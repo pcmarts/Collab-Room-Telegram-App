@@ -565,8 +565,9 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
                         </FormItem>
                       )}
                     />
-
-                    <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 flex gap-4">
+                  </div>
+                  <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 flex gap-4">
+                    {step > 1 && (
                       <Button
                         type="button"
                         variant="outline"
@@ -576,21 +577,24 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
                       >
                         Back
                       </Button>
-                      <Button
-                        type="submit"
-                        className="flex-1"
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Saving...
-                          </>
-                        ) : (
-                          "Complete Profile"
-                        )}
-                      </Button>
-                    </div>
+                    )}
+                    <Button
+                      type={step === 3 ? "submit" : "button"}
+                      onClick={step === 3 ? undefined : nextStep}
+                      className="flex-1"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : step === 3 ? (
+                        "Complete Profile"
+                      ) : (
+                        "Next"
+                      )}
+                    </Button>
                   </div>
                 </form>
               )}
