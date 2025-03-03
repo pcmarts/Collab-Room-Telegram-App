@@ -225,21 +225,28 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', req.body);
 
     try {
-      const { collabs_to_discover, collabs_to_host, notification_frequency, initData } = req.body;
+      const { collabs_to_discover, collabs_to_host, notification_frequency } = req.body;
 
       if (!notification_frequency || !collabs_to_discover?.length || !collabs_to_host?.length) {
         console.error('Missing required fields');
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      // Parse Telegram data to get user
-      console.log('Parsing Telegram data');
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        console.error('No Telegram init data found in headers');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Parse Telegram data
+      console.log('Parsing Telegram data:', initData);
       const decodedInitData = new URLSearchParams(initData);
       const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
       console.log('Decoded Telegram user:', telegramUser);
 
       if (!telegramUser.id) {
-        console.error('No Telegram user ID found');
+        console.error('No Telegram user ID found in parsed data');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
 
@@ -309,7 +316,7 @@ export async function registerRoutes(app: Express) {
 
       } catch (dbError) {
         console.error('Database error:', dbError);
-        throw new Error(`Failed to save preferences: ${dbError.message}`);
+        throw new Error(`Failed to save preferences: ${dbError}`);
       }
 
     } catch (error) {

@@ -60,7 +60,7 @@ export default function Dashboard() {
         <Button
           variant="outline"
           className="h-24 flex-col"
-          onClick={() => setLocation('/collab-preferences')}
+          onClick={() => setLocation('/preferences')}
         >
           <Settings className="h-6 w-6 mb-2" />
           <span>Edit Preferences</span>
@@ -139,35 +139,45 @@ export default function Dashboard() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLocation('/collab-preferences')}
+              onClick={() => setLocation('/preferences')}
             >
               Edit
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium mb-2">Looking to Discover</h3>
-              <div className="flex flex-wrap gap-2">
-                {preferences?.collabs_to_discover?.map(collab => (
-                  <span key={collab} className="px-2 py-1 bg-primary/10 rounded-full text-xs">
-                    {collab}
-                  </span>
-                ))}
+          {preferences ? (
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-medium mb-2">Looking to Discover</h3>
+                <div className="flex flex-wrap gap-2">
+                  {preferences.collabs_to_discover?.map(collab => (
+                    <span key={collab} className="px-2 py-1 bg-primary/10 rounded-full text-xs">
+                      {collab}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div>
-              <h3 className="font-medium mb-2">Ready to Host</h3>
-              <div className="flex flex-wrap gap-2">
-                {preferences?.collabs_to_host?.map(collab => (
-                  <span key={collab} className="px-2 py-1 bg-primary/10 rounded-full text-xs">
-                    {collab}
-                  </span>
-                ))}
+              <div>
+                <h3 className="font-medium mb-2">Ready to Host</h3>
+                <div className="flex flex-wrap gap-2">
+                  {preferences.collabs_to_host?.map(collab => (
+                    <span key={collab} className="px-2 py-1 bg-primary/10 rounded-full text-xs">
+                      {collab}
+                    </span>
+                  ))}
+                </div>
               </div>
+              {preferences.notification_frequency && (
+                <div>
+                  <h3 className="font-medium">Notification Frequency</h3>
+                  <p>{preferences.notification_frequency}</p>
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            <p className="text-muted-foreground">No preferences set</p>
+          )}
         </CardContent>
       </Card>
     </div>
