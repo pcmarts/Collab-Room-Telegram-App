@@ -6,25 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
-
-declare global {
-  interface Window {
-    Telegram: {
-      WebApp: {
-        ready: () => void;
-        close: () => void;
-        initData: string;
-        MainButton: {
-          text: string;
-          show: () => void;
-          hide: () => void;
-          onClick: (callback: () => void) => void;
-        };
-      };
-    };
-  }
-}
+import { useEffect, useState } from "react";
 
 const onboardingSchema = z.object({
   bio: z.string().min(10).max(300),
@@ -36,6 +18,8 @@ type OnboardingData = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingForm() {
   const { toast } = useToast();
+  const [isWebAppReady, setIsWebAppReady] = useState(false);
+
   const form = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
@@ -46,27 +30,46 @@ export default function OnboardingForm() {
   });
 
   useEffect(() => {
-    // Initialize Telegram WebApp
+    // Check if we're in Telegram environment
     if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.ready();
+      try {
+        // Initialize WebApp
+        window.Telegram.WebApp.ready();
+        setIsWebAppReady(true);
+      } catch (error) {
+        console.error('Failed to initialize Telegram WebApp:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to initialize Telegram WebApp"
+        });
+      }
+    } else {
+      // We're not in Telegram environment
+      console.log('Not in Telegram WebApp environment');
     }
-  }, []);
+  }, [toast]);
 
   async function onSubmit(data: OnboardingData) {
     try {
-      const webApp = window.Telegram?.WebApp;
-      if (!webApp) {
-        throw new Error("Telegram WebApp not initialized");
+      if (!window.Telegram?.WebApp) {
+        throw new Error("Not in Telegram WebApp environment");
       }
 
-      await fetch('/api/onboarding', {
+      const { WebApp } = window.Telegram;
+
+      const response = await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
-          initData: webApp.initData
+          initData: WebApp.initData
         })
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to save profile');
+      }
 
       toast({
         title: "Profile Updated",
@@ -75,9 +78,10 @@ export default function OnboardingForm() {
 
       // Close the WebApp after a short delay to show the success message
       setTimeout(() => {
-        webApp.close();
+        WebApp.close();
       }, 1500);
     } catch (error) {
+      console.error('Submission error:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -147,7 +151,11 @@ export default function OnboardingForm() {
               )}
             />
 
-            <Button type="submit" className="w-full">
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={!isWebAppReady}
+            >
               Complete Profile
             </Button>
           </form>
