@@ -40,6 +40,10 @@ export default function OnboardingForm() {
       setIsSubmitting(true);
       console.log('Form data:', formData);
 
+      if (!formData.first_name || !formData.last_name || !formData.handle) {
+        throw new Error('Please fill in all required fields');
+      }
+
       const submitData = {
         ...formData,
         initData: window.Telegram?.WebApp?.initData || ''

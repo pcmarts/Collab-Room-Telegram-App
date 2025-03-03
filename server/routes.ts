@@ -48,22 +48,42 @@ export async function registerRoutes(app: Express) {
       }
 
       // Create new user
-      const [user] = await db.insert(users)
-        .values({
-          telegram_id,
-          first_name,
-          last_name,
-          handle
-        })
-        .returning();
-
-      console.log('Created user:', user);
-
-      res.json({ 
-        success: true,
-        user,
-        message: 'User created successfully'
+      console.log('Creating new user with data:', {
+        telegram_id,
+        first_name,
+        last_name,
+        handle
       });
+
+      try {
+        const [user] = await db
+          .insert(users)
+          .values({
+            telegram_id,
+            first_name,
+            last_name,
+            handle
+          })
+          .returning();
+
+        console.log('Created user:', user);
+
+        // Verify the user was created
+        const verifyUser = await db.select()
+          .from(users)
+          .where(eq(users.telegram_id, telegram_id));
+
+        console.log('Verification query result:', verifyUser);
+
+        res.json({ 
+          success: true,
+          user,
+          message: 'User created successfully'
+        });
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error(`Failed to create user: ${dbError.message}`);
+      }
 
     } catch (error) {
       console.error('Detailed error:', {
