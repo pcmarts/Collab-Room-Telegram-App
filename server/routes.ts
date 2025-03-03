@@ -149,9 +149,12 @@ export async function registerRoutes(app: Express) {
   // Updated onboarding endpoint
   app.post("/api/onboarding", async (req, res) => {
     try {
+      console.log('Received onboarding request:', req.body);
+
       const validation = onboardingSchema.safeParse(req.body);
 
       if (!validation.success) {
+        console.log('Validation failed:', validation.error);
         res.status(400).json({ error: validation.error });
         return;
       }
@@ -179,6 +182,8 @@ export async function registerRoutes(app: Express) {
         initData
       } = validation.data;
 
+      console.log('Parsed data:', validation.data);
+
       // Parse the initData to get user information
       const decodedInitData = new URLSearchParams(initData);
       const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
@@ -187,6 +192,15 @@ export async function registerRoutes(app: Express) {
         res.status(400).json({ error: 'Invalid user data' });
         return;
       }
+
+      console.log('Creating user with data:', {
+        telegram_id: telegramUser.id.toString(),
+        first_name,
+        last_name,
+        handle: telegram_handle,
+        linkedin_url,
+        email
+      });
 
       // Start a transaction
       const [user] = await db.insert(users).values({
@@ -197,6 +211,21 @@ export async function registerRoutes(app: Express) {
         linkedin_url,
         email
       }).returning();
+
+      console.log('Created user:', user);
+
+      console.log('Creating company with data:', {
+        name: company_name,
+        user_id: user.id,
+        website: company_website,
+        category: company_category,
+        size: company_size,
+        funding_stage,
+        geographic_focus,
+        twitter_handle,
+        linkedin_url: company_linkedin,
+        telegram_group: company_telegram
+      });
 
       await db.insert(companies).values({
         name: company_name,
@@ -209,6 +238,14 @@ export async function registerRoutes(app: Express) {
         twitter_handle,
         linkedin_url: company_linkedin,
         telegram_group: company_telegram
+      });
+
+      console.log('Creating user preferences with data:', {
+        user_id: user.id,
+        collabs_to_discover,
+        collabs_to_host,
+        notification_frequency,
+        additional_opportunities
       });
 
       await db.insert(userPreferences).values({

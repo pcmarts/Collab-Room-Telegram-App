@@ -73,6 +73,7 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
 
   const form = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
+    mode: "onChange",
     defaultValues: {
       first_name: "",
       last_name: "",
@@ -85,6 +86,10 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
       twitter_handle: "@",
       company_linkedin: "https://www.linkedin.com/company/",
       company_telegram: "https://t.me/",
+      company_category: "",
+      company_size: "",
+      funding_stage: "",
+      geographic_focus: "",
       notification_frequency: "Daily",
       additional_opportunities: "",
       collabs_to_discover: [],
@@ -178,7 +183,7 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
 
     const subscription = form.watch(saveData);
     return () => subscription.unsubscribe();
-  }, [selectedCollabsToDiscover, selectedCollabsToHost]);
+  }, [selectedCollabsToDiscover, selectedCollabsToHost, form]);
 
   useEffect(() => {
     if (window.Telegram?.WebApp) {
@@ -223,10 +228,10 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
     }
   }, [form.formState.errors, step, selectedCollabsToDiscover, selectedCollabsToHost]);
 
-  const handleSubmit = useCallback(async (data: OnboardingData) => {
+  const handleSubmit = async (data: OnboardingData) => {
+    console.log('handleSubmit called with data:', data);
     try {
       setIsSubmitting(true);
-      console.log('Form submission started', { data, selectedCollabsToDiscover, selectedCollabsToHost });
 
       if (!window.Telegram?.WebApp) {
         throw new Error("Not in Telegram WebApp environment");
@@ -248,7 +253,7 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
         initData: window.Telegram.WebApp.initData
       };
 
-      console.log('Sending form data to server:', formData);
+      console.log('Sending form data:', formData);
 
       const response = await fetch('/api/onboarding', {
         method: 'POST',
@@ -256,12 +261,13 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
         body: JSON.stringify(formData)
       });
 
+      console.log('Response received:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to save profile');
       }
 
-      console.log('Form submission successful');
       localStorage.removeItem(STORAGE_KEY);
 
       toast({
@@ -281,7 +287,7 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
     } finally {
       setIsSubmitting(false);
     }
-  }, [toast, selectedCollabsToDiscover, selectedCollabsToHost]);
+  };
 
   const handleNextStep = useCallback(async () => {
     if (step === 3) {
@@ -318,7 +324,10 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit((data) => {
+              console.log('Form submitted with data:', data);
+              handleSubmit(data);
+            })} className="space-y-6">
               {/* Step 1: Personal Information */}
               {step === 1 && (
                 <div className="space-y-4">
@@ -698,8 +707,8 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
                   </Button>
                 )}
                 <Button
-                  type="button"
-                  onClick={handleNextStep}
+                  type={step === 3 ? "submit" : "button"}
+                  onClick={step === 3 ? undefined : handleNextStep}
                   className="flex-1"
                   disabled={!isWebAppReady || !isCurrentStepValid() || isSubmitting}
                 >
