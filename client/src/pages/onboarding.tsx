@@ -6,6 +6,25 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+
+declare global {
+  interface Window {
+    Telegram: {
+      WebApp: {
+        ready: () => void;
+        close: () => void;
+        initData: string;
+        MainButton: {
+          text: string;
+          show: () => void;
+          hide: () => void;
+          onClick: (callback: () => void) => void;
+        };
+      };
+    };
+  }
+}
 
 const onboardingSchema = z.object({
   bio: z.string().min(10).max(300),
@@ -26,16 +45,26 @@ export default function OnboardingForm() {
     }
   });
 
+  useEffect(() => {
+    // Initialize Telegram WebApp
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.ready();
+    }
+  }, []);
+
   async function onSubmit(data: OnboardingData) {
     try {
-      const telegram = (window as any).Telegram.WebApp;
-      
+      const webApp = window.Telegram?.WebApp;
+      if (!webApp) {
+        throw new Error("Telegram WebApp not initialized");
+      }
+
       await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
-          initData: telegram.initData
+          initData: webApp.initData
         })
       });
 
@@ -44,7 +73,10 @@ export default function OnboardingForm() {
         description: "Your profile has been successfully updated!"
       });
 
-      telegram.close();
+      // Close the WebApp after a short delay to show the success message
+      setTimeout(() => {
+        webApp.close();
+      }, 1500);
     } catch (error) {
       toast({
         variant: "destructive",
