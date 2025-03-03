@@ -1,32 +1,19 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useEffect } from "react";
-import { type OnboardingData, onboardingSchema } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-
-const COLLAB_OPTIONS = [
-  "Podcast Guest Appearances",
-  "Twitter Spaces Guest",
-  "Webinar Guest Appearance",
-  "Keynote Speaking at Virtual Events",
-  "Medium Guest Posts"
-];
 
 export default function OnboardingForm() {
   const { toast } = useToast();
-  const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedCollabsToDiscover, setSelectedCollabsToDiscover] = useState<string[]>([]);
-  const [selectedCollabsToHost, setSelectedCollabsToHost] = useState<string[]>([]);
+  const [formData, setFormData] = useState({
+    first_name: '',
+    email: ''
+  });
 
-  // Debug: Log Telegram WebApp status on mount
+  // Debug: Log Telegram WebApp status
   useEffect(() => {
     console.log('============ DEBUG: Component Mount ============');
     console.log('window.Telegram exists:', !!window.Telegram);
@@ -36,51 +23,35 @@ export default function OnboardingForm() {
     }
   }, []);
 
-  const form = useForm<OnboardingData>({
-    resolver: zodResolver(onboardingSchema),
-    defaultValues: {
-      first_name: "",
-      last_name: "",
-      handle: "",
-      company_name: "",
-      company_website: "https://",
-      twitter_handle: "@",
-      company_category: "Crypto",
-      company_size: "1-10",
-      notification_frequency: "Daily",
-      collabs_to_discover: [],
-      collabs_to_host: []
-    }
-  });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-  const onSubmit = async (data: OnboardingData) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     console.log('============ DEBUG: Form Submit Started ============');
 
     try {
       setIsSubmitting(true);
+      console.log('Form data:', formData);
 
-      // Log form data
-      console.log('Form values:', data);
-      console.log('Selected collabs to discover:', selectedCollabsToDiscover);
-      console.log('Selected collabs to host:', selectedCollabsToHost);
-
-      // Add collaborations to form data
-      const formData = {
-        ...data,
-        collabs_to_discover: selectedCollabsToDiscover,
-        collabs_to_host: selectedCollabsToHost,
-        // Add empty initData for testing
+      const submitData = {
+        ...formData,
         initData: window.Telegram?.WebApp?.initData || ''
       };
 
-      console.log('Submitting data:', formData);
+      console.log('Submitting data:', submitData);
 
       const response = await fetch('/api/onboarding', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submitData)
       });
 
       console.log('Response status:', response.status);
@@ -96,8 +67,9 @@ export default function OnboardingForm() {
         description: "Form submitted successfully"
       });
 
-      // For testing, don't close WebApp yet
-      console.log('Form submission completed successfully');
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.close();
+      }
 
     } catch (error) {
       console.error('Form submission error:', error);
@@ -116,242 +88,40 @@ export default function OnboardingForm() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Complete Your Profile</h1>
-          <p className="text-muted-foreground mt-2">Step {step} of 3</p>
+          <h1 className="text-2xl font-bold">Test Form</h1>
+          <p className="text-muted-foreground mt-2">Simple test submission</p>
         </div>
 
         <div className="text-xs text-muted-foreground mb-4">
           Telegram WebApp: {window.Telegram?.WebApp ? 'Available' : 'Not Available'}
         </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {step === 1 && (
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="first_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="first_name">First Name</Label>
+            <Input
+              id="first_name"
+              name="first_name"
+              value={formData.first_name}
+              onChange={handleInputChange}
+            />
+          </div>
 
-                <FormField
-                  control={form.control}
-                  name="last_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+          </div>
 
-                <FormField
-                  control={form.control}
-                  name="handle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Telegram Handle</FormLabel>
-                      <FormControl>
-                        <Input placeholder="@username" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {step === 2 && (
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="company_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Company Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="company_website"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Company Website</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="twitter_handle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Company Twitter Handle</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="company_category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {[
-                            "Crypto", "NFT", "DeFi", "Web3 Gaming", "Memes & Culture",
-                            "Bitcoin", "Solana", "Ethereum", "Creator Economy",
-                            "Fundraising", "AI & Web3"
-                          ].map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="company_size"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Company Size</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select size" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="1-10">1-10</SelectItem>
-                          <SelectItem value="11-50">11-50</SelectItem>
-                          <SelectItem value="51-200">51-200</SelectItem>
-                          <SelectItem value="200+">200+</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <Label className="text-base font-semibold">Collaborations to Discover</Label>
-                  <div className="grid gap-2">
-                    {COLLAB_OPTIONS.map((option) => (
-                      <div key={option} className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={selectedCollabsToDiscover.includes(option)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedCollabsToDiscover([...selectedCollabsToDiscover, option]);
-                            } else {
-                              setSelectedCollabsToDiscover(
-                                selectedCollabsToDiscover.filter((item) => item !== option)
-                              );
-                            }
-                          }}
-                        />
-                        <Label className="text-sm">{option}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <Label className="text-base font-semibold">Collaborations to Host</Label>
-                  <div className="grid gap-2">
-                    {COLLAB_OPTIONS.map((option) => (
-                      <div key={option} className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={selectedCollabsToHost.includes(option)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedCollabsToHost([...selectedCollabsToHost, option]);
-                            } else {
-                              setSelectedCollabsToHost(
-                                selectedCollabsToHost.filter((item) => item !== option)
-                              );
-                            }
-                          }}
-                        />
-                        <Label className="text-sm">{option}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="notification_frequency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Notification Frequency</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select frequency" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Instant">Instant</SelectItem>
-                          <SelectItem value="Daily">Daily</SelectItem>
-                          <SelectItem value="Weekly">Weekly</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-          </form>
-        </Form>
-
-        <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4">
           <Button 
             type="submit" 
             className="w-full"
             disabled={isSubmitting}
-            onClick={() => form.handleSubmit(onSubmit)()}
           >
             {isSubmitting ? (
               <>
@@ -359,10 +129,10 @@ export default function OnboardingForm() {
                 Submitting...
               </>
             ) : (
-              "Submit"
+              "Submit Test"
             )}
           </Button>
-        </div>
+        </form>
       </div>
     </div>
   );
