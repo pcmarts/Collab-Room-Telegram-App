@@ -61,7 +61,7 @@ export async function handleStart(msg: TelegramBot.Message) {
         `Commands:\n` +
         `/my_collabs - View your collaborations\n` +
         `/host_collab - Create a new collaboration\n` +
-        `/update_profile - Update your profile\n`;
+        `/update_profile - Update your profile settings`;
 
       await bot.sendMessage(chatId, welcomeBackMessage);
     }
@@ -69,6 +69,20 @@ export async function handleStart(msg: TelegramBot.Message) {
     console.error('Error in handleStart:', error);
     await bot.sendMessage(chatId, 'Sorry, there was an error processing your request. Please try again later.');
   }
+}
+
+export async function handleUpdateProfile(msg: TelegramBot.Message) {
+  const chatId = msg.chat.id;
+  await bot.sendMessage(chatId, "Update your profile information:", {
+    reply_markup: {
+      inline_keyboard: [[
+        {
+          text: "Open Profile Editor",
+          web_app: { url: WEBAPP_URL }
+        }
+      ]]
+    }
+  });
 }
 
 export async function handleMyCollabs(msg: TelegramBot.Message) {
@@ -121,3 +135,4 @@ bot.setMyCommands([
 // Set up command handlers
 bot.onText(/\/start/, handleStart);
 bot.onText(/\/my_collabs/, handleMyCollabs);
+bot.onText(/\/update_profile/, handleUpdateProfile);
