@@ -12,9 +12,18 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Add Telegram initData to headers if available
+  const headers: Record<string, string> = {};
+  if (window.Telegram?.WebApp?.initData) {
+    headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
+  }
+  if (data) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -29,8 +38,15 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    // Add Telegram initData to headers if available
+    const headers: Record<string, string> = {};
+    if (window.Telegram?.WebApp?.initData) {
+      headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
+    }
+
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
+      headers
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
