@@ -1,4 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
+import { db } from "./db";
+import { users } from "@shared/schema";
+import { eq } from 'drizzle-orm';
 
 if (!process.env.TELEGRAM_BOT_TOKEN) {
   throw new Error('TELEGRAM_BOT_TOKEN is required');
@@ -10,7 +13,7 @@ if (!process.env.REPLIT_DOMAINS) {
 
 // Get the webapp URL from environment
 const domain = process.env.REPLIT_DOMAINS.split(',')[0];
-const WEBAPP_URL = `https://${domain}/onboarding`;
+const WEBAPP_URL = `https://${domain}`;
 
 console.log('=== Telegram Bot Initialization ===');
 console.log('WebApp URL:', WEBAPP_URL);
@@ -36,26 +39,45 @@ bot.on('error', (error) => {
 // Handle /start command
 async function handleStart(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
+  const telegramId = msg.from?.id.toString();
 
   console.log('=== Handling /start command ===');
   console.log('Chat ID:', chatId);
   console.log('Message:', JSON.stringify(msg, null, 2));
 
   try {
+    // Check if user exists in database
+    if (!telegramId) {
+      throw new Error('No Telegram ID found in message');
+    }
+
+    const [existingUser] = await db.select()
+      .from(users)
+      .where(eq(users.telegram_id, telegramId));
+
     const keyboard = {
       inline_keyboard: [[
-        {
-          text: "Complete Profile",
-          web_app: { url: WEBAPP_URL }
-        }
+        existingUser 
+          ? {
+              text: "Open Dashboard",
+              web_app: { url: `${WEBAPP_URL}/dashboard` }
+            }
+          : {
+              text: "Complete Profile",
+              web_app: { url: `${WEBAPP_URL}/onboarding` }
+            }
       ]]
     };
 
     console.log('Sending message with keyboard:', JSON.stringify(keyboard, null, 2));
 
+    const welcomeMessage = existingUser
+      ? `👋 Welcome back to CollabRoom!\n\nClick the button below to access your dashboard.`
+      : '👋 Welcome to CollabRoom!\n\nClick the button below to complete your profile.';
+
     await bot.sendMessage(
       chatId,
-      '👋 Welcome to CollabRoom!\n\nClick the button below to complete your profile.',
+      welcomeMessage,
       { reply_markup: keyboard }
     );
 
