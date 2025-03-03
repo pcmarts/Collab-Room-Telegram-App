@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
 
+  // Simple test endpoint that writes to database
   app.post("/api/onboarding", async (req, res) => {
     console.log('============ DEBUG: Test Endpoint ============');
     console.log('Headers:', req.headers);
@@ -14,6 +15,11 @@ export async function registerRoutes(app: Express) {
 
     try {
       const { first_name, last_name, handle, initData } = req.body;
+
+      if (!first_name || !last_name || !handle) {
+        console.error('Missing required fields');
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
 
       // Parse Telegram data
       console.log('Parsing Telegram data');
@@ -49,26 +55,41 @@ export async function registerRoutes(app: Express) {
         handle
       });
 
-      const [user] = await db.insert(users)
-        .values({
-          telegram_id,
-          first_name,
-          last_name,
-          handle
-        })
-        .returning();
+      try {
+        const [user] = await db
+          .insert(users)
+          .values({
+            telegram_id,
+            first_name,
+            last_name,
+            handle
+          })
+          .returning();
 
-      console.log('Created user:', user);
-      res.json({ 
-        success: true,
-        user,
-        message: 'User created successfully'
-      });
+        console.log('Created user:', user);
+
+        // Verify the user was created
+        const verifyUser = await db.select()
+          .from(users)
+          .where(eq(users.telegram_id, telegram_id));
+
+        console.log('Verification query result:', verifyUser);
+
+        res.json({ 
+          success: true,
+          user,
+          message: 'User created successfully'
+        });
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error(`Failed to create user: ${dbError.message}`);
+      }
 
     } catch (error) {
       console.error('Detailed error:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
+        message: error.message,
+        stack: error.stack,
+        name: error.name
       });
       res.status(500).json({ error: 'Server error', details: error.message });
     }

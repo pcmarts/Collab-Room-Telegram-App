@@ -1,25 +1,17 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { userFormSchema, type UserFormData } from "@shared/schema";
 
 export default function OnboardingForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Initialize form
-  const form = useForm<UserFormData>({
-    resolver: zodResolver(userFormSchema),
-    defaultValues: {
-      first_name: "",
-      last_name: "",
-      handle: "@",
-    }
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    handle: ''
   });
 
   // Debug: Log Telegram WebApp status
@@ -32,15 +24,28 @@ export default function OnboardingForm() {
     }
   }, []);
 
-  const onSubmit = async (data: UserFormData) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     console.log('============ DEBUG: Form Submit Started ============');
 
     try {
       setIsSubmitting(true);
-      console.log('Form data:', data);
+      console.log('Form data:', formData);
+
+      if (!formData.first_name || !formData.last_name || !formData.handle) {
+        throw new Error('Please fill in all required fields');
+      }
 
       const submitData = {
-        ...data,
+        ...formData,
         initData: window.Telegram?.WebApp?.initData || ''
       };
 
@@ -64,7 +69,7 @@ export default function OnboardingForm() {
 
       toast({
         title: "Success!",
-        description: responseData.message || "Form submitted successfully"
+        description: responseData.message || "Test submission successful"
       });
 
       // Close Telegram WebApp after short delay to show toast
@@ -91,82 +96,64 @@ export default function OnboardingForm() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Basic Information</h1>
-          <p className="text-muted-foreground mt-2">Tell us about yourself</p>
+          <h1 className="text-2xl font-bold">Test User Creation</h1>
+          <p className="text-muted-foreground mt-2">Simple database test</p>
         </div>
 
         <div className="text-xs text-muted-foreground mb-4">
           Telegram WebApp: {window.Telegram?.WebApp ? 'Available' : 'Not Available'}
         </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="first_name">First Name</Label>
+            <Input
+              id="first_name"
               name="first_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>First Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} className="h-12" />
-                  </FormControl>
-                </FormItem>
-              )}
+              value={formData.first_name}
+              onChange={handleInputChange}
+              required
             />
+          </div>
 
-            <FormField
-              control={form.control}
+          <div>
+            <Label htmlFor="last_name">Last Name</Label>
+            <Input
+              id="last_name"
               name="last_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Last Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} className="h-12" />
-                  </FormControl>
-                </FormItem>
-              )}
+              value={formData.last_name}
+              onChange={handleInputChange}
+              required
             />
+          </div>
 
-            <FormField
-              control={form.control}
+          <div>
+            <Label htmlFor="handle">Telegram Handle</Label>
+            <Input
+              id="handle"
               name="handle"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telegram Handle</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="@username"
-                      className="h-12"
-                      onChange={(e) => {
-                        let value = e.target.value;
-                        if (!value.startsWith('@')) {
-                          value = '@' + value;
-                        }
-                        field.onChange(value);
-                      }}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
+              value={formData.handle}
+              onChange={handleInputChange}
+              placeholder="@username"
+              required
             />
+          </div>
 
-            <Button 
-              type="submit" 
-              className="w-full h-12 mt-6"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Submit"
-              )}
-            </Button>
-          </form>
-        </Form>
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Test Database Submit"
+            )}
+          </Button>
+        </form>
       </div>
     </div>
   );
