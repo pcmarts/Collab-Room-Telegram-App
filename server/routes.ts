@@ -10,6 +10,58 @@ import { insertCollaborationSchema, insertCompanySchema, onboardingSchema } from
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
 
+  // Profile endpoint
+  app.get("/api/profile", async (req, res) => {
+    try {
+      const telegramInitData = req.query.initData as string;
+
+      if (!telegramInitData) {
+        res.status(400).json({ error: 'Missing Telegram initialization data' });
+        return;
+      }
+
+      const decodedInitData = new URLSearchParams(telegramInitData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+
+      if (!telegramUser.id) {
+        res.status(400).json({ error: 'Invalid user data' });
+        return;
+      }
+
+      // Get user data
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+
+      // Get company data
+      const [company] = await db
+        .select()
+        .from(companies)
+        .where(eq(companies.user_id, user.id));
+
+      // Get preferences
+      const [preferences] = await db
+        .select()
+        .from(userPreferences)
+        .where(eq(userPreferences.user_id, user.id));
+
+      res.json({
+        user,
+        company,
+        preferences
+      });
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Companies endpoints
   app.get("/api/companies", async (_req, res) => {
     try {
@@ -31,7 +83,7 @@ export async function registerRoutes(app: Express) {
 
     try {
       const [company] = await db
-        .insert(users)
+        .insert(companies)
         .values(validation.data)
         .returning();
       res.json(company);

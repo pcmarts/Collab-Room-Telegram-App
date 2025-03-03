@@ -12,6 +12,10 @@ import { useEffect, useState, useCallback } from "react";
 import { type OnboardingData, onboardingSchema } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 
+interface OnboardingFormProps {
+  isEditMode?: boolean;
+}
+
 declare global {
   interface Window {
     Telegram?: {
@@ -59,7 +63,7 @@ const GEOGRAPHIC_FOCUS = [
   "Latin America", "Africa", "Middle East", "Australia"
 ];
 
-export default function OnboardingForm() {
+export default function OnboardingForm({ isEditMode = false }: OnboardingFormProps) {
   const { toast } = useToast();
   const [isWebAppReady, setIsWebAppReady] = useState(false);
   const [step, setStep] = useState(1);
@@ -106,6 +110,56 @@ export default function OnboardingForm() {
       console.error('Error loading saved data:', error);
     }
   }, []);
+
+  // Load existing profile data in edit mode
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchProfile = async () => {
+        try {
+          if (!window.Telegram?.WebApp) return;
+
+          const response = await fetch(`/api/profile?initData=${encodeURIComponent(window.Telegram.WebApp.initData)}`);
+          if (!response.ok) throw new Error('Failed to fetch profile');
+
+          const { user, company, preferences } = await response.json();
+
+          // Set form values
+          form.reset({
+            first_name: user.first_name,
+            last_name: user.last_name,
+            telegram_handle: user.handle,
+            linkedin_url: user.linkedin_url,
+            email: user.email,
+            company_name: company.name,
+            job_title: company.job_title,
+            company_website: company.website,
+            twitter_handle: company.twitter_handle,
+            company_linkedin: company.linkedin_url,
+            company_telegram: company.telegram_group,
+            company_category: company.category,
+            company_size: company.size,
+            funding_stage: company.funding_stage,
+            geographic_focus: company.geographic_focus,
+            notification_frequency: preferences.notification_frequency,
+            additional_opportunities: preferences.additional_opportunities
+          });
+
+          // Set collaboration preferences
+          setSelectedCollabsToDiscover(preferences.collabs_to_discover);
+          setSelectedCollabsToHost(preferences.collabs_to_host);
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to load profile data"
+          });
+        }
+      };
+
+      fetchProfile();
+    }
+  }, [isEditMode, form, toast]);
 
   // Save form data on change
   useEffect(() => {
@@ -169,10 +223,10 @@ export default function OnboardingForm() {
     }
   }, [form.formState.errors, step, selectedCollabsToDiscover, selectedCollabsToHost]);
 
-  const onSubmit = useCallback(async (data: OnboardingData) => {
+  const handleSubmit = useCallback(async (data: OnboardingData) => {
     try {
-      console.log('Form submission started', { data, selectedCollabsToDiscover, selectedCollabsToHost });
       setIsSubmitting(true);
+      console.log('Form submission started', { data, selectedCollabsToDiscover, selectedCollabsToHost });
 
       if (!window.Telegram?.WebApp) {
         throw new Error("Not in Telegram WebApp environment");
@@ -211,13 +265,12 @@ export default function OnboardingForm() {
       localStorage.removeItem(STORAGE_KEY);
 
       toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated!"
+        title: "Success",
+        description: "Your profile has been saved successfully!"
       });
 
-      setTimeout(() => {
-        window.Telegram.WebApp?.close();
-      }, 1500);
+      // Redirect to profile overview
+      window.location.href = '/profile-overview';
     } catch (error) {
       console.error('Submission error:', error);
       toast({
@@ -234,7 +287,7 @@ export default function OnboardingForm() {
     if (step === 3) {
       // For the final step, trigger form submission
       if (isCurrentStepValid()) {
-        await form.handleSubmit(onSubmit)();
+        await form.handleSubmit(handleSubmit)();
       }
     } else {
       // For other steps, validate and move to next step
@@ -249,7 +302,7 @@ export default function OnboardingForm() {
         setStep(prev => prev + 1);
       }
     }
-  }, [step, form, onSubmit, isCurrentStepValid]);
+  }, [step, form, handleSubmit, isCurrentStepValid]);
 
   const prevStep = useCallback(() => {
     if (step > 1) setStep(step - 1);
@@ -260,12 +313,12 @@ export default function OnboardingForm() {
       <div className="p-4 pb-40">
         <div className="max-w-md mx-auto space-y-6">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Complete Your Profile</h1>
+            <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Profile' : 'Complete Your Profile'}</h1>
             <p className="text-muted-foreground mt-2">Step {step} of 3</p>
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
               {/* Step 1: Personal Information */}
               {step === 1 && (
                 <div className="space-y-4">
