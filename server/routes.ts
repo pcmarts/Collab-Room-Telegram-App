@@ -1,9 +1,8 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "./db";
-import { users, userPreferences, companies } from "../shared/schema";
+import { users, userPreferences, companies, collaborations } from "../shared/schema";
 import { bot } from "./telegram";
-import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { insertCollaborationSchema, insertCompanySchema, onboardingSchema } from "../shared/schema";
 
@@ -93,51 +92,44 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Collaborations endpoints
+  // Collaborations endpoints with better error logging
   app.get("/api/collaborations", async (_req, res) => {
     try {
-      const collaborations = await db.query.collaborations.findMany({
-        with: {
-          host: true,
-          company: true,
-          applicant: true
-        }
-      });
-      res.json(collaborations);
+      console.log('Starting collaborations fetch...');
+      // Simplified query without relations for now
+      const result = await db
+        .select()
+        .from(collaborations);
+
+      console.log('Collaborations fetched successfully:', result);
+      res.json(result);
     } catch (error) {
-      console.error('Error fetching collaborations:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error('Detailed error in collaborations fetch:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   });
 
   app.post("/api/collaborations", async (req, res) => {
-    const validation = insertCollaborationSchema.safeParse(req.body);
-
-    if (!validation.success) {
-      res.status(400).json({ error: validation.error });
-      return;
-    }
-
     try {
+      console.log('Creating new collaboration:', req.body);
+      const validation = insertCollaborationSchema.safeParse(req.body);
+
+      if (!validation.success) {
+        console.error('Validation failed:', validation.error);
+        res.status(400).json({ error: validation.error });
+        return;
+      }
+
       const [collaboration] = await db
-        .insert(users)
+        .insert(collaborations)
         .values(validation.data)
         .returning();
 
-      // Notify via Telegram bot
-      if (collaboration.host_id) {
-        const [host] = await db
-          .select()
-          .from(users)
-          .where(eq(users.id, collaboration.host_id));
-
-        if (host?.telegram_id) {
-          await bot.sendMessage(
-            host.telegram_id,
-            `New collaboration created: ${collaboration.title}`
-          );
-        }
-      }
+      console.log('Collaboration created:', collaboration);
 
       res.json(collaboration);
     } catch (error) {
@@ -146,7 +138,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Updated onboarding endpoint
+  // Onboarding endpoint
   app.post("/api/onboarding", async (req, res) => {
     try {
       console.log('Received onboarding request:', req.body);
@@ -182,8 +174,6 @@ export async function registerRoutes(app: Express) {
         initData
       } = validation.data;
 
-      console.log('Parsed data:', validation.data);
-
       // Parse the initData to get user information
       const decodedInitData = new URLSearchParams(initData);
       const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
@@ -192,15 +182,6 @@ export async function registerRoutes(app: Express) {
         res.status(400).json({ error: 'Invalid user data' });
         return;
       }
-
-      console.log('Creating user with data:', {
-        telegram_id: telegramUser.id.toString(),
-        first_name,
-        last_name,
-        handle: telegram_handle,
-        linkedin_url,
-        email
-      });
 
       // Start a transaction
       const [user] = await db.insert(users).values({
@@ -214,19 +195,6 @@ export async function registerRoutes(app: Express) {
 
       console.log('Created user:', user);
 
-      console.log('Creating company with data:', {
-        name: company_name,
-        user_id: user.id,
-        website: company_website,
-        category: company_category,
-        size: company_size,
-        funding_stage,
-        geographic_focus,
-        twitter_handle,
-        linkedin_url: company_linkedin,
-        telegram_group: company_telegram
-      });
-
       await db.insert(companies).values({
         name: company_name,
         user_id: user.id,
@@ -238,14 +206,6 @@ export async function registerRoutes(app: Express) {
         twitter_handle,
         linkedin_url: company_linkedin,
         telegram_group: company_telegram
-      });
-
-      console.log('Creating user preferences with data:', {
-        user_id: user.id,
-        collabs_to_discover,
-        collabs_to_host,
-        notification_frequency,
-        additional_opportunities
       });
 
       await db.insert(userPreferences).values({

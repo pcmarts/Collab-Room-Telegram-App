@@ -1,4 +1,5 @@
-import { pgTable, uuid, text, timestamp, jsonb, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
@@ -42,14 +43,6 @@ export const userPreferences = pgTable('user_preferences', {
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow()
 });
 
-export const userCompanyRelations = pgTable('user_company_relations', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  company_id: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
-  role: text('role').notNull(),
-  created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
-});
-
 export const collaborations = pgTable('collaborations', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: text('title').notNull(),
@@ -65,22 +58,21 @@ export const collaborations = pgTable('collaborations', {
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow()
 });
 
+// Schema Validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
 export const insertCollaborationSchema = createInsertSchema(collaborations);
-export const insertUserCompanyRelationSchema = createInsertSchema(userCompanyRelations);
 export const insertUserPreferencesSchema = createInsertSchema(userPreferences);
 
+// Types
 export type User = typeof users.$inferSelect;
 export type Company = typeof companies.$inferSelect;
 export type Collaboration = typeof collaborations.$inferSelect;
-export type UserCompanyRelation = typeof userCompanyRelations.$inferSelect;
 export type UserPreferences = typeof userPreferences.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type InsertCollaboration = z.infer<typeof insertCollaborationSchema>;
-export type InsertUserCompanyRelation = z.infer<typeof insertUserCompanyRelationSchema>;
 export type InsertUserPreferences = z.infer<typeof insertUserPreferencesSchema>;
 
 export const onboardingSchema = z.object({
@@ -99,17 +91,17 @@ export const onboardingSchema = z.object({
   company_linkedin: z.string().url("Please enter a valid LinkedIn URL"),
   company_telegram: z.string().url("Please enter a valid Telegram group link").optional(),
   company_category: z.enum([
-    "Crypto", "NFT", "DeFi", "Web3 Gaming", "Memes & Culture", "Bitcoin", 
-    "Solana", "Ethereum", "Creator Economy", "Fundraising", "AI & Web3", 
-    "Infrastructure", "DAOs", "Metaverse", "DEXs & Trading", 
-    "Stablecoins & Payments", "Real World Assets (RWA)", "SocialFi", 
-    "Identity & Privacy", "Security & Auditing", "Interoperability & Bridges", 
+    "Crypto", "NFT", "DeFi", "Web3 Gaming", "Memes & Culture", "Bitcoin",
+    "Solana", "Ethereum", "Creator Economy", "Fundraising", "AI & Web3",
+    "Infrastructure", "DAOs", "Metaverse", "DEXs & Trading",
+    "Stablecoins & Payments", "Real World Assets (RWA)", "SocialFi",
+    "Identity & Privacy", "Security & Auditing", "Interoperability & Bridges",
     "Data & Oracles", "ReFi (Regenerative Finance)", "Decentralized Compute & Storage"
   ]),
   company_size: z.enum(["1-10", "11-50", "51-200", "200+"]),
   funding_stage: z.enum(["Pre-seed", "Seed", "Series A", "Series B+"]),
   geographic_focus: z.enum([
-    "Global", "North America", "Europe", "Asia", "Latin America", 
+    "Global", "North America", "Europe", "Asia", "Latin America",
     "Africa", "Middle East", "Australia"
   ]),
 
@@ -117,7 +109,10 @@ export const onboardingSchema = z.object({
   collabs_to_discover: z.array(z.string()).min(1, "Select at least one collaboration type to discover"),
   collabs_to_host: z.array(z.string()).min(1, "Select at least one collaboration type to host"),
   notification_frequency: z.enum(["Instant", "Daily", "Weekly"]),
-  additional_opportunities: z.string().optional()
+  additional_opportunities: z.string().optional(),
+
+  // Telegram data
+  initData: z.string()
 });
 
 export type OnboardingData = z.infer<typeof onboardingSchema>;
