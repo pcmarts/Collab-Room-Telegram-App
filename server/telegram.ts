@@ -4,59 +4,71 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
   throw new Error('TELEGRAM_BOT_TOKEN is required');
 }
 
-// Get the webapp URL from environment or use the first Replit domain
-const WEBAPP_URL = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}/onboarding`;
-console.log('Initializing Telegram bot with WebApp URL:', WEBAPP_URL);
+if (!process.env.REPLIT_DOMAINS) {
+  throw new Error('REPLIT_DOMAINS is required');
+}
 
-export const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+// Get the webapp URL from environment
+const domain = process.env.REPLIT_DOMAINS.split(',')[0];
+const WEBAPP_URL = `https://${domain}/onboarding`;
 
-// Log when the bot starts successfully
+console.log('=== Telegram Bot Initialization ===');
+console.log('WebApp URL:', WEBAPP_URL);
+console.log('Domain:', domain);
+
+// Initialize bot with polling
+export const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { 
+  polling: true,
+  webHook: false // Explicitly disable webhook
+});
+
+// Basic error handling
 bot.on('polling_error', (error) => {
-  console.error('Telegram bot polling error:', error);
+  console.error('=== Telegram Bot Polling Error ===');
+  console.error(error);
 });
 
 bot.on('error', (error) => {
-  console.error('Telegram bot error:', error);
+  console.error('=== Telegram Bot General Error ===');
+  console.error(error);
 });
 
-export async function handleStart(msg: TelegramBot.Message) {
+// Handle /start command
+async function handleStart(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
-  console.log('Received /start command from chat ID:', chatId);
-  console.log('Message details:', JSON.stringify(msg, null, 2));
+
+  console.log('=== Handling /start command ===');
+  console.log('Chat ID:', chatId);
+  console.log('Message:', JSON.stringify(msg, null, 2));
 
   try {
-    const welcomeMessage = 
-      `👋 Welcome to CollabRoom! I'm your Web3 collaboration assistant.\n\n` +
-      `Let's get you set up with a profile that will help you find the perfect collaborations.`;
-
-    console.log('Sending welcome message to chat ID:', chatId);
-
-    const messageOptions = {
-      reply_markup: {
-        inline_keyboard: [[
-          {
-            text: "Complete Profile",
-            web_app: { url: WEBAPP_URL }
-          }
-        ]]
-      }
+    const keyboard = {
+      inline_keyboard: [[
+        {
+          text: "Complete Profile",
+          web_app: { url: WEBAPP_URL }
+        }
+      ]]
     };
 
-    console.log('Message options:', JSON.stringify(messageOptions, null, 2));
+    console.log('Sending message with keyboard:', JSON.stringify(keyboard, null, 2));
 
-    const sentMessage = await bot.sendMessage(chatId, welcomeMessage, messageOptions);
-    console.log('Successfully sent message:', sentMessage);
+    await bot.sendMessage(
+      chatId,
+      '👋 Welcome to CollabRoom!\n\nClick the button below to complete your profile.',
+      { reply_markup: keyboard }
+    );
+
+    console.log('Message sent successfully');
   } catch (error) {
-    console.error('Detailed error in handleStart:', {
-      error: error,
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
-    });
+    console.error('=== Error in handleStart ===');
+    console.error(error);
 
+    // Try to send error message to user
     try {
       await bot.sendMessage(
-        chatId, 
-        'Sorry, there was an error. Please try the /start command again in a few moments.'
+        chatId,
+        'Sorry, something went wrong. Please try again in a few moments.'
       );
     } catch (sendError) {
       console.error('Failed to send error message:', sendError);
@@ -64,17 +76,17 @@ export async function handleStart(msg: TelegramBot.Message) {
   }
 }
 
-// Initialize bot commands
+// Set up commands
 console.log('Setting up bot commands...');
 bot.setMyCommands([
   { command: 'start', description: 'Start the bot' }
 ]).then(() => {
-  console.log('Bot commands set successfully');
+  console.log('Bot commands registered successfully');
 }).catch((error) => {
-  console.error('Failed to set bot commands:', error);
+  console.error('Failed to register commands:', error);
 });
 
-// Set up command handlers
-console.log('Setting up command handlers...');
+// Register command handler
 bot.onText(/\/start/, handleStart);
+
 console.log('Telegram bot initialization completed');

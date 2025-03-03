@@ -7,15 +7,28 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Initialize Telegram bot and verify
+// Initialize Telegram bot first
+log('=== Initializing Server ===');
+
+// Verify bot is working
 try {
-  log('Initializing Telegram bot...');
-  if (bot) {
-    log('Telegram bot initialized successfully');
+  log('Checking Telegram bot status...');
+
+  if (!bot) {
+    throw new Error('Telegram bot not initialized');
   }
+
+  // Try to get bot info to verify token works
+  bot.getMe().then((botInfo) => {
+    log('Telegram bot verified:', botInfo.username);
+  }).catch((error) => {
+    console.error('Failed to verify bot:', error);
+    process.exit(1);
+  });
+
 } catch (error) {
-  console.error('Failed to initialize Telegram bot:', error);
-  process.exit(1); // Exit if bot fails to initialize
+  console.error('Critical error initializing Telegram bot:', error);
+  process.exit(1);
 }
 
 app.use((req, res, next) => {
