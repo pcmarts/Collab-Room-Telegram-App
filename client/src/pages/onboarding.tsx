@@ -115,25 +115,20 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
     try {
       setIsSubmitting(true);
 
-      if (!window.Telegram?.WebApp) {
-        throw new Error("Not in Telegram WebApp environment");
-      }
-
-      if (selectedCollabsToDiscover.length === 0 || selectedCollabsToHost.length === 0) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please select at least one option for both collaboration types."
-        });
-        return;
-      }
-
-      const formData = {
+      // Prepare form data
+      let formData = {
         ...data,
         collabs_to_discover: selectedCollabsToDiscover,
         collabs_to_host: selectedCollabsToHost,
-        initData: window.Telegram.WebApp.initData
       };
+
+      // Add Telegram initData if available
+      if (window.Telegram?.WebApp) {
+        formData = {
+          ...formData,
+          initData: window.Telegram.WebApp.initData
+        };
+      }
 
       console.log('Sending form data:', formData);
 
@@ -157,6 +152,7 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
         description: "Your profile has been saved successfully!"
       });
 
+      // Redirect to profile overview
       window.location.href = '/profile-overview';
     } catch (error) {
       console.error('Submission error:', error);

@@ -21,6 +21,8 @@ export async function handleStart(msg: TelegramBot.Message) {
     return;
   }
 
+  console.log('Handling /start command for user:', user);
+
   try {
     // Check if user exists using Drizzle
     const [existingUser] = await db
@@ -29,14 +31,6 @@ export async function handleStart(msg: TelegramBot.Message) {
       .where(eq(users.telegram_id, user.id.toString()));
 
     if (!existingUser) {
-      // Create new user using Drizzle
-      await db.insert(users).values({
-        telegram_id: user.id.toString(),
-        first_name: user.first_name,
-        last_name: user.last_name || '', // Provide empty string if last_name is not available
-        handle: user.username || null
-      });
-
       const welcomeMessage = 
         `👋 Welcome to CollabRoom! I'm your Web3 collaboration assistant.\n\n` +
         `Let's get you set up with a profile that will help you find the perfect collaborations.`;
@@ -64,8 +58,6 @@ export async function handleStart(msg: TelegramBot.Message) {
     }
   } catch (error) {
     console.error('Error in handleStart:', error);
-
-    // Send a user-friendly error message
     await bot.sendMessage(
       chatId, 
       'Sorry, there was an error processing your request. Please try the /start command again in a few moments.'
