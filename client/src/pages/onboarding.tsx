@@ -65,12 +65,15 @@ export default function OnboardingForm() {
 
       toast({
         title: "Success!",
-        description: "Test submission successful"
+        description: responseData.message || "Test submission successful"
       });
 
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.close();
-      }
+      // Close Telegram WebApp after short delay to show toast
+      setTimeout(() => {
+        if (window.Telegram?.WebApp) {
+          window.Telegram.WebApp.close();
+        }
+      }, 1500);
 
     } catch (error) {
       console.error('Form submission error:', error);
