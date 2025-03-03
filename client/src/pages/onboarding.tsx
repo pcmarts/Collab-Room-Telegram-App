@@ -149,63 +149,6 @@ export default function OnboardingForm() {
     }, 100);
   }, []);
 
-  const onSubmit = useCallback(async (data: OnboardingData) => {
-    try {
-      setIsSubmitting(true);
-
-      if (!window.Telegram?.WebApp) {
-        throw new Error("Not in Telegram WebApp environment");
-      }
-
-      const { WebApp } = window.Telegram;
-
-      if (selectedCollabsToDiscover.length === 0 || selectedCollabsToHost.length === 0) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please select at least one option for both collaboration types."
-        });
-        return;
-      }
-
-      const response = await fetch('/api/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          collabs_to_discover: selectedCollabsToDiscover,
-          collabs_to_host: selectedCollabsToHost,
-          initData: WebApp.initData
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save profile');
-      }
-
-      localStorage.removeItem(STORAGE_KEY);
-
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated!"
-      });
-
-      setTimeout(() => {
-        WebApp.close();
-      }, 1500);
-    } catch (error) {
-      console.error('Submission error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update profile. Please try again."
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [toast, selectedCollabsToDiscover, selectedCollabsToHost]);
-
   const isCurrentStepValid = useCallback(() => {
     const currentErrors = form.formState.errors;
 
@@ -226,38 +169,87 @@ export default function OnboardingForm() {
     }
   }, [form.formState.errors, step, selectedCollabsToDiscover, selectedCollabsToHost]);
 
-  const nextStep = useCallback(async () => {
-    let fieldsToValidate: (keyof OnboardingData)[] = [];
+  const onSubmit = useCallback(async (data: OnboardingData) => {
+    try {
+      console.log('Form submission started', { data, selectedCollabsToDiscover, selectedCollabsToHost });
+      setIsSubmitting(true);
 
-    switch (step) {
-      case 1:
-        fieldsToValidate = ['first_name', 'last_name', 'telegram_handle', 'linkedin_url'];
-        break;
-      case 2:
-        fieldsToValidate = [
-          'company_name', 'job_title', 'company_website', 'twitter_handle',
-          'company_linkedin', 'company_category', 'company_size', 'funding_stage',
-          'geographic_focus'
-        ];
-        break;
-      case 3:
-        if (selectedCollabsToDiscover.length === 0 || selectedCollabsToHost.length === 0) {
-          toast({
-            variant: "destructive",
-            title: "Validation Error",
-            description: "Please select at least one option for both collaboration types."
-          });
-          return;
-        }
-        break;
-    }
+      if (!window.Telegram?.WebApp) {
+        throw new Error("Not in Telegram WebApp environment");
+      }
 
-    const isValid = await form.trigger(fieldsToValidate);
-    if (isValid) {
-      if (step < 3) setStep(step + 1);
-      else form.handleSubmit(onSubmit)();
+      if (selectedCollabsToDiscover.length === 0 || selectedCollabsToHost.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please select at least one option for both collaboration types."
+        });
+        return;
+      }
+
+      const formData = {
+        ...data,
+        collabs_to_discover: selectedCollabsToDiscover,
+        collabs_to_host: selectedCollabsToHost,
+        initData: window.Telegram.WebApp.initData
+      };
+
+      console.log('Sending form data to server:', formData);
+
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save profile');
+      }
+
+      console.log('Form submission successful');
+      localStorage.removeItem(STORAGE_KEY);
+
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated!"
+      });
+
+      setTimeout(() => {
+        window.Telegram.WebApp?.close();
+      }, 1500);
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update profile. Please try again."
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [step, form, selectedCollabsToDiscover, selectedCollabsToHost, toast]);
+  }, [toast, selectedCollabsToDiscover, selectedCollabsToHost]);
+
+  const handleNextStep = useCallback(async () => {
+    if (step === 3) {
+      // For the final step, trigger form submission
+      if (isCurrentStepValid()) {
+        await form.handleSubmit(onSubmit)();
+      }
+    } else {
+      // For other steps, validate and move to next step
+      const fieldsToValidate: (keyof OnboardingData)[] = step === 1
+        ? ['first_name', 'last_name', 'telegram_handle', 'linkedin_url']
+        : ['company_name', 'job_title', 'company_website', 'twitter_handle',
+           'company_linkedin', 'company_category', 'company_size', 'funding_stage',
+           'geographic_focus'];
+
+      const isValid = await form.trigger(fieldsToValidate);
+      if (isValid) {
+        setStep(prev => prev + 1);
+      }
+    }
+  }, [step, form, onSubmit, isCurrentStepValid]);
 
   const prevStep = useCallback(() => {
     if (step > 1) setStep(step - 1);
@@ -653,8 +645,8 @@ export default function OnboardingForm() {
                   </Button>
                 )}
                 <Button
-                  type={step === 3 ? "submit" : "button"}
-                  onClick={step === 3 ? form.handleSubmit(onSubmit) : nextStep}
+                  type="button"
+                  onClick={handleNextStep}
                   className="flex-1"
                   disabled={!isWebAppReady || !isCurrentStepValid() || isSubmitting}
                 >
