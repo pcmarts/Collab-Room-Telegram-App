@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { type OnboardingData, onboardingSchema } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 
@@ -67,19 +67,9 @@ export default function OnboardingForm() {
   const [selectedCollabsToDiscover, setSelectedCollabsToDiscover] = useState<string[]>([]);
   const [selectedCollabsToHost, setSelectedCollabsToHost] = useState<string[]>([]);
 
-  const loadSavedData = useCallback(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const data = JSON.parse(saved);
-        setSelectedCollabsToDiscover(data.collabs_to_discover || []);
-        setSelectedCollabsToHost(data.collabs_to_host || []);
-        return data;
-      }
-    } catch (error) {
-      console.error('Error loading saved data:', error);
-    }
-    return {
+  const form = useForm<OnboardingData>({
+    resolver: zodResolver(onboardingSchema),
+    defaultValues: {
       first_name: "",
       last_name: "",
       telegram_handle: "",
@@ -95,26 +85,46 @@ export default function OnboardingForm() {
       additional_opportunities: "",
       collabs_to_discover: [],
       collabs_to_host: []
-    };
-  }, []);
-
-  const form = useForm<OnboardingData>({
-    resolver: zodResolver(onboardingSchema),
-    defaultValues: loadSavedData()
+    }
   });
 
-  // Save form data when it changes
+  // Load saved data on mount
   useEffect(() => {
-    const subscription = form.watch(() => {
-      const formData = form.getValues();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        ...formData,
-        collabs_to_discover: selectedCollabsToDiscover,
-        collabs_to_host: selectedCollabsToHost
-      }));
-    });
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        setSelectedCollabsToDiscover(data.collabs_to_discover || []);
+        setSelectedCollabsToHost(data.collabs_to_host || []);
+        Object.keys(data).forEach(key => {
+          if (key !== 'collabs_to_discover' && key !== 'collabs_to_host') {
+            form.setValue(key as keyof OnboardingData, data[key]);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error loading saved data:', error);
+    }
+  }, []);
+
+  // Save form data on change
+  useEffect(() => {
+    const saveData = () => {
+      try {
+        const formData = form.getValues();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          ...formData,
+          collabs_to_discover: selectedCollabsToDiscover,
+          collabs_to_host: selectedCollabsToHost
+        }));
+      } catch (error) {
+        console.error('Error saving data:', error);
+      }
+    };
+
+    const subscription = form.watch(saveData);
     return () => subscription.unsubscribe();
-  }, [form, selectedCollabsToDiscover, selectedCollabsToHost]);
+  }, [selectedCollabsToDiscover, selectedCollabsToHost]);
 
   useEffect(() => {
     if (window.Telegram?.WebApp) {
@@ -138,26 +148,6 @@ export default function OnboardingForm() {
       event.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
   }, []);
-
-  const isStepValid = useMemo(() => {
-    const currentErrors = form.formState.errors;
-
-    switch (step) {
-      case 1:
-        return !['first_name', 'last_name', 'telegram_handle', 'linkedin_url']
-          .some(field => currentErrors[field as keyof OnboardingData]);
-      case 2:
-        return ![
-          'company_name', 'job_title', 'company_website', 'twitter_handle',
-          'company_linkedin', 'company_category', 'company_size', 'funding_stage',
-          'geographic_focus'
-        ].some(field => currentErrors[field as keyof OnboardingData]);
-      case 3:
-        return selectedCollabsToDiscover.length > 0 && selectedCollabsToHost.length > 0;
-      default:
-        return false;
-    }
-  }, [form.formState.errors, step, selectedCollabsToDiscover, selectedCollabsToHost]);
 
   const nextStep = useCallback(async () => {
     let fieldsToValidate: (keyof OnboardingData)[] = [];
@@ -242,6 +232,26 @@ export default function OnboardingForm() {
       setIsSubmitting(false);
     }
   }, [toast, selectedCollabsToDiscover, selectedCollabsToHost]);
+
+  const isCurrentStepValid = (): boolean => {
+    const currentErrors = form.formState.errors;
+
+    switch (step) {
+      case 1:
+        return !['first_name', 'last_name', 'telegram_handle', 'linkedin_url']
+          .some(field => currentErrors[field as keyof OnboardingData]);
+      case 2:
+        return ![
+          'company_name', 'job_title', 'company_website', 'twitter_handle',
+          'company_linkedin', 'company_category', 'company_size', 'funding_stage',
+          'geographic_focus'
+        ].some(field => currentErrors[field as keyof OnboardingData]);
+      case 3:
+        return selectedCollabsToDiscover.length > 0 && selectedCollabsToHost.length > 0;
+      default:
+        return false;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -636,7 +646,7 @@ export default function OnboardingForm() {
                   type={step === 3 ? "submit" : "button"}
                   onClick={step === 3 ? undefined : nextStep}
                   className="flex-1"
-                  disabled={!isWebAppReady || !isStepValid || isSubmitting}
+                  disabled={!isWebAppReady || !isCurrentStepValid() || isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
