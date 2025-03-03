@@ -141,12 +141,12 @@ export async function registerRoutes(app: Express) {
   // Onboarding endpoint with enhanced logging
   app.post("/api/onboarding", async (req, res) => {
     try {
-      console.log('Received onboarding request:', req.body);
+      console.log('[Onboarding] Received request:', req.body);
 
       const validation = onboardingSchema.safeParse(req.body);
 
       if (!validation.success) {
-        console.log('Validation failed:', validation.error);
+        console.log('[Onboarding] Validation failed:', validation.error);
         res.status(400).json({ error: validation.error });
         return;
       }
@@ -170,7 +170,7 @@ export async function registerRoutes(app: Express) {
       // Parse the initData to get user information
       const decodedInitData = new URLSearchParams(initData);
       const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      console.log('Decoded Telegram user:', telegramUser);
+      console.log('[Onboarding] Decoded Telegram user:', telegramUser);
 
       if (!telegramUser.id) {
         res.status(400).json({ error: 'Invalid user data' });
@@ -178,6 +178,14 @@ export async function registerRoutes(app: Express) {
       }
 
       // Create user
+      console.log('[Onboarding] Creating user with data:', {
+        telegram_id: telegramUser.id.toString(),
+        first_name,
+        last_name,
+        handle,
+        linkedin_url
+      });
+
       const [user] = await db.insert(users).values({
         telegram_id: telegramUser.id.toString(),
         first_name,
@@ -186,9 +194,18 @@ export async function registerRoutes(app: Express) {
         linkedin_url
       }).returning();
 
-      console.log('Created user:', user);
+      console.log('[Onboarding] Created user:', user);
 
       // Create company
+      console.log('[Onboarding] Creating company with data:', {
+        name: company_name,
+        user_id: user.id,
+        website: company_website,
+        category: company_category,
+        size: company_size,
+        twitter_handle
+      });
+
       await db.insert(companies).values({
         name: company_name,
         user_id: user.id,
@@ -199,6 +216,13 @@ export async function registerRoutes(app: Express) {
       });
 
       // Create preferences
+      console.log('[Onboarding] Creating preferences with data:', {
+        user_id: user.id,
+        collabs_to_discover,
+        collabs_to_host,
+        notification_frequency
+      });
+
       await db.insert(preferences).values({
         user_id: user.id,
         collabs_to_discover,
@@ -206,9 +230,10 @@ export async function registerRoutes(app: Express) {
         notification_frequency
       });
 
+      console.log('[Onboarding] Successfully completed onboarding process');
       res.json({ success: true });
     } catch (error) {
-      console.error('Error in onboarding:', error);
+      console.error('[Onboarding] Error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });

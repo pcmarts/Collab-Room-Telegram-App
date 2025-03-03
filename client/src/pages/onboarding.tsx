@@ -46,12 +46,23 @@ export default function OnboardingForm() {
   const onSubmit = async (data: OnboardingData) => {
     try {
       setIsSubmitting(true);
-      console.log('Form data before submission:', data);
-      console.log('Selected collabs to discover:', selectedCollabsToDiscover);
-      console.log('Selected collabs to host:', selectedCollabsToHost);
+      console.log('[Form] Starting submission with data:', data);
+      console.log('[Form] Selected collabs to discover:', selectedCollabsToDiscover);
+      console.log('[Form] Selected collabs to host:', selectedCollabsToHost);
 
       // Check if we're in Telegram environment
-      console.log('Checking Telegram WebApp:', !!window.Telegram?.WebApp);
+      const isTelegramWebApp = !!window.Telegram?.WebApp;
+      console.log('[Form] Is Telegram WebApp:', isTelegramWebApp);
+
+      if (!selectedCollabsToDiscover.length || !selectedCollabsToHost.length) {
+        console.error('[Form] Missing collaboration selections');
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please select at least one option for both collaboration types."
+        });
+        return;
+      }
 
       // Prepare form data
       let formData = {
@@ -61,17 +72,17 @@ export default function OnboardingForm() {
       };
 
       // Add Telegram initData if available
-      if (window.Telegram?.WebApp) {
-        console.log('Adding Telegram initData');
+      if (isTelegramWebApp) {
+        console.log('[Form] Adding Telegram initData');
         formData = {
           ...formData,
           initData: window.Telegram.WebApp.initData
         };
       } else {
-        console.warn('Not in Telegram WebApp environment');
+        console.warn('[Form] Not in Telegram WebApp environment');
       }
 
-      console.log('Final form data:', formData);
+      console.log('[Form] Sending final form data:', formData);
 
       const response = await fetch('/api/onboarding', {
         method: 'POST',
@@ -79,14 +90,16 @@ export default function OnboardingForm() {
         body: JSON.stringify(formData)
       });
 
-      console.log('Response status:', response.status);
+      console.log('[Form] Response status:', response.status);
       const responseData = await response.json();
-      console.log('Response data:', responseData);
+      console.log('[Form] Response data:', responseData);
 
       if (!response.ok) {
+        console.error('[Form] Submission failed:', responseData);
         throw new Error(responseData.error || 'Failed to save profile');
       }
 
+      console.log('[Form] Submission successful');
       toast({
         title: "Success",
         description: "Your profile has been saved successfully!"
@@ -95,7 +108,7 @@ export default function OnboardingForm() {
       // Redirect to profile overview
       window.location.href = '/profile-overview';
     } catch (error) {
-      console.error('Submission error:', error);
+      console.error('[Form] Submission error:', error);
       toast({
         variant: "destructive",
         title: "Error",
