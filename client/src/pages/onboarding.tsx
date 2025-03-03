@@ -16,6 +16,14 @@ export default function OnboardingForm() {
     email: ''
   });
 
+  // Load saved data if exists
+  useEffect(() => {
+    const savedData = sessionStorage.getItem('userFormData');
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+    }
+  }, []);
+
   // Debug: Log Telegram WebApp status
   useEffect(() => {
     console.log('============ DEBUG: Component Mount ============');
@@ -28,10 +36,12 @@ export default function OnboardingForm() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    const newFormData = {
+      ...formData,
       [name]: value
-    }));
+    };
+    setFormData(newFormData);
+    sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,7 +87,6 @@ export default function OnboardingForm() {
       // Instead of closing, redirect to company info
       window.location.href = '/company-info';
 
-
     } catch (error) {
       console.error('Form submission error:', error);
       toast({
@@ -94,9 +103,16 @@ export default function OnboardingForm() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
+        <div className="flex justify-end mb-8">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-primary"></div>
+            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+          </div>
+        </div>
+
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Test User Creation</h1>
-          <p className="text-muted-foreground mt-2">Simple database test</p>
+          <h1 className="text-2xl font-bold">Personal Information</h1>
+          <p className="text-muted-foreground mt-2">Tell us about yourself</p>
         </div>
 
         <div className="text-xs text-muted-foreground mb-4">
@@ -170,10 +186,10 @@ export default function OnboardingForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
+                Next
               </>
             ) : (
-              "Test Database Submit"
+              "Continue to Company Info"
             )}
           </Button>
         </form>

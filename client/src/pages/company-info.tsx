@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 export default function CompanyInfoForm() {
   const { toast } = useToast();
@@ -16,12 +16,22 @@ export default function CompanyInfoForm() {
     linkedin_url: ''
   });
 
+  // Load saved data if exists
+  useEffect(() => {
+    const savedData = sessionStorage.getItem('companyFormData');
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+    }
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    const newFormData = {
+      ...formData,
       [name]: value
-    }));
+    };
+    setFormData(newFormData);
+    sessionStorage.setItem('companyFormData', JSON.stringify(newFormData));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,6 +74,10 @@ export default function CompanyInfoForm() {
         description: responseData.message || "Company information saved successfully"
       });
 
+      // Clear stored form data
+      sessionStorage.removeItem('companyFormData');
+      sessionStorage.removeItem('userFormData');
+
       // Close Telegram WebApp after short delay to show toast
       setTimeout(() => {
         if (window.Telegram?.WebApp) {
@@ -84,9 +98,24 @@ export default function CompanyInfoForm() {
     }
   };
 
+  const handleBack = () => {
+    window.location.href = '/onboarding';
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
+        <div className="flex items-center justify-between mb-8">
+          <Button variant="ghost" onClick={handleBack} className="flex items-center">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+            <div className="w-3 h-3 rounded-full bg-primary"></div>
+          </div>
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold">Company Information</h1>
           <p className="text-muted-foreground mt-2">Tell us about your company</p>
