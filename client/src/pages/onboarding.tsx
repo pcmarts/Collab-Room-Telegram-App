@@ -30,7 +30,11 @@ declare global {
 const onboardingSchema = z.object({
   bio: z.string().min(10, "Bio must be at least 10 characters").max(300, "Bio must be less than 300 characters"),
   interests: z.string().min(3, "Please enter at least one interest"),
-  collaborationTypes: z.string().min(3, "Please enter at least one collaboration type")
+  collaborationTypes: z.string().min(3, "Please enter at least one collaboration type"),
+  linkedinUrl: z.string().url("Please enter a valid LinkedIn URL").optional(),
+  companyName: z.string().min(2, "Company name is required").optional(),
+  companyWebsite: z.string().url("Please enter a valid website URL").optional(),
+  companyIndustry: z.string().min(2, "Please select an industry").optional()
 });
 
 type OnboardingData = z.infer<typeof onboardingSchema>;
@@ -38,13 +42,18 @@ type OnboardingData = z.infer<typeof onboardingSchema>;
 export default function OnboardingForm() {
   const { toast } = useToast();
   const [isWebAppReady, setIsWebAppReady] = useState(false);
+  const [step, setStep] = useState(1);
 
   const form = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       bio: "",
       interests: "",
-      collaborationTypes: ""
+      collaborationTypes: "",
+      linkedinUrl: "https://www.linkedin.com/in/",
+      companyName: "",
+      companyWebsite: "https://",
+      companyIndustry: ""
     }
   });
 
@@ -110,74 +119,176 @@ export default function OnboardingForm() {
     }
   }
 
+  const nextStep = () => {
+    if (step < 3) setStep(step + 1);
+    else form.handleSubmit(onSubmit)();
+  };
+
+  const prevStep = () => {
+    if (step > 1) setStep(step - 1);
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Complete Your Profile</h1>
-          <p className="text-muted-foreground mt-2">Tell us about yourself to get started</p>
+          <p className="text-muted-foreground mt-2">Step {step} of 3</p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bio</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Tell us about your experience in Web3..."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {step === 1 && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="bio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bio</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Tell us about your experience in Web3..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="interests"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Interests</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="DeFi, NFTs, DAOs (comma separated)"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="linkedinUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>LinkedIn Profile</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://www.linkedin.com/in/your-profile"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
 
-            <FormField
-              control={form.control}
-              name="collaborationTypes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Preferred Collaboration Types</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Development, Marketing, Content (comma separated)"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {step === 2 && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="companyName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Your company name"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={!isWebAppReady}
-            >
-              Complete Profile
-            </Button>
+                <FormField
+                  control={form.control}
+                  name="companyWebsite"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company Website</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://your-company.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="companyIndustry"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Industry</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., DeFi, NFT, Gaming"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            {step === 3 && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="interests"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Interests</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="DeFi, NFTs, DAOs (comma separated)"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="collaborationTypes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Preferred Collaboration Types</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Development, Marketing, Content (comma separated)"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
+            <div className="flex gap-4">
+              {step > 1 && (
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={prevStep}
+                  className="flex-1"
+                >
+                  Back
+                </Button>
+              )}
+              <Button 
+                type={step === 3 ? "submit" : "button"}
+                onClick={step === 3 ? undefined : nextStep}
+                className="flex-1"
+                disabled={!isWebAppReady}
+              >
+                {step === 3 ? "Complete Profile" : "Next"}
+              </Button>
+            </div>
           </form>
         </Form>
       </div>
