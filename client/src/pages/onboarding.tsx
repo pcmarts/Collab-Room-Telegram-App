@@ -28,22 +28,16 @@ export default function OnboardingForm() {
 
   // Debug: Log Telegram WebApp status on mount
   useEffect(() => {
-    const debugTelegramWebApp = () => {
-      console.log('============ DEBUG: Telegram WebApp Status ============');
-      console.log('window.Telegram exists:', !!window.Telegram);
-      console.log('window.Telegram?.WebApp exists:', !!window.Telegram?.WebApp);
-      if (window.Telegram?.WebApp) {
-        console.log('initData:', window.Telegram.WebApp.initData);
-        console.log('initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe);
-      }
-      console.log('================================================');
-    };
-
-    debugTelegramWebApp();
+    console.log('============ DEBUG: Component Mount ============');
+    console.log('window.Telegram exists:', !!window.Telegram);
+    console.log('window.Telegram?.WebApp exists:', !!window.Telegram?.WebApp);
+    if (window.Telegram?.WebApp) {
+      console.log('initData:', window.Telegram.WebApp.initData);
+    }
   }, []);
 
   const form = useForm<OnboardingData>({
-    resolver: zodResolver(onboardingSchema.strict()),
+    resolver: zodResolver(onboardingSchema),
     defaultValues: {
       first_name: "",
       last_name: "",
@@ -60,44 +54,31 @@ export default function OnboardingForm() {
   });
 
   const onSubmit = async (data: OnboardingData) => {
-    console.log('============ DEBUG: Form Submission Started ============');
+    console.log('============ DEBUG: Form Submit Started ============');
 
     try {
       setIsSubmitting(true);
 
-      // Step 1: Validate form data
-      console.log('Step 1: Validating form data');
+      // Log form data
       console.log('Form values:', data);
       console.log('Selected collabs to discover:', selectedCollabsToDiscover);
       console.log('Selected collabs to host:', selectedCollabsToHost);
 
-      if (!selectedCollabsToDiscover.length || !selectedCollabsToHost.length) {
-        throw new Error('Please select at least one option for both collaboration types');
-      }
-
-      // Step 2: Check Telegram environment
-      console.log('Step 2: Checking Telegram environment');
-      if (!window.Telegram?.WebApp) {
-        throw new Error('Please access this form through Telegram mobile app');
-      }
-
-      // Step 3: Prepare submission data
-      console.log('Step 3: Preparing submission data');
+      // Add collaborations to form data
       const formData = {
         ...data,
         collabs_to_discover: selectedCollabsToDiscover,
         collabs_to_host: selectedCollabsToHost,
-        initData: window.Telegram.WebApp.initData
+        // Add empty initData for testing
+        initData: window.Telegram?.WebApp?.initData || ''
       };
-      console.log('Final form data:', formData);
 
-      // Step 4: Submit data
-      console.log('Step 4: Submitting data to server');
+      console.log('Submitting data:', formData);
+
       const response = await fetch('/api/onboarding', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
         },
         body: JSON.stringify(formData)
       });
@@ -107,32 +88,27 @@ export default function OnboardingForm() {
       console.log('Response data:', responseData);
 
       if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to save profile');
+        throw new Error(responseData.error || 'Failed to submit form');
       }
 
-      // Step 5: Handle success
-      console.log('Step 5: Handling success');
       toast({
         title: "Success!",
-        description: "Profile saved successfully"
+        description: "Form submitted successfully"
       });
 
-      // Step 6: Close Telegram WebApp
-      console.log('Step 6: Closing Telegram WebApp');
-      window.Telegram.WebApp.close();
+      // For testing, don't close WebApp yet
+      console.log('Form submission completed successfully');
 
     } catch (error) {
-      console.error('============ DEBUG: Form Submission Error ============');
-      console.error(error);
-
+      console.error('Form submission error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save profile"
+        description: error instanceof Error ? error.message : "Failed to submit form"
       });
     } finally {
       setIsSubmitting(false);
-      console.log('============ DEBUG: Form Submission Ended ============');
+      console.log('============ DEBUG: Form Submit Ended ============');
     }
   };
 
@@ -142,6 +118,10 @@ export default function OnboardingForm() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold">Complete Your Profile</h1>
           <p className="text-muted-foreground mt-2">Step {step} of 3</p>
+        </div>
+
+        <div className="text-xs text-muted-foreground mb-4">
+          Telegram WebApp: {window.Telegram?.WebApp ? 'Available' : 'Not Available'}
         </div>
 
         <Form {...form}>
@@ -366,39 +346,20 @@ export default function OnboardingForm() {
           </form>
         </Form>
 
-        <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 flex gap-4">
-          {step > 1 && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setStep(step - 1)}
-              className="flex-1"
-              disabled={isSubmitting}
-            >
-              Back
-            </Button>
-          )}
-          <Button
-            type={step === 3 ? "submit" : "button"}
-            onClick={() => {
-              if (step === 3) {
-                form.handleSubmit(onSubmit)();
-              } else {
-                setStep(step + 1);
-              }
-            }}
-            className="flex-1"
+        <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4">
+          <Button 
+            type="submit" 
+            className="w-full"
             disabled={isSubmitting}
+            onClick={() => form.handleSubmit(onSubmit)()}
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                Submitting...
               </>
-            ) : step === 3 ? (
-              "Complete Profile"
             ) : (
-              "Next"
+              "Submit"
             )}
           </Button>
         </div>

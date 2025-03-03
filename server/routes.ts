@@ -1,13 +1,46 @@
 import type { Express } from "express";
 import { createServer } from "http";
-import { db } from "./db";
-import { users, preferences, companies } from "../shared/schema";
-import { bot } from "./telegram";
-import { eq } from "drizzle-orm";
 import { onboardingSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
+
+  // Simplified onboarding endpoint for testing
+  app.post("/api/onboarding", async (req, res) => {
+    console.log('============ DEBUG: Onboarding Request Started ============');
+    console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
+
+    try {
+      // Step 1: Validate request data
+      console.log('Step 1: Validating request data');
+      const validation = onboardingSchema.safeParse(req.body);
+
+      if (!validation.success) {
+        console.error('Validation failed:', validation.error);
+        return res.status(400).json({ 
+          error: 'Invalid data provided',
+          details: validation.error.errors 
+        });
+      }
+
+      console.log('Validation successful:', validation.data);
+
+      // For now, just return success without database operations
+      console.log('Sending success response');
+      res.json({ success: true });
+
+    } catch (error) {
+      console.error('Onboarding error:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      res.status(500).json({ error: 'Internal server error' });
+    } finally {
+      console.log('============ DEBUG: Onboarding Request Ended ============');
+    }
+  });
 
   // Profile endpoint
   app.get("/api/profile", async (req, res) => {
@@ -138,116 +171,6 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Onboarding endpoint with detailed logging
-  app.post("/api/onboarding", async (req, res) => {
-    console.log('============ DEBUG: Onboarding Request Started ============');
-    console.log('Request body:', req.body);
-
-    try {
-      // Step 1: Validate request data
-      console.log('Step 1: Validating request data');
-      const validation = onboardingSchema.safeParse(req.body);
-
-      if (!validation.success) {
-        console.error('Validation failed:', validation.error);
-        return res.status(400).json({ 
-          error: 'Invalid data provided',
-          details: validation.error.errors 
-        });
-      }
-
-      const {
-        first_name,
-        last_name,
-        handle,
-        linkedin_url,
-        company_name,
-        company_website,
-        twitter_handle,
-        company_category,
-        company_size,
-        collabs_to_discover,
-        collabs_to_host,
-        notification_frequency,
-        initData
-      } = validation.data;
-
-      // Step 2: Parse and validate Telegram data
-      console.log('Step 2: Parsing Telegram data');
-      console.log('initData:', initData);
-
-      try {
-        const decodedInitData = new URLSearchParams(initData);
-        const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-        console.log('Decoded Telegram user:', telegramUser);
-
-        if (!telegramUser.id) {
-          return res.status(400).json({ error: 'Invalid Telegram user data' });
-        }
-
-        // Step 3: Create user
-        console.log('Step 3: Creating user');
-        const userData = {
-          telegram_id: telegramUser.id.toString(),
-          first_name,
-          last_name,
-          handle,
-          linkedin_url
-        };
-        console.log('User data:', userData);
-
-        const [user] = await db.insert(users)
-          .values(userData)
-          .returning();
-        console.log('Created user:', user);
-
-        // Step 4: Create company
-        console.log('Step 4: Creating company');
-        const companyData = {
-          name: company_name,
-          user_id: user.id,
-          website: company_website,
-          category: company_category,
-          size: company_size,
-          twitter_handle
-        };
-        console.log('Company data:', companyData);
-
-        await db.insert(companies)
-          .values(companyData);
-
-        // Step 5: Create preferences
-        console.log('Step 5: Creating preferences');
-        const preferencesData = {
-          user_id: user.id,
-          collabs_to_discover,
-          collabs_to_host,
-          notification_frequency
-        };
-        console.log('Preferences data:', preferencesData);
-
-        await db.insert(preferences)
-          .values(preferencesData);
-
-        console.log('Successfully completed onboarding process');
-        res.json({ success: true });
-
-      } catch (telegramError) {
-        console.error('Error processing Telegram data:', telegramError);
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-    } catch (error) {
-      console.error('Onboarding error:', error);
-      console.error('Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      res.status(500).json({ error: 'Internal server error' });
-    } finally {
-      console.log('============ DEBUG: Onboarding Request Ended ============');
-    }
-  });
 
   return httpServer;
 }
