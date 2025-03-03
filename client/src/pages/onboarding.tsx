@@ -1,17 +1,27 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { userFormSchema, type UserFormData } from "@shared/schema";
 
 export default function OnboardingForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    handle: ''
+
+  // Initialize form with Telegram handle prefix
+  const form = useForm<UserFormData>({
+    resolver: zodResolver(userFormSchema),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      handle: "@",
+      linkedin_url: "https://www.linkedin.com/in/",
+      email: "",
+    }
   });
 
   // Debug: Log Telegram WebApp status
@@ -24,28 +34,15 @@ export default function OnboardingForm() {
     }
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: UserFormData) => {
     console.log('============ DEBUG: Form Submit Started ============');
 
     try {
       setIsSubmitting(true);
-      console.log('Form data:', formData);
-
-      if (!formData.first_name || !formData.last_name || !formData.handle) {
-        throw new Error('Please fill in all required fields');
-      }
+      console.log('Form data:', data);
 
       const submitData = {
-        ...formData,
+        ...data,
         initData: window.Telegram?.WebApp?.initData || ''
       };
 
@@ -96,64 +93,134 @@ export default function OnboardingForm() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Test User Creation</h1>
-          <p className="text-muted-foreground mt-2">Simple database test</p>
+          <h1 className="text-2xl font-bold">Your Information</h1>
+          <p className="text-muted-foreground mt-2">Tell us about yourself</p>
         </div>
 
         <div className="text-xs text-muted-foreground mb-4">
           Telegram WebApp: {window.Telegram?.WebApp ? 'Available' : 'Not Available'}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="first_name">First Name</Label>
-            <Input
-              id="first_name"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
               name="first_name"
-              value={formData.first_name}
-              onChange={handleInputChange}
-              required
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      autoCapitalize="words"
+                      autoComplete="given-name"
+                      className="h-12"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div>
-            <Label htmlFor="last_name">Last Name</Label>
-            <Input
-              id="last_name"
+            <FormField
+              control={form.control}
               name="last_name"
-              value={formData.last_name}
-              onChange={handleInputChange}
-              required
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      autoCapitalize="words"
+                      autoComplete="family-name"
+                      className="h-12"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div>
-            <Label htmlFor="handle">Telegram Handle</Label>
-            <Input
-              id="handle"
+            <FormField
+              control={form.control}
               name="handle"
-              value={formData.handle}
-              onChange={handleInputChange}
-              placeholder="@username"
-              required
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telegram Handle</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="@username"
+                      className="h-12"
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        if (!value.startsWith('@')) {
+                          value = '@' + value;
+                        }
+                        field.onChange(value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              "Test Database Submit"
-            )}
-          </Button>
-        </form>
+            <FormField
+              control={form.control}
+              name="linkedin_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>LinkedIn Profile URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="url"
+                      placeholder="https://www.linkedin.com/in/your-profile"
+                      className="h-12"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email Address (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      className="h-12"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button 
+              type="submit" 
+              className="w-full h-12 mt-6"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Continue"
+              )}
+            </Button>
+          </form>
+        </Form>
       </div>
     </div>
   );

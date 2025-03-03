@@ -7,14 +7,13 @@ import { eq } from 'drizzle-orm';
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
 
-  // Simple test endpoint that writes to database
   app.post("/api/onboarding", async (req, res) => {
     console.log('============ DEBUG: Test Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
 
     try {
-      const { first_name, last_name, handle, initData } = req.body;
+      const { first_name, last_name, handle, linkedin_url, email, initData } = req.body;
 
       if (!first_name || !last_name || !handle) {
         console.error('Missing required fields');
@@ -52,7 +51,9 @@ export async function registerRoutes(app: Express) {
         telegram_id,
         first_name,
         last_name,
-        handle
+        handle,
+        linkedin_url,
+        email
       });
 
       try {
@@ -62,7 +63,9 @@ export async function registerRoutes(app: Express) {
             telegram_id,
             first_name,
             last_name,
-            handle
+            handle,
+            linkedin_url,
+            email
           })
           .returning();
 
@@ -87,9 +90,8 @@ export async function registerRoutes(app: Express) {
 
     } catch (error) {
       console.error('Detailed error:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
       });
       res.status(500).json({ error: 'Server error', details: error.message });
     }

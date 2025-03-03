@@ -10,6 +10,7 @@ export const users = pgTable('users', {
   last_name: text('last_name').notNull(),
   handle: text('handle').notNull(),
   linkedin_url: text('linkedin_url'),
+  email: text('email'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
@@ -71,28 +72,36 @@ export const COLLAB_TYPES = [
 
 export const NOTIFICATION_FREQUENCIES = ["Instant", "Daily", "Weekly"] as const;
 
-// Onboarding schema with validation
-export const onboardingSchema = z.object({
-  // User Information
-  first_name: z.string().min(1, "First name is required"),
-  last_name: z.string().min(1, "Last name is required"),
-  handle: z.string().min(1, "Telegram handle is required"),
-  linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(),
+// Form validation schema
+export const userFormSchema = z.object({
+  first_name: z.string()
+    .min(1, "First name is required")
+    .max(50, "First name is too long"),
 
-  // Company Information
-  company_name: z.string().min(2, "Company name is required"),
-  company_website: z.string().url("Please enter a valid website URL"),
-  twitter_handle: z.string().min(1, "Twitter handle is required"),
-  company_category: z.enum(COMPANY_CATEGORIES),
-  company_size: z.enum(COMPANY_SIZES),
+  last_name: z.string()
+    .min(1, "Last name is required")
+    .max(50, "Last name is too long"),
 
-  // Collaboration Preferences
-  collabs_to_discover: z.array(z.enum(COLLAB_TYPES)).min(1, "Select at least one collaboration type to discover"),
-  collabs_to_host: z.array(z.enum(COLLAB_TYPES)).min(1, "Select at least one collaboration type to host"),
-  notification_frequency: z.enum(NOTIFICATION_FREQUENCIES),
+  handle: z.string()
+    .min(1, "Telegram handle is required")
+    .max(32, "Telegram handle is too long")
+    .regex(/^@/, "Handle must start with @")
+    .regex(/^@[a-zA-Z0-9_]{5,32}$/, "Invalid Telegram handle format"),
 
-  // Telegram data
+  linkedin_url: z.string()
+    .url("Please enter a valid LinkedIn URL")
+    .startsWith("https://www.linkedin.com/", "Must be a LinkedIn URL")
+    .optional()
+    .nullable(),
+
+  email: z.string()
+    .email("Please enter a valid email address")
+    .optional()
+    .nullable(),
+
+  // Required for Telegram WebApp
   initData: z.string()
 });
 
-export type OnboardingData = z.infer<typeof onboardingSchema>;
+export type UserFormData = z.infer<typeof userFormSchema>;
+export type OnboardingData = UserFormData;

@@ -14,7 +14,7 @@ LinkedIn URL,Your Information,Personal LinkedIn profile,URL Input,,✅ Yes
 Email Address,Your Information,Additional contact method (backup if Telegram fails),Email Input,,⬜ No
 ,,,,,
 Company Name,Brand Information,Name of the company,Text Input,,✅ Yes
-Job Title / Relationship to Company,Brand Information,"User’s role within the company (e.g., CMO, Founder)",Text Input,,✅ Yes
+Your Job Title / Relationship to Company,Brand Information,"User’s role within the company (e.g., CMO, Founder)",Text Input,,✅ Yes
 Company Website,Brand Information,Official company website,URL Input,,✅ Yes
 Company X Handle (Twitter),Brand Information,Company’s Twitter/X profile,Text Input (@handle),,✅ Yes
 Company LinkedIn URL,Brand Information,Official LinkedIn page of the company,URL Input,,✅ Yes
