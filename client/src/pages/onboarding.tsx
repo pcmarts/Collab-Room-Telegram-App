@@ -10,7 +10,8 @@ export default function OnboardingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     first_name: '',
-    email: ''
+    last_name: '',
+    handle: ''
   });
 
   // Debug: Log Telegram WebApp status
@@ -64,7 +65,7 @@ export default function OnboardingForm() {
 
       toast({
         title: "Success!",
-        description: "Form submitted successfully"
+        description: "Test submission successful"
       });
 
       if (window.Telegram?.WebApp) {
@@ -88,8 +89,8 @@ export default function OnboardingForm() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Test Form</h1>
-          <p className="text-muted-foreground mt-2">Simple test submission</p>
+          <h1 className="text-2xl font-bold">Test User Creation</h1>
+          <p className="text-muted-foreground mt-2">Simple database test</p>
         </div>
 
         <div className="text-xs text-muted-foreground mb-4">
@@ -104,17 +105,30 @@ export default function OnboardingForm() {
               name="first_name"
               value={formData.first_name}
               onChange={handleInputChange}
+              required
             />
           </div>
 
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="last_name">Last Name</Label>
             <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
+              id="last_name"
+              name="last_name"
+              value={formData.last_name}
               onChange={handleInputChange}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="handle">Telegram Handle</Label>
+            <Input
+              id="handle"
+              name="handle"
+              value={formData.handle}
+              onChange={handleInputChange}
+              placeholder="@username"
+              required
             />
           </div>
 
@@ -129,7 +143,7 @@ export default function OnboardingForm() {
                 Submitting...
               </>
             ) : (
-              "Submit Test"
+              "Test Database Submit"
             )}
           </Button>
         </form>
