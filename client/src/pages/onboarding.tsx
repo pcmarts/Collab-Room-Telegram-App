@@ -8,10 +8,29 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: {
+        ready: () => void;
+        close: () => void;
+        initData: string;
+        expand: () => void;
+        MainButton: {
+          text: string;
+          show: () => void;
+          hide: () => void;
+          onClick: (callback: () => void) => void;
+        };
+      };
+    };
+  }
+}
+
 const onboardingSchema = z.object({
-  bio: z.string().min(10).max(300),
-  interests: z.string().min(3),
-  collaborationTypes: z.string().min(3)
+  bio: z.string().min(10, "Bio must be at least 10 characters").max(300, "Bio must be less than 300 characters"),
+  interests: z.string().min(3, "Please enter at least one interest"),
+  collaborationTypes: z.string().min(3, "Please enter at least one collaboration type")
 });
 
 type OnboardingData = z.infer<typeof onboardingSchema>;
@@ -35,6 +54,7 @@ export default function OnboardingForm() {
       try {
         // Initialize WebApp
         window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand(); // Expand the WebApp to full height
         setIsWebAppReady(true);
       } catch (error) {
         console.error('Failed to initialize Telegram WebApp:', error);
