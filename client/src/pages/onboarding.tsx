@@ -7,9 +7,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type OnboardingData, onboardingSchema } from "@shared/schema";
 import { Loader2 } from "lucide-react";
+
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: any;
+    };
+  }
+}
 
 const COLLAB_OPTIONS = [
   "Podcast Guest Appearances",
@@ -25,6 +33,17 @@ export default function OnboardingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollabsToDiscover, setSelectedCollabsToDiscover] = useState<string[]>([]);
   const [selectedCollabsToHost, setSelectedCollabsToHost] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Initialize Telegram WebApp
+    if (window.Telegram?.WebApp) {
+      console.log('Telegram WebApp initialized');
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+    } else {
+      console.warn('Telegram WebApp not available');
+    }
+  }, []);
 
   const form = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
@@ -51,25 +70,20 @@ export default function OnboardingForm() {
       console.log('Selected collabs to host:', selectedCollabsToHost);
 
       // Check if we're in Telegram environment
-      console.log('Checking Telegram WebApp:', !!window.Telegram?.WebApp);
+      const webApp = window.Telegram?.WebApp;
+      console.log('Telegram WebApp available:', !!webApp);
+
+      if (!webApp) {
+        throw new Error('Telegram WebApp not available');
+      }
 
       // Prepare form data
-      let formData = {
+      const formData = {
         ...data,
         collabs_to_discover: selectedCollabsToDiscover,
-        collabs_to_host: selectedCollabsToHost
+        collabs_to_host: selectedCollabsToHost,
+        initData: webApp.initData
       };
-
-      // Add Telegram initData if available
-      if (window.Telegram?.WebApp) {
-        console.log('Adding Telegram initData');
-        formData = {
-          ...formData,
-          initData: window.Telegram.WebApp.initData
-        };
-      } else {
-        console.warn('Not in Telegram WebApp environment');
-      }
 
       console.log('Final form data:', formData);
 
@@ -349,14 +363,7 @@ export default function OnboardingForm() {
             </Button>
           )}
           <Button
-            type={step === 3 ? "submit" : "button"}
-            onClick={() => {
-              if (step === 3) {
-                form.handleSubmit(onSubmit)();
-              } else {
-                setStep(step + 1);
-              }
-            }}
+            type="submit"
             className="flex-1"
             disabled={isSubmitting}
           >
@@ -365,10 +372,8 @@ export default function OnboardingForm() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
               </>
-            ) : step === 3 ? (
-              "Complete Profile"
             ) : (
-              "Next"
+              "Complete Profile"
             )}
           </Button>
         </div>
