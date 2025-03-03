@@ -20,9 +20,9 @@ export const companies = pgTable('companies', {
   user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   website: text('website').notNull(),
-  category: text('category').notNull(),
-  size: text('size').notNull(),
+  job_title: text('job_title').notNull(),
   twitter_handle: text('twitter_handle'),
+  linkedin_url: text('linkedin_url'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 

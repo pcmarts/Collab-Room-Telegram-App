@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "./db";
-import { users } from "../shared/schema";
+import { users, companies } from "../shared/schema";
 import { eq } from 'drizzle-orm';
 
 export async function registerRoutes(app: Express) {
@@ -96,6 +96,116 @@ export async function registerRoutes(app: Express) {
       } catch (dbError) {
         console.error('Database error:', dbError);
         throw new Error(`Failed to save user: ${dbError.message}`);
+      }
+
+    } catch (error) {
+      console.error('Detailed error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : 'Unknown'
+      });
+      res.status(500).json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Company information endpoint
+  app.post("/api/company", async (req, res) => {
+    console.log('============ DEBUG: Company Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+
+    try {
+      const { company_name, job_title, website, twitter_handle, linkedin_url, initData } = req.body;
+
+      if (!company_name || !job_title || !website) {
+        console.error('Missing required fields');
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      // Parse Telegram data to get user
+      console.log('Parsing Telegram data');
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      console.log('Decoded Telegram user:', telegramUser);
+
+      if (!telegramUser.id) {
+        console.error('No Telegram user ID found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user ID from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      try {
+        // Check if company exists for this user
+        const existingCompany = await db.select()
+          .from(companies)
+          .where(eq(companies.user_id, user.id));
+
+        let company;
+
+        if (existingCompany.length > 0) {
+          // Update existing company
+          console.log('Updating existing company:', existingCompany[0]);
+          [company] = await db.update(companies)
+            .set({
+              name: company_name,
+              job_title,
+              website,
+              twitter_handle,
+              linkedin_url
+            })
+            .where(eq(companies.user_id, user.id))
+            .returning();
+
+          console.log('Updated company:', company);
+          return res.json({ 
+            success: true,
+            company,
+            message: 'Company information updated successfully'
+          });
+        }
+
+        // Create new company
+        console.log('Creating new company with data:', {
+          user_id: user.id,
+          name: company_name,
+          job_title,
+          website,
+          twitter_handle,
+          linkedin_url
+        });
+
+        [company] = await db
+          .insert(companies)
+          .values({
+            user_id: user.id,
+            name: company_name,
+            job_title,
+            website,
+            twitter_handle,
+            linkedin_url
+          })
+          .returning();
+
+        console.log('Created company:', company);
+
+        res.json({ 
+          success: true,
+          company,
+          message: 'Company information saved successfully'
+        });
+
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error(`Failed to save company: ${dbError.message}`);
       }
 
     } catch (error) {

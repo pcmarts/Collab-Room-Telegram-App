@@ -7,12 +7,13 @@ import Dashboard from "@/pages/dashboard";
 import Companies from "@/pages/companies";
 import Collaborations from "@/pages/collaborations";
 import OnboardingForm from "@/pages/onboarding";
+import CompanyInfoForm from "@/pages/company-info";
 import ProfileOverview from "@/pages/profile-overview";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 
 function Router() {
-  const isOnboardingRoute = window.location.pathname === '/onboarding';
+  const isOnboardingRoute = window.location.pathname === '/onboarding' || window.location.pathname === '/company-info';
   const isProfileRoute = window.location.pathname === '/profile-overview';
 
   return (
@@ -26,9 +27,8 @@ function Router() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/companies" component={Companies} />
           <Route path="/collaborations" component={Collaborations} />
-          <Route path="/onboarding">
-            {() => <OnboardingForm isEditMode={window.location.search.includes('edit=true')} />}
-          </Route>
+          <Route path="/onboarding" component={OnboardingForm} />
+          <Route path="/company-info" component={CompanyInfoForm} />
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route component={NotFound} />
         </Switch>
