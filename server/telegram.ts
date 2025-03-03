@@ -2,7 +2,6 @@ import TelegramBot from 'node-telegram-bot-api';
 import { db } from './db';
 import { users } from '../shared/schema';
 import { eq } from 'drizzle-orm';
-import type { User, Collaboration } from '../shared/schema';
 
 if (!process.env.TELEGRAM_BOT_TOKEN) {
   throw new Error('TELEGRAM_BOT_TOKEN is required');
@@ -17,7 +16,10 @@ export async function handleStart(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
   const user = msg.from;
 
-  if (!user) return;
+  if (!user) {
+    await bot.sendMessage(chatId, 'Sorry, I couldn\'t get your user information. Please try again.');
+    return;
+  }
 
   try {
     // Check if user exists using Drizzle
@@ -30,14 +32,9 @@ export async function handleStart(msg: TelegramBot.Message) {
       // Create new user using Drizzle
       await db.insert(users).values({
         telegram_id: user.id.toString(),
-        name: user.first_name,
-        handle: user.username || undefined,
-        profile_info: {
-          onboarding_complete: false,
-          interests: [],
-          bio: '',
-          preferred_collaboration_types: []
-        }
+        first_name: user.first_name,
+        last_name: user.last_name || '', // Provide empty string if last_name is not available
+        handle: user.username || null
       });
 
       const welcomeMessage = 
@@ -67,7 +64,12 @@ export async function handleStart(msg: TelegramBot.Message) {
     }
   } catch (error) {
     console.error('Error in handleStart:', error);
-    await bot.sendMessage(chatId, 'Sorry, there was an error processing your request. Please try again later.');
+
+    // Send a user-friendly error message
+    await bot.sendMessage(
+      chatId, 
+      'Sorry, there was an error processing your request. Please try the /start command again in a few moments.'
+    );
   }
 }
 
@@ -89,10 +91,13 @@ export async function handleMyCollabs(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
   const user = msg.from;
 
-  if (!user) return;
+  if (!user) {
+    await bot.sendMessage(chatId, "Sorry, I couldn't get your user information. Please try again.");
+    return;
+  }
 
   try {
-    // Get user's collaborations using Drizzle
+    // Get user's collabs
     const [dbUser] = await db
       .select()
       .from(users)
@@ -103,24 +108,14 @@ export async function handleMyCollabs(msg: TelegramBot.Message) {
       return;
     }
 
-    const collabs = await db.query.collaborations.findMany({
-      where: (collab, { or, eq }) => 
-        or(eq(collab.host_id, dbUser.id), eq(collab.applicant_id, dbUser.id))
-    });
-
-    if (!collabs || collabs.length === 0) {
-      await bot.sendMessage(chatId, "You don't have any active collaborations.");
-      return;
-    }
-
-    const collabsList = collabs.map((collab: Collaboration) => 
-      `${collab.title}\nStatus: ${collab.status}\n${collab.description}\n\n`
-    ).join('');
-
-    await bot.sendMessage(chatId, `Your Collaborations:\n\n${collabsList}`);
+    // Query collaborations will be implemented in a future update
+    await bot.sendMessage(chatId, "Collaboration listing feature coming soon!");
   } catch (error) {
     console.error('Error in handleMyCollabs:', error);
-    await bot.sendMessage(chatId, 'Sorry, there was an error fetching your collaborations. Please try again later.');
+    await bot.sendMessage(
+      chatId, 
+      'Sorry, there was an error fetching your collaborations. Please try again later.'
+    );
   }
 }
 
