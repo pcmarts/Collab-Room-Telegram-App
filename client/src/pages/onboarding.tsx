@@ -8,31 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { type OnboardingData, onboardingSchema } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 
 interface OnboardingFormProps {
   isEditMode?: boolean;
-}
-
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: {
-        ready: () => void;
-        close: () => void;
-        initData: string;
-        expand: () => void;
-        MainButton: {
-          text: string;
-          show: () => void;
-          hide: () => void;
-          onClick: (callback: () => void) => void;
-        };
-      };
-    };
-  }
 }
 
 const STORAGE_KEY = 'onboarding_data';
@@ -65,7 +46,6 @@ const GEOGRAPHIC_FOCUS = [
 
 export default function OnboardingForm({ isEditMode = false }: OnboardingFormProps) {
   const { toast } = useToast();
-  const [isWebAppReady, setIsWebAppReady] = useState(false);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollabsToDiscover, setSelectedCollabsToDiscover] = useState<string[]>([]);
@@ -73,7 +53,7 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
 
   const form = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
-    mode: "onChange",
+    mode: "onSubmit",
     defaultValues: {
       first_name: "",
       last_name: "",
@@ -86,10 +66,10 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
       twitter_handle: "@",
       company_linkedin: "https://www.linkedin.com/company/",
       company_telegram: "https://t.me/",
-      company_category: "",
-      company_size: "",
-      funding_stage: "",
-      geographic_focus: "",
+      company_category: "Crypto",
+      company_size: "1-10",
+      funding_stage: "Pre-seed",
+      geographic_focus: "Global",
       notification_frequency: "Daily",
       additional_opportunities: "",
       collabs_to_discover: [],
@@ -97,7 +77,6 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
     }
   });
 
-  // Load saved data on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -105,68 +84,13 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
         const data = JSON.parse(saved);
         setSelectedCollabsToDiscover(data.collabs_to_discover || []);
         setSelectedCollabsToHost(data.collabs_to_host || []);
-        Object.keys(data).forEach(key => {
-          if (key !== 'collabs_to_discover' && key !== 'collabs_to_host') {
-            form.setValue(key as keyof OnboardingData, data[key]);
-          }
-        });
+        form.reset(data);
       }
     } catch (error) {
       console.error('Error loading saved data:', error);
     }
-  }, []);
+  }, [form]);
 
-  // Load existing profile data in edit mode
-  useEffect(() => {
-    if (isEditMode) {
-      const fetchProfile = async () => {
-        try {
-          if (!window.Telegram?.WebApp) return;
-
-          const response = await fetch(`/api/profile?initData=${encodeURIComponent(window.Telegram.WebApp.initData)}`);
-          if (!response.ok) throw new Error('Failed to fetch profile');
-
-          const { user, company, preferences } = await response.json();
-
-          // Set form values
-          form.reset({
-            first_name: user.first_name,
-            last_name: user.last_name,
-            telegram_handle: user.handle,
-            linkedin_url: user.linkedin_url,
-            email: user.email,
-            company_name: company.name,
-            job_title: company.job_title,
-            company_website: company.website,
-            twitter_handle: company.twitter_handle,
-            company_linkedin: company.linkedin_url,
-            company_telegram: company.telegram_group,
-            company_category: company.category,
-            company_size: company.size,
-            funding_stage: company.funding_stage,
-            geographic_focus: company.geographic_focus,
-            notification_frequency: preferences.notification_frequency,
-            additional_opportunities: preferences.additional_opportunities
-          });
-
-          // Set collaboration preferences
-          setSelectedCollabsToDiscover(preferences.collabs_to_discover);
-          setSelectedCollabsToHost(preferences.collabs_to_host);
-        } catch (error) {
-          console.error('Error fetching profile:', error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to load profile data"
-          });
-        }
-      };
-
-      fetchProfile();
-    }
-  }, [isEditMode, form, toast]);
-
-  // Save form data on change
   useEffect(() => {
     const saveData = () => {
       try {
@@ -183,53 +107,11 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
 
     const subscription = form.watch(saveData);
     return () => subscription.unsubscribe();
-  }, [selectedCollabsToDiscover, selectedCollabsToHost, form]);
+  }, [form, selectedCollabsToDiscover, selectedCollabsToHost]);
 
-  useEffect(() => {
-    if (window.Telegram?.WebApp) {
-      try {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-        setIsWebAppReady(true);
-      } catch (error) {
-        console.error('Failed to initialize Telegram WebApp:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to initialize Telegram WebApp"
-        });
-      }
-    }
-  }, [toast]);
+  const onSubmit = async (data: OnboardingData) => {
+    console.log('Form submitted with data:', data);
 
-  const handleFocus = useCallback((event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setTimeout(() => {
-      event.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
-  }, []);
-
-  const isCurrentStepValid = useCallback(() => {
-    const currentErrors = form.formState.errors;
-
-    switch (step) {
-      case 1:
-        return !['first_name', 'last_name', 'telegram_handle', 'linkedin_url']
-          .some(field => currentErrors[field as keyof OnboardingData]);
-      case 2:
-        return ![
-          'company_name', 'job_title', 'company_website', 'twitter_handle',
-          'company_linkedin', 'company_category', 'company_size', 'funding_stage',
-          'geographic_focus'
-        ].some(field => currentErrors[field as keyof OnboardingData]);
-      case 3:
-        return selectedCollabsToDiscover.length > 0 && selectedCollabsToHost.length > 0;
-      default:
-        return false;
-    }
-  }, [form.formState.errors, step, selectedCollabsToDiscover, selectedCollabsToHost]);
-
-  const handleSubmit = async (data: OnboardingData) => {
-    console.log('handleSubmit called with data:', data);
     try {
       setIsSubmitting(true);
 
@@ -261,11 +143,11 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
         body: JSON.stringify(formData)
       });
 
-      console.log('Response received:', response.status);
+      const responseData = await response.json();
+      console.log('Response:', response.status, responseData);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save profile');
+        throw new Error(responseData.error || 'Failed to save profile');
       }
 
       localStorage.removeItem(STORAGE_KEY);
@@ -275,7 +157,6 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
         description: "Your profile has been saved successfully!"
       });
 
-      // Redirect to profile overview
       window.location.href = '/profile-overview';
     } catch (error) {
       console.error('Submission error:', error);
@@ -289,30 +170,28 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
     }
   };
 
-  const handleNextStep = useCallback(async () => {
-    if (step === 3) {
-      // For the final step, trigger form submission
-      if (isCurrentStepValid()) {
-        await form.handleSubmit(handleSubmit)();
-      }
-    } else {
-      // For other steps, validate and move to next step
-      const fieldsToValidate: (keyof OnboardingData)[] = step === 1
-        ? ['first_name', 'last_name', 'telegram_handle', 'linkedin_url']
-        : ['company_name', 'job_title', 'company_website', 'twitter_handle',
-           'company_linkedin', 'company_category', 'company_size', 'funding_stage',
-           'geographic_focus'];
+  const nextStep = async () => {
+    const fieldsToValidate = step === 1
+      ? ['first_name', 'last_name', 'telegram_handle', 'linkedin_url']
+      : ['company_name', 'job_title', 'company_website', 'twitter_handle',
+         'company_linkedin', 'company_category', 'company_size', 'funding_stage',
+         'geographic_focus'];
 
-      const isValid = await form.trigger(fieldsToValidate);
-      if (isValid) {
-        setStep(prev => prev + 1);
-      }
+    const isValid = await form.trigger(fieldsToValidate as Array<keyof OnboardingData>);
+    if (isValid) {
+      setStep(prev => prev + 1);
     }
-  }, [step, form, handleSubmit, isCurrentStepValid]);
+  };
 
-  const prevStep = useCallback(() => {
+  const prevStep = () => {
     if (step > 1) setStep(step - 1);
-  }, [step]);
+  };
+
+  const handleFocus = (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setTimeout(() => {
+      event.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -324,11 +203,7 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((data) => {
-              console.log('Form submitted with data:', data);
-              handleSubmit(data);
-            })} className="space-y-6">
-              {/* Step 1: Personal Information */}
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {step === 1 && (
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold">Personal Information</h2>
@@ -407,7 +282,6 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
                 </div>
               )}
 
-              {/* Step 2: Company Information */}
               {step === 2 && (
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold">Company Information</h2>
@@ -600,130 +474,126 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
                 </div>
               )}
 
-              {/* Step 3: Collaboration Preferences */}
               {step === 3 && (
-                <div className="space-y-6">
-                  <h2 className="text-lg font-semibold">Collaboration Preferences</h2>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="space-y-6">
+                    <h2 className="text-lg font-semibold">Collaboration Preferences</h2>
 
-                  <div className="space-y-4">
-                    <Label className="text-base">Collaborations to Discover</Label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {COLLAB_OPTIONS.map((option) => (
-                        <div key={option} className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={selectedCollabsToDiscover.includes(option)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedCollabsToDiscover([...selectedCollabsToDiscover, option]);
-                              } else {
-                                setSelectedCollabsToDiscover(
-                                  selectedCollabsToDiscover.filter((item) => item !== option)
-                                );
-                              }
-                            }}
-                          />
-                          <Label className="text-sm">{option}</Label>
-                        </div>
-                      ))}
+                    <div className="space-y-4">
+                      <Label className="text-base">Collaborations to Discover</Label>
+                      <div className="grid grid-cols-1 gap-2">
+                        {COLLAB_OPTIONS.map((option) => (
+                          <div key={option} className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={selectedCollabsToDiscover.includes(option)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedCollabsToDiscover([...selectedCollabsToDiscover, option]);
+                                } else {
+                                  setSelectedCollabsToDiscover(
+                                    selectedCollabsToDiscover.filter((item) => item !== option)
+                                  );
+                                }
+                              }}
+                            />
+                            <Label className="text-sm">{option}</Label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-4">
-                    <Label className="text-base">Collaborations to Host</Label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {COLLAB_OPTIONS.map((option) => (
-                        <div key={option} className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={selectedCollabsToHost.includes(option)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedCollabsToHost([...selectedCollabsToHost, option]);
-                              } else {
-                                setSelectedCollabsToHost(
-                                  selectedCollabsToHost.filter((item) => item !== option)
-                                );
-                              }
-                            }}
-                          />
-                          <Label className="text-sm">{option}</Label>
-                        </div>
-                      ))}
+                    <div className="space-y-4">
+                      <Label className="text-base">Collaborations to Host</Label>
+                      <div className="grid grid-cols-1 gap-2">
+                        {COLLAB_OPTIONS.map((option) => (
+                          <div key={option} className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={selectedCollabsToHost.includes(option)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedCollabsToHost([...selectedCollabsToHost, option]);
+                                } else {
+                                  setSelectedCollabsToHost(
+                                    selectedCollabsToHost.filter((item) => item !== option)
+                                  );
+                                }
+                              }}
+                            />
+                            <Label className="text-sm">{option}</Label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="notification_frequency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notification Frequency</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormField
+                      control={form.control}
+                      name="notification_frequency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Notification Frequency</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select frequency" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Instant">Instant</SelectItem>
+                              <SelectItem value="Daily">Daily</SelectItem>
+                              <SelectItem value="Weekly">Weekly</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="additional_opportunities"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Additional Collaboration Opportunities (Optional)</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select frequency" />
-                            </SelectTrigger>
+                            <Textarea
+                              placeholder="Tell us about other collaboration types you're interested in..."
+                              {...field}
+                              onFocus={handleFocus}
+                            />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Instant">Instant</SelectItem>
-                            <SelectItem value="Daily">Daily</SelectItem>
-                            <SelectItem value="Weekly">Weekly</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="additional_opportunities"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Additional Collaboration Opportunities (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Tell us about other collaboration types you're interested in..."
-                            {...field}
-                            onFocus={handleFocus}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                    <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 flex gap-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={prevStep}
+                        className="flex-1"
+                        disabled={isSubmitting}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="flex-1"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Complete Profile"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
               )}
-
-              <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 flex gap-4">
-                {step > 1 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={prevStep}
-                    className="flex-1"
-                    disabled={isSubmitting}
-                  >
-                    Back
-                  </Button>
-                )}
-                <Button
-                  type={step === 3 ? "submit" : "button"}
-                  onClick={step === 3 ? undefined : handleNextStep}
-                  className="flex-1"
-                  disabled={!isWebAppReady || !isCurrentStepValid() || isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : step === 3 ? (
-                    "Complete Profile"
-                  ) : (
-                    "Next"
-                  )}
-                </Button>
-              </div>
             </form>
           </Form>
         </div>
