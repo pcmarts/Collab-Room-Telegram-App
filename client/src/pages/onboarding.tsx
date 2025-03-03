@@ -137,7 +137,7 @@ export default function OnboardingForm() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="p-4 pb-32"> {/* Added bottom padding to prevent last input from being hidden */}
+      <div className="p-4 pb-40"> {/* Increased bottom padding to prevent overlap with fixed buttons */}
         <div className="max-w-md mx-auto space-y-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold">Complete Your Profile</h1>
@@ -284,7 +284,7 @@ export default function OnboardingForm() {
                 </>
               )}
 
-              <div className="flex gap-4 sticky bottom-4 bg-background p-4 -mx-4 border-t">
+              <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 flex gap-4">
                 {step > 1 && (
                   <Button 
                     type="button" 
