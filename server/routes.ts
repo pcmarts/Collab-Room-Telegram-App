@@ -1,10 +1,10 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "./db";
-import { users, userPreferences, companies, collaborations } from "../shared/schema";
+import { users, preferences, companies } from "../shared/schema";
 import { bot } from "./telegram";
 import { eq } from "drizzle-orm";
-import { insertCollaborationSchema, insertCompanySchema, onboardingSchema } from "../shared/schema";
+import { onboardingSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
@@ -45,15 +45,15 @@ export async function registerRoutes(app: Express) {
         .where(eq(companies.user_id, user.id));
 
       // Get preferences
-      const [preferences] = await db
+      const [userPreferences] = await db
         .select()
-        .from(userPreferences)
-        .where(eq(userPreferences.user_id, user.id));
+        .from(preferences)
+        .where(eq(preferences.user_id, user.id));
 
       res.json({
         user,
         company,
-        preferences
+        preferences: userPreferences
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -154,23 +154,16 @@ export async function registerRoutes(app: Express) {
       const {
         first_name,
         last_name,
-        telegram_handle,
+        handle,
         linkedin_url,
-        email,
         company_name,
-        job_title,
         company_website,
         twitter_handle,
-        company_linkedin,
-        company_telegram,
         company_category,
         company_size,
-        funding_stage,
-        geographic_focus,
         collabs_to_discover,
         collabs_to_host,
         notification_frequency,
-        additional_opportunities,
         initData
       } = validation.data;
 
@@ -183,37 +176,33 @@ export async function registerRoutes(app: Express) {
         return;
       }
 
-      // Start a transaction
+      // Create user
       const [user] = await db.insert(users).values({
         telegram_id: telegramUser.id.toString(),
         first_name,
         last_name,
-        handle: telegram_handle,
-        linkedin_url,
-        email
+        handle,
+        linkedin_url
       }).returning();
 
       console.log('Created user:', user);
 
+      // Create company
       await db.insert(companies).values({
         name: company_name,
         user_id: user.id,
         website: company_website,
         category: company_category,
         size: company_size,
-        funding_stage,
-        geographic_focus,
-        twitter_handle,
-        linkedin_url: company_linkedin,
-        telegram_group: company_telegram
+        twitter_handle
       });
 
-      await db.insert(userPreferences).values({
+      // Create preferences
+      await db.insert(preferences).values({
         user_id: user.id,
         collabs_to_discover,
         collabs_to_host,
-        notification_frequency,
-        additional_opportunities
+        notification_frequency
       });
 
       res.json({ success: true });

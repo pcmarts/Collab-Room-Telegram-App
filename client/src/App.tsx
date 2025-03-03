@@ -9,6 +9,7 @@ import Collaborations from "@/pages/collaborations";
 import OnboardingForm from "@/pages/onboarding";
 import ProfileOverview from "@/pages/profile-overview";
 import NotFound from "@/pages/not-found";
+import { MobileCheck } from "@/components/MobileCheck";
 
 function Router() {
   const isOnboardingRoute = window.location.pathname === '/onboarding';
@@ -16,7 +17,6 @@ function Router() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Only show sidebar on main app pages */}
       {!isOnboardingRoute && !isProfileRoute && <Sidebar />}
       <div className={!isOnboardingRoute && !isProfileRoute ? 'lg:pl-64' : ''}>
         <Switch>
@@ -40,7 +40,9 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
+      <MobileCheck>
+        <Router />
+      </MobileCheck>
       <Toaster />
     </QueryClientProvider>
   );
