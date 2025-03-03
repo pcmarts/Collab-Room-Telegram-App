@@ -4,10 +4,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { ProfileData } from "@/types/profile";
+import { useLocation } from "wouter";
 
 export default function CompanyInfoForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [_, setLocation] = useLocation();
+
+  // Check if we're in edit mode
+  const isEditMode = window.location.search.includes('edit=true');
+
+  // Fetch existing data if in edit mode
+  const { data: profileData } = useQuery<ProfileData>({
+    queryKey: ['/api/profile'],
+    enabled: isEditMode
+  });
+
   const [formData, setFormData] = useState({
     company_name: '',
     job_title: '',
@@ -16,13 +30,23 @@ export default function CompanyInfoForm() {
     linkedin_url: ''
   });
 
-  // Load saved data if exists
+  // Load saved data from API or session storage
   useEffect(() => {
-    const savedData = sessionStorage.getItem('companyFormData');
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
+    if (isEditMode && profileData?.company) {
+      setFormData({
+        company_name: profileData.company.name,
+        job_title: profileData.company.job_title,
+        website: profileData.company.website,
+        twitter_handle: profileData.company.twitter_handle || '',
+        linkedin_url: profileData.company.linkedin_url || ''
+      });
+    } else {
+      const savedData = sessionStorage.getItem('companyFormData');
+      if (savedData) {
+        setFormData(JSON.parse(savedData));
+      }
     }
-  }, []);
+  }, [isEditMode, profileData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -31,7 +55,9 @@ export default function CompanyInfoForm() {
       [name]: value
     };
     setFormData(newFormData);
-    sessionStorage.setItem('companyFormData', JSON.stringify(newFormData));
+    if (!isEditMode) {
+      sessionStorage.setItem('companyFormData', JSON.stringify(newFormData));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,8 +100,12 @@ export default function CompanyInfoForm() {
         description: responseData.message || "Company information saved successfully"
       });
 
-      // Instead of closing, redirect to preferences page
-      window.location.href = '/collab-preferences';
+      // Navigate to next step or back to profile
+      if (isEditMode) {
+        setLocation('/profile-overview');
+      } else {
+        setLocation('/collab-preferences');
+      }
 
     } catch (error) {
       console.error('Form submission error:', error);
@@ -91,7 +121,11 @@ export default function CompanyInfoForm() {
   };
 
   const handleBack = () => {
-    window.location.href = '/onboarding';
+    if (isEditMode) {
+      setLocation('/profile-overview');
+    } else {
+      setLocation('/onboarding');
+    }
   };
 
   return (
@@ -100,21 +134,20 @@ export default function CompanyInfoForm() {
         <div className="flex items-center justify-between mb-8">
           <Button variant="ghost" onClick={handleBack} className="flex items-center">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            {isEditMode ? 'Cancel' : 'Back'}
           </Button>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-primary/50"></div>
             <div className="w-3 h-3 rounded-full bg-primary"></div>
+            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
           </div>
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Company Information</h1>
+          <h1 className="text-2xl font-bold">
+            {isEditMode ? 'Edit Company Information' : 'Company Information'}
+          </h1>
           <p className="text-muted-foreground mt-2">Tell us about your company</p>
-        </div>
-
-        <div className="text-xs text-muted-foreground mb-4">
-          Telegram WebApp: {window.Telegram?.WebApp ? 'Available' : 'Not Available'}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -184,10 +217,10 @@ export default function CompanyInfoForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {isEditMode ? 'Saving...' : 'Next'}
               </>
             ) : (
-              "Save Company Information"
+              isEditMode ? "Save Changes" : "Continue to Preferences"
             )}
           </Button>
         </form>

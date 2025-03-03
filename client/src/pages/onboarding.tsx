@@ -4,10 +4,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { ProfileData } from "@/types/profile";
+import { useLocation } from "wouter";
 
 export default function OnboardingForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [_, setLocation] = useLocation();
+
+  // Check if we're in edit mode
+  const isEditMode = window.location.search.includes('edit=true');
+
+  // Fetch existing data if in edit mode
+  const { data: profileData } = useQuery<ProfileData>({
+    queryKey: ['/api/profile'],
+    enabled: isEditMode
+  });
+
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -16,23 +30,23 @@ export default function OnboardingForm() {
     email: ''
   });
 
-  // Load saved data if exists
+  // Load saved data from API or session storage
   useEffect(() => {
-    const savedData = sessionStorage.getItem('userFormData');
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
+    if (isEditMode && profileData?.user) {
+      setFormData({
+        first_name: profileData.user.first_name,
+        last_name: profileData.user.last_name,
+        handle: profileData.user.handle,
+        linkedin_url: profileData.user.linkedin_url || '',
+        email: profileData.user.email || ''
+      });
+    } else {
+      const savedData = sessionStorage.getItem('userFormData');
+      if (savedData) {
+        setFormData(JSON.parse(savedData));
+      }
     }
-  }, []);
-
-  // Debug: Log Telegram WebApp status
-  useEffect(() => {
-    console.log('============ DEBUG: Component Mount ============');
-    console.log('window.Telegram exists:', !!window.Telegram);
-    console.log('window.Telegram?.WebApp exists:', !!window.Telegram?.WebApp);
-    if (window.Telegram?.WebApp) {
-      console.log('initData:', window.Telegram.WebApp.initData);
-    }
-  }, []);
+  }, [isEditMode, profileData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -41,7 +55,9 @@ export default function OnboardingForm() {
       [name]: value
     };
     setFormData(newFormData);
-    sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
+    if (!isEditMode) {
+      sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,11 +97,15 @@ export default function OnboardingForm() {
 
       toast({
         title: "Success!",
-        description: responseData.message || "Test submission successful"
+        description: responseData.message || "Personal information saved successfully"
       });
 
-      // Instead of closing, redirect to company info
-      window.location.href = '/company-info';
+      // Navigate to next step or back to profile
+      if (isEditMode) {
+        setLocation('/profile-overview');
+      } else {
+        setLocation('/company-info');
+      }
 
     } catch (error) {
       console.error('Form submission error:', error);
@@ -103,20 +123,28 @@ export default function OnboardingForm() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
-        <div className="flex justify-end mb-8">
+        <div className="flex justify-between mb-8">
+          {isEditMode && (
+            <Button
+              variant="ghost"
+              onClick={() => setLocation('/profile-overview')}
+              className="flex items-center"
+            >
+              Cancel
+            </Button>
+          )}
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-primary"></div>
+            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
             <div className="w-3 h-3 rounded-full bg-primary/50"></div>
           </div>
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Personal Information</h1>
+          <h1 className="text-2xl font-bold">
+            {isEditMode ? 'Edit Personal Information' : 'Personal Information'}
+          </h1>
           <p className="text-muted-foreground mt-2">Tell us about yourself</p>
-        </div>
-
-        <div className="text-xs text-muted-foreground mb-4">
-          Telegram WebApp: {window.Telegram?.WebApp ? 'Available' : 'Not Available'}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -186,10 +214,10 @@ export default function OnboardingForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Next
+                {isEditMode ? 'Saving...' : 'Next'}
               </>
             ) : (
-              "Continue to Company Info"
+              isEditMode ? "Save Changes" : "Continue to Company Info"
             )}
           </Button>
         </form>
