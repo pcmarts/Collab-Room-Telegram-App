@@ -67,13 +67,15 @@ export default function ProfileOverview() {
               <h3 className="font-medium">Telegram Handle</h3>
               <p>{user.handle}</p>
             </div>
-            <div>
-              <h3 className="font-medium">LinkedIn</h3>
-              <a href={user.linkedin_url} target="_blank" rel="noopener noreferrer" 
-                 className="text-primary hover:underline">
-                View Profile
-              </a>
-            </div>
+            {user.linkedin_url && (
+              <div>
+                <h3 className="font-medium">LinkedIn</h3>
+                <a href={user.linkedin_url} target="_blank" rel="noopener noreferrer" 
+                   className="text-primary hover:underline">
+                  View Profile
+                </a>
+              </div>
+            )}
             {user.email && (
               <div>
                 <h3 className="font-medium">Email</h3>
@@ -86,7 +88,16 @@ export default function ProfileOverview() {
         {/* Company Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Company Information</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>Company Information</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation('/company-info?edit=true')}
+              >
+                Edit
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -102,10 +113,14 @@ export default function ProfileOverview() {
               <div className="space-x-4">
                 <a href={company.website} target="_blank" rel="noopener noreferrer" 
                    className="text-primary hover:underline">Website</a>
-                <a href={`https://twitter.com/${company.twitter_handle}`} target="_blank" 
-                   rel="noopener noreferrer" className="text-primary hover:underline">Twitter</a>
-                <a href={company.linkedin_url} target="_blank" rel="noopener noreferrer" 
-                   className="text-primary hover:underline">LinkedIn</a>
+                {company.twitter_handle && (
+                  <a href={`https://twitter.com/${company.twitter_handle}`} target="_blank" 
+                     rel="noopener noreferrer" className="text-primary hover:underline">Twitter</a>
+                )}
+                {company.linkedin_url && (
+                  <a href={company.linkedin_url} target="_blank" rel="noopener noreferrer" 
+                     className="text-primary hover:underline">LinkedIn</a>
+                )}
               </div>
             </div>
           </CardContent>
@@ -114,33 +129,48 @@ export default function ProfileOverview() {
         {/* Collaboration Preferences */}
         <Card>
           <CardHeader>
-            <CardTitle>Collaboration Preferences</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>Collaboration Preferences</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation('/collab-preferences?edit=true')}
+              >
+                Edit
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div>
-              <h3 className="font-medium mb-2">Looking to Discover</h3>
-              <div className="flex flex-wrap gap-2">
-                {preferences.collabs_to_discover.map(collab => (
-                  <span key={collab} className="px-2 py-1 bg-primary/10 rounded-full text-sm">
-                    {collab}
-                  </span>
-                ))}
+            {preferences && preferences.collabs_to_discover && preferences.collabs_to_discover.length > 0 && (
+              <div>
+                <h3 className="font-medium mb-2">Looking to Discover</h3>
+                <div className="flex flex-wrap gap-2">
+                  {preferences.collabs_to_discover.map(collab => (
+                    <span key={collab} className="px-2 py-1 bg-primary/10 rounded-full text-sm">
+                      {collab}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div>
-              <h3 className="font-medium mb-2">Ready to Host</h3>
-              <div className="flex flex-wrap gap-2">
-                {preferences.collabs_to_host.map(collab => (
-                  <span key={collab} className="px-2 py-1 bg-primary/10 rounded-full text-sm">
-                    {collab}
-                  </span>
-                ))}
+            )}
+            {preferences && preferences.collabs_to_host && preferences.collabs_to_host.length > 0 && (
+              <div>
+                <h3 className="font-medium mb-2">Ready to Host</h3>
+                <div className="flex flex-wrap gap-2">
+                  {preferences.collabs_to_host.map(collab => (
+                    <span key={collab} className="px-2 py-1 bg-primary/10 rounded-full text-sm">
+                      {collab}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div>
-              <h3 className="font-medium">Notification Frequency</h3>
-              <p className="capitalize">{preferences.notification_frequency}</p>
-            </div>
+            )}
+            {preferences && preferences.notification_frequency && (
+              <div>
+                <h3 className="font-medium">Notification Frequency</h3>
+                <p className="capitalize">{preferences.notification_frequency}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
