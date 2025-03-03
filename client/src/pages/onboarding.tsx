@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { type OnboardingData, onboardingSchema } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 
@@ -105,15 +105,16 @@ export default function OnboardingForm() {
 
   // Save form data when it changes
   useEffect(() => {
-    const subscription = form.watch((value) => {
+    const subscription = form.watch(() => {
+      const formData = form.getValues();
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        ...value,
+        ...formData,
         collabs_to_discover: selectedCollabsToDiscover,
         collabs_to_host: selectedCollabsToHost
       }));
     });
     return () => subscription.unsubscribe();
-  }, [form.watch, selectedCollabsToDiscover, selectedCollabsToHost]);
+  }, [form, selectedCollabsToDiscover, selectedCollabsToHost]);
 
   useEffect(() => {
     if (window.Telegram?.WebApp) {
@@ -138,7 +139,7 @@ export default function OnboardingForm() {
     }, 100);
   }, []);
 
-  const isStepValid = useCallback(() => {
+  const isStepValid = useMemo(() => {
     const currentErrors = form.formState.errors;
 
     switch (step) {
@@ -195,7 +196,7 @@ export default function OnboardingForm() {
     if (step > 1) setStep(step - 1);
   }, [step]);
 
-  const onSubmit = async (data: OnboardingData) => {
+  const onSubmit = useCallback(async (data: OnboardingData) => {
     try {
       setIsSubmitting(true);
 
@@ -240,7 +241,7 @@ export default function OnboardingForm() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [toast, selectedCollabsToDiscover, selectedCollabsToHost]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -635,7 +636,7 @@ export default function OnboardingForm() {
                   type={step === 3 ? "submit" : "button"}
                   onClick={step === 3 ? undefined : nextStep}
                   className="flex-1"
-                  disabled={!isWebAppReady || !isStepValid() || isSubmitting}
+                  disabled={!isWebAppReady || !isStepValid || isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
