@@ -56,7 +56,7 @@ export async function registerRoutes(app: Express) {
             .returning();
 
           console.log('Updated user:', user);
-          return res.json({ 
+          return res.json({
             success: true,
             user,
             message: 'User updated successfully'
@@ -87,7 +87,7 @@ export async function registerRoutes(app: Express) {
 
         console.log('Created user:', user);
 
-        res.json({ 
+        res.json({
           success: true,
           user,
           message: 'User created successfully'
@@ -166,7 +166,7 @@ export async function registerRoutes(app: Express) {
             .returning();
 
           console.log('Updated company:', company);
-          return res.json({ 
+          return res.json({
             success: true,
             company,
             message: 'Company information updated successfully'
@@ -197,7 +197,7 @@ export async function registerRoutes(app: Express) {
 
         console.log('Created company:', company);
 
-        res.json({ 
+        res.json({
           success: true,
           company,
           message: 'Company information saved successfully'
@@ -274,7 +274,7 @@ export async function registerRoutes(app: Express) {
             .returning();
 
           console.log('Updated preferences:', userPreferences);
-          return res.json({ 
+          return res.json({
             success: true,
             preferences: userPreferences,
             message: 'Preferences updated successfully'
@@ -301,7 +301,7 @@ export async function registerRoutes(app: Express) {
 
         console.log('Created preferences:', userPreferences);
 
-        res.json({ 
+        res.json({
           success: true,
           preferences: userPreferences,
           message: 'Preferences saved successfully'
@@ -319,6 +319,61 @@ export async function registerRoutes(app: Express) {
         name: error instanceof Error ? error.name : 'Unknown'
       });
       res.status(500).json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Profile endpoint
+  app.get("/api/profile", async (req, res) => {
+    console.log('============ DEBUG: Profile Endpoint ============');
+    console.log('Headers:', req.headers);
+
+    try {
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        console.error('No Telegram init data found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Parse Telegram data
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      console.log('Decoded Telegram user:', telegramUser);
+
+      if (!telegramUser.id) {
+        console.error('No Telegram user ID found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user and related data
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get company info
+      const [company] = await db.select()
+        .from(companies)
+        .where(eq(companies.user_id, user.id));
+
+      // Get preferences
+      const [userPreferences] = await db.select()
+        .from(preferences)
+        .where(eq(preferences.user_id, user.id));
+
+      res.json({
+        user,
+        company,
+        preferences: userPreferences
+      });
+
+    } catch (error) {
+      console.error('Profile fetch error:', error);
+      res.status(500).json({ error: 'Failed to fetch profile data' });
     }
   });
 

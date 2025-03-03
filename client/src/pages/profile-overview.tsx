@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
-import type { User, Company, UserPreferences } from '@shared/schema';
+import type { User, Company, Preferences } from '@shared/schema';
 
 interface ProfileData {
   user: User;
   company: Company;
-  preferences: UserPreferences;
+  preferences: Preferences;
 }
 
 export default function ProfileOverview() {
@@ -94,20 +94,8 @@ export default function ProfileOverview() {
               <p>{company.name}</p>
             </div>
             <div>
-              <h3 className="font-medium">Category</h3>
-              <p>{company.category}</p>
-            </div>
-            <div>
-              <h3 className="font-medium">Size</h3>
-              <p>{company.size}</p>
-            </div>
-            <div>
-              <h3 className="font-medium">Funding Stage</h3>
-              <p>{company.funding_stage}</p>
-            </div>
-            <div>
-              <h3 className="font-medium">Geographic Focus</h3>
-              <p>{company.geographic_focus}</p>
+              <h3 className="font-medium">Job Title</h3>
+              <p>{company.job_title}</p>
             </div>
             <div className="space-y-2">
               <h3 className="font-medium">Social Links</h3>
@@ -118,10 +106,6 @@ export default function ProfileOverview() {
                    rel="noopener noreferrer" className="text-primary hover:underline">Twitter</a>
                 <a href={company.linkedin_url} target="_blank" rel="noopener noreferrer" 
                    className="text-primary hover:underline">LinkedIn</a>
-                {company.telegram_group && (
-                  <a href={company.telegram_group} target="_blank" rel="noopener noreferrer" 
-                     className="text-primary hover:underline">Telegram</a>
-                )}
               </div>
             </div>
           </CardContent>
@@ -157,12 +141,6 @@ export default function ProfileOverview() {
               <h3 className="font-medium">Notification Frequency</h3>
               <p className="capitalize">{preferences.notification_frequency}</p>
             </div>
-            {preferences.additional_opportunities && (
-              <div>
-                <h3 className="font-medium">Additional Interests</h3>
-                <p>{preferences.additional_opportunities}</p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
