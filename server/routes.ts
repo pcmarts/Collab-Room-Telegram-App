@@ -1,18 +1,11 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "./db";
-import { users } from "../shared/schema";
+import { users, userPreferences, companies } from "../shared/schema";
 import { bot } from "./telegram";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { insertCollaborationSchema, insertCompanySchema } from "../shared/schema";
-
-const onboardingSchema = z.object({
-  bio: z.string().min(10).max(300),
-  interests: z.string(),
-  collaborationTypes: z.string(),
-  initData: z.string()
-});
+import { insertCollaborationSchema, insertCompanySchema, onboardingSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
@@ -101,7 +94,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Add onboarding endpoint
+  // Updated onboarding endpoint
   app.post("/api/onboarding", async (req, res) => {
     try {
       const validation = onboardingSchema.safeParse(req.body);
@@ -111,28 +104,68 @@ export async function registerRoutes(app: Express) {
         return;
       }
 
-      const { bio, interests, collaborationTypes, initData } = validation.data;
+      const {
+        first_name,
+        last_name,
+        telegram_handle,
+        linkedin_url,
+        email,
+        company_name,
+        job_title,
+        company_website,
+        twitter_handle,
+        company_linkedin,
+        company_telegram,
+        company_category,
+        company_size,
+        funding_stage,
+        geographic_focus,
+        collabs_to_discover,
+        collabs_to_host,
+        notification_frequency,
+        additional_opportunities,
+        initData
+      } = validation.data;
 
       // Parse the initData to get user information
       const decodedInitData = new URLSearchParams(initData);
-      const user = JSON.parse(decodedInitData.get('user') || '{}');
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
 
-      if (!user.id) {
+      if (!telegramUser.id) {
         res.status(400).json({ error: 'Invalid user data' });
         return;
       }
 
-      await db
-        .update(users)
-        .set({
-          profile_info: {
-            bio,
-            interests: interests.split(',').map(i => i.trim()),
-            preferred_collaboration_types: collaborationTypes.split(',').map(t => t.trim()),
-            onboarding_complete: true
-          }
-        })
-        .where(eq(users.telegram_id, user.id.toString()));
+      // Start a transaction
+      const [user] = await db.insert(users).values({
+        telegram_id: telegramUser.id.toString(),
+        first_name,
+        last_name,
+        handle: telegram_handle,
+        linkedin_url,
+        email
+      }).returning();
+
+      await db.insert(companies).values({
+        name: company_name,
+        user_id: user.id,
+        website: company_website,
+        category: company_category,
+        size: company_size,
+        funding_stage,
+        geographic_focus,
+        twitter_handle,
+        linkedin_url: company_linkedin,
+        telegram_group: company_telegram
+      });
+
+      await db.insert(userPreferences).values({
+        user_id: user.id,
+        collabs_to_discover,
+        collabs_to_host,
+        notification_frequency,
+        additional_opportunities
+      });
 
       res.json({ success: true });
     } catch (error) {
