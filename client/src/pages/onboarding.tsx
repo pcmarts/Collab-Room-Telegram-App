@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { type OnboardingData, onboardingSchema } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 
@@ -67,13 +67,17 @@ export default function OnboardingForm() {
   const [selectedCollabsToDiscover, setSelectedCollabsToDiscover] = useState<string[]>([]);
   const [selectedCollabsToHost, setSelectedCollabsToHost] = useState<string[]>([]);
 
-  const loadSavedData = () => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const data = JSON.parse(saved);
-      setSelectedCollabsToDiscover(data.collabs_to_discover || []);
-      setSelectedCollabsToHost(data.collabs_to_host || []);
-      return data;
+  const loadSavedData = useCallback(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        setSelectedCollabsToDiscover(data.collabs_to_discover || []);
+        setSelectedCollabsToHost(data.collabs_to_host || []);
+        return data;
+      }
+    } catch (error) {
+      console.error('Error loading saved data:', error);
     }
     return {
       first_name: "",
@@ -92,7 +96,7 @@ export default function OnboardingForm() {
       collabs_to_discover: [],
       collabs_to_host: []
     };
-  };
+  }, []);
 
   const form = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
@@ -128,56 +132,34 @@ export default function OnboardingForm() {
     }
   }, [toast]);
 
-  async function onSubmit(data: OnboardingData) {
-    try {
-      setIsSubmitting(true);
+  const handleFocus = useCallback((event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setTimeout(() => {
+      event.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  }, []);
 
-      if (!window.Telegram?.WebApp) {
-        throw new Error("Not in Telegram WebApp environment");
-      }
+  const isStepValid = useCallback(() => {
+    const currentErrors = form.formState.errors;
 
-      const { WebApp } = window.Telegram;
-
-      const response = await fetch('/api/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          collabs_to_discover: selectedCollabsToDiscover,
-          collabs_to_host: selectedCollabsToHost,
-          initData: WebApp.initData
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save profile');
-      }
-
-      localStorage.removeItem(STORAGE_KEY); // Clear saved data on successful submission
-
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated!"
-      });
-
-      setTimeout(() => {
-        WebApp.close();
-      }, 1500);
-    } catch (error) {
-      console.error('Submission error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update profile. Please try again."
-      });
-    } finally {
-      setIsSubmitting(false);
+    switch (step) {
+      case 1:
+        return !['first_name', 'last_name', 'telegram_handle', 'linkedin_url']
+          .some(field => currentErrors[field as keyof OnboardingData]);
+      case 2:
+        return ![
+          'company_name', 'job_title', 'company_website', 'twitter_handle',
+          'company_linkedin', 'company_category', 'company_size', 'funding_stage',
+          'geographic_focus'
+        ].some(field => currentErrors[field as keyof OnboardingData]);
+      case 3:
+        return selectedCollabsToDiscover.length > 0 && selectedCollabsToHost.length > 0;
+      default:
+        return false;
     }
-  }
+  }, [form.formState.errors, step, selectedCollabsToDiscover, selectedCollabsToHost]);
 
-  const nextStep = () => {
-    // Validate current step fields before proceeding
-    let fieldsToValidate: string[] = [];
+  const nextStep = useCallback(async () => {
+    let fieldsToValidate: (keyof OnboardingData)[] = [];
 
     switch (step) {
       case 1:
@@ -202,40 +184,61 @@ export default function OnboardingForm() {
         break;
     }
 
-    form.trigger(fieldsToValidate).then((isValid) => {
-      if (isValid) {
-        if (step < 3) setStep(step + 1);
-        else form.handleSubmit(onSubmit)();
-      }
-    });
-  };
+    const isValid = await form.trigger(fieldsToValidate);
+    if (isValid) {
+      if (step < 3) setStep(step + 1);
+      else form.handleSubmit(onSubmit)();
+    }
+  }, [step, form, selectedCollabsToDiscover, selectedCollabsToHost, toast]);
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     if (step > 1) setStep(step - 1);
-  };
+  }, [step]);
 
-  const handleFocus = (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setTimeout(() => {
-      event.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
-  };
+  const onSubmit = async (data: OnboardingData) => {
+    try {
+      setIsSubmitting(true);
 
-  // Check if current step is valid
-  const isStepValid = () => {
-    const currentErrors = form.formState.errors;
-    switch (step) {
-      case 1:
-        return !['first_name', 'last_name', 'telegram_handle', 'linkedin_url'].some(field => currentErrors[field as keyof OnboardingData]);
-      case 2:
-        return ![
-          'company_name', 'job_title', 'company_website', 'twitter_handle',
-          'company_linkedin', 'company_category', 'company_size', 'funding_stage',
-          'geographic_focus'
-        ].some(field => currentErrors[field as keyof OnboardingData]);
-      case 3:
-        return selectedCollabsToDiscover.length > 0 && selectedCollabsToHost.length > 0;
-      default:
-        return false;
+      if (!window.Telegram?.WebApp) {
+        throw new Error("Not in Telegram WebApp environment");
+      }
+
+      const { WebApp } = window.Telegram;
+
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          collabs_to_discover: selectedCollabsToDiscover,
+          collabs_to_host: selectedCollabsToHost,
+          initData: WebApp.initData
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save profile');
+      }
+
+      localStorage.removeItem(STORAGE_KEY);
+
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated!"
+      });
+
+      setTimeout(() => {
+        WebApp.close();
+      }, 1500);
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update profile. Please try again."
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
