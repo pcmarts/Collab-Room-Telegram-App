@@ -10,6 +10,7 @@ export const users = pgTable('users', {
   last_name: text('last_name').notNull(),
   handle: text('handle').notNull(),
   linkedin_url: text('linkedin_url'),
+  email: text('email'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 

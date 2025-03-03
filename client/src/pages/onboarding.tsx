@@ -11,7 +11,9 @@ export default function OnboardingForm() {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
-    handle: ''
+    handle: '',
+    linkedin_url: '',
+    email: ''
   });
 
   // Debug: Log Telegram WebApp status
@@ -136,6 +138,30 @@ export default function OnboardingForm() {
               onChange={handleInputChange}
               placeholder="@username"
               required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+            <Input
+              id="linkedin_url"
+              name="linkedin_url"
+              type="url"
+              value={formData.linkedin_url}
+              onChange={handleInputChange}
+              placeholder="https://linkedin.com/in/..."
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="your@email.com"
             />
           </div>
 
