@@ -138,7 +138,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Onboarding endpoint
+  // Onboarding endpoint with enhanced logging
   app.post("/api/onboarding", async (req, res) => {
     try {
       console.log('Received onboarding request:', req.body);
@@ -170,6 +170,7 @@ export async function registerRoutes(app: Express) {
       // Parse the initData to get user information
       const decodedInitData = new URLSearchParams(initData);
       const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      console.log('Decoded Telegram user:', telegramUser);
 
       if (!telegramUser.id) {
         res.status(400).json({ error: 'Invalid user data' });

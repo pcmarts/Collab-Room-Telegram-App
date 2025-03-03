@@ -46,7 +46,12 @@ export default function OnboardingForm() {
   const onSubmit = async (data: OnboardingData) => {
     try {
       setIsSubmitting(true);
-      console.log('Form submitted with data:', data);
+      console.log('Form data before submission:', data);
+      console.log('Selected collabs to discover:', selectedCollabsToDiscover);
+      console.log('Selected collabs to host:', selectedCollabsToHost);
+
+      // Check if we're in Telegram environment
+      console.log('Checking Telegram WebApp:', !!window.Telegram?.WebApp);
 
       // Prepare form data
       let formData = {
@@ -57,11 +62,16 @@ export default function OnboardingForm() {
 
       // Add Telegram initData if available
       if (window.Telegram?.WebApp) {
+        console.log('Adding Telegram initData');
         formData = {
           ...formData,
           initData: window.Telegram.WebApp.initData
         };
+      } else {
+        console.warn('Not in Telegram WebApp environment');
       }
+
+      console.log('Final form data:', formData);
 
       const response = await fetch('/api/onboarding', {
         method: 'POST',
@@ -69,8 +79,12 @@ export default function OnboardingForm() {
         body: JSON.stringify(formData)
       });
 
+      console.log('Response status:', response.status);
+      const responseData = await response.json();
+      console.log('Response data:', responseData);
+
       if (!response.ok) {
-        throw new Error('Failed to save profile');
+        throw new Error(responseData.error || 'Failed to save profile');
       }
 
       toast({
