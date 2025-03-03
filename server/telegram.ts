@@ -9,7 +9,7 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
 }
 
 // Get the webapp URL from environment or use the first Replit domain
-const WEBAPP_URL = `${process.env.REPLIT_DOMAINS?.split(',')[0]}/onboarding`;
+const WEBAPP_URL = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}/onboarding`;
 
 export const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 
