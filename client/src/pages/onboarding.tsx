@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -12,15 +12,13 @@ export default function OnboardingForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize form with Telegram handle prefix
+  // Initialize form
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
       first_name: "",
       last_name: "",
       handle: "@",
-      linkedin_url: "https://www.linkedin.com/in/",
-      email: "",
     }
   });
 
@@ -66,7 +64,7 @@ export default function OnboardingForm() {
 
       toast({
         title: "Success!",
-        description: responseData.message || "Test submission successful"
+        description: responseData.message || "Form submitted successfully"
       });
 
       // Close Telegram WebApp after short delay to show toast
@@ -93,7 +91,7 @@ export default function OnboardingForm() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Your Information</h1>
+          <h1 className="text-2xl font-bold">Basic Information</h1>
           <p className="text-muted-foreground mt-2">Tell us about yourself</p>
         </div>
 
@@ -110,14 +108,8 @@ export default function OnboardingForm() {
                 <FormItem>
                   <FormLabel>First Name</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      autoCapitalize="words"
-                      autoComplete="given-name"
-                      className="h-12"
-                    />
+                    <Input {...field} className="h-12" />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -129,14 +121,8 @@ export default function OnboardingForm() {
                 <FormItem>
                   <FormLabel>Last Name</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      autoCapitalize="words"
-                      autoComplete="family-name"
-                      className="h-12"
-                    />
+                    <Input {...field} className="h-12" />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -161,46 +147,6 @@ export default function OnboardingForm() {
                       }}
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="linkedin_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>LinkedIn Profile URL</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="url"
-                      placeholder="https://www.linkedin.com/in/your-profile"
-                      className="h-12"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="email"
-                      autoComplete="email"
-                      placeholder="you@example.com"
-                      className="h-12"
-                    />
-                  </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -216,7 +162,7 @@ export default function OnboardingForm() {
                   Saving...
                 </>
               ) : (
-                "Continue"
+                "Submit"
               )}
             </Button>
           </form>

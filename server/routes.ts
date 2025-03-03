@@ -13,12 +13,7 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', req.body);
 
     try {
-      const { first_name, last_name, handle, linkedin_url, email, initData } = req.body;
-
-      if (!first_name || !last_name || !handle) {
-        console.error('Missing required fields');
-        return res.status(400).json({ error: 'Missing required fields' });
-      }
+      const { first_name, last_name, handle, initData } = req.body;
 
       // Parse Telegram data
       console.log('Parsing Telegram data');
@@ -51,42 +46,24 @@ export async function registerRoutes(app: Express) {
         telegram_id,
         first_name,
         last_name,
-        handle,
-        linkedin_url,
-        email
+        handle
       });
 
-      try {
-        const [user] = await db
-          .insert(users)
-          .values({
-            telegram_id,
-            first_name,
-            last_name,
-            handle,
-            linkedin_url,
-            email
-          })
-          .returning();
+      const [user] = await db.insert(users)
+        .values({
+          telegram_id,
+          first_name,
+          last_name,
+          handle
+        })
+        .returning();
 
-        console.log('Created user:', user);
-
-        // Verify the user was created
-        const verifyUser = await db.select()
-          .from(users)
-          .where(eq(users.telegram_id, telegram_id));
-
-        console.log('Verification query result:', verifyUser);
-
-        res.json({ 
-          success: true,
-          user,
-          message: 'User created successfully'
-        });
-      } catch (dbError) {
-        console.error('Database error:', dbError);
-        throw new Error(`Failed to create user: ${dbError.message}`);
-      }
+      console.log('Created user:', user);
+      res.json({ 
+        success: true,
+        user,
+        message: 'User created successfully'
+      });
 
     } catch (error) {
       console.error('Detailed error:', {
