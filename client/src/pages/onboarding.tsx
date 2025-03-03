@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect, useState } from "react";
-import { type OnboardingData, onboardingSchema } from "@shared/schema";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useEffect, useState } from "react";
+import { type OnboardingData, onboardingSchema } from "@shared/schema";
+import { Loader2 } from "lucide-react";
 
 declare global {
   interface Window {
@@ -29,6 +30,8 @@ declare global {
     };
   }
 }
+
+const STORAGE_KEY = 'onboarding_data';
 
 const COLLAB_OPTIONS = [
   "Podcast Guest Appearances",
@@ -60,12 +63,19 @@ export default function OnboardingForm() {
   const { toast } = useToast();
   const [isWebAppReady, setIsWebAppReady] = useState(false);
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollabsToDiscover, setSelectedCollabsToDiscover] = useState<string[]>([]);
   const [selectedCollabsToHost, setSelectedCollabsToHost] = useState<string[]>([]);
 
-  const form = useForm<OnboardingData>({
-    resolver: zodResolver(onboardingSchema),
-    defaultValues: {
+  const loadSavedData = () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      setSelectedCollabsToDiscover(data.collabs_to_discover || []);
+      setSelectedCollabsToHost(data.collabs_to_host || []);
+      return data;
+    }
+    return {
       first_name: "",
       last_name: "",
       telegram_handle: "",
@@ -81,8 +91,25 @@ export default function OnboardingForm() {
       additional_opportunities: "",
       collabs_to_discover: [],
       collabs_to_host: []
-    }
+    };
+  };
+
+  const form = useForm<OnboardingData>({
+    resolver: zodResolver(onboardingSchema),
+    defaultValues: loadSavedData()
   });
+
+  // Save form data when it changes
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        ...value,
+        collabs_to_discover: selectedCollabsToDiscover,
+        collabs_to_host: selectedCollabsToHost
+      }));
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch, selectedCollabsToDiscover, selectedCollabsToHost]);
 
   useEffect(() => {
     if (window.Telegram?.WebApp) {
@@ -103,6 +130,8 @@ export default function OnboardingForm() {
 
   async function onSubmit(data: OnboardingData) {
     try {
+      setIsSubmitting(true);
+
       if (!window.Telegram?.WebApp) {
         throw new Error("Not in Telegram WebApp environment");
       }
@@ -124,6 +153,8 @@ export default function OnboardingForm() {
         throw new Error('Failed to save profile');
       }
 
+      localStorage.removeItem(STORAGE_KEY); // Clear saved data on successful submission
+
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated!"
@@ -139,12 +170,44 @@ export default function OnboardingForm() {
         title: "Error",
         description: "Failed to update profile. Please try again."
       });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   const nextStep = () => {
-    if (step < 3) setStep(step + 1);
-    else form.handleSubmit(onSubmit)();
+    // Validate current step fields before proceeding
+    let fieldsToValidate: string[] = [];
+
+    switch (step) {
+      case 1:
+        fieldsToValidate = ['first_name', 'last_name', 'telegram_handle', 'linkedin_url'];
+        break;
+      case 2:
+        fieldsToValidate = [
+          'company_name', 'job_title', 'company_website', 'twitter_handle',
+          'company_linkedin', 'company_category', 'company_size', 'funding_stage',
+          'geographic_focus'
+        ];
+        break;
+      case 3:
+        if (selectedCollabsToDiscover.length === 0 || selectedCollabsToHost.length === 0) {
+          toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: "Please select at least one option for both collaboration types."
+          });
+          return;
+        }
+        break;
+    }
+
+    form.trigger(fieldsToValidate).then((isValid) => {
+      if (isValid) {
+        if (step < 3) setStep(step + 1);
+        else form.handleSubmit(onSubmit)();
+      }
+    });
   };
 
   const prevStep = () => {
@@ -155,6 +218,25 @@ export default function OnboardingForm() {
     setTimeout(() => {
       event.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
+  };
+
+  // Check if current step is valid
+  const isStepValid = () => {
+    const currentErrors = form.formState.errors;
+    switch (step) {
+      case 1:
+        return !['first_name', 'last_name', 'telegram_handle', 'linkedin_url'].some(field => currentErrors[field as keyof OnboardingData]);
+      case 2:
+        return ![
+          'company_name', 'job_title', 'company_website', 'twitter_handle',
+          'company_linkedin', 'company_category', 'company_size', 'funding_stage',
+          'geographic_focus'
+        ].some(field => currentErrors[field as keyof OnboardingData]);
+      case 3:
+        return selectedCollabsToDiscover.length > 0 && selectedCollabsToHost.length > 0;
+      default:
+        return false;
+    }
   };
 
   return (
@@ -168,6 +250,7 @@ export default function OnboardingForm() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Step 1: Personal Information */}
               {step === 1 && (
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold">Personal Information</h2>
@@ -246,6 +329,7 @@ export default function OnboardingForm() {
                 </div>
               )}
 
+              {/* Step 2: Company Information */}
               {step === 2 && (
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold">Company Information</h2>
@@ -438,6 +522,7 @@ export default function OnboardingForm() {
                 </div>
               )}
 
+              {/* Step 3: Collaboration Preferences */}
               {step === 3 && (
                 <div className="space-y-6">
                   <h2 className="text-lg font-semibold">Collaboration Preferences</h2>
@@ -538,6 +623,7 @@ export default function OnboardingForm() {
                     variant="outline"
                     onClick={prevStep}
                     className="flex-1"
+                    disabled={isSubmitting}
                   >
                     Back
                   </Button>
@@ -546,9 +632,18 @@ export default function OnboardingForm() {
                   type={step === 3 ? "submit" : "button"}
                   onClick={step === 3 ? undefined : nextStep}
                   className="flex-1"
-                  disabled={!isWebAppReady}
+                  disabled={!isWebAppReady || !isStepValid() || isSubmitting}
                 >
-                  {step === 3 ? "Complete Profile" : "Next"}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : step === 3 ? (
+                    "Complete Profile"
+                  ) : (
+                    "Next"
+                  )}
                 </Button>
               </div>
             </form>
