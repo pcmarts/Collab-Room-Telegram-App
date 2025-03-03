@@ -2,6 +2,28 @@ import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
+// Constants for form options
+export const COLLAB_TYPES = [
+  "Podcast Guest Appearances",
+  "Twitter Spaces Guest",
+  "Webinar Guest Appearance",
+  "Keynote Speaking at Virtual Events",
+  "Keynote Speaking at Real Events",
+  "Medium Guest Posts",
+  "Newsletter Features or Guest Posts",
+  "Report and Research Features",
+  "Co-Marketing on Twitter"
+] as const;
+
+export const NOTIFICATION_FREQUENCIES = ["Instant", "Daily", "Weekly"] as const;
+
+export const COMPANY_CATEGORIES = [
+  "Crypto", "NFT", "DeFi", "Web3 Gaming", "Memes & Culture", "Bitcoin",
+  "Solana", "Ethereum", "Creator Economy", "Fundraising", "AI & Web3"
+] as const;
+
+export const COMPANY_SIZES = ["1-10", "11-50", "51-200", "200+"] as const;
+
 // Core user table
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -49,28 +71,6 @@ export type Preferences = typeof preferences.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type InsertPreferences = z.infer<typeof insertPreferencesSchema>;
-
-// Constants for form options
-export const COMPANY_CATEGORIES = [
-  "Crypto", "NFT", "DeFi", "Web3 Gaming", "Memes & Culture", "Bitcoin",
-  "Solana", "Ethereum", "Creator Economy", "Fundraising", "AI & Web3"
-] as const;
-
-export const COMPANY_SIZES = ["1-10", "11-50", "51-200", "200+"] as const;
-
-export const COLLAB_TYPES = [
-  "Podcast Guest Appearances",
-  "Twitter Spaces Guest",
-  "Webinar Guest Appearance",
-  "Keynote Speaking at Virtual Events",
-  "Keynote Speaking at Real Events",
-  "Medium Guest Posts",
-  "Newsletter Features or Guest Posts",
-  "Report and Research Features",
-  "Co-Marketing on Twitter"
-] as const;
-
-export const NOTIFICATION_FREQUENCIES = ["Instant", "Daily", "Weekly"] as const;
 
 // Onboarding schema with validation
 export const onboardingSchema = z.object({

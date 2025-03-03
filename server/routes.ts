@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "./db";
-import { users, companies } from "../shared/schema";
+import { users, companies, preferences } from "../shared/schema";
 import { eq } from 'drizzle-orm';
 
 export async function registerRoutes(app: Express) {
@@ -206,6 +206,110 @@ export async function registerRoutes(app: Express) {
       } catch (dbError) {
         console.error('Database error:', dbError);
         throw new Error(`Failed to save company: ${dbError.message}`);
+      }
+
+    } catch (error) {
+      console.error('Detailed error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : 'Unknown'
+      });
+      res.status(500).json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Preferences endpoint
+  app.post("/api/preferences", async (req, res) => {
+    console.log('============ DEBUG: Preferences Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+
+    try {
+      const { collabs_to_discover, collabs_to_host, notification_frequency, initData } = req.body;
+
+      if (!notification_frequency || !collabs_to_discover?.length || !collabs_to_host?.length) {
+        console.error('Missing required fields');
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      // Parse Telegram data to get user
+      console.log('Parsing Telegram data');
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      console.log('Decoded Telegram user:', telegramUser);
+
+      if (!telegramUser.id) {
+        console.error('No Telegram user ID found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user ID from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      try {
+        // Check if preferences exist for this user
+        const existingPreferences = await db.select()
+          .from(preferences)
+          .where(eq(preferences.user_id, user.id));
+
+        let userPreferences;
+
+        if (existingPreferences.length > 0) {
+          // Update existing preferences
+          console.log('Updating existing preferences:', existingPreferences[0]);
+          [userPreferences] = await db.update(preferences)
+            .set({
+              collabs_to_discover,
+              collabs_to_host,
+              notification_frequency
+            })
+            .where(eq(preferences.user_id, user.id))
+            .returning();
+
+          console.log('Updated preferences:', userPreferences);
+          return res.json({ 
+            success: true,
+            preferences: userPreferences,
+            message: 'Preferences updated successfully'
+          });
+        }
+
+        // Create new preferences
+        console.log('Creating new preferences with data:', {
+          user_id: user.id,
+          collabs_to_discover,
+          collabs_to_host,
+          notification_frequency
+        });
+
+        [userPreferences] = await db
+          .insert(preferences)
+          .values({
+            user_id: user.id,
+            collabs_to_discover,
+            collabs_to_host,
+            notification_frequency
+          })
+          .returning();
+
+        console.log('Created preferences:', userPreferences);
+
+        res.json({ 
+          success: true,
+          preferences: userPreferences,
+          message: 'Preferences saved successfully'
+        });
+
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error(`Failed to save preferences: ${dbError.message}`);
       }
 
     } catch (error) {

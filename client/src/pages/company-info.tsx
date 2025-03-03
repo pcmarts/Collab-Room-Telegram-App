@@ -74,16 +74,8 @@ export default function CompanyInfoForm() {
         description: responseData.message || "Company information saved successfully"
       });
 
-      // Clear stored form data
-      sessionStorage.removeItem('companyFormData');
-      sessionStorage.removeItem('userFormData');
-
-      // Close Telegram WebApp after short delay to show toast
-      setTimeout(() => {
-        if (window.Telegram?.WebApp) {
-          window.Telegram.WebApp.close();
-        }
-      }, 1500);
+      // Instead of closing, redirect to preferences page
+      window.location.href = '/collab-preferences';
 
     } catch (error) {
       console.error('Form submission error:', error);
@@ -184,8 +176,8 @@ export default function CompanyInfoForm() {
             />
           </div>
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full"
             disabled={isSubmitting}
           >

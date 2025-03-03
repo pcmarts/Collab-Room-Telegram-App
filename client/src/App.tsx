@@ -8,12 +8,15 @@ import Companies from "@/pages/companies";
 import Collaborations from "@/pages/collaborations";
 import OnboardingForm from "@/pages/onboarding";
 import CompanyInfoForm from "@/pages/company-info";
+import CollabPreferencesForm from "@/pages/collab-preferences";
 import ProfileOverview from "@/pages/profile-overview";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 
 function Router() {
-  const isOnboardingRoute = window.location.pathname === '/onboarding' || window.location.pathname === '/company-info';
+  const isOnboardingRoute = window.location.pathname === '/onboarding' || 
+    window.location.pathname === '/company-info' || 
+    window.location.pathname === '/collab-preferences';
   const isProfileRoute = window.location.pathname === '/profile-overview';
 
   return (
@@ -29,6 +32,7 @@ function Router() {
           <Route path="/collaborations" component={Collaborations} />
           <Route path="/onboarding" component={OnboardingForm} />
           <Route path="/company-info" component={CompanyInfoForm} />
+          <Route path="/collab-preferences" component={CollabPreferencesForm} />
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route component={NotFound} />
         </Switch>
