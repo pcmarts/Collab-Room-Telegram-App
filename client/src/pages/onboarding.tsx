@@ -26,17 +26,24 @@ export default function OnboardingForm() {
   const [selectedCollabsToDiscover, setSelectedCollabsToDiscover] = useState<string[]>([]);
   const [selectedCollabsToHost, setSelectedCollabsToHost] = useState<string[]>([]);
 
-  // Log when component mounts to verify Telegram WebApp
+  // Debug: Log Telegram WebApp status on mount
   useEffect(() => {
-    console.log('[Form] Component mounted');
-    console.log('[Form] Telegram WebApp available:', !!window.Telegram?.WebApp);
-    if (window.Telegram?.WebApp) {
-      console.log('[Form] Telegram initData:', window.Telegram.WebApp.initData);
-    }
+    const debugTelegramWebApp = () => {
+      console.log('============ DEBUG: Telegram WebApp Status ============');
+      console.log('window.Telegram exists:', !!window.Telegram);
+      console.log('window.Telegram?.WebApp exists:', !!window.Telegram?.WebApp);
+      if (window.Telegram?.WebApp) {
+        console.log('initData:', window.Telegram.WebApp.initData);
+        console.log('initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe);
+      }
+      console.log('================================================');
+    };
+
+    debugTelegramWebApp();
   }, []);
 
   const form = useForm<OnboardingData>({
-    resolver: zodResolver(onboardingSchema),
+    resolver: zodResolver(onboardingSchema.strict()),
     defaultValues: {
       first_name: "",
       last_name: "",
@@ -53,70 +60,71 @@ export default function OnboardingForm() {
   });
 
   const onSubmit = async (data: OnboardingData) => {
+    console.log('============ DEBUG: Form Submission Started ============');
+
     try {
       setIsSubmitting(true);
-      console.log('[Form] Starting submission');
-      console.log('[Form] Form data:', data);
-      console.log('[Form] Selected collabs to discover:', selectedCollabsToDiscover);
-      console.log('[Form] Selected collabs to host:', selectedCollabsToHost);
 
-      // Validate collaborations
+      // Step 1: Validate form data
+      console.log('Step 1: Validating form data');
+      console.log('Form values:', data);
+      console.log('Selected collabs to discover:', selectedCollabsToDiscover);
+      console.log('Selected collabs to host:', selectedCollabsToHost);
+
       if (!selectedCollabsToDiscover.length || !selectedCollabsToHost.length) {
-        console.error('[Form] Missing collaboration selections');
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please select at least one option for both collaboration types."
-        });
-        return;
+        throw new Error('Please select at least one option for both collaboration types');
       }
 
-      // Get Telegram data
+      // Step 2: Check Telegram environment
+      console.log('Step 2: Checking Telegram environment');
       if (!window.Telegram?.WebApp) {
-        console.error('[Form] Not in Telegram WebApp environment');
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please access this form through Telegram mobile app."
-        });
-        return;
+        throw new Error('Please access this form through Telegram mobile app');
       }
 
+      // Step 3: Prepare submission data
+      console.log('Step 3: Preparing submission data');
       const formData = {
         ...data,
         collabs_to_discover: selectedCollabsToDiscover,
         collabs_to_host: selectedCollabsToHost,
         initData: window.Telegram.WebApp.initData
       };
+      console.log('Final form data:', formData);
 
-      console.log('[Form] Sending request with data:', formData);
-
+      // Step 4: Submit data
+      console.log('Step 4: Submitting data to server');
       const response = await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify(formData)
       });
 
-      console.log('[Form] Response status:', response.status);
+      console.log('Response status:', response.status);
       const responseData = await response.json();
-      console.log('[Form] Response data:', responseData);
+      console.log('Response data:', responseData);
 
       if (!response.ok) {
         throw new Error(responseData.error || 'Failed to save profile');
       }
 
-      // Success
+      // Step 5: Handle success
+      console.log('Step 5: Handling success');
       toast({
-        title: "Success",
-        description: "Your profile has been saved successfully!"
+        title: "Success!",
+        description: "Profile saved successfully"
       });
 
-      // Close Telegram WebApp
+      // Step 6: Close Telegram WebApp
+      console.log('Step 6: Closing Telegram WebApp');
       window.Telegram.WebApp.close();
+
     } catch (error) {
-      console.error('[Form] Error during submission:', error);
+      console.error('============ DEBUG: Form Submission Error ============');
+      console.error(error);
+
       toast({
         variant: "destructive",
         title: "Error",
@@ -124,6 +132,7 @@ export default function OnboardingForm() {
       });
     } finally {
       setIsSubmitting(false);
+      console.log('============ DEBUG: Form Submission Ended ============');
     }
   };
 
