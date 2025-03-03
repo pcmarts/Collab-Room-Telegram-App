@@ -46,16 +46,16 @@ const COLLAB_OPTIONS = [
 ];
 
 const COMPANY_CATEGORIES = [
-  "Crypto", "NFT", "DeFi", "Web3 Gaming", "Memes & Culture", "Bitcoin", 
-  "Solana", "Ethereum", "Creator Economy", "Fundraising", "AI & Web3", 
-  "Infrastructure", "DAOs", "Metaverse", "DEXs & Trading", 
-  "Stablecoins & Payments", "Real World Assets (RWA)", "SocialFi", 
-  "Identity & Privacy", "Security & Auditing", "Interoperability & Bridges", 
+  "Crypto", "NFT", "DeFi", "Web3 Gaming", "Memes & Culture", "Bitcoin",
+  "Solana", "Ethereum", "Creator Economy", "Fundraising", "AI & Web3",
+  "Infrastructure", "DAOs", "Metaverse", "DEXs & Trading",
+  "Stablecoins & Payments", "Real World Assets (RWA)", "SocialFi",
+  "Identity & Privacy", "Security & Auditing", "Interoperability & Bridges",
   "Data & Oracles", "ReFi (Regenerative Finance)", "Decentralized Compute & Storage"
 ];
 
 const GEOGRAPHIC_FOCUS = [
-  "Global", "North America", "Europe", "Asia", 
+  "Global", "North America", "Europe", "Asia",
   "Latin America", "Africa", "Middle East", "Australia"
 ];
 
@@ -149,6 +149,83 @@ export default function OnboardingForm() {
     }, 100);
   }, []);
 
+  const onSubmit = useCallback(async (data: OnboardingData) => {
+    try {
+      setIsSubmitting(true);
+
+      if (!window.Telegram?.WebApp) {
+        throw new Error("Not in Telegram WebApp environment");
+      }
+
+      const { WebApp } = window.Telegram;
+
+      if (selectedCollabsToDiscover.length === 0 || selectedCollabsToHost.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please select at least one option for both collaboration types."
+        });
+        return;
+      }
+
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          collabs_to_discover: selectedCollabsToDiscover,
+          collabs_to_host: selectedCollabsToHost,
+          initData: WebApp.initData
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save profile');
+      }
+
+      localStorage.removeItem(STORAGE_KEY);
+
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated!"
+      });
+
+      setTimeout(() => {
+        WebApp.close();
+      }, 1500);
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update profile. Please try again."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [toast, selectedCollabsToDiscover, selectedCollabsToHost]);
+
+  const isCurrentStepValid = useCallback(() => {
+    const currentErrors = form.formState.errors;
+
+    switch (step) {
+      case 1:
+        return !['first_name', 'last_name', 'telegram_handle', 'linkedin_url']
+          .some(field => currentErrors[field as keyof OnboardingData]);
+      case 2:
+        return ![
+          'company_name', 'job_title', 'company_website', 'twitter_handle',
+          'company_linkedin', 'company_category', 'company_size', 'funding_stage',
+          'geographic_focus'
+        ].some(field => currentErrors[field as keyof OnboardingData]);
+      case 3:
+        return selectedCollabsToDiscover.length > 0 && selectedCollabsToHost.length > 0;
+      default:
+        return false;
+    }
+  }, [form.formState.errors, step, selectedCollabsToDiscover, selectedCollabsToHost]);
+
   const nextStep = useCallback(async () => {
     let fieldsToValidate: (keyof OnboardingData)[] = [];
 
@@ -185,73 +262,6 @@ export default function OnboardingForm() {
   const prevStep = useCallback(() => {
     if (step > 1) setStep(step - 1);
   }, [step]);
-
-  const onSubmit = useCallback(async (data: OnboardingData) => {
-    try {
-      setIsSubmitting(true);
-
-      if (!window.Telegram?.WebApp) {
-        throw new Error("Not in Telegram WebApp environment");
-      }
-
-      const { WebApp } = window.Telegram;
-
-      const response = await fetch('/api/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          collabs_to_discover: selectedCollabsToDiscover,
-          collabs_to_host: selectedCollabsToHost,
-          initData: WebApp.initData
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save profile');
-      }
-
-      localStorage.removeItem(STORAGE_KEY);
-
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated!"
-      });
-
-      setTimeout(() => {
-        WebApp.close();
-      }, 1500);
-    } catch (error) {
-      console.error('Submission error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update profile. Please try again."
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [toast, selectedCollabsToDiscover, selectedCollabsToHost]);
-
-  const isCurrentStepValid = (): boolean => {
-    const currentErrors = form.formState.errors;
-
-    switch (step) {
-      case 1:
-        return !['first_name', 'last_name', 'telegram_handle', 'linkedin_url']
-          .some(field => currentErrors[field as keyof OnboardingData]);
-      case 2:
-        return ![
-          'company_name', 'job_title', 'company_website', 'twitter_handle',
-          'company_linkedin', 'company_category', 'company_size', 'funding_stage',
-          'geographic_focus'
-        ].some(field => currentErrors[field as keyof OnboardingData]);
-      case 3:
-        return selectedCollabsToDiscover.length > 0 && selectedCollabsToHost.length > 0;
-      default:
-        return false;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -632,8 +642,8 @@ export default function OnboardingForm() {
 
               <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 flex gap-4">
                 {step > 1 && (
-                  <Button 
-                    type="button" 
+                  <Button
+                    type="button"
                     variant="outline"
                     onClick={prevStep}
                     className="flex-1"
@@ -642,9 +652,9 @@ export default function OnboardingForm() {
                     Back
                   </Button>
                 )}
-                <Button 
+                <Button
                   type={step === 3 ? "submit" : "button"}
-                  onClick={step === 3 ? undefined : nextStep}
+                  onClick={step === 3 ? form.handleSubmit(onSubmit) : nextStep}
                   className="flex-1"
                   disabled={!isWebAppReady || !isCurrentStepValid() || isSubmitting}
                 >
