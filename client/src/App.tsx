@@ -6,13 +6,15 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import Dashboard from "@/pages/dashboard";
 import Companies from "@/pages/companies";
 import Collaborations from "@/pages/collaborations";
+import OnboardingForm from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar />
-      <div className="lg:pl-64">
+      {/* Only show sidebar on non-onboarding pages */}
+      {window.location.pathname !== '/onboarding' && <Sidebar />}
+      <div className={window.location.pathname !== '/onboarding' ? 'lg:pl-64' : ''}>
         <Switch>
           <Route path="/">
             <Redirect to="/dashboard" />
@@ -20,6 +22,7 @@ function Router() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/companies" component={Companies} />
           <Route path="/collaborations" component={Collaborations} />
+          <Route path="/onboarding" component={OnboardingForm} />
           <Route component={NotFound} />
         </Switch>
       </div>

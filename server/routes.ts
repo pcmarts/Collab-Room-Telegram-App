@@ -1,120 +1,144 @@
 import type { Express } from "express";
 import { createServer } from "http";
-import { supabase } from "../shared/supabase";
+import { db } from "./db";
+import { users } from "../shared/schema";
 import { bot } from "./telegram";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { insertCollaborationSchema, insertCompanySchema } from "../shared/schema";
+
+const onboardingSchema = z.object({
+  bio: z.string().min(10).max(300),
+  interests: z.string(),
+  collaborationTypes: z.string(),
+  initData: z.string()
+});
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
 
-  // Auth endpoints
-  app.post("/api/auth/telegram", async (req, res) => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "telegram",
-      options: {
-        redirectTo: `${process.env.REPLIT_DOMAINS?.split(',')[0]}/auth/callback`
-      }
-    });
-
-    if (error) {
-      res.status(400).json({ error: error.message });
-      return;
-    }
-
-    res.json(data);
-  });
-
   // Companies endpoints
-  app.get("/api/companies", async (req, res) => {
-    const { data, error } = await supabase
-      .from("companies")
-      .select("*");
-
-    if (error) {
-      res.status(400).json({ error: error.message });
-      return;
+  app.get("/api/companies", async (_req, res) => {
+    try {
+      const companies = await db.query.companies.findMany();
+      res.json(companies);
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    res.json(data);
   });
 
   app.post("/api/companies", async (req, res) => {
     const validation = insertCompanySchema.safeParse(req.body);
-    
+
     if (!validation.success) {
       res.status(400).json({ error: validation.error });
       return;
     }
 
-    const { data, error } = await supabase
-      .from("companies")
-      .insert(validation.data)
-      .select();
-
-    if (error) {
-      res.status(400).json({ error: error.message });
-      return;
+    try {
+      const [company] = await db
+        .insert(users)
+        .values(validation.data)
+        .returning();
+      res.json(company);
+    } catch (error) {
+      console.error('Error creating company:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    res.json(data[0]);
   });
 
   // Collaborations endpoints
-  app.get("/api/collaborations", async (req, res) => {
-    const { data, error } = await supabase
-      .from("collaborations")
-      .select(`
-        *,
-        host:users!host_id(*),
-        company:companies(*),
-        applicant:users!applicant_id(*)
-      `);
-
-    if (error) {
-      res.status(400).json({ error: error.message });
-      return;
+  app.get("/api/collaborations", async (_req, res) => {
+    try {
+      const collaborations = await db.query.collaborations.findMany({
+        with: {
+          host: true,
+          company: true,
+          applicant: true
+        }
+      });
+      res.json(collaborations);
+    } catch (error) {
+      console.error('Error fetching collaborations:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    res.json(data);
   });
 
   app.post("/api/collaborations", async (req, res) => {
     const validation = insertCollaborationSchema.safeParse(req.body);
-    
+
     if (!validation.success) {
       res.status(400).json({ error: validation.error });
       return;
     }
 
-    const { data, error } = await supabase
-      .from("collaborations")
-      .insert(validation.data)
-      .select();
+    try {
+      const [collaboration] = await db
+        .insert(users)
+        .values(validation.data)
+        .returning();
 
-    if (error) {
-      res.status(400).json({ error: error.message });
-      return;
-    }
+      // Notify via Telegram bot
+      if (collaboration.host_id) {
+        const [host] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, collaboration.host_id));
 
-    // Notify via Telegram bot
-    const collaboration = data[0];
-    if (collaboration.host_id) {
-      const { data: host } = await supabase
-        .from("users")
-        .select()
-        .eq("id", collaboration.host_id)
-        .single();
-
-      if (host?.telegram_id) {
-        await bot.sendMessage(
-          host.telegram_id,
-          `New collaboration created: ${collaboration.title}`
-        );
+        if (host?.telegram_id) {
+          await bot.sendMessage(
+            host.telegram_id,
+            `New collaboration created: ${collaboration.title}`
+          );
+        }
       }
-    }
 
-    res.json(data[0]);
+      res.json(collaboration);
+    } catch (error) {
+      console.error('Error creating collaboration:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Add onboarding endpoint
+  app.post("/api/onboarding", async (req, res) => {
+    try {
+      const validation = onboardingSchema.safeParse(req.body);
+
+      if (!validation.success) {
+        res.status(400).json({ error: validation.error });
+        return;
+      }
+
+      const { bio, interests, collaborationTypes, initData } = validation.data;
+
+      // Parse the initData to get user information
+      const decodedInitData = new URLSearchParams(initData);
+      const user = JSON.parse(decodedInitData.get('user') || '{}');
+
+      if (!user.id) {
+        res.status(400).json({ error: 'Invalid user data' });
+        return;
+      }
+
+      await db
+        .update(users)
+        .set({
+          profile_info: {
+            bio,
+            interests: interests.split(',').map(i => i.trim()),
+            preferred_collaboration_types: collaborationTypes.split(',').map(t => t.trim()),
+            onboarding_complete: true
+          }
+        })
+        .where(eq(users.telegram_id, user.id.toString()));
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error in onboarding:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   return httpServer;
