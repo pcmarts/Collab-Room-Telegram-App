@@ -475,131 +475,129 @@ export default function OnboardingForm({ isEditMode = false }: OnboardingFormPro
               )}
 
               {step === 3 && (
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="space-y-6">
-                    <h2 className="text-lg font-semibold">Collaboration Preferences</h2>
+                <div className="space-y-6">
+                  <h2 className="text-lg font-semibold">Collaboration Preferences</h2>
 
-                    <div className="space-y-4">
-                      <Label className="text-base">Collaborations to Discover</Label>
-                      <div className="grid grid-cols-1 gap-2">
-                        {COLLAB_OPTIONS.map((option) => (
-                          <div key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              checked={selectedCollabsToDiscover.includes(option)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedCollabsToDiscover([...selectedCollabsToDiscover, option]);
-                                } else {
-                                  setSelectedCollabsToDiscover(
-                                    selectedCollabsToDiscover.filter((item) => item !== option)
-                                  );
-                                }
-                              }}
-                            />
-                            <Label className="text-sm">{option}</Label>
-                          </div>
-                        ))}
-                      </div>
+                  <div className="space-y-4">
+                    <Label className="text-base">Collaborations to Discover</Label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {COLLAB_OPTIONS.map((option) => (
+                        <div key={option} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={selectedCollabsToDiscover.includes(option)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedCollabsToDiscover([...selectedCollabsToDiscover, option]);
+                              } else {
+                                setSelectedCollabsToDiscover(
+                                  selectedCollabsToDiscover.filter((item) => item !== option)
+                                );
+                              }
+                            }}
+                          />
+                          <Label className="text-sm">{option}</Label>
+                        </div>
+                      ))}
                     </div>
+                  </div>
 
-                    <div className="space-y-4">
-                      <Label className="text-base">Collaborations to Host</Label>
-                      <div className="grid grid-cols-1 gap-2">
-                        {COLLAB_OPTIONS.map((option) => (
-                          <div key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              checked={selectedCollabsToHost.includes(option)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedCollabsToHost([...selectedCollabsToHost, option]);
-                                } else {
-                                  setSelectedCollabsToHost(
-                                    selectedCollabsToHost.filter((item) => item !== option)
-                                  );
-                                }
-                              }}
-                            />
-                            <Label className="text-sm">{option}</Label>
-                          </div>
-                        ))}
-                      </div>
+                  <div className="space-y-4">
+                    <Label className="text-base">Collaborations to Host</Label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {COLLAB_OPTIONS.map((option) => (
+                        <div key={option} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={selectedCollabsToHost.includes(option)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedCollabsToHost([...selectedCollabsToHost, option]);
+                              } else {
+                                setSelectedCollabsToHost(
+                                  selectedCollabsToHost.filter((item) => item !== option)
+                                );
+                              }
+                            }}
+                          />
+                          <Label className="text-sm">{option}</Label>
+                        </div>
+                      ))}
                     </div>
+                  </div>
 
-                    <FormField
-                      control={form.control}
-                      name="notification_frequency"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Notification Frequency</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select frequency" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Instant">Instant</SelectItem>
-                              <SelectItem value="Daily">Daily</SelectItem>
-                              <SelectItem value="Weekly">Weekly</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="additional_opportunities"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Additional Collaboration Opportunities (Optional)</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="notification_frequency"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Notification Frequency</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <Textarea
-                              placeholder="Tell us about other collaboration types you're interested in..."
-                              {...field}
-                              onFocus={handleFocus}
-                            />
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select frequency" />
+                            </SelectTrigger>
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 flex gap-4">
-                    {step > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={prevStep}
-                        className="flex-1"
-                        disabled={isSubmitting}
-                      >
-                        Back
-                      </Button>
+                          <SelectContent>
+                            <SelectItem value="Instant">Instant</SelectItem>
+                            <SelectItem value="Daily">Daily</SelectItem>
+                            <SelectItem value="Weekly">Weekly</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    <Button
-                      type={step === 3 ? "submit" : "button"}
-                      onClick={step === 3 ? undefined : nextStep}
-                      className="flex-1"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Saving...
-                        </>
-                      ) : step === 3 ? (
-                        "Complete Profile"
-                      ) : (
-                        "Next"
-                      )}
-                    </Button>
-                  </div>
-                </form>
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="additional_opportunities"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Additional Collaboration Opportunities (Optional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Tell us about other collaboration types you're interested in..."
+                            {...field}
+                            onFocus={handleFocus}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               )}
             </form>
           </Form>
+          <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-4 flex gap-4">
+            {step > 1 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={prevStep}
+                className="flex-1"
+                disabled={isSubmitting}
+              >
+                Back
+              </Button>
+            )}
+            <Button
+              type={step === 3 ? "submit" : "button"}
+              onClick={step === 3 ? undefined : nextStep}
+              className="flex-1"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : step === 3 ? (
+                "Complete Profile"
+              ) : (
+                "Next"
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
