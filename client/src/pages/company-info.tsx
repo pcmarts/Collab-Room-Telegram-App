@@ -92,7 +92,7 @@ export default function CompanyInfoForm() {
         throw new Error('Please fill in all required fields');
       }
 
-      // In edit mode, submit directly to the API
+      // Use apiRequest which handles Telegram headers automatically
       const response = await apiRequest('POST', '/api/company', {
         company_name: formData.company_name,
         job_title: formData.job_title,
