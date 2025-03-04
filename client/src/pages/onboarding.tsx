@@ -16,21 +16,19 @@ export default function OnboardingForm() {
   // Check if we're in edit mode
   const isEditMode = window.location.search.includes('edit=true');
 
-  // Fetch existing data if in edit mode
+  // Fetch existing data if in edit mode or to check if user has already applied
   const { data: profileData } = useQuery<ProfileData>({
-    queryKey: ['/api/profile'],
-    enabled: isEditMode
+    queryKey: ['/api/profile']
   });
 
-  const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    linkedin_url: '',
-    email: ''
-  });
-
-  // Load saved data from API or session storage
+  // Check if user has already applied and redirect if necessary
   useEffect(() => {
+    if (!isEditMode && profileData?.user) {
+      // If the user has already applied, redirect them to application status
+      setLocation('/application-status');
+      return;
+    }
+
     if (isEditMode && profileData?.user) {
       setFormData({
         first_name: profileData.user.first_name,
@@ -45,6 +43,13 @@ export default function OnboardingForm() {
       }
     }
   }, [isEditMode, profileData]);
+
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    linkedin_url: '',
+    email: ''
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
