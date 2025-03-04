@@ -27,9 +27,8 @@ We'll notify you here once your application has been reviewed`;
 }
 
 // Command handlers
-bot.command("start", async (ctx) => {
-  const message = "👋 Welcome to CollabRoom!\n\nUse /status command to check your application status.";
-  await ctx.reply(message);
+bot.command("start", ctx => {
+  ctx.reply("👋 Welcome to CollabRoom!\n\nUse /status command to check your application status.");
 });
 
 bot.command("status", async (ctx) => {
