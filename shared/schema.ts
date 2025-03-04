@@ -124,6 +124,15 @@ export const companies = pgTable('companies', {
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
+// Update the insert schema to match
+export const insertCompanySchema = createInsertSchema(companies)
+  .extend({
+    logo_url: z.string().default(''),
+    has_token: z.boolean().default(false),
+    blockchain_networks: z.array(z.string()).default([]),
+    tags: z.array(z.string()).default([])
+  });
+
 // Collaboration preferences
 export const preferences = pgTable('preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -137,7 +146,6 @@ export const preferences = pgTable('preferences', {
 
 // Schema validation
 export const insertUserSchema = createInsertSchema(users);
-export const insertCompanySchema = createInsertSchema(companies);
 export const insertPreferencesSchema = createInsertSchema(preferences);
 
 // Types

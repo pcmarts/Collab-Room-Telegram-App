@@ -223,12 +223,21 @@ export default function CompanyInfoForm() {
       if (logoFile) {
         const formData = new FormData();
         formData.append('logo', logoFile);
-        const uploadResponse = await apiRequest('POST', '/api/upload-logo', formData);
-        const uploadData = await uploadResponse.json();
-        if (!uploadResponse.ok) {
-          throw new Error(uploadData.error || 'Failed to upload logo');
+
+        try {
+          const uploadResponse = await apiRequest('POST', '/api/upload-logo', formData);
+          const uploadData = await uploadResponse.json();
+
+          if (!uploadResponse.ok) {
+            throw new Error(uploadData.error || 'Failed to upload logo');
+          }
+
+          logo_url = uploadData.url;
+          console.log('Logo uploaded successfully:', logo_url);
+        } catch (error) {
+          console.error('Logo upload error:', error);
+          throw new Error('Failed to upload company logo');
         }
-        logo_url = uploadData.url;
       }
 
       const submitData = {
@@ -242,7 +251,7 @@ export default function CompanyInfoForm() {
         token_ticker: formData.has_token ? formData.token_ticker : null,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
         tags: formData.tags,
-        logo_url
+        logo_url: logo_url || ''  // Ensure we always send a string
       };
 
       console.log('Submitting data to API:', submitData);
