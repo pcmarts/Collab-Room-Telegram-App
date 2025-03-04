@@ -3,19 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { FUNDING_STAGES, BLOCKCHAIN_NETWORKS, COMPANY_TAG_CATEGORIES } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { FUNDING_STAGES, BLOCKCHAIN_NETWORKS } from "@shared/schema";
 
 export default function CompanyInfoForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   // Check if we're in edit mode
   const isEditMode = window.location.search.includes('edit=true');
@@ -35,7 +36,8 @@ export default function CompanyInfoForm() {
     funding_stage: 'Pre-seed',
     has_token: false,
     token_ticker: '$',
-    blockchain_networks: [] as string[]
+    blockchain_networks: [] as string[],
+    tags: [] as string[]
   });
 
   // Load saved data from API or session storage
@@ -50,7 +52,8 @@ export default function CompanyInfoForm() {
         funding_stage: profileData.company.funding_stage,
         has_token: profileData.company.has_token,
         token_ticker: profileData.company.token_ticker || '$',
-        blockchain_networks: profileData.company.blockchain_networks || []
+        blockchain_networks: profileData.company.blockchain_networks || [],
+        tags: profileData.company.tags || []
       });
     } else {
       const savedData = sessionStorage.getItem('companyFormData');
@@ -65,6 +68,21 @@ export default function CompanyInfoForm() {
     const newFormData = {
       ...formData,
       [name]: value
+    };
+    setFormData(newFormData);
+    if (!isEditMode) {
+      sessionStorage.setItem('companyFormData', JSON.stringify(newFormData));
+    }
+  };
+
+  const toggleTag = (tag: string) => {
+    const tags = formData.tags.includes(tag)
+      ? formData.tags.filter(t => t !== tag)
+      : [...formData.tags, tag];
+
+    const newFormData = {
+      ...formData,
+      tags
     };
     setFormData(newFormData);
     if (!isEditMode) {
@@ -87,6 +105,14 @@ export default function CompanyInfoForm() {
     }
   };
 
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
   const handleNext = () => {
     if (!formData.company_name || !formData.job_title || !formData.website || !formData.funding_stage) {
       toast({
@@ -102,6 +128,15 @@ export default function CompanyInfoForm() {
         variant: "destructive",
         title: "Error",
         description: "Please fill in token information"
+      });
+      return;
+    }
+
+    if (formData.tags.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select at least one company tag"
       });
       return;
     }
@@ -130,6 +165,10 @@ export default function CompanyInfoForm() {
         throw new Error('Please fill in token information');
       }
 
+      if (formData.tags.length === 0) {
+        throw new Error('Please select at least one company tag');
+      }
+
       // Use apiRequest which handles Telegram headers automatically
       const response = await apiRequest('POST', '/api/company', {
         company_name: formData.company_name,
@@ -140,7 +179,8 @@ export default function CompanyInfoForm() {
         funding_stage: formData.funding_stage,
         has_token: formData.has_token,
         token_ticker: formData.has_token ? formData.token_ticker : null,
-        blockchain_networks: formData.has_token ? formData.blockchain_networks : []
+        blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
+        tags: formData.tags
       });
 
       await response.json();
@@ -314,6 +354,47 @@ export default function CompanyInfoForm() {
               </div>
             </>
           )}
+
+          <div className="space-y-4 pt-4">
+            <Label className="text-lg">Company Tags</Label>
+            <p className="text-sm text-muted-foreground">
+              Select tags that best describe your company's focus areas
+            </p>
+
+            {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+              <div key={category} className="border rounded-lg overflow-hidden">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full flex justify-between items-center p-4"
+                  onClick={() => toggleCategory(category)}
+                >
+                  <span className="font-medium">{category}</span>
+                  {expandedCategories.includes(category) ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </Button>
+
+                {expandedCategories.includes(category) && (
+                  <div className="p-4 pt-0 grid grid-cols-1 gap-2">
+                    {tags.map(tag => (
+                      <Button
+                        key={tag}
+                        type="button"
+                        variant={formData.tags.includes(tag) ? "default" : "outline"}
+                        className="justify-start h-auto py-3 px-4"
+                        onClick={() => toggleTag(tag)}
+                      >
+                        <span className="text-left">{tag}</span>
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
 
           <Button
             type="submit"

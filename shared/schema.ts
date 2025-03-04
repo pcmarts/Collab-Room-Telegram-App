@@ -33,6 +33,58 @@ export const BLOCKCHAIN_NETWORKS = [
   "Other"
 ] as const;
 
+// Company Tags by Category
+export const COMPANY_TAG_CATEGORIES = {
+  "Core Blockchain Infrastructure": [
+    "L1 (Layer 1 Blockchains)",
+    "L2 & Scaling Solutions",
+    "Interoperability & Bridges"
+  ],
+  "Finance & Tokenization": [
+    "Stablecoins & Payments",
+    "Finance",
+    "Trading",
+    "Fundraising",
+    "RWA",
+    "Lending & Borrowing",
+    "Yield Farming & Staking"
+  ],
+  "Web3 Sectors & Use Cases": [
+    "Gaming",
+    "NFTs & Digital Collectibles",
+    "Metaverse",
+    "SocialFi",
+    "Music & Entertainment",
+    "Gambling & Betting",
+    "MEMES & Culture Tokens"
+  ],
+  "Emerging & Niche Web3 Technologies": [
+    "AI",
+    "AI Agents",
+    "DeFAI",
+    "DePIN",
+    "Decentralized Compute & Storage",
+    "Data & Oracles"
+  ],
+  "Governance, Security & Identity": [
+    "DAO",
+    "Identity & Privacy",
+    "Security & Auditing"
+  ],
+  "Marketing & Growth": [
+    "Marketing & Growth Platforms"
+  ],
+  "Infrastructure & Developer Tools": [
+    "Smart Contract Development Platforms",
+    "No-Code/Low-Code Web3 Tools",
+    "Blockchain Analytics & Insights",
+    "Indexing & Querying"
+  ]
+} as const;
+
+// Create a flat array of all tags for validation
+export const ALL_COMPANY_TAGS = Object.values(COMPANY_TAG_CATEGORIES).flat();
+
 export const COMPANY_CATEGORIES = [
   "Crypto", "NFT", "DeFi", "Web3 Gaming", "Memes & Culture", "Bitcoin",
   "Solana", "Ethereum", "Creator Economy", "Fundraising", "AI & Web3"
@@ -67,6 +119,7 @@ export const companies = pgTable('companies', {
   has_token: boolean('has_token').default(false),
   token_ticker: text('token_ticker'),
   blockchain_networks: text('blockchain_networks').array(),
+  tags: text('tags').array(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
