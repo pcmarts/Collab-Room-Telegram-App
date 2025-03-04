@@ -47,7 +47,6 @@ async function handleStart(msg: TelegramBot.Message) {
   console.log('Message:', JSON.stringify(msg, null, 2));
 
   try {
-    // Check if user exists in database
     if (!telegramId) {
       throw new Error('No Telegram ID found in message');
     }
@@ -56,44 +55,19 @@ async function handleStart(msg: TelegramBot.Message) {
       .from(users)
       .where(eq(users.telegram_id, telegramId));
 
-    const keyboard = {
-      inline_keyboard: [[
-        existingUser 
-          ? {
-              text: existingUser.is_approved 
-                ? "Open Dashboard" 
-                : "Check Application Status",
-              ...(existingUser.is_approved 
-                ? { web_app: { url: `${WEBAPP_URL}/dashboard` } }
-                : { callback_data: 'check_status' })
-            }
-          : {
-              text: "Apply to Join",
-              web_app: { url: `${WEBAPP_URL}/onboarding` }
-            }
-      ]]
-    };
-
-    console.log('Sending message with keyboard:', JSON.stringify(keyboard, null, 2));
-
     const welcomeMessage = existingUser
       ? existingUser.is_approved
-        ? `👋 Welcome back to CollabRoom!\n\nYour application has been approved. Click below to access your dashboard.`
-        : `👋 Welcome back to CollabRoom!\n\nYour application is currently under review. Click below to check your application status or use /status command anytime.`
-      : '👋 Welcome to CollabRoom!\n\nWe\'re excited that you\'re interested in joining our community of innovative collaborators. Click below to start your application.';
+        ? `👋 Welcome back to CollabRoom!\n\nYour application has been approved. Use /status to check your status.`
+        : `👋 Welcome back to CollabRoom!\n\nYour application is currently under review. Use /status command to check your application status.`
+      : '👋 Welcome to CollabRoom!\n\nUse /status to check your application status.';
 
-    await bot.sendMessage(
-      chatId,
-      welcomeMessage,
-      { reply_markup: keyboard }
-    );
-
+    await bot.sendMessage(chatId, welcomeMessage);
     console.log('Message sent successfully');
+
   } catch (error) {
     console.error('=== Error in handleStart ===');
     console.error(error);
 
-    // Try to send error message to user
     try {
       await bot.sendMessage(
         chatId,
@@ -105,7 +79,7 @@ async function handleStart(msg: TelegramBot.Message) {
   }
 }
 
-// Handle /status command and status button
+// Handle /status command
 async function handleStatus(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
   const telegramId = msg.from?.id.toString();
@@ -119,7 +93,6 @@ async function handleStatus(msg: TelegramBot.Message) {
       throw new Error('No Telegram ID found in message');
     }
 
-    // Query for user with exact telegram_id match
     const [user] = await db.select()
       .from(users)
       .where(eq(users.telegram_id, telegramId));
@@ -129,15 +102,7 @@ async function handleStatus(msg: TelegramBot.Message) {
     if (!user) {
       await bot.sendMessage(
         chatId,
-        'No application found. Click "Apply to Join" to start your application.',
-        {
-          reply_markup: {
-            inline_keyboard: [[{
-              text: "Apply to Join",
-              web_app: { url: `${WEBAPP_URL}/onboarding` }
-            }]]
-          }
-        }
+        'No application found. Use /start to get started.'
       );
       return;
     }
@@ -148,19 +113,7 @@ async function handleStatus(msg: TelegramBot.Message) {
       ? `✅ Your application has been approved!\n\nYou can now access the dashboard to start collaborating.`
       : `📝 Application Status: Under Review\n\nApplication Details:\n• Name: ${user.first_name} ${user.last_name}\n• Submitted: ${applicationDate}\n\nWe'll notify you here once your application has been reviewed.`;
 
-    const keyboard = user.is_approved
-      ? {
-          inline_keyboard: [[{
-            text: "Open Dashboard",
-            web_app: { url: `${WEBAPP_URL}/dashboard` }
-          }]]
-        }
-      : undefined;
-
-    await bot.sendMessage(chatId, statusMessage, { 
-      reply_markup: keyboard,
-      parse_mode: 'HTML'
-    });
+    await bot.sendMessage(chatId, statusMessage, { parse_mode: 'HTML' });
 
   } catch (error) {
     console.error('Error handling status check:', error);
@@ -171,18 +124,6 @@ async function handleStatus(msg: TelegramBot.Message) {
     );
   }
 }
-
-// Handle callback queries
-bot.on('callback_query', async (callbackQuery) => {
-  if (!callbackQuery.message) return;
-
-  if (callbackQuery.data === 'check_status') {
-    await handleStatus(callbackQuery.message);
-  }
-
-  // Answer callback query to remove loading state
-  await bot.answerCallbackQuery(callbackQuery.id);
-});
 
 // Set up commands
 console.log('Setting up bot commands...');
