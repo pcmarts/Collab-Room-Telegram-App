@@ -120,7 +120,7 @@ export async function registerRoutes(app: Express) {
     try {
       const { company_name, job_title, website, twitter_handle, linkedin_url, funding_stage, has_token, token_ticker, blockchain_networks } = req.body;
 
-      if (!company_name || !job_title || !website) {
+      if (!company_name || !job_title || !website || !funding_stage) {
         console.error('Missing required fields');
         return res.status(400).json({ error: 'Missing required fields' });
       }
@@ -161,21 +161,25 @@ export async function registerRoutes(app: Express) {
 
         let company;
 
+        const companyData = {
+          name: company_name,
+          job_title,
+          website,
+          twitter_handle,
+          linkedin_url,
+          funding_stage,
+          has_token: Boolean(has_token),
+          token_ticker: has_token ? token_ticker : null,
+          blockchain_networks: has_token ? blockchain_networks : []
+        };
+
+        console.log('Company data to save:', companyData);
+
         if (existingCompany.length > 0) {
           // Update existing company
           console.log('Updating existing company:', existingCompany[0]);
           [company] = await db.update(companies)
-            .set({
-              name: company_name,
-              job_title,
-              website,
-              twitter_handle,
-              linkedin_url,
-              funding_stage,
-              has_token,
-              token_ticker,
-              blockchain_networks
-            })
+            .set(companyData)
             .where(eq(companies.user_id, user.id))
             .returning();
 
@@ -190,30 +194,14 @@ export async function registerRoutes(app: Express) {
         // Create new company
         console.log('Creating new company with data:', {
           user_id: user.id,
-          name: company_name,
-          job_title,
-          website,
-          twitter_handle,
-          linkedin_url,
-          funding_stage,
-          has_token,
-          token_ticker,
-          blockchain_networks
+          ...companyData
         });
 
         [company] = await db
           .insert(companies)
           .values({
             user_id: user.id,
-            name: company_name,
-            job_title,
-            website,
-            twitter_handle,
-            linkedin_url,
-            funding_stage,
-            has_token,
-            token_ticker,
-            blockchain_networks
+            ...companyData
           })
           .returning();
 
