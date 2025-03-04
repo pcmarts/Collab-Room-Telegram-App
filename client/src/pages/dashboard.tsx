@@ -37,6 +37,12 @@ export default function Dashboard() {
     );
   }
 
+  // Redirect to application status if user is not approved
+  if (!profile.user.is_approved) {
+    setLocation('/application-status');
+    return null;
+  }
+
   const { user } = profile;
 
   // Close Telegram WebApp loading when dashboard is ready

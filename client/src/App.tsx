@@ -10,6 +10,7 @@ import OnboardingForm from "@/pages/onboarding";
 import CompanyInfoForm from "@/pages/company-info";
 import CollabPreferencesForm from "@/pages/collab-preferences";
 import MyCollabsForm from "@/pages/my-collabs";
+import ApplicationStatus from "@/pages/application-status";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 
@@ -19,7 +20,8 @@ function Router() {
     window.location.pathname === '/collab-preferences';
   const isProfileRoute = window.location.pathname === '/profile-overview' ||
     window.location.pathname === '/preferences' ||
-    window.location.pathname === '/my-collabs';
+    window.location.pathname === '/my-collabs' ||
+    window.location.pathname === '/application-status';
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,6 +38,7 @@ function Router() {
           <Route path="/company-info" component={CompanyInfoForm} />
           <Route path="/collab-preferences" component={CollabPreferencesForm} />
           <Route path="/my-collabs" component={MyCollabsForm} />
+          <Route path="/application-status" component={ApplicationStatus} />
           <Route component={NotFound} />
         </Switch>
       </div>

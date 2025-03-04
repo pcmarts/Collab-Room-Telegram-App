@@ -121,12 +121,12 @@ export default function CollabPreferencesForm() {
         sessionStorage.removeItem('collabsFormData');
 
         toast({
-          title: "Success!",
-          description: "Your profile has been created successfully",
+          title: "Application Submitted!",
+          description: "We'll review your application and notify you through Telegram.",
           duration: 2000
         });
 
-        setLocation('/dashboard');
+        setLocation('/application-status');
       }
     } catch (error) {
       console.error('Failed to submit:', error);
