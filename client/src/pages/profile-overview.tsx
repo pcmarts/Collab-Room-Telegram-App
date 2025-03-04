@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pencil, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import type { User, Company, Preferences } from '@shared/schema';
@@ -40,7 +40,7 @@ export default function ProfileOverview() {
     );
   }
 
-  const { user, company, preferences } = profile;
+  const { user, company } = profile;
 
   return (
     <div className="min-h-[100svh] bg-background">
@@ -143,55 +143,6 @@ export default function ProfileOverview() {
                 )}
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Collaboration Preferences */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Collaboration Preferences</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setLocation('/collab-preferences?edit=true')}
-                className="h-8 px-3"
-              >
-                Edit
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {preferences && preferences.collabs_to_discover && preferences.collabs_to_discover.length > 0 && (
-              <div>
-                <h3 className="font-medium mb-2">Looking to Discover</h3>
-                <div className="flex flex-wrap gap-2">
-                  {preferences.collabs_to_discover.map(collab => (
-                    <span key={collab} className="px-2 py-1 bg-primary/10 rounded-full text-sm">
-                      {collab}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {preferences && preferences.collabs_to_host && preferences.collabs_to_host.length > 0 && (
-              <div>
-                <h3 className="font-medium mb-2">Ready to Host</h3>
-                <div className="flex flex-wrap gap-2">
-                  {preferences.collabs_to_host.map(collab => (
-                    <span key={collab} className="px-2 py-1 bg-primary/10 rounded-full text-sm">
-                      {collab}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {preferences && preferences.notification_frequency && (
-              <div>
-                <h3 className="font-medium">Notification Frequency</h3>
-                <p className="capitalize">{preferences.notification_frequency}</p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

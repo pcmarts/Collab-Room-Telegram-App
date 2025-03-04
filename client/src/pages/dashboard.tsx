@@ -37,7 +37,7 @@ export default function Dashboard() {
     );
   }
 
-  const { user, company, preferences } = profile;
+  const { user, company } = profile;
 
   // Close Telegram WebApp loading when dashboard is ready
   if (window.Telegram?.WebApp) {
@@ -66,7 +66,7 @@ export default function Dashboard() {
           <Button
             variant="outline"
             className="h-20 flex-col"
-            onClick={() => setLocation('/preferences')}
+            onClick={() => setLocation('/collab-preferences?edit=true')}
           >
             <Settings className="h-5 w-5 mb-1.5" />
             <span className="text-sm">Preferences</span>
@@ -117,57 +117,6 @@ export default function Dashboard() {
               <p><strong>Role:</strong> {company?.job_title}</p>
               <p><strong>Website:</strong> {company?.website}</p>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Collaboration Preferences Quick View */}
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-base">Collaboration Preferences</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-3"
-                onClick={() => setLocation('/preferences?edit=true')}
-              >
-                Edit
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 pt-2">
-            {preferences ? (
-              <div className="space-y-4 text-sm">
-                <div>
-                  <h3 className="font-medium mb-2">Looking to Discover</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {preferences.collabs_to_discover?.map(collab => (
-                      <span key={collab} className="px-2 py-0.5 bg-primary/10 rounded-full text-xs">
-                        {collab}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-2">Ready to Host</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {preferences.collabs_to_host?.map(collab => (
-                      <span key={collab} className="px-2 py-0.5 bg-primary/10 rounded-full text-xs">
-                        {collab}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                {preferences.notification_frequency && (
-                  <div>
-                    <h3 className="font-medium">Notification Frequency</h3>
-                    <p>{preferences.notification_frequency}</p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No preferences set</p>
-            )}
           </CardContent>
         </Card>
       </div>
