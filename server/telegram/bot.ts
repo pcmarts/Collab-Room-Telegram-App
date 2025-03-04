@@ -45,15 +45,31 @@ bot.command("start", async (ctx) => {
 });
 
 bot.command("status", async (ctx) => {
+  console.log('=== Handling /status command ===');
+  console.log('Chat ID:', ctx.chat.id);
+  console.log('Telegram ID:', ctx.from.id);
   const status = await getApplicationStatus(ctx.from.id.toString());
+  console.log('User found:', await storage.getUserByTelegramId(ctx.from.id.toString()));
   await ctx.reply(status);
 });
 
 // Handle callback queries
 bot.callbackQuery("check_status", async (ctx) => {
-  const status = await getApplicationStatus(ctx.from.id.toString());
-  await ctx.answerCallbackQuery();
-  await ctx.reply(status);
+  console.log('=== Handling check_status callback ===');
+  console.log('Chat ID:', ctx.chat?.id);
+  console.log('From ID:', ctx.from.id);
+
+  try {
+    const status = await getApplicationStatus(ctx.from.id.toString());
+    await ctx.answerCallbackQuery(); // Acknowledge the callback query
+    await ctx.reply(status); // Send the status message
+  } catch (error) {
+    console.error('Error handling check_status callback:', error);
+    await ctx.answerCallbackQuery({
+      text: "An error occurred while checking your application status.",
+      show_alert: true
+    });
+  }
 });
 
 export { bot };
