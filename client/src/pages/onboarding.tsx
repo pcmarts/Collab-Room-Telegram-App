@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
@@ -53,92 +53,98 @@ export default function OnboardingForm() {
       [name]: value
     };
     setFormData(newFormData);
-    if (!isEditMode) {
-      sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
+    sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
+  };
+
+  const handleNext = () => {
+    if (!formData.first_name || !formData.last_name) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please fill in all required fields",
+        duration: 2000
+      });
+      return;
     }
+
+    // Store the form data in session storage and proceed to next step
+    sessionStorage.setItem('userFormData', JSON.stringify(formData));
+    setLocation('/company-info');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('============ DEBUG: Form Submit Started ============');
 
-    try {
-      setIsSubmitting(true);
-      console.log('Form data:', formData);
+    if (isEditMode) {
+      try {
+        setIsSubmitting(true);
 
-      if (!formData.first_name || !formData.last_name) {
-        throw new Error('Please fill in all required fields');
-      }
+        if (!formData.first_name || !formData.last_name) {
+          throw new Error('Please fill in all required fields');
+        }
 
-      const submitData = {
-        ...formData,
-        handle: window.Telegram?.WebApp?.initData?.user?.username || '',
-        initData: window.Telegram?.WebApp?.initData || ''
-      };
+        const submitData = {
+          ...formData,
+          handle: window.Telegram?.WebApp?.initData?.user?.username || '',
+          initData: window.Telegram?.WebApp?.initData || ''
+        };
 
-      console.log('Submitting data:', submitData);
+        const response = await fetch('/api/onboarding', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(submitData)
+        });
 
-      const response = await fetch('/api/onboarding', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submitData)
-      });
+        if (!response.ok) {
+          throw new Error('Failed to update profile');
+        }
 
-      console.log('Response status:', response.status);
-      const responseData = await response.json();
-      console.log('Response data:', responseData);
+        toast({
+          title: "Success!",
+          description: "Personal information updated successfully",
+          duration: 2000
+        });
 
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to submit form');
-      }
-
-      toast({
-        title: "Success!",
-        description: responseData.message || "Personal information saved successfully",
-        duration: 2000, // 2 seconds
-      });
-
-      // Navigate to next step or back to dashboard
-      if (isEditMode) {
         setLocation('/dashboard');
-      } else {
-        setLocation('/company-info');
-      }
 
-    } catch (error) {
-      console.error('Form submission error:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to submit form"
-      });
-    } finally {
-      setIsSubmitting(false);
-      console.log('============ DEBUG: Form Submit Ended ============');
+      } catch (error) {
+        console.error('Form submission error:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to update profile"
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      handleNext();
     }
   };
 
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
-        <div className="flex justify-between mb-8">
-          {isEditMode && (
+        {isEditMode ? (
+          <div className="flex justify-between mb-8">
             <Button
               variant="ghost"
               onClick={() => setLocation('/dashboard')}
               className="flex items-center"
             >
+              <ArrowLeft className="h-4 w-4 mr-2" />
               Cancel
             </Button>
-          )}
-          <div className="flex items-center gap-2">
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2 mb-8">
             <div className="w-3 h-3 rounded-full bg-primary"></div>
             <div className="w-3 h-3 rounded-full bg-primary/50"></div>
             <div className="w-3 h-3 rounded-full bg-primary/50"></div>
           </div>
-        </div>
+        )}
 
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold">
@@ -202,10 +208,10 @@ export default function OnboardingForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isEditMode ? 'Saving...' : 'Next'}
+                Updating...
               </>
             ) : (
-              isEditMode ? "Save Changes" : "Continue to Company Info"
+              isEditMode ? "Submit" : "Continue to Company Info"
             )}
           </Button>
         </form>

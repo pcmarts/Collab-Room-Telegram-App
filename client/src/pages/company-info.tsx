@@ -123,7 +123,8 @@ export default function CompanyInfoForm() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please fill in all required fields"
+        description: "Please fill in all required fields",
+        duration: 2000
       });
       return;
     }
@@ -132,7 +133,8 @@ export default function CompanyInfoForm() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please fill in token information"
+        description: "Please fill in token information",
+        duration: 2000
       });
       return;
     }
@@ -141,88 +143,68 @@ export default function CompanyInfoForm() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please select at least one company tag"
+        description: "Please select at least one company tag",
+        duration: 2000
       });
       return;
     }
 
     // Store the form data in session storage
-    sessionStorage.setItem('companyFormData', JSON.stringify({
-      ...formData,
-      twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', '')
-    }));
+    sessionStorage.setItem('companyFormData', JSON.stringify(formData));
 
     // Navigate to next step
-    setLocation('/collab-preferences');
+    setLocation('/my-collabs');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('============ DEBUG: Company Form Submit Started ============');
-    console.log('Current form data:', formData);
 
-    try {
-      setIsSubmitting(true);
+    if (isEditMode) {
+      try {
+        setIsSubmitting(true);
 
-      if (!formData.company_name || !formData.job_title || !formData.website || !formData.funding_stage) {
-        throw new Error('Please fill in all required fields');
+        const submitData = {
+          company_name: formData.company_name,
+          job_title: formData.job_title,
+          website: formData.website,
+          twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', ''),
+          linkedin_url: formData.linkedin_url,
+          funding_stage: formData.funding_stage,
+          has_token: formData.has_token,
+          token_ticker: formData.has_token ? formData.token_ticker : null,
+          blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
+          tags: formData.tags
+        };
+
+        const response = await apiRequest('POST', '/api/company', submitData);
+        const responseData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(responseData.error || 'Failed to update company information');
+        }
+
+        await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+
+        toast({
+          title: "Success!",
+          description: "Company information updated successfully",
+          duration: 2000
+        });
+
+        setLocation('/dashboard');
+
+      } catch (error) {
+        console.error('Failed to update company info:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to update company information"
+        });
+      } finally {
+        setIsSubmitting(false);
       }
-
-      if (formData.has_token && (!formData.token_ticker || formData.blockchain_networks.length === 0)) {
-        throw new Error('Please fill in token information');
-      }
-
-      if (formData.tags.length === 0) {
-        throw new Error('Please select at least one company tag');
-      }
-
-      const submitData = {
-        company_name: formData.company_name,
-        job_title: formData.job_title,
-        website: formData.website,
-        twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', ''),
-        linkedin_url: formData.linkedin_url,
-        funding_stage: formData.funding_stage,
-        has_token: formData.has_token,
-        token_ticker: formData.has_token ? formData.token_ticker : null,
-        blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
-        tags: formData.tags
-      };
-
-      console.log('Submitting data to API:', submitData);
-
-      const response = await apiRequest('POST', '/api/company', submitData);
-      const responseData = await response.json();
-
-      console.log('API Response:', responseData);
-
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to update company information');
-      }
-
-      // Invalidate the profile query to force a refresh
-      await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-
-      toast({
-        title: "Success!",
-        description: "Company information updated successfully",
-        duration: 2000, // 2 seconds
-      });
-
-      // Wait for toast to show before navigation
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setLocation('/dashboard');
-
-    } catch (error) {
-      console.error('Failed to update company info:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update company information"
-      });
-    } finally {
-      setIsSubmitting(false);
-      console.log('============ DEBUG: Company Form Submit Ended ============');
+    } else {
+      handleNext();
     }
   };
 
@@ -421,16 +403,16 @@ export default function CompanyInfoForm() {
           <Button
             type="submit"
             className="w-full mt-6"
-            onClick={isEditMode ? handleSubmit : handleNext}
+            onClick={handleSubmit}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isEditMode ? 'Saving...' : 'Next'}
+                {isEditMode ? 'Submitting...' : 'Submitting...'}
               </>
             ) : (
-              isEditMode ? "Save Changes" : "Continue to Preferences"
+              isEditMode ? "Submit" : "Continue to My Collabs"
             )}
           </Button>
         </form>

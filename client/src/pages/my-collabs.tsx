@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { COLLAB_TYPES } from "@shared/schema";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
@@ -13,16 +13,14 @@ export default function MyCollabsForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
-  const queryClient = useQueryClient();
 
   // Check if we're in edit mode
   const isEditMode = window.location.search.includes('edit=true');
 
   // Fetch existing data if in edit mode
-  const { data: profileData, isLoading } = useQuery<ProfileData>({
+  const { data: profileData } = useQuery<ProfileData>({
     queryKey: ['/api/profile'],
-    enabled: isEditMode,
-    staleTime: 0 // Always fetch fresh data
+    enabled: isEditMode
   });
 
   const [formData, setFormData] = useState({
@@ -31,12 +29,15 @@ export default function MyCollabsForm() {
 
   // Load existing preferences when data is fetched
   useEffect(() => {
-    console.log('Loading preferences data, isEditMode:', isEditMode, 'profileData:', profileData);
     if (isEditMode && profileData?.preferences) {
-      console.log('Setting form data from profile:', profileData.preferences);
       setFormData({
         collabs_to_host: profileData.preferences.collabs_to_host || []
       });
+    } else {
+      const savedData = sessionStorage.getItem('collabsFormData');
+      if (savedData) {
+        setFormData(JSON.parse(savedData));
+      }
     }
   }, [isEditMode, profileData]);
 
@@ -46,74 +47,82 @@ export default function MyCollabsForm() {
       ? current.filter(item => item !== collab)
       : [...current, collab];
 
-    setFormData(prev => ({
-      ...prev,
+    const newFormData = {
+      ...formData,
       collabs_to_host: updated
-    }));
+    };
+    setFormData(newFormData);
+    if (!isEditMode) {
+      sessionStorage.setItem('collabsFormData', JSON.stringify(newFormData));
+    }
+  };
+
+  const handleNext = () => {
+    if (formData.collabs_to_host.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select at least one collaboration type to host",
+        duration: 2000
+      });
+      return;
+    }
+
+    // Store the form data in session storage
+    sessionStorage.setItem('collabsFormData', JSON.stringify(formData));
+
+    // Navigate to next step
+    setLocation('/collab-preferences');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('============ DEBUG: My Collabs Form Submit Started ============');
-    console.log('Current form data:', formData);
 
-    try {
-      setIsSubmitting(true);
+    if (isEditMode) {
+      try {
+        setIsSubmitting(true);
 
-      if (formData.collabs_to_host.length === 0) {
-        throw new Error('Please select at least one collaboration type to host');
+        const response = await apiRequest('POST', '/api/preferences', {
+          ...profileData?.preferences,
+          collabs_to_host: formData.collabs_to_host
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update collaborations');
+        }
+
+        toast({
+          title: "Success!",
+          description: "Your collaboration offerings have been updated",
+          duration: 2000
+        });
+
+        setLocation('/dashboard');
+
+      } catch (error) {
+        console.error('Failed to update my collabs:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to update collaborations"
+        });
+      } finally {
+        setIsSubmitting(false);
       }
-
-      console.log('Submitting to API:', formData);
-
-      const response = await apiRequest('POST', '/api/preferences', {
-        ...profileData?.preferences,
-        collabs_to_host: formData.collabs_to_host
-      });
-      const responseData = await response.json();
-
-      console.log('API Response:', responseData);
-
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to update collaborations');
-      }
-
-      // Invalidate the profile query to force a refresh
-      await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-
-      toast({
-        title: "Success!",
-        description: "Your collaboration offerings have been updated",
-        duration: 2000, // 2 seconds
-      });
-
-      // Wait for toast to show before navigation
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setLocation('/dashboard');
-
-    } catch (error) {
-      console.error('Failed to update my collabs:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update collaborations"
-      });
-    } finally {
-      setIsSubmitting(false);
-      console.log('============ DEBUG: My Collabs Form Submit Ended ============');
+    } else {
+      handleNext();
     }
   };
 
   return (
     <div className="min-h-[100svh] bg-background">
-      {/* Sticky Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
             className="flex items-center -ml-3"
-            onClick={() => setLocation('/dashboard')}
+            onClick={() => setLocation(isEditMode ? '/dashboard' : '/company-info')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
@@ -124,6 +133,14 @@ export default function MyCollabsForm() {
       </div>
 
       <div className="p-4 space-y-6">
+        {!isEditMode && (
+          <div className="flex items-center gap-2 justify-center mb-4">
+            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+            <div className="w-3 h-3 rounded-full bg-primary"></div>
+            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-8">
           <div>
             <Label className="text-lg">Collaborations to Host</Label>
@@ -153,10 +170,10 @@ export default function MyCollabsForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
+                {isEditMode ? 'Submitting...' : 'Saving...'}
               </>
             ) : (
-              "Submit"
+              isEditMode ? "Submit" : "Continue to Discovery"
             )}
           </Button>
         </form>
