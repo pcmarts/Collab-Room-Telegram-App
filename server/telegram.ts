@@ -55,7 +55,6 @@ async function handleStart(msg: TelegramBot.Message) {
       .from(users)
       .where(eq(users.telegram_id, telegramId));
 
-    // Prepare keyboard based on user status
     let keyboard;
     let welcomeMessage;
 
@@ -72,11 +71,11 @@ async function handleStart(msg: TelegramBot.Message) {
       // Approved user - show Dashboard button
       keyboard = {
         inline_keyboard: [[{
-          text: "Open Dashboard",
+          text: "View Dashboard",
           web_app: { url: `${WEBAPP_URL}/dashboard` }
         }]]
       };
-      welcomeMessage = `👋 Welcome back to CollabRoom!\n\nYour application has been approved. Use the button below to access your dashboard.`;
+      welcomeMessage = `👋 Welcome back to CollabRoom!\n\nYou're all set! Click below to access your dashboard and start collaborating.`;
     } else {
       // Pending user - no buttons, just status info
       keyboard = undefined;
@@ -143,10 +142,10 @@ async function handleStatus(msg: TelegramBot.Message) {
     let keyboard;
 
     if (user.is_approved) {
-      statusMessage = `✅ Your application has been approved!\n\nYou can now access the dashboard to start collaborating.`;
+      statusMessage = `✅ Your application has been approved!\n\nYou can now access your dashboard and start collaborating.`;
       keyboard = {
         inline_keyboard: [[{
-          text: "Open Dashboard",
+          text: "View Dashboard",
           web_app: { url: `${WEBAPP_URL}/dashboard` }
         }]]
       };
