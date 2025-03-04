@@ -55,13 +55,35 @@ async function handleStart(msg: TelegramBot.Message) {
       .from(users)
       .where(eq(users.telegram_id, telegramId));
 
-    const welcomeMessage = existingUser
-      ? existingUser.is_approved
-        ? `👋 Welcome back to CollabRoom!\n\nYour application has been approved. Use /status to check your status.`
-        : `👋 Welcome back to CollabRoom!\n\nYour application is currently under review. Use /status command to check your application status.`
-      : '👋 Welcome to CollabRoom!\n\nUse /status to check your application status.';
+    // Prepare keyboard based on user status
+    let keyboard;
+    let welcomeMessage;
 
-    await bot.sendMessage(chatId, welcomeMessage);
+    if (!existingUser) {
+      // New user - show Apply button
+      keyboard = {
+        inline_keyboard: [[{
+          text: "Apply to Join",
+          web_app: { url: `${WEBAPP_URL}/onboarding` }
+        }]]
+      };
+      welcomeMessage = '👋 Welcome to CollabRoom!\n\nWe\'re excited that you\'re interested in joining our community of innovative collaborators. Click below to start your application.';
+    } else if (existingUser.is_approved) {
+      // Approved user - show Dashboard button
+      keyboard = {
+        inline_keyboard: [[{
+          text: "Open Dashboard",
+          web_app: { url: `${WEBAPP_URL}/dashboard` }
+        }]]
+      };
+      welcomeMessage = `👋 Welcome back to CollabRoom!\n\nYour application has been approved. Use the button below to access your dashboard.`;
+    } else {
+      // Pending user - no buttons, just status info
+      keyboard = undefined;
+      welcomeMessage = `👋 Welcome back to CollabRoom!\n\nYour application is currently under review. Use /status to check your application status.`;
+    }
+
+    await bot.sendMessage(chatId, welcomeMessage, keyboard ? { reply_markup: keyboard } : undefined);
     console.log('Message sent successfully');
 
   } catch (error) {
@@ -100,20 +122,43 @@ async function handleStatus(msg: TelegramBot.Message) {
     console.log('User found:', user);
 
     if (!user) {
+      // For users without applications, show the Apply button
+      const keyboard = {
+        inline_keyboard: [[{
+          text: "Apply to Join",
+          web_app: { url: `${WEBAPP_URL}/onboarding` }
+        }]]
+      };
       await bot.sendMessage(
         chatId,
-        'No application found. Use /start to get started.'
+        'No application found. Click below to start your application.',
+        { reply_markup: keyboard }
       );
       return;
     }
 
     const applicationDate = format(new Date(user.applied_at), 'MMMM d, yyyy');
 
-    const statusMessage = user.is_approved
-      ? `✅ Your application has been approved!\n\nYou can now access the dashboard to start collaborating.`
-      : `📝 Application Status: Under Review\n\nApplication Details:\n• Name: ${user.first_name} ${user.last_name}\n• Submitted: ${applicationDate}\n\nWe'll notify you here once your application has been reviewed.`;
+    let statusMessage;
+    let keyboard;
 
-    await bot.sendMessage(chatId, statusMessage, { parse_mode: 'HTML' });
+    if (user.is_approved) {
+      statusMessage = `✅ Your application has been approved!\n\nYou can now access the dashboard to start collaborating.`;
+      keyboard = {
+        inline_keyboard: [[{
+          text: "Open Dashboard",
+          web_app: { url: `${WEBAPP_URL}/dashboard` }
+        }]]
+      };
+    } else {
+      statusMessage = `📝 Application Status: Under Review\n\nApplication Details:\n• Name: ${user.first_name} ${user.last_name}\n• Submitted: ${applicationDate}\n\nWe'll notify you here once your application has been reviewed.`;
+      keyboard = undefined;
+    }
+
+    await bot.sendMessage(chatId, statusMessage, { 
+      parse_mode: 'HTML',
+      reply_markup: keyboard
+    });
 
   } catch (error) {
     console.error('Error handling status check:', error);
