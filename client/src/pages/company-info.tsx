@@ -12,6 +12,7 @@ import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ImageCropModal } from '@/components/ImageCropModal';
 
 export default function CompanyInfoForm() {
   const { toast } = useToast();
@@ -21,6 +22,8 @@ export default function CompanyInfoForm() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   const queryClient = useQueryClient();
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [tempImageSrc, setTempImageSrc] = useState<string>('');
 
   // Check if we're in edit mode
   const isEditMode = window.location.search.includes('edit=true');
@@ -88,13 +91,23 @@ export default function CompanyInfoForm() {
         return;
       }
 
-      setLogoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
+        setTempImageSrc(reader.result as string);
+        setIsCropModalOpen(true);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCropComplete = async (croppedImage: string) => {
+    setLogoPreview(croppedImage);
+
+    // Convert base64/URL to file
+    const response = await fetch(croppedImage);
+    const blob = await response.blob();
+    const file = new File([blob], 'logo.jpg', { type: 'image/jpeg' });
+    setLogoFile(file);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -517,6 +530,12 @@ export default function CompanyInfoForm() {
           </Button>
         </form>
       </div>
+      <ImageCropModal
+        open={isCropModalOpen}
+        onClose={() => setIsCropModalOpen(false)}
+        imageSrc={tempImageSrc}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 }
