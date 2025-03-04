@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 
@@ -60,7 +61,7 @@ export default function CompanyInfoForm() {
     }
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (!formData.company_name || !formData.job_title || !formData.website) {
       toast({
         variant: "destructive",
@@ -81,6 +82,46 @@ export default function CompanyInfoForm() {
     setLocation('/collab-preferences');
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      setIsSubmitting(true);
+
+      if (!formData.company_name || !formData.job_title || !formData.website) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      // In edit mode, submit directly to the API
+      const response = await apiRequest('POST', '/api/company', {
+        company_name: formData.company_name,
+        job_title: formData.job_title,
+        website: formData.website,
+        twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', ''),
+        linkedin_url: formData.linkedin_url
+      });
+
+      await response.json();
+
+      toast({
+        title: "Success!",
+        description: "Company information updated successfully"
+      });
+
+      setLocation('/profile-overview');
+
+    } catch (error) {
+      console.error('Failed to update company info:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update company information"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleBack = () => {
     if (isEditMode) {
       setLocation('/profile-overview');
@@ -97,11 +138,13 @@ export default function CompanyInfoForm() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             {isEditMode ? 'Cancel' : 'Back'}
           </Button>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-            <div className="w-3 h-3 rounded-full bg-primary"></div>
-            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          </div>
+          {!isEditMode && (
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+              <div className="w-3 h-3 rounded-full bg-primary"></div>
+              <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+            </div>
+          )}
         </div>
 
         <div className="text-center mb-8">
