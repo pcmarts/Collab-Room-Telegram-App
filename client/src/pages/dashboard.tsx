@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
 import { User as UserIcon, Settings, Users, BookOpen, Building } from 'lucide-react';
 import type { User, Company, Preferences } from '@shared/schema';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface ProfileData {
   user: User;
@@ -123,11 +124,14 @@ export default function Dashboard() {
             <div className="space-y-4">
               {company?.logo_url && (
                 <div className="flex justify-center">
-                  <img
-                    src={company.logo_url}
-                    alt={`${company.name} logo`}
-                    className="w-32 h-32 object-contain rounded-lg"
-                  />
+                  <Avatar className="w-32 h-32">
+                    <AvatarImage 
+                      src={company.logo_url} 
+                      alt={`${company.name} logo`}
+                      className="object-cover"
+                    />
+                    <AvatarFallback>{company.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
                 </div>
               )}
               <div className="space-y-2 text-sm">

@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function CompanyInfoForm() {
   const { toast } = useToast();
@@ -301,12 +302,11 @@ export default function CompanyInfoForm() {
             <Label>Company Logo</Label>
             <div className="flex flex-col items-center p-4 border-2 border-dashed rounded-lg">
               {logoPreview ? (
-                <div className="relative w-32 h-32 mb-4">
-                  <img
-                    src={logoPreview}
-                    alt="Company logo preview"
-                    className="w-full h-full object-contain rounded-lg"
-                  />
+                <div className="relative mb-4">
+                  <Avatar className="w-32 h-32">
+                    <AvatarImage src={logoPreview} alt="Company logo preview" />
+                    <AvatarFallback>LOGO</AvatarFallback>
+                  </Avatar>
                   <Button
                     type="button"
                     variant="destructive"
@@ -323,9 +323,13 @@ export default function CompanyInfoForm() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center">
-                  <Upload className="w-12 h-12 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Upload your company logo</p>
-                  <p className="text-xs text-muted-foreground">(Max 5MB)</p>
+                  <Avatar className="w-32 h-32">
+                    <AvatarFallback>
+                      <Upload className="w-12 h-12 text-muted-foreground" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="text-sm text-muted-foreground mt-4">Upload your company logo</p>
+                  <p className="text-xs text-muted-foreground">(Max 5MB, will be cropped square)</p>
                 </div>
               )}
               <Input
