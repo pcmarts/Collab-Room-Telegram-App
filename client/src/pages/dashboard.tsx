@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
-import { User as UserIcon, Settings, Users, BookOpen } from 'lucide-react';
+import { User as UserIcon, Settings, Users, BookOpen, Building } from 'lucide-react';
 import type { User, Company, Preferences } from '@shared/schema';
 
 interface ProfileData {
@@ -54,14 +54,22 @@ export default function Dashboard() {
 
       <div className="p-4 space-y-4 pb-safe">
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <Button
             variant="outline"
             className="h-20 flex-col"
-            onClick={() => setLocation('/profile-overview')}
+            onClick={() => setLocation('/onboarding?edit=true')}
           >
             <UserIcon className="h-5 w-5 mb-1.5" />
-            <span className="text-sm">Edit Profile</span>
+            <span className="text-sm">Personal Info</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
+            onClick={() => setLocation('/company-info?edit=true')}
+          >
+            <Building className="h-5 w-5 mb-1.5" />
+            <span className="text-sm">Company Info</span>
           </Button>
           <Button
             variant="outline"
@@ -116,6 +124,34 @@ export default function Dashboard() {
               <p><strong>Company:</strong> {company?.name}</p>
               <p><strong>Role:</strong> {company?.job_title}</p>
               <p><strong>Website:</strong> {company?.website}</p>
+              <p><strong>Funding Stage:</strong> {company?.funding_stage}</p>
+              {company?.has_token && (
+                <>
+                  <p><strong>Token:</strong> {company?.token_ticker}</p>
+                  <div>
+                    <strong>Networks:</strong>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {company?.blockchain_networks?.map(network => (
+                        <span key={network} className="px-2 py-0.5 bg-primary/10 rounded-full text-xs">
+                          {network}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+              {company?.tags && company.tags.length > 0 && (
+                <div>
+                  <strong>Tags:</strong>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {company.tags.map(tag => (
+                      <span key={tag} className="px-2 py-0.5 bg-primary/10 rounded-full text-xs">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

@@ -40,7 +40,7 @@ export default function ProfileOverview() {
     );
   }
 
-  const { user, company } = profile;
+  const { user } = profile;
 
   return (
     <div className="min-h-[100svh] bg-background">
@@ -56,7 +56,7 @@ export default function ProfileOverview() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-lg font-semibold">Profile Overview</h1>
+          <h1 className="text-lg font-semibold">Personal Information</h1>
           <div className="w-12" /> {/* Spacer for alignment */}
         </div>
       </div>
@@ -101,48 +101,6 @@ export default function ProfileOverview() {
                 <p>{user.email}</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Company Information */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Company Information</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setLocation('/company-info?edit=true')}
-                className="h-8 px-3"
-              >
-                Edit
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h3 className="font-medium">Company Name</h3>
-              <p>{company.name}</p>
-            </div>
-            <div>
-              <h3 className="font-medium">Job Title</h3>
-              <p>{company.job_title}</p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-medium">Social Links</h3>
-              <div className="space-x-4">
-                <a href={company.website} target="_blank" rel="noopener noreferrer" 
-                   className="text-primary hover:underline">Website</a>
-                {company.twitter_handle && (
-                  <a href={`https://twitter.com/${company.twitter_handle}`} target="_blank" 
-                     rel="noopener noreferrer" className="text-primary hover:underline">Twitter</a>
-                )}
-                {company.linkedin_url && (
-                  <a href={company.linkedin_url} target="_blank" rel="noopener noreferrer" 
-                     className="text-primary hover:underline">LinkedIn</a>
-                )}
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
