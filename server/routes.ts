@@ -118,21 +118,28 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', req.body);
 
     try {
-      const { company_name, job_title, website, twitter_handle, linkedin_url, initData } = req.body;
+      const { company_name, job_title, website, twitter_handle, linkedin_url } = req.body;
 
       if (!company_name || !job_title || !website) {
         console.error('Missing required fields');
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      // Parse Telegram data to get user
-      console.log('Parsing Telegram data');
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        console.error('No Telegram init data found in headers');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Parse Telegram data
+      console.log('Parsing Telegram data:', initData);
       const decodedInitData = new URLSearchParams(initData);
       const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
       console.log('Decoded Telegram user:', telegramUser);
 
       if (!telegramUser.id) {
-        console.error('No Telegram user ID found');
+        console.error('No Telegram user ID found in parsed data');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
 
@@ -208,7 +215,7 @@ export async function registerRoutes(app: Express) {
 
       } catch (dbError) {
         console.error('Database error:', dbError);
-        throw new Error(`Failed to save company: ${dbError.message}`);
+        throw new Error(`Failed to save company: ${dbError}`);
       }
 
     } catch (error) {
