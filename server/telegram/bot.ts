@@ -10,7 +10,7 @@ async function getApplicationStatus(telegramId: string) {
   const user = await storage.getUserByTelegramId(telegramId);
 
   if (!user) {
-    return 'No application found. Click "Apply to Join" to start your application.';
+    return 'No application found. Use /start to get started.';
   }
 
   const applicationDate = user.applied_at
@@ -31,7 +31,7 @@ bot.command("start", async (ctx) => {
   const user = await storage.getUserByTelegramId(ctx.from.id.toString());
 
   const message = user
-    ? "👋 Welcome back to CollabRoom!\n\nYour application is currently under review. Use /status command anytime to check your application status."
+    ? "👋 Welcome back to CollabRoom!\n\nUse /status command to check your application status."
     : "👋 Welcome to CollabRoom!\n\nUse /status command to check your application status.";
 
   await ctx.reply(message);
