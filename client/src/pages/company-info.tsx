@@ -7,7 +7,7 @@ import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { FUNDING_STAGES, BLOCKCHAIN_NETWORKS, COMPANY_TAG_CATEGORIES } from "@shared/schema";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
@@ -17,14 +17,16 @@ export default function CompanyInfoForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const queryClient = useQueryClient();
 
   // Check if we're in edit mode
   const isEditMode = window.location.search.includes('edit=true');
 
   // Fetch existing data if in edit mode
-  const { data: profileData } = useQuery<ProfileData>({
+  const { data: profileData, isLoading } = useQuery<ProfileData>({
     queryKey: ['/api/profile'],
-    enabled: isEditMode
+    enabled: isEditMode,
+    staleTime: 0 // Always fetch fresh data
   });
 
   const [formData, setFormData] = useState({
@@ -42,7 +44,9 @@ export default function CompanyInfoForm() {
 
   // Load saved data from API or session storage
   useEffect(() => {
+    console.log('Loading data, isEditMode:', isEditMode, 'profileData:', profileData);
     if (isEditMode && profileData?.company) {
+      console.log('Setting form data from profile:', profileData.company);
       setFormData({
         company_name: profileData.company.name,
         job_title: profileData.company.job_title,
@@ -55,9 +59,10 @@ export default function CompanyInfoForm() {
         blockchain_networks: profileData.company.blockchain_networks || [],
         tags: profileData.company.tags || []
       });
-    } else {
+    } else if (!isEditMode) {
       const savedData = sessionStorage.getItem('companyFormData');
       if (savedData) {
+        console.log('Loading data from session storage:', savedData);
         setFormData(JSON.parse(savedData));
       }
     }
@@ -186,7 +191,6 @@ export default function CompanyInfoForm() {
 
       console.log('Submitting data to API:', submitData);
 
-      // Use apiRequest which handles Telegram headers automatically
       const response = await apiRequest('POST', '/api/company', submitData);
       const responseData = await response.json();
 
@@ -195,6 +199,9 @@ export default function CompanyInfoForm() {
       if (!response.ok) {
         throw new Error(responseData.error || 'Failed to update company information');
       }
+
+      // Invalidate the profile query to force a refresh
+      await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
 
       toast({
         title: "Success!",

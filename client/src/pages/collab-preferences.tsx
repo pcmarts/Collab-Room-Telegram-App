@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { COLLAB_TYPES, NOTIFICATION_FREQUENCIES, COMPANY_TAG_CATEGORIES } from "@shared/schema";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
@@ -14,14 +14,16 @@ export default function CollabPreferencesForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
   // Check if we're in edit mode
   const isEditMode = window.location.search.includes('edit=true');
 
   // Fetch existing data if in edit mode
-  const { data: profileData } = useQuery<ProfileData>({
+  const { data: profileData, isLoading } = useQuery<ProfileData>({
     queryKey: ['/api/profile'],
-    enabled: isEditMode
+    enabled: isEditMode,
+    staleTime: 0 // Always fetch fresh data
   });
 
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
@@ -35,16 +37,19 @@ export default function CollabPreferencesForm() {
 
   // Load existing preferences when data is fetched
   useEffect(() => {
+    console.log('Loading preferences data, isEditMode:', isEditMode, 'profileData:', profileData);
     if (isEditMode && profileData?.preferences) {
+      console.log('Setting form data from profile:', profileData.preferences);
       setFormData({
         collabs_to_discover: profileData.preferences.collabs_to_discover || [],
         collabs_to_host: profileData.preferences.collabs_to_host || [],
         notification_frequency: profileData.preferences.notification_frequency || '',
         excluded_tags: profileData.preferences.excluded_tags || []
       });
-    } else {
+    } else if (!isEditMode) {
       const savedData = sessionStorage.getItem('preferencesFormData');
       if (savedData) {
+        console.log('Loading data from session storage:', savedData);
         setFormData(JSON.parse(savedData));
       }
     }
@@ -109,6 +114,8 @@ export default function CollabPreferencesForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('============ DEBUG: Preferences Form Submit Started ============');
+    console.log('Current form data:', formData);
 
     try {
       setIsSubmitting(true);
@@ -117,67 +124,39 @@ export default function CollabPreferencesForm() {
         throw new Error('Please fill in all required fields');
       }
 
-      if (isEditMode) {
-        // In edit mode, just update preferences
-        const response = await apiRequest('POST', '/api/preferences', formData);
-        await response.json();
+      console.log('Submitting preferences to API:', formData);
 
-        toast({
-          title: "Success!",
-          description: "Your collaboration preferences have been updated."
-        });
+      const response = await apiRequest('POST', '/api/preferences', formData);
+      const responseData = await response.json();
 
-        setLocation('/dashboard');
-      } else {
-        // In onboarding mode, submit all form data
-        const userFormData = JSON.parse(sessionStorage.getItem('userFormData') || '{}');
-        const companyFormData = JSON.parse(sessionStorage.getItem('companyFormData') || '{}');
+      console.log('API Response:', responseData);
 
-        // Submit user data first
-        const userResponse = await apiRequest('POST', '/api/onboarding', {
-          ...userFormData,
-          initData: window.Telegram?.WebApp?.initData || ''
-        });
-        await userResponse.json();
-
-        // Then submit company data
-        const companyResponse = await apiRequest('POST', '/api/company', {
-          ...companyFormData,
-          initData: window.Telegram?.WebApp?.initData || ''
-        });
-        await companyResponse.json();
-
-        // Finally submit preferences
-        const prefResponse = await apiRequest('POST', '/api/preferences', formData);
-        await prefResponse.json();
-
-        toast({
-          title: "Application Submitted!",
-          description: "Thanks for applying. We'll review your application and notify you through Telegram once approved."
-        });
-
-        // Clear all stored form data
-        sessionStorage.removeItem('preferencesFormData');
-        sessionStorage.removeItem('companyFormData');
-        sessionStorage.removeItem('userFormData');
-
-        // Close Telegram WebApp after short delay to show toast
-        setTimeout(() => {
-          if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.close();
-          }
-        }, 2000);
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Failed to update preferences');
       }
 
+      // Invalidate the profile query to force a refresh
+      await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+
+      toast({
+        title: "Success!",
+        description: "Your collaboration preferences have been updated"
+      });
+
+      // Wait for toast to show before navigation
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setLocation('/dashboard');
+
     } catch (error) {
-      console.error('Failed to submit form:', error);
+      console.error('Failed to update preferences:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to submit form"
+        description: error instanceof Error ? error.message : "Failed to update preferences"
       });
     } finally {
       setIsSubmitting(false);
+      console.log('============ DEBUG: Preferences Form Submit Ended ============');
     }
   };
 
