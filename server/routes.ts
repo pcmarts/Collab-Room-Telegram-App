@@ -118,7 +118,7 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', req.body);
 
     try {
-      const { company_name, job_title, website, twitter_handle, linkedin_url } = req.body;
+      const { company_name, job_title, website, twitter_handle, linkedin_url, funding_stage, has_token, token_ticker, blockchain_networks } = req.body;
 
       if (!company_name || !job_title || !website) {
         console.error('Missing required fields');
@@ -170,7 +170,11 @@ export async function registerRoutes(app: Express) {
               job_title,
               website,
               twitter_handle,
-              linkedin_url
+              linkedin_url,
+              funding_stage,
+              has_token,
+              token_ticker,
+              blockchain_networks
             })
             .where(eq(companies.user_id, user.id))
             .returning();
@@ -190,7 +194,11 @@ export async function registerRoutes(app: Express) {
           job_title,
           website,
           twitter_handle,
-          linkedin_url
+          linkedin_url,
+          funding_stage,
+          has_token,
+          token_ticker,
+          blockchain_networks
         });
 
         [company] = await db
@@ -201,7 +209,11 @@ export async function registerRoutes(app: Express) {
             job_title,
             website,
             twitter_handle,
-            linkedin_url
+            linkedin_url,
+            funding_stage,
+            has_token,
+            token_ticker,
+            blockchain_networks
           })
           .returning();
 
