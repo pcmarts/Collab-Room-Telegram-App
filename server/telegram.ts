@@ -59,11 +59,13 @@ async function handleStart(msg: TelegramBot.Message) {
       inline_keyboard: [[
         existingUser 
           ? {
-              text: "Open Dashboard",
-              web_app: { url: `${WEBAPP_URL}/dashboard` }
+              text: existingUser.is_approved 
+                ? "Open Dashboard" 
+                : "View Application Status",
+              web_app: { url: `${WEBAPP_URL}${existingUser.is_approved ? '/dashboard' : '/application-status'}` }
             }
           : {
-              text: "Complete Profile",
+              text: "Apply to Join",
               web_app: { url: `${WEBAPP_URL}/onboarding` }
             }
       ]]
@@ -72,8 +74,10 @@ async function handleStart(msg: TelegramBot.Message) {
     console.log('Sending message with keyboard:', JSON.stringify(keyboard, null, 2));
 
     const welcomeMessage = existingUser
-      ? `👋 Welcome back to CollabRoom!\n\nClick the button below to access your dashboard.`
-      : '👋 Welcome to CollabRoom!\n\nClick the button below to complete your profile.';
+      ? existingUser.is_approved
+        ? `👋 Welcome back to CollabRoom!\n\nYour application has been approved. Click below to access your dashboard.`
+        : `👋 Welcome back to CollabRoom!\n\nYour application is currently under review. We'll notify you once it's approved.`
+      : '👋 Welcome to CollabRoom!\n\nWe\'re excited that you\'re interested in joining our community of innovative collaborators. Click below to start your application.';
 
     await bot.sendMessage(
       chatId,
@@ -101,7 +105,7 @@ async function handleStart(msg: TelegramBot.Message) {
 // Set up commands
 console.log('Setting up bot commands...');
 bot.setMyCommands([
-  { command: 'start', description: 'Start the bot' }
+  { command: 'start', description: 'Start the application process' }
 ]).then(() => {
   console.log('Bot commands registered successfully');
 }).catch((error) => {

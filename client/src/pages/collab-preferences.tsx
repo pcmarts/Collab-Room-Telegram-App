@@ -124,22 +124,22 @@ export default function CollabPreferencesForm() {
         const prefResponse = await apiRequest('POST', '/api/preferences', formData);
         await prefResponse.json();
 
+        toast({
+          title: "Application Submitted!",
+          description: "Thanks for applying. We'll review your application and notify you through Telegram once approved."
+        });
+
         // Clear all stored form data
         sessionStorage.removeItem('preferencesFormData');
         sessionStorage.removeItem('companyFormData');
         sessionStorage.removeItem('userFormData');
-
-        toast({
-          title: "Success!",
-          description: "Your profile has been created successfully!"
-        });
 
         // Close Telegram WebApp after short delay to show toast
         setTimeout(() => {
           if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.close();
           }
-        }, 1500);
+        }, 2000);
       }
 
     } catch (error) {

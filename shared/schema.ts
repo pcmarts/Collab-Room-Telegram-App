@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
@@ -33,6 +33,8 @@ export const users = pgTable('users', {
   handle: text('handle').notNull(),
   linkedin_url: text('linkedin_url'),
   email: text('email'),
+  is_approved: boolean('is_approved').default(false),
+  applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
