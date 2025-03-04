@@ -99,9 +99,9 @@ export default function OnboardingForm() {
         description: responseData.message || "Personal information saved successfully"
       });
 
-      // Navigate to next step or back to profile
+      // Navigate to next step or back to dashboard
       if (isEditMode) {
-        setLocation('/profile-overview');
+        setLocation('/dashboard');
       } else {
         setLocation('/company-info');
       }
@@ -126,7 +126,7 @@ export default function OnboardingForm() {
           {isEditMode && (
             <Button
               variant="ghost"
-              onClick={() => setLocation('/profile-overview')}
+              onClick={() => setLocation('/dashboard')}
               className="flex items-center"
             >
               Cancel

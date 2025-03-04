@@ -210,7 +210,7 @@ export default function CompanyInfoForm() {
 
       // Wait for toast to show before navigation
       await new Promise(resolve => setTimeout(resolve, 500));
-      setLocation('/profile-overview');
+      setLocation('/dashboard');
 
     } catch (error) {
       console.error('Failed to update company info:', error);
