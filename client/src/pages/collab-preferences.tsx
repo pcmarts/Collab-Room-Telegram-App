@@ -265,7 +265,7 @@ export default function CollabPreferencesForm() {
             <div className="space-y-4 pt-4">
               <Label className="text-lg">Company Tag Preferences</Label>
               <p className="text-sm text-muted-foreground mb-4">
-                By default, you'll discover collaborations from all company types. Select tags below to exclude specific types of companies from your discovery feed.
+                By default, all company types are included in your discovery feed. Deselect any tags below to exclude those types of companies from your matches.
               </p>
 
               {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
@@ -290,7 +290,7 @@ export default function CollabPreferencesForm() {
                         <Button
                           key={tag}
                           type="button"
-                          variant={formData.excluded_tags.includes(tag) ? "destructive" : "outline"}
+                          variant={formData.excluded_tags.includes(tag) ? "outline" : "default"}
                           className="justify-start h-auto py-3 px-4"
                           onClick={() => toggleExcludedTag(tag)}
                         >
