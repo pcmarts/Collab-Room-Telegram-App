@@ -3,9 +3,61 @@ import { createServer } from "http";
 import { db } from "./db";
 import { users, companies, preferences } from "../shared/schema";
 import { eq } from 'drizzle-orm';
+import multer from 'multer';
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { randomUUID } from 'crypto';
+
+// Configure multer for memory storage
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  }
+});
+
+// Initialize S3 client
+const s3Client = new S3Client({
+  endpoint: process.env.SUPABASE_URL,
+  credentials: {
+    accessKeyId: 'unused',
+    secretAccessKey: process.env.SUPABASE_SERVICE_KEY || ''
+  },
+  region: 'unused'
+});
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
+
+  // Logo upload endpoint
+  app.post("/api/upload-logo", upload.single('logo'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      const file = req.file;
+      const fileExtension = file.mimetype.split('/')[1];
+      const fileName = `${randomUUID()}.${fileExtension}`;
+
+      // Upload to Supabase Storage
+      const command = new PutObjectCommand({
+        Bucket: 'company-logos',
+        Key: fileName,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      });
+
+      await s3Client.send(command);
+
+      // Construct the public URL
+      const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/company-logos/${fileName}`;
+
+      res.json({ url: publicUrl });
+    } catch (error) {
+      console.error('Logo upload error:', error);
+      res.status(500).json({ error: 'Failed to upload logo' });
+    }
+  });
 
   // Simple test endpoint that writes to database
   app.post("/api/onboarding", async (req, res) => {
