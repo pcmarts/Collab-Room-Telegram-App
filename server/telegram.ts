@@ -110,14 +110,21 @@ async function handleStatus(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
   const telegramId = msg.from?.id.toString();
 
+  console.log('=== Handling /status command ===');
+  console.log('Chat ID:', chatId);
+  console.log('Telegram ID:', telegramId);
+
   try {
     if (!telegramId) {
       throw new Error('No Telegram ID found in message');
     }
 
+    // Query for user with exact telegram_id match
     const [user] = await db.select()
       .from(users)
       .where(eq(users.telegram_id, telegramId));
+
+    console.log('User found:', user);
 
     if (!user) {
       await bot.sendMessage(
@@ -157,6 +164,7 @@ async function handleStatus(msg: TelegramBot.Message) {
 
   } catch (error) {
     console.error('Error handling status check:', error);
+    console.error('Full error details:', error);
     await bot.sendMessage(
       chatId,
       'Sorry, something went wrong while checking your status. Please try again later.'
