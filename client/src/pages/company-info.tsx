@@ -8,6 +8,9 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { FUNDING_STAGES, BLOCKCHAIN_NETWORKS } from "@shared/schema";
 
 export default function CompanyInfoForm() {
   const { toast } = useToast();
@@ -28,7 +31,11 @@ export default function CompanyInfoForm() {
     job_title: '',
     website: 'https://www.',
     twitter_url: 'https://x.com/',
-    linkedin_url: ''
+    linkedin_url: '',
+    funding_stage: 'Pre-seed',
+    has_token: false,
+    token_ticker: '$',
+    blockchain_networks: [] as string[]
   });
 
   // Load saved data from API or session storage
@@ -39,7 +46,11 @@ export default function CompanyInfoForm() {
         job_title: profileData.company.job_title,
         website: profileData.company.website,
         twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : 'https://x.com/',
-        linkedin_url: profileData.company.linkedin_url || ''
+        linkedin_url: profileData.company.linkedin_url || '',
+        funding_stage: profileData.company.funding_stage,
+        has_token: profileData.company.has_token,
+        token_ticker: profileData.company.token_ticker || '$',
+        blockchain_networks: profileData.company.blockchain_networks || []
       });
     } else {
       const savedData = sessionStorage.getItem('companyFormData');
@@ -61,8 +72,23 @@ export default function CompanyInfoForm() {
     }
   };
 
+  const toggleBlockchain = (network: string) => {
+    const networks = formData.blockchain_networks.includes(network)
+      ? formData.blockchain_networks.filter(n => n !== network)
+      : [...formData.blockchain_networks, network];
+
+    const newFormData = {
+      ...formData,
+      blockchain_networks: networks
+    };
+    setFormData(newFormData);
+    if (!isEditMode) {
+      sessionStorage.setItem('companyFormData', JSON.stringify(newFormData));
+    }
+  };
+
   const handleNext = () => {
-    if (!formData.company_name || !formData.job_title || !formData.website) {
+    if (!formData.company_name || !formData.job_title || !formData.website || !formData.funding_stage) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -71,10 +97,18 @@ export default function CompanyInfoForm() {
       return;
     }
 
+    if (formData.has_token && (!formData.token_ticker || formData.blockchain_networks.length === 0)) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please fill in token information"
+      });
+      return;
+    }
+
     // Store the form data in session storage
     sessionStorage.setItem('companyFormData', JSON.stringify({
       ...formData,
-      // Extract handle from twitter URL if present
       twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', '')
     }));
 
@@ -88,8 +122,12 @@ export default function CompanyInfoForm() {
     try {
       setIsSubmitting(true);
 
-      if (!formData.company_name || !formData.job_title || !formData.website) {
+      if (!formData.company_name || !formData.job_title || !formData.website || !formData.funding_stage) {
         throw new Error('Please fill in all required fields');
+      }
+
+      if (formData.has_token && (!formData.token_ticker || formData.blockchain_networks.length === 0)) {
+        throw new Error('Please fill in token information');
       }
 
       // Use apiRequest which handles Telegram headers automatically
@@ -98,7 +136,11 @@ export default function CompanyInfoForm() {
         job_title: formData.job_title,
         website: formData.website,
         twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', ''),
-        linkedin_url: formData.linkedin_url
+        linkedin_url: formData.linkedin_url,
+        funding_stage: formData.funding_stage,
+        has_token: formData.has_token,
+        token_ticker: formData.has_token ? formData.token_ticker : null,
+        blockchain_networks: formData.has_token ? formData.blockchain_networks : []
       });
 
       await response.json();
@@ -211,9 +253,71 @@ export default function CompanyInfoForm() {
             />
           </div>
 
+          <div>
+            <Label htmlFor="funding_stage">Company Funding Stage</Label>
+            <Select
+              value={formData.funding_stage}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, funding_stage: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select funding stage" />
+              </SelectTrigger>
+              <SelectContent>
+                {FUNDING_STAGES.map(stage => (
+                  <SelectItem key={stage} value={stage}>
+                    {stage}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="has_token"
+                checked={formData.has_token}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, has_token: checked }))}
+              />
+              <Label htmlFor="has_token">Live Token?</Label>
+            </div>
+          </div>
+
+          {formData.has_token && (
+            <>
+              <div>
+                <Label htmlFor="token_ticker">Token Ticker</Label>
+                <Input
+                  id="token_ticker"
+                  name="token_ticker"
+                  value={formData.token_ticker}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Blockchain Networks</Label>
+                <div className="grid grid-cols-1 gap-2">
+                  {BLOCKCHAIN_NETWORKS.map(network => (
+                    <Button
+                      key={network}
+                      type="button"
+                      variant={formData.blockchain_networks.includes(network) ? "default" : "outline"}
+                      className="justify-start"
+                      onClick={() => toggleBlockchain(network)}
+                    >
+                      {network}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
           <Button
             type="submit"
-            className="w-full"
+            className="w-full mt-6"
             onClick={isEditMode ? handleSubmit : handleNext}
             disabled={isSubmitting}
           >

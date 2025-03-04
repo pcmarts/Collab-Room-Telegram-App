@@ -17,6 +17,22 @@ export const COLLAB_TYPES = [
 
 export const NOTIFICATION_FREQUENCIES = ["Instant", "Daily", "Weekly"] as const;
 
+export const FUNDING_STAGES = ["Pre-seed", "Seed", "Series A", "Series B+"] as const;
+
+export const BLOCKCHAIN_NETWORKS = [
+  "Ethereum",
+  "Binance Smart Chain (BSC)",
+  "Solana",
+  "Polygon",
+  "Cardano",
+  "Tron",
+  "Tezos",
+  "Stellar",
+  "Avalanche",
+  "Fantom",
+  "Other"
+] as const;
+
 export const COMPANY_CATEGORIES = [
   "Crypto", "NFT", "DeFi", "Web3 Gaming", "Memes & Culture", "Bitcoin",
   "Solana", "Ethereum", "Creator Economy", "Fundraising", "AI & Web3"
@@ -47,6 +63,10 @@ export const companies = pgTable('companies', {
   job_title: text('job_title').notNull(),
   twitter_handle: text('twitter_handle'),
   linkedin_url: text('linkedin_url'),
+  funding_stage: text('funding_stage').notNull(),
+  has_token: boolean('has_token').default(false),
+  token_ticker: text('token_ticker'),
+  blockchain_networks: text('blockchain_networks').array(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
