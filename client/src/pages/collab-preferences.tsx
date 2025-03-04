@@ -30,7 +30,6 @@ export default function CollabPreferencesForm() {
 
   const [formData, setFormData] = useState({
     collabs_to_discover: [] as string[],
-    collabs_to_host: [] as string[],
     notification_frequency: '',
     excluded_tags: [] as string[]
   });
@@ -42,51 +41,22 @@ export default function CollabPreferencesForm() {
       console.log('Setting form data from profile:', profileData.preferences);
       setFormData({
         collabs_to_discover: profileData.preferences.collabs_to_discover || [],
-        collabs_to_host: profileData.preferences.collabs_to_host || [],
         notification_frequency: profileData.preferences.notification_frequency || '',
         excluded_tags: profileData.preferences.excluded_tags || []
       });
-    } else if (!isEditMode) {
-      const savedData = sessionStorage.getItem('preferencesFormData');
-      if (savedData) {
-        console.log('Loading data from session storage:', savedData);
-        setFormData(JSON.parse(savedData));
-      }
     }
   }, [isEditMode, profileData]);
 
-  const handleMultiSelect = (type: 'discover' | 'host', collab: string) => {
-    const key = type === 'discover' ? 'collabs_to_discover' : 'collabs_to_host';
-    const current = formData[key];
+  const handleMultiSelect = (collab: string) => {
+    const current = formData.collabs_to_discover;
     const updated = current.includes(collab)
       ? current.filter(item => item !== collab)
       : [...current, collab];
 
     setFormData(prev => ({
       ...prev,
-      [key]: updated
+      collabs_to_discover: updated
     }));
-
-    if (!isEditMode) {
-      sessionStorage.setItem('preferencesFormData', JSON.stringify({
-        ...formData,
-        [key]: updated
-      }));
-    }
-  };
-
-  const handleFrequencyChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      notification_frequency: value
-    }));
-
-    if (!isEditMode) {
-      sessionStorage.setItem('preferencesFormData', JSON.stringify({
-        ...formData,
-        notification_frequency: value
-      }));
-    }
   };
 
   const toggleCategory = (category: string) => {
@@ -102,31 +72,31 @@ export default function CollabPreferencesForm() {
       ? formData.excluded_tags.filter(t => t !== tag)
       : [...formData.excluded_tags, tag];
 
-    const newFormData = {
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       excluded_tags: tags
-    };
-    setFormData(newFormData);
-    if (!isEditMode) {
-      sessionStorage.setItem('preferencesFormData', JSON.stringify(newFormData));
-    }
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('============ DEBUG: Preferences Form Submit Started ============');
+    console.log('============ DEBUG: Discovery Preferences Form Submit Started ============');
     console.log('Current form data:', formData);
 
     try {
       setIsSubmitting(true);
 
-      if (!formData.notification_frequency || formData.collabs_to_discover.length === 0 || formData.collabs_to_host.length === 0) {
+      if (!formData.notification_frequency || formData.collabs_to_discover.length === 0) {
         throw new Error('Please fill in all required fields');
       }
 
-      console.log('Submitting preferences to API:', formData);
+      console.log('Submitting to API:', formData);
 
-      const response = await apiRequest('POST', '/api/preferences', formData);
+      // Keep existing collabs_to_host when updating preferences
+      const response = await apiRequest('POST', '/api/preferences', {
+        ...formData,
+        collabs_to_host: profileData?.preferences?.collabs_to_host || []
+      });
       const responseData = await response.json();
 
       console.log('API Response:', responseData);
@@ -140,7 +110,7 @@ export default function CollabPreferencesForm() {
 
       toast({
         title: "Success!",
-        description: "Your collaboration preferences have been updated",
+        description: "Your discovery preferences have been updated",
         duration: 2000, // 2 seconds
       });
 
@@ -157,15 +127,7 @@ export default function CollabPreferencesForm() {
       });
     } finally {
       setIsSubmitting(false);
-      console.log('============ DEBUG: Preferences Form Submit Ended ============');
-    }
-  };
-
-  const handleBack = () => {
-    if (isEditMode) {
-      setLocation('/dashboard');
-    } else {
-      setLocation('/company-info');
+      console.log('============ DEBUG: Discovery Preferences Form Submit Ended ============');
     }
   };
 
@@ -178,31 +140,21 @@ export default function CollabPreferencesForm() {
             variant="ghost"
             size="sm"
             className="flex items-center -ml-3"
-            onClick={handleBack}
+            onClick={() => setLocation('/dashboard')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-lg font-semibold">
-            {isEditMode ? 'Edit Preferences' : 'Collaboration Preferences'}
-          </h1>
+          <h1 className="text-lg font-semibold">Collab Discovery</h1>
           <div className="w-12" /> {/* Spacer for alignment */}
         </div>
       </div>
 
       <div className="p-4 space-y-6">
-        {!isEditMode && (
-          <div className="flex items-center gap-2 justify-center mb-4">
-            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-            <div className="w-3 h-3 rounded-full bg-primary"></div>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-6">
             <div>
-              <Label className="text-lg">Collaborations to Discover</Label>
+              <Label className="text-lg">Looking to Discover</Label>
               <p className="text-sm text-muted-foreground mb-4">
                 Select the types of collaboration opportunities you'd like to be notified about
               </p>
@@ -213,27 +165,7 @@ export default function CollabPreferencesForm() {
                     type="button"
                     variant={formData.collabs_to_discover.includes(type) ? "default" : "outline"}
                     className="justify-start h-auto py-3 px-4"
-                    onClick={() => handleMultiSelect('discover', type)}
-                  >
-                    <span className="text-left">{type}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-lg">Collaborations to Host</Label>
-              <p className="text-sm text-muted-foreground mb-4">
-                Select the types of collaborations your company can offer
-              </p>
-              <div className="grid grid-cols-1 gap-2">
-                {COLLAB_TYPES.map(type => (
-                  <Button
-                    key={type}
-                    type="button"
-                    variant={formData.collabs_to_host.includes(type) ? "default" : "outline"}
-                    className="justify-start h-auto py-3 px-4"
-                    onClick={() => handleMultiSelect('host', type)}
+                    onClick={() => handleMultiSelect(type)}
                   >
                     <span className="text-left">{type}</span>
                   </Button>
@@ -248,7 +180,7 @@ export default function CollabPreferencesForm() {
               </p>
               <Select
                 value={formData.notification_frequency}
-                onValueChange={handleFrequencyChange}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, notification_frequency: value }))}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select frequency" />
@@ -313,10 +245,10 @@ export default function CollabPreferencesForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isEditMode ? 'Saving Changes...' : 'Complete Setup'}
+                Saving Changes...
               </>
             ) : (
-              isEditMode ? "Save Changes" : "Complete Setup"
+              "Save Changes"
             )}
           </Button>
         </form>

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
-import { User as UserIcon, Settings, Users, BookOpen, Building } from 'lucide-react';
+import { User as UserIcon, Settings, Users, BookOpen, Building, Star } from 'lucide-react';
 import type { User, Company, Preferences } from '@shared/schema';
 
 interface ProfileData {
@@ -54,7 +54,7 @@ export default function Dashboard() {
 
       <div className="p-4 space-y-4 pb-safe">
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Button
             variant="outline"
             className="h-20 flex-col"
@@ -74,10 +74,18 @@ export default function Dashboard() {
           <Button
             variant="outline"
             className="h-20 flex-col"
+            onClick={() => setLocation('/my-collabs?edit=true')}
+          >
+            <Star className="h-5 w-5 mb-1.5" />
+            <span className="text-sm">My Collabs</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
             onClick={() => setLocation('/collab-preferences?edit=true')}
           >
             <Settings className="h-5 w-5 mb-1.5" />
-            <span className="text-sm">Preferences</span>
+            <span className="text-sm">Discovery</span>
           </Button>
         </div>
 
