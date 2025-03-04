@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', req.body);
 
     try {
-      const { collabs_to_discover, collabs_to_host, notification_frequency } = req.body;
+      const { collabs_to_discover, collabs_to_host, notification_frequency, excluded_tags } = req.body;
 
       if (!notification_frequency || !collabs_to_discover?.length || !collabs_to_host?.length) {
         console.error('Missing required fields');
@@ -278,15 +278,18 @@ export async function registerRoutes(app: Express) {
 
         let userPreferences;
 
+        const preferencesData = {
+          collabs_to_discover,
+          collabs_to_host,
+          notification_frequency,
+          excluded_tags: excluded_tags || []
+        };
+
         if (existingPreferences.length > 0) {
           // Update existing preferences
           console.log('Updating existing preferences:', existingPreferences[0]);
           [userPreferences] = await db.update(preferences)
-            .set({
-              collabs_to_discover,
-              collabs_to_host,
-              notification_frequency
-            })
+            .set(preferencesData)
             .where(eq(preferences.user_id, user.id))
             .returning();
 
@@ -301,18 +304,14 @@ export async function registerRoutes(app: Express) {
         // Create new preferences
         console.log('Creating new preferences with data:', {
           user_id: user.id,
-          collabs_to_discover,
-          collabs_to_host,
-          notification_frequency
+          ...preferencesData
         });
 
         [userPreferences] = await db
           .insert(preferences)
           .values({
             user_id: user.id,
-            collabs_to_discover,
-            collabs_to_host,
-            notification_frequency
+            ...preferencesData
           })
           .returning();
 

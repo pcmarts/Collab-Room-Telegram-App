@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { COLLAB_TYPES, NOTIFICATION_FREQUENCIES } from "@shared/schema";
+import { COLLAB_TYPES, NOTIFICATION_FREQUENCIES, COMPANY_TAG_CATEGORIES } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
@@ -24,10 +24,13 @@ export default function CollabPreferencesForm() {
     enabled: isEditMode
   });
 
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
     collabs_to_discover: [] as string[],
     collabs_to_host: [] as string[],
-    notification_frequency: ''
+    notification_frequency: '',
+    excluded_tags: [] as string[]
   });
 
   // Load existing preferences when data is fetched
@@ -36,7 +39,8 @@ export default function CollabPreferencesForm() {
       setFormData({
         collabs_to_discover: profileData.preferences.collabs_to_discover || [],
         collabs_to_host: profileData.preferences.collabs_to_host || [],
-        notification_frequency: profileData.preferences.notification_frequency || ''
+        notification_frequency: profileData.preferences.notification_frequency || '',
+        excluded_tags: profileData.preferences.excluded_tags || []
       });
     } else {
       const savedData = sessionStorage.getItem('preferencesFormData');
@@ -77,6 +81,29 @@ export default function CollabPreferencesForm() {
         ...formData,
         notification_frequency: value
       }));
+    }
+  };
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
+  const toggleExcludedTag = (tag: string) => {
+    const tags = formData.excluded_tags.includes(tag)
+      ? formData.excluded_tags.filter(t => t !== tag)
+      : [...formData.excluded_tags, tag];
+
+    const newFormData = {
+      ...formData,
+      excluded_tags: tags
+    };
+    setFormData(newFormData);
+    if (!isEditMode) {
+      sessionStorage.setItem('preferencesFormData', JSON.stringify(newFormData));
     }
   };
 
@@ -254,6 +281,47 @@ export default function CollabPreferencesForm() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-4 pt-4">
+              <Label className="text-lg">Company Tag Preferences</Label>
+              <p className="text-sm text-muted-foreground mb-4">
+                By default, you'll discover collaborations from all company types. Select tags below to exclude specific types of companies from your discovery feed.
+              </p>
+
+              {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+                <div key={category} className="border rounded-lg overflow-hidden">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full flex justify-between items-center p-4"
+                    onClick={() => toggleCategory(category)}
+                  >
+                    <span className="font-medium">{category}</span>
+                    {expandedCategories.includes(category) ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </Button>
+
+                  {expandedCategories.includes(category) && (
+                    <div className="p-4 pt-0 grid grid-cols-1 gap-2">
+                      {tags.map(tag => (
+                        <Button
+                          key={tag}
+                          type="button"
+                          variant={formData.excluded_tags.includes(tag) ? "destructive" : "outline"}
+                          className="justify-start h-auto py-3 px-4"
+                          onClick={() => toggleExcludedTag(tag)}
+                        >
+                          <span className="text-left">{tag}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 

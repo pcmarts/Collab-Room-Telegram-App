@@ -130,6 +130,7 @@ export const preferences = pgTable('preferences', {
   collabs_to_discover: text('collabs_to_discover').array(),
   collabs_to_host: text('collabs_to_host').array(),
   notification_frequency: text('notification_frequency').notNull(),
+  excluded_tags: text('excluded_tags').array(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
