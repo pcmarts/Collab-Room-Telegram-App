@@ -1,4 +1,4 @@
-import { Bot, InlineKeyboard } from "grammy";
+import { Bot } from "grammy";
 import { TELEGRAM_BOT_TOKEN } from "../config";
 import { storage } from "../storage";
 import { format } from "date-fns";
@@ -31,17 +31,10 @@ bot.command("start", async (ctx) => {
   const user = await storage.getUserByTelegramId(ctx.from.id.toString());
 
   const message = user
-    ? "👋 Welcome back to CollabRoom!\n\nYour application is currently under review. Click below to check your application status or use /status command anytime."
-    : "👋 Welcome to CollabRoom!\n\nClick below to start your application or check its status.";
+    ? "👋 Welcome back to CollabRoom!\n\nYour application is currently under review. Use /status command anytime to check your application status."
+    : "👋 Welcome to CollabRoom!\n\nUse /status command to check your application status.";
 
-  const keyboard = new InlineKeyboard().text(
-    "Check Application Status",
-    "check_status"
-  );
-
-  await ctx.reply(message, {
-    reply_markup: keyboard,
-  });
+  await ctx.reply(message);
 });
 
 bot.command("status", async (ctx) => {
@@ -51,25 +44,6 @@ bot.command("status", async (ctx) => {
   const status = await getApplicationStatus(ctx.from.id.toString());
   console.log('User found:', await storage.getUserByTelegramId(ctx.from.id.toString()));
   await ctx.reply(status);
-});
-
-// Handle callback queries
-bot.callbackQuery("check_status", async (ctx) => {
-  console.log('=== Handling check_status callback ===');
-  console.log('Chat ID:', ctx.chat?.id);
-  console.log('From ID:', ctx.from.id);
-
-  try {
-    const status = await getApplicationStatus(ctx.from.id.toString());
-    await ctx.answerCallbackQuery(); // Acknowledge the callback query
-    await ctx.reply(status); // Send the status message
-  } catch (error) {
-    console.error('Error handling check_status callback:', error);
-    await ctx.answerCallbackQuery({
-      text: "An error occurred while checking your application status.",
-      show_alert: true
-    });
-  }
 });
 
 export { bot };
