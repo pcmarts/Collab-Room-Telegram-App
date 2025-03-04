@@ -106,7 +106,7 @@ export default function CompanyInfoForm() {
   };
 
   const toggleCategory = (category: string) => {
-    setExpandedCategories(prev => 
+    setExpandedCategories(prev =>
       prev.includes(category)
         ? prev.filter(c => c !== category)
         : [...prev, category]
@@ -153,6 +153,8 @@ export default function CompanyInfoForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('============ DEBUG: Company Form Submit Started ============');
+    console.log('Current form data:', formData);
 
     try {
       setIsSubmitting(true);
@@ -169,8 +171,7 @@ export default function CompanyInfoForm() {
         throw new Error('Please select at least one company tag');
       }
 
-      // Use apiRequest which handles Telegram headers automatically
-      const response = await apiRequest('POST', '/api/company', {
+      const submitData = {
         company_name: formData.company_name,
         job_title: formData.job_title,
         website: formData.website,
@@ -181,15 +182,27 @@ export default function CompanyInfoForm() {
         token_ticker: formData.has_token ? formData.token_ticker : null,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
         tags: formData.tags
-      });
+      };
 
-      await response.json();
+      console.log('Submitting data to API:', submitData);
+
+      // Use apiRequest which handles Telegram headers automatically
+      const response = await apiRequest('POST', '/api/company', submitData);
+      const responseData = await response.json();
+
+      console.log('API Response:', responseData);
+
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Failed to update company information');
+      }
 
       toast({
         title: "Success!",
         description: "Company information updated successfully"
       });
 
+      // Wait for toast to show before navigation
+      await new Promise(resolve => setTimeout(resolve, 500));
       setLocation('/profile-overview');
 
     } catch (error) {
@@ -201,6 +214,7 @@ export default function CompanyInfoForm() {
       });
     } finally {
       setIsSubmitting(false);
+      console.log('============ DEBUG: Company Form Submit Ended ============');
     }
   };
 
