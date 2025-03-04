@@ -7,16 +7,23 @@ import { eq } from 'drizzle-orm';
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
 
-  // Simple test endpoint that writes to database
   app.post("/api/onboarding", async (req, res) => {
-    console.log('============ DEBUG: Test Endpoint ============');
+    console.log('============ DEBUG: Onboarding Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
 
     try {
-      const { first_name, last_name, linkedin_url, email, initData } = req.body;
+      const { 
+        // User info
+        first_name, last_name, linkedin_url, email, initData,
+        // Company info
+        company_name, company_website, twitter_handle, job_title, 
+        funding_stage, has_token, token_ticker, blockchain_networks, company_tags,
+        // Preferences
+        collabs_to_discover, collabs_to_host, notification_frequency, excluded_tags
+      } = req.body;
 
-      if (!first_name || !last_name) {
+      if (!first_name || !last_name || !company_name || !job_title || !company_website || !funding_stage) {
         console.error('Missing required fields');
         return res.status(400).json({ error: 'Missing required fields' });
       }
@@ -36,69 +43,105 @@ export async function registerRoutes(app: Express) {
       const telegram_id = telegramUser.id.toString();
       const handle = telegramUser.username;
 
-      // Check if user exists
-      const existingUser = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegram_id));
-
       try {
-        let user;
-
-        if (existingUser.length > 0) {
-          // Update existing user
-          console.log('Updating existing user:', existingUser[0]);
-          [user] = await db.update(users)
-            .set({
+        // Start a transaction
+        const result = await db.transaction(async (tx) => {
+          // 1. Create or update user
+          const [user] = await tx
+            .insert(users)
+            .values({
+              telegram_id,
               first_name,
               last_name,
               handle,
               linkedin_url,
-              email
+              email,
+              applied_at: new Date()
             })
-            .where(eq(users.telegram_id, telegram_id))
+            .onConflictDoUpdate({
+              target: users.telegram_id,
+              set: {
+                first_name,
+                last_name,
+                handle,
+                linkedin_url,
+                email,
+                applied_at: new Date()
+              }
+            })
             .returning();
 
-          console.log('Updated user:', user);
-          return res.json({
-            success: true,
-            user,
-            message: 'User updated successfully'
-          });
-        }
+          console.log('Created/Updated user:', user);
 
-        // Create new user
-        console.log('Creating new user with data:', {
-          telegram_id,
-          first_name,
-          last_name,
-          handle,
-          linkedin_url,
-          email
+          // 2. Create company record
+          const [company] = await tx
+            .insert(companies)
+            .values({
+              user_id: user.id,
+              name: company_name,
+              job_title,
+              website: company_website,
+              twitter_handle: twitter_handle?.replace('https://x.com/', '').replace('@', ''),
+              funding_stage,
+              has_token: Boolean(has_token),
+              token_ticker: has_token ? token_ticker : null,
+              blockchain_networks: has_token ? blockchain_networks : [],
+              tags: company_tags || []
+            })
+            .onConflictDoUpdate({
+              target: [companies.user_id],
+              set: {
+                name: company_name,
+                job_title,
+                website: company_website,
+                twitter_handle: twitter_handle?.replace('https://x.com/', '').replace('@', ''),
+                funding_stage,
+                has_token: Boolean(has_token),
+                token_ticker: has_token ? token_ticker : null,
+                blockchain_networks: has_token ? blockchain_networks : [],
+                tags: company_tags || []
+              }
+            })
+            .returning();
+
+          console.log('Created/Updated company:', company);
+
+          // 3. Create preferences record
+          const [userPreferences] = await tx
+            .insert(preferences)
+            .values({
+              user_id: user.id,
+              collabs_to_discover: collabs_to_discover || [],
+              collabs_to_host: collabs_to_host || [],
+              notification_frequency: notification_frequency || 'Daily',
+              excluded_tags: excluded_tags || []
+            })
+            .onConflictDoUpdate({
+              target: [preferences.user_id],
+              set: {
+                collabs_to_discover: collabs_to_discover || [],
+                collabs_to_host: collabs_to_host || [],
+                notification_frequency: notification_frequency || 'Daily',
+                excluded_tags: excluded_tags || []
+              }
+            })
+            .returning();
+
+          console.log('Created/Updated preferences:', userPreferences);
+
+          return { user, company, preferences: userPreferences };
         });
 
-        [user] = await db
-          .insert(users)
-          .values({
-            telegram_id,
-            first_name,
-            last_name,
-            handle,
-            linkedin_url,
-            email
-          })
-          .returning();
-
-        console.log('Created user:', user);
-
+        // Clear session storage after successful submission
         res.json({
           success: true,
-          user,
-          message: 'User created successfully'
+          message: 'Application submitted successfully',
+          ...result
         });
 
       } catch (dbError) {
         console.error('Database error:', dbError);
-        throw new Error(`Failed to save user: ${dbError.message}`);
+        throw new Error(`Failed to save application data: ${dbError.message}`);
       }
 
     } catch (error) {
