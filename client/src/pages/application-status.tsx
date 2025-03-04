@@ -20,7 +20,7 @@ export default function ApplicationStatus() {
     );
   }
 
-  if (!profile) {
+  if (!profile?.user) {
     return (
       <div className="p-4 text-center min-h-[100svh] flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold mb-4">No Application Found</h1>
