@@ -14,9 +14,9 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', req.body);
 
     try {
-      const { first_name, last_name, handle, linkedin_url, email, initData } = req.body;
+      const { first_name, last_name, linkedin_url, email, initData } = req.body;
 
-      if (!first_name || !last_name || !handle) {
+      if (!first_name || !last_name) {
         console.error('Missing required fields');
         return res.status(400).json({ error: 'Missing required fields' });
       }
@@ -27,13 +27,16 @@ export async function registerRoutes(app: Express) {
       const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
       console.log('Decoded Telegram user:', telegramUser);
 
-      if (!telegramUser.id) {
-        console.error('No Telegram user ID found');
+      if (!telegramUser.id || !telegramUser.username) {
+        console.error('No Telegram user ID or username found');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
 
-      // Check if user exists
+      // Use Telegram username as handle
       const telegram_id = telegramUser.id.toString();
+      const handle = telegramUser.username;
+
+      // Check if user exists
       const existingUser = await db.select()
         .from(users)
         .where(eq(users.telegram_id, telegram_id));

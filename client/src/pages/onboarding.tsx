@@ -25,7 +25,6 @@ export default function OnboardingForm() {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
-    handle: '',
     linkedin_url: '',
     email: ''
   });
@@ -36,7 +35,6 @@ export default function OnboardingForm() {
       setFormData({
         first_name: profileData.user.first_name,
         last_name: profileData.user.last_name,
-        handle: profileData.user.handle,
         linkedin_url: profileData.user.linkedin_url || '',
         email: profileData.user.email || ''
       });
@@ -68,12 +66,13 @@ export default function OnboardingForm() {
       setIsSubmitting(true);
       console.log('Form data:', formData);
 
-      if (!formData.first_name || !formData.last_name || !formData.handle) {
+      if (!formData.first_name || !formData.last_name) {
         throw new Error('Please fill in all required fields');
       }
 
       const submitData = {
         ...formData,
+        handle: window.Telegram?.WebApp?.initData?.user?.username || '',
         initData: window.Telegram?.WebApp?.initData || ''
       };
 
@@ -166,18 +165,6 @@ export default function OnboardingForm() {
               name="last_name"
               value={formData.last_name}
               onChange={handleInputChange}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="handle">Telegram Handle</Label>
-            <Input
-              id="handle"
-              name="handle"
-              value={formData.handle}
-              onChange={handleInputChange}
-              placeholder="@username"
               required
             />
           </div>
