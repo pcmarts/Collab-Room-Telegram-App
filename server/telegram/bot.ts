@@ -28,12 +28,7 @@ We'll notify you here once your application has been reviewed`;
 
 // Command handlers
 bot.command("start", async (ctx) => {
-  const user = await storage.getUserByTelegramId(ctx.from.id.toString());
-
-  const message = user
-    ? "👋 Welcome back to CollabRoom!\n\nUse /status command to check your application status."
-    : "👋 Welcome to CollabRoom!\n\nUse /status command to check your application status.";
-
+  const message = "👋 Welcome to CollabRoom!\n\nUse /status command to check your application status.";
   await ctx.reply(message);
 });
 
