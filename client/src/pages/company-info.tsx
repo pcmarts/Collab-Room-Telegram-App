@@ -205,7 +205,8 @@ export default function CompanyInfoForm() {
 
       toast({
         title: "Success!",
-        description: "Company information updated successfully"
+        description: "Company information updated successfully",
+        duration: 2000, // 2 seconds
       });
 
       // Wait for toast to show before navigation

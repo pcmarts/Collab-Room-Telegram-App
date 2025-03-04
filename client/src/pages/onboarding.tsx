@@ -96,7 +96,8 @@ export default function OnboardingForm() {
 
       toast({
         title: "Success!",
-        description: responseData.message || "Personal information saved successfully"
+        description: responseData.message || "Personal information saved successfully",
+        duration: 2000, // 2 seconds
       });
 
       // Navigate to next step or back to dashboard

@@ -140,7 +140,8 @@ export default function CollabPreferencesForm() {
 
       toast({
         title: "Success!",
-        description: "Your collaboration preferences have been updated"
+        description: "Your collaboration preferences have been updated",
+        duration: 2000, // 2 seconds
       });
 
       // Wait for toast to show before navigation
