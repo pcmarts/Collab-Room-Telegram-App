@@ -3,6 +3,8 @@ import { createServer } from "http";
 import { db } from "./db";
 import { users, companies, preferences } from "../shared/schema";
 import { eq } from 'drizzle-orm';
+import { matchingService } from "./services/matching";
+import { collaboration_opportunities } from "../shared/schema"; // Assuming this is the correct import
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
@@ -434,6 +436,121 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error('Profile fetch error:', error);
       res.status(500).json({ error: 'Failed to fetch profile data' });
+    }
+  });
+
+  // Get potential matches for the current user
+  app.get("/api/matches", async (req, res) => {
+    try {
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+
+      if (!telegramUser.id) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const matches = await matchingService.findMatches(user.id);
+      res.json(matches);
+
+    } catch (error) {
+      console.error('Error fetching matches:', error);
+      res.status(500).json({ error: 'Failed to fetch matches' });
+    }
+  });
+
+  // Create a new match
+  app.post("/api/matches", async (req, res) => {
+    try {
+      const { opportunity_id } = req.body;
+
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+
+      if (!telegramUser.id) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const match = await matchingService.createMatch(opportunity_id, user.id);
+      res.json({ success: true, match });
+
+    } catch (error) {
+      console.error('Error creating match:', error);
+      res.status(500).json({ error: 'Failed to create match' });
+    }
+  });
+
+  // Create a new collaboration opportunity
+  app.post("/api/opportunities", async (req, res) => {
+    try {
+      const { title, description, collab_type, expires_at } = req.body;
+
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+
+      if (!telegramUser.id) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const [opportunity] = await db.insert(collaboration_opportunities)
+        .values({
+          user_id: user.id,
+          title,
+          description,
+          collab_type,
+          expires_at: expires_at ? new Date(expires_at) : null
+        })
+        .returning();
+
+      res.json({ success: true, opportunity });
+
+    } catch (error) {
+      console.error('Error creating opportunity:', error);
+      res.status(500).json({ error: 'Failed to create opportunity' });
     }
   });
 
