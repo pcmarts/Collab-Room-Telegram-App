@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Pencil, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import type { User, Company, Preferences } from '@shared/schema';
@@ -22,7 +22,7 @@ export default function ProfileOverview() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[100svh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
@@ -43,20 +43,39 @@ export default function ProfileOverview() {
   const { user, company, preferences } = profile;
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">Profile Overview</h1>
-        <Button onClick={() => setLocation('/onboarding?edit=true')}>
-          <Pencil className="mr-2 h-4 w-4" />
-          Edit Profile
-        </Button>
+    <div className="min-h-[100svh] bg-background">
+      {/* Sticky Header */}
+      <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center -ml-3"
+            onClick={() => setLocation('/dashboard')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <h1 className="text-lg font-semibold">Profile Overview</h1>
+          <div className="w-12" /> {/* Spacer for alignment */}
+        </div>
       </div>
 
-      <div className="space-y-8">
+      <div className="p-4 space-y-6">
         {/* Personal Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>Personal Information</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation('/onboarding?edit=true')}
+                className="h-8 px-3"
+              >
+                Edit
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -94,6 +113,7 @@ export default function ProfileOverview() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setLocation('/company-info?edit=true')}
+                className="h-8 px-3"
               >
                 Edit
               </Button>
@@ -135,6 +155,7 @@ export default function ProfileOverview() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setLocation('/collab-preferences?edit=true')}
+                className="h-8 px-3"
               >
                 Edit
               </Button>
