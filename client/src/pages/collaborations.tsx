@@ -6,10 +6,26 @@ import { cn } from '@/lib/utils';
 import { apiRequest } from '@/lib/queryClient';
 import type { CollaborationOpportunity } from '@shared/schema';
 import { useToast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
+
+interface OpportunityWithDetails extends CollaborationOpportunity {
+  company: {
+    name: string;
+    website: string;
+    twitter_handle: string | null;
+    linkedin_url: string | null;
+  };
+  host: {
+    first_name: string;
+    last_name: string;
+    handle: string;
+  };
+}
 
 export default function Collaborations() {
   const { toast } = useToast();
-  const { data: collaborations, isLoading } = useQuery<CollaborationOpportunity[]>({
+  const [_, setLocation] = useLocation();
+  const { data: collaborations, isLoading } = useQuery<OpportunityWithDetails[]>({
     queryKey: ['/api/opportunities']
   });
 
@@ -45,7 +61,7 @@ export default function Collaborations() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">Collaboration Opportunities</h1>
-        <Button>
+        <Button onClick={() => setLocation('/create-opportunity')}>
           <Plus className="mr-2 h-4 w-4" />
           New Opportunity
         </Button>
@@ -57,7 +73,10 @@ export default function Collaborations() {
             <CardHeader>
               <CardTitle className="flex justify-between items-start">
                 <div>
-                  {collab.title}
+                  <div className="text-xl mb-1">{collab.title}</div>
+                  <div className="text-sm text-muted-foreground mb-2">
+                    By {collab.company.name}
+                  </div>
                   <div className="flex gap-2 mt-2">
                     <span className={cn(
                       "px-2 py-1 rounded-full text-xs",
@@ -79,16 +98,41 @@ export default function Collaborations() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Globe className="h-4 w-4" />
-                  <a href="#" className="hover:underline">Visit Website</a>
+                  <a 
+                    href={collab.company.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="hover:underline"
+                  >
+                    Visit Website
+                  </a>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Twitter className="h-4 w-4" />
-                  <a href="#" className="hover:underline">Twitter Profile</a>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Linkedin className="h-4 w-4" />
-                  <a href="#" className="hover:underline">LinkedIn Profile</a>
-                </div>
+                {collab.company.twitter_handle && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Twitter className="h-4 w-4" />
+                    <a 
+                      href={`https://twitter.com/${collab.company.twitter_handle}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="hover:underline"
+                    >
+                      @{collab.company.twitter_handle}
+                    </a>
+                  </div>
+                )}
+                {collab.company.linkedin_url && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Linkedin className="h-4 w-4" />
+                    <a 
+                      href={collab.company.linkedin_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="hover:underline"
+                    >
+                      LinkedIn Profile
+                    </a>
+                  </div>
+                )}
               </div>
             </CardContent>
 

@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { bot } from "./telegram";
+import { matchingScheduler } from "./services/scheduler";
 
 const app = express();
 app.use(express.json());
@@ -21,6 +22,10 @@ try {
   // Try to get bot info to verify token works
   bot.getMe().then((botInfo) => {
     log('Telegram bot verified:', botInfo.username);
+
+    // Start the matching scheduler after bot is verified
+    log('Starting matching scheduler...');
+    matchingScheduler.start();
   }).catch((error) => {
     console.error('Failed to verify bot:', error);
     process.exit(1);

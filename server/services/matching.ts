@@ -11,12 +11,22 @@ export class MatchingService {
    * Find potential matches for a user based on their preferences
    */
   async findMatches(userId: string): Promise<CollaborationOpportunity[]> {
+    console.log(`Finding matches for user ${userId}`);
+
     // Get user's preferences and excluded tags
     const [userPrefs] = await db.select()
       .from(preferences)
       .where(eq(preferences.user_id, userId));
 
-    if (!userPrefs) return [];
+    if (!userPrefs) {
+      console.log(`No preferences found for user ${userId}`);
+      return [];
+    }
+
+    console.log(`User ${userId} preferences:`, {
+      collabs_to_discover: userPrefs.collabs_to_discover,
+      excluded_tags: userPrefs.excluded_tags
+    });
 
     // Get active opportunities that match user's preferences
     const matches = await db.select()
@@ -27,6 +37,7 @@ export class MatchingService {
         inArray(collaboration_opportunities.collab_type, userPrefs.collabs_to_discover)
       ));
 
+    console.log(`Found ${matches.length} potential matches for user ${userId}`);
     return matches;
   }
 
@@ -34,6 +45,8 @@ export class MatchingService {
    * Create a new match between users
    */
   async createMatch(opportunityId: string, discovererId: string): Promise<Match> {
+    console.log(`Creating match for opportunity ${opportunityId} and discoverer ${discovererId}`);
+
     const [opportunity] = await db.select()
       .from(collaboration_opportunities)
       .where(eq(collaboration_opportunities.id, opportunityId));
@@ -50,6 +63,8 @@ export class MatchingService {
       })
       .returning();
 
+    console.log(`Match created: ${match.id}`);
+
     // Send Telegram notifications to both users
     await this.notifyMatchCreated(match);
 
@@ -57,7 +72,7 @@ export class MatchingService {
   }
 
   /**
-   * Send Telegram notifications about a new match
+   * Send Telegram notifications about a new match with complete company details
    */
   private async notifyMatchCreated(match: Match) {
     // Get user and company info for both parties
@@ -93,6 +108,7 @@ export class MatchingService {
         `To connect, message @${host.handle} directly on Telegram.`;
 
       await bot.sendMessage(discoverer.telegram_id, hostMessage);
+      console.log(`Sent match notification to discoverer ${discoverer.telegram_id}`);
     }
 
     // Notify host
@@ -107,6 +123,7 @@ export class MatchingService {
         `To connect, message @${discoverer.handle} directly on Telegram.`;
 
       await bot.sendMessage(host.telegram_id, discovererMessage);
+      console.log(`Sent match notification to host ${host.telegram_id}`);
     }
   }
 }
