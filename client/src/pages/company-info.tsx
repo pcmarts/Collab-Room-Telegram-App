@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronDown, ChevronUp, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { FUNDING_STAGES, BLOCKCHAIN_NETWORKS, COMPANY_TAG_CATEGORIES } from "@shared/schema";
@@ -17,6 +17,8 @@ export default function CompanyInfoForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>('');
   const queryClient = useQueryClient();
 
   // Check if we're in edit mode
@@ -39,7 +41,8 @@ export default function CompanyInfoForm() {
     has_token: false,
     token_ticker: '$',
     blockchain_networks: [] as string[],
-    tags: [] as string[]
+    tags: [] as string[],
+    logo_url: ''
   });
 
   // Load saved data from API or session storage
@@ -57,8 +60,12 @@ export default function CompanyInfoForm() {
         has_token: profileData.company.has_token,
         token_ticker: profileData.company.token_ticker || '$',
         blockchain_networks: profileData.company.blockchain_networks || [],
-        tags: profileData.company.tags || []
+        tags: profileData.company.tags || [],
+        logo_url: profileData.company.logo_url || ''
       });
+      if (profileData.company.logo_url) {
+        setLogoPreview(profileData.company.logo_url);
+      }
     } else if (!isEditMode) {
       const savedData = sessionStorage.getItem('companyFormData');
       if (savedData) {
@@ -67,6 +74,27 @@ export default function CompanyInfoForm() {
       }
     }
   }, [isEditMode, profileData]);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Logo file size must be less than 5MB"
+        });
+        return;
+      }
+
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -176,6 +204,19 @@ export default function CompanyInfoForm() {
         throw new Error('Please select at least one company tag');
       }
 
+      // If there's a new logo file, upload it first
+      let logo_url = formData.logo_url;
+      if (logoFile) {
+        const formData = new FormData();
+        formData.append('logo', logoFile);
+        const uploadResponse = await apiRequest('POST', '/api/upload-logo', formData);
+        const uploadData = await uploadResponse.json();
+        if (!uploadResponse.ok) {
+          throw new Error(uploadData.error || 'Failed to upload logo');
+        }
+        logo_url = uploadData.url;
+      }
+
       const submitData = {
         company_name: formData.company_name,
         job_title: formData.job_title,
@@ -186,7 +227,8 @@ export default function CompanyInfoForm() {
         has_token: formData.has_token,
         token_ticker: formData.has_token ? formData.token_ticker : null,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
-        tags: formData.tags
+        tags: formData.tags,
+        logo_url
       };
 
       console.log('Submitting data to API:', submitData);
@@ -210,7 +252,7 @@ export default function CompanyInfoForm() {
 
       // Wait for toast to show before navigation
       await new Promise(resolve => setTimeout(resolve, 500));
-      setLocation('/profile-overview');
+      setLocation('/dashboard');
 
     } catch (error) {
       console.error('Failed to update company info:', error);
@@ -226,11 +268,7 @@ export default function CompanyInfoForm() {
   };
 
   const handleBack = () => {
-    if (isEditMode) {
-      setLocation('/profile-overview');
-    } else {
-      setLocation('/onboarding');
-    }
+    setLocation(isEditMode ? '/dashboard' : '/onboarding');
   };
 
   return (
@@ -257,7 +295,48 @@ export default function CompanyInfoForm() {
           <p className="text-muted-foreground mt-2">Tell us about your company</p>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Company Logo Upload */}
+          <div className="space-y-2">
+            <Label>Company Logo</Label>
+            <div className="flex flex-col items-center p-4 border-2 border-dashed rounded-lg">
+              {logoPreview ? (
+                <div className="relative w-32 h-32 mb-4">
+                  <img
+                    src={logoPreview}
+                    alt="Company logo preview"
+                    className="w-full h-full object-contain rounded-lg"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute -top-2 -right-2"
+                    onClick={() => {
+                      setLogoFile(null);
+                      setLogoPreview('');
+                      setFormData(prev => ({ ...prev, logo_url: '' }));
+                    }}
+                  >
+                    ×
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center">
+                  <Upload className="w-12 h-12 text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">Upload your company logo</p>
+                  <p className="text-xs text-muted-foreground">(Max 5MB)</p>
+                </div>
+              )}
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoChange}
+                className="mt-4"
+              />
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="company_name">Company Name</Label>
             <Input
