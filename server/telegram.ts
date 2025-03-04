@@ -77,9 +77,14 @@ async function handleStart(msg: TelegramBot.Message) {
       };
       welcomeMessage = `👋 Welcome back to CollabRoom!\n\nYou're all set! Click below to access your dashboard and start collaborating.`;
     } else {
-      // Pending user - no buttons, just status info
-      keyboard = undefined;
-      welcomeMessage = `👋 Welcome back to CollabRoom!\n\nYour application is currently under review. Use /status to check your application status.`;
+      // Pending user - show application status button
+      keyboard = {
+        inline_keyboard: [[{
+          text: "View Application Status",
+          web_app: { url: `${WEBAPP_URL}/application-status` }
+        }]]
+      };
+      welcomeMessage = `👋 Welcome back to CollabRoom!\n\nYour application is currently under review. Click below to check your application status or use /status command anytime.`;
     }
 
     await bot.sendMessage(chatId, welcomeMessage, keyboard ? { reply_markup: keyboard } : undefined);
@@ -151,7 +156,12 @@ async function handleStatus(msg: TelegramBot.Message) {
       };
     } else {
       statusMessage = `📝 Application Status: Under Review\n\nApplication Details:\n• Name: ${user.first_name} ${user.last_name}\n• Submitted: ${applicationDate}\n\nWe'll notify you here once your application has been reviewed.`;
-      keyboard = undefined;
+      keyboard = {
+        inline_keyboard: [[{
+          text: "View Application Status",
+          web_app: { url: `${WEBAPP_URL}/application-status` }
+        }]]
+      };
     }
 
     await bot.sendMessage(chatId, statusMessage, { 
