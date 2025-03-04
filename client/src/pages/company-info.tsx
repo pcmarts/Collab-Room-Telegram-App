@@ -227,7 +227,7 @@ export default function CompanyInfoForm() {
 
   const handleBack = () => {
     if (isEditMode) {
-      setLocation('/profile-overview');
+      setLocation('/dashboard');
     } else {
       setLocation('/onboarding');
     }
@@ -377,9 +377,9 @@ export default function CompanyInfoForm() {
           )}
 
           <div className="space-y-4 pt-4">
-            <Label className="text-lg">Company Tags</Label>
+            <Label className="text-lg">Your Company Sector</Label>
             <p className="text-sm text-muted-foreground">
-              Select tags that best describe your company's focus areas
+              Select tags that best describe your company's focus areas in web3. 
             </p>
 
             {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
