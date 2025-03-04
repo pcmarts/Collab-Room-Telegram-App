@@ -3,86 +3,9 @@ import { createServer } from "http";
 import { db } from "./db";
 import { users, companies, preferences } from "../shared/schema";
 import { eq } from 'drizzle-orm';
-import multer from 'multer';
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { randomUUID } from 'crypto';
-
-// Configure multer for memory storage
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  }
-});
-
-// Initialize S3 client for Supabase Storage
-const s3Client = new S3Client({
-  endpoint: process.env.SUPABASE_URL,
-  credentials: {
-    accessKeyId: process.env.SUPABASE_SERVICE_KEY || '',
-    secretAccessKey: process.env.SUPABASE_SERVICE_KEY || ''
-  },
-  region: 'auto',
-  forcePathStyle: true
-});
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
-
-  // Logo upload endpoint
-  app.post("/api/upload-logo", upload.single('logo'), async (req, res) => {
-    console.log('============ DEBUG: Logo Upload Started ============');
-    try {
-      if (!req.file) {
-        console.error('No file in request');
-        return res.status(400).json({ error: 'No file uploaded' });
-      }
-
-      console.log('File received:', {
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size
-      });
-
-      const file = req.file;
-      const fileExtension = file.mimetype.split('/')[1];
-      const fileName = `${randomUUID()}.${fileExtension}`;
-
-      console.log('Preparing S3 upload:', {
-        bucket: 'company-logos',
-        key: fileName,
-        contentType: file.mimetype
-      });
-
-      // Upload to Supabase Storage
-      const command = new PutObjectCommand({
-        Bucket: 'company-logos',
-        Key: fileName,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-        ACL: 'public-read'
-      });
-
-      try {
-        await s3Client.send(command);
-        console.log('File uploaded successfully');
-
-        // Construct the public URL
-        const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/company-logos/${fileName}`;
-        console.log('Generated public URL:', publicUrl);
-
-        res.json({ url: publicUrl });
-      } catch (uploadError) {
-        console.error('S3 upload error:', uploadError);
-        throw new Error(`Failed to upload to storage: ${uploadError.message}`);
-      }
-    } catch (error) {
-      console.error('Logo upload error:', error);
-      res.status(500).json({ error: 'Failed to upload logo' });
-    } finally {
-      console.log('============ DEBUG: Logo Upload Ended ============');
-    }
-  });
 
   // Simple test endpoint that writes to database
   app.post("/api/onboarding", async (req, res) => {

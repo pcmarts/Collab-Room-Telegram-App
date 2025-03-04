@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, ChevronDown, ChevronUp, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { FUNDING_STAGES, BLOCKCHAIN_NETWORKS, COMPANY_TAG_CATEGORIES } from "@shared/schema";
@@ -11,19 +11,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ImageCropModal } from '@/components/ImageCropModal';
 
 export default function CompanyInfoForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string>('');
   const queryClient = useQueryClient();
-  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
-  const [tempImageSrc, setTempImageSrc] = useState<string>('');
 
   // Check if we're in edit mode
   const isEditMode = window.location.search.includes('edit=true');
@@ -45,8 +39,7 @@ export default function CompanyInfoForm() {
     has_token: false,
     token_ticker: '$',
     blockchain_networks: [] as string[],
-    tags: [] as string[],
-    logo_url: ''
+    tags: [] as string[]
   });
 
   // Load saved data from API or session storage
@@ -64,12 +57,8 @@ export default function CompanyInfoForm() {
         has_token: profileData.company.has_token,
         token_ticker: profileData.company.token_ticker || '$',
         blockchain_networks: profileData.company.blockchain_networks || [],
-        tags: profileData.company.tags || [],
-        logo_url: profileData.company.logo_url || ''
+        tags: profileData.company.tags || []
       });
-      if (profileData.company.logo_url) {
-        setLogoPreview(profileData.company.logo_url);
-      }
     } else if (!isEditMode) {
       const savedData = sessionStorage.getItem('companyFormData');
       if (savedData) {
@@ -78,37 +67,6 @@ export default function CompanyInfoForm() {
       }
     }
   }, [isEditMode, profileData]);
-
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Logo file size must be less than 5MB"
-        });
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTempImageSrc(reader.result as string);
-        setIsCropModalOpen(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleCropComplete = async (croppedImage: string) => {
-    setLogoPreview(croppedImage);
-
-    // Convert base64/URL to file
-    const response = await fetch(croppedImage);
-    const blob = await response.blob();
-    const file = new File([blob], 'logo.jpg', { type: 'image/jpeg' });
-    setLogoFile(file);
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -218,28 +176,6 @@ export default function CompanyInfoForm() {
         throw new Error('Please select at least one company tag');
       }
 
-      // If there's a new logo file, upload it first
-      let logo_url = formData.logo_url;
-      if (logoFile) {
-        const formData = new FormData();
-        formData.append('logo', logoFile);
-
-        try {
-          const uploadResponse = await apiRequest('POST', '/api/upload-logo', formData);
-          const uploadData = await uploadResponse.json();
-
-          if (!uploadResponse.ok) {
-            throw new Error(uploadData.error || 'Failed to upload logo');
-          }
-
-          logo_url = uploadData.url;
-          console.log('Logo uploaded successfully:', logo_url);
-        } catch (error) {
-          console.error('Logo upload error:', error);
-          throw new Error('Failed to upload company logo');
-        }
-      }
-
       const submitData = {
         company_name: formData.company_name,
         job_title: formData.job_title,
@@ -250,8 +186,7 @@ export default function CompanyInfoForm() {
         has_token: formData.has_token,
         token_ticker: formData.has_token ? formData.token_ticker : null,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
-        tags: formData.tags,
-        logo_url: logo_url || ''  // Ensure we always send a string
+        tags: formData.tags
       };
 
       console.log('Submitting data to API:', submitData);
@@ -275,7 +210,7 @@ export default function CompanyInfoForm() {
 
       // Wait for toast to show before navigation
       await new Promise(resolve => setTimeout(resolve, 500));
-      setLocation('/dashboard');
+      setLocation('/profile-overview');
 
     } catch (error) {
       console.error('Failed to update company info:', error);
@@ -291,7 +226,11 @@ export default function CompanyInfoForm() {
   };
 
   const handleBack = () => {
-    setLocation(isEditMode ? '/dashboard' : '/onboarding');
+    if (isEditMode) {
+      setLocation('/profile-overview');
+    } else {
+      setLocation('/onboarding');
+    }
   };
 
   return (
@@ -318,51 +257,7 @@ export default function CompanyInfoForm() {
           <p className="text-muted-foreground mt-2">Tell us about your company</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Company Logo Upload */}
-          <div className="space-y-2">
-            <Label>Company Logo</Label>
-            <div className="flex flex-col items-center p-4 border-2 border-dashed rounded-lg">
-              {logoPreview ? (
-                <div className="relative mb-4">
-                  <Avatar className="w-32 h-32">
-                    <AvatarImage src={logoPreview} alt="Company logo preview" />
-                    <AvatarFallback>LOGO</AvatarFallback>
-                  </Avatar>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="absolute -top-2 -right-2"
-                    onClick={() => {
-                      setLogoFile(null);
-                      setLogoPreview('');
-                      setFormData(prev => ({ ...prev, logo_url: '' }));
-                    }}
-                  >
-                    ×
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center">
-                  <Avatar className="w-32 h-32">
-                    <AvatarFallback>
-                      <Upload className="w-12 h-12 text-muted-foreground" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <p className="text-sm text-muted-foreground mt-4">Upload your company logo</p>
-                  <p className="text-xs text-muted-foreground">(Max 5MB, will be cropped square)</p>
-                </div>
-              )}
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleLogoChange}
-                className="mt-4"
-              />
-            </div>
-          </div>
-
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
           <div>
             <Label htmlFor="company_name">Company Name</Label>
             <Input
@@ -539,12 +434,6 @@ export default function CompanyInfoForm() {
           </Button>
         </form>
       </div>
-      <ImageCropModal
-        open={isCropModalOpen}
-        onClose={() => setIsCropModalOpen(false)}
-        imageSrc={tempImageSrc}
-        onCropComplete={handleCropComplete}
-      />
     </div>
   );
 }

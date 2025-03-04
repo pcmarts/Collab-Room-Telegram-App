@@ -120,18 +120,8 @@ export const companies = pgTable('companies', {
   token_ticker: text('token_ticker'),
   blockchain_networks: text('blockchain_networks').array(),
   tags: text('tags').array(),
-  logo_url: text('logo_url').default(''),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
-
-// Update the insert schema to match
-export const insertCompanySchema = createInsertSchema(companies)
-  .extend({
-    logo_url: z.string().default(''),
-    has_token: z.boolean().default(false),
-    blockchain_networks: z.array(z.string()).default([]),
-    tags: z.array(z.string()).default([])
-  });
 
 // Collaboration preferences
 export const preferences = pgTable('preferences', {
@@ -146,6 +136,7 @@ export const preferences = pgTable('preferences', {
 
 // Schema validation
 export const insertUserSchema = createInsertSchema(users);
+export const insertCompanySchema = createInsertSchema(companies);
 export const insertPreferencesSchema = createInsertSchema(preferences);
 
 // Types

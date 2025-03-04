@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
 import { User as UserIcon, Settings, Users, BookOpen, Building } from 'lucide-react';
 import type { User, Company, Preferences } from '@shared/schema';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface ProfileData {
   user: User;
@@ -121,52 +120,38 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="p-4 pt-2">
-            <div className="space-y-4">
-              {company?.logo_url && (
-                <div className="flex justify-center">
-                  <Avatar className="w-32 h-32">
-                    <AvatarImage 
-                      src={company.logo_url} 
-                      alt={`${company.name} logo`}
-                      className="object-cover"
-                    />
-                    <AvatarFallback>{company.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                </div>
-              )}
-              <div className="space-y-2 text-sm">
-                <p><strong>Company:</strong> {company?.name}</p>
-                <p><strong>Role:</strong> {company?.job_title}</p>
-                <p><strong>Website:</strong> {company?.website}</p>
-                <p><strong>Funding Stage:</strong> {company?.funding_stage}</p>
-                {company?.has_token && (
-                  <>
-                    <p><strong>Token:</strong> {company?.token_ticker}</p>
-                    <div>
-                      <strong>Networks:</strong>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {company?.blockchain_networks?.map(network => (
-                          <span key={network} className="px-2 py-0.5 bg-primary/10 rounded-full text-xs">
-                            {network}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-                {company?.tags && company.tags.length > 0 && (
+            <div className="space-y-2 text-sm">
+              <p><strong>Company:</strong> {company?.name}</p>
+              <p><strong>Role:</strong> {company?.job_title}</p>
+              <p><strong>Website:</strong> {company?.website}</p>
+              <p><strong>Funding Stage:</strong> {company?.funding_stage}</p>
+              {company?.has_token && (
+                <>
+                  <p><strong>Token:</strong> {company?.token_ticker}</p>
                   <div>
-                    <strong>Tags:</strong>
+                    <strong>Networks:</strong>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {company.tags.map(tag => (
-                        <span key={tag} className="px-2 py-0.5 bg-primary/10 rounded-full text-xs">
-                          {tag}
+                      {company?.blockchain_networks?.map(network => (
+                        <span key={network} className="px-2 py-0.5 bg-primary/10 rounded-full text-xs">
+                          {network}
                         </span>
                       ))}
                     </div>
                   </div>
-                )}
-              </div>
+                </>
+              )}
+              {company?.tags && company.tags.length > 0 && (
+                <div>
+                  <strong>Tags:</strong>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {company.tags.map(tag => (
+                      <span key={tag} className="px-2 py-0.5 bg-primary/10 rounded-full text-xs">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
