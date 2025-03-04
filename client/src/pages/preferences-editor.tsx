@@ -69,7 +69,7 @@ export default function PreferencesEditor() {
         description: "Your collaboration preferences have been updated."
       });
 
-      setLocation('/profile-overview');
+      setLocation('/dashboard');
 
     } catch (error) {
       console.error('Failed to update preferences:', error);
@@ -85,31 +85,32 @@ export default function PreferencesEditor() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[100svh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center mb-8">
+    <div className="min-h-[100svh] bg-background">
+      {/* Sticky Header */}
+      <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
-            onClick={() => setLocation('/profile-overview')}
-            className="flex items-center"
+            size="sm"
+            className="flex items-center -ml-3"
+            onClick={() => setLocation('/dashboard')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Profile
+            Back
           </Button>
+          <h1 className="text-lg font-semibold">Edit Preferences</h1>
+          <div className="w-12" /> {/* Spacer for alignment */}
         </div>
+      </div>
 
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold">Edit Collaboration Preferences</h1>
-          <p className="text-muted-foreground mt-2">Update your collaboration interests and notification settings</p>
-        </div>
-
+      <div className="p-4 space-y-6">
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-6">
             <div>
@@ -117,7 +118,7 @@ export default function PreferencesEditor() {
               <p className="text-sm text-muted-foreground mb-4">
                 Select the types of collaboration opportunities you'd like to be notified about
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 {COLLAB_TYPES.map(type => (
                   <Button
                     key={type}
@@ -137,7 +138,7 @@ export default function PreferencesEditor() {
               <p className="text-sm text-muted-foreground mb-4">
                 Select the types of collaborations your company can offer
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 {COLLAB_TYPES.map(type => (
                   <Button
                     key={type}
@@ -161,7 +162,7 @@ export default function PreferencesEditor() {
                 value={formData.notification_frequency}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, notification_frequency: value }))}
               >
-                <SelectTrigger className="w-full max-w-xs">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select frequency" />
                 </SelectTrigger>
                 <SelectContent>
@@ -177,7 +178,7 @@ export default function PreferencesEditor() {
 
           <Button
             type="submit"
-            className="w-full max-w-xs"
+            className="w-full"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
