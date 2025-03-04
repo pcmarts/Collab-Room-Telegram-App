@@ -25,8 +25,8 @@ export default function CompanyInfoForm() {
   const [formData, setFormData] = useState({
     company_name: '',
     job_title: '',
-    website: '',
-    twitter_handle: '',
+    website: 'https://www.',
+    twitter_url: 'https://x.com/',
     linkedin_url: ''
   });
 
@@ -37,7 +37,7 @@ export default function CompanyInfoForm() {
         company_name: profileData.company.name,
         job_title: profileData.company.job_title,
         website: profileData.company.website,
-        twitter_handle: profileData.company.twitter_handle || '',
+        twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : 'https://x.com/',
         linkedin_url: profileData.company.linkedin_url || ''
       });
     } else {
@@ -60,64 +60,25 @@ export default function CompanyInfoForm() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('============ DEBUG: Company Form Submit Started ============');
-
-    try {
-      setIsSubmitting(true);
-      console.log('Form data:', formData);
-
-      if (!formData.company_name || !formData.job_title || !formData.website) {
-        throw new Error('Please fill in all required fields');
-      }
-
-      const submitData = {
-        ...formData,
-        initData: window.Telegram?.WebApp?.initData || ''
-      };
-
-      console.log('Submitting data:', submitData);
-
-      const response = await fetch('/api/company', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submitData)
-      });
-
-      console.log('Response status:', response.status);
-      const responseData = await response.json();
-      console.log('Response data:', responseData);
-
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to submit form');
-      }
-
-      toast({
-        title: "Success!",
-        description: responseData.message || "Company information saved successfully"
-      });
-
-      // Navigate to next step or back to profile
-      if (isEditMode) {
-        setLocation('/profile-overview');
-      } else {
-        setLocation('/collab-preferences');
-      }
-
-    } catch (error) {
-      console.error('Form submission error:', error);
+  const handleNext = async () => {
+    if (!formData.company_name || !formData.job_title || !formData.website) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to submit form"
+        description: "Please fill in all required fields"
       });
-    } finally {
-      setIsSubmitting(false);
-      console.log('============ DEBUG: Company Form Submit Ended ============');
+      return;
     }
+
+    // Store the form data in session storage
+    sessionStorage.setItem('companyFormData', JSON.stringify({
+      ...formData,
+      // Extract handle from twitter URL if present
+      twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', '')
+    }));
+
+    // Navigate to next step
+    setLocation('/collab-preferences');
   };
 
   const handleBack = () => {
@@ -150,7 +111,7 @@ export default function CompanyInfoForm() {
           <p className="text-muted-foreground mt-2">Tell us about your company</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
           <div>
             <Label htmlFor="company_name">Company Name</Label>
             <Input
@@ -181,19 +142,17 @@ export default function CompanyInfoForm() {
               type="url"
               value={formData.website}
               onChange={handleInputChange}
-              placeholder="https://"
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="twitter_handle">Company Twitter Handle</Label>
+            <Label htmlFor="twitter_url">Company Twitter URL</Label>
             <Input
-              id="twitter_handle"
-              name="twitter_handle"
-              value={formData.twitter_handle}
+              id="twitter_url"
+              name="twitter_url"
+              value={formData.twitter_url}
               onChange={handleInputChange}
-              placeholder="@"
             />
           </div>
 
@@ -212,6 +171,7 @@ export default function CompanyInfoForm() {
           <Button
             type="submit"
             className="w-full"
+            onClick={isEditMode ? handleSubmit : handleNext}
             disabled={isSubmitting}
           >
             {isSubmitting ? (

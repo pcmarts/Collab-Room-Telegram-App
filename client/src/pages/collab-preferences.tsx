@@ -90,22 +90,49 @@ export default function CollabPreferencesForm() {
         throw new Error('Please fill in all required fields');
       }
 
-      // Use apiRequest which handles Telegram headers automatically
-      const response = await apiRequest('POST', '/api/preferences', formData);
-      const data = await response.json();
-
-      toast({
-        title: "Success!",
-        description: "Your collaboration preferences have been updated."
-      });
-
       if (isEditMode) {
+        // In edit mode, just update preferences
+        const response = await apiRequest('POST', '/api/preferences', formData);
+        await response.json();
+
+        toast({
+          title: "Success!",
+          description: "Your collaboration preferences have been updated."
+        });
+
         setLocation('/dashboard');
       } else {
+        // In onboarding mode, submit all form data
+        const userFormData = JSON.parse(sessionStorage.getItem('userFormData') || '{}');
+        const companyFormData = JSON.parse(sessionStorage.getItem('companyFormData') || '{}');
+
+        // Submit user data first
+        const userResponse = await apiRequest('POST', '/api/onboarding', {
+          ...userFormData,
+          initData: window.Telegram?.WebApp?.initData || ''
+        });
+        await userResponse.json();
+
+        // Then submit company data
+        const companyResponse = await apiRequest('POST', '/api/company', {
+          ...companyFormData,
+          initData: window.Telegram?.WebApp?.initData || ''
+        });
+        await companyResponse.json();
+
+        // Finally submit preferences
+        const prefResponse = await apiRequest('POST', '/api/preferences', formData);
+        await prefResponse.json();
+
         // Clear all stored form data
         sessionStorage.removeItem('preferencesFormData');
         sessionStorage.removeItem('companyFormData');
         sessionStorage.removeItem('userFormData');
+
+        toast({
+          title: "Success!",
+          description: "Your profile has been created successfully!"
+        });
 
         // Close Telegram WebApp after short delay to show toast
         setTimeout(() => {
@@ -116,11 +143,11 @@ export default function CollabPreferencesForm() {
       }
 
     } catch (error) {
-      console.error('Failed to update preferences:', error);
+      console.error('Failed to submit form:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update preferences"
+        description: error instanceof Error ? error.message : "Failed to submit form"
       });
     } finally {
       setIsSubmitting(false);
@@ -157,6 +184,14 @@ export default function CollabPreferencesForm() {
       </div>
 
       <div className="p-4 space-y-6">
+        {!isEditMode && (
+          <div className="flex items-center gap-2 justify-center mb-4">
+            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+            <div className="w-3 h-3 rounded-full bg-primary"></div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-6">
             <div>
