@@ -68,14 +68,24 @@ async function handleStart(msg: TelegramBot.Message) {
       };
       welcomeMessage = '👋 Welcome to CollabRoom!\n\nWe\'re excited that you\'re interested in joining our community of innovative collaborators. Click below to start your application.';
     } else if (existingUser.is_approved) {
-      // Approved user - show Dashboard button
+      // Approved user - show multiple action buttons
       keyboard = {
-        inline_keyboard: [[{
-          text: "View Dashboard",
-          web_app: { url: `${WEBAPP_URL}/dashboard` }
-        }]]
+        inline_keyboard: [
+          [{
+            text: "Find Collaborations",
+            web_app: { url: `${WEBAPP_URL}/collaborations` }
+          }],
+          [{
+            text: "Create Opportunity",
+            web_app: { url: `${WEBAPP_URL}/create-opportunity` }
+          }],
+          [{
+            text: "View Dashboard",
+            web_app: { url: `${WEBAPP_URL}/dashboard` }
+          }]
+        ]
       };
-      welcomeMessage = `👋 Welcome back to CollabRoom!\n\nYou're all set! Click below to access your dashboard and start collaborating.`;
+      welcomeMessage = `👋 Welcome back to CollabRoom!\n\nReady to collaborate? You can:\n• Find new collaboration opportunities\n• Create your own opportunity\n• Check your dashboard`;
     } else {
       // Pending user - show application status button
       keyboard = {
