@@ -3,13 +3,20 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import type { User } from '@shared/schema';
+
+interface ProfileResponse {
+  user: User;
+  company: any;
+  preferences: any;
+}
 
 export function MatchingToggle() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const { data: profile } = useQuery({
+  const { data: profile } = useQuery<ProfileResponse>({
     queryKey: ['/api/profile'],
   });
 
@@ -17,13 +24,13 @@ export function MatchingToggle() {
     try {
       setIsUpdating(true);
       const response = await apiRequest('POST', '/api/preferences/matching', { enabled });
-      
+
       if (!response.ok) {
         throw new Error('Failed to update matching preferences');
       }
 
       queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-      
+
       toast({
         title: 'Success!',
         description: `Collaboration matching ${enabled ? 'enabled' : 'disabled'}.`,
