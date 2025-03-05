@@ -615,5 +615,46 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Toggle matching status
+  app.post("/api/preferences/matching", async (req, res) => {
+    try {
+      const { enabled } = req.body;
+
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+
+      if (!telegramUser.id) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Update matching status
+      const [updatedUser] = await db.update(users)
+        .set({ matching_enabled: enabled })
+        .where(eq(users.id, user.id))
+        .returning();
+
+      res.json({ success: true, matching_enabled: updatedUser.matching_enabled });
+
+    } catch (error) {
+      console.error('Error updating matching status:', error);
+      res.status(500).json({ error: 'Failed to update matching status' });
+    }
+  });
+
   return httpServer;
 }

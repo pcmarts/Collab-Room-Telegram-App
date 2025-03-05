@@ -10,6 +10,7 @@ import CompanyInfoForm from "@/pages/company-info";
 import CollabPreferencesForm from "@/pages/collab-preferences";
 import MyCollabsForm from "@/pages/my-collabs";
 import ApplicationStatus from "@/pages/application-status";
+import ActiveCollabs from "@/pages/active-collabs";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 
@@ -32,6 +33,7 @@ function Router() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/collaborations" component={Collaborations} />
           <Route path="/create-opportunity" component={CreateOpportunity} />
+          <Route path="/active-collabs" component={ActiveCollabs} />
           <Route path="/onboarding" component={OnboardingForm} />
           <Route path="/company-info" component={CompanyInfoForm} />
           <Route path="/collab-preferences" component={CollabPreferencesForm} />
