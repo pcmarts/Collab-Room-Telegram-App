@@ -117,7 +117,7 @@ export default function ConferenceCoffees() {
             onClick={() => setLocation('/dashboard')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Cancel
+            Back
           </Button>
           <h1 className="text-lg font-semibold">Conference Coffees</h1>
           <div className="w-12" /> {/* Spacer for alignment */}

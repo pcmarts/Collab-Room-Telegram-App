@@ -172,6 +172,8 @@ export const preferences = pgTable('preferences', {
   collabs_to_host: text('collabs_to_host').array(),
   notification_frequency: text('notification_frequency').notNull(),
   excluded_tags: text('excluded_tags').array(),
+  marketing_collabs_enabled: boolean('marketing_collabs_enabled').default(true),
+  conference_collabs_enabled: boolean('conference_collabs_enabled').default(true),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
