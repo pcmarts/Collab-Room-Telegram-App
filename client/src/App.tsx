@@ -6,14 +6,14 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import Dashboard from "@/pages/dashboard";
 import Collaborations from "@/pages/collaborations";
 import OnboardingForm from "@/pages/onboarding";
-import CompanyInfoForm from "@/pages/company-info";
 import MarketingCollabs from "@/pages/marketing-collabs";
+import ConferenceCoffees from "@/pages/conference-coffees";
+import CompanyInfoForm from "@/pages/company-info";
 import MatchingFilters from "@/pages/matching-filters";
 import ApplicationStatus from "@/pages/application-status";
 import ProfileOverview from "@/pages/profile-overview";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
-import ConferenceCoffees from "@/pages/conference-coffees";
 
 function Router() {
   const isOnboardingRoute = window.location.pathname === '/onboarding' || 
@@ -34,11 +34,11 @@ function Router() {
           </Route>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/collaborations" component={Collaborations} />
+          <Route path="/marketing-collabs" component={MarketingCollabs} />
+          <Route path="/conference-coffees" component={ConferenceCoffees} />
           <Route path="/onboarding" component={OnboardingForm} />
           <Route path="/company-info" component={CompanyInfoForm} />
           <Route path="/matching-filters" component={MatchingFilters} />
-          <Route path="/marketing-collabs" component={MarketingCollabs} />
-          <Route path="/conference-coffees" component={ConferenceCoffees} />
           <Route path="/application-status" component={ApplicationStatus} />
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route component={NotFound} />

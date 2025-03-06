@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Layout, Users } from 'lucide-react';
+import { Layout, Users, Coffee, Megaphone, User, Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Sidebar() {
@@ -7,7 +7,11 @@ export function Sidebar() {
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: Layout },
-    { href: '/collaborations', label: 'Collaborations', icon: Users }
+    { href: '/collaborations', label: 'Collaborations', icon: Users },
+    { href: '/marketing-collabs', label: 'Marketing Collabs', icon: Megaphone },
+    { href: '/conference-coffees', label: 'Conference Coffees', icon: Coffee },
+    { href: '/profile-overview', label: 'Personal Info', icon: User },
+    { href: '/company-info', label: 'Company Info', icon: Building }
   ];
 
   return (
