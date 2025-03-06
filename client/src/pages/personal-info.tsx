@@ -1,0 +1,156 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { ProfileData } from "@/types/profile";
+import { useLocation } from "wouter";
+
+export default function PersonalInfo() {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [_, setLocation] = useLocation();
+
+  // Fetch profile data to check if user has already applied
+  const { data: profileData } = useQuery<ProfileData>({
+    queryKey: ['/api/profile']
+  });
+
+  // Check if user has already applied and redirect if necessary
+  useEffect(() => {
+    if (profileData?.user) {
+      // If the user has already applied, redirect them to application status
+      setLocation('/application-status');
+      return;
+    } else {
+      const savedData = sessionStorage.getItem('userFormData');
+      if (savedData) {
+        setFormData(JSON.parse(savedData));
+      }
+    }
+  }, [profileData]);
+
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    linkedin_url: '',
+    email: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const newFormData = {
+      ...formData,
+      [name]: value
+    };
+    setFormData(newFormData);
+    sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
+  };
+
+  const handleNext = () => {
+    if (!formData.first_name) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter your first name",
+        duration: 2000
+      });
+      return;
+    }
+
+    // Store the form data in session storage and proceed to next step
+    sessionStorage.setItem('userFormData', JSON.stringify(formData));
+    setLocation('/company-basics');
+  };
+
+  return (
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-md mx-auto space-y-6">
+        <div className="flex items-center justify-between mb-8">
+          <Button variant="ghost" onClick={() => setLocation('/apply')} className="flex items-center">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </div>
+
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+          <div className="w-3 h-3 rounded-full bg-primary"></div>
+          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+        </div>
+
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold">Tell Us About Yourself</h1>
+          <p className="text-muted-foreground mt-2">
+            Share your details to help us know you better
+          </p>
+        </div>
+
+        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4">
+          <div>
+            <Label htmlFor="first_name">First Name *</Label>
+            <Input
+              id="first_name"
+              name="first_name"
+              value={formData.first_name}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="last_name">Last Name (Optional)</Label>
+            <Input
+              id="last_name"
+              name="last_name"
+              value={formData.last_name}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="linkedin_url">LinkedIn URL (Optional)</Label>
+            <Input
+              id="linkedin_url"
+              name="linkedin_url"
+              type="url"
+              value={formData.linkedin_url}
+              onChange={handleInputChange}
+              placeholder="https://linkedin.com/in/..."
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="email">Email Address (Optional)</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="your@email.com"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full mt-6"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Continue to Company Info"
+            )}
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}

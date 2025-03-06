@@ -5,21 +5,23 @@ import { Toaster } from "@/components/ui/toaster";
 import { Sidebar } from "@/components/layout/Sidebar";
 import Dashboard from "@/pages/dashboard";
 import Collaborations from "@/pages/collaborations";
-import ApplicationForm from "@/pages/application-form";
+import Welcome from "@/pages/welcome";
+import PersonalInfo from "@/pages/personal-info";
+import CompanyBasics from "@/pages/company-basics";
+import CompanyDetails from "@/pages/company-details";
+import ApplicationStatus from "@/pages/application-status";
 import MarketingCollabs from "@/pages/marketing-collabs";
 import ConferenceCoffees from "@/pages/conference-coffees";
-import CompanyInfoForm from "@/pages/company-info";
-import ReferralCodeForm from "@/pages/referral-code";
-import MatchingFilters from "@/pages/matching-filters";
-import ApplicationStatus from "@/pages/application-status";
 import ProfileOverview from "@/pages/profile-overview";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 
 function Router() {
   const isApplicationRoute = window.location.pathname === '/apply' || 
-    window.location.pathname === '/company-info' || 
-    window.location.pathname === '/referral-code';
+    window.location.pathname === '/personal-info' || 
+    window.location.pathname === '/company-basics' ||
+    window.location.pathname === '/company-details';
+
   const isProfileRoute = window.location.pathname === '/profile-overview' ||
     window.location.pathname === '/marketing-collabs' ||
     window.location.pathname === '/conference-coffees' ||
@@ -37,11 +39,15 @@ function Router() {
           <Route path="/collaborations" component={Collaborations} />
           <Route path="/marketing-collabs" component={MarketingCollabs} />
           <Route path="/conference-coffees" component={ConferenceCoffees} />
-          <Route path="/apply" component={ApplicationForm} />
-          <Route path="/company-info" component={CompanyInfoForm} />
-          <Route path="/referral-code" component={ReferralCodeForm} />
-          <Route path="/matching-filters" component={MatchingFilters} />
+
+          {/* Application Flow */}
+          <Route path="/apply" component={Welcome} />
+          <Route path="/personal-info" component={PersonalInfo} />
+          <Route path="/company-basics" component={CompanyBasics} />
+          <Route path="/company-details" component={CompanyDetails} />
           <Route path="/application-status" component={ApplicationStatus} />
+
+          {/* Profile Routes */}
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route component={NotFound} />
         </Switch>
