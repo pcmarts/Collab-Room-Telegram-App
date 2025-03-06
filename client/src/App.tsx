@@ -11,6 +11,7 @@ import CompanyInfoForm from "@/pages/company-info";
 import CollabPreferencesForm from "@/pages/collab-preferences";
 import MyCollabsForm from "@/pages/my-collabs";
 import ApplicationStatus from "@/pages/application-status";
+import ProfileOverview from "@/pages/profile-overview";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 
@@ -39,6 +40,7 @@ function Router() {
           <Route path="/collab-preferences" component={CollabPreferencesForm} />
           <Route path="/my-collabs" component={MyCollabsForm} />
           <Route path="/application-status" component={ApplicationStatus} />
+          <Route path="/profile-overview" component={ProfileOverview} />
           <Route component={NotFound} />
         </Switch>
       </div>
