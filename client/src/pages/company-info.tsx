@@ -19,95 +19,66 @@ export default function CompanyInfoForm() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
-  // Check if we're in edit mode
-  const isEditMode = window.location.search.includes('edit=true');
-
-  // Fetch existing data if in edit mode
+  // Fetch existing data
   const { data: profileData, isLoading } = useQuery<ProfileData>({
-    queryKey: ['/api/profile'],
-    enabled: isEditMode,
-    staleTime: 0 // Always fetch fresh data
+    queryKey: ['/api/profile']
   });
 
   const [formData, setFormData] = useState({
     company_name: '',
     job_title: '',
-    website: 'https://www.',
-    twitter_url: 'https://x.com/',
+    website: '',
+    twitter_url: '',
     linkedin_url: '',
-    funding_stage: 'Pre-seed',
+    funding_stage: '',
     has_token: false,
     token_ticker: '$',
     blockchain_networks: [] as string[],
     tags: [] as string[]
   });
 
-  // Load saved data from API or session storage
+  // Load data when available
   useEffect(() => {
-    console.log('Loading data, isEditMode:', isEditMode, 'profileData:', profileData);
-    if (isEditMode && profileData?.company) {
-      console.log('Setting form data from profile:', profileData.company);
+    if (profileData?.company) {
       setFormData({
         company_name: profileData.company.name,
         job_title: profileData.company.job_title,
         website: profileData.company.website,
-        twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : 'https://x.com/',
+        twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : '',
         linkedin_url: profileData.company.linkedin_url || '',
         funding_stage: profileData.company.funding_stage,
-        has_token: profileData.company.has_token,
+        has_token: profileData.company.has_token || false,
         token_ticker: profileData.company.token_ticker || '$',
         blockchain_networks: profileData.company.blockchain_networks || [],
         tags: profileData.company.tags || []
       });
-    } else if (!isEditMode) {
-      const savedData = sessionStorage.getItem('companyFormData');
-      if (savedData) {
-        console.log('Loading data from session storage:', savedData);
-        setFormData(JSON.parse(savedData));
-      }
     }
-  }, [isEditMode, profileData]);
+  }, [profileData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const newFormData = {
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value
-    };
-    setFormData(newFormData);
-    if (!isEditMode) {
-      sessionStorage.setItem('companyFormData', JSON.stringify(newFormData));
-    }
+    }));
   };
 
   const toggleTag = (tag: string) => {
-    const tags = formData.tags.includes(tag)
-      ? formData.tags.filter(t => t !== tag)
-      : [...formData.tags, tag];
-
-    const newFormData = {
-      ...formData,
-      tags
-    };
-    setFormData(newFormData);
-    if (!isEditMode) {
-      sessionStorage.setItem('companyFormData', JSON.stringify(newFormData));
-    }
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter(t => t !== tag)
+        : [...prev.tags, tag]
+    }));
   };
 
   const toggleBlockchain = (network: string) => {
-    const networks = formData.blockchain_networks.includes(network)
-      ? formData.blockchain_networks.filter(n => n !== network)
-      : [...formData.blockchain_networks, network];
-
-    const newFormData = {
-      ...formData,
-      blockchain_networks: networks
-    };
-    setFormData(newFormData);
-    if (!isEditMode) {
-      sessionStorage.setItem('companyFormData', JSON.stringify(newFormData));
-    }
+    setFormData(prev => ({
+      ...prev,
+      blockchain_networks: prev.blockchain_networks.includes(network)
+        ? prev.blockchain_networks.filter(n => n !== network)
+        : [...prev.blockchain_networks, network]
+    }));
   };
 
   const toggleCategory = (category: string) => {
@@ -118,129 +89,78 @@ export default function CompanyInfoForm() {
     );
   };
 
-  const handleNext = () => {
-    if (!formData.company_name || !formData.job_title || !formData.website || !formData.funding_stage) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please fill in all required fields",
-        duration: 2000
-      });
-      return;
-    }
-
-    if (formData.has_token && (!formData.token_ticker || formData.blockchain_networks.length === 0)) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please fill in token information",
-        duration: 2000
-      });
-      return;
-    }
-
-    if (formData.tags.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please select at least one company tag",
-        duration: 2000
-      });
-      return;
-    }
-
-    // Store the form data in session storage
-    sessionStorage.setItem('companyFormData', JSON.stringify(formData));
-
-    // Navigate to next step
-    setLocation('/my-collabs');
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isEditMode) {
-      try {
-        setIsSubmitting(true);
+    try {
+      setIsSubmitting(true);
 
-        const submitData = {
-          company_name: formData.company_name,
-          job_title: formData.job_title,
-          website: formData.website,
-          twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', ''),
-          linkedin_url: formData.linkedin_url,
-          funding_stage: formData.funding_stage,
-          has_token: formData.has_token,
-          token_ticker: formData.has_token ? formData.token_ticker : null,
-          blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
-          tags: formData.tags
-        };
+      const submitData = {
+        company_name: formData.company_name,
+        job_title: formData.job_title,
+        website: formData.website,
+        twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', ''),
+        linkedin_url: formData.linkedin_url,
+        funding_stage: formData.funding_stage,
+        has_token: formData.has_token,
+        token_ticker: formData.has_token ? formData.token_ticker : null,
+        blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
+        tags: formData.tags
+      };
 
-        const response = await apiRequest('POST', '/api/company', submitData);
-        const responseData = await response.json();
+      const response = await apiRequest('POST', '/api/company', submitData);
 
-        if (!response.ok) {
-          throw new Error(responseData.error || 'Failed to update company information');
-        }
-
-        await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-
-        toast({
-          title: "Success!",
-          description: "Company information updated successfully",
-          duration: 2000
-        });
-
-        setLocation('/dashboard');
-
-      } catch (error) {
-        console.error('Failed to update company info:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error instanceof Error ? error.message : "Failed to update company information"
-        });
-      } finally {
-        setIsSubmitting(false);
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update company information');
       }
-    } else {
-      handleNext();
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+
+      toast({
+        title: "Success!",
+        description: "Company information updated successfully",
+        duration: 2000
+      });
+
+      setLocation('/dashboard');
+
+    } catch (error) {
+      console.error('Failed to update company info:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update company information"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleBack = () => {
-    if (isEditMode) {
-      setLocation('/dashboard');
-    } else {
-      setLocation('/onboarding');
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[100svh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="flex items-center justify-between mb-8">
-          <Button variant="ghost" onClick={handleBack} className="flex items-center">
+          <Button variant="ghost" onClick={() => setLocation('/dashboard')} className="flex items-center">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {isEditMode ? 'Cancel' : 'Back'}
+            Cancel
           </Button>
-          {!isEditMode && (
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-              <div className="w-3 h-3 rounded-full bg-primary"></div>
-              <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-            </div>
-          )}
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">
-            {isEditMode ? 'Edit Company Information' : 'Company Information'}
-          </h1>
-          <p className="text-muted-foreground mt-2">Tell us about your company</p>
+          <h1 className="text-2xl font-bold">Company Information</h1>
+          <p className="text-muted-foreground mt-2">Manage your company details</p>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="company_name">Company Name</Label>
             <Input
@@ -276,17 +196,18 @@ export default function CompanyInfoForm() {
           </div>
 
           <div>
-            <Label htmlFor="twitter_url">Company Twitter URL</Label>
+            <Label htmlFor="twitter_url">Twitter URL</Label>
             <Input
               id="twitter_url"
               name="twitter_url"
               value={formData.twitter_url}
               onChange={handleInputChange}
+              placeholder="https://x.com/..."
             />
           </div>
 
           <div>
-            <Label htmlFor="linkedin_url">Company LinkedIn URL</Label>
+            <Label htmlFor="linkedin_url">LinkedIn URL</Label>
             <Input
               id="linkedin_url"
               name="linkedin_url"
@@ -336,7 +257,7 @@ export default function CompanyInfoForm() {
                   name="token_ticker"
                   value={formData.token_ticker}
                   onChange={handleInputChange}
-                  required
+                  required={formData.has_token}
                 />
               </div>
 
@@ -362,7 +283,7 @@ export default function CompanyInfoForm() {
           <div className="space-y-4 pt-4">
             <Label className="text-lg">Your Company Sector</Label>
             <p className="text-sm text-muted-foreground">
-              Select tags that best describe your company's focus areas in web3. 
+              Select tags that best describe your company's focus areas in web3.
             </p>
 
             {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
@@ -403,16 +324,15 @@ export default function CompanyInfoForm() {
           <Button
             type="submit"
             className="w-full mt-6"
-            onClick={handleSubmit}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isEditMode ? 'Submitting...' : 'Submitting...'}
+                Saving...
               </>
             ) : (
-              isEditMode ? "Submit" : "Continue to My Collabs"
+              "Save"
             )}
           </Button>
         </form>
