@@ -419,10 +419,17 @@ export async function registerRoutes(app: Express) {
         .from(preferences)
         .where(eq(preferences.user_id, user.id));
 
+      // Ensure default values for new fields
+      const preferencesWithDefaults = userPreferences ? {
+        ...userPreferences,
+        marketing_collabs_enabled: userPreferences.marketing_collabs_enabled ?? true,
+        conference_collabs_enabled: userPreferences.conference_collabs_enabled ?? true
+      } : null;
+
       res.json({
         user,
         company,
-        preferences: userPreferences
+        preferences: preferencesWithDefaults
       });
 
     } catch (error) {
