@@ -47,9 +47,9 @@ export async function registerRoutes(app: Express) {
         const isProfileUpdate = existingUser.length > 0;
 
         // Validate required fields based on operation type
-        if (!first_name || !last_name) {
+        if (!first_name) {
           console.error('Missing required user fields');
-          return res.status(400).json({ error: 'First name and last name are required' });
+          return res.status(400).json({ error: 'First name is required' });
         }
 
         if (!isProfileUpdate && (!company_name || !job_title || !company_website || !funding_stage)) {

@@ -138,21 +138,6 @@ export default function ProfileOverview() {
       </div>
 
       <div className="p-4 space-y-6">
-        {/* Privacy Notice */}
-        <Card className="bg-primary/5 border-primary/10">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <Shield className="h-5 w-5 text-primary mt-0.5" />
-              <div>
-                <h3 className="font-medium mb-1">Privacy Protected</h3>
-                <p className="text-sm text-muted-foreground">
-                  When matching, only your company details are visible to others. Your personal information hidden, and is only shared after a successful mutual match.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Edit Personal Information</CardTitle>
@@ -226,6 +211,21 @@ export default function ProfileOverview() {
                 )}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Privacy Notice moved to bottom */}
+        <Card className="bg-primary/5 border-primary/10">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <Shield className="h-5 w-5 text-primary mt-0.5" />
+              <div>
+                <h3 className="font-medium mb-1">Privacy Protected</h3>
+                <p className="text-sm text-muted-foreground">
+                  When matching, only your company details are visible to others. Your personal information hidden, and is only shared after a successful mutual match.
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
