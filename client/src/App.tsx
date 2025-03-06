@@ -19,7 +19,6 @@ function Router() {
     window.location.pathname === '/company-info' || 
     window.location.pathname === '/collab-preferences';
   const isProfileRoute = window.location.pathname === '/profile-overview' ||
-    window.location.pathname === '/preferences' ||
     window.location.pathname === '/my-collabs' ||
     window.location.pathname === '/application-status';
 
