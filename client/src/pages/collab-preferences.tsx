@@ -3,8 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { COLLAB_TYPES, NOTIFICATION_FREQUENCIES, COMPANY_TAG_CATEGORIES } from "@shared/schema";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  COLLAB_TYPES,
+  NOTIFICATION_FREQUENCIES,
+  COMPANY_TAG_CATEGORIES,
+} from "@shared/schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
@@ -18,18 +28,18 @@ export default function CollabPreferencesForm() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   // Check if we're in edit mode
-  const isEditMode = window.location.search.includes('edit=true');
+  const isEditMode = window.location.search.includes("edit=true");
 
   // Fetch existing data if in edit mode
   const { data: profileData } = useQuery<ProfileData>({
-    queryKey: ['/api/profile'],
-    enabled: isEditMode
+    queryKey: ["/api/profile"],
+    enabled: isEditMode,
   });
 
   const [formData, setFormData] = useState({
     collabs_to_discover: [] as string[],
-    notification_frequency: '',
-    excluded_tags: [] as string[]
+    notification_frequency: "",
+    excluded_tags: [] as string[],
   });
 
   // Load existing preferences when data is fetched
@@ -37,8 +47,9 @@ export default function CollabPreferencesForm() {
     if (isEditMode && profileData?.preferences) {
       setFormData({
         collabs_to_discover: profileData.preferences.collabs_to_discover || [],
-        notification_frequency: profileData.preferences.notification_frequency || '',
-        excluded_tags: profileData.preferences.excluded_tags || []
+        notification_frequency:
+          profileData.preferences.notification_frequency || "",
+        excluded_tags: profileData.preferences.excluded_tags || [],
       });
     }
   }, [isEditMode, profileData]);
@@ -49,48 +60,59 @@ export default function CollabPreferencesForm() {
     try {
       setIsSubmitting(true);
 
-      if (!formData.notification_frequency || formData.collabs_to_discover.length === 0) {
-        throw new Error('Please fill in all required fields');
+      if (
+        !formData.notification_frequency ||
+        formData.collabs_to_discover.length === 0
+      ) {
+        throw new Error("Please fill in all required fields");
       }
 
       if (isEditMode) {
         // For edit mode, just update preferences
-        const response = await apiRequest('POST', '/api/preferences', {
+        const response = await apiRequest("POST", "/api/preferences", {
           ...formData,
-          collabs_to_host: profileData?.preferences?.collabs_to_host || []
+          collabs_to_host: profileData?.preferences?.collabs_to_host || [],
         });
 
         if (!response.ok) {
-          throw new Error('Failed to update preferences');
+          throw new Error("Failed to update preferences");
         }
 
-        await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+        await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
 
         toast({
           title: "Success!",
           description: "Your discovery preferences have been updated",
-          duration: 2000
+          duration: 2000,
         });
 
-        setLocation('/dashboard');
+        setLocation("/dashboard");
       } else {
         // For onboarding, submit all collected data
-        const userFormData = JSON.parse(sessionStorage.getItem('userFormData') || '{}');
-        const companyFormData = JSON.parse(sessionStorage.getItem('companyFormData') || '{}');
-        const collabsFormData = JSON.parse(sessionStorage.getItem('collabsFormData') || '{}');
+        const userFormData = JSON.parse(
+          sessionStorage.getItem("userFormData") || "{}",
+        );
+        const companyFormData = JSON.parse(
+          sessionStorage.getItem("companyFormData") || "{}",
+        );
+        const collabsFormData = JSON.parse(
+          sessionStorage.getItem("collabsFormData") || "{}",
+        );
 
         const submitData = {
           // User information
           first_name: userFormData.first_name,
           last_name: userFormData.last_name,
-          handle: window.Telegram?.WebApp?.initData?.user?.username || '',
+          handle: window.Telegram?.WebApp?.initData?.user?.username || "",
           linkedin_url: userFormData.linkedin_url,
           email: userFormData.email,
 
           // Company information
           company_name: companyFormData.company_name,
           company_website: companyFormData.website,
-          twitter_handle: companyFormData.twitter_url?.replace('https://x.com/', '').replace('@', ''),
+          twitter_handle: companyFormData.twitter_url
+            ?.replace("https://x.com/", "")
+            .replace("@", ""),
           job_title: companyFormData.job_title,
           funding_stage: companyFormData.funding_stage,
           has_token: companyFormData.has_token,
@@ -105,35 +127,41 @@ export default function CollabPreferencesForm() {
           excluded_tags: formData.excluded_tags,
 
           // Telegram data
-          initData: window.Telegram?.WebApp?.initData || ''
+          initData: window.Telegram?.WebApp?.initData || "",
         };
 
-        const response = await apiRequest('POST', '/api/onboarding', submitData);
+        const response = await apiRequest(
+          "POST",
+          "/api/onboarding",
+          submitData,
+        );
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.error || 'Failed to complete onboarding');
+          throw new Error(error.error || "Failed to complete onboarding");
         }
 
         // Clear session storage after successful submission
-        sessionStorage.removeItem('userFormData');
-        sessionStorage.removeItem('companyFormData');
-        sessionStorage.removeItem('collabsFormData');
+        sessionStorage.removeItem("userFormData");
+        sessionStorage.removeItem("companyFormData");
+        sessionStorage.removeItem("collabsFormData");
 
         toast({
           title: "Application Submitted!",
-          description: "We'll review your application and notify you through Telegram.",
-          duration: 2000
+          description:
+            "We'll review your application and notify you through Telegram.",
+          duration: 2000,
         });
 
-        setLocation('/application-status');
+        setLocation("/application-status");
       }
     } catch (error) {
-      console.error('Failed to submit:', error);
+      console.error("Failed to submit:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to submit form"
+        description:
+          error instanceof Error ? error.message : "Failed to submit form",
       });
     } finally {
       setIsSubmitting(false);
@@ -141,28 +169,28 @@ export default function CollabPreferencesForm() {
   };
 
   const handleMultiSelect = (collab: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       collabs_to_discover: prev.collabs_to_discover.includes(collab)
-        ? prev.collabs_to_discover.filter(item => item !== collab)
-        : [...prev.collabs_to_discover, collab]
+        ? prev.collabs_to_discover.filter((item) => item !== collab)
+        : [...prev.collabs_to_discover, collab],
     }));
   };
 
   const toggleCategory = (category: string) => {
-    setExpandedCategories(prev =>
+    setExpandedCategories((prev) =>
       prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
+        ? prev.filter((c) => c !== category)
+        : [...prev, category],
     );
   };
 
   const toggleExcludedTag = (tag: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       excluded_tags: prev.excluded_tags.includes(tag)
-        ? prev.excluded_tags.filter(t => t !== tag)
-        : [...prev.excluded_tags, tag]
+        ? prev.excluded_tags.filter((t) => t !== tag)
+        : [...prev.excluded_tags, tag],
     }));
   };
 
@@ -174,7 +202,9 @@ export default function CollabPreferencesForm() {
             variant="ghost"
             size="sm"
             className="flex items-center -ml-3"
-            onClick={() => setLocation(isEditMode ? '/dashboard' : '/my-collabs')}
+            onClick={() =>
+              setLocation(isEditMode ? "/dashboard" : "/my-collabs")
+            }
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Cancel
@@ -196,7 +226,7 @@ export default function CollabPreferencesForm() {
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-6">
             <div>
-              <Label className="text-lg">👀 Types of Collabs</Label>
+              <Label className="text-lg">👀 Marketing Collabs</Label>
               <p className="text-sm text-muted-foreground mb-4">
                 Select the types of collaboration opportunities you'd like to be notified about
               </p>
@@ -255,28 +285,33 @@ export default function CollabPreferencesForm() {
                 </div>
               ))}
             </div>
+          </div>
 
-            <div className="pt-4">
-              <Label className="text-lg">📅 Notification Frequency</Label>
-              <p className="text-sm text-muted-foreground mb-4">
-                How often would you like to receive notifications about new opportunities?
-              </p>
-              <Select
-                value={formData.notification_frequency}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, notification_frequency: value }))}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select frequency" />
-                </SelectTrigger>
-                <SelectContent>
-                  {NOTIFICATION_FREQUENCIES.map(frequency => (
-                    <SelectItem key={frequency} value={frequency}>
-                      {frequency}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-4 pt-4">
+            <Label className="text-lg">📅 Notification Frequency</Label>
+            <p className="text-sm text-muted-foreground mb-4">
+              How often would you like to receive notifications about new opportunities?
+            </p>
+            <Select
+              value={formData.notification_frequency}
+              onValueChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  notification_frequency: value,
+                }))
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select frequency" />
+              </SelectTrigger>
+              <SelectContent>
+                {NOTIFICATION_FREQUENCIES.map((frequency) => (
+                  <SelectItem key={frequency} value={frequency}>
+                    {frequency}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <Button
