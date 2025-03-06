@@ -3,45 +3,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { BLOCKCHAIN_NETWORKS, COMPANY_TAG_CATEGORIES } from "@shared/schema";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { BLOCKCHAIN_NETWORKS } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
+import { Badge } from "@/components/ui/badge";
 
 export default function CompanyDetails() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  const queryClient = useQueryClient();
 
-  // Fetch existing data
   const { data: profileData } = useQuery<ProfileData>({
     queryKey: ['/api/profile']
   });
 
   const [formData, setFormData] = useState({
-    twitter_url: '',
-    linkedin_url: '',
     has_token: false,
     token_ticker: '$',
-    blockchain_networks: [] as string[],
-    tags: [] as string[]
+    blockchain_networks: [] as string[]
   });
 
-  // Load data when available
   useEffect(() => {
     if (profileData?.company) {
       setFormData({
-        twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : '',
-        linkedin_url: profileData.company.linkedin_url || '',
         has_token: profileData.company.has_token || false,
         token_ticker: profileData.company.token_ticker || '$',
-        blockchain_networks: profileData.company.blockchain_networks || [],
-        tags: profileData.company.tags || []
+        blockchain_networks: profileData.company.blockchain_networks || []
       });
     } else {
       const savedData = sessionStorage.getItem('companyDetailsData');
@@ -51,26 +41,7 @@ export default function CompanyDetails() {
     }
   }, [profileData]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const newFormData = {
-      ...formData,
-      [name]: value
-    };
-    setFormData(newFormData);
-    sessionStorage.setItem('companyDetailsData', JSON.stringify(newFormData));
-  };
-
-  const toggleTag = (tag: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.includes(tag)
-        ? prev.tags.filter(t => t !== tag)
-        : [...prev.tags, tag]
-    }));
-  };
-
-  const toggleBlockchain = (network: string) => {
+  const toggleNetwork = (network: string) => {
     setFormData(prev => ({
       ...prev,
       blockchain_networks: prev.blockchain_networks.includes(network)
@@ -79,22 +50,35 @@ export default function CompanyDetails() {
     }));
   };
 
-  const toggleCategory = (category: string) => {
-    setExpandedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       setIsSubmitting(true);
 
-      // Get basic company data from session storage
+      if (formData.has_token && !formData.token_ticker) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please enter your token ticker",
+          duration: 2000
+        });
+        return;
+      }
+
+      if (formData.has_token && !formData.blockchain_networks.length) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please select at least one blockchain network",
+          duration: 2000
+        });
+        return;
+      }
+
+      // Get data from session storage
       const basicData = JSON.parse(sessionStorage.getItem('companyFormData') || '{}');
+      const sectorData = JSON.parse(sessionStorage.getItem('companySectorData') || '{}');
       const userFormData = JSON.parse(sessionStorage.getItem('userFormData') || '{}');
 
       const submitData = {
@@ -108,15 +92,13 @@ export default function CompanyDetails() {
         // Company information
         company_name: basicData.company_name,
         website: basicData.website,
-        twitter_handle: formData.twitter_url?.replace("https://x.com/", "").replace("@", ""),
+        twitter_handle: basicData.twitter_url?.replace("https://x.com/", "").replace("@", ""),
         job_title: basicData.job_title,
         funding_stage: basicData.funding_stage,
         has_token: formData.has_token,
         token_ticker: formData.has_token ? formData.token_ticker : null,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
-        tags: formData.tags,
-        short_description: basicData.short_description,
-        long_description: basicData.long_description,
+        company_tags: sectorData.company_tags,
 
         // Referral code
         referral_code: sessionStorage.getItem('referralCode') || '',
@@ -140,6 +122,7 @@ export default function CompanyDetails() {
       // Clear session storage after successful submission
       sessionStorage.removeItem('userFormData');
       sessionStorage.removeItem('companyFormData');
+      sessionStorage.removeItem('companySectorData');
       sessionStorage.removeItem('companyDetailsData');
       sessionStorage.removeItem('referralCode');
 
@@ -167,7 +150,7 @@ export default function CompanyDetails() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="flex items-center justify-between mb-8">
-          <Button variant="ghost" onClick={() => setLocation('/company-basics')} className="flex items-center">
+          <Button variant="ghost" onClick={() => setLocation('/company-sector')} className="flex items-center">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -181,34 +164,11 @@ export default function CompanyDetails() {
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Company Details</h1>
-          <p className="text-muted-foreground mt-2">Tell us more about your company's blockchain presence</p>
+          <h1 className="text-2xl font-bold">Token Information</h1>
+          <p className="text-muted-foreground mt-2">Tell us about your company's token</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="twitter_url">Twitter URL</Label>
-            <Input
-              id="twitter_url"
-              name="twitter_url"
-              value={formData.twitter_url}
-              onChange={handleInputChange}
-              placeholder="https://x.com/..."
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="linkedin_url">LinkedIn URL</Label>
-            <Input
-              id="linkedin_url"
-              name="linkedin_url"
-              type="url"
-              value={formData.linkedin_url}
-              onChange={handleInputChange}
-              placeholder="https://linkedin.com/company/..."
-            />
-          </div>
-
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Switch
@@ -216,82 +176,39 @@ export default function CompanyDetails() {
                 checked={formData.has_token}
                 onCheckedChange={(checked) => setFormData(prev => ({ ...prev, has_token: checked }))}
               />
-              <Label htmlFor="has_token">Live Token?</Label>
+              <Label htmlFor="has_token">Does your company have a token?</Label>
             </div>
           </div>
 
           {formData.has_token && (
             <>
               <div>
-                <Label htmlFor="token_ticker">Token Ticker</Label>
+                <Label htmlFor="token_ticker">Token Ticker *</Label>
                 <Input
                   id="token_ticker"
-                  name="token_ticker"
                   value={formData.token_ticker}
-                  onChange={handleInputChange}
+                  onChange={(e) => setFormData(prev => ({ ...prev, token_ticker: e.target.value }))}
                   required={formData.has_token}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Blockchain Networks</Label>
-                <div className="grid grid-cols-1 gap-2">
+                <Label>Blockchain Networks *</Label>
+                <div className="flex flex-wrap gap-2">
                   {BLOCKCHAIN_NETWORKS.map(network => (
-                    <Button
+                    <Badge
                       key={network}
-                      type="button"
                       variant={formData.blockchain_networks.includes(network) ? "default" : "outline"}
-                      className="justify-start"
-                      onClick={() => toggleBlockchain(network)}
+                      className="cursor-pointer"
+                      onClick={() => toggleNetwork(network)}
                     >
                       {network}
-                    </Button>
+                    </Badge>
                   ))}
                 </div>
               </div>
             </>
           )}
-
-          <div className="space-y-4 pt-4">
-            <Label className="text-lg">Your Company Sector</Label>
-            <p className="text-sm text-muted-foreground">
-              Select tags that best describe your company's focus areas in web3.
-            </p>
-
-            {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-              <div key={category} className="border rounded-lg overflow-hidden">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full flex justify-between items-center p-4"
-                  onClick={() => toggleCategory(category)}
-                >
-                  <span className="font-medium">{category}</span>
-                  {expandedCategories.includes(category) ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </Button>
-
-                {expandedCategories.includes(category) && (
-                  <div className="p-4 pt-0 grid grid-cols-1 gap-2">
-                    {tags.map(tag => (
-                      <Button
-                        key={tag}
-                        type="button"
-                        variant={formData.tags.includes(tag) ? "default" : "outline"}
-                        className="justify-start h-auto py-3 px-4"
-                        onClick={() => toggleTag(tag)}
-                      >
-                        <span className="text-left">{tag}</span>
-                      </Button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
 
           <Button
             type="submit"

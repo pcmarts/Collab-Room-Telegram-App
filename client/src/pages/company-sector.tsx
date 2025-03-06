@@ -6,9 +6,7 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { BLOCKCHAIN_NETWORKS, COMPANY_TAG_CATEGORIES, ALL_COMPANY_TAGS } from "@shared/schema";
+import { COMPANY_TAG_CATEGORIES } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -22,18 +20,12 @@ export default function CompanySector() {
   });
 
   const [formData, setFormData] = useState({
-    has_token: false,
-    token_ticker: '',
-    blockchain_networks: [] as string[],
     company_tags: [] as string[]
   });
 
   useEffect(() => {
     if (profileData?.company) {
       setFormData({
-        has_token: profileData.company.has_token,
-        token_ticker: profileData.company.token_ticker || '',
-        blockchain_networks: profileData.company.blockchain_networks || [],
         company_tags: profileData.company.tags || []
       });
     } else {
@@ -53,41 +45,12 @@ export default function CompanySector() {
     });
   };
 
-  const toggleNetwork = (network: string) => {
-    setFormData(prev => {
-      const newNetworks = prev.blockchain_networks.includes(network)
-        ? prev.blockchain_networks.filter(n => n !== network)
-        : [...prev.blockchain_networks, network];
-      return { ...prev, blockchain_networks: newNetworks };
-    });
-  };
-
   const handleNext = () => {
     if (!formData.company_tags.length) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Please select at least one company sector",
-        duration: 2000
-      });
-      return;
-    }
-
-    if (formData.has_token && !formData.token_ticker) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please enter your token ticker",
-        duration: 2000
-      });
-      return;
-    }
-
-    if (formData.has_token && !formData.blockchain_networks.length) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please select at least one blockchain network",
         duration: 2000
       });
       return;
@@ -146,48 +109,6 @@ export default function CompanySector() {
                 </div>
               ))}
             </ScrollArea>
-          </div>
-
-          <div className="space-y-4 pt-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="has_token">Does your company have a token?</Label>
-              <Switch
-                id="has_token"
-                checked={formData.has_token}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, has_token: checked }))}
-              />
-            </div>
-
-            {formData.has_token && (
-              <>
-                <div>
-                  <Label htmlFor="token_ticker">Token Ticker *</Label>
-                  <Input
-                    id="token_ticker"
-                    value={formData.token_ticker}
-                    onChange={(e) => setFormData(prev => ({ ...prev, token_ticker: e.target.value }))}
-                    placeholder="e.g. BTC, ETH"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label>Blockchain Networks *</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {BLOCKCHAIN_NETWORKS.map(network => (
-                      <Badge
-                        key={network}
-                        variant={formData.blockchain_networks.includes(network) ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => toggleNetwork(network)}
-                      >
-                        {network}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
           </div>
 
           <Button

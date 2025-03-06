@@ -8,32 +8,28 @@ import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 
-export default function OnboardingForm() {
+export default function PersonalInfo() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
 
-  // Check if we're in edit mode
-  const isEditMode = window.location.search.includes('edit=true');
-
-  // Fetch existing data if in edit mode or to check if user has already applied
   const { data: profileData } = useQuery<ProfileData>({
     queryKey: ['/api/profile']
   });
 
-  // Check if user has already applied and redirect if necessary
-  useEffect(() => {
-    if (!isEditMode && profileData?.user) {
-      // If the user has already applied, redirect them to application status
-      setLocation('/application-status');
-      return;
-    }
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    linkedin_url: 'https://linkedin.com/in/',
+    email: ''
+  });
 
-    if (isEditMode && profileData?.user) {
+  useEffect(() => {
+    if (profileData?.user) {
       setFormData({
         first_name: profileData.user.first_name,
         last_name: profileData.user.last_name,
-        linkedin_url: profileData.user.linkedin_url || '',
+        linkedin_url: profileData.user.linkedin_url || 'https://linkedin.com/in/',
         email: profileData.user.email || ''
       });
     } else {
@@ -42,14 +38,7 @@ export default function OnboardingForm() {
         setFormData(JSON.parse(savedData));
       }
     }
-  }, [isEditMode, profileData]);
-
-  const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    linkedin_url: '',
-    email: ''
-  });
+  }, [profileData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -62,7 +51,7 @@ export default function OnboardingForm() {
   };
 
   const handleNext = () => {
-    if (!formData.first_name || !formData.last_name) {
+    if (!formData.first_name || !formData.last_name || !formData.linkedin_url || !formData.email) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -72,95 +61,39 @@ export default function OnboardingForm() {
       return;
     }
 
-    // Store the form data in session storage and proceed to next step
     sessionStorage.setItem('userFormData', JSON.stringify(formData));
-    setLocation('/company-info');
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (isEditMode) {
-      try {
-        setIsSubmitting(true);
-
-        if (!formData.first_name || !formData.last_name) {
-          throw new Error('Please fill in all required fields');
-        }
-
-        const submitData = {
-          ...formData,
-          handle: window.Telegram?.WebApp?.initData?.user?.username || '',
-          initData: window.Telegram?.WebApp?.initData || ''
-        };
-
-        const response = await fetch('/api/onboarding', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(submitData)
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to update profile');
-        }
-
-        toast({
-          title: "Success!",
-          description: "Personal information updated successfully",
-          duration: 2000
-        });
-
-        setLocation('/dashboard');
-
-      } catch (error) {
-        console.error('Form submission error:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error instanceof Error ? error.message : "Failed to update profile"
-        });
-      } finally {
-        setIsSubmitting(false);
-      }
-    } else {
-      handleNext();
-    }
+    setLocation('/company-basics');
   };
 
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
-        {isEditMode ? (
-          <div className="flex justify-between mb-8">
-            <Button
-              variant="ghost"
-              onClick={() => setLocation('/dashboard')}
-              className="flex items-center"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <div className="w-3 h-3 rounded-full bg-primary"></div>
-            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          </div>
-        )}
+        <div className="flex items-center justify-between mb-8">
+          <Button
+            variant="ghost"
+            onClick={() => setLocation('/apply')}
+            className="flex items-center"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </div>
+
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="w-3 h-3 rounded-full bg-primary"></div>
+          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+        </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">
-            {isEditMode ? 'Edit Personal Information' : 'Personal Information'}
-          </h1>
+          <h1 className="text-2xl font-bold">Personal Information</h1>
           <p className="text-muted-foreground mt-2">Tell us about yourself</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4">
           <div>
-            <Label htmlFor="first_name">First Name</Label>
+            <Label htmlFor="first_name">First Name *</Label>
             <Input
               id="first_name"
               name="first_name"
@@ -171,7 +104,7 @@ export default function OnboardingForm() {
           </div>
 
           <div>
-            <Label htmlFor="last_name">Last Name</Label>
+            <Label htmlFor="last_name">Last Name *</Label>
             <Input
               id="last_name"
               name="last_name"
@@ -182,41 +115,41 @@ export default function OnboardingForm() {
           </div>
 
           <div>
-            <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+            <Label htmlFor="linkedin_url">LinkedIn URL *</Label>
             <Input
               id="linkedin_url"
               name="linkedin_url"
               type="url"
               value={formData.linkedin_url}
               onChange={handleInputChange}
-              placeholder="https://linkedin.com/in/..."
+              required
             />
           </div>
 
           <div>
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Email Address *</Label>
             <Input
               id="email"
               name="email"
               type="email"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder="your@email.com"
+              required
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full mt-6"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Updating...
+                Saving...
               </>
             ) : (
-              isEditMode ? "Submit" : "Continue to Company Info"
+              "Continue to Company Info"
             )}
           </Button>
         </form>
