@@ -81,11 +81,15 @@ export default function CompanyDetails() {
       const sectorData = JSON.parse(sessionStorage.getItem('companySectorData') || '{}');
       const userFormData = JSON.parse(sessionStorage.getItem('userFormData') || '{}');
 
+      // Get Telegram username from the initData
+      const telegramData = window.Telegram?.WebApp?.initDataUnsafe?.user;
+      const handle = telegramData?.username || '';
+
       const submitData = {
-        // User information
+        // User Information
         first_name: userFormData.first_name,
         last_name: userFormData.last_name,
-        handle: window.Telegram?.WebApp?.initData?.user?.username || '',
+        handle: handle,
         linkedin_url: userFormData.linkedin_url,
         email: userFormData.email,
 
@@ -104,8 +108,10 @@ export default function CompanyDetails() {
         referral_code: sessionStorage.getItem('referralCode') || '',
 
         // Telegram data
-        initData: window.Telegram?.WebApp?.initData || '',
+        initData: window.Telegram?.WebApp?.initData || ''
       };
+
+      console.log('Submitting application data:', submitData);
 
       const response = await fetch('/api/onboarding', {
         method: 'POST',
@@ -116,7 +122,8 @@ export default function CompanyDetails() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit application');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit application');
       }
 
       // Clear session storage after successful submission
