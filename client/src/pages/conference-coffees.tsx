@@ -20,26 +20,37 @@ export default function ConferenceCoffees() {
   const queryClient = useQueryClient();
 
   // Fetch events and user's attending events
-  const { data: events, isLoading } = useQuery<Event[]>({
+  const { data: events, isLoading: eventsLoading, error: eventsError } = useQuery<Event[]>({
     queryKey: ['/api/events']
   });
 
-  const { data: userEvents } = useQuery<UserEvent[]>({
+  const { data: userEvents, isLoading: userEventsLoading, error: userEventsError } = useQuery<UserEvent[]>({
     queryKey: ['/api/user-events']
   });
 
-  // Combine events with user's attending status
-  const eventsWithAttending: EventWithAttending[] = events?.map(event => ({
-    ...event,
-    isAttending: userEvents?.some(ue => ue.event_id === event.id) || false
-  })) || [];
+  // Combined loading state
+  const isLoading = eventsLoading || userEventsLoading;
+
+  // Handle errors
+  if (eventsError) {
+    console.error('Events fetch error:', eventsError);
+    return <div>Error loading events. Please try again.</div>;
+  }
+
+  if (userEventsError) {
+    console.error('User events fetch error:', userEventsError);
+    return <div>Error loading user events. Please try again.</div>;
+  }
 
   // Filter out past events
-  const activeEvents = eventsWithAttending.filter(event => 
+  const activeEvents = events?.map(event => ({
+    ...event,
+    isAttending: userEvents?.some(ue => ue.event_id === event.id) || false
+  })).filter(event => 
     new Date(event.end_date) > new Date()
   ).sort((a, b) => 
     new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
-  );
+  ) || [];
 
   const toggleEventAttendance = async (eventId: string) => {
     try {
@@ -90,6 +101,10 @@ export default function ConferenceCoffees() {
       </div>
     );
   }
+
+  console.log('Events data:', events);
+  console.log('User events data:', userEvents);
+  console.log('Active events:', activeEvents);
 
   return (
     <div className="min-h-[100svh] bg-background">
