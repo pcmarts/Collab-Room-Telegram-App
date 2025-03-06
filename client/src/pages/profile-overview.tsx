@@ -1,9 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState, React } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
+import { apiRequest } from '@/lib/queryClient';
 import type { User, Company, Preferences } from '@shared/schema';
 
 interface ProfileData {
@@ -15,10 +19,31 @@ interface ProfileData {
 export default function ProfileOverview() {
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: profile, isLoading } = useQuery<ProfileData>({
     queryKey: ['/api/profile'],
   });
+
+  const [formData, setFormData] = useState({
+    first_name: profile?.user?.first_name || '',
+    last_name: profile?.user?.last_name || '',
+    linkedin_url: profile?.user?.linkedin_url || '',
+    email: profile?.user?.email || ''
+  });
+
+  // Update form data when profile is loaded
+  React.useEffect(() => {
+    if (profile?.user) {
+      setFormData({
+        first_name: profile.user.first_name,
+        last_name: profile.user.last_name,
+        linkedin_url: profile.user.linkedin_url || '',
+        email: profile.user.email || ''
+      });
+    }
+  }, [profile]);
 
   if (isLoading) {
     return (
@@ -33,14 +58,64 @@ export default function ProfileOverview() {
       <div className="p-8 text-center">
         <h1 className="text-2xl font-bold mb-4">Profile Not Found</h1>
         <p className="text-muted-foreground">Please complete the onboarding process.</p>
-        <Button className="mt-4" onClick={() => setLocation('/onboarding')}>
-          Complete Profile
+        <Button className="mt-4" onClick={() => setLocation('/dashboard')}>
+          Return to Dashboard
         </Button>
       </div>
     );
   }
 
-  const { user } = profile;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      setIsSubmitting(true);
+
+      if (!formData.first_name || !formData.last_name) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      const submitData = {
+        ...formData,
+        handle: profile.user.handle,
+        initData: window.Telegram?.WebApp?.initData || ''
+      };
+
+      const response = await apiRequest('POST', '/api/onboarding', submitData);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update profile');
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+
+      toast({
+        title: "Success!",
+        description: "Personal information updated successfully"
+      });
+
+      setLocation('/dashboard');
+
+    } catch (error) {
+      console.error('Form submission error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update profile"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-[100svh] bg-background">
@@ -62,45 +137,78 @@ export default function ProfileOverview() {
       </div>
 
       <div className="p-4 space-y-6">
-        {/* Personal Information */}
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Personal Information</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setLocation('/onboarding?edit=true')}
-                className="h-8 px-3"
-              >
-                Edit
-              </Button>
-            </div>
+            <CardTitle>Edit Personal Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h3 className="font-medium">Name</h3>
-              <p>{user.first_name} {user.last_name}</p>
-            </div>
-            <div>
-              <h3 className="font-medium">Telegram Handle</h3>
-              <p>{user.handle}</p>
-            </div>
-            {user.linkedin_url && (
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <h3 className="font-medium">LinkedIn</h3>
-                <a href={user.linkedin_url} target="_blank" rel="noopener noreferrer" 
-                   className="text-primary hover:underline">
-                  View Profile
-                </a>
+                <Label htmlFor="first_name">First Name *</Label>
+                <Input
+                  id="first_name"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleInputChange}
+                  required
+                />
               </div>
-            )}
-            {user.email && (
+
               <div>
-                <h3 className="font-medium">Email</h3>
-                <p>{user.email}</p>
+                <Label htmlFor="last_name">Last Name *</Label>
+                <Input
+                  id="last_name"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleInputChange}
+                  required
+                />
               </div>
-            )}
+
+              <div>
+                <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+                <Input
+                  id="linkedin_url"
+                  name="linkedin_url"
+                  type="url"
+                  value={formData.linkedin_url}
+                  onChange={handleInputChange}
+                  placeholder="https://linkedin.com/in/..."
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="your@email.com"
+                />
+              </div>
+
+              <div>
+                <Label>Telegram Handle</Label>
+                <p className="text-sm text-muted-foreground">@{profile.user.handle}</p>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full mt-6"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving Changes...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>
