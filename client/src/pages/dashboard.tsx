@@ -131,7 +131,7 @@ export default function Dashboard() {
       </div>
 
       <div className="p-4 space-y-4 pb-safe">
-        {/* Quick Actions - Reordered */}
+        {/* Quick Actions - First Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Button
             variant="outline"
@@ -149,6 +149,33 @@ export default function Dashboard() {
             <Coffee className="h-5 w-5 mb-1.5" />
             <span className="text-sm">Conference Coffees</span>
           </Button>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex flex-col items-center">
+                <Users className="h-5 w-5 mb-1.5 text-primary" />
+                <span className="text-xl font-bold">0</span>
+                <span className="text-xs text-muted-foreground">Active Collabs</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex flex-col items-center">
+                <Star className="h-5 w-5 mb-1.5 text-primary" />
+                <span className="text-xl font-bold">0</span>
+                <span className="text-xs text-muted-foreground">Opportunities</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions - Second Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Button
             variant="outline"
             className="h-20 flex-col"
@@ -213,29 +240,6 @@ export default function Dashboard() {
             </CardContent>
           )}
         </Card>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="bg-primary/5">
-            <CardContent className="p-4">
-              <div className="flex flex-col items-center">
-                <Users className="h-5 w-5 mb-1.5 text-primary" />
-                <span className="text-xl font-bold">0</span>
-                <span className="text-xs text-muted-foreground">Active Collabs</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-primary/5">
-            <CardContent className="p-4">
-              <div className="flex flex-col items-center">
-                <Star className="h-5 w-5 mb-1.5 text-primary" />
-                <span className="text-xl font-bold">0</span>
-                <span className="text-xs text-muted-foreground">Opportunities</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
