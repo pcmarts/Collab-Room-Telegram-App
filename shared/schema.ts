@@ -120,10 +120,10 @@ export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   telegram_id: text('telegram_id').unique().notNull(),
   first_name: text('first_name').notNull(),
-  last_name: text('last_name').notNull(),
+  last_name: text('last_name'),  // Made optional
   handle: text('handle').notNull(),
-  linkedin_url: text('linkedin_url'),
-  email: text('email'),
+  linkedin_url: text('linkedin_url'),  // Already optional
+  email: text('email'),  // Already optional
   is_approved: boolean('is_approved').default(false),
   applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
@@ -199,18 +199,19 @@ export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
 export const onboardingSchema = z.object({
   // User Information
   first_name: z.string().min(1, "First name is required"),
-  last_name: z.string().min(1, "Last name is required"),
+  last_name: z.string().optional(),  // Made optional
   handle: z.string().min(1, "Telegram handle is required"),
   linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(),
+  email: z.string().email("Please enter a valid email").optional().nullable(),
 
-  // Company Information
+  // Company Information remains unchanged
   company_name: z.string().min(2, "Company name is required"),
   company_website: z.string().url("Please enter a valid website URL"),
   twitter_handle: z.string().min(1, "Twitter handle is required"),
   company_category: z.enum(COMPANY_CATEGORIES),
   company_size: z.enum(COMPANY_SIZES),
 
-  // Collaboration Preferences
+  // Collaboration Preferences remain unchanged
   collabs_to_discover: z.array(z.enum(COLLAB_TYPES)).min(1, "Select at least one collaboration type to discover"),
   collabs_to_host: z.array(z.enum(COLLAB_TYPES)).min(1, "Select at least one collaboration type to host"),
   notification_frequency: z.enum(NOTIFICATION_FREQUENCIES),

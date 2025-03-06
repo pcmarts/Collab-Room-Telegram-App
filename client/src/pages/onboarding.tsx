@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Shield } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function OnboardingForm() {
   const { toast } = useToast();
@@ -32,7 +33,7 @@ export default function OnboardingForm() {
     if (isEditMode && profileData?.user) {
       setFormData({
         first_name: profileData.user.first_name,
-        last_name: profileData.user.last_name,
+        last_name: profileData.user.last_name || '',
         linkedin_url: profileData.user.linkedin_url || '',
         email: profileData.user.email || ''
       });
@@ -62,11 +63,11 @@ export default function OnboardingForm() {
   };
 
   const handleNext = () => {
-    if (!formData.first_name || !formData.last_name) {
+    if (!formData.first_name) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "First name is required",
         duration: 2000
       });
       return;
@@ -84,8 +85,8 @@ export default function OnboardingForm() {
       try {
         setIsSubmitting(true);
 
-        if (!formData.first_name || !formData.last_name) {
-          throw new Error('Please fill in all required fields');
+        if (!formData.first_name) {
+          throw new Error('First name is required');
         }
 
         const submitData = {
@@ -158,31 +159,45 @@ export default function OnboardingForm() {
           <p className="text-muted-foreground mt-2">Tell us about yourself</p>
         </div>
 
+        <Alert>
+          <Shield className="h-4 w-4" />
+          <AlertDescription>
+            Your contact information remains private and will only be shared with matches after both parties agree to connect.
+          </AlertDescription>
+        </Alert>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="first_name">First Name</Label>
+            <Label htmlFor="first_name" className="font-medium">First Name *</Label>
             <Input
               id="first_name"
               name="first_name"
               value={formData.first_name}
               onChange={handleInputChange}
               required
+              className="mt-1"
             />
           </div>
 
           <div>
-            <Label htmlFor="last_name">Last Name</Label>
+            <div className="flex items-baseline justify-between">
+              <Label htmlFor="last_name" className="text-muted-foreground">Last Name</Label>
+              <span className="text-xs text-muted-foreground">(Optional)</span>
+            </div>
             <Input
               id="last_name"
               name="last_name"
               value={formData.last_name}
               onChange={handleInputChange}
-              required
+              className="mt-1"
             />
           </div>
 
           <div>
-            <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+            <div className="flex items-baseline justify-between">
+              <Label htmlFor="linkedin_url" className="text-muted-foreground">LinkedIn URL</Label>
+              <span className="text-xs text-muted-foreground">(Optional)</span>
+            </div>
             <Input
               id="linkedin_url"
               name="linkedin_url"
@@ -190,11 +205,15 @@ export default function OnboardingForm() {
               value={formData.linkedin_url}
               onChange={handleInputChange}
               placeholder="https://linkedin.com/in/..."
+              className="mt-1"
             />
           </div>
 
           <div>
-            <Label htmlFor="email">Email Address</Label>
+            <div className="flex items-baseline justify-between">
+              <Label htmlFor="email" className="text-muted-foreground">Email Address</Label>
+              <span className="text-xs text-muted-foreground">(Optional)</span>
+            </div>
             <Input
               id="email"
               name="email"
@@ -202,12 +221,13 @@ export default function OnboardingForm() {
               value={formData.email}
               onChange={handleInputChange}
               placeholder="your@email.com"
+              className="mt-1"
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full mt-8"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
