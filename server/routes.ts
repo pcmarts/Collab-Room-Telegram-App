@@ -155,7 +155,11 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', req.body);
 
     try {
-      const { company_name, job_title, website, twitter_handle, linkedin_url, funding_stage, has_token, token_ticker, blockchain_networks, tags } = req.body;
+      const { 
+        company_name, job_title, website, twitter_handle, linkedin_url, 
+        funding_stage, has_token, token_ticker, blockchain_networks, tags,
+        short_description, long_description 
+      } = req.body;
 
       if (!company_name || !job_title || !website || !funding_stage) {
         console.error('Missing required fields');
@@ -208,7 +212,9 @@ export async function registerRoutes(app: Express) {
           has_token: Boolean(has_token),
           token_ticker: has_token ? token_ticker : null,
           blockchain_networks: has_token ? blockchain_networks : [],
-          tags: tags || []
+          tags: tags || [],
+          short_description,
+          long_description
         };
 
         console.log('Company data to save:', companyData);

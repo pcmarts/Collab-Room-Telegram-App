@@ -47,7 +47,6 @@ export const INITIAL_EVENTS = [
     end_date: "2025-02-28",
     city: "London"
   },
-  // Add all other events...
   {
     name: "Web Summit",
     start_date: "2025-11-11",
@@ -134,6 +133,8 @@ export const companies = pgTable('companies', {
   id: uuid('id').primaryKey().defaultRandom(),
   user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
+  short_description: text('short_description'),
+  long_description: text('long_description'),
   website: text('website').notNull(),
   job_title: text('job_title').notNull(),
   twitter_handle: text('twitter_handle'),
@@ -206,6 +207,8 @@ export const onboardingSchema = z.object({
   // Company Information
   company_name: z.string().min(2, "Company name is required"),
   company_website: z.string().url("Please enter a valid website URL"),
+  short_description: z.string().max(150, "Short description must be less than 150 characters").optional(),
+  long_description: z.string().max(1000, "Long description must be less than 1000 characters").optional(),
   twitter_handle: z.string().min(1, "Twitter handle is required"),
   company_category: z.enum(COMPANY_CATEGORIES),
   company_size: z.enum(COMPANY_SIZES),

@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function CompanyInfoForm() {
   const { toast } = useToast();
@@ -34,7 +35,9 @@ export default function CompanyInfoForm() {
     has_token: false,
     token_ticker: '$',
     blockchain_networks: [] as string[],
-    tags: [] as string[]
+    tags: [] as string[],
+    short_description: '',
+    long_description: ''
   });
 
   // Load data when available
@@ -50,12 +53,14 @@ export default function CompanyInfoForm() {
         has_token: profileData.company.has_token || false,
         token_ticker: profileData.company.token_ticker || '$',
         blockchain_networks: profileData.company.blockchain_networks || [],
-        tags: profileData.company.tags || []
+        tags: profileData.company.tags || [],
+        short_description: profileData.company.short_description || '',
+        long_description: profileData.company.long_description || ''
       });
     }
   }, [profileData]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -105,7 +110,9 @@ export default function CompanyInfoForm() {
         has_token: formData.has_token,
         token_ticker: formData.has_token ? formData.token_ticker : null,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
-        tags: formData.tags
+        tags: formData.tags,
+        short_description: formData.short_description,
+        long_description: formData.long_description
       };
 
       const response = await apiRequest('POST', '/api/company', submitData);
@@ -170,6 +177,43 @@ export default function CompanyInfoForm() {
               onChange={handleInputChange}
               required
             />
+          </div>
+
+          <div>
+            <Label htmlFor="short_description">Short Description</Label>
+            <div className="mt-1.5">
+              <Textarea
+                id="short_description"
+                name="short_description"
+                value={formData.short_description}
+                onChange={handleInputChange}
+                placeholder="A brief tagline or elevator pitch for your company"
+                className="resize-none"
+                maxLength={150}
+              />
+              <div className="text-sm text-muted-foreground text-right mt-1">
+                {formData.short_description.length}/150
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="long_description">Long Description</Label>
+            <div className="mt-1.5">
+              <Textarea
+                id="long_description"
+                name="long_description"
+                value={formData.long_description}
+                onChange={handleInputChange}
+                placeholder="A detailed description of your company, its mission, and what makes it unique"
+                className="resize-none"
+                rows={5}
+                maxLength={1000}
+              />
+              <div className="text-sm text-muted-foreground text-right mt-1">
+                {formData.long_description.length}/1000
+              </div>
+            </div>
           </div>
 
           <div>
