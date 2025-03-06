@@ -147,7 +147,7 @@ export default function ProfileOverview() {
               <div>
                 <h3 className="font-medium mb-1">Privacy Protected</h3>
                 <p className="text-sm text-muted-foreground">
-                  Your personal information is only shared with users after a successful mutual match. Until then, only your first name and company details are visible to other users.
+                  When matching, only your company details are visible to others. Your personal information hidden, and is only shared after a successful mutual match.
                 </p>
               </div>
             </div>
