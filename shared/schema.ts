@@ -47,6 +47,7 @@ export const INITIAL_EVENTS = [
     end_date: "2025-02-28",
     city: "London"
   },
+  // Add all other events...
   {
     name: "Web Summit",
     start_date: "2025-11-11",
@@ -119,13 +120,10 @@ export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   telegram_id: text('telegram_id').unique().notNull(),
   first_name: text('first_name').notNull(),
-  last_name: text('last_name'),  // Optional
+  last_name: text('last_name').notNull(),
   handle: text('handle').notNull(),
-  linkedin_url: text('linkedin_url'),  // Optional
-  email: text('email'),  // Optional
-  share_last_name: boolean('share_last_name').default(false),
-  share_linkedin: boolean('share_linkedin').default(false),
-  share_email: boolean('share_email').default(false),
+  linkedin_url: text('linkedin_url'),
+  email: text('email'),
   is_approved: boolean('is_approved').default(false),
   applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
@@ -201,15 +199,9 @@ export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
 export const onboardingSchema = z.object({
   // User Information
   first_name: z.string().min(1, "First name is required"),
-  last_name: z.string().optional(),
+  last_name: z.string().min(1, "Last name is required"),
   handle: z.string().min(1, "Telegram handle is required"),
   linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(),
-  email: z.string().email("Please enter a valid email").optional().nullable(),
-
-  // Privacy Controls
-  share_last_name: z.boolean().default(false),
-  share_linkedin: z.boolean().default(false),
-  share_email: z.boolean().default(false),
 
   // Company Information
   company_name: z.string().min(2, "Company name is required"),

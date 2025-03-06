@@ -3,12 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Shield, Eye, EyeOff } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Switch } from "@/components/ui/switch";
 
 export default function OnboardingForm() {
   const { toast } = useToast();
@@ -18,32 +16,25 @@ export default function OnboardingForm() {
   // Check if we're in edit mode
   const isEditMode = window.location.search.includes('edit=true');
 
-  // Fetch existing data if in edit mode
+  // Fetch existing data if in edit mode or to check if user has already applied
   const { data: profileData } = useQuery<ProfileData>({
-    queryKey: ['/api/profile'],
-    enabled: isEditMode
+    queryKey: ['/api/profile']
   });
 
-  const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    linkedin_url: '',
-    email: '',
-    share_last_name: false,
-    share_linkedin: false,
-    share_email: false
-  });
-
+  // Check if user has already applied and redirect if necessary
   useEffect(() => {
+    if (!isEditMode && profileData?.user) {
+      // If the user has already applied, redirect them to application status
+      setLocation('/application-status');
+      return;
+    }
+
     if (isEditMode && profileData?.user) {
       setFormData({
         first_name: profileData.user.first_name,
-        last_name: profileData.user.last_name || '',
+        last_name: profileData.user.last_name,
         linkedin_url: profileData.user.linkedin_url || '',
-        email: profileData.user.email || '',
-        share_last_name: profileData.user.share_last_name || false,
-        share_linkedin: profileData.user.share_linkedin || false,
-        share_email: profileData.user.share_email || false
+        email: profileData.user.email || ''
       });
     } else {
       const savedData = sessionStorage.getItem('userFormData');
@@ -52,6 +43,13 @@ export default function OnboardingForm() {
       }
     }
   }, [isEditMode, profileData]);
+
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    linkedin_url: '',
+    email: ''
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -63,38 +61,45 @@ export default function OnboardingForm() {
     sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
   };
 
-  const handlePrivacyToggle = (field: string) => {
-    const newFormData = {
-      ...formData,
-      [`share_${field}`]: !formData[`share_${field}`]
-    };
-    setFormData(newFormData);
-    sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.first_name) {
+  const handleNext = () => {
+    if (!formData.first_name || !formData.last_name) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "First name is required",
+        description: "Please fill in all required fields",
         duration: 2000
       });
       return;
     }
 
+    // Store the form data in session storage and proceed to next step
+    sessionStorage.setItem('userFormData', JSON.stringify(formData));
+    setLocation('/company-info');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (isEditMode) {
       try {
         setIsSubmitting(true);
+
+        if (!formData.first_name || !formData.last_name) {
+          throw new Error('Please fill in all required fields');
+        }
+
+        const submitData = {
+          ...formData,
+          handle: window.Telegram?.WebApp?.initData?.user?.username || '',
+          initData: window.Telegram?.WebApp?.initData || ''
+        };
+
         const response = await fetch('/api/onboarding', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...formData,
-            handle: window.Telegram?.WebApp?.initData?.user?.username || '',
-            initData: window.Telegram?.WebApp?.initData || ''
-          })
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(submitData)
         });
 
         if (!response.ok) {
@@ -108,6 +113,7 @@ export default function OnboardingForm() {
         });
 
         setLocation('/dashboard');
+
       } catch (error) {
         console.error('Form submission error:', error);
         toast({
@@ -119,14 +125,13 @@ export default function OnboardingForm() {
         setIsSubmitting(false);
       }
     } else {
-      sessionStorage.setItem('userFormData', JSON.stringify(formData));
-      setLocation('/company-info');
+      handleNext();
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto p-4 space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-md mx-auto space-y-6">
         {isEditMode ? (
           <div className="flex justify-between mb-8">
             <Button
@@ -153,106 +158,56 @@ export default function OnboardingForm() {
           <p className="text-muted-foreground mt-2">Tell us about yourself</p>
         </div>
 
-        <Alert>
-          <Shield className="h-4 w-4" />
-          <AlertDescription>
-            Your contact information is private by default. Use the toggles below to choose what information to share when you match with someone.
-          </AlertDescription>
-        </Alert>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Required Field */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="first_name" className="font-medium">First Name *</Label>
+            <Label htmlFor="first_name">First Name</Label>
             <Input
               id="first_name"
               name="first_name"
               value={formData.first_name}
               onChange={handleInputChange}
               required
-              className="mt-1"
             />
           </div>
 
-          {/* Optional Fields with Privacy Controls */}
-          <div className="space-y-6">
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <Label htmlFor="last_name">Last Name</Label>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="share_last_name" className="text-sm text-muted-foreground">
-                    {formData.share_last_name ? 'Shared when matched' : 'Private'}
-                  </Label>
-                  <Switch
-                    id="share_last_name"
-                    checked={formData.share_last_name}
-                    onCheckedChange={() => handlePrivacyToggle('last_name')}
-                  />
-                </div>
-              </div>
-              <Input
-                id="last_name"
-                name="last_name"
-                value={formData.last_name}
-                onChange={handleInputChange}
-                className="mt-1"
-              />
-            </div>
+          <div>
+            <Label htmlFor="last_name">Last Name</Label>
+            <Input
+              id="last_name"
+              name="last_name"
+              value={formData.last_name}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
 
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <Label htmlFor="linkedin_url">LinkedIn URL</Label>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="share_linkedin" className="text-sm text-muted-foreground">
-                    {formData.share_linkedin ? 'Shared when matched' : 'Private'}
-                  </Label>
-                  <Switch
-                    id="share_linkedin"
-                    checked={formData.share_linkedin}
-                    onCheckedChange={() => handlePrivacyToggle('linkedin')}
-                  />
-                </div>
-              </div>
-              <Input
-                id="linkedin_url"
-                name="linkedin_url"
-                type="url"
-                value={formData.linkedin_url}
-                onChange={handleInputChange}
-                placeholder="https://linkedin.com/in/..."
-                className="mt-1"
-              />
-            </div>
+          <div>
+            <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+            <Input
+              id="linkedin_url"
+              name="linkedin_url"
+              type="url"
+              value={formData.linkedin_url}
+              onChange={handleInputChange}
+              placeholder="https://linkedin.com/in/..."
+            />
+          </div>
 
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <Label htmlFor="email">Email Address</Label>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="share_email" className="text-sm text-muted-foreground">
-                    {formData.share_email ? 'Shared when matched' : 'Private'}
-                  </Label>
-                  <Switch
-                    id="share_email"
-                    checked={formData.share_email}
-                    onCheckedChange={() => handlePrivacyToggle('email')}
-                  />
-                </div>
-              </div>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="your@email.com"
-                className="mt-1"
-              />
-            </div>
+          <div>
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="your@email.com"
+            />
           </div>
 
           <Button
             type="submit"
-            className="w-full mt-8"
+            className="w-full"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
@@ -261,7 +216,7 @@ export default function OnboardingForm() {
                 Updating...
               </>
             ) : (
-              isEditMode ? "Save Changes" : "Continue to Company Info"
+              isEditMode ? "Submit" : "Continue to Company Info"
             )}
           </Button>
         </form>
