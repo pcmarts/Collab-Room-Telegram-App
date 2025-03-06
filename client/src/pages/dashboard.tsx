@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
-import { UserIcon, Settings, Users, Building, Star, Bell } from 'lucide-react';
+import { UserIcon, Settings, Users, Building, Star, Bell, Coffee } from 'lucide-react'; // Added Coffee import
 import type { User, Company, Preferences } from '@shared/schema';
 import { NOTIFICATION_FREQUENCIES } from '@shared/schema';
 import { useToast } from "@/hooks/use-toast";
@@ -156,6 +156,14 @@ export default function Dashboard() {
           >
             <Star className="h-5 w-5 mb-1.5" />
             <span className="text-sm">Marketing Collabs</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
+            onClick={() => setLocation('/conference-coffees')}
+          >
+            <Coffee className="h-5 w-5 mb-1.5" />
+            <span className="text-sm">Conference Coffees</span>
           </Button>
           <Button
             variant="outline"

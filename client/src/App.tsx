@@ -13,6 +13,7 @@ import ApplicationStatus from "@/pages/application-status";
 import ProfileOverview from "@/pages/profile-overview";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
+import ConferenceCoffees from "@/pages/conference-coffees";
 
 function Router() {
   const isOnboardingRoute = window.location.pathname === '/onboarding' || 
@@ -20,6 +21,7 @@ function Router() {
     window.location.pathname === '/matching-filters';
   const isProfileRoute = window.location.pathname === '/profile-overview' ||
     window.location.pathname === '/marketing-collabs' ||
+    window.location.pathname === '/conference-coffees' ||
     window.location.pathname === '/application-status';
 
   return (
@@ -36,6 +38,7 @@ function Router() {
           <Route path="/company-info" component={CompanyInfoForm} />
           <Route path="/matching-filters" component={MatchingFilters} />
           <Route path="/marketing-collabs" component={MarketingCollabs} />
+          <Route path="/conference-coffees" component={ConferenceCoffees} />
           <Route path="/application-status" component={ApplicationStatus} />
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route component={NotFound} />

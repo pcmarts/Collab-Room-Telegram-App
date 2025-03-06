@@ -33,6 +33,29 @@ export const BLOCKCHAIN_NETWORKS = [
   "Other"
 ] as const;
 
+// Initial events data
+export const INITIAL_EVENTS = [
+  {
+    name: "European Blockchain Convention",
+    start_date: "2025-02-15",
+    end_date: "2025-02-17",
+    city: "Barcelona"
+  },
+  {
+    name: "Blockchain Economy London Summit",
+    start_date: "2025-02-27",
+    end_date: "2025-02-28",
+    city: "London"
+  },
+  // Add all other events...
+  {
+    name: "Web Summit",
+    start_date: "2025-11-11",
+    end_date: "2025-11-14",
+    city: "Lisbon"
+  }
+] as const;
+
 // Company Tags by Category
 export const COMPANY_TAG_CATEGORIES = {
   "Core Blockchain Infrastructure": [
@@ -123,6 +146,24 @@ export const companies = pgTable('companies', {
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
+// Events table
+export const events = pgTable('events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  start_date: timestamp('start_date', { withTimezone: true }).notNull(),
+  end_date: timestamp('end_date', { withTimezone: true }).notNull(),
+  city: text('city').notNull(),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
+// User events (for tracking which events users are attending)
+export const user_events = pgTable('user_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  event_id: uuid('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
 // Collaboration preferences
 export const preferences = pgTable('preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -138,15 +179,21 @@ export const preferences = pgTable('preferences', {
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
 export const insertPreferencesSchema = createInsertSchema(preferences);
+export const insertEventSchema = createInsertSchema(events);
+export const insertUserEventSchema = createInsertSchema(user_events);
 
 // Types
 export type User = typeof users.$inferSelect;
 export type Company = typeof companies.$inferSelect;
 export type Preferences = typeof preferences.$inferSelect;
+export type Event = typeof events.$inferSelect;
+export type UserEvent = typeof user_events.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type InsertPreferences = z.infer<typeof insertPreferencesSchema>;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
 
 // Onboarding schema with validation
 export const onboardingSchema = z.object({
