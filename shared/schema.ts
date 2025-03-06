@@ -15,9 +15,6 @@ export const COLLAB_TYPES = [
   "Co-Marketing on Twitter"
 ] as const;
 
-// Add collaboration opportunity status
-export const COLLAB_STATUS = ["active", "matched", "completed", "cancelled"] as const;
-
 export const NOTIFICATION_FREQUENCIES = ["Instant", "Daily", "Weekly"] as const;
 
 export const FUNDING_STAGES = ["Pre-seed", "Seed", "Series A", "Series B+"] as const;
@@ -105,7 +102,6 @@ export const users = pgTable('users', {
   linkedin_url: text('linkedin_url'),
   email: text('email'),
   is_approved: boolean('is_approved').default(false),
-  matching_enabled: boolean('matching_enabled').default(true),
   applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
@@ -138,50 +134,19 @@ export const preferences = pgTable('preferences', {
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
-// New table for collaboration opportunities
-export const collaboration_opportunities = pgTable('collaboration_opportunities', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  title: text('title').notNull(),
-  description: text('description').notNull(),
-  collab_type: text('collab_type').notNull(),
-  status: text('status').notNull().default('active'),
-  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  expires_at: timestamp('expires_at', { withTimezone: true })
-});
-
-// Table for matches between users and opportunities
-export const matches = pgTable('matches', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  opportunity_id: uuid('opportunity_id').notNull().references(() => collaboration_opportunities.id, { onDelete: 'cascade' }),
-  discoverer_id: uuid('discoverer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  host_id: uuid('host_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  status: text('status').notNull().default('pending'),
-  discoverer_accepted: boolean('discoverer_accepted').default(false),
-  host_accepted: boolean('host_accepted').default(false),
-  matched_at: timestamp('matched_at', { withTimezone: true }).defaultNow(),
-  last_interaction: timestamp('last_interaction', { withTimezone: true }).defaultNow()
-});
-
 // Schema validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
 export const insertPreferencesSchema = createInsertSchema(preferences);
-export const insertCollaborationOpportunitySchema = createInsertSchema(collaboration_opportunities);
-export const insertMatchSchema = createInsertSchema(matches);
 
 // Types
 export type User = typeof users.$inferSelect;
 export type Company = typeof companies.$inferSelect;
 export type Preferences = typeof preferences.$inferSelect;
-export type CollaborationOpportunity = typeof collaboration_opportunities.$inferSelect;
-export type Match = typeof matches.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type InsertPreferences = z.infer<typeof insertPreferencesSchema>;
-export type InsertCollaborationOpportunity = z.infer<typeof insertCollaborationOpportunitySchema>;
-export type InsertMatch = z.infer<typeof insertMatchSchema>;
 
 // Onboarding schema with validation
 export const onboardingSchema = z.object({

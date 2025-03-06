@@ -3,8 +3,6 @@ import { createServer } from "http";
 import { db } from "./db";
 import { users, companies, preferences } from "../shared/schema";
 import { eq } from 'drizzle-orm';
-import { matchingService } from "./services/matching";
-import { collaboration_opportunities } from "../shared/schema"; // Assuming this is the correct import
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
@@ -15,11 +13,11 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', req.body);
 
     try {
-      const {
+      const { 
         // User info
         first_name, last_name, linkedin_url, email, initData,
         // Company info
-        company_name, company_website, twitter_handle, job_title,
+        company_name, company_website, twitter_handle, job_title, 
         funding_stage, has_token, token_ticker, blockchain_networks, company_tags,
         // Preferences
         collabs_to_discover, collabs_to_host, notification_frequency, excluded_tags
@@ -436,223 +434,6 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error('Profile fetch error:', error);
       res.status(500).json({ error: 'Failed to fetch profile data' });
-    }
-  });
-
-  // Get potential matches for the current user
-  app.get("/api/matches", async (req, res) => {
-    try {
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      if (!initData) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-
-      if (!telegramUser.id) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Get user from telegram_id
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      const matches = await matchingService.findMatches(user.id);
-      res.json(matches);
-
-    } catch (error) {
-      console.error('Error fetching matches:', error);
-      res.status(500).json({ error: 'Failed to fetch matches' });
-    }
-  });
-
-  // Create a new match
-  app.post("/api/matches", async (req, res) => {
-    try {
-      const { opportunity_id } = req.body;
-
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      if (!initData) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-
-      if (!telegramUser.id) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Get user from telegram_id
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      const match = await matchingService.createMatch(opportunity_id, user.id);
-      res.json({ success: true, match });
-
-    } catch (error) {
-      console.error('Error creating match:', error);
-      res.status(500).json({ error: 'Failed to create match' });
-    }
-  });
-
-  // Create a new collaboration opportunity
-  app.post("/api/opportunities", async (req, res) => {
-    try {
-      const { title, description, collab_type, expires_at } = req.body;
-
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      if (!initData) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-
-      if (!telegramUser.id) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Get user from telegram_id
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      const [opportunity] = await db.insert(collaboration_opportunities)
-        .values({
-          user_id: user.id,
-          title,
-          description,
-          collab_type,
-          expires_at: expires_at ? new Date(expires_at) : null
-        })
-        .returning();
-
-      res.json({ success: true, opportunity });
-
-    } catch (error) {
-      console.error('Error creating opportunity:', error);
-      res.status(500).json({ error: 'Failed to create opportunity' });
-    }
-  });
-
-  // Get all collaboration opportunities with company info
-  app.get("/api/opportunities", async (req, res) => {
-    try {
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      if (!initData) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-
-      if (!telegramUser.id) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Get user from telegram_id
-      const [currentUser] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!currentUser) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      // Get all active opportunities with company and user info
-      const opportunities = await db
-        .select({
-          opportunity: collaboration_opportunities,
-          company: companies,
-          host: users
-        })
-        .from(collaboration_opportunities)
-        .where(eq(collaboration_opportunities.status, 'active'))
-        .innerJoin(users, eq(collaboration_opportunities.user_id, users.id))
-        .innerJoin(companies, eq(users.id, companies.user_id));
-
-      // Format response to include company details
-      const formattedOpportunities = opportunities.map(({ opportunity, company, host }) => ({
-        ...opportunity,
-        company: {
-          name: company.name,
-          website: company.website,
-          twitter_handle: company.twitter_handle,
-          linkedin_url: company.linkedin_url
-        },
-        host: {
-          first_name: host.first_name,
-          last_name: host.last_name,
-          handle: host.handle
-        }
-      }));
-
-      res.json(formattedOpportunities);
-
-    } catch (error) {
-      console.error('Error fetching opportunities:', error);
-      res.status(500).json({ error: 'Failed to fetch opportunities' });
-    }
-  });
-
-  // Toggle matching status
-  app.post("/api/preferences/matching", async (req, res) => {
-    try {
-      const { enabled } = req.body;
-
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      if (!initData) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-
-      if (!telegramUser.id) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Get user from telegram_id
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      // Update matching status
-      const [updatedUser] = await db.update(users)
-        .set({ matching_enabled: enabled })
-        .where(eq(users.id, user.id))
-        .returning();
-
-      res.json({ success: true, matching_enabled: updatedUser.matching_enabled });
-
-    } catch (error) {
-      console.error('Error updating matching status:', error);
-      res.status(500).json({ error: 'Failed to update matching status' });
     }
   });
 
