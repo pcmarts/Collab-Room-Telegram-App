@@ -92,10 +92,9 @@ export default function ProfileOverview() {
       };
 
       const response = await apiRequest("POST", "/api/onboarding", submitData);
-      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to update profile");
+        throw new Error("Failed to update profile");
       }
 
       await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
@@ -172,7 +171,7 @@ export default function ProfileOverview() {
               </div>
 
               <div>
-                <Label htmlFor="last_name">Last Name</Label>
+                <Label htmlFor="last_name">Last Name (Optional)</Label>
                 <Input
                   id="last_name"
                   name="last_name"
@@ -182,7 +181,7 @@ export default function ProfileOverview() {
               </div>
 
               <div>
-                <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+                <Label htmlFor="linkedin_url">LinkedIn URL (Optional)</Label>
                 <Input
                   id="linkedin_url"
                   name="linkedin_url"
@@ -194,7 +193,7 @@ export default function ProfileOverview() {
               </div>
 
               <div>
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">Email Address (Optional)</Label>
                 <Input
                   id="email"
                   name="email"
