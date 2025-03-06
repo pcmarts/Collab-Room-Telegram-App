@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "./db";
-import { users, companies, preferences } from "../shared/schema";
+import { users, companies, preferences, events, user_events } from "../shared/schema";
 import { eq } from 'drizzle-orm';
 
 export async function registerRoutes(app: Express) {
@@ -428,6 +428,115 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error('Profile fetch error:', error);
       res.status(500).json({ error: 'Failed to fetch profile data' });
+    }
+  });
+
+  // Events endpoint
+  app.get("/api/events", async (req, res) => {
+    try {
+      const allEvents = await db.select().from(events);
+      res.json(allEvents);
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+      res.status(500).json({ error: 'Failed to fetch events' });
+    }
+  });
+
+  // User events endpoint
+  app.get("/api/user-events", async (req, res) => {
+    try {
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Parse Telegram data
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+
+      if (!telegramUser.id) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user ID from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get user's event attendance
+      const userEventAttendance = await db.select()
+        .from(user_events)
+        .where(eq(user_events.user_id, user.id));
+
+      res.json(userEventAttendance);
+
+    } catch (error) {
+      console.error('Failed to fetch user events:', error);
+      res.status(500).json({ error: 'Failed to fetch user events' });
+    }
+  });
+
+  // Toggle user event attendance
+  app.post("/api/user-events", async (req, res) => {
+    try {
+      const { event_id } = req.body;
+
+      if (!event_id) {
+        return res.status(400).json({ error: 'Event ID is required' });
+      }
+
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Parse Telegram data
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+
+      if (!telegramUser.id) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user ID from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Check if user is already attending this event
+      const [existingAttendance] = await db.select()
+        .from(user_events)
+        .where(eq(user_events.user_id, user.id))
+        .where(eq(user_events.event_id, event_id));
+
+      if (existingAttendance) {
+        // Remove attendance if exists
+        await db.delete(user_events)
+          .where(eq(user_events.id, existingAttendance.id));
+      } else {
+        // Add new attendance
+        await db.insert(user_events)
+          .values({
+            user_id: user.id,
+            event_id
+          });
+      }
+
+      res.json({ success: true });
+
+    } catch (error) {
+      console.error('Failed to toggle event attendance:', error);
+      res.status(500).json({ error: 'Failed to update event attendance' });
     }
   });
 
