@@ -101,9 +101,9 @@ export default function Dashboard() {
     return (
       <div className="p-4 text-center min-h-[100svh] flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold mb-4">Profile Not Found</h1>
-        <p className="text-muted-foreground mb-4">Please complete the onboarding process.</p>
-        <Button className="w-full max-w-xs" onClick={() => setLocation('/onboarding')}>
-          Complete Profile
+        <p className="text-muted-foreground mb-4">Please complete the application process.</p>
+        <Button className="w-full max-w-xs" onClick={() => setLocation('/apply')}>
+          Apply to Join
         </Button>
       </div>
     );
