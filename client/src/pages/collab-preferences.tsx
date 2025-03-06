@@ -17,13 +17,9 @@ export default function CollabPreferencesForm() {
   const queryClient = useQueryClient();
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
-  // Check if we're in edit mode
-  const isEditMode = window.location.search.includes('edit=true');
-
-  // Fetch existing data if in edit mode
-  const { data: profileData } = useQuery<ProfileData>({
-    queryKey: ['/api/profile'],
-    enabled: isEditMode
+  // Fetch existing data
+  const { data: profileData, isLoading } = useQuery<ProfileData>({
+    queryKey: ['/api/profile']
   });
 
   const [formData, setFormData] = useState({
@@ -34,14 +30,14 @@ export default function CollabPreferencesForm() {
 
   // Load existing preferences when data is fetched
   useEffect(() => {
-    if (isEditMode && profileData?.preferences) {
+    if (profileData?.preferences) {
       setFormData({
         collabs_to_discover: profileData.preferences.collabs_to_discover || [],
         notification_frequency: profileData.preferences.notification_frequency || '',
         excluded_tags: profileData.preferences.excluded_tags || []
       });
     }
-  }, [isEditMode, profileData]);
+  }, [profileData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,81 +49,29 @@ export default function CollabPreferencesForm() {
         throw new Error('Please fill in all required fields');
       }
 
-      if (isEditMode) {
-        // For edit mode, just update preferences
-        const response = await apiRequest('POST', '/api/preferences', {
-          ...formData,
-          collabs_to_host: profileData?.preferences?.collabs_to_host || []
-        });
+      const submitData = {
+        ...profileData?.preferences,
+        collabs_to_discover: formData.collabs_to_discover,
+        notification_frequency: formData.notification_frequency,
+        excluded_tags: formData.excluded_tags
+      };
 
-        if (!response.ok) {
-          throw new Error('Failed to update preferences');
-        }
+      const response = await apiRequest('POST', '/api/preferences', submitData);
 
-        await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-
-        toast({
-          title: "Success!",
-          description: "Your discovery preferences have been updated",
-          duration: 2000
-        });
-
-        setLocation('/dashboard');
-      } else {
-        // For onboarding, submit all collected data
-        const userFormData = JSON.parse(sessionStorage.getItem('userFormData') || '{}');
-        const companyFormData = JSON.parse(sessionStorage.getItem('companyFormData') || '{}');
-        const collabsFormData = JSON.parse(sessionStorage.getItem('collabsFormData') || '{}');
-
-        const submitData = {
-          // User information
-          first_name: userFormData.first_name,
-          last_name: userFormData.last_name,
-          handle: window.Telegram?.WebApp?.initData?.user?.username || '',
-          linkedin_url: userFormData.linkedin_url,
-          email: userFormData.email,
-
-          // Company information
-          company_name: companyFormData.company_name,
-          company_website: companyFormData.website,
-          twitter_handle: companyFormData.twitter_url?.replace('https://x.com/', '').replace('@', ''),
-          job_title: companyFormData.job_title,
-          funding_stage: companyFormData.funding_stage,
-          has_token: companyFormData.has_token,
-          token_ticker: companyFormData.token_ticker,
-          blockchain_networks: companyFormData.blockchain_networks,
-          company_tags: companyFormData.tags,
-
-          // Collaboration preferences
-          collabs_to_discover: formData.collabs_to_discover,
-          collabs_to_host: collabsFormData.collabs_to_host,
-          notification_frequency: formData.notification_frequency,
-          excluded_tags: formData.excluded_tags,
-
-          // Telegram data
-          initData: window.Telegram?.WebApp?.initData || ''
-        };
-
-        const response = await apiRequest('POST', '/api/onboarding', submitData);
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to complete onboarding');
-        }
-
-        // Clear session storage after successful submission
-        sessionStorage.removeItem('userFormData');
-        sessionStorage.removeItem('companyFormData');
-        sessionStorage.removeItem('collabsFormData');
-
-        toast({
-          title: "Application Submitted!",
-          description: "We'll review your application and notify you through Telegram.",
-          duration: 2000
-        });
-
-        setLocation('/application-status');
+      if (!response.ok) {
+        throw new Error('Failed to update preferences');
       }
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+
+      toast({
+        title: "Success!",
+        description: "Your discovery preferences have been updated",
+        duration: 2000
+      });
+
+      setLocation('/dashboard');
+
     } catch (error) {
       console.error('Failed to submit:', error);
       toast({
@@ -166,6 +110,14 @@ export default function CollabPreferencesForm() {
     }));
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[100svh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[100svh] bg-background">
       <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
@@ -174,25 +126,17 @@ export default function CollabPreferencesForm() {
             variant="ghost"
             size="sm"
             className="flex items-center -ml-3"
-            onClick={() => setLocation(isEditMode ? '/dashboard' : '/my-collabs')}
+            onClick={() => setLocation('/dashboard')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Cancel
           </Button>
-          <h1 className="text-lg font-semibold">Collab Discovery</h1>
+          <h1 className="text-lg font-semibold">Discovery Preferences</h1>
           <div className="w-12" /> {/* Spacer for alignment */}
         </div>
       </div>
 
       <div className="p-4 space-y-6">
-        {!isEditMode && (
-          <div className="flex items-center gap-2 justify-center mb-4">
-            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-            <div className="w-3 h-3 rounded-full bg-primary"></div>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-6">
             <div>
@@ -287,10 +231,10 @@ export default function CollabPreferencesForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
+                Saving...
               </>
             ) : (
-              isEditMode ? "Submit" : "Complete Setup"
+              "Save"
             )}
           </Button>
         </form>
