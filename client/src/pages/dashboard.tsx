@@ -4,9 +4,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Label } from '@/components/ui/label';
+import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
-import { UserIcon, Settings, Users, Building, Star, Bell, Coffee, Grid } from 'lucide-react';
+import { UserIcon, Settings, Users, Building, Star, Bell, Coffee } from 'lucide-react'; // Added Coffee import
 import type { User, Company, Preferences } from '@shared/schema';
 import { NOTIFICATION_FREQUENCIES } from '@shared/schema';
 import { useToast } from "@/hooks/use-toast";
@@ -29,12 +29,6 @@ export default function Dashboard() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [notificationFrequency, setNotificationFrequency] = useState(
     profile?.preferences?.notification_frequency || 'Daily'
-  );
-  const [marketingEnabled, setMarketingEnabled] = useState(
-    profile?.preferences?.marketing_collabs_enabled ?? true
-  );
-  const [conferenceEnabled, setConferenceEnabled] = useState(
-    profile?.preferences?.conference_collabs_enabled ?? true
   );
 
   const handleNotificationSettingsChange = async (enabled: boolean) => {
@@ -89,40 +83,6 @@ export default function Dashboard() {
         variant: "destructive",
         title: "Error",
         description: "Failed to update notification frequency"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleFeatureToggle = async (feature: 'marketing' | 'conference', enabled: boolean) => {
-    try {
-      setIsSubmitting(true);
-      const response = await apiRequest('POST', '/api/preferences', {
-        ...profile?.preferences,
-        marketing_collabs_enabled: feature === 'marketing' ? enabled : marketingEnabled,
-        conference_collabs_enabled: feature === 'conference' ? enabled : conferenceEnabled
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update ${feature} settings`);
-      }
-
-      if (feature === 'marketing') {
-        setMarketingEnabled(enabled);
-      } else {
-        setConferenceEnabled(enabled);
-      }
-
-      toast({
-        title: "Success",
-        description: `${feature === 'marketing' ? 'Marketing' : 'Conference'} collabs ${enabled ? 'enabled' : 'disabled'}`,
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Failed to update ${feature} settings`
       });
     } finally {
       setIsSubmitting(false);
@@ -191,7 +151,7 @@ export default function Dashboard() {
           </Button>
           <Button
             variant="outline"
-            className={`h-20 flex-col ${!marketingEnabled ? 'opacity-50' : ''}`}
+            className="h-20 flex-col"
             onClick={() => setLocation('/marketing-collabs')}
           >
             <Star className="h-5 w-5 mb-1.5" />
@@ -199,7 +159,7 @@ export default function Dashboard() {
           </Button>
           <Button
             variant="outline"
-            className={`h-20 flex-col ${!conferenceEnabled ? 'opacity-50' : ''}`}
+            className="h-20 flex-col"
             onClick={() => setLocation('/conference-coffees')}
           >
             <Coffee className="h-5 w-5 mb-1.5" />
@@ -214,44 +174,6 @@ export default function Dashboard() {
             <span className="text-sm">Matching Filters</span>
           </Button>
         </div>
-
-        {/* Feature Settings */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Grid className="h-5 w-5" />
-              Feature Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Marketing Collabs</Label>
-                <p className="text-sm text-muted-foreground">
-                  Enable or disable marketing collaboration discovery
-                </p>
-              </div>
-              <Switch
-                checked={marketingEnabled}
-                onCheckedChange={(enabled) => handleFeatureToggle('marketing', enabled)}
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Conference Coffees</Label>
-                <p className="text-sm text-muted-foreground">
-                  Enable or disable conference attendee discovery
-                </p>
-              </div>
-              <Switch
-                checked={conferenceEnabled}
-                onCheckedChange={(enabled) => handleFeatureToggle('conference', enabled)}
-                disabled={isSubmitting}
-              />
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Notification Settings */}
         <Card>
