@@ -8,6 +8,7 @@ import Collaborations from "@/pages/collaborations";
 import Welcome from "@/pages/welcome";
 import PersonalInfo from "@/pages/personal-info";
 import CompanyBasics from "@/pages/company-basics";
+import CompanySector from "@/pages/company-sector";
 import CompanyDetails from "@/pages/company-details";
 import ApplicationStatus from "@/pages/application-status";
 import MarketingCollabs from "@/pages/marketing-collabs";
@@ -20,6 +21,7 @@ function Router() {
   const isApplicationRoute = window.location.pathname === '/apply' || 
     window.location.pathname === '/personal-info' || 
     window.location.pathname === '/company-basics' ||
+    window.location.pathname === '/company-sector' ||
     window.location.pathname === '/company-details';
 
   const isProfileRoute = window.location.pathname === '/profile-overview' ||
@@ -44,6 +46,7 @@ function Router() {
           <Route path="/apply" component={Welcome} />
           <Route path="/personal-info" component={PersonalInfo} />
           <Route path="/company-basics" component={CompanyBasics} />
+          <Route path="/company-sector" component={CompanySector} />
           <Route path="/company-details" component={CompanyDetails} />
           <Route path="/application-status" component={ApplicationStatus} />
 
