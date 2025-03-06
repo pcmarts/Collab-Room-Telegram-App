@@ -49,6 +49,7 @@ function Router() {
 
           {/* Profile Routes */}
           <Route path="/profile-overview" component={ProfileOverview} />
+          <Route path="/not-found" component={NotFound} />
           <Route component={NotFound} />
         </Switch>
       </div>
