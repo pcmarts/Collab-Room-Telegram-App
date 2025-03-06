@@ -23,11 +23,6 @@ export async function registerRoutes(app: Express) {
         collabs_to_discover, collabs_to_host, notification_frequency, excluded_tags
       } = req.body;
 
-      if (!first_name || !last_name || !company_name || !job_title || !company_website || !funding_stage) {
-        console.error('Missing required fields');
-        return res.status(400).json({ error: 'Missing required fields' });
-      }
-
       // Parse Telegram data
       console.log('Parsing Telegram data');
       const decodedInitData = new URLSearchParams(initData);
@@ -44,6 +39,24 @@ export async function registerRoutes(app: Express) {
       const handle = telegramUser.username;
 
       try {
+        // Check if this is a profile update or full onboarding
+        const existingUser = await db.select()
+          .from(users)
+          .where(eq(users.telegram_id, telegram_id));
+
+        const isProfileUpdate = existingUser.length > 0;
+
+        // Validate required fields based on operation type
+        if (!first_name || !last_name) {
+          console.error('Missing required user fields');
+          return res.status(400).json({ error: 'First name and last name are required' });
+        }
+
+        if (!isProfileUpdate && (!company_name || !job_title || !company_website || !funding_stage)) {
+          console.error('Missing required company fields for new user');
+          return res.status(400).json({ error: 'Missing required company fields' });
+        }
+
         // Start a transaction
         const result = await db.transaction(async (tx) => {
           // 1. Create or update user
@@ -73,24 +86,13 @@ export async function registerRoutes(app: Express) {
 
           console.log('Created/Updated user:', user);
 
-          // 2. Create company record
-          const [company] = await tx
-            .insert(companies)
-            .values({
-              user_id: user.id,
-              name: company_name,
-              job_title,
-              website: company_website,
-              twitter_handle: twitter_handle?.replace('https://x.com/', '').replace('@', ''),
-              funding_stage,
-              has_token: Boolean(has_token),
-              token_ticker: has_token ? token_ticker : null,
-              blockchain_networks: has_token ? blockchain_networks : [],
-              tags: company_tags || []
-            })
-            .onConflictDoUpdate({
-              target: [companies.user_id],
-              set: {
+          // Only handle company and preferences for full onboarding
+          if (!isProfileUpdate) {
+            // 2. Create company record
+            const [company] = await tx
+              .insert(companies)
+              .values({
+                user_id: user.id,
                 name: company_name,
                 job_title,
                 website: company_website,
@@ -100,42 +102,34 @@ export async function registerRoutes(app: Express) {
                 token_ticker: has_token ? token_ticker : null,
                 blockchain_networks: has_token ? blockchain_networks : [],
                 tags: company_tags || []
-              }
-            })
-            .returning();
+              })
+              .returning();
 
-          console.log('Created/Updated company:', company);
+            console.log('Created company:', company);
 
-          // 3. Create preferences record
-          const [userPreferences] = await tx
-            .insert(preferences)
-            .values({
-              user_id: user.id,
-              collabs_to_discover: collabs_to_discover || [],
-              collabs_to_host: collabs_to_host || [],
-              notification_frequency: notification_frequency || 'Daily',
-              excluded_tags: excluded_tags || []
-            })
-            .onConflictDoUpdate({
-              target: [preferences.user_id],
-              set: {
+            // 3. Create preferences record
+            const [userPreferences] = await tx
+              .insert(preferences)
+              .values({
+                user_id: user.id,
                 collabs_to_discover: collabs_to_discover || [],
                 collabs_to_host: collabs_to_host || [],
                 notification_frequency: notification_frequency || 'Daily',
                 excluded_tags: excluded_tags || []
-              }
-            })
-            .returning();
+              })
+              .returning();
 
-          console.log('Created/Updated preferences:', userPreferences);
+            console.log('Created preferences:', userPreferences);
 
-          return { user, company, preferences: userPreferences };
+            return { user, company, preferences: userPreferences };
+          }
+
+          return { user };
         });
 
-        // Clear session storage after successful submission
         res.json({
           success: true,
-          message: 'Application submitted successfully',
+          message: isProfileUpdate ? 'Profile updated successfully' : 'Application submitted successfully',
           ...result
         });
 
