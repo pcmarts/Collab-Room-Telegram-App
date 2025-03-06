@@ -125,7 +125,7 @@ export default function MyCollabsForm() {
             onClick={() => setLocation(isEditMode ? '/dashboard' : '/company-info')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Cancel
           </Button>
           <h1 className="text-lg font-semibold">My Collaborations</h1>
           <div className="w-12" /> {/* Spacer for alignment */}

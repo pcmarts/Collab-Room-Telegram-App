@@ -64,7 +64,7 @@ export default function Dashboard() {
           <Button
             variant="outline"
             className="h-20 flex-col"
-            onClick={() => setLocation('/onboarding?edit=true')}
+            onClick={() => setLocation('/profile-overview')}
           >
             <UserIcon className="h-5 w-5 mb-1.5" />
             <span className="text-sm">Personal Info</span>

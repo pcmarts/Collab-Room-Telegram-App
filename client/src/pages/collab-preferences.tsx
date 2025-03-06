@@ -177,7 +177,7 @@ export default function CollabPreferencesForm() {
             onClick={() => setLocation(isEditMode ? '/dashboard' : '/my-collabs')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Cancel
           </Button>
           <h1 className="text-lg font-semibold">Collab Discovery</h1>
           <div className="w-12" /> {/* Spacer for alignment */}
