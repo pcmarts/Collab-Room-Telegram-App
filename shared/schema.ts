@@ -47,7 +47,6 @@ export const INITIAL_EVENTS = [
     end_date: "2025-02-28",
     city: "London"
   },
-  // Add all other events...
   {
     name: "Web Summit",
     start_date: "2025-11-11",
@@ -120,10 +119,13 @@ export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   telegram_id: text('telegram_id').unique().notNull(),
   first_name: text('first_name').notNull(),
-  last_name: text('last_name'),  // Made optional
+  last_name: text('last_name'),  // Optional
   handle: text('handle').notNull(),
-  linkedin_url: text('linkedin_url'),  // Already optional
-  email: text('email'),  // Already optional
+  linkedin_url: text('linkedin_url'),  // Optional
+  email: text('email'),  // Optional
+  share_last_name: boolean('share_last_name').default(false),
+  share_linkedin: boolean('share_linkedin').default(false),
+  share_email: boolean('share_email').default(false),
   is_approved: boolean('is_approved').default(false),
   applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
@@ -199,19 +201,24 @@ export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
 export const onboardingSchema = z.object({
   // User Information
   first_name: z.string().min(1, "First name is required"),
-  last_name: z.string().optional(),  // Made optional
+  last_name: z.string().optional(),
   handle: z.string().min(1, "Telegram handle is required"),
   linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(),
   email: z.string().email("Please enter a valid email").optional().nullable(),
 
-  // Company Information remains unchanged
+  // Privacy Controls
+  share_last_name: z.boolean().default(false),
+  share_linkedin: z.boolean().default(false),
+  share_email: z.boolean().default(false),
+
+  // Company Information
   company_name: z.string().min(2, "Company name is required"),
   company_website: z.string().url("Please enter a valid website URL"),
   twitter_handle: z.string().min(1, "Twitter handle is required"),
   company_category: z.enum(COMPANY_CATEGORIES),
   company_size: z.enum(COMPANY_SIZES),
 
-  // Collaboration Preferences remain unchanged
+  // Collaboration Preferences
   collabs_to_discover: z.array(z.enum(COLLAB_TYPES)).min(1, "Select at least one collaboration type to discover"),
   collabs_to_host: z.array(z.enum(COLLAB_TYPES)).min(1, "Select at least one collaboration type to host"),
   notification_frequency: z.enum(NOTIFICATION_FREQUENCIES),
