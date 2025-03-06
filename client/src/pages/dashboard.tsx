@@ -174,15 +174,15 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Quick Actions - Second Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Quick Actions - Second Row - Three Column Layout */}
+        <div className="grid grid-cols-3 gap-3">
           <Button
             variant="outline"
             className="h-20 flex-col"
             onClick={() => setLocation('/profile-overview')}
           >
             <UserIcon className="h-5 w-5 mb-1.5" />
-            <span className="text-sm">Personal Info</span>
+            <span className="text-sm">Me</span>
           </Button>
           <Button
             variant="outline"
@@ -190,7 +190,7 @@ export default function Dashboard() {
             onClick={() => setLocation('/company-info')}
           >
             <Building className="h-5 w-5 mb-1.5" />
-            <span className="text-sm">Company Info</span>
+            <span className="text-sm">My Company</span>
           </Button>
           <Button
             variant="outline"
