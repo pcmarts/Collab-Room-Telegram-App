@@ -123,6 +123,7 @@ export const users = pgTable('users', {
   handle: text('handle').notNull(),
   linkedin_url: text('linkedin_url'),
   email: text('email'),
+  referral_code: text('referral_code'),
   is_approved: boolean('is_approved').default(false),
   applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
@@ -197,12 +198,15 @@ export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
 
 // Onboarding schema with validation
-export const onboardingSchema = z.object({
+// Rename to applicationSchema for clarity
+export const applicationSchema = z.object({
   // User Information
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().optional(),
   handle: z.string().min(1, "Telegram handle is required"),
   linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(),
+  email: z.string().email("Please enter a valid email").optional().nullable(),
+  referral_code: z.string().optional(),
 
   // Company Information
   company_name: z.string().min(2, "Company name is required"),
@@ -210,16 +214,15 @@ export const onboardingSchema = z.object({
   short_description: z.string().max(150, "Short description must be less than 150 characters").optional(),
   long_description: z.string().max(1000, "Long description must be less than 1000 characters").optional(),
   twitter_handle: z.string().min(1, "Twitter handle is required"),
-  company_category: z.enum(COMPANY_CATEGORIES),
-  company_size: z.enum(COMPANY_SIZES),
-
-  // Collaboration Preferences
-  collabs_to_discover: z.array(z.enum(COLLAB_TYPES)).min(1, "Select at least one collaboration type to discover"),
-  collabs_to_host: z.array(z.enum(COLLAB_TYPES)).min(1, "Select at least one collaboration type to host"),
-  notification_frequency: z.enum(NOTIFICATION_FREQUENCIES),
+  job_title: z.string().min(1, "Job title is required"),
+  funding_stage: z.enum(FUNDING_STAGES),
+  has_token: z.boolean(),
+  token_ticker: z.string().optional(),
+  blockchain_networks: z.array(z.enum(BLOCKCHAIN_NETWORKS)).optional(),
+  company_tags: z.array(z.string()).optional(),
 
   // Telegram data
   initData: z.string()
 });
 
-export type OnboardingData = z.infer<typeof onboardingSchema>;
+export type ApplicationData = z.infer<typeof applicationSchema>;
