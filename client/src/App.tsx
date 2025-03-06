@@ -7,8 +7,8 @@ import Dashboard from "@/pages/dashboard";
 import Collaborations from "@/pages/collaborations";
 import OnboardingForm from "@/pages/onboarding";
 import CompanyInfoForm from "@/pages/company-info";
-import CollabPreferencesForm from "@/pages/collab-preferences";
-import MyCollabsForm from "@/pages/my-collabs";
+import MarketingCollabs from "@/pages/marketing-collabs";
+import MatchingFilters from "@/pages/matching-filters";
 import ApplicationStatus from "@/pages/application-status";
 import ProfileOverview from "@/pages/profile-overview";
 import NotFound from "@/pages/not-found";
@@ -17,9 +17,9 @@ import { MobileCheck } from "@/components/MobileCheck";
 function Router() {
   const isOnboardingRoute = window.location.pathname === '/onboarding' || 
     window.location.pathname === '/company-info' || 
-    window.location.pathname === '/collab-preferences';
+    window.location.pathname === '/matching-filters';
   const isProfileRoute = window.location.pathname === '/profile-overview' ||
-    window.location.pathname === '/my-collabs' ||
+    window.location.pathname === '/marketing-collabs' ||
     window.location.pathname === '/application-status';
 
   return (
@@ -34,8 +34,8 @@ function Router() {
           <Route path="/collaborations" component={Collaborations} />
           <Route path="/onboarding" component={OnboardingForm} />
           <Route path="/company-info" component={CompanyInfoForm} />
-          <Route path="/collab-preferences" component={CollabPreferencesForm} />
-          <Route path="/my-collabs" component={MyCollabsForm} />
+          <Route path="/matching-filters" component={MatchingFilters} />
+          <Route path="/marketing-collabs" component={MarketingCollabs} />
           <Route path="/application-status" component={ApplicationStatus} />
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route component={NotFound} />

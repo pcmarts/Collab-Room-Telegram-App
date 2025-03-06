@@ -1,9 +1,16 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
-import { User as UserIcon, Settings, Users, BookOpen, Building, Star } from 'lucide-react';
+import { UserIcon, Settings, Users, Building, Star, Bell } from 'lucide-react';
 import type { User, Company, Preferences } from '@shared/schema';
+import { NOTIFICATION_FREQUENCIES } from '@shared/schema';
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface ProfileData {
   user: User;
@@ -13,9 +20,74 @@ interface ProfileData {
 
 export default function Dashboard() {
   const [_, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: profile, isLoading } = useQuery<ProfileData>({
     queryKey: ['/api/profile']
   });
+
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationFrequency, setNotificationFrequency] = useState(
+    profile?.preferences?.notification_frequency || 'Daily'
+  );
+
+  const handleNotificationSettingsChange = async (enabled: boolean) => {
+    setNotificationsEnabled(enabled);
+    if (!enabled) {
+      try {
+        setIsSubmitting(true);
+        const response = await apiRequest('POST', '/api/preferences', {
+          ...profile?.preferences,
+          notification_frequency: 'Never'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update notification settings');
+        }
+
+        toast({
+          title: "Success",
+          description: "Notifications have been disabled",
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update notification settings"
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  const handleFrequencyChange = async (frequency: string) => {
+    try {
+      setIsSubmitting(true);
+      const response = await apiRequest('POST', '/api/preferences', {
+        ...profile?.preferences,
+        notification_frequency: frequency
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update notification frequency');
+      }
+
+      setNotificationFrequency(frequency);
+      toast({
+        title: "Success",
+        description: "Notification frequency updated",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update notification frequency"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -72,7 +144,7 @@ export default function Dashboard() {
           <Button
             variant="outline"
             className="h-20 flex-col"
-            onClick={() => setLocation('/company-info?edit=true')}
+            onClick={() => setLocation('/company-info')}
           >
             <Building className="h-5 w-5 mb-1.5" />
             <span className="text-sm">Company Info</span>
@@ -80,20 +152,59 @@ export default function Dashboard() {
           <Button
             variant="outline"
             className="h-20 flex-col"
-            onClick={() => setLocation('/my-collabs?edit=true')}
+            onClick={() => setLocation('/marketing-collabs')}
           >
             <Star className="h-5 w-5 mb-1.5" />
-            <span className="text-sm">My Collabs</span>
+            <span className="text-sm">Marketing Collabs</span>
           </Button>
           <Button
             variant="outline"
             className="h-20 flex-col"
-            onClick={() => setLocation('/collab-preferences?edit=true')}
+            onClick={() => setLocation('/matching-filters')}
           >
             <Settings className="h-5 w-5 mb-1.5" />
-            <span className="text-sm">Discovery</span>
+            <span className="text-sm">Matching Filters</span>
           </Button>
         </div>
+
+        {/* Notification Settings */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notifications
+              </CardTitle>
+              <Switch
+                checked={notificationsEnabled}
+                onCheckedChange={handleNotificationSettingsChange}
+              />
+            </div>
+          </CardHeader>
+          {notificationsEnabled && (
+            <CardContent>
+              <div className="space-y-2">
+                <Label>Frequency</Label>
+                <Select
+                  value={notificationFrequency}
+                  onValueChange={handleFrequencyChange}
+                  disabled={isSubmitting}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {NOTIFICATION_FREQUENCIES.map((frequency) => (
+                      <SelectItem key={frequency} value={frequency}>
+                        {frequency}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          )}
+        </Card>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 gap-3">
@@ -110,7 +221,7 @@ export default function Dashboard() {
           <Card className="bg-primary/5">
             <CardContent className="p-4">
               <div className="flex flex-col items-center">
-                <BookOpen className="h-5 w-5 mb-1.5 text-primary" />
+                <Star className="h-5 w-5 mb-1.5 text-primary" />
                 <span className="text-xl font-bold">0</span>
                 <span className="text-xs text-muted-foreground">Opportunities</span>
               </div>
