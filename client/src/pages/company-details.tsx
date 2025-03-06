@@ -22,7 +22,7 @@ export default function CompanyDetails() {
 
   const [formData, setFormData] = useState({
     has_token: false,
-    token_ticker: '$',
+    token_ticker: '',
     blockchain_networks: [] as string[]
   });
 
@@ -30,7 +30,7 @@ export default function CompanyDetails() {
     if (profileData?.company) {
       setFormData({
         has_token: profileData.company.has_token || false,
-        token_ticker: profileData.company.token_ticker || '$',
+        token_ticker: profileData.company.token_ticker || '',
         blockchain_networks: profileData.company.blockchain_networks || []
       });
     } else {
@@ -56,53 +56,55 @@ export default function CompanyDetails() {
     try {
       setIsSubmitting(true);
 
-      if (formData.has_token && !formData.token_ticker) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please enter your token ticker",
-          duration: 2000
-        });
-        return;
-      }
-
-      if (formData.has_token && !formData.blockchain_networks.length) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please select at least one blockchain network",
-          duration: 2000
-        });
-        return;
-      }
-
-      // Get data from session storage
+      // Get required data from session storage
       const basicData = JSON.parse(sessionStorage.getItem('companyFormData') || '{}');
       const sectorData = JSON.parse(sessionStorage.getItem('companySectorData') || '{}');
       const userFormData = JSON.parse(sessionStorage.getItem('userFormData') || '{}');
 
       // Get Telegram username from the initData
       const telegramData = window.Telegram?.WebApp?.initDataUnsafe?.user;
-      const handle = telegramData?.username || '';
+      const handle = telegramData?.username;
+
+      if (!handle) {
+        throw new Error('Telegram username is required');
+      }
+
+      if (!basicData.company_name || !basicData.website || !basicData.job_title || 
+          !basicData.twitter_url || !basicData.linkedin_url || !basicData.funding_stage) {
+        throw new Error('Please complete all company information fields');
+      }
+
+      if (!sectorData.company_tags?.length) {
+        throw new Error('Please select at least one company sector');
+      }
+
+      if (formData.has_token) {
+        if (!formData.token_ticker) {
+          throw new Error('Token ticker is required when you have a token');
+        }
+        if (!formData.blockchain_networks.length) {
+          throw new Error('Please select at least one blockchain network');
+        }
+      }
 
       const submitData = {
         // User Information
         first_name: userFormData.first_name,
         last_name: userFormData.last_name,
-        handle: handle,
+        handle,
         linkedin_url: userFormData.linkedin_url,
         email: userFormData.email,
 
         // Company information
         company_name: basicData.company_name,
-        website: basicData.website,
-        twitter_handle: basicData.twitter_url?.replace("https://x.com/", "").replace("@", ""),
+        company_website: basicData.website,
+        twitter_handle: basicData.twitter_url.replace("https://x.com/", "").replace("@", ""),
         job_title: basicData.job_title,
         funding_stage: basicData.funding_stage,
         has_token: formData.has_token,
-        token_ticker: formData.has_token ? formData.token_ticker : null,
+        token_ticker: formData.has_token ? formData.token_ticker : undefined,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
-        company_tags: sectorData.company_tags,
+        tags: sectorData.company_tags,
 
         // Referral code
         referral_code: sessionStorage.getItem('referralCode') || '',
