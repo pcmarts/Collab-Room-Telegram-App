@@ -4,7 +4,6 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { Sidebar } from "@/components/layout/Sidebar";
 import Dashboard from "@/pages/dashboard";
-import Companies from "@/pages/companies";
 import Collaborations from "@/pages/collaborations";
 import OnboardingForm from "@/pages/onboarding";
 import CompanyInfoForm from "@/pages/company-info";
@@ -33,7 +32,6 @@ function Router() {
             <Redirect to="/dashboard" />
           </Route>
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/companies" component={Companies} />
           <Route path="/collaborations" component={Collaborations} />
           <Route path="/onboarding" component={OnboardingForm} />
           <Route path="/company-info" component={CompanyInfoForm} />

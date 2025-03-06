@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Layout, Users, Briefcase } from 'lucide-react';
+import { Layout, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Sidebar() {
@@ -7,7 +7,6 @@ export function Sidebar() {
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: Layout },
-    { href: '/companies', label: 'Companies', icon: Briefcase },
     { href: '/collaborations', label: 'Collaborations', icon: Users }
   ];
 
@@ -16,7 +15,7 @@ export function Sidebar() {
       <div className="p-6">
         <h1 className="text-2xl font-bold text-sidebar-foreground">CollabRoom</h1>
       </div>
-      
+
       <nav className="flex-1 px-4">
         {navItems.map(({ href, label, icon: Icon }) => (
           <Link key={href} href={href}>
