@@ -120,7 +120,7 @@ export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   telegram_id: text('telegram_id').unique().notNull(),
   first_name: text('first_name').notNull(),
-  last_name: text('last_name').notNull(),
+  last_name: text('last_name'),
   handle: text('handle').notNull(),
   linkedin_url: text('linkedin_url'),
   email: text('email'),
@@ -199,7 +199,7 @@ export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
 export const onboardingSchema = z.object({
   // User Information
   first_name: z.string().min(1, "First name is required"),
-  last_name: z.string().min(1, "Last name is required"),
+  last_name: z.string().optional(),
   handle: z.string().min(1, "Telegram handle is required"),
   linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(),
 

@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -38,7 +38,7 @@ export default function ProfileOverview() {
     if (profile?.user) {
       setFormData({
         first_name: profile.user.first_name,
-        last_name: profile.user.last_name,
+        last_name: profile.user.last_name || "",
         linkedin_url: profile.user.linkedin_url || "",
         email: profile.user.email || "",
       });
@@ -81,8 +81,8 @@ export default function ProfileOverview() {
     try {
       setIsSubmitting(true);
 
-      if (!formData.first_name || !formData.last_name) {
-        throw new Error("Please fill in all required fields");
+      if (!formData.first_name) {
+        throw new Error("First name is required");
       }
 
       const submitData = {
@@ -139,6 +139,21 @@ export default function ProfileOverview() {
       </div>
 
       <div className="p-4 space-y-6">
+        {/* Privacy Notice */}
+        <Card className="bg-primary/5 border-primary/10">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <Shield className="h-5 w-5 text-primary mt-0.5" />
+              <div>
+                <h3 className="font-medium mb-1">Privacy Protected</h3>
+                <p className="text-sm text-muted-foreground">
+                  Your personal information is only shared with users after a successful mutual match. Until then, only your first name and company details are visible to other users.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Edit Personal Information</CardTitle>
@@ -157,13 +172,12 @@ export default function ProfileOverview() {
               </div>
 
               <div>
-                <Label htmlFor="last_name">Last Name *</Label>
+                <Label htmlFor="last_name">Last Name</Label>
                 <Input
                   id="last_name"
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleInputChange}
-                  required
                 />
               </div>
 
