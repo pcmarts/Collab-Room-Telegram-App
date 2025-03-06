@@ -68,21 +68,33 @@ async function handleStart(msg: TelegramBot.Message) {
       };
       welcomeMessage = '👋 Welcome to CollabRoom!\n\nWe\'re excited that you\'re interested in joining our community of innovative collaborators. Click below to start your application.';
     } else if (existingUser.is_approved) {
-      // Approved user - show Dashboard button
+      // Approved user - show Dashboard button and Announcement Channel
       keyboard = {
-        inline_keyboard: [[{
-          text: "View Dashboard",
-          web_app: { url: `${WEBAPP_URL}/dashboard` }
-        }]]
+        inline_keyboard: [
+          [{
+            text: "View Dashboard",
+            web_app: { url: `${WEBAPP_URL}/dashboard` }
+          }],
+          [{
+            text: "📣 Join Announcement Channel",
+            url: "https://t.me/TheMarketingDAO"
+          }]
+        ]
       };
       welcomeMessage = `👋 Welcome back to CollabRoom!\n\nYou're all set! Click below to access your dashboard and start collaborating.`;
     } else {
-      // Pending user - show application status button
+      // Pending user - show application status button and Announcement Channel
       keyboard = {
-        inline_keyboard: [[{
-          text: "View Application Status",
-          web_app: { url: `${WEBAPP_URL}/application-status` }
-        }]]
+        inline_keyboard: [
+          [{
+            text: "View Application Status",
+            web_app: { url: `${WEBAPP_URL}/application-status` }
+          }],
+          [{
+            text: "📣 Join Announcement Channel",
+            url: "https://t.me/TheMarketingDAO"
+          }]
+        ]
       };
       welcomeMessage = `👋 Welcome back to CollabRoom!\n\nYour application is currently under review. Click below to check your application status or use /status command anytime.`;
     }
@@ -149,18 +161,30 @@ async function handleStatus(msg: TelegramBot.Message) {
     if (user.is_approved) {
       statusMessage = `✅ Your application has been approved!\n\nYou can now access your dashboard and start collaborating.`;
       keyboard = {
-        inline_keyboard: [[{
-          text: "View Dashboard",
-          web_app: { url: `${WEBAPP_URL}/dashboard` }
-        }]]
+        inline_keyboard: [
+          [{
+            text: "View Dashboard",
+            web_app: { url: `${WEBAPP_URL}/dashboard` }
+          }],
+          [{
+            text: "📣 Join Announcement Channel",
+            url: "https://t.me/TheMarketingDAO"
+          }]
+        ]
       };
     } else {
       statusMessage = `📝 Application Status: Under Review\n\nApplication Details:\n• Name: ${user.first_name} ${user.last_name}\n• Submitted: ${applicationDate}\n\nWe'll notify you here once your application has been reviewed.`;
       keyboard = {
-        inline_keyboard: [[{
-          text: "View Application Status",
-          web_app: { url: `${WEBAPP_URL}/application-status` }
-        }]]
+        inline_keyboard: [
+          [{
+            text: "View Application Status",
+            web_app: { url: `${WEBAPP_URL}/application-status` }
+          }],
+          [{
+            text: "📣 Join Announcement Channel",
+            url: "https://t.me/TheMarketingDAO"
+          }]
+        ]
       };
     }
 
