@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
-import { UserIcon, Settings, Users, Building, Star, Bell, Coffee } from 'lucide-react'; // Added Coffee import
+import { UserIcon, Settings, Users, Building, Star, Bell, Coffee } from 'lucide-react';
 import type { User, Company, Preferences } from '@shared/schema';
 import { NOTIFICATION_FREQUENCIES } from '@shared/schema';
 import { useToast } from "@/hooks/use-toast";
@@ -131,24 +131,8 @@ export default function Dashboard() {
       </div>
 
       <div className="p-4 space-y-4 pb-safe">
-        {/* Quick Actions */}
+        {/* Quick Actions - Reordered */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/profile-overview')}
-          >
-            <UserIcon className="h-5 w-5 mb-1.5" />
-            <span className="text-sm">Personal Info</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/company-info')}
-          >
-            <Building className="h-5 w-5 mb-1.5" />
-            <span className="text-sm">Company Info</span>
-          </Button>
           <Button
             variant="outline"
             className="h-20 flex-col"
@@ -164,6 +148,22 @@ export default function Dashboard() {
           >
             <Coffee className="h-5 w-5 mb-1.5" />
             <span className="text-sm">Conference Coffees</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
+            onClick={() => setLocation('/profile-overview')}
+          >
+            <UserIcon className="h-5 w-5 mb-1.5" />
+            <span className="text-sm">Personal Info</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
+            onClick={() => setLocation('/company-info')}
+          >
+            <Building className="h-5 w-5 mb-1.5" />
+            <span className="text-sm">Company Info</span>
           </Button>
           <Button
             variant="outline"
