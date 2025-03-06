@@ -1,4 +1,4 @@
-import { useState, React } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,14 +27,14 @@ export default function ProfileOverview() {
   });
 
   const [formData, setFormData] = useState({
-    first_name: profile?.user?.first_name || '',
-    last_name: profile?.user?.last_name || '',
-    linkedin_url: profile?.user?.linkedin_url || '',
-    email: profile?.user?.email || ''
+    first_name: '',
+    last_name: '',
+    linkedin_url: '',
+    email: ''
   });
 
   // Update form data when profile is loaded
-  React.useEffect(() => {
+  useEffect(() => {
     if (profile?.user) {
       setFormData({
         first_name: profile.user.first_name,
