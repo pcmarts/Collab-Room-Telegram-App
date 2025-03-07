@@ -23,13 +23,13 @@ export function Sidebar() {
       <nav className="flex-1 px-4">
         {navItems.map(({ href, label, icon: Icon }) => (
           <Link key={href} href={href}>
-            <a className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-md mb-1 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors",
+            <span className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-md mb-1 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors cursor-pointer",
               location === href && "bg-sidebar-accent text-sidebar-foreground"
             )}>
               <Icon className="h-5 w-5" />
               {label}
-            </a>
+            </span>
           </Link>
         ))}
       </nav>

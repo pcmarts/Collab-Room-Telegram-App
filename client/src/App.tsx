@@ -1,4 +1,4 @@
-import { Switch, Route, Redirect } from "wouter";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -18,27 +18,41 @@ import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
+import { Loader2 } from "lucide-react";
 
 function Router() {
+  const [_, setLocation] = useLocation();
   // Add profile data check
-  const { data: profileData } = useQuery<ProfileData>({
+  const { data: profileData, isLoading } = useQuery<ProfileData>({
     queryKey: ['/api/profile']
   });
 
-  const isApplicationRoute = window.location.pathname === '/apply' || 
-    window.location.pathname === '/personal-info' || 
-    window.location.pathname === '/company-basics' ||
-    window.location.pathname === '/company-sector' ||
-    window.location.pathname === '/company-details';
+  const currentPath = window.location.pathname;
 
-  const isProfileRoute = window.location.pathname === '/profile-overview' ||
-    window.location.pathname === '/marketing-collabs' ||
-    window.location.pathname === '/conference-coffees' ||
-    window.location.pathname === '/application-status';
+  const isApplicationRoute = currentPath === '/apply' || 
+    currentPath === '/personal-info' || 
+    currentPath === '/company-basics' ||
+    currentPath === '/company-sector' ||
+    currentPath === '/company-details';
+
+  const isProfileRoute = currentPath === '/profile-overview' ||
+    currentPath === '/marketing-collabs' ||
+    currentPath === '/conference-coffees' ||
+    currentPath === '/application-status';
+
+  // Show loading state while checking profile
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   // Redirect if user has already applied
-  if (profileData?.user && isApplicationRoute && window.location.pathname !== '/application-status') {
-    return <Redirect to="/application-status" />;
+  if (profileData?.user && isApplicationRoute && currentPath !== '/application-status') {
+    setLocation('/application-status');
+    return null;
   }
 
   return (

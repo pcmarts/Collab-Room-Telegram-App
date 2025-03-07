@@ -399,17 +399,29 @@ export async function registerRoutes(app: Express) {
     try {
       // Get Telegram data from header
       const initData = req.headers['x-telegram-init-data'] as string;
+      let telegramUser;
+
       if (!initData) {
-        console.error('No Telegram init data found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
+        // In development, use fallback data if Telegram data is missing
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Using development fallback for Telegram data');
+          telegramUser = {
+            id: '12345',
+            username: 'test_user',
+            first_name: 'Test',
+            last_name: 'User'
+          };
+        } else {
+          console.error('No Telegram init data found');
+          return res.status(400).json({ error: 'Invalid Telegram data' });
+        }
+      } else {
+        // Parse Telegram data
+        const decodedInitData = new URLSearchParams(initData);
+        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
       }
 
-      // Parse Telegram data
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      console.log('Decoded Telegram user:', telegramUser);
-
-      if (!telegramUser.id) {
+      if (!telegramUser?.id) {
         console.error('No Telegram user ID found');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
@@ -420,7 +432,6 @@ export async function registerRoutes(app: Express) {
         .where(eq(users.telegram_id, telegramUser.id.toString()));
 
       if (!user) {
-        console.error('User not found');
         return res.status(404).json({ error: 'User not found' });
       }
 
