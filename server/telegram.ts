@@ -26,6 +26,27 @@ export const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
   webHook: false // Explicitly disable webhook
 });
 
+// Send application confirmation message
+export async function sendApplicationConfirmation(chatId: number) {
+  const keyboard = {
+    inline_keyboard: [[{
+      text: "Check Application Status",
+      web_app: { url: `${WEBAPP_URL}/application-status` }
+    }]]
+  };
+
+  try {
+    await bot.sendMessage(
+      chatId,
+      "🎉 Application Submitted Successfully!\n\nThank you for applying to join CollabRoom. Click below to check your application status anytime.",
+      { reply_markup: keyboard }
+    );
+    console.log('Application confirmation message sent successfully');
+  } catch (error) {
+    console.error('Failed to send application confirmation:', error);
+  }
+}
+
 // Basic error handling
 bot.on('polling_error', (error) => {
   console.error('=== Telegram Bot Polling Error ===');
@@ -59,7 +80,7 @@ async function handleStart(msg: TelegramBot.Message) {
     let welcomeMessage;
 
     if (!existingUser) {
-      // New user - show Apply button
+      // New user - show Apply button and send confirmation message
       keyboard = {
         inline_keyboard: [[{
           text: "Apply to Join",
@@ -67,6 +88,7 @@ async function handleStart(msg: TelegramBot.Message) {
         }]]
       };
       welcomeMessage = '👋 Welcome to CollabRoom!\n\nWe\'re excited that you\'re interested in joining our community of innovative collaborators. Click below to start your application.';
+      await sendApplicationConfirmation(chatId); // Added confirmation message
     } else if (existingUser.is_approved) {
       // Approved user - show Dashboard button and Announcement Channel
       keyboard = {

@@ -3,6 +3,7 @@ import { createServer } from "http";
 import { db } from "./db";
 import { users, companies, preferences, events, user_events } from "../shared/schema";
 import { eq } from 'drizzle-orm';
+import { sendApplicationConfirmation } from "./telegram";
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
@@ -18,7 +19,7 @@ export async function registerRoutes(app: Express) {
         first_name, last_name, linkedin_url, email, initData,
         // Company info
         company_name, company_website, twitter_handle, job_title, 
-        funding_stage, has_token, token_ticker, blockchain_networks, company_tags,
+        funding_stage, has_token, token_ticker, blockchain_networks, tags,
         // Preferences
         collabs_to_discover, collabs_to_host, notification_frequency, excluded_tags
       } = req.body;
@@ -29,8 +30,8 @@ export async function registerRoutes(app: Express) {
       const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
       console.log('Decoded Telegram user:', telegramUser);
 
-      if (!telegramUser.id || !telegramUser.username) {
-        console.error('No Telegram user ID or username found');
+      if (!telegramUser.id) {
+        console.error('No Telegram user ID found');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
 
@@ -101,7 +102,7 @@ export async function registerRoutes(app: Express) {
                 has_token: Boolean(has_token),
                 token_ticker: has_token ? token_ticker : null,
                 blockchain_networks: has_token ? blockchain_networks : [],
-                tags: company_tags || []
+                tags: tags || []
               })
               .returning();
 
@@ -126,6 +127,14 @@ export async function registerRoutes(app: Express) {
 
           return { user };
         });
+
+        // After successful transaction
+        try {
+          await sendApplicationConfirmation(parseInt(telegram_id));
+        } catch (msgError) {
+          console.error('Failed to send confirmation message:', msgError);
+          // Don't throw here, as the application was still successful
+        }
 
         res.json({
           success: true,
