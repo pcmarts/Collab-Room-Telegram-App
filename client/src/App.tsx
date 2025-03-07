@@ -15,6 +15,7 @@ import ApplicationStatus from "@/pages/application-status";
 import MarketingCollabs from "@/pages/marketing-collabs";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
+import MatchingFilters from "@/pages/matching-filters";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 
@@ -31,7 +32,8 @@ function Router() {
     currentPath === '/marketing-collabs' ||
     currentPath === '/conference-coffees' ||
     currentPath === '/application-status' ||
-    currentPath === '/company-info';
+    currentPath === '/company-info' ||
+    currentPath === '/matching-filters';
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,6 +59,7 @@ function Router() {
           {/* Profile Routes */}
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route path="/company-info" component={CompanyInfo} />
+          <Route path="/matching-filters" component={MatchingFilters} />
           <Route path="/not-found" component={NotFound} />
           <Route component={NotFound} />
         </Switch>
