@@ -16,8 +16,15 @@ import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
+import { useQuery } from "@tanstack/react-query";
+import type { ProfileData } from "@/types/profile";
 
 function Router() {
+  // Add profile data check
+  const { data: profileData } = useQuery<ProfileData>({
+    queryKey: ['/api/profile']
+  });
+
   const isApplicationRoute = window.location.pathname === '/apply' || 
     window.location.pathname === '/personal-info' || 
     window.location.pathname === '/company-basics' ||
@@ -28,6 +35,11 @@ function Router() {
     window.location.pathname === '/marketing-collabs' ||
     window.location.pathname === '/conference-coffees' ||
     window.location.pathname === '/application-status';
+
+  // Redirect if user has already applied
+  if (profileData?.user && isApplicationRoute && window.location.pathname !== '/application-status') {
+    return <Redirect to="/application-status" />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
