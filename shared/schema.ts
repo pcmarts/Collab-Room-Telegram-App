@@ -1,17 +1,15 @@
-import { pgTable, uuid, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean, jsonb, integer } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
 // Constants for form options
 export const COLLAB_TYPES = [
-  "Podcast Guest Appearances",
+  "Podcast Guest Appearance",
   "Twitter Spaces Guest",
-  "Webinar Guest Appearance",
-  "Keynote Speaking at Virtual Events",
-  "Keynote Speaking at Real Events",
-  "Medium Guest Posts",
-  "Newsletter Features or Guest Posts",
-  "Report and Research Features",
+  "Live Stream Guest Appearance",
+  "Report & Research Feature",
+  "Newsletter Feature",
+  "Blog Post Feature",
   "Co-Marketing on Twitter"
 ] as const;
 
@@ -34,11 +32,36 @@ export const BLOCKCHAIN_NETWORKS = [
 ] as const;
 
 export const TWITTER_FOLLOWER_COUNTS = [
-  "Under 1,000",
-  "1,000 - 10,000",
-  "10,000 - 50,000",
-  "50,000 - 250,000",
-  "500,000+"
+  "0-1K",
+  "1K-10K",
+  "10K-100K",
+  "100K-500K",
+  "500K+"
+] as const;
+
+export const TWITTER_COLLAB_TYPES = [
+  "Thread Collab",
+  "Joint Campaign",
+  "Giveaway",
+  "Twitter Space Co-Host",
+  "Retweet & Boost",
+  "Sponsored Tweet",
+  "Poll/Q&A",
+  "AMA",
+  "Shoutout",
+  "Tweet Swap",
+  "Meme/Viral Collab",
+  "Twitter List Collab",
+  "Exclusive Announcement"
+] as const;
+
+export const AUDIENCE_SIZE_RANGES = [
+  "Under 100",
+  "100-500",
+  "500-1,000",
+  "1,000-5,000",
+  "5,000-10,000",
+  "10,000+"
 ] as const;
 
 // Initial events data
@@ -187,12 +210,59 @@ export const preferences = pgTable('preferences', {
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
+// Collaborations table
+export const collaborations = pgTable('collaborations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  creator_id: uuid('creator_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  collab_type: text('collab_type').notNull(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  status: text('status').notNull().default('active'),
+  // Common filtering criteria
+  required_company_sectors: text('required_company_sectors').array(),
+  required_funding_stages: text('required_funding_stages').array(),
+  required_token_status: boolean('required_token_status'),
+  min_company_followers: text('min_company_followers'),
+  min_user_followers: text('min_user_followers'),
+  // Type-specific details stored as JSON
+  details: jsonb('details').notNull(),
+  // Dates
+  date_type: text('date_type').notNull(), // 'any_future_date' or 'specific_date'
+  specific_date: timestamp('specific_date', { withTimezone: true }),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow()
+});
+
+// Collaboration applications
+export const collab_applications = pgTable('collab_applications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  collaboration_id: uuid('collaboration_id').notNull().references(() => collaborations.id, { onDelete: 'cascade' }),
+  applicant_id: uuid('applicant_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  status: text('status').notNull().default('pending'), // pending, accepted, rejected
+  message: text('message'),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow()
+});
+
+// Collaboration matching notifications
+export const collab_notifications = pgTable('collab_notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  collaboration_id: uuid('collaboration_id').notNull().references(() => collaborations.id, { onDelete: 'cascade' }),
+  is_read: boolean('is_read').default(false),
+  is_sent: boolean('is_sent').default(false),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
 // Schema validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
 export const insertPreferencesSchema = createInsertSchema(preferences);
 export const insertEventSchema = createInsertSchema(events);
 export const insertUserEventSchema = createInsertSchema(user_events);
+export const insertCollaborationSchema = createInsertSchema(collaborations);
+export const insertCollabApplicationSchema = createInsertSchema(collab_applications);
+export const insertCollabNotificationSchema = createInsertSchema(collab_notifications);
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -200,12 +270,18 @@ export type Company = typeof companies.$inferSelect;
 export type Preferences = typeof preferences.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type UserEvent = typeof user_events.$inferSelect;
+export type Collaboration = typeof collaborations.$inferSelect;
+export type CollabApplication = typeof collab_applications.$inferSelect;
+export type CollabNotification = typeof collab_notifications.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type InsertPreferences = z.infer<typeof insertPreferencesSchema>;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
+export type InsertCollaboration = z.infer<typeof insertCollaborationSchema>;
+export type InsertCollabApplication = z.infer<typeof insertCollabApplicationSchema>;
+export type InsertCollabNotification = z.infer<typeof insertCollabNotificationSchema>;
 
 // Onboarding schema with validation
 // Rename to applicationSchema for clarity
@@ -238,3 +314,86 @@ export const applicationSchema = z.object({
 });
 
 export type ApplicationData = z.infer<typeof applicationSchema>;
+
+// Collaboration type schemas
+// Podcast Guest Appearance
+export const podcastDetailsSchema = z.object({
+  podcast_name: z.string().min(2, "Podcast name is required"),
+  short_description: z.string().max(200, "Short description must be less than 200 characters"),
+  podcast_link: z.string().url("Please enter a valid podcast link")
+});
+
+// Twitter Spaces Guest
+export const twitterSpacesDetailsSchema = z.object({
+  twitter_handle: z.string().min(1, "Twitter handle is required"),
+  space_topic: z.array(z.string()).min(1, "At least one topic is required"),
+  host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS)
+});
+
+// Live Stream Guest Appearance
+export const liveStreamDetailsSchema = z.object({
+  title: z.string().min(2, "Title is required"),
+  short_description: z.string().max(200, "Short description must be less than 200 characters"),
+  date_selection: z.enum(["any_future_date", "specific_date"]),
+  specific_date: z.string().optional(),
+  previous_stream_link: z.string().url("Please enter a valid stream link").optional(),
+  expected_audience_size: z.enum(AUDIENCE_SIZE_RANGES),
+  topics: z.array(z.string()).min(1, "At least one topic is required")
+});
+
+// Report & Research Feature
+export const researchReportDetailsSchema = z.object({
+  research_topic: z.array(z.string()).min(1, "At least one topic is required"),
+  target_audience: z.string().min(2, "Target audience is required"),
+  estimated_release_date: z.string()
+});
+
+// Newsletter Feature
+export const newsletterDetailsSchema = z.object({
+  newsletter_name: z.string().min(2, "Newsletter name is required"),
+  topics: z.array(z.string()).min(1, "At least one topic is required"),
+  audience_reach: z.enum(AUDIENCE_SIZE_RANGES),
+  short_description: z.string().max(200, "Short description must be less than 200 characters")
+});
+
+// Blog Post Feature
+export const blogPostDetailsSchema = z.object({
+  blog_topic: z.string().min(2, "Blog topic is required"),
+  blog_link: z.string().url("Please enter a valid blog link"),
+  estimated_release_date: z.string()
+});
+
+// Co-Marketing on Twitter
+export const twitterCoMarketingDetailsSchema = z.object({
+  collaboration_type: z.enum(TWITTER_COLLAB_TYPES),
+  host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS)
+});
+
+// Create a Collaboration schema that combines all the types
+export const createCollaborationSchema = z.object({
+  collab_type: z.enum(COLLAB_TYPES),
+  title: z.string().min(2, "Title is required"),
+  description: z.string().min(10, "Description is required"),
+  date_type: z.enum(["any_future_date", "specific_date"]),
+  specific_date: z.string().optional(),
+  
+  // Filtering criteria
+  required_company_sectors: z.array(z.string()).optional(),
+  required_funding_stages: z.array(z.enum(FUNDING_STAGES)).optional(),
+  required_token_status: z.boolean().optional(),
+  min_company_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
+  min_user_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
+  
+  // Type-specific details
+  details: z.union([
+    podcastDetailsSchema,
+    twitterSpacesDetailsSchema,
+    liveStreamDetailsSchema,
+    researchReportDetailsSchema,
+    newsletterDetailsSchema,
+    blogPostDetailsSchema,
+    twitterCoMarketingDetailsSchema
+  ])
+});
+
+export type CreateCollaboration = z.infer<typeof createCollaborationSchema>;
