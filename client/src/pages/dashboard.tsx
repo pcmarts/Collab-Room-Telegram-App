@@ -135,45 +135,37 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Button
             className="h-24 flex-col bg-primary text-primary-foreground"
-            onClick={() => setLocation('/my-collaborations')}
+            onClick={() => setLocation('/create-collaboration')}
           >
-            <Users className="h-6 w-6 mb-2" />
-            <span className="text-sm font-medium">My Collaborations</span>
+            <Star className="h-6 w-6 mb-2" />
+            <span className="text-sm font-medium">Create Collab</span>
           </Button>
           <Button
             className="h-24 flex-col bg-primary text-primary-foreground"
-            onClick={() => setLocation('/browse-collaborations')}
+            onClick={() => setLocation('/collab-preferences')}
           >
-            <Star className="h-6 w-6 mb-2" />
-            <span className="text-sm font-medium">Browse Collabs</span>
+            <Settings className="h-6 w-6 mb-2" />
+            <span className="text-sm font-medium">Match Settings</span>
           </Button>
         </div>
 
         {/* Quick Actions - Second Row */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Button
             variant="outline"
             className="h-20 flex-col"
-            onClick={() => setLocation('/create-collaboration')}
+            onClick={() => setLocation('/my-collaborations')}
+          >
+            <Users className="h-5 w-5 mb-1.5" />
+            <span className="text-xs">My Collaborations</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
+            onClick={() => setLocation('/my-applications')}
           >
             <Star className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Create Collab</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/marketing-collabs')}
-          >
-            <Coffee className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Marketing</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/conference-coffees')}
-          >
-            <Coffee className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Coffees</span>
+            <span className="text-xs">My Applications</span>
           </Button>
         </div>
 
@@ -201,14 +193,14 @@ export default function Dashboard() {
         </div>
 
         {/* Profile Actions */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Button
             variant="outline"
             className="h-20 flex-col"
             onClick={() => setLocation('/profile-overview')}
           >
             <UserIcon className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Me</span>
+            <span className="text-xs">My Profile</span>
           </Button>
           <Button
             variant="outline"
@@ -216,15 +208,7 @@ export default function Dashboard() {
             onClick={() => setLocation('/company-info')}
           >
             <Building className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Company</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/matching-filters')}
-          >
-            <Settings className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Filters</span>
+            <span className="text-xs">Company Info</span>
           </Button>
         </div>
 

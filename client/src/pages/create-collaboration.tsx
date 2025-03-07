@@ -294,359 +294,286 @@ export default function CreateCollaboration() {
 
   return (
     <MobileCheck>
-      <div className="container mx-auto py-6 px-4 max-w-4xl">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Create Collaboration</h1>
-          <Button variant="ghost" onClick={() => setLocation('/dashboard')}>
-            Back
-          </Button>
-        </div>
+      <div className="min-h-[100svh] bg-background">
+        <PageHeader 
+          title="Create Collaboration" 
+          subtitle="Offer collaboration opportunities"
+        />
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter a title for your collaboration" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Describe your collaboration opportunity" 
-                          className="min-h-[120px]" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="collab_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Collaboration Type</FormLabel>
-                      <Select 
-                        onValueChange={(value) => handleCollabTypeChange(value)} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select collaboration type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {COLLAB_TYPES.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="date_type"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel>Timing</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="flexible" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Flexible (No specific date)
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="specific" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Specific Date
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="recurring" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Recurring
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-            
-            {selectedCollabType && (
+        <div className="p-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <Card>
                 <CardHeader>
-                  <CardTitle>Collaboration Details</CardTitle>
+                  <CardTitle>Basic Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {renderCollabTypeSpecificFields()}
-                </CardContent>
-              </Card>
-            )}
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Requirements</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="required_min_followers"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Minimum Twitter Followers</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select minimum followers" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="">No minimum</SelectItem>
-                          {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                            <SelectItem key={count} value={count}>
-                              {count}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="required_company_sectors"
-                  render={() => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Company Sectors</FormLabel>
-                        <FormDescription>
-                          Select the sectors that are relevant for this collaboration
-                        </FormDescription>
-                      </div>
-                      {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-                        <div key={category} className="mb-4">
-                          <h3 className="mb-2 text-sm font-medium">{category}</h3>
-                          <div className="space-y-2">
-                            {tags.map((tag) => (
-                              <FormField
-                                key={tag}
-                                control={form.control}
-                                name="required_company_sectors"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem
-                                      key={tag}
-                                      className="flex flex-row items-start space-x-3 space-y-0"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value?.includes(tag)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value || [], tag])
-                                              : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== tag
-                                                  )
-                                                )
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal">
-                                        {tag}
-                                      </FormLabel>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="required_blockchain_networks"
-                  render={() => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-base">Blockchain Networks</FormLabel>
-                        <FormDescription>
-                          Select the blockchain networks that are relevant for this collaboration
-                        </FormDescription>
-                      </div>
-                      <div className="space-y-2">
-                        {BLOCKCHAIN_NETWORKS.map((network) => (
-                          <FormField
-                            key={network}
-                            control={form.control}
-                            name="required_blockchain_networks"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={network}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(network)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value || [], network])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (value) => value !== network
-                                              )
-                                            )
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    {network}
-                                  </FormLabel>
-                                </FormItem>
-                              )
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="additional_requirements"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Additional Requirements</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Any other specific requirements for collaborators" 
-                          className="min-h-[100px]" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Token & Compensation</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="has_token"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          Has Token
-                        </FormLabel>
-                        <FormDescription>
-                          Check if your project has a token
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="has_compensation"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          Offers Compensation
-                        </FormLabel>
-                        <FormDescription>
-                          Check if you're offering compensation for this collaboration
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                
-                {form.watch("has_compensation") && (
                   <FormField
                     control={form.control}
-                    name="compensation_details"
+                    name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Compensation Details</FormLabel>
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter a title for your collaboration" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Describe the compensation offered" 
+                            placeholder="Describe your collaboration opportunity" 
+                            className="min-h-[120px]" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="collab_type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Collaboration Type</FormLabel>
+                        <Select 
+                          onValueChange={(value) => handleCollabTypeChange(value)} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select collaboration type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {COLLAB_TYPES.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="date_type"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Timing</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex flex-col space-y-1"
+                          >
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="flexible" />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                Flexible (No specific date)
+                              </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="specific" />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                Specific Date
+                              </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="recurring" />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                Recurring
+                              </FormLabel>
+                            </FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+              
+              {selectedCollabType && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Collaboration Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {renderCollabTypeSpecificFields()}
+                  </CardContent>
+                </Card>
+              )}
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Requirements</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="required_min_followers"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Minimum Twitter Followers</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select minimum followers" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="">No minimum</SelectItem>
+                            {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                              <SelectItem key={count} value={count}>
+                                {count}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="required_company_sectors"
+                    render={() => (
+                      <FormItem>
+                        <div className="mb-4">
+                          <FormLabel className="text-base">Company Sectors</FormLabel>
+                          <FormDescription>
+                            Select the sectors that are relevant for this collaboration
+                          </FormDescription>
+                        </div>
+                        {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+                          <div key={category} className="mb-4">
+                            <h3 className="mb-2 text-sm font-medium">{category}</h3>
+                            <div className="space-y-2">
+                              {tags.map((tag) => (
+                                <FormField
+                                  key={tag}
+                                  control={form.control}
+                                  name="required_company_sectors"
+                                  render={({ field }) => {
+                                    return (
+                                      <FormItem
+                                        key={tag}
+                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                      >
+                                        <FormControl>
+                                          <Checkbox
+                                            checked={field.value?.includes(tag)}
+                                            onCheckedChange={(checked) => {
+                                              return checked
+                                                ? field.onChange([...field.value || [], tag])
+                                                : field.onChange(
+                                                    field.value?.filter(
+                                                      (value) => value !== tag
+                                                    )
+                                                  )
+                                            }}
+                                          />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">
+                                          {tag}
+                                        </FormLabel>
+                                      </FormItem>
+                                    )
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="required_blockchain_networks"
+                    render={() => (
+                      <FormItem>
+                        <div className="mb-4">
+                          <FormLabel className="text-base">Blockchain Networks</FormLabel>
+                          <FormDescription>
+                            Select the blockchain networks that are relevant for this collaboration
+                          </FormDescription>
+                        </div>
+                        <div className="space-y-2">
+                          {BLOCKCHAIN_NETWORKS.map((network) => (
+                            <FormField
+                              key={network}
+                              control={form.control}
+                              name="required_blockchain_networks"
+                              render={({ field }) => {
+                                return (
+                                  <FormItem
+                                    key={network}
+                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(network)}
+                                        onCheckedChange={(checked) => {
+                                          return checked
+                                            ? field.onChange([...field.value || [], network])
+                                            : field.onChange(
+                                                field.value?.filter(
+                                                  (value) => value !== network
+                                                )
+                                              )
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                      {network}
+                                    </FormLabel>
+                                  </FormItem>
+                                )
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="additional_requirements"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Additional Requirements</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Any other specific requirements for collaborators" 
                             className="min-h-[100px]" 
                             {...field} 
                           />
@@ -655,28 +582,101 @@ export default function CreateCollaboration() {
                       </FormItem>
                     )}
                   />
-                )}
-              </CardContent>
-            </Card>
-            
-            <div className="flex justify-end space-x-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setLocation('/dashboard')}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting} 
-                className="min-w-[120px]"
-              >
-                {isSubmitting ? "Submitting..." : "Create Collaboration"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Token & Compensation</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="has_token"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            Has Token
+                          </FormLabel>
+                          <FormDescription>
+                            Check if your project has a token
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="has_compensation"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            Offers Compensation
+                          </FormLabel>
+                          <FormDescription>
+                            Check if you're offering compensation for this collaboration
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {form.watch("has_compensation") && (
+                    <FormField
+                      control={form.control}
+                      name="compensation_details"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Compensation Details</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Describe the compensation offered" 
+                              className="min-h-[100px]" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+              
+              <div className="flex justify-end space-x-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setLocation('/dashboard')}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="min-w-[120px]"
+                >
+                  {isSubmitting ? "Submitting..." : "Create Collaboration"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
       </div>
     </MobileCheck>
   );
