@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ export default function ApplicationForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Fetch profile data to check if user has already applied
   const { data: profileData, isLoading } = useQuery<ProfileData>({
@@ -32,6 +33,20 @@ export default function ApplicationForm() {
     linkedin_url: 'https://linkedin.com/in/',
     email: ''
   });
+
+  // Handle field focus for better mobile UX
+  const handleFieldFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Delay the scroll to ensure the keyboard is fully shown
+    setTimeout(() => {
+      const input = e.target;
+      const rect = input.getBoundingClientRect();
+      const offset = rect.top + window.scrollY - 100; // Scroll to show field with padding
+      window.scrollTo({
+        top: offset,
+        behavior: 'smooth'
+      });
+    }, 300);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -68,7 +83,7 @@ export default function ApplicationForm() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 pb-24">
       <div className="max-w-md mx-auto space-y-6">
         <div className="flex items-center justify-center gap-2 mb-8">
           <div className="w-3 h-3 rounded-full bg-primary"></div>
@@ -83,7 +98,11 @@ export default function ApplicationForm() {
           </p>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4">
+        <form 
+          ref={formRef}
+          onSubmit={(e) => { e.preventDefault(); handleNext(); }} 
+          className="space-y-4"
+        >
           <div>
             <Label htmlFor="first_name">First Name *</Label>
             <Input
@@ -91,6 +110,9 @@ export default function ApplicationForm() {
               name="first_name"
               value={formData.first_name}
               onChange={handleInputChange}
+              onFocus={handleFieldFocus}
+              inputMode="text"
+              autoComplete="given-name"
               required
             />
           </div>
@@ -102,6 +124,9 @@ export default function ApplicationForm() {
               name="last_name"
               value={formData.last_name}
               onChange={handleInputChange}
+              onFocus={handleFieldFocus}
+              inputMode="text"
+              autoComplete="family-name"
               required
             />
           </div>
@@ -114,6 +139,9 @@ export default function ApplicationForm() {
               type="url"
               value={formData.linkedin_url}
               onChange={handleInputChange}
+              onFocus={handleFieldFocus}
+              inputMode="url"
+              autoComplete="url"
               required
             />
           </div>
@@ -126,6 +154,9 @@ export default function ApplicationForm() {
               type="email"
               value={formData.email}
               onChange={handleInputChange}
+              onFocus={handleFieldFocus}
+              inputMode="email"
+              autoComplete="email"
               placeholder="your@company.com"
               required
             />
