@@ -32,14 +32,18 @@ import {
 
 import { CalendarDays, Coins, Tag, Check, X } from "lucide-react";
 
-export default function Apply() {
+interface ApplyProps {
+  id?: string;
+}
+
+export default function Apply({ id: propId }: ApplyProps = {}) {
   const params = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Parse collab ID from URL parameters
-  const collabId = params.id;
+  // Parse collab ID from URL parameters or props
+  const collabId = propId || params.id;
   
   // Fetch collaboration details
   const { data: collaboration, isLoading, isError } = useQuery({

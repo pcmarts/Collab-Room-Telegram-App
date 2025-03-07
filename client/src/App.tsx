@@ -70,7 +70,7 @@ function Router() {
           <Route path="/create-collaboration" component={CreateCollaboration} />
           <Route path="/my-collaborations" component={MyCollaborations} />
           <Route path="/apply/:id">
-            {(params) => <Apply id={params.id} />}
+            {(params) => <Apply />}
           </Route>
 
           {/* Profile Routes */}

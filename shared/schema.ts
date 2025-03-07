@@ -318,6 +318,18 @@ export const applicationSchema = z.object({
 
 export type ApplicationData = z.infer<typeof applicationSchema>;
 
+// Collaboration application schema for the form
+export const collabApplicationSchema = z.object({
+  reason: z.string().min(1, "Please explain why you're interested in this collaboration"),
+  experience: z.string().min(1, "Please describe your relevant experience"),
+  portfolioLinks: z.string().optional(),
+  twitterHandle: z.string().min(1, "Your Twitter handle is required"),
+  githubHandle: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export type CollabApplicationData = z.infer<typeof collabApplicationSchema>;
+
 // Collaboration type schemas
 // Podcast Guest Appearance
 export const podcastDetailsSchema = z.object({
