@@ -28,7 +28,7 @@ export default function PersonalInfo() {
     if (profileData?.user) {
       setFormData({
         first_name: profileData.user.first_name,
-        last_name: profileData.user.last_name,
+        last_name: profileData.user.last_name || '',
         linkedin_url: profileData.user.linkedin_url || 'https://linkedin.com/in/',
         email: profileData.user.email || ''
       });
@@ -87,8 +87,8 @@ export default function PersonalInfo() {
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Personal Information</h1>
-          <p className="text-muted-foreground mt-2">Tell us about yourself</p>
+          <h1 className="text-2xl font-bold">Tell Us About Yourself</h1>
+          <p className="text-muted-foreground mt-2">Share your details to help us know you better</p>
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4">
@@ -127,7 +127,7 @@ export default function PersonalInfo() {
           </div>
 
           <div>
-            <Label htmlFor="email">Email Address *</Label>
+            <Label htmlFor="email">Company Email Address *</Label>
             <Input
               id="email"
               name="email"
