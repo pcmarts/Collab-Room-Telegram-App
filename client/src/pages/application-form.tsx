@@ -69,7 +69,7 @@ export default function ApplicationForm() {
     }
 
     sessionStorage.setItem('userFormData', JSON.stringify(formData));
-    setLocation('/company-info');
+    setLocation('/company-basics');
   };
 
   if (isLoading) {
@@ -168,9 +168,13 @@ export default function ApplicationForm() {
             <Label htmlFor="twitter_followers">Your Twitter Follower Count</Label>
             <Select
               value={formData.twitter_followers}
-              onValueChange={(value) => 
-                setFormData(prev => ({ ...prev, twitter_followers: value }))
-              }
+              onValueChange={(value) => {
+                setFormData(prev => ({ ...prev, twitter_followers: value }));
+                sessionStorage.setItem('userFormData', JSON.stringify({
+                  ...formData,
+                  twitter_followers: value
+                }));
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select your follower count" />
