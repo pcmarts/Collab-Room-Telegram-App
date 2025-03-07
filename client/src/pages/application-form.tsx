@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
@@ -14,28 +14,22 @@ export default function ApplicationForm() {
   const [_, setLocation] = useLocation();
 
   // Fetch profile data to check if user has already applied
-  const { data: profileData } = useQuery<ProfileData>({
+  const { data: profileData, isLoading } = useQuery<ProfileData>({
     queryKey: ['/api/profile']
   });
 
   // Check if user has already applied and redirect if necessary
   useEffect(() => {
-    if (profileData?.user) {
+    if (!isLoading && profileData?.user) {
       // If the user has already applied, redirect them to application status
       setLocation('/application-status');
-      return;
-    } else {
-      const savedData = sessionStorage.getItem('userFormData');
-      if (savedData) {
-        setFormData(JSON.parse(savedData));
-      }
     }
-  }, [profileData]);
+  }, [profileData, isLoading]);
 
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
-    linkedin_url: '',
+    linkedin_url: 'https://linkedin.com/in/',
     email: ''
   });
 
@@ -50,7 +44,7 @@ export default function ApplicationForm() {
   };
 
   const handleNext = () => {
-    if (!formData.first_name || !formData.last_name) {
+    if (!formData.first_name || !formData.last_name || !formData.linkedin_url || !formData.email) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -60,10 +54,18 @@ export default function ApplicationForm() {
       return;
     }
 
-    // Store the form data in session storage and proceed to next step
     sessionStorage.setItem('userFormData', JSON.stringify(formData));
     setLocation('/company-info');
   };
+
+  // Show loading state while checking profile
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -105,26 +107,27 @@ export default function ApplicationForm() {
           </div>
 
           <div>
-            <Label htmlFor="linkedin_url">LinkedIn URL (Optional)</Label>
+            <Label htmlFor="linkedin_url">LinkedIn URL *</Label>
             <Input
               id="linkedin_url"
               name="linkedin_url"
               type="url"
               value={formData.linkedin_url}
               onChange={handleInputChange}
-              placeholder="https://linkedin.com/in/..."
+              required
             />
           </div>
 
           <div>
-            <Label htmlFor="email">Email Address (Optional)</Label>
+            <Label htmlFor="email">Company Email Address *</Label>
             <Input
               id="email"
               name="email"
               type="email"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder="your@email.com"
+              placeholder="your@company.com"
+              required
             />
           </div>
 
