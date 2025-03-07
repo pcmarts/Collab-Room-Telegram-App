@@ -22,9 +22,15 @@ import { Loader2 } from "lucide-react";
 
 function Router() {
   const [_, setLocation] = useLocation();
-  // Add profile data check
+  // Add profile data check with retry disabled for 404s
   const { data: profileData, isLoading } = useQuery<ProfileData>({
-    queryKey: ['/api/profile']
+    queryKey: ['/api/profile'],
+    retry: (failureCount, error: any) => {
+      // Don't retry on 404 (user not found)
+      if (error?.response?.status === 404) return false;
+      // Retry other errors up to 3 times
+      return failureCount < 3;
+    }
   });
 
   const currentPath = window.location.pathname;
