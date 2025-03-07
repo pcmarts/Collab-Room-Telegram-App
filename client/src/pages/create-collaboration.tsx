@@ -56,15 +56,16 @@ export default function CreateCollaboration() {
     defaultValues: {
       title: "",
       description: "",
-      collab_type: "",
-      date_type: "flexible",
-      has_token: false,
-      has_compensation: false,
-      compensation_details: "",
-      required_min_followers: "",
+      collab_type: COLLAB_TYPES[0],
+      date_type: "specific_date",
       required_company_sectors: [],
-      required_blockchain_networks: [],
-      additional_requirements: ""
+      required_funding_stages: [],
+      required_token_status: false,
+      min_company_followers: TWITTER_FOLLOWER_COUNTS[0],
+      min_user_followers: TWITTER_FOLLOWER_COUNTS[0],
+      details: {
+        // Initial empty details will be filled based on selection
+      } as any
     }
   });
 
@@ -110,11 +111,20 @@ export default function CreateCollaboration() {
   const renderCollabTypeSpecificFields = () => {
     switch (selectedCollabType) {
       case "Podcast Guest Appearance":
+        // Set initial podcastDetailsSchema when this type is selected
+        if (!form.getValues('details') || !('podcast_name' in form.getValues('details'))) {
+          form.setValue('details', {
+            podcast_name: "",
+            short_description: "",
+            podcast_link: ""
+          });
+        }
+        
         return (
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="podcast_details.name"
+              name="details.podcast_name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Podcast Name</FormLabel>
@@ -127,36 +137,29 @@ export default function CreateCollaboration() {
             />
             <FormField
               control={form.control}
-              name="podcast_details.audience_size"
+              name="details.short_description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Audience Size</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select audience size" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {AUDIENCE_SIZE_RANGES.map((size) => (
-                        <SelectItem key={size} value={size}>
-                          {size}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Short Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Brief description of your podcast" 
+                      className="min-h-[80px]"
+                      {...field} 
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="podcast_details.episode_length"
+              name="details.podcast_link"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Episode Length (minutes)</FormLabel>
+                  <FormLabel>Podcast Link</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="30" {...field} />
+                    <Input placeholder="https://your-podcast-link.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -166,16 +169,25 @@ export default function CreateCollaboration() {
         );
       
       case "Twitter Spaces Guest":
+        // Set initial twitterSpacesDetailsSchema when this type is selected
+        if (!form.getValues('details') || !('twitter_handle' in form.getValues('details'))) {
+          form.setValue('details', {
+            twitter_handle: "",
+            space_topic: [],
+            host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
+          });
+        }
+        
         return (
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="twitter_spaces_details.topic"
+              name="details.twitter_handle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Space Topic</FormLabel>
+                  <FormLabel>Twitter Handle</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter space topic" {...field} />
+                    <Input placeholder="@yourhandle" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -183,20 +195,20 @@ export default function CreateCollaboration() {
             />
             <FormField
               control={form.control}
-              name="twitter_spaces_details.expected_audience"
+              name="details.host_follower_count"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Expected Audience Size</FormLabel>
+                  <FormLabel>Twitter Follower Count</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select audience size" />
+                        <SelectValue placeholder="Select follower count" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {AUDIENCE_SIZE_RANGES.map((size) => (
-                        <SelectItem key={size} value={size}>
-                          {size}
+                      {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                        <SelectItem key={count} value={count}>
+                          {count}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -205,28 +217,24 @@ export default function CreateCollaboration() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="twitter_spaces_details.duration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Duration (minutes)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="60" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
         );
         
       case "Newsletter Feature":
+        // Set initial newsletterDetailsSchema when this type is selected
+        if (!form.getValues('details') || !('newsletter_name' in form.getValues('details'))) {
+          form.setValue('details', {
+            newsletter_name: "",
+            subscriber_count: AUDIENCE_SIZE_RANGES[0],
+            format: "feature"
+          });
+        }
+        
         return (
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="newsletter_details.name"
+              name="details.newsletter_name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Newsletter Name</FormLabel>
@@ -239,7 +247,7 @@ export default function CreateCollaboration() {
             />
             <FormField
               control={form.control}
-              name="newsletter_details.subscriber_count"
+              name="details.subscriber_count"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Subscriber Count</FormLabel>
@@ -263,7 +271,7 @@ export default function CreateCollaboration() {
             />
             <FormField
               control={form.control}
-              name="newsletter_details.format"
+              name="details.format"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Format</FormLabel>
@@ -382,26 +390,18 @@ export default function CreateCollaboration() {
                           >
                             <FormItem className="flex items-center space-x-3 space-y-0">
                               <FormControl>
-                                <RadioGroupItem value="flexible" />
+                                <RadioGroupItem value="any_future_date" />
                               </FormControl>
                               <FormLabel className="font-normal">
-                                Flexible (No specific date)
+                                Any Future Date
                               </FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0">
                               <FormControl>
-                                <RadioGroupItem value="specific" />
+                                <RadioGroupItem value="specific_date" />
                               </FormControl>
                               <FormLabel className="font-normal">
                                 Specific Date
-                              </FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem value="recurring" />
-                              </FormControl>
-                              <FormLabel className="font-normal">
-                                Recurring
                               </FormLabel>
                             </FormItem>
                           </RadioGroup>
