@@ -22,6 +22,8 @@ import { Loader2 } from "lucide-react";
 
 function Router() {
   const [_, setLocation] = useLocation();
+  const currentPath = window.location.pathname;
+
   // Add profile data check with retry disabled for 404s
   const { data: profileData, isLoading } = useQuery<ProfileData>({
     queryKey: ['/api/profile'],
@@ -33,21 +35,22 @@ function Router() {
     }
   });
 
-  const currentPath = window.location.pathname;
+  // Define application routes that should redirect if user exists
+  const applicationRoutes = [
+    '/company-basics',
+    '/company-sector',
+    '/company-details'
+  ];
 
-  const isApplicationRoute = currentPath === '/apply' || 
-    currentPath === '/personal-info' || 
-    currentPath === '/company-basics' ||
-    currentPath === '/company-sector' ||
-    currentPath === '/company-details';
+  const isApplicationRoute = applicationRoutes.includes(currentPath);
 
   const isProfileRoute = currentPath === '/profile-overview' ||
     currentPath === '/marketing-collabs' ||
     currentPath === '/conference-coffees' ||
     currentPath === '/application-status';
 
-  // Show loading state while checking profile
-  if (isLoading) {
+  // Show loading state while checking profile, but only for routes that need it
+  if (isLoading && (isApplicationRoute || isProfileRoute)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -55,8 +58,8 @@ function Router() {
     );
   }
 
-  // Redirect if user has already applied
-  if (profileData?.user && isApplicationRoute && currentPath !== '/application-status') {
+  // Redirect if user has already applied, but only for protected routes
+  if (profileData?.user && isApplicationRoute) {
     setLocation('/application-status');
     return null;
   }
