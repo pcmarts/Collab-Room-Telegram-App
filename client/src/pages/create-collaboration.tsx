@@ -49,7 +49,7 @@ export default function CreateCollaboration() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedCollabType, setSelectedCollabType] = useState<string>("");
+  const [selectedCollabType, setSelectedCollabType] = useState<typeof COLLAB_TYPES[number] | "">("");
 
   const form = useForm<CreateCollaboration>({
     resolver: zodResolver(createCollaborationSchema),
@@ -69,20 +69,54 @@ export default function CreateCollaboration() {
     }
   });
 
-  const handleCollabTypeChange = (value: string) => {
+  const handleCollabTypeChange = (value: typeof COLLAB_TYPES[number]) => {
     setSelectedCollabType(value);
     form.setValue("collab_type", value);
+    
+    // Reset details object when collaboration type changes
+    switch (value) {
+      case "Podcast Guest Appearance":
+        form.setValue('details', {
+          podcast_name: "",
+          short_description: "",
+          podcast_link: ""
+        });
+        break;
+      case "Twitter Spaces Guest":
+        form.setValue('details', {
+          twitter_handle: "",
+          space_topic: [],
+          host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
+        });
+        break;
+      case "Newsletter Feature":
+        form.setValue('details', {
+          newsletter_name: "",
+          subscriber_count: AUDIENCE_SIZE_RANGES[0],
+          format: "feature"
+        });
+        break;
+      // Add other collaboration types as needed
+      default:
+        form.setValue('details', {});
+        break;
+    }
   }
 
   const onSubmit = async (data: CreateCollaboration) => {
     setIsSubmitting(true);
     try {
+      // Match form data to schema
+      const formattedData = {
+        ...data,
+        // Ensure specific optional fields are in proper format
+        required_company_sectors: data.required_company_sectors || [],
+        required_funding_stages: data.required_funding_stages || [],
+      };
+      
       const response = await apiRequest('/api/collaborations', {
         method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        body: JSON.stringify(formattedData),
       });
 
       if (response.ok) {
@@ -431,13 +465,13 @@ export default function CreateCollaboration() {
                 <CardContent className="space-y-6">
                   <FormField
                     control={form.control}
-                    name="required_min_followers"
+                    name="min_user_followers"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Minimum Twitter Followers</FormLabel>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          defaultValue={field.value || ""}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -592,13 +626,15 @@ export default function CreateCollaboration() {
                 <CardContent className="space-y-6">
                   <FormField
                     control={form.control}
-                    name="has_token"
+                    name="required_token_status"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                         <FormControl>
                           <Checkbox
                             checked={field.value}
-                            onCheckedChange={field.onChange}
+                            onCheckedChange={(checked) => {
+                              field.onChange(!!checked);
+                            }}
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
