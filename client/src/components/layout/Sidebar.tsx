@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Layout, Users, Coffee, Megaphone, User, Building } from 'lucide-react';
+import { Layout, Users, Coffee, Megaphone, User, Building, Search, PlusCircle, ListChecks } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Sidebar() {
@@ -7,6 +7,13 @@ export function Sidebar() {
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: Layout },
+    
+    // Collaboration section
+    { href: '/browse-collaborations', label: 'Browse Collaborations', icon: Search },
+    { href: '/create-collaboration', label: 'Create Collaboration', icon: PlusCircle },
+    { href: '/my-collaborations', label: 'My Collaborations', icon: ListChecks },
+    
+    // Original items
     { href: '/collaborations', label: 'Collaborations', icon: Users },
     { href: '/marketing-collabs', label: 'Marketing Collabs', icon: Megaphone },
     { href: '/conference-coffees', label: 'Conference Coffees', icon: Coffee },

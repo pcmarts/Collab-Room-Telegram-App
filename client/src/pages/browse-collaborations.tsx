@@ -1,0 +1,546 @@
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { MobileCheck } from "@/components/MobileCheck";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+import {
+  COLLAB_TYPES,
+  COMPANY_TAG_CATEGORIES,
+  TWITTER_FOLLOWER_COUNTS,
+  FUNDING_STAGES,
+  BLOCKCHAIN_NETWORKS,
+  ALL_COMPANY_TAGS,
+  type Collaboration,
+} from "@shared/schema";
+
+import { 
+  Filter, 
+  CalendarDays, 
+  Users, 
+  Coins, 
+  Clock, 
+  Tag, 
+  CheckCircle, 
+  ChevronRight,
+  Twitter
+} from "lucide-react";
+
+// Filter interface for collaborations
+interface CollaborationFilters {
+  collabTypes: string[];
+  companyTags: string[];
+  minCompanyFollowers: string;
+  minUserFollowers: string;
+  hasToken: boolean;
+  fundingStages: string[];
+}
+
+export default function BrowseCollaborations() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
+  
+  // Filter state
+  const [filters, setFilters] = useState<CollaborationFilters>({
+    collabTypes: [],
+    companyTags: [],
+    minCompanyFollowers: "",
+    minUserFollowers: "",
+    hasToken: false,
+    fundingStages: [],
+  });
+  
+  // Filter open state (for mobile)
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
+  // Search term
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  
+  // Debounce search term
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
+  
+  // Query collaborations with filters
+  const { data: collaborations, isLoading, isError, refetch } = useQuery({
+    queryKey: [
+      "/api/collaborations/search", 
+      filters, 
+      debouncedSearchTerm
+    ],
+    queryFn: async () => {
+      let queryParams = new URLSearchParams();
+      
+      // Add filters to query params
+      if (filters.collabTypes.length > 0) {
+        filters.collabTypes.forEach(type => {
+          queryParams.append("collabTypes", type);
+        });
+      }
+      
+      if (filters.companyTags.length > 0) {
+        filters.companyTags.forEach(tag => {
+          queryParams.append("companyTags", tag);
+        });
+      }
+      
+      if (filters.minCompanyFollowers) {
+        queryParams.append("minCompanyFollowers", filters.minCompanyFollowers);
+      }
+      
+      if (filters.minUserFollowers) {
+        queryParams.append("minUserFollowers", filters.minUserFollowers);
+      }
+      
+      if (filters.hasToken) {
+        queryParams.append("hasToken", "true");
+      }
+      
+      if (filters.fundingStages.length > 0) {
+        filters.fundingStages.forEach(stage => {
+          queryParams.append("fundingStages", stage);
+        });
+      }
+      
+      if (debouncedSearchTerm) {
+        queryParams.append("search", debouncedSearchTerm);
+      }
+      
+      // Build URL with query params
+      const url = `/api/collaborations/search?${queryParams.toString()}`;
+      
+      const response = await apiRequest(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch collaborations");
+      }
+      
+      return response.json() as Promise<Collaboration[]>;
+    }
+  });
+
+  // Handler for applying to a collaboration
+  const handleApply = (collabId: string) => {
+    setLocation(`/apply/${collabId}`);
+  };
+  
+  // Handler for toggling a filter value
+  const toggleFilterValue = (filterName: keyof CollaborationFilters, value: string) => {
+    setFilters(prev => {
+      if (Array.isArray(prev[filterName])) {
+        const currentArray = prev[filterName] as string[];
+        if (currentArray.includes(value)) {
+          return {
+            ...prev,
+            [filterName]: currentArray.filter(v => v !== value)
+          };
+        } else {
+          return {
+            ...prev,
+            [filterName]: [...currentArray, value]
+          };
+        }
+      }
+      return prev;
+    });
+  };
+  
+  // Handler for setting a filter value
+  const setFilterValue = (filterName: keyof CollaborationFilters, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: value
+    }));
+  };
+  
+  // Handler for clearing all filters
+  const clearFilters = () => {
+    setFilters({
+      collabTypes: [],
+      companyTags: [],
+      minCompanyFollowers: "",
+      minUserFollowers: "",
+      hasToken: false,
+      fundingStages: [],
+    });
+    setSearchTerm("");
+    setDebouncedSearchTerm("");
+  };
+  
+  // Filter component
+  const FilterPanel = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-medium mb-3">Collaboration Types</h3>
+        <div className="space-y-2">
+          {COLLAB_TYPES.map(type => (
+            <div key={type} className="flex items-center space-x-2">
+              <Checkbox 
+                id={`type-${type}`}
+                checked={filters.collabTypes.includes(type)}
+                onCheckedChange={() => toggleFilterValue("collabTypes", type)}
+              />
+              <label 
+                htmlFor={`type-${type}`}
+                className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {type}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <Separator />
+      
+      <div>
+        <h3 className="font-medium mb-3">Company Tags</h3>
+        <div className="space-y-2 max-h-[200px] overflow-y-auto">
+          {ALL_COMPANY_TAGS.map(tag => (
+            <div key={tag} className="flex items-center space-x-2">
+              <Checkbox
+                id={`tag-${tag}`}
+                checked={filters.companyTags.includes(tag)}
+                onCheckedChange={() => toggleFilterValue("companyTags", tag)}
+              />
+              <label
+                htmlFor={`tag-${tag}`}
+                className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {tag}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <Separator />
+      
+      <div>
+        <h3 className="font-medium mb-3">Minimum Followers</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm block mb-2">Company Twitter Followers</label>
+            <Select
+              value={filters.minCompanyFollowers}
+              onValueChange={(value) => setFilterValue("minCompanyFollowers", value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="No minimum" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No minimum</SelectItem>
+                {TWITTER_FOLLOWER_COUNTS.map(count => (
+                  <SelectItem key={count} value={count}>{count}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label className="text-sm block mb-2">User Twitter Followers</label>
+            <Select
+              value={filters.minUserFollowers}
+              onValueChange={(value) => setFilterValue("minUserFollowers", value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="No minimum" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No minimum</SelectItem>
+                {TWITTER_FOLLOWER_COUNTS.map(count => (
+                  <SelectItem key={count} value={count}>{count}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+      
+      <Separator />
+      
+      <div>
+        <h3 className="font-medium mb-3">Token & Funding</h3>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="has-token"
+              checked={filters.hasToken}
+              onCheckedChange={(checked) => setFilterValue("hasToken", !!checked)}
+            />
+            <label
+              htmlFor="has-token"
+              className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Has Token
+            </label>
+          </div>
+          
+          <div className="mt-4">
+            <label className="text-sm block mb-2">Funding Stages</label>
+            <div className="space-y-2">
+              {FUNDING_STAGES.map(stage => (
+                <div key={stage} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`stage-${stage}`}
+                    checked={filters.fundingStages.includes(stage)}
+                    onCheckedChange={() => toggleFilterValue("fundingStages", stage)}
+                  />
+                  <label
+                    htmlFor={`stage-${stage}`}
+                    className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {stage}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="pt-4">
+        <Button 
+          onClick={clearFilters} 
+          variant="outline" 
+          className="w-full"
+        >
+          Clear All Filters
+        </Button>
+      </div>
+    </div>
+  );
+  
+  // Render collaboration card
+  const renderCollaborationCard = (collab: Collaboration) => (
+    <Card key={collab.id} className="mb-4">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <Badge className="mb-2">{collab.collab_type}</Badge>
+            <CardTitle className="text-xl">{collab.title}</CardTitle>
+          </div>
+          {collab.has_token && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Coins className="h-3 w-3" /> Token
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <p className="text-sm text-gray-600 mb-4 line-clamp-3">{collab.description}</p>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <CalendarDays className="h-3 w-3" />
+            <span>{collab.date_type === 'flexible' ? 'Flexible timing' : 'Specific date'}</span>
+          </div>
+          
+          {collab.has_compensation && (
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <Coins className="h-3 w-3" />
+              <span>Paid opportunity</span>
+            </div>
+          )}
+          
+          {collab.required_min_followers && (
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <Twitter className="h-3 w-3" />
+              <span>Min {collab.required_min_followers} followers</span>
+            </div>
+          )}
+        </div>
+        
+        {collab.required_company_sectors && collab.required_company_sectors.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {Array.isArray(collab.required_company_sectors) && 
+              collab.required_company_sectors.slice(0, 3).map((sector, idx) => (
+                <Badge key={idx} variant="secondary" className="text-xs">
+                  {sector}
+                </Badge>
+              ))
+            }
+            {Array.isArray(collab.required_company_sectors) && 
+              collab.required_company_sectors.length > 3 && (
+                <Badge variant="secondary" className="text-xs">
+                  +{collab.required_company_sectors.length - 3} more
+                </Badge>
+              )
+            }
+          </div>
+        )}
+      </CardContent>
+      <CardFooter>
+        <Button 
+          onClick={() => handleApply(collab.id)} 
+          className="w-full"
+        >
+          Apply
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+  
+  // Loading skeleton
+  const renderSkeletons = () => (
+    <div className="space-y-6">
+      {[1, 2, 3].map(i => (
+        <Card key={i} className="mb-4">
+          <CardHeader>
+            <Skeleton className="h-4 w-20 mb-2" />
+            <Skeleton className="h-6 w-2/3" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-3/4 mb-4" />
+            <div className="flex gap-2 mb-4">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+            <div className="flex gap-1 mb-3">
+              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-5 w-16" />
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Skeleton className="h-10 w-full" />
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+  
+  return (
+    <MobileCheck>
+      <div className="container mx-auto py-6 px-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Browse Collaborations</h1>
+          <Button 
+            variant="default" 
+            onClick={() => setLocation('/create-collaboration')}
+          >
+            Create New
+          </Button>
+        </div>
+        
+        <div className="flex items-center space-x-4 mb-6">
+          <div className="relative flex-grow">
+            <Input
+              type="text"
+              placeholder="Search collaborations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pr-10"
+            />
+          </div>
+          
+          {isMobile ? (
+            <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="shrink-0">
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <SheetHeader className="mb-5">
+                  <SheetTitle>Filters</SheetTitle>
+                  <SheetDescription>
+                    Narrow down your collaboration search
+                  </SheetDescription>
+                </SheetHeader>
+                <FilterPanel />
+              </SheetContent>
+            </Sheet>
+          ) : (
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="shrink-0"
+            >
+              <Filter className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Filters - Desktop */}
+          {!isMobile && isFilterOpen && (
+            <div className="md:w-1/4 shrink-0">
+              <div className="sticky top-6 border rounded-lg p-4 bg-card">
+                <h2 className="text-lg font-semibold mb-4">Filters</h2>
+                <FilterPanel />
+              </div>
+            </div>
+          )}
+          
+          {/* Collaborations List */}
+          <div className={`${!isMobile && isFilterOpen ? 'md:w-3/4' : 'w-full'}`}>
+            {isLoading ? (
+              renderSkeletons()
+            ) : isError ? (
+              <div className="text-center py-8">
+                <p className="text-red-500 mb-2">Failed to load collaborations</p>
+                <Button variant="outline" onClick={() => refetch()}>
+                  Try Again
+                </Button>
+              </div>
+            ) : collaborations && collaborations.length > 0 ? (
+              <div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Showing {collaborations.length} collaboration{collaborations.length !== 1 ? 's' : ''}
+                </p>
+                {collaborations.map(collab => renderCollaborationCard(collab))}
+              </div>
+            ) : (
+              <div className="text-center py-12 border rounded-lg">
+                <p className="text-gray-500 mb-4">No collaborations found</p>
+                <p className="text-gray-400 text-sm mb-6">
+                  Try adjusting your filters or create a new collaboration
+                </p>
+                <Button 
+                  onClick={() => setLocation('/create-collaboration')}
+                >
+                  Create New Collaboration
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </MobileCheck>
+  );
+}
