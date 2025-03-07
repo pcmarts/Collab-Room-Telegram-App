@@ -4,7 +4,7 @@ import { db } from "./db";
 import { 
   users, companies, preferences, events, user_events, 
   collaborations, collab_applications, collab_notifications,
-  createCollaborationSchema, applicationSchema
+  createCollaborationSchema, applicationSchema, collabApplicationSchema
 } from "../shared/schema";
 import { eq, and, not, desc } from 'drizzle-orm';
 import { sendApplicationConfirmation } from "./telegram";
@@ -785,8 +785,8 @@ export async function registerRoutes(app: Express) {
     try {
       const { id } = req.params;
       
-      // Validate application data
-      const result = applicationSchema.safeParse(req.body);
+      // Validate application data using the enhanced schema
+      const result = collabApplicationSchema.safeParse(req.body);
       if (!result.success) {
         console.error('Validation error:', result.error);
         return res.status(400).json({ 
