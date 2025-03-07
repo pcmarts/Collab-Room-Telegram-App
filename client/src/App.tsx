@@ -16,18 +16,8 @@ import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
-import { useQuery } from "@tanstack/react-query";
-import type { ProfileData } from "@/types/profile";
-import { Loader2 } from "lucide-react";
 
 function Router() {
-  const [_, setLocation] = useLocation();
-  // Add profile data check
-  const { data: profileData, isLoading } = useQuery<ProfileData>({
-    queryKey: ['/api/profile'],
-    retry: false // Don't retry on 404
-  });
-
   const currentPath = window.location.pathname;
 
   const isApplicationRoute = currentPath === '/apply' || 
@@ -40,21 +30,6 @@ function Router() {
     currentPath === '/marketing-collabs' ||
     currentPath === '/conference-coffees' ||
     currentPath === '/application-status';
-
-  // Show loading state while checking profile
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  // Redirect if user has already applied
-  if (profileData?.user && isApplicationRoute && currentPath !== '/application-status') {
-    setLocation('/application-status');
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-background">

@@ -15,17 +15,17 @@ export default function ApplicationForm() {
   const formRef = useRef<HTMLFormElement>(null);
 
   // Fetch profile data to check if user has already applied
-  const { data: profileData, isLoading } = useQuery<ProfileData>({
-    queryKey: ['/api/profile']
+  const { data: profileData, isLoading, error } = useQuery<ProfileData>({
+    queryKey: ['/api/profile'],
+    retry: false // Don't retry on 404
   });
 
-  // Check if user has already applied and redirect if necessary
   useEffect(() => {
-    if (!isLoading && profileData?.user) {
+    if (!isLoading && !error && profileData?.user) {
       // If the user has already applied, redirect them to application status
       setLocation('/application-status');
     }
-  }, [profileData, isLoading]);
+  }, [profileData, isLoading, error, setLocation]);
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -82,6 +82,11 @@ export default function ApplicationForm() {
     );
   }
 
+  // Don't render if redirecting due to existing profile
+  if (profileData?.user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background p-4 pb-24">
       <div className="max-w-md mx-auto space-y-6">
@@ -92,9 +97,9 @@ export default function ApplicationForm() {
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Join the Network</h1>
+          <h1 className="text-2xl font-bold">Tell Us About Yourself</h1>
           <p className="text-muted-foreground mt-2">
-            Apply to join our exclusive Web3 collaboration network
+            Share your details to help us know you better
           </p>
         </div>
 
