@@ -50,11 +50,11 @@ export default function ApplicationForm() {
   };
 
   const handleNext = () => {
-    if (!formData.first_name) {
+    if (!formData.first_name || !formData.last_name) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please enter your first name",
+        description: "Please fill in all required fields",
         duration: 2000
       });
       return;
@@ -94,12 +94,13 @@ export default function ApplicationForm() {
           </div>
 
           <div>
-            <Label htmlFor="last_name">Last Name (Optional)</Label>
+            <Label htmlFor="last_name">Last Name *</Label>
             <Input
               id="last_name"
               name="last_name"
               value={formData.last_name}
               onChange={handleInputChange}
+              required
             />
           </div>
 
