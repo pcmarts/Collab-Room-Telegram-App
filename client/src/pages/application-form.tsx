@@ -7,6 +7,8 @@ import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 
 export default function ApplicationForm() {
   const { toast } = useToast();
@@ -14,15 +16,13 @@ export default function ApplicationForm() {
   const [_, setLocation] = useLocation();
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Fetch profile data to check if user has already applied
   const { data: profileData, isLoading, error } = useQuery<ProfileData>({
     queryKey: ['/api/profile'],
-    retry: false // Don't retry on 404
+    retry: false 
   });
 
   useEffect(() => {
     if (!isLoading && !error && profileData?.user) {
-      // If the user has already applied, redirect them to application status
       setLocation('/application-status');
     }
   }, [profileData, isLoading, error, setLocation]);
@@ -31,16 +31,15 @@ export default function ApplicationForm() {
     first_name: '',
     last_name: '',
     linkedin_url: 'https://linkedin.com/in/',
-    email: ''
+    email: '',
+    twitter_followers: ''
   });
 
-  // Handle field focus for better mobile UX
   const handleFieldFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Delay the scroll to ensure the keyboard is fully shown
     setTimeout(() => {
       const input = e.target;
       const rect = input.getBoundingClientRect();
-      const offset = rect.top + window.scrollY - 100; // Scroll to show field with padding
+      const offset = rect.top + window.scrollY - 100; 
       window.scrollTo({
         top: offset,
         behavior: 'smooth'
@@ -73,7 +72,6 @@ export default function ApplicationForm() {
     setLocation('/company-info');
   };
 
-  // Show loading state while checking profile
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -82,7 +80,6 @@ export default function ApplicationForm() {
     );
   }
 
-  // Don't render if redirecting due to existing profile
   if (profileData?.user) {
     return null;
   }
@@ -165,6 +162,27 @@ export default function ApplicationForm() {
               placeholder="your@company.com"
               required
             />
+          </div>
+
+          <div>
+            <Label htmlFor="twitter_followers">Your Twitter Follower Count</Label>
+            <Select
+              value={formData.twitter_followers}
+              onValueChange={(value) => 
+                setFormData(prev => ({ ...prev, twitter_followers: value }))
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select your follower count" />
+              </SelectTrigger>
+              <SelectContent>
+                {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                  <SelectItem key={count} value={count}>
+                    {count}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <Button

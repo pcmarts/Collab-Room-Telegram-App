@@ -33,6 +33,14 @@ export const BLOCKCHAIN_NETWORKS = [
   "Other"
 ] as const;
 
+export const TWITTER_FOLLOWER_COUNTS = [
+  "Under 1,000",
+  "1,000 - 10,000",
+  "10,000 - 50,000",
+  "50,000 - 250,000",
+  "500,000+"
+] as const;
+
 // Initial events data
 export const INITIAL_EVENTS = [
   {
@@ -124,6 +132,7 @@ export const users = pgTable('users', {
   linkedin_url: text('linkedin_url'),
   email: text('email'),
   referral_code: text('referral_code'),
+  twitter_followers: text('twitter_followers'),
   is_approved: boolean('is_approved').default(false),
   applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
@@ -139,6 +148,7 @@ export const companies = pgTable('companies', {
   website: text('website').notNull(),
   job_title: text('job_title').notNull(),
   twitter_handle: text('twitter_handle'),
+  twitter_followers: text('twitter_followers'),
   linkedin_url: text('linkedin_url'),
   funding_stage: text('funding_stage').notNull(),
   has_token: boolean('has_token').default(false),
@@ -207,6 +217,7 @@ export const applicationSchema = z.object({
   linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(),
   email: z.string().email("Please enter a valid email").optional().nullable(),
   referral_code: z.string().optional(),
+  twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
 
   // Company Information
   company_name: z.string().min(2, "Company name is required"),
@@ -220,6 +231,7 @@ export const applicationSchema = z.object({
   token_ticker: z.string().optional(),
   blockchain_networks: z.array(z.enum(BLOCKCHAIN_NETWORKS)).optional(),
   company_tags: z.array(z.string()).optional(),
+  company_twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
 
   // Telegram data
   initData: z.string()

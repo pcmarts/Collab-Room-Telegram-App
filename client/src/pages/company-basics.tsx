@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FUNDING_STAGES } from "@shared/schema";
+import { FUNDING_STAGES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
@@ -26,7 +26,8 @@ export default function CompanyBasics() {
     website: 'https://www.',
     twitter_url: 'https://x.com/',
     linkedin_url: 'https://linkedin.com/company/',
-    funding_stage: ''
+    funding_stage: '',
+    twitter_followers: ''
   });
 
   // Load data when available
@@ -38,7 +39,8 @@ export default function CompanyBasics() {
         website: profileData.company.website,
         twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : 'https://x.com/',
         linkedin_url: profileData.company.linkedin_url || 'https://linkedin.com/company/',
-        funding_stage: profileData.company.funding_stage
+        funding_stage: profileData.company.funding_stage,
+        twitter_followers: profileData.company.twitter_followers || ''
       });
     } else {
       const savedData = sessionStorage.getItem('companyFormData');
@@ -59,7 +61,8 @@ export default function CompanyBasics() {
   };
 
   const handleNext = () => {
-    if (!formData.company_name || !formData.job_title || !formData.website || !formData.twitter_url || !formData.linkedin_url || !formData.funding_stage) {
+    if (!formData.company_name || !formData.job_title || !formData.website || 
+        !formData.twitter_url || !formData.linkedin_url || !formData.funding_stage) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -141,6 +144,25 @@ export default function CompanyBasics() {
               onChange={handleInputChange}
               required
             />
+          </div>
+
+          <div>
+            <Label htmlFor="twitter_followers">Company Twitter Follower Count</Label>
+            <Select
+              value={formData.twitter_followers}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, twitter_followers: value }))}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select follower count" />
+              </SelectTrigger>
+              <SelectContent>
+                {TWITTER_FOLLOWER_COUNTS.map(count => (
+                  <SelectItem key={count} value={count}>
+                    {count}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
