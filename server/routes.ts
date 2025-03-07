@@ -1,9 +1,14 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { db } from "./db";
-import { users, companies, preferences, events, user_events } from "../shared/schema";
-import { eq } from 'drizzle-orm';
+import { 
+  users, companies, preferences, events, user_events, 
+  collaborations, collab_applications, collab_notifications,
+  createCollaborationSchema, applicationSchema
+} from "../shared/schema";
+import { eq, and, not, desc } from 'drizzle-orm';
 import { sendApplicationConfirmation } from "./telegram";
+import { storage } from "./storage";
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
@@ -465,6 +470,301 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error('Failed to fetch events:', error);
       res.status(500).json({ error: 'Failed to fetch events' });
+    }
+  });
+  
+  // Create a new collaboration
+  app.post("/api/collaborations", async (req, res) => {
+    console.log('============ DEBUG: Create Collaboration Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+
+    try {
+      // Validate input using Zod schema
+      const result = createCollaborationSchema.safeParse(req.body);
+      if (!result.success) {
+        console.error('Validation error:', result.error);
+        return res.status(400).json({ 
+          error: 'Invalid collaboration data', 
+          details: result.error.format() 
+        });
+      }
+      
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        console.error('No Telegram init data found in headers');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Parse Telegram data
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      
+      if (!telegramUser.id) {
+        console.error('No Telegram user ID found in parsed data');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user ID from telegram_id
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Prepare collaboration data
+      const collabData = {
+        creator_id: user.id,
+        ...result.data
+      };
+
+      // Create the collaboration
+      try {
+        const newCollaboration = await storage.createCollaboration(collabData);
+        res.status(201).json({
+          success: true,
+          collaboration: newCollaboration,
+          message: 'Collaboration created successfully'
+        });
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error(`Failed to create collaboration: ${String(dbError)}`);
+      }
+
+    } catch (error) {
+      console.error('Detailed error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : 'Unknown'
+      });
+      res.status(500).json({ 
+        error: 'Server error', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Get user's collaborations
+  app.get("/api/collaborations/my", async (req, res) => {
+    console.log('============ DEBUG: My Collaborations Endpoint ============');
+    console.log('Headers:', req.headers);
+
+    try {
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      let telegramUser;
+
+      if (!initData) {
+        // In development, use fallback data if Telegram data is missing
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Using development fallback for Telegram data');
+          telegramUser = {
+            id: '12345',
+            username: 'test_user',
+            first_name: 'Test',
+            last_name: 'User'
+          };
+        } else {
+          console.error('No Telegram init data found');
+          return res.status(400).json({ error: 'Invalid Telegram data' });
+        }
+      } else {
+        // Parse Telegram data
+        const decodedInitData = new URLSearchParams(initData);
+        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      }
+
+      if (!telegramUser?.id) {
+        console.error('No Telegram user ID found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get collaborations created by this user
+      const collaborations = await storage.getUserCollaborations(user.id);
+      res.json(collaborations);
+
+    } catch (error) {
+      console.error('Failed to fetch user collaborations:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch collaborations', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Search collaborations
+  app.get("/api/collaborations/search", async (req, res) => {
+    console.log('============ DEBUG: Search Collaborations Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Query:', req.query);
+
+    try {
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      let telegramUser;
+
+      if (!initData) {
+        // In development, use fallback data if Telegram data is missing
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Using development fallback for Telegram data');
+          telegramUser = {
+            id: '12345',
+            username: 'test_user',
+            first_name: 'Test',
+            last_name: 'User'
+          };
+        } else {
+          console.error('No Telegram init data found');
+          return res.status(400).json({ error: 'Invalid Telegram data' });
+        }
+      } else {
+        // Parse Telegram data
+        const decodedInitData = new URLSearchParams(initData);
+        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      }
+
+      if (!telegramUser?.id) {
+        console.error('No Telegram user ID found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Parse filters from query params
+      const filters: CollaborationFilters = {
+        collabTypes: req.query.collabTypes ? (req.query.collabTypes as string).split(',') : undefined,
+        companyTags: req.query.companyTags ? (req.query.companyTags as string).split(',') : undefined,
+        minCompanyFollowers: req.query.minCompanyFollowers as string | undefined,
+        minUserFollowers: req.query.minUserFollowers as string | undefined,
+        hasToken: req.query.hasToken ? req.query.hasToken === 'true' : undefined,
+        fundingStages: req.query.fundingStages ? (req.query.fundingStages as string).split(',') : undefined
+      };
+
+      // Get filtered collaborations
+      const collaborations = await storage.searchCollaborations(user.id, filters);
+      res.json(collaborations);
+
+    } catch (error) {
+      console.error('Failed to search collaborations:', error);
+      res.status(500).json({ 
+        error: 'Failed to search collaborations', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Apply to a collaboration
+  app.post("/api/collaborations/:id/apply", async (req, res) => {
+    console.log('============ DEBUG: Apply to Collaboration Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Params:', req.params);
+    console.log('Body:', req.body);
+
+    try {
+      const { id } = req.params;
+      
+      // Validate application data
+      const result = applicationSchema.safeParse(req.body);
+      if (!result.success) {
+        console.error('Validation error:', result.error);
+        return res.status(400).json({ 
+          error: 'Invalid application data', 
+          details: result.error.format() 
+        });
+      }
+      
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        console.error('No Telegram init data found in headers');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Parse Telegram data
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      
+      if (!telegramUser.id) {
+        console.error('No Telegram user ID found in parsed data');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user ID from telegram_id
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Check if the collaboration exists
+      const collaboration = await storage.getCollaboration(id);
+      if (!collaboration) {
+        return res.status(404).json({ error: 'Collaboration not found' });
+      }
+
+      // Check if user is applying to their own collaboration
+      if (collaboration.creator_id === user.id) {
+        return res.status(400).json({ error: 'You cannot apply to your own collaboration' });
+      }
+
+      // Prepare application data
+      const applicationData = {
+        collaboration_id: id,
+        applicant_id: user.id,
+        status: 'pending',
+        application_data: result.data,
+        notes: req.body.notes || '',
+        created_at: new Date(),
+        updated_at: new Date()
+      };
+
+      // Submit the application
+      try {
+        const application = await storage.applyToCollaboration(applicationData);
+        
+        // Create notification for collaboration creator
+        await storage.createNotification({
+          user_id: collaboration.creator_id,
+          type: 'new_application',
+          content: `${user.first_name} ${user.last_name || ''} applied to your ${collaboration.title} collaboration`,
+          collaboration_id: collaboration.id,
+          application_id: application.id,
+          is_read: false,
+          is_sent: false,
+          created_at: new Date()
+        });
+
+        res.status(201).json({
+          success: true,
+          application,
+          message: 'Application submitted successfully'
+        });
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error(`Failed to submit application: ${String(dbError)}`);
+      }
+
+    } catch (error) {
+      console.error('Detailed error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : 'Unknown'
+      });
+      res.status(500).json({ 
+        error: 'Server error', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
 

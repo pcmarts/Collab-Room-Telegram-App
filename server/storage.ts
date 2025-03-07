@@ -6,6 +6,7 @@ import {
   type CollabNotification, type InsertCollabNotification,
   type Preferences
 } from "@shared/schema";
+import { z } from 'zod';
 import { db } from "./db";
 import { eq, and, inArray, isNull, not, desc, sql, ilike } from "drizzle-orm";
 
@@ -71,7 +72,11 @@ export class DatabaseStorage implements IStorage {
   async createCollaboration(collaboration: InsertCollaboration): Promise<Collaboration> {
     const [newCollaboration] = await db
       .insert(collaborations)
-      .values(collaboration)
+      .values([{
+        ...collaboration,
+        created_at: new Date(),
+        updated_at: new Date()
+      }])
       .returning();
     return newCollaboration;
   }
