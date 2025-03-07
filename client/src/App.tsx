@@ -24,7 +24,8 @@ function Router() {
   const [_, setLocation] = useLocation();
   // Add profile data check
   const { data: profileData, isLoading } = useQuery<ProfileData>({
-    queryKey: ['/api/profile']
+    queryKey: ['/api/profile'],
+    retry: false // Don't retry on 404
   });
 
   const currentPath = window.location.pathname;
