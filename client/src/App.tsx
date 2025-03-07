@@ -16,7 +16,7 @@ import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
 import MatchingFilters from "@/pages/matching-filters";
 import BrowseCollaborations from "@/pages/browse-collaborations";
-import CreateCollaboration from "@/pages/create-collaboration";
+import CreateCollaboration from "@/pages/create-collaboration-fixed";
 import MyCollaborations from "@/pages/my-collaborations";
 import Apply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
