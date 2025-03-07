@@ -30,6 +30,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { MobileCheck } from "@/components/MobileCheck";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 import {
   AUDIENCE_SIZE_RANGES,

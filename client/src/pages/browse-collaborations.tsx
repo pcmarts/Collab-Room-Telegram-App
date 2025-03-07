@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/sheet";
 import { MobileCheck } from "@/components/MobileCheck";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 import {
   COLLAB_TYPES,
@@ -142,7 +143,7 @@ export default function BrowseCollaborations() {
       // Build URL with query params
       const url = `/api/collaborations/search?${queryParams.toString()}`;
       
-      const response = await apiRequest(url);
+      const response = await apiRequest('GET', url);
       if (!response.ok) {
         throw new Error("Failed to fetch collaborations");
       }
@@ -352,7 +353,7 @@ export default function BrowseCollaborations() {
             <Badge className="mb-2">{collab.collab_type}</Badge>
             <CardTitle className="text-xl">{collab.title}</CardTitle>
           </div>
-          {collab.has_token && (
+          {collab.details && typeof collab.details === 'object' && 'has_token' in collab.details && collab.details.has_token && (
             <Badge variant="outline" className="flex items-center gap-1">
               <Coins className="h-3 w-3" /> Token
             </Badge>
@@ -368,17 +369,17 @@ export default function BrowseCollaborations() {
             <span>{collab.date_type === 'flexible' ? 'Flexible timing' : 'Specific date'}</span>
           </div>
           
-          {collab.has_compensation && (
+          {collab.details && typeof collab.details === 'object' && 'has_compensation' in collab.details && collab.details.has_compensation && (
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Coins className="h-3 w-3" />
               <span>Paid opportunity</span>
             </div>
           )}
           
-          {collab.required_min_followers && (
+          {collab.details && typeof collab.details === 'object' && 'required_min_followers' in collab.details && collab.details.required_min_followers && (
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Twitter className="h-3 w-3" />
-              <span>Min {collab.required_min_followers} followers</span>
+              <span>Min {collab.details.required_min_followers} followers</span>
             </div>
           )}
         </div>
@@ -445,99 +446,106 @@ export default function BrowseCollaborations() {
   
   return (
     <MobileCheck>
-      <div className="container mx-auto py-6 px-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Browse Collaborations</h1>
-          <Button 
-            variant="default" 
-            onClick={() => setLocation('/create-collaboration')}
-          >
-            Create New
-          </Button>
-        </div>
+      <div className="min-h-[100svh] bg-background">
+        <PageHeader 
+          title="Browse Collaborations" 
+          subtitle="Find collaboration opportunities"
+        />
         
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="relative flex-grow">
-            <Input
-              type="text"
-              placeholder="Search collaborations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-10"
-            />
+        <div className="p-4 space-y-4">
+          <div className="flex justify-end mb-4">
+            <Button 
+              variant="default" 
+              onClick={() => setLocation('/create-collaboration')}
+              size="sm"
+            >
+              Create New
+            </Button>
           </div>
           
-          {isMobile ? (
-            <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="shrink-0">
-                  <Filter className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <SheetHeader className="mb-5">
-                  <SheetTitle>Filters</SheetTitle>
-                  <SheetDescription>
-                    Narrow down your collaboration search
-                  </SheetDescription>
-                </SheetHeader>
-                <FilterPanel />
-              </SheetContent>
-            </Sheet>
-          ) : (
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="shrink-0"
-            >
-              <Filter className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters - Desktop */}
-          {!isMobile && isFilterOpen && (
-            <div className="md:w-1/4 shrink-0">
-              <div className="sticky top-6 border rounded-lg p-4 bg-card">
-                <h2 className="text-lg font-semibold mb-4">Filters</h2>
-                <FilterPanel />
-              </div>
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="relative flex-grow">
+              <Input
+                type="text"
+                placeholder="Search collaborations..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pr-10"
+              />
             </div>
-          )}
-          
-          {/* Collaborations List */}
-          <div className={`${!isMobile && isFilterOpen ? 'md:w-3/4' : 'w-full'}`}>
-            {isLoading ? (
-              renderSkeletons()
-            ) : isError ? (
-              <div className="text-center py-8">
-                <p className="text-red-500 mb-2">Failed to load collaborations</p>
-                <Button variant="outline" onClick={() => refetch()}>
-                  Try Again
-                </Button>
-              </div>
-            ) : collaborations && collaborations.length > 0 ? (
-              <div>
-                <p className="text-sm text-gray-500 mb-4">
-                  Showing {collaborations.length} collaboration{collaborations.length !== 1 ? 's' : ''}
-                </p>
-                {collaborations.map(collab => renderCollaborationCard(collab))}
-              </div>
+            
+            {isMobile ? (
+              <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon" className="shrink-0">
+                    <Filter className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                  <SheetHeader className="mb-5">
+                    <SheetTitle>Filters</SheetTitle>
+                    <SheetDescription>
+                      Narrow down your collaboration search
+                    </SheetDescription>
+                  </SheetHeader>
+                  <FilterPanel />
+                </SheetContent>
+              </Sheet>
             ) : (
-              <div className="text-center py-12 border rounded-lg">
-                <p className="text-gray-500 mb-4">No collaborations found</p>
-                <p className="text-gray-400 text-sm mb-6">
-                  Try adjusting your filters or create a new collaboration
-                </p>
-                <Button 
-                  onClick={() => setLocation('/create-collaboration')}
-                >
-                  Create New Collaboration
-                </Button>
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="shrink-0"
+              >
+                <Filter className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Filters - Desktop */}
+            {!isMobile && isFilterOpen && (
+              <div className="md:w-1/4 shrink-0">
+                <div className="sticky top-6 border rounded-lg p-4 bg-card">
+                  <h2 className="text-lg font-semibold mb-4">Filters</h2>
+                  <FilterPanel />
+                </div>
               </div>
             )}
+            
+            {/* Collaborations List */}
+            <div className={`${!isMobile && isFilterOpen ? 'md:w-3/4' : 'w-full'}`}>
+              {isLoading ? (
+                renderSkeletons()
+              ) : isError ? (
+                <div className="text-center py-8">
+                  <p className="text-red-500 mb-2">Failed to load collaborations</p>
+                  <Button variant="outline" onClick={() => refetch()}>
+                    Try Again
+                  </Button>
+                </div>
+              ) : collaborations && collaborations.length > 0 ? (
+                <div>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Showing {collaborations.length} collaboration{collaborations.length !== 1 ? 's' : ''}
+                  </p>
+                  {collaborations.map(collab => renderCollaborationCard(collab))}
+                </div>
+              ) : (
+                <div className="text-center py-12 border rounded-lg">
+                  <p className="text-gray-500 mb-4">No collaborations found</p>
+                  <p className="text-gray-400 text-sm mb-6">
+                    Try adjusting your filters or create a new collaboration
+                  </p>
+                  <Button 
+                    onClick={() => setLocation('/create-collaboration')}
+                  >
+                    Create New Collaboration
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
