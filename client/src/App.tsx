@@ -1,8 +1,7 @@
-import { Switch, Route, Redirect, useLocation } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
-import { Sidebar } from "@/components/layout/Sidebar";
 import Dashboard from "@/pages/dashboard";
 import Collaborations from "@/pages/collaborations";
 import Welcome from "@/pages/welcome";
@@ -24,30 +23,9 @@ import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 
 function Router() {
-  const currentPath = window.location.pathname;
-
-  const isApplicationRoute = currentPath === '/welcome' || 
-    currentPath === '/personal-info' || 
-    currentPath === '/company-basics' ||
-    currentPath === '/company-sector' ||
-    currentPath === '/company-details';
-
-  const isProfileRoute = currentPath === '/profile-overview' ||
-    currentPath === '/marketing-collabs' ||
-    currentPath === '/conference-coffees' ||
-    currentPath === '/application-status' ||
-    currentPath === '/company-info' ||
-    currentPath === '/matching-filters';
-    
-  const isCollabFlow = currentPath.startsWith('/apply/') ||
-    currentPath === '/create-collaboration' ||
-    currentPath === '/browse-collaborations' ||
-    currentPath === '/my-collaborations';
-
   return (
     <div className="min-h-screen bg-background">
-      {!isApplicationRoute && !isProfileRoute && !isCollabFlow && <Sidebar />}
-      <div className={!isApplicationRoute && !isProfileRoute && !isCollabFlow ? 'lg:pl-64' : ''}>
+      <div className="w-full">
         <Switch>
           <Route path="/">
             <Redirect to="/dashboard" />
