@@ -70,13 +70,22 @@ export class DatabaseStorage implements IStorage {
   
   // Collaboration methods
   async createCollaboration(collaboration: InsertCollaboration): Promise<Collaboration> {
+    // Ensure array fields are properly formatted
+    const preparedData = {
+      ...collaboration,
+      required_company_sectors: Array.isArray(collaboration.required_company_sectors) 
+        ? collaboration.required_company_sectors 
+        : (collaboration.required_company_sectors ? [collaboration.required_company_sectors] : []),
+      required_funding_stages: Array.isArray(collaboration.required_funding_stages) 
+        ? collaboration.required_funding_stages 
+        : (collaboration.required_funding_stages ? [collaboration.required_funding_stages] : []),
+      created_at: new Date(),
+      updated_at: new Date()
+    };
+    
     const [newCollaboration] = await db
       .insert(collaborations)
-      .values([{
-        ...collaboration,
-        created_at: new Date(),
-        updated_at: new Date()
-      }])
+      .values(preparedData)
       .returning();
     return newCollaboration;
   }

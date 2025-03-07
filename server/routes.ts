@@ -642,7 +642,7 @@ export async function registerRoutes(app: Express) {
       }
 
       // Parse filters from query params
-      const filters: CollaborationFilters = {
+      const filters = {
         collabTypes: req.query.collabTypes ? (req.query.collabTypes as string).split(',') : undefined,
         companyTags: req.query.companyTags ? (req.query.companyTags as string).split(',') : undefined,
         minCompanyFollowers: req.query.minCompanyFollowers as string | undefined,
@@ -659,6 +659,117 @@ export async function registerRoutes(app: Express) {
       console.error('Failed to search collaborations:', error);
       res.status(500).json({ 
         error: 'Failed to search collaborations', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Update application status (approve/reject)
+  app.patch("/api/collaborations/applications/:id", async (req, res) => {
+    console.log('============ DEBUG: Update Application Status Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Params:', req.params);
+    console.log('Body:', req.body);
+
+    try {
+      const { id } = req.params;
+      const { status, message } = req.body;
+      
+      if (!status || !['approved', 'rejected', 'pending'].includes(status)) {
+        return res.status(400).json({ error: 'Invalid status value' });
+      }
+      
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        console.error('No Telegram init data found in headers');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Parse Telegram data
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      
+      if (!telegramUser.id) {
+        console.error('No Telegram user ID found in parsed data');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user ID from telegram_id
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get the application
+      const [application] = await db.select()
+        .from(collab_applications)
+        .where(eq(collab_applications.id, id));
+      
+      if (!application) {
+        return res.status(404).json({ error: 'Application not found' });
+      }
+
+      // Get the collaboration to check permissions
+      const [collaboration] = await db.select()
+        .from(collaborations)
+        .where(eq(collaborations.id, application.collaboration_id));
+      
+      if (!collaboration) {
+        return res.status(404).json({ error: 'Collaboration not found' });
+      }
+
+      // Check if user is the owner of the collaboration
+      if (collaboration.creator_id !== user.id) {
+        return res.status(403).json({ error: 'You are not authorized to update this application' });
+      }
+
+      // Update application status
+      try {
+        const updatedApplication = await storage.updateApplicationStatus(id, status);
+        
+        // Get applicant details
+        const [applicant] = await db.select()
+          .from(users)
+          .where(eq(users.id, application.applicant_id));
+        
+        if (applicant) {
+          // Create notification for the applicant
+          await storage.createNotification({
+            user_id: applicant.id,
+            type: `application_${status}`,
+            content: `Your application for "${collaboration.title}" has been ${status}`,
+            collaboration_id: collaboration.id,
+            application_id: application.id,
+            is_read: false,
+            is_sent: false,
+            created_at: new Date()
+          });
+          
+          // Send message via Telegram bot (optional implementation)
+          // This would call the appropriate method in telegram.ts
+          // await sendApplicationStatusUpdate(applicant.telegram_id, status, collaboration.title);
+        }
+
+        res.json({
+          success: true,
+          application: updatedApplication,
+          message: `Application ${status} successfully`
+        });
+      } catch (err) {
+        console.error('Database error:', err);
+        throw new Error(`Failed to update application status: ${String(err)}`);
+      }
+
+    } catch (error) {
+      console.error('Detailed error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : 'Unknown'
+      });
+      res.status(500).json({ 
+        error: 'Server error', 
         details: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
@@ -804,6 +915,128 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error('Failed to fetch user events:', error);
       res.status(500).json({ error: 'Failed to fetch user events' });
+    }
+  });
+
+  // Get user notifications
+  app.get("/api/notifications", async (req, res) => {
+    console.log('============ DEBUG: User Notifications Endpoint ============');
+    console.log('Headers:', req.headers);
+
+    try {
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      let telegramUser;
+
+      if (!initData) {
+        // In development, use fallback data if Telegram data is missing
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Using development fallback for Telegram data');
+          telegramUser = {
+            id: '12345',
+            username: 'test_user',
+            first_name: 'Test',
+            last_name: 'User'
+          };
+        } else {
+          console.error('No Telegram init data found');
+          return res.status(400).json({ error: 'Invalid Telegram data' });
+        }
+      } else {
+        // Parse Telegram data
+        const decodedInitData = new URLSearchParams(initData);
+        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      }
+
+      if (!telegramUser?.id) {
+        console.error('No Telegram user ID found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get user's notifications
+      const notifications = await storage.getUserNotifications(user.id);
+      res.json(notifications);
+
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch notifications', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Mark notification as read
+  app.patch("/api/notifications/:id/read", async (req, res) => {
+    console.log('============ DEBUG: Mark Notification Read Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Params:', req.params);
+
+    try {
+      const { id } = req.params;
+      
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      if (!initData) {
+        console.error('No Telegram init data found in headers');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Parse Telegram data
+      const decodedInitData = new URLSearchParams(initData);
+      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      
+      if (!telegramUser.id) {
+        console.error('No Telegram user ID found in parsed data');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user ID from telegram_id
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get the notification
+      const [notification] = await db.select()
+        .from(collab_notifications)
+        .where(eq(collab_notifications.id, id));
+      
+      if (!notification) {
+        return res.status(404).json({ error: 'Notification not found' });
+      }
+
+      // Check if user owns this notification
+      if (notification.user_id !== user.id) {
+        return res.status(403).json({ error: 'You are not authorized to update this notification' });
+      }
+
+      // Mark notification as read
+      const updatedNotification = await storage.markNotificationAsRead(id);
+      
+      res.json({
+        success: true,
+        notification: updatedNotification,
+        message: 'Notification marked as read'
+      });
+
+    } catch (error) {
+      console.error('Detailed error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : 'Unknown'
+      });
+      res.status(500).json({ 
+        error: 'Server error', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
 
