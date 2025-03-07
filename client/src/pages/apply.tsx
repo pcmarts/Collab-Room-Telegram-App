@@ -25,9 +25,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MobileCheck } from "@/components/MobileCheck";
 
 import {
-  applicationSchema,
+  collabApplicationSchema,
   type Collaboration,
-  type ApplicationData,
+  type CollabApplicationData,
 } from "@shared/schema";
 
 import { CalendarDays, Coins, Tag, Check, X } from "lucide-react";
@@ -59,8 +59,8 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
   });
   
   // Setup form
-  const form = useForm<ApplicationData>({
-    resolver: zodResolver(applicationSchema),
+  const form = useForm<CollabApplicationData>({
+    resolver: zodResolver(collabApplicationSchema),
     defaultValues: {
       reason: "",
       experience: "",
@@ -72,7 +72,7 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
   });
   
   // Handle form submission
-  const onSubmit = async (data: ApplicationData) => {
+  const onSubmit = async (data: CollabApplicationData) => {
     if (!collabId) return;
     
     setIsSubmitting(true);
