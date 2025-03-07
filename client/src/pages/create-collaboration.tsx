@@ -40,6 +40,7 @@ import {
   COMPANY_TAG_CATEGORIES,
   FUNDING_STAGES,
   TWITTER_FOLLOWER_COUNTS,
+  TWITTER_COLLAB_TYPES,
   createCollaborationSchema,
   type CreateCollaboration
 } from "@shared/schema";
