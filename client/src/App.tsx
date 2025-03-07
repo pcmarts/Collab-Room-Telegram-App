@@ -10,6 +10,7 @@ import PersonalInfo from "@/pages/personal-info";
 import CompanyBasics from "@/pages/company-basics";
 import CompanySector from "@/pages/company-sector";
 import CompanyDetails from "@/pages/company-details";
+import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
 import MarketingCollabs from "@/pages/marketing-collabs";
 import ConferenceCoffees from "@/pages/conference-coffees";
@@ -29,7 +30,8 @@ function Router() {
   const isProfileRoute = currentPath === '/profile-overview' ||
     currentPath === '/marketing-collabs' ||
     currentPath === '/conference-coffees' ||
-    currentPath === '/application-status';
+    currentPath === '/application-status' ||
+    currentPath === '/company-info';
 
   return (
     <div className="min-h-screen bg-background">
@@ -54,6 +56,7 @@ function Router() {
 
           {/* Profile Routes */}
           <Route path="/profile-overview" component={ProfileOverview} />
+          <Route path="/company-info" component={CompanyInfo} />
           <Route path="/not-found" component={NotFound} />
           <Route component={NotFound} />
         </Switch>
