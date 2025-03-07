@@ -22,35 +22,26 @@ import { Loader2 } from "lucide-react";
 
 function Router() {
   const [_, setLocation] = useLocation();
-  const currentPath = window.location.pathname;
-
-  // Add profile data check with retry disabled for 404s
+  // Add profile data check
   const { data: profileData, isLoading } = useQuery<ProfileData>({
-    queryKey: ['/api/profile'],
-    retry: (failureCount, error: any) => {
-      // Don't retry on 404 (user not found)
-      if (error?.response?.status === 404) return false;
-      // Retry other errors up to 3 times
-      return failureCount < 3;
-    }
+    queryKey: ['/api/profile']
   });
 
-  // Define application routes that should redirect if user exists
-  const applicationRoutes = [
-    '/company-basics',
-    '/company-sector',
-    '/company-details'
-  ];
+  const currentPath = window.location.pathname;
 
-  const isApplicationRoute = applicationRoutes.includes(currentPath);
+  const isApplicationRoute = currentPath === '/apply' || 
+    currentPath === '/personal-info' || 
+    currentPath === '/company-basics' ||
+    currentPath === '/company-sector' ||
+    currentPath === '/company-details';
 
   const isProfileRoute = currentPath === '/profile-overview' ||
     currentPath === '/marketing-collabs' ||
     currentPath === '/conference-coffees' ||
     currentPath === '/application-status';
 
-  // Show loading state while checking profile, but only for routes that need it
-  if (isLoading && (isApplicationRoute || isProfileRoute)) {
+  // Show loading state while checking profile
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -58,8 +49,8 @@ function Router() {
     );
   }
 
-  // Redirect if user has already applied, but only for protected routes
-  if (profileData?.user && isApplicationRoute) {
+  // Redirect if user has already applied
+  if (profileData?.user && isApplicationRoute && currentPath !== '/application-status') {
     setLocation('/application-status');
     return null;
   }
