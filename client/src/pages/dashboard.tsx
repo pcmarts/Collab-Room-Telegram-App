@@ -38,7 +38,7 @@ export default function Dashboard() {
       
       const newFrequency = enabled ? 'Daily' : 'Never';
       
-      const response = await apiRequest('POST', '/api/preferences', {
+      const response = await apiRequest('/api/preferences', 'POST', {
         ...profile?.preferences,
         notification_frequency: newFrequency
       });
@@ -70,7 +70,7 @@ export default function Dashboard() {
   const handleFrequencyChange = async (frequency: string) => {
     try {
       setIsSubmitting(true);
-      const response = await apiRequest('POST', '/api/preferences', {
+      const response = await apiRequest('/api/preferences', 'POST', {
         ...profile?.preferences,
         notification_frequency: frequency
       });
