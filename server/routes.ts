@@ -1024,6 +1024,17 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Events endpoint
+  app.get("/api/events", async (req, res) => {
+    try {
+      const allEvents = await db.select().from(events);
+      res.json(allEvents);
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+      res.status(500).json({ error: 'Failed to fetch events' });
+    }
+  });
+
   // User events endpoint
   app.get("/api/user-events", async (req, res) => {
     try {
