@@ -191,7 +191,7 @@ export default function ConferenceCoffees() {
         backUrl="/dashboard"
       />
 
-      <Tabs defaultValue="attending" value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue="attending" onValueChange={setActiveTab}>
         <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="attending">1️⃣ Attending</TabsTrigger>
@@ -200,8 +200,7 @@ export default function ConferenceCoffees() {
         </div>
 
         <div className="p-4 space-y-6 pt-2">
-        {activeTab === 'attending' && (
-          <div className="space-y-4">
+          <TabsContent value="attending" className="space-y-4 mt-0">
             <Label className="text-lg">Select Your Conferences</Label>
             <p className="text-sm text-muted-foreground mb-4">
               Choose the conferences you'll be attending to connect with other attendees
@@ -234,11 +233,9 @@ export default function ConferenceCoffees() {
                 </Card>
               ))}
             </div>
-          </div>
-        )}
-        
-        {activeTab === 'criteria' && (
-          <div className="space-y-4">
+          </TabsContent>
+          
+          <TabsContent value="criteria" className="space-y-4 mt-0">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmitCriteria)} className="space-y-6">
                 <Card>
@@ -504,9 +501,8 @@ export default function ConferenceCoffees() {
                 </Button>
               </form>
             </Form>
-          </div>
-        )}
-      </div>
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );
