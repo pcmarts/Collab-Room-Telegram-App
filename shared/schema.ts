@@ -65,7 +65,6 @@ export const TWITTER_COLLAB_TYPES = [
   "Thread Collab",
   "Joint Campaign",
   "Giveaway",
-  "Twitter Space Co-Host",
   "Retweet & Boost",
   "Sponsored Tweet",
   "Poll/Q&A",
