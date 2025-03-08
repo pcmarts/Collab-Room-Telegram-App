@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, RouteComponentProps } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { 
@@ -175,6 +175,11 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
   // Handler for applying to a collaboration
   const handleApply = (collabId: string) => {
     setLocation(`/apply/${collabId}`);
+  };
+  
+  // Handler for viewing a single collaboration
+  const handleViewCollaboration = (collabId: string) => {
+    setLocation(`/collaboration/${collabId}`);
   };
   
   // Handler for toggling a filter value
@@ -423,10 +428,17 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
           </div>
         )}
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex gap-2">
+        <Button 
+          onClick={() => handleViewCollaboration(collab.id)} 
+          variant="outline"
+          className="flex-1"
+        >
+          View Details
+        </Button>
         <Button 
           onClick={() => handleApply(collab.id)} 
-          className="w-full"
+          className="flex-1"
         >
           Apply
         </Button>
