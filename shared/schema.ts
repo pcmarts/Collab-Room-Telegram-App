@@ -221,10 +221,18 @@ export const user_events = pgTable('user_events', {
 export const preferences = pgTable('preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
   user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  // General preferences
   collabs_to_discover: text('collabs_to_discover').array(),
   collabs_to_host: text('collabs_to_host').array(),
   notification_frequency: text('notification_frequency').notNull(),
   excluded_tags: text('excluded_tags').array(),
+  // Coffee match preferences
+  coffee_match_enabled: boolean('coffee_match_enabled').default(false),
+  coffee_match_company_sectors: text('coffee_match_company_sectors').array(),
+  coffee_match_company_followers: text('coffee_match_company_followers'),
+  coffee_match_user_followers: text('coffee_match_user_followers'),
+  coffee_match_funding_stages: text('coffee_match_funding_stages').array(),
+  coffee_match_token_status: boolean('coffee_match_token_status').default(false),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 

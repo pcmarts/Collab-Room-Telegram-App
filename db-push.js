@@ -17,7 +17,19 @@ async function main() {
   const db = drizzle(client, { schema });
   
   try {
-    // Drop the table causing issues
+    // Update the preferences table
+    console.log('Updating the preferences table...');
+    await client.unsafe(`
+      ALTER TABLE preferences 
+      ADD COLUMN IF NOT EXISTS coffee_match_enabled BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS coffee_match_company_sectors TEXT[],
+      ADD COLUMN IF NOT EXISTS coffee_match_company_followers TEXT,
+      ADD COLUMN IF NOT EXISTS coffee_match_user_followers TEXT,
+      ADD COLUMN IF NOT EXISTS coffee_match_funding_stages TEXT[],
+      ADD COLUMN IF NOT EXISTS coffee_match_token_status BOOLEAN DEFAULT FALSE;
+    `);
+    
+    // Drop and recreate the collaborations table
     console.log('Dropping the collaborations table...');
     await client.unsafe('DROP TABLE IF EXISTS collaborations CASCADE');
     
@@ -31,11 +43,13 @@ async function main() {
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'active',
+        topics TEXT[],
         required_company_sectors TEXT[],
         required_funding_stages TEXT[],
         required_token_status BOOLEAN,
         min_company_followers TEXT,
         min_user_followers TEXT,
+        is_free_collab BOOLEAN NOT NULL DEFAULT TRUE,
         details JSONB NOT NULL,
         date_type TEXT NOT NULL,
         specific_date TEXT,
