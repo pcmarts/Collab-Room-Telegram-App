@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Users, CalendarDays, Clock, Coins, Sliders } from "lucide-react";
+import { Loader2, Plus, Users, CalendarDays, Clock, Coins, Sliders, Filter } from "lucide-react";
 import { 
   COLLAB_TYPES, 
   TWITTER_COLLAB_TYPES,
@@ -61,8 +61,8 @@ export default function MarketingCollabs() {
   const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("optin");
-  const [showFilters, setShowFilters] = useState(false);
   
+  // Define filter states
   const [filtersEnabled, setFiltersEnabled] = useState({
     topics: false,
     companySectors: false,
@@ -135,10 +135,10 @@ export default function MarketingCollabs() {
       setFiltersEnabled({
         topics: profileData.preferences.excluded_tags && profileData.preferences.excluded_tags.length > 0,
         companySectors: profileData.preferences.coffee_match_company_sectors && profileData.preferences.coffee_match_company_sectors.length > 0,
-        companyFollowers: !!profileData.preferences.coffee_match_company_followers,
-        userFollowers: !!profileData.preferences.coffee_match_user_followers,
+        companyFollowers: Boolean(profileData.preferences.coffee_match_company_followers),
+        userFollowers: Boolean(profileData.preferences.coffee_match_user_followers),
         fundingStages: profileData.preferences.coffee_match_funding_stages && profileData.preferences.coffee_match_funding_stages.length > 0,
-        hasToken: !!profileData.preferences.coffee_match_token_status
+        hasToken: Boolean(profileData.preferences.coffee_match_token_status)
       });
       
       // Get saved filter data if available
@@ -146,7 +146,7 @@ export default function MarketingCollabs() {
         enabledCollabs,
         enabledTwitterCollabs: twitterCollabs,
         // Set matching enabled if filter preferences exist
-        matchingEnabled: hasFilterPreferences,
+        matchingEnabled: Boolean(hasFilterPreferences),
         // Load saved filter values using appropriate field names from schema
         companySectors: profileData.preferences.coffee_match_company_sectors || [],
         topics: profileData.preferences.excluded_tags || [],
@@ -207,10 +207,10 @@ export default function MarketingCollabs() {
         // Save filter preferences if filtering is enabled
         // When main toggle is disabled, we don't apply filters but still store the values
         excluded_tags: data.matchingEnabled ? (filtersEnabled.topics ? data.topics : []) : [],
-        coffee_match_company_sectors: data.matchingEnabled ? (filtersEnabled.companySectors ? data.companySectors : []) : data.companySectors || [],
+        coffee_match_company_sectors: data.matchingEnabled ? (filtersEnabled.companySectors ? data.companySectors : []) : data.companySectors,
         coffee_match_company_followers: data.matchingEnabled ? (filtersEnabled.companyFollowers ? data.companyFollowers : null) : data.companyFollowers,
         coffee_match_user_followers: data.matchingEnabled ? (filtersEnabled.userFollowers ? data.userFollowers : null) : data.userFollowers,
-        coffee_match_funding_stages: data.matchingEnabled ? (filtersEnabled.fundingStages ? data.fundingStages : []) : data.fundingStages || [],
+        coffee_match_funding_stages: data.matchingEnabled ? (filtersEnabled.fundingStages ? data.fundingStages : []) : data.fundingStages,
         coffee_match_token_status: data.matchingEnabled ? (filtersEnabled.hasToken ? data.hasToken : false) : data.hasToken
       };
 
@@ -252,7 +252,7 @@ export default function MarketingCollabs() {
   }
 
   return (
-    <div className="min-h-[100svh] bg-background">
+    <div className="min-h-[100svh] bg-background pb-20">
       <PageHeader
         title="Marketing Collabs"
         subtitle="Select your preferred collaboration types"
@@ -273,219 +273,9 @@ export default function MarketingCollabs() {
               <TabsContent value="optin" className="space-y-4 mt-0">
                 <div className="flex items-center justify-between mb-4">
                   <Label className="text-lg">Discover Collaborations</Label>
-                  <Button 
-                    variant={showFilters ? "default" : "outline"} 
-                    size="sm"
-                    type="button" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowFilters(!showFilters);
-                    }}
-                    className="flex items-center"
-                  >
-                    <Sliders className="h-4 w-4 mr-2" />
-                    {showFilters ? "Hide Filters" : "Show Filters"}
-                  </Button>
                 </div>
                 
-                {/* Filter Panel */}
-                {showFilters && (
-                  <div className="space-y-4 mb-6 border rounded-lg p-4 bg-accent/10">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-base font-medium">Discovery Filters</h3>
-                      <FormField
-                        control={form.control}
-                        name="matchingEnabled"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormLabel className="font-normal">Enable Filtering</FormLabel>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    {matchingEnabled && (
-                      <div className="space-y-6 pt-2">
-                        {/* Topics Filter */}
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-3 mb-1">
-                            <Switch
-                              checked={filtersEnabled.topics}
-                              onCheckedChange={() => toggleFilter("topics")}
-                            />
-                            <Label>Filter by Topics</Label>
-                          </div>
-
-                          {filtersEnabled.topics && (
-                            <FormField
-                              control={form.control}
-                              name="topics"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    {COLLAB_TOPICS.map((topic) => (
-                                      <FormItem
-                                        key={topic}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
-                                      >
-                                        <FormControl>
-                                          <Checkbox
-                                            checked={field.value?.includes(topic)}
-                                            onCheckedChange={(checked) => {
-                                              const currentTopics = field.value || [];
-                                              if (checked) {
-                                                field.onChange([...currentTopics, topic]);
-                                              } else {
-                                                field.onChange(
-                                                  currentTopics.filter(
-                                                    (value) => value !== topic
-                                                  )
-                                                );
-                                              }
-                                            }}
-                                          />
-                                        </FormControl>
-                                        <FormLabel className="text-sm font-normal">
-                                          {topic}
-                                        </FormLabel>
-                                      </FormItem>
-                                    ))}
-                                  </div>
-                                </FormItem>
-                              )}
-                            />
-                          )}
-                        </div>
-
-                        {/* Company Sector Filter */}
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-3 mb-1">
-                            <Switch
-                              checked={filtersEnabled.companySectors}
-                              onCheckedChange={() => toggleFilter("companySectors")}
-                            />
-                            <Label>Filter by Company Sectors</Label>
-                          </div>
-
-                          {filtersEnabled.companySectors && (
-                            <FormField
-                              control={form.control}
-                              name="companySectors"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <div className="grid grid-cols-1 gap-2">
-                                    {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-                                      <div key={category} className="mb-3">
-                                        <h4 className="text-sm font-medium mb-2">{category}</h4>
-                                        <div className="grid grid-cols-1 gap-2 ml-2">
-                                          {tags.map((tag) => (
-                                            <FormItem
-                                              key={tag}
-                                              className="flex flex-row items-start space-x-3 space-y-0"
-                                            >
-                                              <FormControl>
-                                                <Checkbox
-                                                  checked={field.value?.includes(tag)}
-                                                  onCheckedChange={(checked) => {
-                                                    const currentSectors = field.value || [];
-                                                    if (checked) {
-                                                      field.onChange([...currentSectors, tag]);
-                                                    } else {
-                                                      field.onChange(
-                                                        currentSectors.filter(
-                                                          (value) => value !== tag
-                                                        )
-                                                      );
-                                                    }
-                                                  }}
-                                                />
-                                              </FormControl>
-                                              <FormLabel className="text-sm font-normal">
-                                                {tag}
-                                              </FormLabel>
-                                            </FormItem>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </FormItem>
-                              )}
-                            />
-                          )}
-                        </div>
-
-                        {/* Company Followers Filter */}
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-3 mb-1">
-                            <Switch
-                              checked={filtersEnabled.companyFollowers}
-                              onCheckedChange={() => toggleFilter("companyFollowers")}
-                            />
-                            <Label>Minimum Company Followers</Label>
-                          </div>
-
-                          {filtersEnabled.companyFollowers && (
-                            <FormField
-                              control={form.control}
-                              name="companyFollowers"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <Select
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select min followers" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                                        <SelectItem key={count} value={count}>
-                                          {count}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </FormItem>
-                              )}
-                            />
-                          )}
-                        </div>
-                        
-                        <Button 
-                          className="w-full"
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            
-                            // Just update the form values - the main form submit will handle saving
-                            form.setValue("matchingEnabled", true);
-                            
-                            toast({
-                              title: "Filters Applied",
-                              description: "Click 'Save Discovery Preferences' below to save your filter settings permanently.",
-                              duration: 5000
-                            });
-                            
-                            setShowFilters(false);
-                          }}
-                        >
-                          Apply Filters
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Add a state to track if Co-Marketing on Twitter is selected */}
+                {/* Collaboration Types Section */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Collaboration Types</CardTitle>
@@ -526,52 +316,30 @@ export default function MarketingCollabs() {
                                         }}
                                       />
                                     </FormControl>
-                                    <FormLabel className="font-normal">{collabType}</FormLabel>
-                                  </FormItem>
-                                  
-                                  {/* Conditionally render Twitter collaborations if this is "Co-Marketing on Twitter" */}
-                                  {collabType === "Co-Marketing on Twitter" && isTwitterCoMarketingSelected && (
-                                    <div className="pl-8 pr-4 pt-2 pb-4 space-y-2">
-                                      <p className="text-sm text-muted-foreground mb-2">
-                                        Select specific Twitter collaboration types:
+                                    <div className="space-y-1 leading-none">
+                                      <FormLabel className="text-base">
+                                        {collabType}
+                                      </FormLabel>
+                                      <p className="text-sm text-muted-foreground">
+                                        {collabType === "Podcast Guest Appearance"
+                                          ? "Appear as a guest on podcasts in the Web3 and blockchain space"
+                                          : collabType === "Twitter Spaces Guest"
+                                          ? "Join Twitter Spaces as a guest speaker or moderator"
+                                          : collabType === "Live Stream Guest Appearance"
+                                          ? "Appear as a guest on live streams on YouTube, Twitch or other platforms"
+                                          : collabType === "Co-Marketing on Twitter"
+                                          ? "Join marketing campaigns with other Web3 companies on Twitter"
+                                          : collabType === "Newsletter Feature"
+                                          ? "Be featured in newsletters from other Web3 companies"
+                                          : collabType === "Community AMA"
+                                          ? "Host or participate in 'Ask Me Anything' sessions"
+                                          : collabType === "Research Report"
+                                          ? "Collaborate on research reports and industry insights"
+                                          : "Collaborate with other Web3 projects"
+                                        }
                                       </p>
-                                      <FormField
-                                        control={form.control}
-                                        name="enabledTwitterCollabs"
-                                        render={({ field: twitterField }) => (
-                                          <FormItem>
-                                            <div className="grid grid-cols-1 gap-2">
-                                              {TWITTER_COLLAB_TYPES.map((twitterCollabType) => (
-                                                <FormItem
-                                                  key={twitterCollabType}
-                                                  className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3"
-                                                >
-                                                  <FormControl>
-                                                    <Checkbox
-                                                      checked={twitterField.value?.includes(twitterCollabType)}
-                                                      onCheckedChange={(checked) => {
-                                                        const currentTypes = twitterField.value || [];
-                                                        if (checked) {
-                                                          twitterField.onChange([...currentTypes, twitterCollabType]);
-                                                        } else {
-                                                          twitterField.onChange(
-                                                            currentTypes.filter(
-                                                              (value) => value !== twitterCollabType
-                                                            )
-                                                          );
-                                                        }
-                                                      }}
-                                                    />
-                                                  </FormControl>
-                                                  <FormLabel className="text-sm font-normal">{twitterCollabType}</FormLabel>
-                                                </FormItem>
-                                              ))}
-                                            </div>
-                                          </FormItem>
-                                        )}
-                                      />
                                     </div>
-                                  )}
+                                  </FormItem>
                                 </div>
                               ))}
                             </div>
@@ -579,116 +347,171 @@ export default function MarketingCollabs() {
                         );
                       }}
                     />
+                    
+                    {/* Twitter-specific collabs that are conditionally rendered */}
+                    <FormField
+                      control={form.control}
+                      name="enabledTwitterCollabs"
+                      render={({ field }) => {
+                        // Only render if Twitter co-marketing is selected
+                        return form.watch("enabledCollabs")?.includes("Co-Marketing on Twitter") ? (
+                          <FormItem className="mt-4">
+                            <FormLabel>Twitter Co-Marketing Options</FormLabel>
+                            <div className="grid grid-cols-1 gap-2 mt-2">
+                              {TWITTER_COLLAB_TYPES.map((twitterCollab) => (
+                                <FormItem
+                                  key={twitterCollab}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(twitterCollab)}
+                                      onCheckedChange={(checked) => {
+                                        const currentTypes = field.value || [];
+                                        if (checked) {
+                                          field.onChange([...currentTypes, twitterCollab]);
+                                        } else {
+                                          field.onChange(
+                                            currentTypes.filter(
+                                              (value) => value !== twitterCollab
+                                            )
+                                          );
+                                        }
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="text-sm font-normal">
+                                    {twitterCollab}
+                                  </FormLabel>
+                                </FormItem>
+                              ))}
+                            </div>
+                          </FormItem>
+                        ) : null;
+                      }}
+                    />
                   </CardContent>
                 </Card>
-                
-                <Button 
-                  className="w-full mb-4"
-                  type="submit"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Discovery Preferences"
-                  )}
-                </Button>
               </TabsContent>
-              
+
               <TabsContent value="host" className="space-y-4 mt-0">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <Label className="text-lg">My Active Collaborations</Label>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setLocation('/create-collaboration')}
-                      className="flex items-center"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create New
-                    </Button>
-                  </div>
-                  
-                  {isLoadingCollabs ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-20 w-full" />
-                      <Skeleton className="h-20 w-full" />
-                    </div>
-                  ) : !collaborations || collaborations.length === 0 ? (
-                    <Card>
-                      <CardContent className="text-center py-8">
-                        <p className="text-muted-foreground mb-4">You don't have any active collaborations yet</p>
-                        <Button 
-                          onClick={() => setLocation('/create-collaboration')}
-                          className="flex items-center"
+                <div className="flex items-center justify-between mb-4">
+                  <Label className="text-lg">Host Collaborations</Label>
+                </div>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Host Collaboration Types</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Select which types of marketing collaborations you're interested in hosting
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 gap-2">
+                      {COLLAB_TYPES.map((collabType) => (
+                        <div
+                          key={collabType}
+                          className={`flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 ${
+                            collabsToHost.includes(collabType)
+                              ? "bg-primary/10 border-primary/50"
+                              : ""
+                          }`}
+                          onClick={() => handleCollabsToHostToggle(collabType)}
                         >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Create Collaboration
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <div className="space-y-3">
-                      {collaborations.map((collab) => (
-                        <Card key={collab.id} className="overflow-hidden">
-                          <CardHeader className="p-4 pb-2">
-                            <CardTitle className="text-base flex items-center justify-between">
-                              <span className="truncate">{collab.title}</span>
-                              <Badge variant={collab.status === "active" ? "default" : "outline"}>
-                                {collab.status === "active" ? "Active" : "Draft"}
-                              </Badge>
-                            </CardTitle>
-                            <div className="text-xs text-muted-foreground">
-                              {collab.collab_type}
-                            </div>
-                          </CardHeader>
-                          <CardContent className="p-4 pt-0 space-y-2">
-                            <div className="flex items-center text-xs text-muted-foreground gap-2">
-                              <CalendarDays className="h-3 w-3" />
-                              <span>
-                                {collab.created_at ? format(new Date(collab.created_at), 'MMM d, yyyy') : 'No date'}
-                              </span>
-                            </div>
-                            
-                            <div className="flex items-center text-xs text-muted-foreground gap-2">
-                              <Clock className="h-3 w-3" />
-                              <span>{collab.date_type === 'specific_date' ? 'Specific date' : 'Flexible timing'}</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 mt-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="w-full text-xs"
-                                onClick={() => setLocation(`/create-collaboration/${collab.id}`)}
-                              >
-                                Edit
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="destructive" 
-                                className="text-xs"
-                                onClick={() => {
-                                  // Would implement delete here
-                                  toast({
-                                    description: "Delete functionality will be implemented soon",
-                                  });
-                                }}
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
+                          <Checkbox
+                            checked={collabsToHost.includes(collabType)}
+                            onCheckedChange={() => handleCollabsToHostToggle(collabType)}
+                          />
+                          <div className="space-y-1 leading-none">
+                            <p className="font-medium">{collabType}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {collabType === "Podcast Guest Appearance"
+                                ? "Host podcasts and have guests on your show"
+                                : collabType === "Twitter Spaces Guest"
+                                ? "Host Twitter Spaces with guest speakers"
+                                : collabType === "Live Stream Guest Appearance"
+                                ? "Host live streams and invite guests to appear"
+                                : collabType === "Co-Marketing on Twitter"
+                                ? "Create marketing campaigns with other Web3 companies"
+                                : collabType === "Newsletter Feature"
+                                ? "Feature other Web3 companies in your newsletter"
+                                : collabType === "Community AMA"
+                                ? "Host 'Ask Me Anything' sessions for your community"
+                                : collabType === "Research Report"
+                                ? "Create research reports with other organizations"
+                                : "Host collaborations with other Web3 projects"
+                              }
+                            </p>
+                          </div>
+                        </div>
                       ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Always visible filter panel at the bottom */}
+              <div className="fixed bottom-0 left-0 right-0 z-10 bg-background p-4 shadow-lg border-t">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Filter className="h-4 w-4" />
+                      <h3 className="text-base font-medium">Discovery Filters</h3>
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="matchingEnabled"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                          <FormLabel className="font-normal">Enable</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {matchingEnabled && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant={filtersEnabled.topics ? "default" : "outline"}
+                        size="sm"
+                        type="button"
+                        onClick={() => toggleFilter("topics")}
+                        className="flex items-center justify-center"
+                      >
+                        Topics ({form.watch("topics")?.length || 0})
+                      </Button>
+                      
+                      <Button
+                        variant={filtersEnabled.companySectors ? "default" : "outline"}
+                        size="sm"
+                        type="button"
+                        onClick={() => toggleFilter("companySectors")}
+                        className="flex items-center justify-center"
+                      >
+                        Sectors ({form.watch("companySectors")?.length || 0})
+                      </Button>
                     </div>
                   )}
                 </div>
-              </TabsContent>
+              </div>
+
+              <div className="pt-6">
+                <Button className="w-full" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                    </>
+                  ) : (
+                    "Save Collaboration Preferences"
+                  )}
+                </Button>
+              </div>
             </form>
           </Form>
         </div>
