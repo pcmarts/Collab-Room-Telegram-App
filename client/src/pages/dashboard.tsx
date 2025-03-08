@@ -142,7 +142,7 @@ export default function Dashboard() {
           </Button>
           <Button
             className="h-24 flex-col bg-primary text-primary-foreground"
-            onClick={() => setLocation('/collab-preferences')}
+            onClick={() => setLocation('/matching-filters')}
           >
             <Settings className="h-6 w-6 mb-2" />
             <span className="text-sm font-medium">Match Settings</span>
