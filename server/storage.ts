@@ -21,6 +21,7 @@ export interface IStorage {
   getCollaboration(id: string): Promise<Collaboration | undefined>;
   getUserCollaborations(userId: string): Promise<Collaboration[]>;
   searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]>;
+  updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined>;
   
   // Collaboration applications
   applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication>;
@@ -153,6 +154,29 @@ export class DatabaseStorage implements IStorage {
     // Other filters would be added here...
     
     return query.orderBy(desc(collaborations.created_at));
+  }
+  
+  async updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined> {
+    try {
+      // Make sure status is either 'active' or 'paused'
+      if (status !== 'active' && status !== 'paused') {
+        throw new Error('Invalid status value. Status must be either "active" or "paused".');
+      }
+      
+      const [updatedCollaboration] = await db
+        .update(collaborations)
+        .set({ 
+          status,
+          updated_at: new Date()
+        })
+        .where(eq(collaborations.id, id))
+        .returning();
+        
+      return updatedCollaboration;
+    } catch (error) {
+      console.error("Error updating collaboration status:", error);
+      throw error;
+    }
   }
   
   // Collaboration applications

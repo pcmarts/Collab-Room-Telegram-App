@@ -86,6 +86,14 @@ export default function MyCollaborations() {
       }
       const data = await response.json();
       console.log("Collaborations API response data:", data);
+      
+      // Initialize activeCollabs state based on fetched data
+      const statusMap: Record<string, boolean> = {};
+      data.forEach((collab: Collaboration) => {
+        statusMap[collab.id] = collab.status === 'active';
+      });
+      setActiveCollabs(statusMap);
+      
       return data as Collaboration[];
     }
   });
@@ -195,22 +203,55 @@ export default function MyCollaborations() {
   };
   
   // Handle toggling collaboration active state
-  const handleToggleActive = (collabId: string, isActive: boolean) => {
+  const toggleCollaborationMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string, status: 'active' | 'paused' }) => {
+      const response = await apiRequest(`/api/collaborations/${id}/status`, 'PATCH', { status });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update collaboration status');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      // Invalidate and refetch queries related to collaborations
+      queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+    }
+  });
+
+  // Handle toggling collaboration active state
+  const handleToggleActive = async (collabId: string, isActive: boolean) => {
+    // Update local state immediately for responsive UI
     setActiveCollabs(prev => ({
       ...prev,
       [collabId]: isActive
     }));
     
-    toast({
-      title: isActive ? "Collaboration Activated" : "Collaboration Paused",
-      description: isActive 
-        ? "Your collaboration is now visible to potential partners" 
-        : "Your collaboration is now hidden from discovery",
-      duration: 3000
-    });
-    
-    // In a real implementation, we would update the server here
-    // apiRequest(`/api/collaborations/${collabId}`, 'PATCH', { is_active: isActive });
+    try {
+      await toggleCollaborationMutation.mutateAsync({
+        id: collabId,
+        status: isActive ? 'active' : 'paused'
+      });
+      
+      toast({
+        title: isActive ? "Collaboration Activated" : "Collaboration Paused",
+        description: isActive 
+          ? "Your collaboration is now visible to potential partners" 
+          : "Your collaboration is now hidden from discovery",
+        duration: 3000
+      });
+    } catch (error) {
+      // Revert local state if the API call fails
+      setActiveCollabs(prev => ({
+        ...prev,
+        [collabId]: !isActive
+      }));
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update collaboration status",
+        variant: "destructive",
+      });
+    }
   };
   
   // Handle deleting a collaboration

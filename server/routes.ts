@@ -671,6 +671,54 @@ export async function registerRoutes(app: Express) {
   });
 
   // Get user's collaborations
+  // Update collaboration status (active/paused)
+  app.patch("/api/collaborations/:id/status", async (req, res) => {
+    try {
+      // Get Telegram data from header
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Validate request body
+      const { status } = req.body;
+      if (!status || (status !== 'active' && status !== 'paused')) {
+        return res.status(400).json({ error: 'Invalid status value. Status must be either "active" or "paused".' });
+      }
+
+      // Get user
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get collaboration
+      const collabId = req.params.id;
+      const [collaboration] = await db.select()
+        .from(collaborations)
+        .where(eq(collaborations.id, collabId));
+
+      if (!collaboration) {
+        return res.status(404).json({ error: 'Collaboration not found' });
+      }
+
+      // Check ownership
+      if (collaboration.creator_id !== user.id) {
+        return res.status(403).json({ error: 'Not authorized to update this collaboration' });
+      }
+
+      // Update collaboration status
+      const updatedCollaboration = await storage.updateCollaborationStatus(collabId, status);
+      res.json(updatedCollaboration);
+    } catch (error) {
+      console.error('Failed to update collaboration status:', error);
+      res.status(500).json({ error: 'Failed to update collaboration status' });
+    }
+  });
+
   app.get("/api/collaborations/my", async (req, res) => {
     console.log('============ DEBUG: My Collaborations Endpoint ============');
     console.log('Headers:', req.headers);
