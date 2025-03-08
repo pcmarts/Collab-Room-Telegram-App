@@ -226,6 +226,37 @@ export default function MyCollaborations() {
     // In a real implementation, we would update the server here
     // apiRequest('PATCH', `/api/collaborations/${collabId}`, { is_active: isActive });
   };
+  
+  // Handle deleting a collaboration
+  const handleDeleteCollaboration = async () => {
+    if (!collabToDelete) return;
+    
+    try {
+      const response = await apiRequest('DELETE', `/api/collaborations/${collabToDelete}`);
+      
+      if (response.ok) {
+        toast({
+          title: "Collaboration Deleted",
+          description: "Your collaboration has been deleted successfully",
+        });
+        
+        // Refresh the collaborations data
+        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete collaboration');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete collaboration",
+        variant: "destructive",
+      });
+    } finally {
+      // Reset the delete state
+      setCollabToDelete(null);
+    }
+  };
 
   // Render a collaboration card
   const renderCollaborationCard = (collab: Collaboration) => {
@@ -334,6 +365,18 @@ export default function MyCollaborations() {
                 View
               </Button>
             )}
+          </div>
+          
+          {/* Delete button */}
+          <div className="border-t mt-3 pt-3 w-full">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
+              onClick={() => setCollabToDelete(collab.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-1" /> Delete Collaboration
+            </Button>
           </div>
         </CardFooter>
       </Card>
@@ -608,61 +651,25 @@ export default function MyCollaborations() {
             </Button>
           </div>
           
-          <Tabs 
-            defaultValue="my-collabs" 
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="my-collabs">My Collaborations</TabsTrigger>
-              <TabsTrigger value="my-applications">My Applications</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="my-collabs" className="mt-0">
-              {isLoadingCollabs ? (
-                renderSkeletons()
-              ) : collaborations && collaborations.length > 0 ? (
-                <div>
-                  {collaborations.map(collab => renderCollaborationCard(collab))}
-                </div>
-              ) : (
-                <div className="text-center py-12 border rounded-lg">
-                  <p className="text-gray-500 mb-4">You haven't created any collaborations yet</p>
-                  <p className="text-gray-400 text-sm mb-6">
-                    Create your first collaboration to connect with others in the blockchain space
-                  </p>
-                  <Button 
-                    onClick={() => setLocation('/create-collaboration')}
-                  >
-                    Create Collaboration
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="my-applications" className="mt-0">
-              {isLoadingApps ? (
-                renderSkeletons()
-              ) : applications && applications.length > 0 ? (
-                <div>
-                  {applications.map(app => renderApplicationCard(app))}
-                </div>
-              ) : (
-                <div className="text-center py-12 border rounded-lg">
-                  <p className="text-gray-500 mb-4">You haven't applied to any collaborations yet</p>
-                  <p className="text-gray-400 text-sm mb-6">
-                    Browse available collaborations and apply to ones that interest you
-                  </p>
-                  <Button 
-                    onClick={() => setLocation('/browse-collaborations')}
-                  >
-                    Browse Collaborations
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+          {isLoadingCollabs ? (
+            renderSkeletons()
+          ) : collaborations && collaborations.length > 0 ? (
+            <div>
+              {collaborations.map(collab => renderCollaborationCard(collab))}
+            </div>
+          ) : (
+            <div className="text-center py-12 border rounded-lg">
+              <p className="text-gray-500 mb-4">You haven't created any collaborations yet</p>
+              <p className="text-gray-400 text-sm mb-6">
+                Create your first collaboration to connect with others in the blockchain space
+              </p>
+              <Button 
+                onClick={() => setLocation('/create-collaboration')}
+              >
+                Create Collaboration
+              </Button>
+            </div>
+          )}
           
           {/* Application Details Dialog */}
           <Dialog open={applicationDialogOpen} onOpenChange={setApplicationDialogOpen}>
@@ -690,6 +697,28 @@ export default function MyCollaborations() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={!!collabToDelete} onOpenChange={(open) => !open && setCollabToDelete(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Collaboration</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete this collaboration 
+                  and remove its data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteCollaboration}
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </MobileCheck>
