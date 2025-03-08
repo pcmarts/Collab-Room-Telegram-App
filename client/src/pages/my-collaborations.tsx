@@ -63,7 +63,7 @@ export default function MyCollaborations() {
   const { data: collaborations, isLoading: isLoadingCollabs } = useQuery({
     queryKey: ['/api/collaborations/my'],
     queryFn: async () => {
-      const response = await apiRequest('/api/collaborations/my');
+      const response = await apiRequest('/api/collaborations/my', {});
       if (!response.ok) {
         throw new Error("Failed to fetch collaborations");
       }
@@ -75,7 +75,7 @@ export default function MyCollaborations() {
   const { data: applications, isLoading: isLoadingApps } = useQuery({
     queryKey: ['/api/my-applications'],
     queryFn: async () => {
-      const response = await apiRequest('/api/my-applications');
+      const response = await apiRequest('/api/my-applications', {});
       if (!response.ok) {
         throw new Error("Failed to fetch applications");
       }
@@ -87,7 +87,7 @@ export default function MyCollaborations() {
   const handleApproveApplication = async (applicationId: string) => {
     setProcessingApplicationId(applicationId);
     try {
-      const response = await apiRequest(`/api/collaborations/applications/${applicationId}`, {
+      const requestOptions = {
         method: 'PATCH',
         body: JSON.stringify({ 
           status: 'approved',
@@ -96,7 +96,12 @@ export default function MyCollaborations() {
         headers: {
           'Content-Type': 'application/json'
         }
-      });
+      };
+      
+      const response = await apiRequest(
+        `/api/collaborations/applications/${applicationId}`, 
+        requestOptions as any
+      );
       
       if (response.ok) {
         toast({
@@ -130,7 +135,7 @@ export default function MyCollaborations() {
   const handleRejectApplication = async (applicationId: string) => {
     setProcessingApplicationId(applicationId);
     try {
-      const response = await apiRequest(`/api/collaborations/applications/${applicationId}`, {
+      const requestOptions = {
         method: 'PATCH',
         body: JSON.stringify({ 
           status: 'rejected',
@@ -139,7 +144,12 @@ export default function MyCollaborations() {
         headers: {
           'Content-Type': 'application/json'
         }
-      });
+      };
+      
+      const response = await apiRequest(
+        `/api/collaborations/applications/${applicationId}`, 
+        requestOptions as any
+      );
       
       if (response.ok) {
         toast({
