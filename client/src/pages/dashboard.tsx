@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
-import { UserIcon, Settings, Users, Building, Star, Bell, Coffee, Calendar } from 'lucide-react';
+import { UserIcon, Users, Building, Star, Bell, Coffee, Calendar, Rocket, Plus } from 'lucide-react';
 import type { User, Company, Preferences } from '@shared/schema';
 import { NOTIFICATION_FREQUENCIES } from '@shared/schema';
 import { useToast } from "@/hooks/use-toast";
@@ -141,17 +141,17 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Button
             className="h-24 flex-col bg-primary text-primary-foreground"
-            onClick={() => setLocation('/create-collaboration')}
+            onClick={() => setLocation('/marketing-collabs')}
           >
-            <Star className="h-6 w-6 mb-2" />
-            <span className="text-sm font-medium">Create Collab</span>
+            <Rocket className="h-6 w-6 mb-2" />
+            <span className="text-sm font-medium">Marketing Collabs</span>
           </Button>
           <Button
             className="h-24 flex-col bg-primary text-primary-foreground"
-            onClick={() => setLocation('/marketing-collabs')}
+            onClick={() => setLocation('/conference-coffees')}
           >
-            <Settings className="h-6 w-6 mb-2" />
-            <span className="text-sm font-medium">Marketing Collabs</span>
+            <Coffee className="h-6 w-6 mb-2" />
+            <span className="text-sm font-medium">Conferences</span>
           </Button>
         </div>
 
@@ -160,18 +160,18 @@ export default function Dashboard() {
           <Button
             variant="outline"
             className="h-20 flex-col"
-            onClick={() => setLocation('/my-collaborations')}
+            onClick={() => setLocation('/create-collaboration')}
           >
-            <Users className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">My Collaborations</span>
+            <Plus className="h-5 w-5 mb-1.5" />
+            <span className="text-xs">Add Marketing Collab</span>
           </Button>
           <Button
             variant="outline"
             className="h-20 flex-col"
-            onClick={() => setLocation('/my-applications')}
+            onClick={() => setLocation('/my-collaborations')}
           >
-            <Star className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">My Applications</span>
+            <Rocket className="h-5 w-5 mb-1.5" />
+            <span className="text-xs">My Marketing Collabs</span>
           </Button>
         </div>
 
@@ -182,7 +182,7 @@ export default function Dashboard() {
               <div className="flex flex-col items-center">
                 <Users className="h-5 w-5 mb-1.5 text-primary" />
                 <span className="text-xl font-bold">0</span>
-                <span className="text-xs text-muted-foreground">Active Collabs</span>
+                <span className="text-xs text-muted-foreground">Matches</span>
               </div>
             </CardContent>
           </Card>
@@ -199,7 +199,7 @@ export default function Dashboard() {
         </div>
 
         {/* Profile Actions */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Button
             variant="outline"
             className="h-20 flex-col"
@@ -215,14 +215,6 @@ export default function Dashboard() {
           >
             <Building className="h-5 w-5 mb-1.5" />
             <span className="text-xs">Company Info</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/conference-coffees')}
-          >
-            <Calendar className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Conferences</span>
           </Button>
         </div>
 
