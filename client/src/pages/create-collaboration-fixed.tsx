@@ -613,40 +613,7 @@ export default function CreateCollaboration() {
                     </div>
                   )}
                   
-                  {/* Topics for this collaboration */}
-                  <FormField
-                    control={form.control}
-                    name="topics"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Topics</FormLabel>
-                        <FormDescription>
-                          Select all topics that apply to this collaboration
-                        </FormDescription>
-                        <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2 border rounded-md">
-                          {COLLAB_TOPICS.map((topic: string) => (
-                            <FormItem key={topic} className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(topic)}
-                                  onCheckedChange={(checked) => {
-                                    const currentValue = field.value || [];
-                                    if (checked) {
-                                      field.onChange([...currentValue, topic]);
-                                    } else {
-                                      field.onChange(currentValue.filter((value) => value !== topic));
-                                    }
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal text-sm">{topic}</FormLabel>
-                            </FormItem>
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Topics moved to Collaboration Details */}
                   
                   <FormField
                     control={form.control}
@@ -751,17 +718,77 @@ export default function CreateCollaboration() {
                 </Card>
               )}
               
-              {/* For other collaboration types */}
-              {selectedCollabType && renderCollabTypeSpecificFields() && !showTwitterFields && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Collaboration Details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {renderCollabTypeSpecificFields()}
-                  </CardContent>
-                </Card>
-              )}
+              {/* Collaboration Details */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Collaboration Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Topics for this collaboration */}
+                  <FormField
+                    control={form.control}
+                    name="topics"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Topics</FormLabel>
+                        <FormDescription>
+                          Select all topics that apply to this collaboration
+                        </FormDescription>
+                        <div className="flex justify-between mb-2">
+                          <Button 
+                            type="button" 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              // Select all topics
+                              field.onChange([...COLLAB_TOPICS]);
+                            }}
+                          >
+                            Select All
+                          </Button>
+                          <Button 
+                            type="button" 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => field.onChange([])}
+                          >
+                            Deselect All
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2 border rounded-md">
+                          {COLLAB_TOPICS.map((topic) => (
+                            <FormItem key={topic} className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(topic)}
+                                  onCheckedChange={(checked) => {
+                                    const currentValue = field.value || [];
+                                    if (checked) {
+                                      field.onChange([...currentValue, topic]);
+                                    } else {
+                                      field.onChange(currentValue.filter((value) => value !== topic));
+                                    }
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal text-sm">{topic}</FormLabel>
+                            </FormItem>
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Specific collaboration type fields */}
+                  {selectedCollabType && !showTwitterFields && renderCollabTypeSpecificFields() && (
+                    <div className="pt-4 border-t mt-6">
+                      <h3 className="text-lg font-medium mb-4">Additional Information</h3>
+                      {renderCollabTypeSpecificFields()}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
               
               <Card>
                 <CardHeader>
