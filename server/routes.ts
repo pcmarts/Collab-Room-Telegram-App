@@ -644,8 +644,26 @@ export async function registerRoutes(app: Express) {
       delete updateData.id; // Prevent updating ID
       delete updateData.creator_id; // Prevent updating creator
       
-      // Set updated timestamp
+      // Handle date conversion - these timestamps might be strings from the client
+      if (updateData.created_at && typeof updateData.created_at === 'string') {
+        delete updateData.created_at; // Don't update creation timestamp
+      }
+      
+      // Convert specific_date if needed
+      if (updateData.specific_date && typeof updateData.specific_date === 'string') {
+        // Keep as string, it's already in the correct format
+      }
+      
+      // Remove any string timestamps that should be dates
+      if (updateData.updated_at && typeof updateData.updated_at === 'string') {
+        delete updateData.updated_at;
+      }
+      
+      // Set fresh updated timestamp
       updateData.updated_at = new Date();
+      
+      // Debug the cleaned data
+      console.log('Cleaned update data:', JSON.stringify(updateData));
       
       // Update the collaboration
       const [updatedCollab] = await db.update(collaborations)
