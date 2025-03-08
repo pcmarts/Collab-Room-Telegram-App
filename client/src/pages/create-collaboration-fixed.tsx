@@ -846,7 +846,14 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Host Follower Count</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select 
+                            onValueChange={(value) => {
+                              console.log("Setting host follower count to:", value);
+                              field.onChange(value);
+                            }} 
+                            value={field.value}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select follower count" />
@@ -860,6 +867,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                               ))}
                             </SelectContent>
                           </Select>
+                          <FormDescription className="text-xs">
+                            Current value: {field.value || "Not set"}
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1075,7 +1085,14 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       render={({ field }) => (
                         <FormItem className="ml-10">
                           <div className="mb-2 font-medium">Minimum Company Twitter Followers</div>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select 
+                            onValueChange={(value) => {
+                              console.log("Setting min company followers to:", value);
+                              field.onChange(value);
+                            }} 
+                            value={field.value}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select minimum followers" />
@@ -1089,6 +1106,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                               ))}
                             </SelectContent>
                           </Select>
+                          <FormDescription className="text-xs">
+                            Current value: {field.value || "Not set"}
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1116,7 +1136,14 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       render={({ field }) => (
                         <FormItem className="ml-10">
                           <div className="mb-2 font-medium">Minimum User Twitter Followers</div>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select 
+                            onValueChange={(value) => {
+                              console.log("Setting min user followers to:", value);
+                              field.onChange(value);
+                            }} 
+                            value={field.value}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select minimum followers" />
@@ -1130,6 +1157,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                               ))}
                             </SelectContent>
                           </Select>
+                          <FormDescription className="text-xs">
+                            Current value: {field.value || "Not set"}
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}

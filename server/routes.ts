@@ -659,6 +659,60 @@ export async function registerRoutes(app: Express) {
         delete updateData.updated_at;
       }
       
+      // Ensure nested details fields are properly set
+      // If details is coming as a string, parse it
+      if (typeof updateData.details === 'string') {
+        try {
+          updateData.details = JSON.parse(updateData.details);
+        } catch (e) {
+          console.error('Error parsing details JSON:', e);
+        }
+      }
+      
+      // Ensure key filtering fields are properly set 
+      console.log('Handling special fields:');
+      
+      // Process host_follower_count (could be in details object)
+      if (updateData.details && updateData.details.host_follower_count) {
+        console.log('Found host_follower_count in details:', updateData.details.host_follower_count);
+      }
+      
+      // Process min_company_followers
+      if (updateData.min_company_followers) {
+        console.log('Found min_company_followers:', updateData.min_company_followers);
+      }
+      
+      // Process min_user_followers
+      if (updateData.min_user_followers) {
+        console.log('Found min_user_followers:', updateData.min_user_followers);
+      }
+      
+      // Process required_funding_stages
+      if (updateData.required_funding_stages) {
+        console.log('Found required_funding_stages:', updateData.required_funding_stages);
+        // Ensure it's an array
+        if (typeof updateData.required_funding_stages === 'string') {
+          try {
+            updateData.required_funding_stages = JSON.parse(updateData.required_funding_stages);
+          } catch (e) {
+            console.error('Error parsing required_funding_stages:', e);
+          }
+        }
+      }
+      
+      // Process required_company_sectors
+      if (updateData.required_company_sectors) {
+        console.log('Found required_company_sectors:', updateData.required_company_sectors);
+        // Ensure it's an array
+        if (typeof updateData.required_company_sectors === 'string') {
+          try {
+            updateData.required_company_sectors = JSON.parse(updateData.required_company_sectors);
+          } catch (e) {
+            console.error('Error parsing required_company_sectors:', e);
+          }
+        }
+      }
+      
       // Set fresh updated timestamp
       updateData.updated_at = new Date();
       
