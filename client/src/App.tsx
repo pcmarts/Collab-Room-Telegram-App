@@ -11,7 +11,7 @@ import CompanySector from "@/pages/company-sector";
 import CompanyDetails from "@/pages/company-details";
 import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
-import MarketingCollabs from "@/pages/marketing-collabs-new";
+import MarketingCollabs from "@/pages/marketing-collabs";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
 
