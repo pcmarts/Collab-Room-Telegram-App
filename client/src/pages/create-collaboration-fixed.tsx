@@ -1262,14 +1262,22 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       
                       setIsSubmitting(true);
                       
-                      // Manually send update request
-                      fetch(`/api/collaborations/${id}`, {
-                        method: "PATCH",
+                      // Create payload with ID included
+                      const updatePayload = {
+                        id: id,
+                        ...formData
+                      };
+                      
+                      console.log("Sending update payload to /api/collaborations/update:", updatePayload);
+                      
+                      // Manually send update request to the direct update endpoint
+                      fetch(`/api/collaborations/update`, {
+                        method: "POST",
                         headers: {
                           "Content-Type": "application/json",
                           "x-telegram-init-data": telegramInitData
                         },
-                        body: JSON.stringify(formData)
+                        body: JSON.stringify(updatePayload)
                       })
                       .then(response => {
                         console.log("Update response:", response.status);
