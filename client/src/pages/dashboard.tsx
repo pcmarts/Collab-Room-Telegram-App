@@ -33,31 +33,37 @@ export default function Dashboard() {
 
   const handleNotificationSettingsChange = async (enabled: boolean) => {
     setNotificationsEnabled(enabled);
-    if (!enabled) {
-      try {
-        setIsSubmitting(true);
-        const response = await apiRequest('POST', '/api/preferences', {
-          ...profile?.preferences,
-          notification_frequency: 'Never'
-        });
+    try {
+      setIsSubmitting(true);
+      
+      const newFrequency = enabled ? 'Daily' : 'Never';
+      
+      const response = await apiRequest('POST', '/api/preferences', {
+        ...profile?.preferences,
+        notification_frequency: newFrequency
+      });
 
-        if (!response.ok) {
-          throw new Error('Failed to update notification settings');
-        }
-
-        toast({
-          title: "Success",
-          description: "Notifications have been disabled",
-        });
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to update notification settings"
-        });
-      } finally {
-        setIsSubmitting(false);
+      if (!response.ok) {
+        throw new Error('Failed to update notification settings');
       }
+      
+      // Update the local state if toggling on
+      if (enabled) {
+        setNotificationFrequency('Daily');
+      }
+
+      toast({
+        title: "Success",
+        description: enabled ? "Notifications have been enabled" : "Notifications have been disabled",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update notification settings"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
