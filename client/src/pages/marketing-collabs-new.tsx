@@ -252,7 +252,7 @@ export default function MarketingCollabs() {
   }
 
   return (
-    <div className="min-h-[100svh] bg-background">
+    <div className="min-h-[100svh] bg-background pb-20">
       <PageHeader
         title="Marketing Collabs"
         subtitle="Select your preferred collaboration types"
@@ -548,43 +548,13 @@ export default function MarketingCollabs() {
                           )}
                         </div>
                         
-                        <Button 
-                          className="w-full"
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            
-                            // Just update the form values - the main form submit will handle saving
-                            form.setValue("matchingEnabled", true);
-                            
-                            toast({
-                              title: "Filters Applied",
-                              description: "Click 'Save Discovery Preferences' below to save your filter settings permanently.",
-                              duration: 5000
-                            });
-                          }}
-                        >
-                          Apply Filters
-                        </Button>
+
                       </div>
                     )}
                   </CardContent>
                 </Card>
                 
-                <Button 
-                  className="w-full mb-4"
-                  type="submit"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Discovery Preferences"
-                  )}
-                </Button>
+
               </TabsContent>
               
               <TabsContent value="host" className="space-y-4 mt-0">
@@ -682,6 +652,30 @@ export default function MarketingCollabs() {
           </Form>
         </div>
       </Tabs>
+      
+      {/* Fixed position save button at the bottom of the screen */}
+      {activeTab === "optin" && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t z-50">
+          <Button 
+            className="w-full"
+            type="submit"
+            onClick={(e) => {
+              e.preventDefault();
+              form.handleSubmit(onSubmit)();
+            }}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Discovery Preferences"
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
