@@ -70,26 +70,35 @@ export class DatabaseStorage implements IStorage {
   
   // Collaboration methods
   async createCollaboration(collaboration: InsertCollaboration): Promise<Collaboration> {
-    // Process dates properly - ensure specific_date is a string
-    let collabWithProcessedDates = { ...collaboration };
+    console.log("Creating collaboration with data:", collaboration);
     
-    // Remove problematic date fields if they're not needed
-    if (collabWithProcessedDates.date_type === 'any_future_date') {
-      delete collabWithProcessedDates.specific_date;
+    // Make a clean copy
+    let collabData = { ...collaboration };
+    
+    // Handle specific_date - remove if not needed
+    if (collabData.date_type === 'any_future_date') {
+      console.log("Removing specific_date for any_future_date option");
+      delete collabData.specific_date;
+    } else if (collabData.date_type === 'specific_date' && collabData.specific_date) {
+      // Ensure it's a string in YYYY-MM-DD format
+      console.log("Formatting specific_date:", collabData.specific_date);
+      // specific_date is already a string from our schema change
     }
     
     // Ensure array fields are properly formatted
     const preparedData = {
-      ...collabWithProcessedDates,
-      required_company_sectors: Array.isArray(collabWithProcessedDates.required_company_sectors) 
-        ? collabWithProcessedDates.required_company_sectors 
-        : (collabWithProcessedDates.required_company_sectors ? [collabWithProcessedDates.required_company_sectors] : []),
-      required_funding_stages: Array.isArray(collabWithProcessedDates.required_funding_stages) 
-        ? collabWithProcessedDates.required_funding_stages 
-        : (collabWithProcessedDates.required_funding_stages ? [collabWithProcessedDates.required_funding_stages] : []),
+      ...collabData,
+      required_company_sectors: Array.isArray(collabData.required_company_sectors) 
+        ? collabData.required_company_sectors 
+        : (collabData.required_company_sectors ? [collabData.required_company_sectors] : []),
+      required_funding_stages: Array.isArray(collabData.required_funding_stages) 
+        ? collabData.required_funding_stages 
+        : (collabData.required_funding_stages ? [collabData.required_funding_stages] : []),
       created_at: new Date(),
       updated_at: new Date()
     };
+    
+    console.log("Final prepared data:", preparedData);
     
     const [newCollaboration] = await db
       .insert(collaborations)

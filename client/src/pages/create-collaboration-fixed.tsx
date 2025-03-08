@@ -176,8 +176,12 @@ export default function CreateCollaboration() {
       
       // Handle specific_date - only include if date_type is specific_date
       if (data.date_type === 'specific_date' && data.specific_date) {
-        // Keep it as a simple string
-        formattedData.specific_date = String(data.specific_date);
+        // Ensure it's in YYYY-MM-DD format
+        const dateStr = String(data.specific_date);
+        console.log("Specific date before formatting:", dateStr);
+        
+        // We already have it in the correct format from the date picker
+        formattedData.specific_date = dateStr;
       } else {
         // Remove specific_date if not needed
         delete formattedData.specific_date;
