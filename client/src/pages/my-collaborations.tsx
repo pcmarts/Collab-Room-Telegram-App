@@ -9,7 +9,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -17,11 +16,22 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileCheck } from "@/components/MobileCheck";
 import { PageHeader } from "@/components/layout/PageHeader";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { 
   type Collaboration, 
@@ -41,7 +51,8 @@ import {
   MessageSquare,
   UserCheck,
   UserX,
-  ListChecks
+  ListChecks,
+  Trash2
 } from "lucide-react";
 
 export default function MyCollaborations() {
@@ -49,8 +60,8 @@ export default function MyCollaborations() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Active tab state
-  const [activeTab, setActiveTab] = useState("my-collabs");
+  // Delete collaboration dialog state
+  const [collabToDelete, setCollabToDelete] = useState<string | null>(null);
   
   // Live collaborations toggle state
   const [activeCollabs, setActiveCollabs] = useState<Record<string, boolean>>({});
