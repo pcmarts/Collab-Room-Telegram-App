@@ -54,7 +54,11 @@ function Router() {
           <Route path="/collaboration/:id">
             {(params: {id: string}) => <BrowseCollaborations id={params.id} />}
           </Route>
+          {/* Edit collaboration route - supports both formats for backward compatibility */}
           <Route path="/edit-collaboration/:id">
+            {(params: {id: string}) => <CreateCollaborationFixed id={params.id} />}
+          </Route>
+          <Route path="/collaboration/edit/:id">
             {(params: {id: string}) => <CreateCollaborationFixed id={params.id} />}
           </Route>
           <Route path="/collaboration/:id/applications">

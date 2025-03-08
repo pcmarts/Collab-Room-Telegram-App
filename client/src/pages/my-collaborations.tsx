@@ -366,7 +366,7 @@ export default function MyCollaborations() {
               variant="outline"
               size="sm"
               className="flex-1"
-              onClick={() => setLocation(`/edit-collaboration/${collab.id}`)}
+              onClick={() => setLocation(`/collaboration/edit/${collab.id}`)}
             >
               Edit
             </Button>
