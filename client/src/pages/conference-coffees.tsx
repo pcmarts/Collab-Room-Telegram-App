@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Calendar } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { Event, UserEvent } from "@shared/schema";
+import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -85,6 +86,12 @@ export default function ConferenceCoffees() {
     queryKey: ["/api/user-events"],
     staleTime: 60 * 1000, // 1 minute
   });
+  
+  // Fetch user profile to get saved preferences
+  const { data: profileData, isLoading: profileLoading } = useQuery<ProfileData>({
+    queryKey: ['/api/profile'],
+    staleTime: 60 * 1000, // 1 minute
+  });
 
   // Toggle event attendance
   const toggleEventAttendance = async (eventId: string) => {
@@ -145,6 +152,32 @@ export default function ConferenceCoffees() {
       [filterName]: !prev[filterName],
     }));
   };
+  
+  // Load saved preferences when profile data is fetched
+  useEffect(() => {
+    if (profileData?.preferences) {
+      const prefs = profileData.preferences;
+      
+      // Set form values from saved preferences
+      form.reset({
+        matchingEnabled: prefs.coffee_match_enabled || false,
+        companySectors: prefs.coffee_match_company_sectors || [],
+        companyFollowers: prefs.coffee_match_company_followers || TWITTER_FOLLOWER_COUNTS[0],
+        userFollowers: prefs.coffee_match_user_followers || TWITTER_FOLLOWER_COUNTS[0],
+        fundingStages: prefs.coffee_match_funding_stages || [],
+        tokenStatus: prefs.coffee_match_token_status || false
+      });
+      
+      // Update filters visibility based on what's saved
+      setFiltersEnabled({
+        companySectors: prefs.coffee_match_company_sectors?.length > 0 || false,
+        companyFollowers: !!prefs.coffee_match_company_followers,
+        userFollowers: !!prefs.coffee_match_user_followers,
+        fundingStages: prefs.coffee_match_funding_stages?.length > 0 || false,
+        tokenStatus: !!prefs.coffee_match_token_status
+      });
+    }
+  }, [profileData, form]);
 
   // Extract the matchingEnabled value from form
   const matchingEnabled = form.watch("matchingEnabled");
@@ -155,8 +188,30 @@ export default function ConferenceCoffees() {
     console.log("Submitting criteria:", data);
 
     try {
-      // In a real app, this would send the criteria to the server
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      // Get current user preferences
+      const profileResponse = await apiRequest('/api/profile', 'GET');
+      const profileData = await profileResponse.json();
+      
+      // Update only the coffee match criteria fields
+      const updateData = {
+        ...profileData.preferences,
+        coffee_match_enabled: data.matchingEnabled,
+        coffee_match_company_sectors: data.companySectors,
+        coffee_match_company_followers: data.companyFollowers,
+        coffee_match_user_followers: data.userFollowers,
+        coffee_match_funding_stages: data.fundingStages,
+        coffee_match_token_status: data.tokenStatus
+      };
+
+      // Save to the preferences API
+      const response = await apiRequest('/api/preferences', 'POST', updateData);
+      
+      if (!response.ok) {
+        throw new Error('Failed to save coffee match criteria');
+      }
+
+      // Invalidate profile data to refresh
+      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
 
       toast({
         title: "Criteria saved",
@@ -241,11 +296,17 @@ export default function ConferenceCoffees() {
           </TabsContent>
 
           <TabsContent value="criteria" className="space-y-4 mt-0">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmitCriteria)}
-                className="space-y-6"
-              >
+            {profileLoading ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                <p className="mt-4 text-muted-foreground">Loading your preferences...</p>
+              </div>
+            ) : (
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmitCriteria)}
+                  className="space-y-6"
+                >
                 <Card>
                   <CardHeader>
                     <CardTitle>Coffee Match Discovery</CardTitle>
@@ -539,7 +600,8 @@ export default function ConferenceCoffees() {
                   )}
                 </Button>
               </form>
-            </Form>
+              </Form>
+            )}
           </TabsContent>
         </div>
       </Tabs>
