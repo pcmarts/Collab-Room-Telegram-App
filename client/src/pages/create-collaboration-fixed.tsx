@@ -151,7 +151,11 @@ export default function CreateCollaboration() {
         });
         break;
       default:
-        form.setValue('details', {});
+        form.setValue('details', {
+          podcast_name: "",
+          short_description: "",
+          podcast_link: ""
+        });
         break;
     }
   };
@@ -604,7 +608,7 @@ export default function CreateCollaboration() {
                       name="min_company_followers"
                       render={({ field }) => (
                         <FormItem className="ml-10">
-                          <FormLabel>Minimum Company Twitter Followers</FormLabel>
+                          <div className="mb-2 font-medium">Minimum Company Twitter Followers</div>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -645,7 +649,7 @@ export default function CreateCollaboration() {
                       name="min_user_followers"
                       render={({ field }) => (
                         <FormItem className="ml-10">
-                          <FormLabel>Minimum User Twitter Followers</FormLabel>
+                          <div className="mb-2 font-medium">Minimum User Twitter Followers</div>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -686,10 +690,10 @@ export default function CreateCollaboration() {
                       name="required_funding_stages"
                       render={({ field }) => (
                         <FormItem className="ml-10">
-                          <FormLabel>Required Funding Stages</FormLabel>
-                          <FormDescription>
+                          <div className="mb-2 font-medium">Required Funding Stages</div>
+                          <p className="text-sm text-muted-foreground mb-2">
                             Select funding stages that are eligible to apply
-                          </FormDescription>
+                          </p>
                           <div className="grid grid-cols-2 gap-2 mt-2">
                             {FUNDING_STAGES.map((stage) => (
                               <FormItem key={stage} className="flex items-center space-x-3 space-y-0">
@@ -706,7 +710,7 @@ export default function CreateCollaboration() {
                                     }}
                                   />
                                 </FormControl>
-                                <FormLabel className="font-normal">{stage}</FormLabel>
+                                <div className="font-normal">{stage}</div>
                               </FormItem>
                             ))}
                           </div>
@@ -743,10 +747,10 @@ export default function CreateCollaboration() {
                             />
                           </FormControl>
                           <div>
-                            <FormLabel className="font-normal">Require Token</FormLabel>
-                            <FormDescription>
+                            <div className="font-medium">Require Token</div>
+                            <p className="text-sm text-muted-foreground">
                               Only companies with tokens can apply
-                            </FormDescription>
+                            </p>
                           </div>
                           <FormMessage />
                         </FormItem>
