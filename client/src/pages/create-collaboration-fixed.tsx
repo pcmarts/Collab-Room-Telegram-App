@@ -28,6 +28,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { MobileCheck } from "@/components/MobileCheck";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -51,6 +53,22 @@ export default function CreateCollaboration() {
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollabType, setSelectedCollabType] = useState<typeof COLLAB_TYPES[number] | "">("");
+
+  // Track which filters are enabled
+  const [filtersEnabled, setFiltersEnabled] = useState({
+    companyFollowers: false,
+    userFollowers: false,
+    fundingStages: false,
+    tokenStatus: false
+  });
+
+  // Toggle filter visibility
+  const toggleFilter = (filterName: keyof typeof filtersEnabled) => {
+    setFiltersEnabled(prev => ({
+      ...prev,
+      [filterName]: !prev[filterName]
+    }));
+  };
 
   const form = useForm<CreateCollaboration>({
     resolver: zodResolver(createCollaborationSchema),
@@ -567,111 +585,179 @@ export default function CreateCollaboration() {
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="min_company_followers"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Minimum Company Twitter Followers</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select minimum followers" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                              <SelectItem key={count} value={count}>
-                                {count}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Company Followers Filter */}
+                  <FormItem className="flex items-center space-x-3 space-y-0 pb-2">
+                    <Switch
+                      checked={filtersEnabled.companyFollowers}
+                      onCheckedChange={() => toggleFilter('companyFollowers')}
+                      id="company-followers-toggle"
+                    />
+                    <div>
+                      <Label htmlFor="company-followers-toggle" className="font-normal">Company Twitter Followers</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Set minimum company follower count
+                      </p>
+                    </div>
+                  </FormItem>
                   
-                  <FormField
-                    control={form.control}
-                    name="min_user_followers"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Minimum User Twitter Followers</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select minimum followers" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                              <SelectItem key={count} value={count}>
-                                {count}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {filtersEnabled.companyFollowers && (
+                    <FormField
+                      control={form.control}
+                      name="min_company_followers"
+                      render={({ field }) => (
+                        <FormItem className="ml-10">
+                          <FormLabel>Minimum Company Twitter Followers</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select minimum followers" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                                <SelectItem key={count} value={count}>
+                                  {count}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                   
-                  <FormField
-                    control={form.control}
-                    name="required_funding_stages"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Required Funding Stages</FormLabel>
-                        <FormDescription>
-                          Select funding stages that are eligible to apply
-                        </FormDescription>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {FUNDING_STAGES.map((stage) => (
-                            <FormItem key={stage} className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(stage)}
-                                  onCheckedChange={(checked) => {
-                                    const currentValue = field.value || [];
-                                    if (checked) {
-                                      field.onChange([...currentValue, stage]);
-                                    } else {
-                                      field.onChange(currentValue.filter((value) => value !== stage));
-                                    }
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">{stage}</FormLabel>
-                            </FormItem>
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* User Followers Filter */}
+                  <FormItem className="flex items-center space-x-3 space-y-0 pt-4 pb-2">
+                    <Switch
+                      checked={filtersEnabled.userFollowers}
+                      onCheckedChange={() => toggleFilter('userFollowers')}
+                      id="user-followers-toggle"
+                    />
+                    <div>
+                      <Label htmlFor="user-followers-toggle" className="font-normal">User Twitter Followers</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Set minimum user follower count
+                      </p>
+                    </div>
+                  </FormItem>
                   
-                  <FormField
-                    control={form.control}
-                    name="required_token_status"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div>
-                          <FormLabel className="font-normal">Require Token</FormLabel>
+                  {filtersEnabled.userFollowers && (
+                    <FormField
+                      control={form.control}
+                      name="min_user_followers"
+                      render={({ field }) => (
+                        <FormItem className="ml-10">
+                          <FormLabel>Minimum User Twitter Followers</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select minimum followers" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                                <SelectItem key={count} value={count}>
+                                  {count}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  
+                  {/* Funding Stages Filter */}
+                  <FormItem className="flex items-center space-x-3 space-y-0 pt-4 pb-2">
+                    <Switch
+                      checked={filtersEnabled.fundingStages}
+                      onCheckedChange={() => toggleFilter('fundingStages')}
+                      id="funding-stages-toggle"
+                    />
+                    <div>
+                      <Label htmlFor="funding-stages-toggle" className="font-normal">Funding Stages</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Filter by company funding stages
+                      </p>
+                    </div>
+                  </FormItem>
+                  
+                  {filtersEnabled.fundingStages && (
+                    <FormField
+                      control={form.control}
+                      name="required_funding_stages"
+                      render={({ field }) => (
+                        <FormItem className="ml-10">
+                          <FormLabel>Required Funding Stages</FormLabel>
                           <FormDescription>
-                            Only companies with tokens can apply
+                            Select funding stages that are eligible to apply
                           </FormDescription>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            {FUNDING_STAGES.map((stage) => (
+                              <FormItem key={stage} className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(stage)}
+                                    onCheckedChange={(checked) => {
+                                      const currentValue = field.value || [];
+                                      if (checked) {
+                                        field.onChange([...currentValue, stage]);
+                                      } else {
+                                        field.onChange(currentValue.filter((value) => value !== stage));
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-normal">{stage}</FormLabel>
+                              </FormItem>
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  
+                  {/* Token Status Filter */}
+                  <FormItem className="flex items-center space-x-3 space-y-0 pt-4 pb-2">
+                    <Switch
+                      checked={filtersEnabled.tokenStatus}
+                      onCheckedChange={() => toggleFilter('tokenStatus')}
+                      id="token-status-toggle"
+                    />
+                    <div>
+                      <Label htmlFor="token-status-toggle" className="font-normal">Token Requirement</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Only allow companies with tokens
+                      </p>
+                    </div>
+                  </FormItem>
+                  
+                  {filtersEnabled.tokenStatus && (
+                    <FormField
+                      control={form.control}
+                      name="required_token_status"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-3 space-y-0 ml-10">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div>
+                            <FormLabel className="font-normal">Require Token</FormLabel>
+                            <FormDescription>
+                              Only companies with tokens can apply
+                            </FormDescription>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </CardContent>
               </Card>
               
