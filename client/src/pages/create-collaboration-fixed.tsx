@@ -1198,20 +1198,17 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                 </CardContent>
               </Card>
               
-              <div className="flex justify-between pt-4 pb-12">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setLocation('/marketing-collabs')}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
+              {/* Sticky footer with submit button */}
+              <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 z-10 flex justify-center">
+                <Button type="submit" disabled={isSubmitting} className="w-full max-w-sm">
                   {isSubmitting 
                     ? (isEditing ? "Updating..." : "Creating...") 
                     : (isEditing ? "Update Collaboration" : "Create Collaboration")}
                 </Button>
               </div>
+              
+              {/* Add padding at the bottom to prevent content from being hidden behind the sticky button */}
+              <div className="h-24"></div>
             </form>
           </Form>
         </div>
