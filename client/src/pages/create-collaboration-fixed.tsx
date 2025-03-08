@@ -47,13 +47,18 @@ import {
   type CreateCollaboration
 } from "@shared/schema";
 
-export default function CreateCollaboration() {
+interface CreateCollaborationProps {
+  id?: string;
+}
+
+export default function CreateCollaboration({ id }: CreateCollaborationProps = {}) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollabType, setSelectedCollabType] = useState<typeof COLLAB_TYPES[number] | "">("");
   const [showTwitterFields, setShowTwitterFields] = useState(false);
+  const [isEditing, setIsEditing] = useState(Boolean(id));
 
   // Track which filters are enabled
   const [filtersEnabled, setFiltersEnabled] = useState({
@@ -174,6 +179,61 @@ export default function CreateCollaboration() {
     }
   };
 
+  // Fetch collaboration data if editing
+  useEffect(() => {
+    const fetchCollaboration = async () => {
+      if (id) {
+        try {
+          const response = await apiRequest(`/api/collaborations/get/${id}`, 'GET');
+          
+          if (response.ok) {
+            const collab = await response.json();
+            
+            // Set form values based on the fetched data
+            if (collab) {
+              // Update form with fetched data
+              form.reset({
+                ...collab,
+                // Convert other fields as needed
+                topics: collab.topics || [],
+                required_company_sectors: collab.required_company_sectors || [],
+                required_funding_stages: collab.required_funding_stages || [],
+              });
+              
+              // Update UI state
+              setSelectedCollabType(collab.collab_type);
+              setShowTwitterFields(collab.collab_type === "Co-Marketing on Twitter");
+              
+              // Update filter toggles based on data
+              setFiltersEnabled({
+                companySectors: Boolean(collab.required_company_sectors?.length),
+                companyFollowers: Boolean(collab.min_company_followers),
+                userFollowers: Boolean(collab.min_user_followers),
+                fundingStages: Boolean(collab.required_funding_stages?.length),
+                tokenStatus: Boolean(collab.required_token_status)
+              });
+            }
+          } else {
+            toast({
+              title: "Error",
+              description: "Failed to fetch collaboration data",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching collaboration:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load collaboration data",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+    
+    fetchCollaboration();
+  }, [id, form, toast]);
+
   const onSubmit = async (data: CreateCollaboration) => {
     console.log("Form data to be submitted:", data);
     setIsSubmitting(true);
@@ -204,9 +264,13 @@ export default function CreateCollaboration() {
       // Get Telegram init data if available
       const telegramInitData = window.Telegram?.WebApp?.initData || '';
       
+      // Determine if we're creating or updating
+      const endpoint = isEditing ? `/api/collaborations/${id}` : '/api/collaborations';
+      const method = isEditing ? 'PATCH' : 'POST';
+      
       // Use the correct type for apiRequest
-      const response = await fetch('/api/collaborations', {
-        method: 'POST',
+      const response = await fetch(endpoint, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'x-telegram-init-data': telegramInitData
@@ -217,18 +281,20 @@ export default function CreateCollaboration() {
       if (response.ok) {
         toast({
           title: "Success!",
-          description: "Your collaboration has been posted.",
+          description: isEditing 
+            ? "Your collaboration has been updated."
+            : "Your collaboration has been posted.",
         });
         setLocation('/my-collaborations');
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create collaboration');
+        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} collaboration`);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to post collaboration",
+        description: error instanceof Error ? error.message : `Failed to ${isEditing ? 'update' : 'create'} collaboration`,
         variant: "destructive",
       });
     } finally {
@@ -532,9 +598,9 @@ export default function CreateCollaboration() {
     <MobileCheck>
       <div className="min-h-[100svh] bg-background">
         <PageHeader 
-          title="Create Collaboration" 
-          subtitle="Offer collaboration opportunities"
-          backUrl="/dashboard"
+          title={isEditing ? "Edit Collaboration" : "Create Collaboration"} 
+          subtitle={isEditing ? "Update your collaboration details" : "Offer collaboration opportunities"}
+          backUrl="/my-collaborations"
         />
         
         <div className="p-4">
@@ -1107,7 +1173,9 @@ export default function CreateCollaboration() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : "Create Collaboration"}
+                  {isSubmitting 
+                    ? (isEditing ? "Updating..." : "Creating...") 
+                    : (isEditing ? "Update Collaboration" : "Create Collaboration")}
                 </Button>
               </div>
             </form>

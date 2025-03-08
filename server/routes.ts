@@ -800,54 +800,23 @@ export async function registerRoutes(app: Express) {
   // Get single collaboration by ID
   app.get("/api/collaborations/get/:id", async (req, res) => {
     console.log('============ DEBUG: Get Collaboration Endpoint ============');
-    console.log('Headers:', req.headers);
     console.log('Params:', req.params);
     
     try {
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      let telegramUser;
-
-      if (!initData) {
-        // In development, use fallback data if Telegram data is missing
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using development fallback for Telegram data');
-          telegramUser = {
-            id: '1211030693',
-            username: 'test_user',
-            first_name: 'Test',
-            last_name: 'User'
-          };
-        } else {
-          console.error('No Telegram init data found');
-          return res.status(400).json({ error: 'Invalid Telegram data' });
-        }
-      } else {
-        // Parse Telegram data
-        const decodedInitData = new URLSearchParams(initData);
-        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      }
-
-      if (!telegramUser?.id) {
-        console.error('No Telegram user ID found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      
       const { id } = req.params;
-      const collaboration = await storage.getCollaboration(id);
+      
+      // Get the collaboration directly from the database
+      const [collaboration] = await db.select()
+        .from(collaborations)
+        .where(eq(collaborations.id, id))
+        .limit(1);
       
       if (!collaboration) {
+        console.log(`Collaboration with ID ${id} not found`);
         return res.status(404).json({ error: 'Collaboration not found' });
       }
 
+      console.log(`Found collaboration: ${collaboration.title}`);
       return res.json(collaboration);
     } catch (error) {
       console.error("Error fetching collaboration:", error);
@@ -1031,6 +1000,71 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Update a collaboration
+  app.patch("/api/collaborations/:id", async (req, res) => {
+    console.log('============ DEBUG: Update Collaboration Endpoint ============');
+    console.log('Params:', req.params);
+    console.log('Body:', req.body);
+    
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      
+      // Get Telegram user ID from request
+      const telegramData = getTelegramUserFromRequest(req);
+      const telegramId = telegramData?.id?.toString() || process.env.DEV_USER_ID || '';
+      console.log(`Telegram ID: ${telegramId} attempting to update collaboration: ${id}`);
+      
+      // First, get the actual user from the database using telegram_id
+      const [dbUser] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramId));
+      
+      if (!dbUser) {
+        console.log('User not found with telegramId:', telegramId);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      const userId = dbUser.id; // This is the UUID from the database
+      console.log(`Found user with ID: ${userId}`);
+      
+      // Verify the collaboration exists and belongs to the user
+      const existingCollab = await db.select()
+        .from(collaborations)
+        .where(and(eq(collaborations.id, id), eq(collaborations.creator_id, userId)))
+        .limit(1);
+      
+      if (!existingCollab.length) {
+        console.log('Collaboration not found or does not belong to the user');
+        return res.status(404).json({ error: 'Collaboration not found or you do not have permission to update it' });
+      }
+      
+      // Clean up data for update 
+      delete updateData.id; // Prevent updating ID
+      delete updateData.creator_id; // Prevent updating creator
+      
+      // Make sure required fields are present
+      if (!updateData.collab_type || !updateData.description || !updateData.date_type) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      
+      // Set updated timestamp
+      updateData.updated_at = new Date();
+      
+      // Update the collaboration
+      const [updatedCollab] = await db.update(collaborations)
+        .set(updateData)
+        .where(eq(collaborations.id, id))
+        .returning();
+      
+      console.log(`Successfully updated collaboration ${id}`);
+      return res.status(200).json(updatedCollab);
+    } catch (error) {
+      console.error('Error updating collaboration:', error);
+      return res.status(500).json({ error: 'Failed to update collaboration' });
+    }
+  });
+  
   // Apply to a collaboration
   // Delete a collaboration
   app.delete("/api/collaborations/:id", async (req, res) => {
