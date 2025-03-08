@@ -28,6 +28,7 @@ import {
   type CollabApplication, 
   type ApplicationData 
 } from "@shared/schema";
+import { Switch } from "@/components/ui/switch";
 
 import {
   CalendarDays,
@@ -50,6 +51,9 @@ export default function MyCollaborations() {
   
   // Active tab state
   const [activeTab, setActiveTab] = useState("my-collabs");
+  
+  // Live collaborations toggle state
+  const [activeCollabs, setActiveCollabs] = useState<Record<string, boolean>>({});
   
   // Application detail dialog state
   const [selectedApplication, setSelectedApplication] = useState<CollabApplication | null>(null);
@@ -193,11 +197,35 @@ export default function MyCollaborations() {
     setApplicationDialogOpen(true);
   };
   
+  // Handle toggling collaboration active state
+  const handleToggleActive = (collabId: string, isActive: boolean) => {
+    setActiveCollabs(prev => ({
+      ...prev,
+      [collabId]: isActive
+    }));
+    
+    toast({
+      title: isActive ? "Collaboration Activated" : "Collaboration Paused",
+      description: isActive 
+        ? "Your collaboration is now visible to potential partners" 
+        : "Your collaboration is now hidden from discovery",
+      duration: 3000
+    });
+    
+    // In a real implementation, we would update the server here
+    // apiRequest('PATCH', `/api/collaborations/${collabId}`, { is_active: isActive });
+  };
+
   // Render a collaboration card
   const renderCollaborationCard = (collab: Collaboration) => {
     // Check if there are any pending applications
     const pendingApplications = collab.applications?.filter(app => app.status === 'pending') || [];
     const hasApplications = pendingApplications.length > 0;
+    
+    // Get active state from local state or default to true
+    const isActive = activeCollabs[collab.id] !== undefined 
+      ? activeCollabs[collab.id] 
+      : collab.status === 'active';
     
     return (
       <Card key={collab.id} className="mb-4">
@@ -205,7 +233,9 @@ export default function MyCollaborations() {
           <div className="flex justify-between items-start">
             <div>
               <Badge className="mb-2">{collab.collab_type}</Badge>
-              <CardTitle className="text-xl">{collab.title}</CardTitle>
+              <CardTitle className="text-xl">
+                {collab.title === "Collaboration" ? collab.collab_type : collab.title}
+              </CardTitle>
             </div>
             {hasApplications && (
               <Badge variant="secondary" className="flex items-center gap-1">
@@ -215,7 +245,11 @@ export default function MyCollaborations() {
           </div>
         </CardHeader>
         <CardContent className="pb-2">
-          <p className="text-sm text-gray-600 mb-4 line-clamp-3">{collab.description}</p>
+          <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+            {collab.description.includes("Created using Collab Room") 
+              ? collab.description.replace("Created using Collab Room.", "").trim() 
+              : collab.description}
+          </p>
           
           <div className="flex flex-wrap gap-2 mb-4">
             <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -233,6 +267,27 @@ export default function MyCollaborations() {
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Clock className="h-3 w-3" />
               <span>Created on {new Date(collab.created_at).toLocaleDateString()}</span>
+            </div>
+          </div>
+          
+          {/* Active toggle */}
+          <div className="flex items-center justify-between border-t pt-3">
+            <div className="flex items-center space-x-2">
+              <Switch 
+                checked={isActive}
+                onCheckedChange={(checked) => handleToggleActive(collab.id, checked)}
+              />
+              <span className="text-sm font-medium">
+                {isActive ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+            <div>
+              <Badge 
+                variant={isActive ? "default" : "outline"}
+                className="text-xs"
+              >
+                {isActive ? 'Live' : 'Paused'}
+              </Badge>
             </div>
           </div>
         </CardContent>
