@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { COMPANY_TAG_CATEGORIES } from "@shared/schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function MatchingFilters() {
   const { toast } = useToast();
@@ -100,21 +101,11 @@ export default function MatchingFilters() {
 
   return (
     <div className="min-h-[100svh] bg-background">
-      <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex items-center -ml-3"
-            onClick={() => setLocation('/dashboard')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Cancel
-          </Button>
-          <h1 className="text-lg font-semibold">Matching Filters</h1>
-          <div className="w-12" /> {/* Spacer for alignment */}
-        </div>
-      </div>
+      <PageHeader
+        title="Matching Filters"
+        subtitle="Control what matches you see"
+        backUrl="/dashboard"
+      />
 
       <div className="p-4 space-y-6">
         <form onSubmit={handleSubmit} className="space-y-8">

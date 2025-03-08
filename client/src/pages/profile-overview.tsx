@@ -4,11 +4,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2, Shield } from "lucide-react";
+import { Loader2, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User, Company, Preferences } from "@shared/schema";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 interface ProfileData {
   user: User;
@@ -120,22 +121,11 @@ export default function ProfileOverview() {
 
   return (
     <div className="min-h-[100svh] bg-background">
-      {/* Sticky Header */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex items-center -ml-3"
-            onClick={() => setLocation("/dashboard")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Cancel
-          </Button>
-          <h1 className="text-lg font-semibold">Personal Information</h1>
-          <div className="w-12" /> {/* Spacer for alignment */}
-        </div>
-      </div>
+      <PageHeader
+        title="Personal Information"
+        subtitle="Edit your profile details"
+        backUrl="/dashboard"
+      />
 
       <div className="p-4 space-y-6">
         <Card>
