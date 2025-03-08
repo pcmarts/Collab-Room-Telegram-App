@@ -126,16 +126,24 @@ export default function MarketingCollabs() {
       // Load twitter collabs if they exist
       const twitterCollabs = profileData.preferences.twitter_collabs || [];
       
+      // Check if any filter preferences exist
+      const hasFilterPreferences = 
+        (profileData.preferences.excluded_tags && profileData.preferences.excluded_tags.length > 0) || 
+        (profileData.preferences.coffee_match_company_sectors && profileData.preferences.coffee_match_company_sectors.length > 0);
+      
+      // Get saved filter data if available
       form.reset({
         enabledCollabs,
         enabledTwitterCollabs: twitterCollabs,
-        matchingEnabled: false,
-        companySectors: [],
-        topics: [],
-        fundingStages: [],
-        hasToken: false,
-        companyFollowers: TWITTER_FOLLOWER_COUNTS[0],
-        userFollowers: TWITTER_FOLLOWER_COUNTS[0]
+        // Set matching enabled if filter preferences exist
+        matchingEnabled: hasFilterPreferences,
+        // Load saved filter values using appropriate field names from schema
+        companySectors: profileData.preferences.coffee_match_company_sectors || [],
+        topics: profileData.preferences.excluded_tags || [],
+        fundingStages: profileData.preferences.coffee_match_funding_stages || [],
+        hasToken: profileData.preferences.coffee_match_token_status || false,
+        companyFollowers: profileData.preferences.coffee_match_company_followers || TWITTER_FOLLOWER_COUNTS[0],
+        userFollowers: profileData.preferences.coffee_match_user_followers || TWITTER_FOLLOWER_COUNTS[0]
       });
     }
   }, [profileData, form]);
@@ -170,10 +178,17 @@ export default function MarketingCollabs() {
         ...profileData?.preferences,
         collabs_to_host: collabsToHost,
         collabs_to_discover: data.enabledCollabs,
-        twitter_collabs: data.enabledTwitterCollabs || []
+        twitter_collabs: data.enabledTwitterCollabs || [],
+        // Save filter preferences if filtering is enabled with correct field names
+        excluded_tags: data.matchingEnabled ? data.topics : [],
+        coffee_match_company_sectors: data.matchingEnabled ? data.companySectors : [],
+        coffee_match_company_followers: data.matchingEnabled ? data.companyFollowers : null,
+        coffee_match_user_followers: data.matchingEnabled ? data.userFollowers : null,
+        coffee_match_funding_stages: data.matchingEnabled ? data.fundingStages : [],
+        coffee_match_token_status: data.matchingEnabled ? data.hasToken : false
       };
 
-      // Twitter collabs are now saved in the preferences
+      console.log("Saving preferences data:", updateData);
 
       const response = await apiRequest('/api/preferences', 'POST', updateData);
 
