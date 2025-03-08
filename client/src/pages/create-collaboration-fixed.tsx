@@ -789,6 +789,27 @@ export default function CreateCollaboration() {
                           <p className="text-sm text-muted-foreground mb-2">
                             Select funding stages that are eligible to apply
                           </p>
+                          <div className="flex justify-between mb-2">
+                            <Button 
+                              type="button" 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                // Select all funding stages
+                                field.onChange([...FUNDING_STAGES]);
+                              }}
+                            >
+                              Select All
+                            </Button>
+                            <Button 
+                              type="button" 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => field.onChange([])}
+                            >
+                              Deselect All
+                            </Button>
+                          </div>
                           <div className="grid grid-cols-2 gap-2 mt-2">
                             {FUNDING_STAGES.map((stage) => (
                               <FormItem key={stage} className="flex items-center space-x-3 space-y-0">
