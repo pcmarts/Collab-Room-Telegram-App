@@ -55,8 +55,8 @@ export default function CreateCollaboration() {
   const form = useForm<CreateCollaboration>({
     resolver: zodResolver(createCollaborationSchema),
     defaultValues: {
-      title: "",
-      description: "",
+      title: "Collaboration", // Default title (hidden from user)
+      description: "Created using Collab Room", // Default description (hidden from user)
       collab_type: COLLAB_TYPES[0],
       date_type: "specific_date",
       specific_date: new Date().toISOString().split('T')[0],
@@ -444,11 +444,7 @@ export default function CreateCollaboration() {
       // Add support for other collaboration types here
         
       default:
-        return (
-          <div className="text-center py-4">
-            <p className="text-muted-foreground">Select a collaboration type to see specific options</p>
-          </div>
-        );
+        return null;
     }
   };
 
@@ -548,41 +544,11 @@ export default function CreateCollaboration() {
                     />
                   )}
                   
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter a title for your collaboration" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Describe your collaboration opportunity" 
-                            className="min-h-[120px]" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Title and description fields removed as requested */}
                 </CardContent>
               </Card>
               
-              {selectedCollabType && (
+              {selectedCollabType && renderCollabTypeSpecificFields() && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Collaboration Details</CardTitle>
