@@ -155,25 +155,7 @@ export default function Dashboard() {
           </Button>
         </div>
 
-        {/* Quick Actions - Second Row */}
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/profile-overview')}
-          >
-            <UserIcon className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Profile</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/create-collaboration')}
-          >
-            <Plus className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">New Collaboration</span>
-          </Button>
-        </div>
+
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 gap-3">
@@ -199,7 +181,7 @@ export default function Dashboard() {
         </div>
 
         {/* Profile Actions */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <Button
             variant="outline"
             className="h-20 flex-col"
@@ -207,14 +189,6 @@ export default function Dashboard() {
           >
             <UserIcon className="h-5 w-5 mb-1.5" />
             <span className="text-xs">My Profile</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/company-info')}
-          >
-            <Building className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Company Info</span>
           </Button>
         </div>
 
