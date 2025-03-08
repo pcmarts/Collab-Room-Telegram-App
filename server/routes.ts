@@ -644,6 +644,7 @@ export async function registerRoutes(app: Express) {
         .where(eq(collaborations.creator_id, userId));
         
       console.log('Found collaborations:', userCollabs.length);
+      console.log('Collaborations data:', JSON.stringify(userCollabs).substring(0, 200) + '...');
       
       // If no collaborations found, insert a sample one for testing
       if (userCollabs.length === 0 && process.env.NODE_ENV !== 'production') {
