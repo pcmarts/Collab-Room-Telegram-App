@@ -7,13 +7,13 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
 import { UserIcon, Users, Building, Star, Bell, Coffee, Calendar, Rocket, Plus } from 'lucide-react';
-import type { User, Company, Preferences } from '@shared/schema';
+import type { User as UserType, Company, Preferences } from '@shared/schema';
 import { NOTIFICATION_FREQUENCIES } from '@shared/schema';
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ProfileData {
-  user: User;
+  user: UserType;
   company: Company;
   preferences: Preferences;
 }
@@ -156,14 +156,22 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions - Second Row */}
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Button
             variant="outline"
             className="h-20 flex-col"
-            onClick={() => setLocation('/my-collaborations')}
+            onClick={() => setLocation('/profile-overview')}
           >
-            <Rocket className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">My Marketing Collabs</span>
+            <UserIcon className="h-5 w-5 mb-1.5" />
+            <span className="text-xs">Profile</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
+            onClick={() => setLocation('/create-collaboration')}
+          >
+            <Plus className="h-5 w-5 mb-1.5" />
+            <span className="text-xs">New Collaboration</span>
           </Button>
         </div>
 
