@@ -63,11 +63,15 @@ export default function MyCollaborations() {
   const { data: collaborations, isLoading: isLoadingCollabs } = useQuery({
     queryKey: ['/api/collaborations/my'],
     queryFn: async () => {
-      const response = await apiRequest('/api/collaborations/my', {});
+      console.log("Fetching collaborations...");
+      const response = await apiRequest('GET', '/api/collaborations/my');
+      console.log("Collaborations API response status:", response.status);
       if (!response.ok) {
         throw new Error("Failed to fetch collaborations");
       }
-      return response.json() as Promise<Collaboration[]>;
+      const data = await response.json();
+      console.log("Collaborations API response data:", data);
+      return data as Collaboration[];
     }
   });
   
@@ -75,11 +79,15 @@ export default function MyCollaborations() {
   const { data: applications, isLoading: isLoadingApps } = useQuery({
     queryKey: ['/api/my-applications'],
     queryFn: async () => {
-      const response = await apiRequest('/api/my-applications', {});
+      console.log("Fetching applications...");
+      const response = await apiRequest('GET', '/api/my-applications');
+      console.log("Applications API response status:", response.status);
       if (!response.ok) {
         throw new Error("Failed to fetch applications");
       }
-      return response.json() as Promise<CollabApplication[]>;
+      const data = await response.json();
+      console.log("Applications API response data:", data);
+      return data as CollabApplication[];
     }
   });
   
