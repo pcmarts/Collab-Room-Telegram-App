@@ -243,6 +243,8 @@ export const collaborations = pgTable('collaborations', {
   required_token_status: boolean('required_token_status'),
   min_company_followers: text('min_company_followers'),
   min_user_followers: text('min_user_followers'),
+  // Free collaboration confirmation
+  is_free_collab: boolean('is_free_collab').notNull().default(true),
   // Type-specific details stored as JSON
   details: jsonb('details').notNull(),
   // Dates
@@ -414,6 +416,11 @@ export const createCollaborationSchema = z.object({
   
   // Topics for the collaboration
   topics: z.array(z.enum(COLLAB_TOPICS)).min(1, "At least one topic is required"),
+  
+  // Free collaboration confirmation
+  is_free_collab: z.boolean().refine(val => val === true, {
+    message: "You must confirm this is a free collaboration with no payments involved"
+  }),
   
   // Filtering criteria
   required_company_sectors: z.array(z.string()).optional(),
