@@ -175,11 +175,15 @@ export default function CreateCollaboration() {
         required_funding_stages: data.required_funding_stages || [],
       };
       
+      // Get Telegram init data if available
+      const telegramInitData = window.Telegram?.WebApp?.initData || '';
+      
       // Use the correct type for apiRequest
       const response = await fetch('/api/collaborations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-telegram-init-data': telegramInitData
         },
         body: JSON.stringify(formattedData),
       });
