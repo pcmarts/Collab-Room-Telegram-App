@@ -572,8 +572,8 @@ export default function CreateCollaboration() {
                   
                   {/* Twitter Co-Marketing Fields - Only shown when that type is selected */}
                   {showTwitterFields && (
-                    <div className="mt-4 p-4 border rounded-md bg-blue-50">
-                      <div className="font-medium mb-4">Twitter Collaboration Types</div>
+                    <div className="mt-4 p-4 border rounded-md bg-card dark:border-gray-700">
+                      <div className="font-medium mb-4 text-card-foreground">Twitter Collaboration Types</div>
                       <div className="space-y-4">
                         <FormField
                           control={form.control}
