@@ -183,14 +183,21 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
   useEffect(() => {
     const fetchCollaboration = async () => {
       if (id) {
+        console.log(`Fetching collaboration with ID: ${id}`);
         try {
-          const response = await apiRequest(`/api/collaborations/get/${id}`, 'GET');
+          const fetchUrl = `/api/collaborations/get/${id}`;
+          console.log(`Making API request to: ${fetchUrl}`);
+          
+          const response = await apiRequest(fetchUrl, 'GET');
+          console.log(`API Response status: ${response.status}`);
           
           if (response.ok) {
             const collab = await response.json();
+            console.log("Received collaboration data:", collab);
             
             // Set form values based on the fetched data
             if (collab) {
+              console.log("Updating form with collaboration data");
               // Update form with fetched data
               form.reset({
                 ...collab,
@@ -214,6 +221,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
               });
             }
           } else {
+            console.error(`Error fetching collaboration. Status: ${response.status}`);
             toast({
               title: "Error",
               description: "Failed to fetch collaboration data",
@@ -268,6 +276,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
       const endpoint = isEditing ? `/api/collaborations/${id}` : '/api/collaborations';
       const method = isEditing ? 'PATCH' : 'POST';
       
+      console.log(`Submitting ${method} request to ${endpoint}`);
+      console.log(`isEditing: ${isEditing}, ID: ${id}`);
+      
       // Use the correct type for apiRequest
       const response = await fetch(endpoint, {
         method: method,
@@ -277,6 +288,8 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
         },
         body: JSON.stringify(formattedData),
       });
+      
+      console.log(`Response from ${endpoint}: status ${response.status}`);
 
       if (response.ok) {
         toast({
