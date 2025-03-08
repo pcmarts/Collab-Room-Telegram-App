@@ -79,7 +79,7 @@ export default function MyCollaborations() {
     queryKey: ['/api/collaborations/my'],
     queryFn: async () => {
       console.log("Fetching collaborations...");
-      const response = await apiRequest('GET', '/api/collaborations/my');
+      const response = await apiRequest('/api/collaborations/my', 'GET');
       console.log("Collaborations API response status:", response.status);
       if (!response.ok) {
         throw new Error("Failed to fetch collaborations");
@@ -95,7 +95,7 @@ export default function MyCollaborations() {
     queryKey: ['/api/my-applications'],
     queryFn: async () => {
       console.log("Fetching applications...");
-      const response = await apiRequest('GET', '/api/my-applications');
+      const response = await apiRequest('/api/my-applications', 'GET');
       console.log("Applications API response status:", response.status);
       if (!response.ok) {
         throw new Error("Failed to fetch applications");
@@ -110,20 +110,13 @@ export default function MyCollaborations() {
   const handleApproveApplication = async (applicationId: string) => {
     setProcessingApplicationId(applicationId);
     try {
-      const requestOptions = {
-        method: 'PATCH',
-        body: JSON.stringify({ 
-          status: 'approved',
-          message: feedbackMessage 
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      };
-      
       const response = await apiRequest(
         `/api/collaborations/applications/${applicationId}`, 
-        requestOptions as any
+        'PATCH',
+        { 
+          status: 'approved',
+          message: feedbackMessage 
+        }
       );
       
       if (response.ok) {
@@ -158,20 +151,13 @@ export default function MyCollaborations() {
   const handleRejectApplication = async (applicationId: string) => {
     setProcessingApplicationId(applicationId);
     try {
-      const requestOptions = {
-        method: 'PATCH',
-        body: JSON.stringify({ 
-          status: 'rejected',
-          message: feedbackMessage 
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      };
-      
       const response = await apiRequest(
         `/api/collaborations/applications/${applicationId}`, 
-        requestOptions as any
+        'PATCH',
+        { 
+          status: 'rejected',
+          message: feedbackMessage 
+        }
       );
       
       if (response.ok) {
@@ -224,7 +210,7 @@ export default function MyCollaborations() {
     });
     
     // In a real implementation, we would update the server here
-    // apiRequest('PATCH', `/api/collaborations/${collabId}`, { is_active: isActive });
+    // apiRequest(`/api/collaborations/${collabId}`, 'PATCH', { is_active: isActive });
   };
   
   // Handle deleting a collaboration
@@ -232,7 +218,7 @@ export default function MyCollaborations() {
     if (!collabToDelete) return;
     
     try {
-      const response = await apiRequest('DELETE', `/api/collaborations/${collabToDelete}`);
+      const response = await apiRequest(`/api/collaborations/${collabToDelete}`, 'DELETE');
       
       if (response.ok) {
         toast({
