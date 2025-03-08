@@ -81,6 +81,7 @@ export default function CreateCollaboration() {
       date_type: "specific_date",
       specific_date: new Date().toISOString().split('T')[0], // Use ISO string format YYYY-MM-DD
       topics: [], // Initialize empty topics array
+      is_free_collab: false, // This will require users to actively check the box
       required_company_sectors: [],
       required_funding_stages: [],
       required_token_status: false,
@@ -774,6 +775,32 @@ export default function CreateCollaboration() {
                               <FormLabel className="font-normal text-sm">{topic}</FormLabel>
                             </FormItem>
                           ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Free Collaboration Confirmation */}
+                  <FormField
+                    control={form.control}
+                    name="is_free_collab"
+                    render={({ field }) => (
+                      <FormItem className="border p-4 rounded-md bg-amber-50">
+                        <div className="flex items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1">
+                            <FormLabel className="font-medium">This is a completely free collaboration</FormLabel>
+                            <FormDescription>
+                              I confirm this collab is 100% free with no payments, fees, or commercial aspects involved. 
+                              Money-related collabs aren't allowed on our platform.
+                            </FormDescription>
+                          </div>
                         </div>
                         <FormMessage />
                       </FormItem>
