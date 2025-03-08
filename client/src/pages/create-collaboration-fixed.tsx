@@ -55,6 +55,7 @@ export default function CreateCollaboration() {
 
   // Track which filters are enabled
   const [filtersEnabled, setFiltersEnabled] = useState({
+    companySectors: false,
     companyFollowers: false,
     userFollowers: false,
     fundingStages: false,
@@ -588,6 +589,63 @@ export default function CreateCollaboration() {
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* Company Sectors Filter */}
+                  <div className="flex items-center space-x-3 mb-4">
+                    <Switch
+                      checked={filtersEnabled.companySectors}
+                      onCheckedChange={() => toggleFilter('companySectors')}
+                    />
+                    <div className="grid gap-0.5">
+                      <div className="text-base font-medium">Company Sectors</div>
+                      <p className="text-sm text-muted-foreground">
+                        Filter by specific company sectors
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {filtersEnabled.companySectors && (
+                    <FormField
+                      control={form.control}
+                      name="required_company_sectors"
+                      render={({ field }) => (
+                        <FormItem className="ml-10">
+                          <div className="mb-2 font-medium">Required Company Sectors</div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Select the company sectors that can apply
+                          </p>
+                          <div className="max-h-[300px] overflow-y-auto p-2 border rounded-md">
+                            {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+                              <div key={category} className="mb-4">
+                                <div className="font-medium mb-2">{category}</div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {tags.map((tag) => (
+                                    <FormItem key={tag} className="flex items-center space-x-3 space-y-0">
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(tag)}
+                                          onCheckedChange={(checked) => {
+                                            const currentValue = field.value || [];
+                                            if (checked) {
+                                              field.onChange([...currentValue, tag]);
+                                            } else {
+                                              field.onChange(currentValue.filter((value) => value !== tag));
+                                            }
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <div className="font-normal text-sm">{tag}</div>
+                                    </FormItem>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  
                   {/* Company Followers Filter */}
                   <div className="flex items-center space-x-3 mb-4">
                     <Switch
