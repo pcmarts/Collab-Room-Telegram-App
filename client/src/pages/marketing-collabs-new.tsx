@@ -232,7 +232,11 @@ export default function MarketingCollabs() {
                   <Button 
                     variant={showFilters ? "default" : "outline"} 
                     size="sm"
-                    onClick={() => setShowFilters(!showFilters)}
+                    type="button" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowFilters(!showFilters);
+                    }}
                     className="flex items-center"
                   >
                     <Sliders className="h-4 w-4 mr-2" />
@@ -356,7 +360,9 @@ export default function MarketingCollabs() {
                         
                         <Button 
                           className="w-full"
-                          onClick={() => {
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
                             toast({
                               title: "Filters Applied",
                               description: "Your discovery filters have been applied",
