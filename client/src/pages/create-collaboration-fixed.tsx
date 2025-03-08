@@ -185,10 +185,22 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
       if (id) {
         console.log(`Fetching collaboration with ID: ${id}`);
         try {
+          // Get the Telegram init data if available
+          const telegramInitData = window.Telegram?.WebApp?.initData || '';
+          
+          // Try to use the correct endpoint format
           const fetchUrl = `/api/collaborations/get/${id}`;
           console.log(`Making API request to: ${fetchUrl}`);
           
-          const response = await apiRequest(fetchUrl, 'GET');
+          // Use fetch directly to have more control over the request
+          const response = await fetch(fetchUrl, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-telegram-init-data': telegramInitData
+            }
+          });
+          
           console.log(`API Response status: ${response.status}`);
           
           if (response.ok) {
@@ -198,14 +210,22 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
             // Set form values based on the fetched data
             if (collab) {
               console.log("Updating form with collaboration data");
-              // Update form with fetched data
-              form.reset({
+              
+              // Handle details object correctly
+              const formData = {
                 ...collab,
-                // Convert other fields as needed
+                // Ensure arrays are properly initialized
                 topics: collab.topics || [],
                 required_company_sectors: collab.required_company_sectors || [],
                 required_funding_stages: collab.required_funding_stages || [],
-              });
+                // Ensure details is an object
+                details: collab.details || {}
+              };
+              
+              console.log("Form data being set:", formData);
+              
+              // Update form with fetched data
+              form.reset(formData);
               
               // Update UI state
               setSelectedCollabType(collab.collab_type);
@@ -221,7 +241,8 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
               });
             }
           } else {
-            console.error(`Error fetching collaboration. Status: ${response.status}`);
+            const errorText = await response.text();
+            console.error(`Error fetching collaboration. Status: ${response.status}, Details:`, errorText);
             toast({
               title: "Error",
               description: "Failed to fetch collaboration data",
