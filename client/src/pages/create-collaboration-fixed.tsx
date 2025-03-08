@@ -37,6 +37,7 @@ import {
   AUDIENCE_SIZE_RANGES,
   BLOCKCHAIN_NETWORKS,
   COLLAB_TYPES,
+  COLLAB_TOPICS,
   COMPANY_CATEGORIES,
   COMPANY_TAG_CATEGORIES,
   FUNDING_STAGES,
@@ -611,6 +612,41 @@ export default function CreateCollaboration() {
                       </div>
                     </div>
                   )}
+                  
+                  {/* Topics for this collaboration */}
+                  <FormField
+                    control={form.control}
+                    name="topics"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Topics</FormLabel>
+                        <FormDescription>
+                          Select all topics that apply to this collaboration
+                        </FormDescription>
+                        <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2 border rounded-md">
+                          {COLLAB_TOPICS.map((topic: string) => (
+                            <FormItem key={topic} className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(topic)}
+                                  onCheckedChange={(checked) => {
+                                    const currentValue = field.value || [];
+                                    if (checked) {
+                                      field.onChange([...currentValue, topic]);
+                                    } else {
+                                      field.onChange(currentValue.filter((value) => value !== topic));
+                                    }
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal text-sm">{topic}</FormLabel>
+                            </FormItem>
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
                   <FormField
                     control={form.control}
