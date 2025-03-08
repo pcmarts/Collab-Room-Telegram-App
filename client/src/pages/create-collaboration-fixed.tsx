@@ -572,15 +572,14 @@ export default function CreateCollaboration() {
                   
                   {/* Twitter Co-Marketing Fields - Only shown when that type is selected */}
                   {showTwitterFields && (
-                    <div className="mt-4 p-4 border rounded-md bg-slate-50">
-                      <div className="font-medium mb-4">Twitter Co-Marketing Details</div>
+                    <div className="mt-4 p-4 border rounded-md bg-blue-50">
+                      <div className="font-medium mb-4">Twitter Collaboration Types</div>
                       <div className="space-y-4">
                         <FormField
                           control={form.control}
                           name="details.collaboration_types"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Twitter Collaboration Types</FormLabel>
                               <FormDescription>
                                 Select all collaboration types you're interested in
                               </FormDescription>
@@ -604,43 +603,6 @@ export default function CreateCollaboration() {
                                   </FormItem>
                                 ))}
                               </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="details.host_twitter_handle"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Host Twitter Handle</FormLabel>
-                              <FormControl>
-                                <Input placeholder="@yourhandle" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="details.host_follower_count"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Host Follower Count</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select follower count" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                                    <SelectItem key={count} value={count}>
-                                      {count}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -704,6 +666,55 @@ export default function CreateCollaboration() {
                 </CardContent>
               </Card>
               
+              {/* For Twitter Co-Marketing, show handle and follower count in Collaboration Details */}
+              {(selectedCollabType === "Co-Marketing on Twitter" && showTwitterFields) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Twitter Account Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="details.host_twitter_handle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Host Twitter Handle</FormLabel>
+                          <FormControl>
+                            <Input placeholder="@yourhandle" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="details.host_follower_count"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Host Follower Count</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select follower count" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                                <SelectItem key={count} value={count}>
+                                  {count}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+              
+              {/* For other collaboration types */}
               {selectedCollabType && renderCollabTypeSpecificFields() && !showTwitterFields && (
                 <Card>
                   <CardHeader>
