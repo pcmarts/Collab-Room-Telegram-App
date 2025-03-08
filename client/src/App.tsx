@@ -16,7 +16,8 @@ import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
 
 import BrowseCollaborations from "@/pages/browse-collaborations";
-import CreateCollaboration from "@/pages/create-collaboration-fixed";
+import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
+import CreateCollaboration from "@/pages/create-collaboration";
 import MyCollaborations from "@/pages/my-collaborations";
 import Apply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
@@ -45,7 +46,7 @@ function Router() {
 
           {/* Collaboration Routes */}
           <Route path="/browse-collaborations" component={BrowseCollaborations} />
-          <Route path="/create-collaboration" component={CreateCollaboration} />
+          <Route path="/create-collaboration" component={CreateCollaborationFixed} />
           <Route path="/my-collaborations" component={MyCollaborations} />
           <Route path="/apply/:id">
             {(params: {id: string}) => <Apply id={params.id} />}
@@ -54,7 +55,7 @@ function Router() {
             {(params: {id: string}) => <BrowseCollaborations id={params.id} />}
           </Route>
           <Route path="/edit-collaboration/:id">
-            {(params: {id: string}) => <CreateCollaboration id={params.id} />}
+            {(params: {id: string}) => <CreateCollaborationFixed id={params.id} />}
           </Route>
           <Route path="/collaboration/:id/applications">
             {(params: {id: string}) => <MyCollaborations collaborationId={params.id} />}
