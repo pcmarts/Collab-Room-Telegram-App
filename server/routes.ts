@@ -686,6 +686,64 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Get single collaboration by ID
+  app.get("/api/collaborations/get/:id", async (req, res) => {
+    console.log('============ DEBUG: Get Collaboration Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Params:', req.params);
+    
+    try {
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      let telegramUser;
+
+      if (!initData) {
+        // In development, use fallback data if Telegram data is missing
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Using development fallback for Telegram data');
+          telegramUser = {
+            id: '1211030693',
+            username: 'test_user',
+            first_name: 'Test',
+            last_name: 'User'
+          };
+        } else {
+          console.error('No Telegram init data found');
+          return res.status(400).json({ error: 'Invalid Telegram data' });
+        }
+      } else {
+        // Parse Telegram data
+        const decodedInitData = new URLSearchParams(initData);
+        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      }
+
+      if (!telegramUser?.id) {
+        console.error('No Telegram user ID found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      const { id } = req.params;
+      const collaboration = await storage.getCollaboration(id);
+      
+      if (!collaboration) {
+        return res.status(404).json({ error: 'Collaboration not found' });
+      }
+
+      return res.json(collaboration);
+    } catch (error) {
+      console.error("Error fetching collaboration:", error);
+      return res.status(500).json({ error: "Failed to fetch collaboration" });
+    }
+  });
+
   // Search collaborations
   app.get("/api/collaborations/search", async (req, res) => {
     console.log('============ DEBUG: Search Collaborations Endpoint ============');
