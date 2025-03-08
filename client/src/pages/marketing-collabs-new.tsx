@@ -252,7 +252,7 @@ export default function MarketingCollabs() {
   }
 
   return (
-    <div className="min-h-[100svh] bg-background pb-20">
+    <div className="min-h-[100svh] bg-background">
       <PageHeader
         title="Marketing Collabs"
         subtitle="Select your preferred collaboration types"
@@ -331,10 +331,8 @@ export default function MarketingCollabs() {
                                           ? "Join marketing campaigns with other Web3 companies on Twitter"
                                           : collabType === "Newsletter Feature"
                                           ? "Be featured in newsletters from other Web3 companies"
-                                          : collabType === "Community AMA"
-                                          ? "Host or participate in 'Ask Me Anything' sessions"
-                                          : collabType === "Research Report"
-                                          ? "Collaborate on research reports and industry insights"
+                                          : collabType === "Blog Post Feature" || collabType === "Report & Research Feature"
+                                          ? "Collaborate on content creation with other companies"
                                           : "Collaborate with other Web3 projects"
                                         }
                                       </p>
@@ -450,13 +448,13 @@ export default function MarketingCollabs() {
                 </Card>
               </TabsContent>
 
-              {/* Always visible filter panel at the bottom */}
-              <div className="fixed bottom-0 left-0 right-0 z-10 bg-background p-4 shadow-lg border-t">
-                <div className="space-y-4">
+              {/* Always visible filter panel at the bottom of the page */}
+              <Card>
+                <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Filter className="h-4 w-4" />
-                      <h3 className="text-base font-medium">Discovery Filters</h3>
+                      <CardTitle>Discovery Filters</CardTitle>
                     </div>
                     <FormField
                       control={form.control}
@@ -474,32 +472,125 @@ export default function MarketingCollabs() {
                       )}
                     />
                   </div>
-
+                  <CardDescription>
+                    Filter collaborations based on your preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   {matchingEnabled && (
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        variant={filtersEnabled.topics ? "default" : "outline"}
-                        size="sm"
-                        type="button"
-                        onClick={() => toggleFilter("topics")}
-                        className="flex items-center justify-center"
-                      >
-                        Topics ({form.watch("topics")?.length || 0})
-                      </Button>
+                    <div className="space-y-4">
+                      {/* Topics Filter */}
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-3 mb-1">
+                          <Switch
+                            checked={filtersEnabled.topics}
+                            onCheckedChange={() => toggleFilter("topics")}
+                          />
+                          <Label>Topics ({form.watch("topics")?.length || 0})</Label>
+                        </div>
+
+                        {filtersEnabled.topics && (
+                          <FormField
+                            control={form.control}
+                            name="topics"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {COLLAB_TOPICS.map((topic) => (
+                                    <FormItem
+                                      key={topic}
+                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(topic)}
+                                          onCheckedChange={(checked) => {
+                                            const currentTopics = field.value || [];
+                                            if (checked) {
+                                              field.onChange([...currentTopics, topic]);
+                                            } else {
+                                              field.onChange(
+                                                currentTopics.filter(
+                                                  (value) => value !== topic
+                                                )
+                                              );
+                                            }
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="text-sm font-normal">
+                                        {topic}
+                                      </FormLabel>
+                                    </FormItem>
+                                  ))}
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                      </div>
                       
-                      <Button
-                        variant={filtersEnabled.companySectors ? "default" : "outline"}
-                        size="sm"
-                        type="button"
-                        onClick={() => toggleFilter("companySectors")}
-                        className="flex items-center justify-center"
-                      >
-                        Sectors ({form.watch("companySectors")?.length || 0})
-                      </Button>
+                      {/* Company Sectors Filter */}
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-3 mb-1">
+                          <Switch
+                            checked={filtersEnabled.companySectors}
+                            onCheckedChange={() => toggleFilter("companySectors")}
+                          />
+                          <Label>Company Sectors ({form.watch("companySectors")?.length || 0})</Label>
+                        </div>
+
+                        {filtersEnabled.companySectors && (
+                          <FormField
+                            control={form.control}
+                            name="companySectors"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="grid grid-cols-1 gap-2">
+                                  {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+                                    <div key={category} className="mb-3">
+                                      <h4 className="text-sm font-medium mb-2">{category}</h4>
+                                      <div className="grid grid-cols-1 gap-2 ml-2">
+                                        {tags.map((tag) => (
+                                          <FormItem
+                                            key={tag}
+                                            className="flex flex-row items-start space-x-3 space-y-0"
+                                          >
+                                            <FormControl>
+                                              <Checkbox
+                                                checked={field.value?.includes(tag)}
+                                                onCheckedChange={(checked) => {
+                                                  const currentSectors = field.value || [];
+                                                  if (checked) {
+                                                    field.onChange([...currentSectors, tag]);
+                                                  } else {
+                                                    field.onChange(
+                                                      currentSectors.filter(
+                                                        (value) => value !== tag
+                                                      )
+                                                    );
+                                                  }
+                                                }}
+                                              />
+                                            </FormControl>
+                                            <FormLabel className="text-sm font-normal">
+                                              {tag}
+                                            </FormLabel>
+                                          </FormItem>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                      </div>
                     </div>
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               <div className="pt-6">
                 <Button className="w-full" type="submit" disabled={isSubmitting}>
