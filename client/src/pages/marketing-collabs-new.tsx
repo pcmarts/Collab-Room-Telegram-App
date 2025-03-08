@@ -378,6 +378,7 @@ export default function MarketingCollabs() {
                   </div>
                 )}
 
+                {/* Add a state to track if Co-Marketing on Twitter is selected */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Collaboration Types</CardTitle>
@@ -389,83 +390,87 @@ export default function MarketingCollabs() {
                     <FormField
                       control={form.control}
                       name="enabledCollabs"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="grid grid-cols-1 gap-2">
-                            {COLLAB_TYPES.map((collabType) => (
-                              <FormItem
-                                key={collabType}
-                                className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(collabType)}
-                                    onCheckedChange={(checked) => {
-                                      const currentTypes = field.value || [];
-                                      if (checked) {
-                                        field.onChange([...currentTypes, collabType]);
-                                      } else {
-                                        field.onChange(
-                                          currentTypes.filter(
-                                            (value) => value !== collabType
-                                          )
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal">{collabType}</FormLabel>
-                              </FormItem>
-                            ))}
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Twitter Collaborations</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Select which types of Twitter collaborations you're interested in finding
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <FormField
-                      control={form.control}
-                      name="enabledTwitterCollabs"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="grid grid-cols-1 gap-2">
-                            {TWITTER_COLLAB_TYPES.map((collabType) => (
-                              <FormItem
-                                key={collabType}
-                                className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(collabType)}
-                                    onCheckedChange={(checked) => {
-                                      const currentTypes = field.value || [];
-                                      if (checked) {
-                                        field.onChange([...currentTypes, collabType]);
-                                      } else {
-                                        field.onChange(
-                                          currentTypes.filter(
-                                            (value) => value !== collabType
-                                          )
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal">{collabType}</FormLabel>
-                              </FormItem>
-                            ))}
-                          </div>
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        // Check if "Co-Marketing on Twitter" is selected
+                        const isTwitterCoMarketingSelected = field.value?.includes("Co-Marketing on Twitter");
+                        
+                        return (
+                          <FormItem>
+                            <div className="grid grid-cols-1 gap-2">
+                              {COLLAB_TYPES.map((collabType) => (
+                                <div key={collabType}>
+                                  <FormItem
+                                    className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(collabType)}
+                                        onCheckedChange={(checked) => {
+                                          const currentTypes = field.value || [];
+                                          if (checked) {
+                                            field.onChange([...currentTypes, collabType]);
+                                          } else {
+                                            field.onChange(
+                                              currentTypes.filter(
+                                                (value) => value !== collabType
+                                              )
+                                            );
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">{collabType}</FormLabel>
+                                  </FormItem>
+                                  
+                                  {/* Conditionally render Twitter collaborations if this is "Co-Marketing on Twitter" */}
+                                  {collabType === "Co-Marketing on Twitter" && isTwitterCoMarketingSelected && (
+                                    <div className="pl-8 pr-4 pt-2 pb-4 space-y-2">
+                                      <p className="text-sm text-muted-foreground mb-2">
+                                        Select specific Twitter collaboration types:
+                                      </p>
+                                      <FormField
+                                        control={form.control}
+                                        name="enabledTwitterCollabs"
+                                        render={({ field: twitterField }) => (
+                                          <FormItem>
+                                            <div className="grid grid-cols-1 gap-2">
+                                              {TWITTER_COLLAB_TYPES.map((twitterCollabType) => (
+                                                <FormItem
+                                                  key={twitterCollabType}
+                                                  className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3"
+                                                >
+                                                  <FormControl>
+                                                    <Checkbox
+                                                      checked={twitterField.value?.includes(twitterCollabType)}
+                                                      onCheckedChange={(checked) => {
+                                                        const currentTypes = twitterField.value || [];
+                                                        if (checked) {
+                                                          twitterField.onChange([...currentTypes, twitterCollabType]);
+                                                        } else {
+                                                          twitterField.onChange(
+                                                            currentTypes.filter(
+                                                              (value) => value !== twitterCollabType
+                                                            )
+                                                          );
+                                                        }
+                                                      }}
+                                                    />
+                                                  </FormControl>
+                                                  <FormLabel className="text-sm font-normal">{twitterCollabType}</FormLabel>
+                                                </FormItem>
+                                              ))}
+                                            </div>
+                                          </FormItem>
+                                        )}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </FormItem>
+                        );
+                      }}
                     />
                   </CardContent>
                 </Card>
