@@ -3,6 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { 
+  CalendarDays, 
+  Coins, 
+  Filter, 
+  Twitter,
+  Users,
+  Clock,
+  Tag,
+  CheckCircle,
+  ChevronRight
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,18 +50,6 @@ import {
   ALL_COMPANY_TAGS,
   type Collaboration,
 } from "@shared/schema";
-
-import { 
-  Filter, 
-  CalendarDays, 
-  Users, 
-  Coins, 
-  Clock, 
-  Tag, 
-  CheckCircle, 
-  ChevronRight,
-  Twitter
-} from "lucide-react";
 
 // Filter interface for collaborations
 interface CollaborationFilters {
@@ -465,109 +464,358 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
     </div>
   );
   
-  return (
-    <MobileCheck>
-      <div className="min-h-[100svh] bg-background">
-        <PageHeader 
-          title="Browse Collaborations" 
-          subtitle="Find collaboration opportunities"
-        />
-        
-        <div className="p-4 space-y-4">
-          <div className="flex justify-end mb-4">
-            <Button 
-              variant="default" 
-              onClick={() => setLocation('/create-collaboration')}
-              size="sm"
-            >
-              Create New
-            </Button>
-          </div>
+  // Render single collaboration detail view
+  const renderSingleCollaboration = () => {
+    if (!singleCollaboration) return null;
+    
+    return (
+      <div className="space-y-6">
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-start">
+              <div>
+                <Badge className="mb-2">{singleCollaboration.collab_type}</Badge>
+                <CardTitle className="text-xl">{singleCollaboration.title}</CardTitle>
+              </div>
+              {singleCollaboration.details && 
+               typeof singleCollaboration.details === 'object' && 
+               'has_token' in singleCollaboration.details && 
+               singleCollaboration.details.has_token && (
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Coins className="h-3 w-3" /> Token
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
           
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="relative flex-grow">
-              <Input
-                type="text"
-                placeholder="Search collaborations..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pr-10"
-              />
+          <CardContent className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium mb-1">Description</h3>
+              <p className="text-sm text-gray-600">{singleCollaboration.description}</p>
             </div>
             
-            {isMobile ? (
-              <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="icon" className="shrink-0">
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                  <SheetHeader className="mb-5">
-                    <SheetTitle>Filters</SheetTitle>
-                    <SheetDescription>
-                      Narrow down your collaboration search
-                    </SheetDescription>
-                  </SheetHeader>
-                  <FilterPanel />
-                </SheetContent>
-              </Sheet>
-            ) : (
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="shrink-0"
-              >
-                <Filter className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-          
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Filters - Desktop */}
-            {!isMobile && isFilterOpen && (
-              <div className="md:w-1/4 shrink-0">
-                <div className="sticky top-6 border rounded-lg p-4 bg-card">
-                  <h2 className="text-lg font-semibold mb-4">Filters</h2>
-                  <FilterPanel />
+            <div className="flex flex-wrap gap-3">
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <CalendarDays className="h-3 w-3" />
+                <span>
+                  {singleCollaboration.date_type === 'flexible' 
+                    ? 'Flexible timing' 
+                    : singleCollaboration.specific_date 
+                      ? `Date: ${singleCollaboration.specific_date}` 
+                      : 'Specific date (unspecified)'}
+                </span>
+              </div>
+              
+              {singleCollaboration.details && 
+               typeof singleCollaboration.details === 'object' && 
+               'has_compensation' in singleCollaboration.details && 
+               singleCollaboration.details.has_compensation && (
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <Coins className="h-3 w-3" />
+                  <span>Paid opportunity</span>
+                </div>
+              )}
+              
+              {singleCollaboration.details && 
+               typeof singleCollaboration.details === 'object' && 
+               'required_min_followers' in singleCollaboration.details && 
+               singleCollaboration.details.required_min_followers && (
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <Twitter className="h-3 w-3" />
+                  <span>Min {singleCollaboration.details.required_min_followers} followers</span>
+                </div>
+              )}
+            </div>
+            
+            {singleCollaboration.required_company_sectors && 
+             singleCollaboration.required_company_sectors.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium mb-1">Required Company Sectors</h3>
+                <div className="flex flex-wrap gap-1">
+                  {Array.isArray(singleCollaboration.required_company_sectors) && 
+                    singleCollaboration.required_company_sectors.map((sector, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-xs">
+                        {sector}
+                      </Badge>
+                    ))
+                  }
                 </div>
               </div>
             )}
             
-            {/* Collaborations List */}
-            <div className={`${!isMobile && isFilterOpen ? 'md:w-3/4' : 'w-full'}`}>
-              {isLoading ? (
-                renderSkeletons()
-              ) : isError ? (
-                <div className="text-center py-8">
-                  <p className="text-red-500 mb-2">Failed to load collaborations</p>
-                  <Button variant="outline" onClick={() => refetch()}>
-                    Try Again
-                  </Button>
+            {/* Additional collaboration details based on type */}
+            {singleCollaboration.details && typeof singleCollaboration.details === 'object' && (
+              <div className="space-y-3 pt-2">
+                <h3 className="text-sm font-medium">Additional Details</h3>
+                
+                {/* Podcast details */}
+                {'podcast_name' in singleCollaboration.details && (
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-xs font-medium block">Podcast Name:</span>
+                      <span className="text-sm">{singleCollaboration.details.podcast_name}</span>
+                    </div>
+                    {'podcast_link' in singleCollaboration.details && (
+                      <div>
+                        <span className="text-xs font-medium block">Podcast Link:</span>
+                        <a 
+                          href={singleCollaboration.details.podcast_link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          {singleCollaboration.details.podcast_link}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Twitter spaces details */}
+                {'space_topic' in singleCollaboration.details && (
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-xs font-medium block">Space Topics:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {Array.isArray(singleCollaboration.details.space_topic) && 
+                          singleCollaboration.details.space_topic.map((topic, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {topic}
+                            </Badge>
+                          ))
+                        }
+                      </div>
+                    </div>
+                    {'host_follower_count' in singleCollaboration.details && (
+                      <div>
+                        <span className="text-xs font-medium block">Host Follower Count:</span>
+                        <span className="text-sm">{singleCollaboration.details.host_follower_count}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Newsletter details */}
+                {'newsletter_name' in singleCollaboration.details && (
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-xs font-medium block">Newsletter Name:</span>
+                      <span className="text-sm">{singleCollaboration.details.newsletter_name}</span>
+                    </div>
+                    {'subscriber_count' in singleCollaboration.details && (
+                      <div>
+                        <span className="text-xs font-medium block">Subscriber Count:</span>
+                        <span className="text-sm">{singleCollaboration.details.subscriber_count}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Research report details */}
+                {'report_topic' in singleCollaboration.details && (
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-xs font-medium block">Report Topic:</span>
+                      <span className="text-sm">{singleCollaboration.details.report_topic}</span>
+                    </div>
+                    {'estimated_reach' in singleCollaboration.details && (
+                      <div>
+                        <span className="text-xs font-medium block">Estimated Reach:</span>
+                        <span className="text-sm">{singleCollaboration.details.estimated_reach}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Twitter co-marketing details */}
+                {'comarketing_types' in singleCollaboration.details && (
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-xs font-medium block">Co-Marketing Types:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {Array.isArray(singleCollaboration.details.comarketing_types) && 
+                          singleCollaboration.details.comarketing_types.map((type, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {type}
+                            </Badge>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+          
+          <CardFooter className="flex gap-2">
+            <Button 
+              onClick={() => handleApply(singleCollaboration.id)} 
+              className="flex-1"
+            >
+              Apply
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setLocation('/browse-collaborations')}
+              className="flex-1"
+            >
+              Back to List
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  };
+  
+  // Variable for page title and subtitle based on view mode
+  const pageTitle = id ? "Collaboration Details" : "Browse Collaborations";
+  const pageSubtitle = id ? "View collaboration information" : "Find collaboration opportunities";
+  
+  // Check if we're in single collaboration view
+  const isLoading = id ? isSingleLoading : isListLoading;
+  const isError = id ? isSingleError : isListError;
+  
+  return (
+    <MobileCheck>
+      <div className="min-h-[100svh] bg-background">
+        <PageHeader 
+          title={pageTitle}
+          subtitle={pageSubtitle}
+          backUrl={id ? "/browse-collaborations" : "/dashboard"}
+        />
+        
+        <div className="p-4 space-y-4">
+          {/* Only show these UI elements in list view */}
+          {!id && (
+            <>
+              <div className="flex justify-end mb-4">
+                <Button 
+                  variant="default" 
+                  onClick={() => setLocation('/create-collaboration')}
+                  size="sm"
+                >
+                  Create New
+                </Button>
+              </div>
+              
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="relative flex-grow">
+                  <Input
+                    type="text"
+                    placeholder="Search collaborations..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pr-10"
+                  />
                 </div>
-              ) : collaborations && collaborations.length > 0 ? (
-                <div>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Showing {collaborations.length} collaboration{collaborations.length !== 1 ? 's' : ''}
-                  </p>
-                  {collaborations.map(collab => renderCollaborationCard(collab))}
-                </div>
-              ) : (
-                <div className="text-center py-12 border rounded-lg">
-                  <p className="text-gray-500 mb-4">No collaborations found</p>
-                  <p className="text-gray-400 text-sm mb-6">
-                    Try adjusting your filters or create a new collaboration
-                  </p>
+                
+                {isMobile ? (
+                  <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" size="icon" className="shrink-0">
+                        <Filter className="h-4 w-4" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                      <SheetHeader className="mb-5">
+                        <SheetTitle>Filters</SheetTitle>
+                        <SheetDescription>
+                          Narrow down your collaboration search
+                        </SheetDescription>
+                      </SheetHeader>
+                      <FilterPanel />
+                    </SheetContent>
+                  </Sheet>
+                ) : (
                   <Button 
-                    onClick={() => setLocation('/create-collaboration')}
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    className="shrink-0"
                   >
-                    Create New Collaboration
+                    <Filter className="h-4 w-4" />
                   </Button>
+                )}
+              </div>
+            </>
+          )}
+          
+          {/* Conditional rendering based on single or list view */}
+          {id ? (
+            // Single collaboration view
+            isLoading ? (
+              renderSkeletons()
+            ) : isError ? (
+              <div className="text-center py-8">
+                <p className="text-red-500 mb-2">Failed to load collaboration</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setLocation('/browse-collaborations')}
+                >
+                  Back to List
+                </Button>
+              </div>
+            ) : singleCollaboration ? (
+              renderSingleCollaboration()
+            ) : (
+              <div className="text-center py-12 border rounded-lg">
+                <p className="text-gray-500 mb-4">Collaboration not found</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setLocation('/browse-collaborations')}
+                >
+                  Back to List
+                </Button>
+              </div>
+            )
+          ) : (
+            // List view with filters
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Filters - Desktop */}
+              {!isMobile && isFilterOpen && (
+                <div className="md:w-1/4 shrink-0">
+                  <div className="sticky top-6 border rounded-lg p-4 bg-card">
+                    <h2 className="text-lg font-semibold mb-4">Filters</h2>
+                    <FilterPanel />
+                  </div>
                 </div>
               )}
+              
+              {/* Collaborations List */}
+              <div className={`${!isMobile && isFilterOpen ? 'md:w-3/4' : 'w-full'}`}>
+                {isLoading ? (
+                  renderSkeletons()
+                ) : isError ? (
+                  <div className="text-center py-8">
+                    <p className="text-red-500 mb-2">Failed to load collaborations</p>
+                    <Button variant="outline" onClick={() => refetch()}>
+                      Try Again
+                    </Button>
+                  </div>
+                ) : collaborations && collaborations.length > 0 ? (
+                  <div>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Showing {collaborations.length} collaboration{collaborations.length !== 1 ? 's' : ''}
+                    </p>
+                    {collaborations.map(collab => renderCollaborationCard(collab))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 border rounded-lg">
+                    <p className="text-gray-500 mb-4">No collaborations found</p>
+                    <p className="text-gray-400 text-sm mb-6">
+                      Try adjusting your filters or create a new collaboration
+                    </p>
+                    <Button 
+                      onClick={() => setLocation('/create-collaboration')}
+                    >
+                      Create New Collaboration
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </MobileCheck>
