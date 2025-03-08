@@ -786,16 +786,17 @@ export default function CreateCollaboration() {
                     control={form.control}
                     name="is_free_collab"
                     render={({ field }) => (
-                      <FormItem className="border p-4 rounded-md bg-amber-50">
+                      <FormItem className="border p-4 rounded-md bg-background border-primary/20">
                         <div className="flex items-start space-x-3 space-y-0">
                           <FormControl>
                             <Checkbox
                               checked={field.value}
                               onCheckedChange={field.onChange}
+                              className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                             />
                           </FormControl>
                           <div className="space-y-1">
-                            <FormLabel className="font-medium">This is a completely free collaboration</FormLabel>
+                            <FormLabel className="font-medium text-primary">This is a completely free collaboration</FormLabel>
                             <FormDescription>
                               I confirm this collab is 100% free with no payments, fees, or commercial aspects involved. 
                               Money-related collabs aren't allowed on our platform.
