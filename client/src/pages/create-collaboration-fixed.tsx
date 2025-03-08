@@ -52,6 +52,7 @@ export default function CreateCollaboration() {
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollabType, setSelectedCollabType] = useState<typeof COLLAB_TYPES[number] | "">("");
+  const [showTwitterFields, setShowTwitterFields] = useState(false);
 
   // Track which filters are enabled
   const [filtersEnabled, setFiltersEnabled] = useState({
@@ -96,6 +97,9 @@ export default function CreateCollaboration() {
   const handleCollabTypeChange = (value: typeof COLLAB_TYPES[number]) => {
     setSelectedCollabType(value);
     form.setValue("collab_type", value);
+    
+    // Set showTwitterFields based on the selected collaboration type
+    setShowTwitterFields(value === "Co-Marketing on Twitter");
     
     // Clear the details object completely first to prevent field value bleed
     // We need to set a temporary empty object that matches the expected type
@@ -552,6 +556,52 @@ export default function CreateCollaboration() {
                       </FormItem>
                     )}
                   />
+                  
+                  {/* Twitter Co-Marketing Fields - Only shown when that type is selected */}
+                  {showTwitterFields && (
+                    <div className="mt-4 p-4 border rounded-md bg-slate-50">
+                      <div className="font-medium mb-4">Twitter Co-Marketing Details</div>
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="details.collaboration_type"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Twitter Collaboration Type</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select collaboration type" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {TWITTER_COLLAB_TYPES.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                      {type}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="details.host_twitter_handle"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Host Twitter Handle</FormLabel>
+                              <FormControl>
+                                <Input placeholder="@yourhandle" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
                   
                   <FormField
                     control={form.control}
