@@ -123,10 +123,12 @@ export default function MarketingCollabs() {
       // Set initial state for collabs to host
       setCollabsToHost(savedCollabsToHost);
       
-      // For now, we'll start with empty Twitter collabs as they're new
+      // Load twitter collabs if they exist
+      const twitterCollabs = profileData.preferences.twitter_collabs || [];
+      
       form.reset({
         enabledCollabs,
-        enabledTwitterCollabs: [],
+        enabledTwitterCollabs: twitterCollabs,
         matchingEnabled: false,
         companySectors: [],
         topics: [],
@@ -167,10 +169,11 @@ export default function MarketingCollabs() {
       const updateData = {
         ...profileData?.preferences,
         collabs_to_host: collabsToHost,
-        collabs_to_discover: data.enabledCollabs
+        collabs_to_discover: data.enabledCollabs,
+        twitter_collabs: data.enabledTwitterCollabs || []
       };
 
-      // Add twitter collabs and filter settings in a real implementation
+      // Twitter collabs are now saved in the preferences
 
       const response = await apiRequest('/api/preferences', 'POST', updateData);
 
