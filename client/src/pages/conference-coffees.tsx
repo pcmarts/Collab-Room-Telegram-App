@@ -12,62 +12,118 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { 
+import {
   Form,
   FormControl,
   FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { 
-  COMPANY_TAG_CATEGORIES, 
-  FUNDING_STAGES, 
-  TWITTER_FOLLOWER_COUNTS 
+import {
+  COMPANY_TAG_CATEGORIES,
+  TWITTER_FOLLOWER_COUNTS,
+  FUNDING_STAGES,
 } from "@shared/schema";
 
-interface EventWithAttending extends Event {
-  isAttending: boolean;
-}
-
-// Define schema for coffee match criteria form
+// Form schema for coffee match criteria
 const coffeeMatchCriteriaSchema = z.object({
   matchingEnabled: z.boolean().default(false),
-  companySectors: z.array(z.string()).optional(),
-  companyFollowers: z.string().optional(),
-  userFollowers: z.string().optional(),
-  fundingStages: z.array(z.string()).optional(),
-  tokenStatus: z.boolean().optional(),
+  companySectors: z.array(z.string()).default([]),
+  companyFollowers: z.string().default(TWITTER_FOLLOWER_COUNTS[0]),
+  userFollowers: z.string().default(TWITTER_FOLLOWER_COUNTS[0]),
+  fundingStages: z.array(z.string()).default([]),
+  tokenStatus: z.boolean().default(false),
 });
 
+// Type for form data
 type CoffeeMatchCriteria = z.infer<typeof coffeeMatchCriteriaSchema>;
 
 export default function ConferenceCoffees() {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [_, setLocation] = useLocation();
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("attending");
-  
-  // Track which filters are enabled
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [filtersEnabled, setFiltersEnabled] = useState({
     companySectors: false,
     companyFollowers: false,
     userFollowers: false,
     fundingStages: false,
-    tokenStatus: false
+    tokenStatus: false,
   });
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
+
+  // Format date helper
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  // Fetch events and user events
+  const { data: events = [] } = useQuery<Event[]>({
+    queryKey: ["/api/events"],
+    staleTime: 60 * 1000, // 1 minute
+  });
+
+  const { data: userEvents = [] } = useQuery<UserEvent[]>({
+    queryKey: ["/api/user-events"],
+    staleTime: 60 * 1000, // 1 minute
+  });
+
+  // Toggle event attendance
+  const toggleEventAttendance = async (eventId: string) => {
+    setIsSubmitting(true);
+    try {
+      const isAttending = userEvents.some((ue) => ue.event_id === eventId);
+
+      if (isAttending) {
+        // Remove user from event
+        const userEvent = userEvents.find((ue) => ue.event_id === eventId);
+        if (userEvent) {
+          await apiRequest(`/api/user-events/${userEvent.id}`, "DELETE");
+          toast({
+            title: "You're no longer attending",
+            description: "You've been removed from this event",
+          });
+        }
+      } else {
+        // Add user to event
+        await apiRequest("/api/user-events", "POST", { event_id: eventId });
+        toast({
+          title: "You're attending!",
+          description: "You've been added to this event",
+        });
+      }
+
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/user-events"] });
+    } catch (error) {
+      console.error("Failed to update attendance:", error);
+      toast({
+        title: "Failed to update attendance",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Coffee match criteria form
   const form = useForm<CoffeeMatchCriteria>({
@@ -79,131 +135,56 @@ export default function ConferenceCoffees() {
       tokenStatus: false,
       companyFollowers: TWITTER_FOLLOWER_COUNTS[0],
       userFollowers: TWITTER_FOLLOWER_COUNTS[0],
-    }
+    },
   });
-  
+
   // Toggle filter visibility
   const toggleFilter = (filterName: keyof typeof filtersEnabled) => {
-    setFiltersEnabled(prev => ({
+    setFiltersEnabled((prev) => ({
       ...prev,
-      [filterName]: !prev[filterName]
+      [filterName]: !prev[filterName],
     }));
   };
-  
-  // Watch for changes to matching enabled
+
+  // Extract the matchingEnabled value from form
   const matchingEnabled = form.watch("matchingEnabled");
-  
+
+  // Submit criteria
   const onSubmitCriteria = async (data: CoffeeMatchCriteria) => {
-    console.log("Coffee match criteria:", data);
+    setIsSubmitting(true);
+    console.log("Submitting criteria:", data);
+
     try {
-      setIsSubmitting(true);
-      
-      // TODO: Implement API endpoint to save coffee match criteria
-      
+      // In a real app, this would send the criteria to the server
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+
       toast({
-        title: "Success!",
-        description: "Your coffee match criteria have been saved",
-        duration: 2000
+        title: "Criteria saved",
+        description: "Your coffee match criteria have been updated",
       });
-      
     } catch (error) {
-      console.error('Failed to save coffee match criteria:', error);
+      console.error("Failed to save criteria:", error);
       toast({
+        title: "Failed to save criteria",
+        description: "Please try again later",
         variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save criteria"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Fetch events and user's attending events
-  const { data: events, isLoading: eventsLoading, error: eventsError } = useQuery<Event[]>({
-    queryKey: ['/api/events']
-  });
-
-  const { data: userEvents, isLoading: userEventsLoading, error: userEventsError } = useQuery<UserEvent[]>({
-    queryKey: ['/api/user-events']
-  });
-
-  // Combined loading state
-  const isLoading = eventsLoading || userEventsLoading;
-
-  // Handle errors
-  if (eventsError) {
-    console.error('Events fetch error:', eventsError);
-    return <div>Error loading events. Please try again.</div>;
-  }
-
-  if (userEventsError) {
-    console.error('User events fetch error:', userEventsError);
-    return <div>Error loading user events. Please try again.</div>;
-  }
-
-  // Filter out past events
-  const activeEvents = events?.map(event => ({
-    ...event,
-    isAttending: userEvents?.some(ue => ue.event_id === event.id) || false
-  })).filter(event => 
-    new Date(event.end_date) > new Date()
-  ).sort((a, b) => 
-    new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
-  ) || [];
-
-  const toggleEventAttendance = async (eventId: string) => {
-    try {
-      setIsSubmitting(true);
-
-      const response = await apiRequest(
-        'POST',
-        '/api/user-events',
-        { event_id: eventId }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to update event attendance');
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ['/api/user-events'] });
-
-      toast({
-        title: "Success!",
-        description: "Your conference selection has been updated",
-        duration: 2000
-      });
-
-    } catch (error) {
-      console.error('Failed to update event attendance:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update event attendance"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const formatDate = (dateString: string | Date) => {
-    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-    return date.toLocaleDateString('en-US', { 
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[100svh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+  // Combine events with user attendance data
+  const activeEvents = events
+    .filter((event) => new Date(event.end_date) >= new Date()) // Only future events
+    .map((event) => ({
+      ...event,
+      isAttending: userEvents.some((ue) => ue.event_id === event.id),
+    }))
+    .sort(
+      (a, b) =>
+        new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
     );
-  }
-
-  console.log('Events data:', events);
-  console.log('User events data:', userEvents);
-  console.log('Active events:', activeEvents);
 
   return (
     <div className="min-h-[100svh] bg-background">
@@ -213,15 +194,11 @@ export default function ConferenceCoffees() {
         backUrl="/dashboard"
       />
 
-      <Tabs 
-        defaultValue="attending" 
-        onValueChange={setActiveTab}
-        className="w-full"
-      >
+      <Tabs defaultValue="attending" onValueChange={setActiveTab}>
         <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="attending">1️⃣ Attending</TabsTrigger>
-            <TabsTrigger value="criteria">2️⃣ Coffee Match Criteria</TabsTrigger>
+            <TabsTrigger value="attending">✔️ Attending</TabsTrigger>
+            <TabsTrigger value="criteria">🔍 Coffee Match Criteria</TabsTrigger>
           </TabsList>
         </div>
 
@@ -229,11 +206,12 @@ export default function ConferenceCoffees() {
           <TabsContent value="attending" className="space-y-4 mt-0">
             <Label className="text-lg">Select Your Conferences</Label>
             <p className="text-sm text-muted-foreground mb-4">
-              Choose the conferences you'll be attending to connect with other attendees
+              Choose the conferences you'll be attending to connect with other
+              attendees
             </p>
 
             <div className="grid gap-4">
-              {activeEvents.map(event => (
+              {activeEvents.map((event) => (
                 <Card key={event.id}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -241,7 +219,8 @@ export default function ConferenceCoffees() {
                         <h3 className="font-medium">{event.name}</h3>
                         <div className="flex items-center text-sm text-muted-foreground">
                           <Calendar className="h-4 w-4 mr-2" />
-                          {formatDate(event.start_date)} - {formatDate(event.end_date)}
+                          {formatDate(event.start_date)} -{" "}
+                          {formatDate(event.end_date)}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           📍 {event.city}
@@ -260,10 +239,13 @@ export default function ConferenceCoffees() {
               ))}
             </div>
           </TabsContent>
-          
+
           <TabsContent value="criteria" className="space-y-4 mt-0">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitCriteria)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmitCriteria)}
+                className="space-y-6"
+              >
                 <Card>
                   <CardHeader>
                     <CardTitle>Coffee Match Discovery</CardTitle>
@@ -282,8 +264,8 @@ export default function ConferenceCoffees() {
                               Enable Coffee Match Discovery
                             </FormLabel>
                             <FormDescription>
-                              {field.value 
-                                ? "Matching enabled - you'll be matched with filtered contacts" 
+                              {field.value
+                                ? "Matching enabled - you'll be matched with filtered contacts"
                                 : "Matching disabled - you'll be matched with everyone"}
                             </FormDescription>
                           </div>
@@ -298,13 +280,14 @@ export default function ConferenceCoffees() {
                     />
                   </CardContent>
                 </Card>
-                
+
                 {matchingEnabled && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Filtering Criteria</CardTitle>
+                      <CardTitle>Filtering Criteria (optional)</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Set requirements for who you'd like to meet at conferences
+                        Set optional requirements for who you'd like to meet at
+                        conferences
                       </p>
                     </CardHeader>
                     <CardContent className="space-y-6">
@@ -312,11 +295,11 @@ export default function ConferenceCoffees() {
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
                           checked={filtersEnabled.companySectors}
-                          onCheckedChange={() => toggleFilter('companySectors')}
+                          onCheckedChange={() => toggleFilter("companySectors")}
                         />
                         <Label>Filter by Company Sectors</Label>
                       </div>
-                      
+
                       {filtersEnabled.companySectors && (
                         <FormField
                           control={form.control}
@@ -324,38 +307,54 @@ export default function ConferenceCoffees() {
                           render={({ field }) => (
                             <FormItem>
                               <div className="grid grid-cols-2 gap-2">
-                                {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-                                  <div key={category} className="space-y-2 mb-4">
-                                    <Label className="font-medium">{category}</Label>
-                                    <div className="space-y-2">
-                                      {tags.map(tag => (
-                                        <FormItem
-                                          key={tag}
-                                          className="flex flex-row items-start space-x-3 space-y-0"
-                                        >
-                                          <FormControl>
-                                            <Checkbox
-                                              checked={field.value?.includes(tag)}
-                                              onCheckedChange={(checked) => {
-                                                const currentTags = field.value || [];
-                                                if (checked) {
-                                                  field.onChange([...currentTags, tag]);
-                                                } else {
-                                                  field.onChange(
-                                                    currentTags.filter(value => value !== tag)
-                                                  );
-                                                }
-                                              }}
-                                            />
-                                          </FormControl>
-                                          <FormLabel className="text-sm font-normal">
-                                            {tag}
-                                          </FormLabel>
-                                        </FormItem>
-                                      ))}
+                                {Object.entries(COMPANY_TAG_CATEGORIES).map(
+                                  ([category, tags]) => (
+                                    <div
+                                      key={category}
+                                      className="space-y-2 mb-4"
+                                    >
+                                      <Label className="font-medium">
+                                        {category}
+                                      </Label>
+                                      <div className="space-y-2">
+                                        {tags.map((tag) => (
+                                          <FormItem
+                                            key={tag}
+                                            className="flex flex-row items-start space-x-3 space-y-0"
+                                          >
+                                            <FormControl>
+                                              <Checkbox
+                                                checked={field.value?.includes(
+                                                  tag,
+                                                )}
+                                                onCheckedChange={(checked) => {
+                                                  const currentTags =
+                                                    field.value || [];
+                                                  if (checked) {
+                                                    field.onChange([
+                                                      ...currentTags,
+                                                      tag,
+                                                    ]);
+                                                  } else {
+                                                    field.onChange(
+                                                      currentTags.filter(
+                                                        (value) =>
+                                                          value !== tag,
+                                                      ),
+                                                    );
+                                                  }
+                                                }}
+                                              />
+                                            </FormControl>
+                                            <FormLabel className="text-sm font-normal">
+                                              {tag}
+                                            </FormLabel>
+                                          </FormItem>
+                                        ))}
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  ),
+                                )}
                               </div>
                             </FormItem>
                           )}
@@ -366,11 +365,13 @@ export default function ConferenceCoffees() {
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
                           checked={filtersEnabled.companyFollowers}
-                          onCheckedChange={() => toggleFilter('companyFollowers')}
+                          onCheckedChange={() =>
+                            toggleFilter("companyFollowers")
+                          }
                         />
                         <Label>Minimum Company Followers</Label>
                       </div>
-                      
+
                       {filtersEnabled.companyFollowers && (
                         <FormField
                           control={form.control}
@@ -403,11 +404,11 @@ export default function ConferenceCoffees() {
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
                           checked={filtersEnabled.userFollowers}
-                          onCheckedChange={() => toggleFilter('userFollowers')}
+                          onCheckedChange={() => toggleFilter("userFollowers")}
                         />
                         <Label>Minimum User Followers</Label>
                       </div>
-                      
+
                       {filtersEnabled.userFollowers && (
                         <FormField
                           control={form.control}
@@ -440,11 +441,11 @@ export default function ConferenceCoffees() {
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
                           checked={filtersEnabled.fundingStages}
-                          onCheckedChange={() => toggleFilter('fundingStages')}
+                          onCheckedChange={() => toggleFilter("fundingStages")}
                         />
                         <Label>Filter by Funding Stage</Label>
                       </div>
-                      
+
                       {filtersEnabled.fundingStages && (
                         <FormField
                           control={form.control}
@@ -452,7 +453,7 @@ export default function ConferenceCoffees() {
                           render={({ field }) => (
                             <FormItem>
                               <div className="grid grid-cols-2 gap-2">
-                                {FUNDING_STAGES.map(stage => (
+                                {FUNDING_STAGES.map((stage) => (
                                   <FormItem
                                     key={stage}
                                     className="flex flex-row items-start space-x-3 space-y-0"
@@ -461,12 +462,18 @@ export default function ConferenceCoffees() {
                                       <Checkbox
                                         checked={field.value?.includes(stage)}
                                         onCheckedChange={(checked) => {
-                                          const currentStages = field.value || [];
+                                          const currentStages =
+                                            field.value || [];
                                           if (checked) {
-                                            field.onChange([...currentStages, stage]);
+                                            field.onChange([
+                                              ...currentStages,
+                                              stage,
+                                            ]);
                                           } else {
                                             field.onChange(
-                                              currentStages.filter(value => value !== stage)
+                                              currentStages.filter(
+                                                (value) => value !== stage,
+                                              ),
                                             );
                                           }
                                         }}
@@ -487,11 +494,11 @@ export default function ConferenceCoffees() {
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
                           checked={filtersEnabled.tokenStatus}
-                          onCheckedChange={() => toggleFilter('tokenStatus')}
+                          onCheckedChange={() => toggleFilter("tokenStatus")}
                         />
                         <Label>Has Token</Label>
                       </div>
-                      
+
                       {filtersEnabled.tokenStatus && (
                         <FormField
                           control={form.control}
@@ -505,7 +512,9 @@ export default function ConferenceCoffees() {
                                     onCheckedChange={field.onChange}
                                   />
                                 </FormControl>
-                                <FormLabel>Only show companies with a token</FormLabel>
+                                <FormLabel>
+                                  Only show companies with a token
+                                </FormLabel>
                               </div>
                             </FormItem>
                           )}
@@ -514,15 +523,19 @@ export default function ConferenceCoffees() {
                     </CardContent>
                   </Card>
                 )}
-                
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? (
                     <>
                       <span className="mr-2">Saving...</span>
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-r-transparent" />
                     </>
                   ) : (
-                    'Save Coffee Match Criteria'
+                    "Save Coffee Match Criteria"
                   )}
                 </Button>
               </form>
