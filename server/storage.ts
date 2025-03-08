@@ -70,15 +70,23 @@ export class DatabaseStorage implements IStorage {
   
   // Collaboration methods
   async createCollaboration(collaboration: InsertCollaboration): Promise<Collaboration> {
+    // Process dates properly - ensure specific_date is a string
+    let collabWithProcessedDates = { ...collaboration };
+    
+    // Remove problematic date fields if they're not needed
+    if (collabWithProcessedDates.date_type === 'any_future_date') {
+      delete collabWithProcessedDates.specific_date;
+    }
+    
     // Ensure array fields are properly formatted
     const preparedData = {
-      ...collaboration,
-      required_company_sectors: Array.isArray(collaboration.required_company_sectors) 
-        ? collaboration.required_company_sectors 
-        : (collaboration.required_company_sectors ? [collaboration.required_company_sectors] : []),
-      required_funding_stages: Array.isArray(collaboration.required_funding_stages) 
-        ? collaboration.required_funding_stages 
-        : (collaboration.required_funding_stages ? [collaboration.required_funding_stages] : []),
+      ...collabWithProcessedDates,
+      required_company_sectors: Array.isArray(collabWithProcessedDates.required_company_sectors) 
+        ? collabWithProcessedDates.required_company_sectors 
+        : (collabWithProcessedDates.required_company_sectors ? [collabWithProcessedDates.required_company_sectors] : []),
+      required_funding_stages: Array.isArray(collabWithProcessedDates.required_funding_stages) 
+        ? collabWithProcessedDates.required_funding_stages 
+        : (collabWithProcessedDates.required_funding_stages ? [collabWithProcessedDates.required_funding_stages] : []),
       created_at: new Date(),
       updated_at: new Date()
     };

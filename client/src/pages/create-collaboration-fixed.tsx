@@ -77,7 +77,7 @@ export default function CreateCollaboration() {
       description: "Created using Collab Room", // Default description (hidden from user)
       collab_type: COLLAB_TYPES[0],
       date_type: "specific_date",
-      specific_date: new Date().toISOString().split('T')[0],
+      specific_date: new Date().toISOString().split('T')[0], // Use ISO string format YYYY-MM-DD
       required_company_sectors: [],
       required_funding_stages: [],
       required_token_status: false,
@@ -167,18 +167,16 @@ export default function CreateCollaboration() {
     console.log("Form data to be submitted:", data);
     setIsSubmitting(true);
     try {
-      // Ensure proper date formatting
+      // Create a clean copy of the data without any type issues
       let formattedData = { ...data };
       
-      // Handle specific_date if present (ensure it's a string)
+      // Handle specific_date - only include if date_type is specific_date
       if (data.date_type === 'specific_date' && data.specific_date) {
-        // If it's already a string in ISO format, keep it, otherwise convert
-        if (typeof data.specific_date === 'object' && data.specific_date instanceof Date) {
-          formattedData.specific_date = data.specific_date.toISOString().split('T')[0];
-        } else if (typeof data.specific_date === 'string') {
-          // Ensure the string is in YYYY-MM-DD format
-          formattedData.specific_date = data.specific_date;
-        }
+        // Keep it as a simple string
+        formattedData.specific_date = String(data.specific_date);
+      } else {
+        // Remove specific_date if not needed
+        delete formattedData.specific_date;
       }
       
       // Ensure specific optional fields are in proper format
