@@ -662,8 +662,27 @@ export async function registerRoutes(app: Express) {
       // Set fresh updated timestamp
       updateData.updated_at = new Date();
       
-      // Debug the cleaned data
-      console.log('Cleaned update data:', JSON.stringify(updateData));
+      // Better detailed logging
+      console.log('=== DETAILED UPDATE DATA DEBUG ===');
+      console.log('1. Original data received:', JSON.stringify(req.body, null, 2));
+      console.log('2. Type of details object:', typeof updateData.details);
+      
+      // Log specific nested fields we're concerned about
+      if (updateData.details && typeof updateData.details === 'object') {
+        console.log('3. Nested details fields:');
+        console.log('   - collaboration_types:', JSON.stringify(updateData.details.collaboration_types));
+        console.log('   - host_follower_count:', updateData.details.host_follower_count);
+        console.log('   - host_twitter_handle:', updateData.details.host_twitter_handle);
+      }
+      
+      console.log('4. Other important fields:');
+      console.log('   - required_company_sectors:', JSON.stringify(updateData.required_company_sectors));
+      console.log('   - required_funding_stages:', JSON.stringify(updateData.required_funding_stages));
+      console.log('   - min_company_followers:', updateData.min_company_followers);
+      console.log('   - min_user_followers:', updateData.min_user_followers);
+      
+      console.log('5. Cleaned update data:', JSON.stringify(updateData, null, 2));
+      console.log('=== END DEBUG ===');
       
       // Update the collaboration
       const [updatedCollab] = await db.update(collaborations)
