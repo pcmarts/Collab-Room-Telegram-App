@@ -66,14 +66,11 @@ export const TWITTER_COLLAB_TYPES = [
   "Joint Campaign",
   "Giveaway",
   "Retweet & Boost",
-  "Sponsored Tweet",
   "Poll/Q&A",
-  "AMA",
   "Shoutout",
   "Tweet Swap",
   "Meme/Viral Collab",
-  "Twitter List Collab",
-  "Exclusive Announcement"
+  "Twitter List Collab"
 ] as const;
 
 export const AUDIENCE_SIZE_RANGES = [
