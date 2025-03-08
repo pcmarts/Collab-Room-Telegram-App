@@ -204,14 +204,14 @@ export default function MarketingCollabs() {
         collabs_to_host: collabsToHost,
         collabs_to_discover: data.enabledCollabs,
         twitter_collabs: data.enabledTwitterCollabs || [],
-        // Save filter preferences if filtering is enabled with correct field names
-        // If filter is disabled, we still save the user's preferences but they won't be applied
+        // Save filter preferences if filtering is enabled
+        // When main toggle is disabled, we don't apply filters but still store the values
         excluded_tags: data.matchingEnabled ? (filtersEnabled.topics ? data.topics : []) : [],
-        coffee_match_company_sectors: data.matchingEnabled ? (filtersEnabled.companySectors ? data.companySectors : []) : [],
-        coffee_match_company_followers: data.matchingEnabled ? (filtersEnabled.companyFollowers ? data.companyFollowers : null) : null,
-        coffee_match_user_followers: data.matchingEnabled ? (filtersEnabled.userFollowers ? data.userFollowers : null) : null,
-        coffee_match_funding_stages: data.matchingEnabled ? (filtersEnabled.fundingStages ? data.fundingStages : []) : [],
-        coffee_match_token_status: data.matchingEnabled ? (filtersEnabled.hasToken ? data.hasToken : false) : false
+        coffee_match_company_sectors: data.matchingEnabled ? (filtersEnabled.companySectors ? data.companySectors : []) : data.companySectors || [],
+        coffee_match_company_followers: data.matchingEnabled ? (filtersEnabled.companyFollowers ? data.companyFollowers : null) : data.companyFollowers,
+        coffee_match_user_followers: data.matchingEnabled ? (filtersEnabled.userFollowers ? data.userFollowers : null) : data.userFollowers,
+        coffee_match_funding_stages: data.matchingEnabled ? (filtersEnabled.fundingStages ? data.fundingStages : []) : data.fundingStages || [],
+        coffee_match_token_status: data.matchingEnabled ? (filtersEnabled.hasToken ? data.hasToken : false) : data.hasToken
       };
 
       console.log("Saving preferences data:", updateData);
