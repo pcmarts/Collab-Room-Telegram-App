@@ -79,6 +79,7 @@ export default function CreateCollaboration() {
       collab_type: COLLAB_TYPES[0],
       date_type: "specific_date",
       specific_date: new Date().toISOString().split('T')[0], // Use ISO string format YYYY-MM-DD
+      topics: [], // Initialize empty topics array
       required_company_sectors: [],
       required_funding_stages: [],
       required_token_status: false,
