@@ -13,6 +13,28 @@ export const COLLAB_TYPES = [
   "Blog Post Feature"
 ] as const;
 
+// Standardized topic list used throughout the app
+export const COLLAB_TOPICS = [
+  "AI",
+  "Airdrops",
+  "Bitcoin",
+  "Creator Economy",
+  "Crypto",
+  "DeFi",
+  "Ethereum",
+  "Fundraising",
+  "Infrastructure",
+  "Memes & Culture",
+  "NFT",
+  "Real-World Assets (RWA)",
+  "SocialFi",
+  "Solana",
+  "Stablecoins",
+  "Web3 Gaming",
+  "Web3 Marketing",
+  "ZK Tech"
+] as const;
+
 export const NOTIFICATION_FREQUENCIES = ["Instant", "Daily", "Weekly"] as const;
 
 export const FUNDING_STAGES = ["Pre-seed", "Seed", "Series A", "Series B+"] as const;
@@ -219,6 +241,7 @@ export const collaborations = pgTable('collaborations', {
   description: text('description').notNull(),
   status: text('status').notNull().default('active'),
   // Common filtering criteria
+  topics: text('topics').array(), // Standardized topics for the collaboration
   required_company_sectors: text('required_company_sectors').array(),
   required_funding_stages: text('required_funding_stages').array(),
   required_token_status: boolean('required_token_status'),
@@ -392,6 +415,9 @@ export const createCollaborationSchema = z.object({
   description: z.string().min(10, "Description is required"),
   date_type: z.enum(["any_future_date", "specific_date"]),
   specific_date: z.string().optional(),
+  
+  // Topics for the collaboration
+  topics: z.array(z.enum(COLLAB_TOPICS)).min(1, "At least one topic is required"),
   
   // Filtering criteria
   required_company_sectors: z.array(z.string()).optional(),
