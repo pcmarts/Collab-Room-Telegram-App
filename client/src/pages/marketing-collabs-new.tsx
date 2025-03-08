@@ -131,17 +131,15 @@ export default function MarketingCollabs() {
         (profileData.preferences.excluded_tags && profileData.preferences.excluded_tags.length > 0) || 
         (profileData.preferences.coffee_match_company_sectors && profileData.preferences.coffee_match_company_sectors.length > 0);
         
-      // Update filter toggles based on preferences
-      if (hasFilterPreferences) {
-        setFiltersEnabled({
-          topics: profileData.preferences.excluded_tags && profileData.preferences.excluded_tags.length > 0,
-          companySectors: profileData.preferences.coffee_match_company_sectors && profileData.preferences.coffee_match_company_sectors.length > 0,
-          companyFollowers: !!profileData.preferences.coffee_match_company_followers,
-          userFollowers: !!profileData.preferences.coffee_match_user_followers,
-          fundingStages: profileData.preferences.coffee_match_funding_stages && profileData.preferences.coffee_match_funding_stages.length > 0,
-          hasToken: !!profileData.preferences.coffee_match_token_status
-        });
-      }
+      // Always reset filter toggles based on preferences
+      setFiltersEnabled({
+        topics: profileData.preferences.excluded_tags && profileData.preferences.excluded_tags.length > 0,
+        companySectors: profileData.preferences.coffee_match_company_sectors && profileData.preferences.coffee_match_company_sectors.length > 0,
+        companyFollowers: !!profileData.preferences.coffee_match_company_followers,
+        userFollowers: !!profileData.preferences.coffee_match_user_followers,
+        fundingStages: profileData.preferences.coffee_match_funding_stages && profileData.preferences.coffee_match_funding_stages.length > 0,
+        hasToken: !!profileData.preferences.coffee_match_token_status
+      });
       
       // Get saved filter data if available
       form.reset({
@@ -179,6 +177,21 @@ export default function MarketingCollabs() {
   
   // Get matchingEnabled value from form
   const matchingEnabled = form.watch("matchingEnabled");
+  
+  // React to main matching toggle changes
+  useEffect(() => {
+    // If matching is disabled, make sure all filter toggles are turned off
+    if (!matchingEnabled) {
+      setFiltersEnabled({
+        topics: false,
+        companySectors: false,
+        companyFollowers: false,
+        userFollowers: false,
+        fundingStages: false,
+        hasToken: false
+      });
+    }
+  }, [matchingEnabled]);
 
   const onSubmit = async (data: MarketingCollabFormData) => {
     setIsSubmitting(true);
@@ -192,12 +205,13 @@ export default function MarketingCollabs() {
         collabs_to_discover: data.enabledCollabs,
         twitter_collabs: data.enabledTwitterCollabs || [],
         // Save filter preferences if filtering is enabled with correct field names
-        excluded_tags: data.matchingEnabled ? data.topics : [],
-        coffee_match_company_sectors: data.matchingEnabled ? data.companySectors : [],
-        coffee_match_company_followers: data.matchingEnabled ? data.companyFollowers : null,
-        coffee_match_user_followers: data.matchingEnabled ? data.userFollowers : null,
-        coffee_match_funding_stages: data.matchingEnabled ? data.fundingStages : [],
-        coffee_match_token_status: data.matchingEnabled ? data.hasToken : false
+        // If filter is disabled, we still save the user's preferences but they won't be applied
+        excluded_tags: data.matchingEnabled ? (filtersEnabled.topics ? data.topics : []) : [],
+        coffee_match_company_sectors: data.matchingEnabled ? (filtersEnabled.companySectors ? data.companySectors : []) : [],
+        coffee_match_company_followers: data.matchingEnabled ? (filtersEnabled.companyFollowers ? data.companyFollowers : null) : null,
+        coffee_match_user_followers: data.matchingEnabled ? (filtersEnabled.userFollowers ? data.userFollowers : null) : null,
+        coffee_match_funding_stages: data.matchingEnabled ? (filtersEnabled.fundingStages ? data.fundingStages : []) : [],
+        coffee_match_token_status: data.matchingEnabled ? (filtersEnabled.hasToken ? data.hasToken : false) : false
       };
 
       console.log("Saving preferences data:", updateData);
