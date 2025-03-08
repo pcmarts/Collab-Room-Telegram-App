@@ -47,7 +47,9 @@ function Router() {
           {/* Collaboration Routes */}
           <Route path="/browse-collaborations" component={BrowseCollaborations} />
           <Route path="/create-collaboration" component={CreateCollaborationFixed} />
-          <Route path="/my-collaborations" component={MyCollaborations} />
+          <Route path="/my-collaborations">
+            <Redirect to="/marketing-collabs" />
+          </Route>
           <Route path="/apply/:id">
             {(params: {id: string}) => <Apply id={params.id} />}
           </Route>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -8,7 +8,23 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Users, CalendarDays, Clock, Coins, Sliders } from "lucide-react";
+import { 
+  Loader2, 
+  Plus, 
+  Users, 
+  CalendarDays, 
+  Clock, 
+  Coins, 
+  Sliders, 
+  Check, 
+  X, 
+  Eye, 
+  MessageSquare, 
+  UserCheck, 
+  UserX, 
+  ListChecks, 
+  Trash2 
+} from "lucide-react";
 import { 
   COLLAB_TYPES, 
   TWITTER_COLLAB_TYPES,
@@ -17,7 +33,9 @@ import {
   COMPANY_TAG_CATEGORIES,
   AUDIENCE_SIZE_RANGES,
   FUNDING_STAGES, 
-  type Collaboration
+  type Collaboration,
+  type CollabApplication,
+  type ApplicationData
 } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
@@ -36,6 +54,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Separator } from "@/components/ui/separator";
 
 // Marketing Collab Schema
 const marketingCollabSchema = z.object({
@@ -74,6 +114,20 @@ export default function MarketingCollabs() {
   // Collabs to host toggle state
   const [collabsToHost, setCollabsToHost] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Live collaborations toggle state
+  const [activeCollabs, setActiveCollabs] = useState<Record<string, boolean>>({});
+  
+  // Delete collaboration dialog state
+  const [collabToDelete, setCollabToDelete] = useState<string | null>(null);
+  
+  // Application detail dialog state
+  const [selectedApplication, setSelectedApplication] = useState<CollabApplication | null>(null);
+  const [applicationDialogOpen, setApplicationDialogOpen] = useState(false);
+  
+  // Application status update
+  const [processingApplicationId, setProcessingApplicationId] = useState<string | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
 
   // Fetch existing data
   const { data: profileData, isLoading } = useQuery<ProfileData>({
@@ -89,9 +143,201 @@ export default function MarketingCollabs() {
         throw new Error("Failed to fetch collaborations");
       }
       const data = await response.json();
+      
+      // Initialize activeCollabs state based on fetched data
+      const statusMap: Record<string, boolean> = {};
+      data.forEach((collab: Collaboration) => {
+        statusMap[collab.id] = collab.status === 'active';
+      });
+      setActiveCollabs(statusMap);
+      
       return data as Collaboration[];
     }
   });
+  
+  // Fetch user's applications
+  const { data: applications, isLoading: isLoadingApps } = useQuery({
+    queryKey: ['/api/my-applications'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/my-applications', 'GET');
+      if (!response.ok) {
+        throw new Error("Failed to fetch applications");
+      }
+      const data = await response.json();
+      return data as CollabApplication[];
+    }
+  });
+  
+  // Handle toggling collaboration active state
+  const toggleCollaborationMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string, status: 'active' | 'paused' }) => {
+      const response = await apiRequest(`/api/collaborations/${id}/status`, 'PATCH', { status });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update collaboration status');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      // Invalidate and refetch queries related to collaborations
+      queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+    }
+  });
+
+  // Handle toggling collaboration active state
+  const handleToggleActive = async (collabId: string, isActive: boolean) => {
+    // Update local state immediately for responsive UI
+    setActiveCollabs(prev => ({
+      ...prev,
+      [collabId]: isActive
+    }));
+    
+    try {
+      await toggleCollaborationMutation.mutateAsync({
+        id: collabId,
+        status: isActive ? 'active' : 'paused'
+      });
+      
+      toast({
+        title: isActive ? "Collaboration Activated" : "Collaboration Paused",
+        description: isActive 
+          ? "Your collaboration is now visible to potential partners" 
+          : "Your collaboration is now hidden from discovery",
+        duration: 3000
+      });
+    } catch (error) {
+      // Revert local state if the API call fails
+      setActiveCollabs(prev => ({
+        ...prev,
+        [collabId]: !isActive
+      }));
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update collaboration status",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Handle deleting a collaboration
+  const handleDeleteCollaboration = async () => {
+    if (!collabToDelete) return;
+    
+    try {
+      const response = await apiRequest(`/api/collaborations/${collabToDelete}`, 'DELETE');
+      
+      if (response.ok) {
+        toast({
+          title: "Collaboration Deleted",
+          description: "Your collaboration has been deleted successfully",
+        });
+        
+        // Refresh the collaborations data
+        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete collaboration');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete collaboration",
+        variant: "destructive",
+      });
+    } finally {
+      // Reset the delete state
+      setCollabToDelete(null);
+    }
+  };
+  
+  // Handle approving an application
+  const handleApproveApplication = async (applicationId: string) => {
+    setProcessingApplicationId(applicationId);
+    try {
+      const response = await apiRequest(
+        `/api/collaborations/applications/${applicationId}`, 
+        'PATCH',
+        { 
+          status: 'approved',
+          message: feedbackMessage 
+        }
+      );
+      
+      if (response.ok) {
+        toast({
+          title: "Application Approved",
+          description: "The applicant has been notified of your decision.",
+        });
+        
+        // Close dialog and reset state
+        setApplicationDialogOpen(false);
+        setSelectedApplication(null);
+        setFeedbackMessage("");
+        
+        // Invalidate queries to refresh data
+        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to approve application');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to approve application",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingApplicationId(null);
+    }
+  };
+  
+  // Handle rejecting an application
+  const handleRejectApplication = async (applicationId: string) => {
+    setProcessingApplicationId(applicationId);
+    try {
+      const response = await apiRequest(
+        `/api/collaborations/applications/${applicationId}`, 
+        'PATCH',
+        { 
+          status: 'rejected',
+          message: feedbackMessage 
+        }
+      );
+      
+      if (response.ok) {
+        toast({
+          title: "Application Rejected",
+          description: "The applicant has been notified of your decision.",
+        });
+        
+        // Close dialog and reset state
+        setApplicationDialogOpen(false);
+        setSelectedApplication(null);
+        setFeedbackMessage("");
+        
+        // Invalidate queries to refresh data
+        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to reject application');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to reject application",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingApplicationId(null);
+    }
+  };
+  
+  // View application details
+  const viewApplicationDetails = (application: CollabApplication) => {
+    setSelectedApplication(application);
+    setApplicationDialogOpen(true);
+  };
 
   // Initialize form with react-hook-form
   const form = useForm<MarketingCollabFormData>({
@@ -197,6 +443,356 @@ export default function MarketingCollabs() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Render a collaboration card
+  const renderCollaborationCard = (collab: Collaboration) => {
+    // Check if there are any pending applications
+    const pendingApplications = collab.applications?.filter(app => app.status === 'pending') || [];
+    const hasApplications = pendingApplications.length > 0;
+    
+    // Get active state from local state or default to true
+    const isActive = activeCollabs[collab.id] !== undefined 
+      ? activeCollabs[collab.id] 
+      : collab.status === 'active';
+    
+    return (
+      <Card key={collab.id} className="mb-4">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
+            <div>
+              <Badge className="mb-2">{collab.collab_type}</Badge>
+              <CardTitle className="text-xl">
+                {collab.title === "Collaboration" ? collab.collab_type : collab.title}
+              </CardTitle>
+            </div>
+            {hasApplications && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Users className="h-3 w-3" /> {pendingApplications.length} application{pendingApplications.length !== 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="pb-2">
+          <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+            {collab.description.includes("Created using Collab Room") 
+              ? collab.description.replace("Created using Collab Room.", "").trim() 
+              : collab.description}
+          </p>
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <CalendarDays className="h-3 w-3" />
+              <span>{collab.date_type === 'flexible' ? 'Flexible timing' : 'Specific date'}</span>
+            </div>
+            
+            {collab.has_compensation && (
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <Coins className="h-3 w-3" />
+                <span>Paid opportunity</span>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <Clock className="h-3 w-3" />
+              <span>Created on {new Date(collab.created_at).toLocaleDateString()}</span>
+            </div>
+          </div>
+          
+          {/* Active toggle */}
+          <div className="flex items-center justify-between border-t pt-3">
+            <div className="flex items-center space-x-2">
+              <Switch 
+                checked={isActive}
+                onCheckedChange={(checked) => handleToggleActive(collab.id, checked)}
+              />
+              <span className="text-sm font-medium">
+                {isActive ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+            <div>
+              <Badge 
+                variant={isActive ? "default" : "outline"}
+                className="text-xs"
+              >
+                {isActive ? 'Live' : 'Paused'}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <div className="flex flex-wrap gap-2 w-full">
+            <Button 
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => setLocation(`/collaboration/edit/${collab.id}`)}
+            >
+              Edit
+            </Button>
+            
+            {hasApplications ? (
+              <Button 
+                variant="default"
+                size="sm"
+                className="flex-1"
+                onClick={() => setLocation(`/collaboration/${collab.id}/applications`)}
+              >
+                <ListChecks className="h-4 w-4 mr-1" /> 
+                View Applications
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex-1 text-red-500 hover:text-red-600 hover:bg-red-50"
+                onClick={() => setCollabToDelete(collab.id)}
+              >
+                <Trash2 className="h-4 w-4 mr-1" /> Delete
+              </Button>
+            )}
+          </div>
+        </CardFooter>
+      </Card>
+    );
+  };
+  
+  // Render an application card
+  const renderApplicationCard = (application: CollabApplication) => {
+    // Parse the application data
+    let applicationData: ApplicationData = {} as ApplicationData;
+    try {
+      applicationData = application.application_data as unknown as ApplicationData;
+    } catch (error) {
+      console.error("Error parsing application data:", error);
+    }
+    
+    // Get status badge variant
+    const getStatusBadge = () => {
+      switch (application.status) {
+        case 'approved':
+          return (
+            <Badge variant="success" className="flex items-center gap-1">
+              <Check className="h-3 w-3" /> Approved
+            </Badge>
+          );
+        case 'rejected':
+          return (
+            <Badge variant="destructive" className="flex items-center gap-1">
+              <X className="h-3 w-3" /> Rejected
+            </Badge>
+          );
+        default:
+          return (
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Clock className="h-3 w-3" /> Pending
+            </Badge>
+          );
+      }
+    };
+    
+    return (
+      <Card key={application.id} className="mb-4">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-sm text-gray-500 mb-1">
+                Applied on {new Date(application.created_at).toLocaleDateString()}
+              </p>
+              <CardTitle className="text-xl">
+                {application.collaboration?.title || "Collaboration Title"}
+              </CardTitle>
+            </div>
+            {getStatusBadge()}
+          </div>
+        </CardHeader>
+        <CardContent className="pb-2">
+          {applicationData.reason && (
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-1">Your reason for applying:</p>
+              <p className="text-sm text-gray-600 line-clamp-3">{applicationData.reason}</p>
+            </div>
+          )}
+          
+          {applicationData.experience && (
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-1">Your experience:</p>
+              <p className="text-sm text-gray-600 line-clamp-2">{applicationData.experience}</p>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter>
+          <Button 
+            variant="outline"
+            className="w-full"
+            onClick={() => viewApplicationDetails(application)}
+          >
+            <Eye className="h-4 w-4 mr-2" /> View Details
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  };
+  
+  // Render skeleton loaders
+  const renderSkeletons = () => {
+    return Array(3).fill(0).map((_, index) => (
+      <Card key={index} className="mb-4">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-6 w-20 mb-2" />
+          <Skeleton className="h-7 w-3/4" />
+        </CardHeader>
+        <CardContent className="pb-2">
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-2/3 mb-4" />
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-36" />
+          </div>
+          
+          <div className="flex items-center justify-between border-t pt-3">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <div className="flex gap-2 w-full">
+            <Skeleton className="h-9 flex-1" />
+            <Skeleton className="h-9 flex-1" />
+          </div>
+        </CardFooter>
+      </Card>
+    ));
+  };
+  
+  // Render application details for dialog
+  const renderApplicationDetails = () => {
+    if (!selectedApplication) return null;
+    
+    let applicationData: ApplicationData = {} as ApplicationData;
+    try {
+      applicationData = selectedApplication.application_data as unknown as ApplicationData;
+    } catch (error) {
+      console.error("Error parsing application data:", error);
+    }
+    
+    return (
+      <div className="py-4">
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <p className="font-medium">Applied For:</p>
+            <p className="text-sm">{selectedApplication.collaboration?.title || "Collaboration"}</p>
+          </div>
+          
+          <Separator />
+          
+          <div>
+            <p className="font-medium">Applicant:</p>
+            <p className="text-sm">{selectedApplication.user?.name || "User"}</p>
+          </div>
+          
+          <div>
+            <p className="font-medium">Status:</p>
+            <div className="mt-1">
+              {selectedApplication.status === 'pending' ? (
+                <Badge variant="outline" className="flex items-center w-fit gap-1">
+                  <Clock className="h-3 w-3" /> Pending Review
+                </Badge>
+              ) : selectedApplication.status === 'approved' ? (
+                <Badge variant="success" className="flex items-center w-fit gap-1">
+                  <Check className="h-3 w-3" /> Approved
+                </Badge>
+              ) : (
+                <Badge variant="destructive" className="flex items-center w-fit gap-1">
+                  <X className="h-3 w-3" /> Rejected
+                </Badge>
+              )}
+            </div>
+          </div>
+          
+          <Separator />
+          
+          {applicationData.reason && (
+            <div>
+              <p className="font-medium">Reason for Applying:</p>
+              <p className="text-sm mt-1">{applicationData.reason}</p>
+            </div>
+          )}
+          
+          {applicationData.experience && (
+            <div>
+              <p className="font-medium">Relevant Experience:</p>
+              <p className="text-sm mt-1">{applicationData.experience}</p>
+            </div>
+          )}
+          
+          {applicationData.portfolioLink && (
+            <div>
+              <p className="font-medium">Portfolio Link:</p>
+              <p className="text-sm mt-1 text-blue-500">
+                <a href={applicationData.portfolioLink} target="_blank" rel="noopener noreferrer">
+                  {applicationData.portfolioLink}
+                </a>
+              </p>
+            </div>
+          )}
+          
+          {applicationData.additionalInfo && (
+            <div>
+              <p className="font-medium">Additional Information:</p>
+              <p className="text-sm mt-1">{applicationData.additionalInfo}</p>
+            </div>
+          )}
+          
+          {selectedApplication.status === 'pending' && (
+            <div className="mt-4 space-y-4">
+              <Separator />
+              
+              <div>
+                <p className="font-medium">Feedback to Applicant:</p>
+                <Textarea 
+                  placeholder="Add a message to the applicant (optional)..."
+                  className="mt-2"
+                  value={feedbackMessage}
+                  onChange={(e) => setFeedbackMessage(e.target.value)}
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <Button 
+                  variant="destructive" 
+                  className="flex-1"
+                  onClick={() => handleRejectApplication(selectedApplication.id)}
+                  disabled={processingApplicationId === selectedApplication.id}
+                >
+                  {processingApplicationId === selectedApplication.id ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <UserX className="h-4 w-4 mr-2" />
+                  )}
+                  Reject
+                </Button>
+                <Button 
+                  className="flex-1"
+                  onClick={() => handleApproveApplication(selectedApplication.id)}
+                  disabled={processingApplicationId === selectedApplication.id}
+                >
+                  {processingApplicationId === selectedApplication.id ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <UserCheck className="h-4 w-4 mr-2" />
+                  )}
+                  Approve
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -496,10 +1092,7 @@ export default function MarketingCollabs() {
                   </div>
                   
                   {isLoadingCollabs ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-20 w-full" />
-                      <Skeleton className="h-20 w-full" />
-                    </div>
+                    renderSkeletons()
                   ) : !collaborations || collaborations.length === 0 ? (
                     <Card>
                       <CardContent className="text-center py-8">
@@ -515,60 +1108,58 @@ export default function MarketingCollabs() {
                     </Card>
                   ) : (
                     <div className="space-y-3">
-                      {collaborations.map((collab) => (
-                        <Card key={collab.id} className="overflow-hidden">
-                          <CardHeader className="p-4 pb-2">
-                            <CardTitle className="text-base flex items-center justify-between">
-                              <span className="truncate">{collab.title}</span>
-                              <Badge variant={collab.status === "active" ? "default" : "outline"}>
-                                {collab.status === "active" ? "Active" : "Draft"}
-                              </Badge>
-                            </CardTitle>
-                            <div className="text-xs text-muted-foreground">
-                              {collab.collab_type}
-                            </div>
-                          </CardHeader>
-                          <CardContent className="p-4 pt-0 space-y-2">
-                            <div className="flex items-center text-xs text-muted-foreground gap-2">
-                              <CalendarDays className="h-3 w-3" />
-                              <span>
-                                {collab.created_at ? format(new Date(collab.created_at), 'MMM d, yyyy') : 'No date'}
-                              </span>
-                            </div>
-                            
-                            <div className="flex items-center text-xs text-muted-foreground gap-2">
-                              <Clock className="h-3 w-3" />
-                              <span>{collab.date_type === 'specific_date' ? 'Specific date' : 'Flexible timing'}</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 mt-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="w-full text-xs"
-                                onClick={() => setLocation(`/create-collaboration/${collab.id}`)}
-                              >
-                                Edit
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="destructive" 
-                                className="text-xs"
-                                onClick={() => {
-                                  // Would implement delete here
-                                  toast({
-                                    description: "Delete functionality will be implemented soon",
-                                  });
-                                }}
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                      {collaborations.map(collab => renderCollaborationCard(collab))}
                     </div>
                   )}
+                  
+                  {/* Application Details Dialog */}
+                  <Dialog open={applicationDialogOpen} onOpenChange={setApplicationDialogOpen}>
+                    <DialogContent className="sm:max-w-[600px]">
+                      <DialogHeader>
+                        <DialogTitle>Application Details</DialogTitle>
+                        <DialogDescription>
+                          Review the application information
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      {renderApplicationDetails()}
+                      
+                      <DialogFooter>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setApplicationDialogOpen(false);
+                            setSelectedApplication(null);
+                            setFeedbackMessage("");
+                          }}
+                        >
+                          Close
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                  
+                  {/* Delete Confirmation Dialog */}
+                  <AlertDialog open={!!collabToDelete} onOpenChange={(open) => !open && setCollabToDelete(null)}>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Collaboration</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete this collaboration 
+                          and remove its data from our servers.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteCollaboration}
+                          className="bg-red-500 hover:bg-red-600"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </TabsContent>
 
