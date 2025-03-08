@@ -439,6 +439,10 @@ export default function CreateCollaboration() {
         );
 
       case "Co-Marketing on Twitter":
+        // Only render this if NOT showing the inline fields
+        if (showTwitterFields) {
+          return null;
+        }
         return (
           <div className="space-y-4">
             <FormField
@@ -599,6 +603,30 @@ export default function CreateCollaboration() {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                          control={form.control}
+                          name="details.host_follower_count"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Host Follower Count</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select follower count" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                                    <SelectItem key={count} value={count}>
+                                      {count}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     </div>
                   )}
@@ -658,7 +686,7 @@ export default function CreateCollaboration() {
                 </CardContent>
               </Card>
               
-              {selectedCollabType && renderCollabTypeSpecificFields() && (
+              {selectedCollabType && renderCollabTypeSpecificFields() && !showTwitterFields && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Collaboration Details</CardTitle>
