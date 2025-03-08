@@ -473,6 +473,68 @@ export async function registerRoutes(app: Express) {
     }
   });
   
+  // Endpoint to fetch user's applications
+  app.get("/api/my-applications", async (req, res) => {
+    try {
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      let telegramUser;
+
+      if (!initData) {
+        // In development, use fallback data if Telegram data is missing
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Using development fallback for Telegram data');
+          telegramUser = {
+            id: '12345',
+            username: 'test_user',
+            first_name: 'Test',
+            last_name: 'User'
+          };
+        } else {
+          console.error('No Telegram init data found');
+          return res.status(400).json({ error: 'Invalid Telegram data' });
+        }
+      } else {
+        // Parse Telegram data
+        const decodedInitData = new URLSearchParams(initData);
+        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+      }
+
+      if (!telegramUser?.id) {
+        console.error('No Telegram user ID found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get user's applications
+      const userApplications = await storage.getUserApplications(user.id);
+      
+      // We need to join collaboration data to each application
+      const applicationsWithCollabData = await Promise.all(
+        userApplications.map(async (app) => {
+          const collab = await storage.getCollaboration(app.collaboration_id);
+          return {
+            ...app,
+            collaboration: collab
+          };
+        })
+      );
+
+      res.json(applicationsWithCollabData);
+    } catch (error) {
+      console.error('Failed to fetch user applications:', error);
+      res.status(500).json({ error: 'Failed to fetch applications' });
+    }
+  });
+  
   // Create a new collaboration
   app.post("/api/collaborations", async (req, res) => {
     console.log('============ DEBUG: Create Collaboration Endpoint ============');
