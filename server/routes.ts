@@ -395,6 +395,8 @@ export async function registerRoutes(app: Express) {
           collabs_to_host: collab_host,
           notification_frequency,
           excluded_tags: excluded,
+          // Twitter specific preferences
+          twitter_collabs: Array.isArray(twitter_collabs) ? twitter_collabs : [],
           // Include coffee match preferences
           coffee_match_enabled: coffee_match_enabled === true,
           coffee_match_company_sectors: company_sectors,
