@@ -216,7 +216,7 @@ export default function CreateCollaboration() {
           title: "Success!",
           description: "Your collaboration has been posted.",
         });
-        setLocation('/my-collabs');
+        setLocation('/my-collaborations');
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to create collaboration');

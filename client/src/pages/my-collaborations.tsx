@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileCheck } from "@/components/MobileCheck";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 import { 
   type Collaboration, 
@@ -507,99 +508,105 @@ export default function MyCollaborations() {
   
   return (
     <MobileCheck>
-      <div className="container mx-auto py-6 px-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">My Collaborations</h1>
-          <Button 
-            variant="default" 
-            onClick={() => setLocation('/create-collaboration')}
+      <div className="min-h-[100svh] bg-background">
+        <PageHeader
+          title="My Collaborations"
+          backUrl="/dashboard"
+        />
+        
+        <div className="container mx-auto py-4 px-4">
+          <div className="flex justify-end mb-4">
+            <Button 
+              variant="default" 
+              onClick={() => setLocation('/create-collaboration')}
+            >
+              Create New
+            </Button>
+          </div>
+          
+          <Tabs 
+            defaultValue="my-collabs" 
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
           >
-            Create New
-          </Button>
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="my-collabs">My Collaborations</TabsTrigger>
+              <TabsTrigger value="my-applications">My Applications</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="my-collabs" className="mt-0">
+              {isLoadingCollabs ? (
+                renderSkeletons()
+              ) : collaborations && collaborations.length > 0 ? (
+                <div>
+                  {collaborations.map(collab => renderCollaborationCard(collab))}
+                </div>
+              ) : (
+                <div className="text-center py-12 border rounded-lg">
+                  <p className="text-gray-500 mb-4">You haven't created any collaborations yet</p>
+                  <p className="text-gray-400 text-sm mb-6">
+                    Create your first collaboration to connect with others in the blockchain space
+                  </p>
+                  <Button 
+                    onClick={() => setLocation('/create-collaboration')}
+                  >
+                    Create Collaboration
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="my-applications" className="mt-0">
+              {isLoadingApps ? (
+                renderSkeletons()
+              ) : applications && applications.length > 0 ? (
+                <div>
+                  {applications.map(app => renderApplicationCard(app))}
+                </div>
+              ) : (
+                <div className="text-center py-12 border rounded-lg">
+                  <p className="text-gray-500 mb-4">You haven't applied to any collaborations yet</p>
+                  <p className="text-gray-400 text-sm mb-6">
+                    Browse available collaborations and apply to ones that interest you
+                  </p>
+                  <Button 
+                    onClick={() => setLocation('/browse-collaborations')}
+                  >
+                    Browse Collaborations
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+          
+          {/* Application Details Dialog */}
+          <Dialog open={applicationDialogOpen} onOpenChange={setApplicationDialogOpen}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Application Details</DialogTitle>
+                <DialogDescription>
+                  Review the application information
+                </DialogDescription>
+              </DialogHeader>
+              
+              {renderApplicationDetails()}
+              
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setApplicationDialogOpen(false);
+                    setSelectedApplication(null);
+                    setFeedbackMessage("");
+                  }}
+                >
+                  Close
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
-        
-        <Tabs 
-          defaultValue="my-collabs" 
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="my-collabs">My Collaborations</TabsTrigger>
-            <TabsTrigger value="my-applications">My Applications</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="my-collabs" className="mt-0">
-            {isLoadingCollabs ? (
-              renderSkeletons()
-            ) : collaborations && collaborations.length > 0 ? (
-              <div>
-                {collaborations.map(collab => renderCollaborationCard(collab))}
-              </div>
-            ) : (
-              <div className="text-center py-12 border rounded-lg">
-                <p className="text-gray-500 mb-4">You haven't created any collaborations yet</p>
-                <p className="text-gray-400 text-sm mb-6">
-                  Create your first collaboration to connect with others in the blockchain space
-                </p>
-                <Button 
-                  onClick={() => setLocation('/create-collaboration')}
-                >
-                  Create Collaboration
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="my-applications" className="mt-0">
-            {isLoadingApps ? (
-              renderSkeletons()
-            ) : applications && applications.length > 0 ? (
-              <div>
-                {applications.map(app => renderApplicationCard(app))}
-              </div>
-            ) : (
-              <div className="text-center py-12 border rounded-lg">
-                <p className="text-gray-500 mb-4">You haven't applied to any collaborations yet</p>
-                <p className="text-gray-400 text-sm mb-6">
-                  Browse available collaborations and apply to ones that interest you
-                </p>
-                <Button 
-                  onClick={() => setLocation('/browse-collaborations')}
-                >
-                  Browse Collaborations
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-        
-        {/* Application Details Dialog */}
-        <Dialog open={applicationDialogOpen} onOpenChange={setApplicationDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Application Details</DialogTitle>
-              <DialogDescription>
-                Review the application information
-              </DialogDescription>
-            </DialogHeader>
-            
-            {renderApplicationDetails()}
-            
-            <DialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setApplicationDialogOpen(false);
-                  setSelectedApplication(null);
-                  setFeedbackMessage("");
-                }}
-              >
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </MobileCheck>
   );
