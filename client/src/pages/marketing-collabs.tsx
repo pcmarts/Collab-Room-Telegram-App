@@ -96,7 +96,8 @@ export default function MarketingCollabs() {
       const collabsToDiscover = profileData.preferences.collabs_to_discover || [];
       
       // Combine to get all enabled collabs
-      const enabledCollabs = [...new Set([...collabsToHost, ...collabsToDiscover])];
+      const uniqueCollabs = new Set([...collabsToHost, ...collabsToDiscover]);
+      const enabledCollabs = Array.from(uniqueCollabs);
       
       // For now, we'll start with empty Twitter collabs as they're new
       form.reset({

@@ -14,7 +14,7 @@ import ApplicationStatus from "@/pages/application-status";
 import MarketingCollabs from "@/pages/marketing-collabs";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
-import MatchingFilters from "@/pages/matching-filters";
+
 import BrowseCollaborations from "@/pages/browse-collaborations";
 import CreateCollaboration from "@/pages/create-collaboration-fixed";
 import MyCollaborations from "@/pages/my-collaborations";
@@ -63,9 +63,9 @@ function Router() {
           {/* Profile Routes */}
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route path="/company-info" component={CompanyInfo} />
-          <Route path="/matching-filters" component={MatchingFilters} />
+
           <Route path="/not-found" component={NotFound} />
-          <Route component={NotFound} />
+          <Route path="*" component={NotFound} />
         </Switch>
       </div>
     </div>
