@@ -322,140 +322,93 @@ export default function MarketingCollabs() {
               
               <TabsContent value="host" className="space-y-4 mt-0">
                 <div className="space-y-6">
-                  <div>
-                    <Label className="text-lg">Collaborations I Can Host</Label>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Select the types of collaborations your company can offer
-                    </p>
-                    <div className="grid grid-cols-1 gap-2">
-                      {COLLAB_TYPES.map(type => (
-                        <Button
-                          key={type}
-                          type="button"
-                          variant={collabsToHost.includes(type) ? "default" : "outline"}
-                          className="justify-start h-auto py-3 px-4"
-                          onClick={() => handleCollabsToHostToggle(type)}
+                  <div className="flex items-center justify-between mb-4">
+                    <Label className="text-lg">My Active Collaborations</Label>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setLocation('/create-collaboration')}
+                      className="flex items-center"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create New
+                    </Button>
+                  </div>
+                  
+                  {isLoadingCollabs ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-20 w-full" />
+                      <Skeleton className="h-20 w-full" />
+                    </div>
+                  ) : !collaborations || collaborations.length === 0 ? (
+                    <Card>
+                      <CardContent className="text-center py-8">
+                        <p className="text-muted-foreground mb-4">You don't have any active collaborations yet</p>
+                        <Button 
+                          onClick={() => setLocation('/create-collaboration')}
+                          className="flex items-center"
                         >
-                          <span className="text-left">{type}</span>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create Collaboration
                         </Button>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-3">
+                      {collaborations.map((collab) => (
+                        <Card key={collab.id} className="overflow-hidden">
+                          <CardHeader className="p-4 pb-2">
+                            <CardTitle className="text-base flex items-center justify-between">
+                              <span className="truncate">{collab.title}</span>
+                              <Badge variant={collab.status === "active" ? "default" : "outline"}>
+                                {collab.status === "active" ? "Active" : "Draft"}
+                              </Badge>
+                            </CardTitle>
+                            <div className="text-xs text-muted-foreground">
+                              {collab.collab_type}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-4 pt-0 space-y-2">
+                            <div className="flex items-center text-xs text-muted-foreground gap-2">
+                              <CalendarDays className="h-3 w-3" />
+                              <span>
+                                {collab.created_at ? format(new Date(collab.created_at), 'MMM d, yyyy') : 'No date'}
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center text-xs text-muted-foreground gap-2">
+                              <Clock className="h-3 w-3" />
+                              <span>{collab.date_type === 'specific_date' ? 'Specific date' : 'Flexible timing'}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 mt-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="w-full text-xs"
+                                onClick={() => setLocation(`/create-collaboration/${collab.id}`)}
+                              >
+                                Edit
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive" 
+                                className="text-xs"
+                                onClick={() => {
+                                  // Would implement delete here
+                                  toast({
+                                    description: "Delete functionality will be implemented soon",
+                                  });
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
                       ))}
                     </div>
-                  </div>
-                  
-                  <Button 
-                    className="w-full"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      if (JSON.stringify(collabsToHost) !== JSON.stringify(profileData?.preferences?.collabs_to_host || [])) {
-                        onSubmit(form.getValues());
-                      } else {
-                        toast({
-                          title: "No changes",
-                          description: "You haven't changed any collaboration preferences",
-                          duration: 2000
-                        });
-                      }
-                    }}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      "Save Collaboration Preferences"
-                    )}
-                  </Button>
-                  
-                  <div className="mt-8">
-                    <div className="flex items-center justify-between mb-4">
-                      <Label className="text-lg">My Active Collaborations</Label>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setLocation('/create-collaboration')}
-                        className="flex items-center"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        New
-                      </Button>
-                    </div>
-                    
-                    {isLoadingCollabs ? (
-                      <div className="space-y-2">
-                        <Skeleton className="h-20 w-full" />
-                        <Skeleton className="h-20 w-full" />
-                      </div>
-                    ) : !collaborations || collaborations.length === 0 ? (
-                      <Card>
-                        <CardContent className="text-center py-8">
-                          <p className="text-muted-foreground mb-4">You don't have any active collaborations yet</p>
-                          <Button 
-                            onClick={() => setLocation('/create-collaboration')}
-                            className="flex items-center"
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Create Collaboration
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ) : (
-                      <div className="space-y-3">
-                        {collaborations.map((collab) => (
-                          <Card key={collab.id} className="overflow-hidden">
-                            <CardHeader className="p-4 pb-2">
-                              <CardTitle className="text-base flex items-center justify-between">
-                                <span className="truncate">{collab.title}</span>
-                                <Badge variant={collab.status === "active" ? "default" : "outline"}>
-                                  {collab.status === "active" ? "Active" : "Draft"}
-                                </Badge>
-                              </CardTitle>
-                              <div className="text-xs text-muted-foreground">
-                                {collab.collab_type}
-                              </div>
-                            </CardHeader>
-                            <CardContent className="p-4 pt-0 space-y-2">
-                              <div className="flex items-center text-xs text-muted-foreground gap-2">
-                                <CalendarDays className="h-3 w-3" />
-                                <span>
-                                  {collab.created_at ? format(new Date(collab.created_at), 'MMM d, yyyy') : 'No date'}
-                                </span>
-                              </div>
-                              
-                              <div className="flex items-center text-xs text-muted-foreground gap-2">
-                                <Clock className="h-3 w-3" />
-                                <span>{collab.date_type === 'specific_date' ? 'Specific date' : 'Flexible timing'}</span>
-                              </div>
-                              
-                              <div className="flex items-center gap-2 mt-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="w-full text-xs"
-                                  onClick={() => setLocation(`/create-collaboration/${collab.id}`)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="destructive" 
-                                  className="text-xs"
-                                  onClick={() => {
-                                    // Would implement delete here
-                                    toast({
-                                      description: "Delete functionality will be implemented soon",
-                                    });
-                                  }}
-                                >
-                                  Delete
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </TabsContent>
 
