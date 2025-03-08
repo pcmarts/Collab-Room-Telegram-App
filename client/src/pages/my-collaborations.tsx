@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -356,27 +356,14 @@ export default function MyCollaborations() {
               </Button>
             ) : (
               <Button 
-                variant="secondary"
+                variant="outline" 
                 size="sm"
-                className="flex-1"
-                onClick={() => setLocation(`/collaboration/${collab.id}`)}
+                className="flex-1 text-red-500 hover:text-red-600 hover:bg-red-50"
+                onClick={() => setCollabToDelete(collab.id)}
               >
-                <Eye className="h-4 w-4 mr-1" /> 
-                View
+                <Trash2 className="h-4 w-4 mr-1" /> Delete
               </Button>
             )}
-          </div>
-          
-          {/* Delete button */}
-          <div className="border-t mt-3 pt-3 w-full">
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
-              onClick={() => setCollabToDelete(collab.id)}
-            >
-              <Trash2 className="h-4 w-4 mr-1" /> Delete Collaboration
-            </Button>
           </div>
         </CardFooter>
       </Card>

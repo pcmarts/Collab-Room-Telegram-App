@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer } from "http";
 import { db } from "./db";
 import { 
@@ -9,6 +9,39 @@ import {
 import { eq, and, not, desc } from 'drizzle-orm';
 import { sendApplicationConfirmation } from "./telegram";
 import { storage } from "./storage";
+
+// Helper function to extract Telegram user data from request
+function getTelegramUserFromRequest(req: Request) {
+  try {
+    const initData = req.headers['x-telegram-init-data'] as string;
+    if (!initData) {
+      console.log('No Telegram init data in headers, using development fallback');
+      if (process.env.NODE_ENV !== 'production') {
+        return {
+          id: process.env.DEV_USER_ID || '8319c02a-f1bd-4f93-abc3-e223c9100bea',
+          username: 'dev_user',
+          first_name: 'Dev',
+          last_name: 'User'
+        };
+      }
+      return null;
+    }
+    
+    // Parse Telegram data
+    const decodedInitData = new URLSearchParams(initData);
+    const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+    
+    if (!telegramUser.id) {
+      console.error('No Telegram user ID found in parsed data');
+      return null;
+    }
+    
+    return telegramUser;
+  } catch (error) {
+    console.error('Error parsing Telegram data:', error);
+    return null;
+  }
+}
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
@@ -926,6 +959,47 @@ export async function registerRoutes(app: Express) {
   });
 
   // Apply to a collaboration
+  // Delete a collaboration
+  app.delete("/api/collaborations/:id", async (req, res) => {
+    console.log('============ DEBUG: Delete Collaboration Endpoint ============');
+    console.log('Params:', req.params);
+    
+    try {
+      const { id } = req.params;
+      
+      // Get user ID from Telegram data or fallback for development
+      const telegramData = getTelegramUserFromRequest(req);
+      const userId = telegramData?.id || process.env.DEV_USER_ID || '';
+      console.log(`User ID: ${userId} attempting to delete collaboration: ${id}`);
+      
+      // Verify the collaboration exists and belongs to the user
+      const existingCollab = await db.select()
+        .from(collaborations)
+        .where(and(eq(collaborations.id, id), eq(collaborations.creator_id, userId)))
+        .limit(1);
+      
+      if (!existingCollab.length) {
+        console.log('Collaboration not found or does not belong to the user');
+        return res.status(404).json({ error: 'Collaboration not found or you do not have permission to delete it' });
+      }
+      
+      // Delete the collaboration
+      await db.delete(collaborations)
+        .where(eq(collaborations.id, id));
+      
+      // Also delete any applications for this collaboration
+      await db.delete(collab_applications)
+        .where(eq(collab_applications.collaboration_id, id));
+      
+      console.log(`Successfully deleted collaboration ${id}`);
+      return res.status(200).json({ success: true, message: 'Collaboration deleted successfully' });
+      
+    } catch (error) {
+      console.error('Error deleting collaboration:', error);
+      return res.status(500).json({ error: 'Failed to delete collaboration' });
+    }
+  });
+
   app.post("/api/collaborations/:id/apply", async (req, res) => {
     console.log('============ DEBUG: Apply to Collaboration Endpoint ============');
     console.log('Headers:', req.headers);
