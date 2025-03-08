@@ -967,10 +967,23 @@ export async function registerRoutes(app: Express) {
     try {
       const { id } = req.params;
       
-      // Get user ID from Telegram data or fallback for development
+      // Get Telegram user ID from request
       const telegramData = getTelegramUserFromRequest(req);
-      const userId = telegramData?.id || process.env.DEV_USER_ID || '';
-      console.log(`User ID: ${userId} attempting to delete collaboration: ${id}`);
+      const telegramId = telegramData?.id?.toString() || process.env.DEV_USER_ID || '';
+      console.log(`Telegram ID: ${telegramId} attempting to delete collaboration: ${id}`);
+      
+      // First, get the actual user from the database using telegram_id
+      const [dbUser] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramId));
+      
+      if (!dbUser) {
+        console.log('User not found with telegramId:', telegramId);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      const userId = dbUser.id; // This is the UUID from the database
+      console.log(`Found user with ID: ${userId}`);
       
       // Verify the collaboration exists and belongs to the user
       const existingCollab = await db.select()
