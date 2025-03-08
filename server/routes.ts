@@ -295,10 +295,15 @@ export async function registerRoutes(app: Express) {
     try {
       const { collabs_to_discover, collabs_to_host, notification_frequency, excluded_tags } = req.body;
 
-      if (!notification_frequency || !collabs_to_discover?.length || !collabs_to_host?.length) {
-        console.error('Missing required fields');
-        return res.status(400).json({ error: 'Missing required fields' });
+      if (!notification_frequency) {
+        console.error('Missing required field: notification_frequency');
+        return res.status(400).json({ error: 'Missing required field: notification_frequency' });
       }
+      
+      // Make collabs arrays optional - use empty arrays if not provided
+      const collab_discover = Array.isArray(collabs_to_discover) ? collabs_to_discover : [];
+      const collab_host = Array.isArray(collabs_to_host) ? collabs_to_host : [];
+      const excluded = Array.isArray(excluded_tags) ? excluded_tags : [];
 
       // Get Telegram data from header
       const initData = req.headers['x-telegram-init-data'] as string;
@@ -337,10 +342,10 @@ export async function registerRoutes(app: Express) {
         let userPreferences;
 
         const preferencesData = {
-          collabs_to_discover,
-          collabs_to_host,
+          collabs_to_discover: collab_discover,
+          collabs_to_host: collab_host,
           notification_frequency,
-          excluded_tags: excluded_tags || []
+          excluded_tags: excluded
         };
 
         if (existingPreferences.length > 0) {
