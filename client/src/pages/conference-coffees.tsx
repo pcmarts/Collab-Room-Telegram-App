@@ -67,8 +67,9 @@ export default function ConferenceCoffees() {
   const [, navigate] = useLocation();
 
   // Format date helper
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const formatDate = (dateStr: string | Date | null) => {
+    if (!dateStr) return "";
+    const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
     return date.toLocaleDateString("en-US", {
       day: "numeric",
       month: "short",
@@ -160,20 +161,20 @@ export default function ConferenceCoffees() {
       
       // Set form values from saved preferences
       form.reset({
-        matchingEnabled: prefs.coffee_match_enabled || false,
-        companySectors: prefs.coffee_match_company_sectors || [],
-        companyFollowers: prefs.coffee_match_company_followers || TWITTER_FOLLOWER_COUNTS[0],
-        userFollowers: prefs.coffee_match_user_followers || TWITTER_FOLLOWER_COUNTS[0],
-        fundingStages: prefs.coffee_match_funding_stages || [],
-        tokenStatus: prefs.coffee_match_token_status || false
+        matchingEnabled: prefs.coffee_match_enabled ?? false,
+        companySectors: prefs.coffee_match_company_sectors ?? [],
+        companyFollowers: prefs.coffee_match_company_followers ?? TWITTER_FOLLOWER_COUNTS[0],
+        userFollowers: prefs.coffee_match_user_followers ?? TWITTER_FOLLOWER_COUNTS[0],
+        fundingStages: prefs.coffee_match_funding_stages ?? [],
+        tokenStatus: prefs.coffee_match_token_status ?? false
       });
       
       // Update filters visibility based on what's saved
       setFiltersEnabled({
-        companySectors: prefs.coffee_match_company_sectors?.length > 0 || false,
+        companySectors: Array.isArray(prefs.coffee_match_company_sectors) && prefs.coffee_match_company_sectors.length > 0,
         companyFollowers: !!prefs.coffee_match_company_followers,
         userFollowers: !!prefs.coffee_match_user_followers,
-        fundingStages: prefs.coffee_match_funding_stages?.length > 0 || false,
+        fundingStages: Array.isArray(prefs.coffee_match_funding_stages) && prefs.coffee_match_funding_stages.length > 0,
         tokenStatus: !!prefs.coffee_match_token_status
       });
     }
