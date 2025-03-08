@@ -411,7 +411,7 @@ export async function registerRoutes(app: Express) {
         if (process.env.NODE_ENV !== 'production') {
           console.log('Using development fallback for Telegram data');
           telegramUser = {
-            id: '8319c02a-f1bd-4f93-abc3-e223c9100bea',
+            id: '1211030693',
             username: 'test_user',
             first_name: 'Test',
             last_name: 'User'
@@ -485,7 +485,7 @@ export async function registerRoutes(app: Express) {
         if (process.env.NODE_ENV !== 'production') {
           console.log('Using development fallback for Telegram data');
           telegramUser = {
-            id: '8319c02a-f1bd-4f93-abc3-e223c9100bea',
+            id: '1211030693',
             username: 'test_user',
             first_name: 'Test',
             last_name: 'User'
@@ -701,7 +701,7 @@ export async function registerRoutes(app: Express) {
         if (process.env.NODE_ENV !== 'production') {
           console.log('Using development fallback for Telegram data');
           telegramUser = {
-            id: '8319c02a-f1bd-4f93-abc3-e223c9100bea',
+            id: '1211030693',
             username: 'test_user',
             first_name: 'Test',
             last_name: 'User'
@@ -1019,7 +1019,7 @@ export async function registerRoutes(app: Express) {
         if (process.env.NODE_ENV !== 'production') {
           console.log('Using development fallback for Telegram data');
           telegramUser = {
-            id: '8319c02a-f1bd-4f93-abc3-e223c9100bea',
+            id: '1211030693',
             username: 'test_user',
             first_name: 'Test',
             last_name: 'User'
