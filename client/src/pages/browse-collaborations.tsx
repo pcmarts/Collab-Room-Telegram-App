@@ -62,7 +62,11 @@ interface CollaborationFilters {
   fundingStages: string[];
 }
 
-export default function BrowseCollaborations() {
+interface BrowseCollaborationsProps {
+  id?: string;
+}
+
+export default function BrowseCollaborations({ id }: BrowseCollaborationsProps = {}) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -95,8 +99,24 @@ export default function BrowseCollaborations() {
     };
   }, [searchTerm]);
   
-  // Query collaborations with filters
-  const { data: collaborations, isLoading, isError, refetch } = useQuery({
+  // Query for a single collaboration if ID is provided
+  const { data: singleCollaboration, isLoading: isSingleLoading, isError: isSingleError } = useQuery({
+    queryKey: ["/api/collaborations/get", id],
+    queryFn: async () => {
+      if (!id) return null;
+      
+      const response = await apiRequest('GET', `/api/collaborations/get/${id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch collaboration");
+      }
+      
+      return response.json() as Promise<Collaboration>;
+    },
+    enabled: !!id
+  });
+
+  // Query collaborations with filters (only when not viewing a single collaboration)
+  const { data: collaborations, isLoading: isListLoading, isError: isListError, refetch } = useQuery({
     queryKey: [
       "/api/collaborations/search", 
       filters, 
@@ -149,7 +169,8 @@ export default function BrowseCollaborations() {
       }
       
       return response.json() as Promise<Collaboration[]>;
-    }
+    },
+    enabled: !id
   });
 
   // Handler for applying to a collaboration
