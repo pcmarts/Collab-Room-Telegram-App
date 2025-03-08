@@ -257,7 +257,14 @@ export class DatabaseStorage implements IStorage {
           notification_frequency: prefs.notification_frequency || 'Daily',
           collabs_to_discover: prefs.collabs_to_discover || [],
           collabs_to_host: prefs.collabs_to_host || [],
-          excluded_tags: prefs.excluded_tags || []
+          excluded_tags: prefs.excluded_tags || [],
+          // Coffee match preferences
+          coffee_match_enabled: prefs.coffee_match_enabled || false,
+          coffee_match_company_sectors: prefs.coffee_match_company_sectors || [],
+          coffee_match_company_followers: prefs.coffee_match_company_followers || null,
+          coffee_match_user_followers: prefs.coffee_match_user_followers || null,
+          coffee_match_funding_stages: prefs.coffee_match_funding_stages || [],
+          coffee_match_token_status: prefs.coffee_match_token_status || false
         })
         .returning();
       return newPrefs;

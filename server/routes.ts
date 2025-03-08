@@ -326,17 +326,31 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', req.body);
 
     try {
-      const { collabs_to_discover, collabs_to_host, notification_frequency, excluded_tags } = req.body;
+      const { 
+        collabs_to_discover, 
+        collabs_to_host, 
+        notification_frequency, 
+        excluded_tags,
+        // Coffee match preferences
+        coffee_match_enabled,
+        coffee_match_company_sectors,
+        coffee_match_company_followers,
+        coffee_match_user_followers,
+        coffee_match_funding_stages,
+        coffee_match_token_status
+      } = req.body;
 
       if (!notification_frequency) {
         console.error('Missing required field: notification_frequency');
         return res.status(400).json({ error: 'Missing required field: notification_frequency' });
       }
       
-      // Make collabs arrays optional - use empty arrays if not provided
+      // Make arrays optional - use empty arrays if not provided
       const collab_discover = Array.isArray(collabs_to_discover) ? collabs_to_discover : [];
       const collab_host = Array.isArray(collabs_to_host) ? collabs_to_host : [];
       const excluded = Array.isArray(excluded_tags) ? excluded_tags : [];
+      const company_sectors = Array.isArray(coffee_match_company_sectors) ? coffee_match_company_sectors : [];
+      const funding_stages = Array.isArray(coffee_match_funding_stages) ? coffee_match_funding_stages : [];
 
       // Get Telegram data from header
       const initData = req.headers['x-telegram-init-data'] as string;
@@ -378,7 +392,14 @@ export async function registerRoutes(app: Express) {
           collabs_to_discover: collab_discover,
           collabs_to_host: collab_host,
           notification_frequency,
-          excluded_tags: excluded
+          excluded_tags: excluded,
+          // Include coffee match preferences
+          coffee_match_enabled: coffee_match_enabled === true,
+          coffee_match_company_sectors: company_sectors,
+          coffee_match_company_followers: coffee_match_company_followers || null,
+          coffee_match_user_followers: coffee_match_user_followers || null,
+          coffee_match_funding_stages: funding_stages,
+          coffee_match_token_status: coffee_match_token_status === true
         };
 
         if (existingPreferences.length > 0) {
