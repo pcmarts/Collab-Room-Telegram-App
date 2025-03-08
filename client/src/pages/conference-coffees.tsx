@@ -4,10 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Calendar } from "lucide-react";
+import { Loader2, Calendar } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { Event, UserEvent } from "@shared/schema";
 import { useLocation } from "wouter";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 interface EventWithAttending extends Event {
   isAttending: boolean;
@@ -86,8 +87,8 @@ export default function ConferenceCoffees() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateString: string | Date) => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
     return date.toLocaleDateString('en-US', { 
       month: 'short',
       day: 'numeric'
@@ -108,21 +109,11 @@ export default function ConferenceCoffees() {
 
   return (
     <div className="min-h-[100svh] bg-background">
-      <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex items-center -ml-3"
-            onClick={() => setLocation('/dashboard')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Cancel
-          </Button>
-          <h1 className="text-lg font-semibold">Conference Coffees</h1>
-          <div className="w-12" /> {/* Spacer for alignment */}
-        </div>
-      </div>
+      <PageHeader
+        title="Conference Coffees"
+        subtitle="Connect with attendees at events"
+        backUrl="/dashboard"
+      />
 
       <div className="p-4 space-y-6">
         <div>
