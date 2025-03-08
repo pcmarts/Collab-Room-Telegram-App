@@ -319,7 +319,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
             ? "Your collaboration has been updated."
             : "Your collaboration has been posted.",
         });
-        setLocation('/my-collaborations');
+        setLocation('/marketing-collabs');
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} collaboration`);
