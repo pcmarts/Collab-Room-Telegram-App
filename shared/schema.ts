@@ -224,6 +224,7 @@ export const preferences = pgTable('preferences', {
   // General preferences
   collabs_to_discover: text('collabs_to_discover').array(),
   collabs_to_host: text('collabs_to_host').array(),
+  twitter_collabs: text('twitter_collabs').array(),
   notification_frequency: text('notification_frequency').notNull(),
   excluded_tags: text('excluded_tags').array(),
   // Coffee match preferences
