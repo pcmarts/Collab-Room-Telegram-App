@@ -89,6 +89,7 @@ export default function CreateCollaboration() {
 
   // Setup default detail fields based on collaboration type
   useEffect(() => {
+    // Since we've moved "Co-Marketing on Twitter" to the top of the list
     handleCollabTypeChange(COLLAB_TYPES[0]);
   }, []);
 
@@ -148,6 +149,7 @@ export default function CreateCollaboration() {
       case "Co-Marketing on Twitter":
         form.setValue('details', {
           collaboration_type: TWITTER_COLLAB_TYPES[0],
+          host_twitter_handle: "",
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
         });
         break;
@@ -432,6 +434,19 @@ export default function CreateCollaboration() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="details.host_twitter_handle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Host Twitter Handle</FormLabel>
+                  <FormControl>
+                    <Input placeholder="@yourhandle" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
