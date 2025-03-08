@@ -180,6 +180,17 @@ export default function CompanyInfoForm() {
           </div>
 
           <div>
+            <Label htmlFor="job_title">Your Job Title / Role</Label>
+            <Input
+              id="job_title"
+              name="job_title"
+              value={formData.job_title}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+
+          <div>
             <Label htmlFor="short_description">Short Description</Label>
             <div className="mt-1.5">
               <Textarea
@@ -214,17 +225,6 @@ export default function CompanyInfoForm() {
                 {formData.long_description.length}/1000
               </div>
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="job_title">Your Job Title / Role</Label>
-            <Input
-              id="job_title"
-              name="job_title"
-              value={formData.job_title}
-              onChange={handleInputChange}
-              required
-            />
           </div>
 
           <div>
