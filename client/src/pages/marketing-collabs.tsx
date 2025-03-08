@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Users, CalendarDays, Clock, Coins } from "lucide-react";
+import { Loader2, Plus, Users, CalendarDays, Clock, Coins, Sliders } from "lucide-react";
 import { 
   COLLAB_TYPES, 
   TWITTER_COLLAB_TYPES,
@@ -73,6 +73,7 @@ export default function MarketingCollabs() {
   
   // Collabs to host toggle state
   const [collabsToHost, setCollabsToHost] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Fetch existing data
   const { data: profileData, isLoading } = useQuery<ProfileData>({
@@ -216,10 +217,9 @@ export default function MarketingCollabs() {
 
       <Tabs defaultValue="host" onValueChange={setActiveTab}>
         <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="optin">✔️ Discover</TabsTrigger>
             <TabsTrigger value="host">🚀 Host</TabsTrigger>
-            <TabsTrigger value="criteria">🔍 Filter</TabsTrigger>
           </TabsList>
         </div>
 
@@ -227,9 +227,154 @@ export default function MarketingCollabs() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <TabsContent value="optin" className="space-y-4 mt-0">
+                <div className="flex items-center justify-between mb-4">
+                  <Label className="text-lg">Discover Collaborations</Label>
+                  <Button 
+                    variant={showFilters ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center"
+                  >
+                    <Sliders className="h-4 w-4 mr-2" />
+                    {showFilters ? "Hide Filters" : "Show Filters"}
+                  </Button>
+                </div>
+                
+                {/* Filter Panel */}
+                {showFilters && (
+                  <div className="space-y-4 mb-6 border rounded-lg p-4 bg-accent/10">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base font-medium">Discovery Filters</h3>
+                      <FormField
+                        control={form.control}
+                        name="matchingEnabled"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                            <FormLabel className="font-normal">Enable Filtering</FormLabel>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    {matchingEnabled && (
+                      <div className="space-y-6 pt-2">
+                        {/* Topics Filter */}
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-3 mb-1">
+                            <Switch
+                              checked={filtersEnabled.topics}
+                              onCheckedChange={() => toggleFilter("topics")}
+                            />
+                            <Label>Filter by Topics</Label>
+                          </div>
+
+                          {filtersEnabled.topics && (
+                            <FormField
+                              control={form.control}
+                              name="topics"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {COLLAB_TOPICS.map((topic) => (
+                                      <FormItem
+                                        key={topic}
+                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                      >
+                                        <FormControl>
+                                          <Checkbox
+                                            checked={field.value?.includes(topic)}
+                                            onCheckedChange={(checked) => {
+                                              const currentTopics = field.value || [];
+                                              if (checked) {
+                                                field.onChange([...currentTopics, topic]);
+                                              } else {
+                                                field.onChange(
+                                                  currentTopics.filter(
+                                                    (value) => value !== topic
+                                                  )
+                                                );
+                                              }
+                                            }}
+                                          />
+                                        </FormControl>
+                                        <FormLabel className="text-sm font-normal">
+                                          {topic}
+                                        </FormLabel>
+                                      </FormItem>
+                                    ))}
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                        </div>
+
+                        {/* More filters */}
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-3 mb-1">
+                            <Switch
+                              checked={filtersEnabled.companyFollowers}
+                              onCheckedChange={() => toggleFilter("companyFollowers")}
+                            />
+                            <Label>Minimum Company Followers</Label>
+                          </div>
+
+                          {filtersEnabled.companyFollowers && (
+                            <FormField
+                              control={form.control}
+                              name="companyFollowers"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select min followers" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                                        <SelectItem key={count} value={count}>
+                                          {count}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                        </div>
+                        
+                        <Button 
+                          className="w-full"
+                          onClick={() => {
+                            toast({
+                              title: "Filters Applied",
+                              description: "Your discovery filters have been applied",
+                              duration: 2000
+                            });
+                            setShowFilters(false);
+                          }}
+                        >
+                          Apply Filters
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <Card>
                   <CardHeader>
-                    <CardTitle>Discover Collaborations</CardTitle>
+                    <CardTitle>Collaboration Types</CardTitle>
                     <p className="text-sm text-muted-foreground">
                       Select which types of marketing collaborations you're interested in discovering
                     </p>
@@ -318,6 +463,21 @@ export default function MarketingCollabs() {
                     />
                   </CardContent>
                 </Card>
+                
+                <Button 
+                  className="w-full mb-4"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Discovery Preferences"
+                  )}
+                </Button>
               </TabsContent>
               
               <TabsContent value="host" className="space-y-4 mt-0">
