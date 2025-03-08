@@ -130,6 +130,18 @@ export default function MarketingCollabs() {
       const hasFilterPreferences = 
         (profileData.preferences.excluded_tags && profileData.preferences.excluded_tags.length > 0) || 
         (profileData.preferences.coffee_match_company_sectors && profileData.preferences.coffee_match_company_sectors.length > 0);
+        
+      // Update filter toggles based on preferences
+      if (hasFilterPreferences) {
+        setFiltersEnabled({
+          topics: profileData.preferences.excluded_tags && profileData.preferences.excluded_tags.length > 0,
+          companySectors: profileData.preferences.coffee_match_company_sectors && profileData.preferences.coffee_match_company_sectors.length > 0,
+          companyFollowers: !!profileData.preferences.coffee_match_company_followers,
+          userFollowers: !!profileData.preferences.coffee_match_user_followers,
+          fundingStages: profileData.preferences.coffee_match_funding_stages && profileData.preferences.coffee_match_funding_stages.length > 0,
+          hasToken: !!profileData.preferences.coffee_match_token_status
+        });
+      }
       
       // Get saved filter data if available
       form.reset({
@@ -337,7 +349,65 @@ export default function MarketingCollabs() {
                           )}
                         </div>
 
-                        {/* More filters */}
+                        {/* Company Sector Filter */}
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-3 mb-1">
+                            <Switch
+                              checked={filtersEnabled.companySectors}
+                              onCheckedChange={() => toggleFilter("companySectors")}
+                            />
+                            <Label>Filter by Company Sectors</Label>
+                          </div>
+
+                          {filtersEnabled.companySectors && (
+                            <FormField
+                              control={form.control}
+                              name="companySectors"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="grid grid-cols-1 gap-2">
+                                    {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+                                      <div key={category} className="mb-3">
+                                        <h4 className="text-sm font-medium mb-2">{category}</h4>
+                                        <div className="grid grid-cols-1 gap-2 ml-2">
+                                          {tags.map((tag) => (
+                                            <FormItem
+                                              key={tag}
+                                              className="flex flex-row items-start space-x-3 space-y-0"
+                                            >
+                                              <FormControl>
+                                                <Checkbox
+                                                  checked={field.value?.includes(tag)}
+                                                  onCheckedChange={(checked) => {
+                                                    const currentSectors = field.value || [];
+                                                    if (checked) {
+                                                      field.onChange([...currentSectors, tag]);
+                                                    } else {
+                                                      field.onChange(
+                                                        currentSectors.filter(
+                                                          (value) => value !== tag
+                                                        )
+                                                      );
+                                                    }
+                                                  }}
+                                                />
+                                              </FormControl>
+                                              <FormLabel className="text-sm font-normal">
+                                                {tag}
+                                              </FormLabel>
+                                            </FormItem>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                        </div>
+
+                        {/* Company Followers Filter */}
                         <div className="space-y-2">
                           <div className="flex items-center space-x-3 mb-1">
                             <Switch
