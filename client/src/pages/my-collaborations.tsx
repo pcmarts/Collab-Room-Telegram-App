@@ -61,9 +61,9 @@ export default function MyCollaborations() {
   
   // Fetch user's collaborations
   const { data: collaborations, isLoading: isLoadingCollabs } = useQuery({
-    queryKey: ['/api/my-collaborations'],
+    queryKey: ['/api/collaborations/my'],
     queryFn: async () => {
-      const response = await apiRequest('/api/my-collaborations');
+      const response = await apiRequest('/api/collaborations/my');
       if (!response.ok) {
         throw new Error("Failed to fetch collaborations");
       }
@@ -110,7 +110,7 @@ export default function MyCollaborations() {
         setFeedbackMessage("");
         
         // Invalidate queries to refresh data
-        queryClient.invalidateQueries({ queryKey: ['/api/my-collaborations'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to approve application');
@@ -153,7 +153,7 @@ export default function MyCollaborations() {
         setFeedbackMessage("");
         
         // Invalidate queries to refresh data
-        queryClient.invalidateQueries({ queryKey: ['/api/my-collaborations'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to reject application');
