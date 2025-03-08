@@ -156,15 +156,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions - Second Row */}
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/create-collaboration')}
-          >
-            <Plus className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Add Marketing Collab</span>
-          </Button>
+        <div className="grid grid-cols-1 gap-3">
           <Button
             variant="outline"
             className="h-20 flex-col"
