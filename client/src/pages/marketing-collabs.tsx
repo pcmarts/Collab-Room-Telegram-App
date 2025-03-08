@@ -141,7 +141,7 @@ export default function MarketingCollabs() {
       // Add twitter collabs and filter settings in a real implementation
       // For now, we'll just update the basic collab preferences
 
-      const response = await apiRequest('POST', '/api/preferences', updateData);
+      const response = await apiRequest('/api/preferences', 'POST', updateData);
 
       if (!response.ok) {
         throw new Error('Failed to update collaborations');
