@@ -613,6 +613,28 @@ export default function CreateCollaboration() {
                           <p className="text-sm text-muted-foreground mb-2">
                             Select the company sectors that can apply
                           </p>
+                          <div className="flex justify-between mb-2">
+                            <Button 
+                              type="button" 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                // Select all company sectors
+                                const allSectors = Object.values(COMPANY_TAG_CATEGORIES).flat();
+                                field.onChange(allSectors);
+                              }}
+                            >
+                              Select All
+                            </Button>
+                            <Button 
+                              type="button" 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => field.onChange([])}
+                            >
+                              Deselect All
+                            </Button>
+                          </div>
                           <div className="max-h-[300px] overflow-y-auto p-2 border rounded-md">
                             {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
                               <div key={category} className="mb-4">
