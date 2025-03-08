@@ -380,7 +380,7 @@ export const blogPostDetailsSchema = z.object({
 
 // Co-Marketing on Twitter
 export const twitterCoMarketingDetailsSchema = z.object({
-  collaboration_type: z.enum(TWITTER_COLLAB_TYPES),
+  collaboration_types: z.array(z.enum(TWITTER_COLLAB_TYPES)).min(1, "At least one Twitter collaboration type is required"),
   host_twitter_handle: z.string().min(1, "Host Twitter handle is required"),
   host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS)
 });

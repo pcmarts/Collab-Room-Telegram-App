@@ -156,7 +156,7 @@ export default function CreateCollaboration() {
         break;
       case "Co-Marketing on Twitter":
         form.setValue('details', {
-          collaboration_type: TWITTER_COLLAB_TYPES[0],
+          collaboration_types: [], // Multiple types can be selected
           host_twitter_handle: "",
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
         });
@@ -447,24 +447,33 @@ export default function CreateCollaboration() {
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="details.collaboration_type"
+              name="details.collaboration_types"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Collaboration Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select collaboration type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {TWITTER_COLLAB_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Twitter Collaboration Types</FormLabel>
+                  <FormDescription>
+                    Select all collaboration types you're interested in
+                  </FormDescription>
+                  <div className="space-y-2">
+                    {TWITTER_COLLAB_TYPES.map((type) => (
+                      <FormItem key={type} className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(type)}
+                            onCheckedChange={(checked) => {
+                              const currentValue = field.value || [];
+                              if (checked) {
+                                field.onChange([...currentValue, type]);
+                              } else {
+                                field.onChange(currentValue.filter((value) => value !== type));
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal text-sm">{type}</FormLabel>
+                      </FormItem>
+                    ))}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -568,24 +577,33 @@ export default function CreateCollaboration() {
                       <div className="space-y-4">
                         <FormField
                           control={form.control}
-                          name="details.collaboration_type"
+                          name="details.collaboration_types"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Twitter Collaboration Type</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select collaboration type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {TWITTER_COLLAB_TYPES.map((type) => (
-                                    <SelectItem key={type} value={type}>
-                                      {type}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormLabel>Twitter Collaboration Types</FormLabel>
+                              <FormDescription>
+                                Select all collaboration types you're interested in
+                              </FormDescription>
+                              <div className="space-y-2">
+                                {TWITTER_COLLAB_TYPES.map((type) => (
+                                  <FormItem key={type} className="flex items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(type)}
+                                        onCheckedChange={(checked) => {
+                                          const currentValue = field.value || [];
+                                          if (checked) {
+                                            field.onChange([...currentValue, type]);
+                                          } else {
+                                            field.onChange(currentValue.filter((value) => value !== type));
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-normal text-sm">{type}</FormLabel>
+                                  </FormItem>
+                                ))}
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
