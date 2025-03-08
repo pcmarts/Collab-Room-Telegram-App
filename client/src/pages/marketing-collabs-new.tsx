@@ -381,11 +381,16 @@ export default function MarketingCollabs() {
                           type="button"
                           onClick={(e) => {
                             e.preventDefault();
+                            
+                            // Just update the form values - the main form submit will handle saving
+                            form.setValue("matchingEnabled", true);
+                            
                             toast({
                               title: "Filters Applied",
-                              description: "Your discovery filters have been applied",
-                              duration: 2000
+                              description: "Click 'Save Discovery Preferences' below to save your filter settings permanently.",
+                              duration: 5000
                             });
+                            
                             setShowFilters(false);
                           }}
                         >
