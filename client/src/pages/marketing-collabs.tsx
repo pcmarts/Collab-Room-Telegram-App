@@ -60,7 +60,7 @@ export default function MarketingCollabs() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("optin");
+  const [activeTab, setActiveTab] = useState("host");
   
   const [filtersEnabled, setFiltersEnabled] = useState({
     topics: false,
@@ -214,7 +214,7 @@ export default function MarketingCollabs() {
         backUrl="/dashboard"
       />
 
-      <Tabs defaultValue="optin" onValueChange={setActiveTab}>
+      <Tabs defaultValue="host" onValueChange={setActiveTab}>
         <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="optin">✔️ Discover</TabsTrigger>
@@ -321,14 +321,12 @@ export default function MarketingCollabs() {
               </TabsContent>
               
               <TabsContent value="host" className="space-y-4 mt-0">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Host Collaborations</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Select the collaboration types your company can host
+                <div className="space-y-6">
+                  <div>
+                    <Label className="text-lg">Collaborations I Can Host</Label>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Select the types of collaborations your company can offer
                     </p>
-                  </CardHeader>
-                  <CardContent>
                     <div className="grid grid-cols-1 gap-2">
                       {COLLAB_TYPES.map(type => (
                         <Button
@@ -342,34 +340,65 @@ export default function MarketingCollabs() {
                         </Button>
                       ))}
                     </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>My Active Collaborations</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      View and manage your current collaborations
-                    </p>
-                  </CardHeader>
-                  <CardContent>
+                  </div>
+                  
+                  <Button 
+                    className="w-full"
+                    disabled={isSubmitting}
+                    onClick={() => {
+                      if (JSON.stringify(collabsToHost) !== JSON.stringify(profileData?.preferences?.collabs_to_host || [])) {
+                        onSubmit(form.getValues());
+                      } else {
+                        toast({
+                          title: "No changes",
+                          description: "You haven't changed any collaboration preferences",
+                          duration: 2000
+                        });
+                      }
+                    }}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Collaboration Preferences"
+                    )}
+                  </Button>
+                  
+                  <div className="mt-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <Label className="text-lg">My Active Collaborations</Label>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setLocation('/create-collaboration')}
+                        className="flex items-center"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        New
+                      </Button>
+                    </div>
+                    
                     {isLoadingCollabs ? (
                       <div className="space-y-2">
                         <Skeleton className="h-20 w-full" />
                         <Skeleton className="h-20 w-full" />
                       </div>
                     ) : !collaborations || collaborations.length === 0 ? (
-                      <div className="text-center py-8">
-                        <p className="text-muted-foreground mb-4">You don't have any active collaborations yet</p>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setLocation('/create-collaboration')}
-                          className="flex items-center"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Create Collaboration
-                        </Button>
-                      </div>
+                      <Card>
+                        <CardContent className="text-center py-8">
+                          <p className="text-muted-foreground mb-4">You don't have any active collaborations yet</p>
+                          <Button 
+                            onClick={() => setLocation('/create-collaboration')}
+                            className="flex items-center"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Collaboration
+                          </Button>
+                        </CardContent>
+                      </Card>
                     ) : (
                       <div className="space-y-3">
                         {collaborations.map((collab) => (
@@ -398,14 +427,27 @@ export default function MarketingCollabs() {
                                 <span>{collab.date_type === 'specific_date' ? 'Specific date' : 'Flexible timing'}</span>
                               </div>
                               
-                              <div className="mt-2">
+                              <div className="flex items-center gap-2 mt-2">
                                 <Button 
                                   size="sm" 
                                   variant="outline" 
                                   className="w-full text-xs"
                                   onClick={() => setLocation(`/create-collaboration/${collab.id}`)}
                                 >
-                                  View Details
+                                  Edit
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive" 
+                                  className="text-xs"
+                                  onClick={() => {
+                                    // Would implement delete here
+                                    toast({
+                                      description: "Delete functionality will be implemented soon",
+                                    });
+                                  }}
+                                >
+                                  Delete
                                 </Button>
                               </div>
                             </CardContent>
@@ -413,17 +455,8 @@ export default function MarketingCollabs() {
                         ))}
                       </div>
                     )}
-                  </CardContent>
-                  <CardFooter className="border-t p-4">
-                    <Button 
-                      className="w-full" 
-                      onClick={() => setLocation('/create-collaboration')}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create New Collaboration
-                    </Button>
-                  </CardFooter>
-                </Card>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="criteria" className="space-y-4 mt-0">
