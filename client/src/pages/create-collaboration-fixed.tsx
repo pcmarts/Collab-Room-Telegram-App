@@ -167,12 +167,25 @@ export default function CreateCollaboration() {
     console.log("Form data to be submitted:", data);
     setIsSubmitting(true);
     try {
-      // Match form data to schema
-      const formattedData = {
-        ...data,
-        // Ensure specific optional fields are in proper format
-        required_company_sectors: data.required_company_sectors || [],
-        required_funding_stages: data.required_funding_stages || [],
+      // Ensure proper date formatting
+      let formattedData = { ...data };
+      
+      // Handle specific_date if present (ensure it's a string)
+      if (data.date_type === 'specific_date' && data.specific_date) {
+        // If it's already a string in ISO format, keep it, otherwise convert
+        if (typeof data.specific_date === 'object' && data.specific_date instanceof Date) {
+          formattedData.specific_date = data.specific_date.toISOString().split('T')[0];
+        } else if (typeof data.specific_date === 'string') {
+          // Ensure the string is in YYYY-MM-DD format
+          formattedData.specific_date = data.specific_date;
+        }
+      }
+      
+      // Ensure specific optional fields are in proper format
+      formattedData = {
+        ...formattedData,
+        required_company_sectors: formattedData.required_company_sectors || [],
+        required_funding_stages: formattedData.required_funding_stages || [],
       };
       
       // Get Telegram init data if available
