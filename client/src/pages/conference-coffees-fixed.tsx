@@ -28,39 +28,31 @@ import {
   FormLabel,
   FormMessage
 } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { 
-  COMPANY_TAG_CATEGORIES, 
-  FUNDING_STAGES, 
-  TWITTER_FOLLOWER_COUNTS 
+  COMPANY_TAG_CATEGORIES,
+  TWITTER_FOLLOWER_COUNTS,
+  FUNDING_STAGES
 } from "@shared/schema";
 
-interface EventWithAttending extends Event {
-  isAttending: boolean;
-}
-
-// Define schema for coffee match criteria form
+// Form schema for coffee match criteria
 const coffeeMatchCriteriaSchema = z.object({
   matchingEnabled: z.boolean().default(false),
-  companySectors: z.array(z.string()).optional(),
-  companyFollowers: z.string().optional(),
-  userFollowers: z.string().optional(),
-  fundingStages: z.array(z.string()).optional(),
-  tokenStatus: z.boolean().optional(),
+  companySectors: z.array(z.string()).default([]),
+  companyFollowers: z.string().default(TWITTER_FOLLOWER_COUNTS[0]),
+  userFollowers: z.string().default(TWITTER_FOLLOWER_COUNTS[0]),
+  fundingStages: z.array(z.string()).default([]),
+  tokenStatus: z.boolean().default(false),
 });
 
+// Type for form data
 type CoffeeMatchCriteria = z.infer<typeof coffeeMatchCriteriaSchema>;
 
 export default function ConferenceCoffees() {
-  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('attending');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [_, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("attending");
-  
-  // Track which filters are enabled
   const [filtersEnabled, setFiltersEnabled] = useState({
     companySectors: false,
     companyFollowers: false,
@@ -68,6 +60,75 @@ export default function ConferenceCoffees() {
     fundingStages: false,
     tokenStatus: false
   });
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
+  
+  // Format date helper
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      day: 'numeric', 
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  // Fetch events and user events
+  const { data: events = [] } = useQuery({
+    queryKey: ['/api/events'],
+    staleTime: 60 * 1000, // 1 minute
+  });
+
+  const { data: userEvents = [] } = useQuery({
+    queryKey: ['/api/user-events'],
+    staleTime: 60 * 1000, // 1 minute
+  });
+
+  // Toggle event attendance
+  const toggleEventAttendance = async (eventId: string) => {
+    setIsSubmitting(true);
+    try {
+      const isAttending = userEvents.some(ue => ue.event_id === eventId);
+      
+      if (isAttending) {
+        // Remove user from event
+        const userEvent = userEvents.find(ue => ue.event_id === eventId);
+        if (userEvent) {
+          await apiRequest(`/api/user-events/${userEvent.id}`, {
+            method: 'DELETE'
+          });
+          toast({
+            title: "You're no longer attending",
+            description: "You've been removed from this event",
+          });
+        }
+      } else {
+        // Add user to event
+        await apiRequest('/api/user-events', {
+          method: 'POST',
+          data: { event_id: eventId }
+        });
+        toast({
+          title: "You're attending!",
+          description: "You've been added to this event",
+        });
+      }
+      
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/user-events'] });
+    } catch (error) {
+      console.error('Failed to update attendance:', error);
+      toast({
+        title: "Failed to update attendance",
+        description: "Please try again later",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Coffee match criteria form
   const form = useForm<CoffeeMatchCriteria>({
@@ -89,121 +150,43 @@ export default function ConferenceCoffees() {
       [filterName]: !prev[filterName]
     }));
   };
-  
-  // Watch for changes to matching enabled
-  const matchingEnabled = form.watch("matchingEnabled");
-  
+
+  // Extract the matchingEnabled value from form
+  const matchingEnabled = form.watch('matchingEnabled');
+
+  // Submit criteria
   const onSubmitCriteria = async (data: CoffeeMatchCriteria) => {
-    console.log("Coffee match criteria:", data);
+    setIsSubmitting(true);
+    console.log('Submitting criteria:', data);
+    
     try {
-      setIsSubmitting(true);
-      
-      // TODO: Implement API endpoint to save coffee match criteria
+      // In a real app, this would send the criteria to the server
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
       
       toast({
-        title: "Success!",
-        description: "Your coffee match criteria have been saved",
-        duration: 2000
+        title: "Criteria saved",
+        description: "Your coffee match criteria have been updated",
       });
-      
     } catch (error) {
-      console.error('Failed to save coffee match criteria:', error);
+      console.error('Failed to save criteria:', error);
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save criteria"
+        title: "Failed to save criteria",
+        description: "Please try again later",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Fetch events and user's attending events
-  const { data: events, isLoading: eventsLoading, error: eventsError } = useQuery<Event[]>({
-    queryKey: ['/api/events']
-  });
-
-  const { data: userEvents, isLoading: userEventsLoading, error: userEventsError } = useQuery<UserEvent[]>({
-    queryKey: ['/api/user-events']
-  });
-
-  // Combined loading state
-  const isLoading = eventsLoading || userEventsLoading;
-
-  // Handle errors
-  if (eventsError) {
-    console.error('Events fetch error:', eventsError);
-    return <div>Error loading events. Please try again.</div>;
-  }
-
-  if (userEventsError) {
-    console.error('User events fetch error:', userEventsError);
-    return <div>Error loading user events. Please try again.</div>;
-  }
-
-  // Filter out past events
-  const activeEvents = events?.map(event => ({
-    ...event,
-    isAttending: userEvents?.some(ue => ue.event_id === event.id) || false
-  })).filter(event => 
-    new Date(event.end_date) > new Date()
-  ).sort((a, b) => 
-    new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
-  ) || [];
-
-  const toggleEventAttendance = async (eventId: string) => {
-    try {
-      setIsSubmitting(true);
-
-      const response = await apiRequest(
-        'POST',
-        '/api/user-events',
-        { event_id: eventId }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to update event attendance');
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ['/api/user-events'] });
-
-      toast({
-        title: "Success!",
-        description: "Your conference selection has been updated",
-        duration: 2000
-      });
-
-    } catch (error) {
-      console.error('Failed to update event attendance:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update event attendance"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const formatDate = (dateString: string | Date) => {
-    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-    return date.toLocaleDateString('en-US', { 
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[100svh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  console.log('Events data:', events);
-  console.log('User events data:', userEvents);
-  console.log('Active events:', activeEvents);
+  // Combine events with user attendance data
+  const activeEvents = events
+    .filter(event => new Date(event.end_date) >= new Date()) // Only future events
+    .map(event => ({
+      ...event,
+      isAttending: userEvents.some(ue => ue.event_id === event.id)
+    }))
+    .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
 
   return (
     <div className="min-h-[100svh] bg-background">
@@ -213,20 +196,28 @@ export default function ConferenceCoffees() {
         backUrl="/dashboard"
       />
 
-      <Tabs 
-        defaultValue="attending" 
-        onValueChange={setActiveTab}
-        className="w-full"
-      >
-        <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="attending">1️⃣ Attending</TabsTrigger>
-            <TabsTrigger value="criteria">2️⃣ Coffee Match Criteria</TabsTrigger>
-          </TabsList>
-        </div>
+      <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger 
+            value="attending" 
+            className={activeTab === 'attending' ? 'data-[state=active]' : ''}
+            onClick={() => setActiveTab('attending')}
+          >
+            1️⃣ Attending
+          </TabsTrigger>
+          <TabsTrigger 
+            value="criteria" 
+            className={activeTab === 'criteria' ? 'data-[state=active]' : ''}
+            onClick={() => setActiveTab('criteria')}
+          >
+            2️⃣ Coffee Match Criteria
+          </TabsTrigger>
+        </TabsList>
+      </div>
 
-        <div className="p-4 space-y-6 pt-2">
-          <TabsContent value="attending" className="space-y-4 mt-0">
+      <div className="p-4 space-y-6 pt-2">
+        {activeTab === 'attending' && (
+          <div className="space-y-4">
             <Label className="text-lg">Select Your Conferences</Label>
             <p className="text-sm text-muted-foreground mb-4">
               Choose the conferences you'll be attending to connect with other attendees
@@ -259,9 +250,11 @@ export default function ConferenceCoffees() {
                 </Card>
               ))}
             </div>
-          </TabsContent>
-          
-          <TabsContent value="criteria" className="space-y-4 mt-0">
+          </div>
+        )}
+        
+        {activeTab === 'criteria' && (
+          <div className="space-y-4">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmitCriteria)} className="space-y-6">
                 <Card>
@@ -527,9 +520,9 @@ export default function ConferenceCoffees() {
                 </Button>
               </form>
             </Form>
-          </TabsContent>
-        </div>
-      </Tabs>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
