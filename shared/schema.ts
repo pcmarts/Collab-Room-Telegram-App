@@ -228,7 +228,7 @@ export const collaborations = pgTable('collaborations', {
   details: jsonb('details').notNull(),
   // Dates
   date_type: text('date_type').notNull(), // 'any_future_date' or 'specific_date'
-  specific_date: timestamp('specific_date', { withTimezone: true }),
+  specific_date: text('specific_date'), // Store as simple text in YYYY-MM-DD format
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow()
 });

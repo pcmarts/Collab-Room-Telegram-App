@@ -97,6 +97,10 @@ export default function CreateCollaboration() {
     setSelectedCollabType(value);
     form.setValue("collab_type", value);
     
+    // Clear the details object completely first to prevent field value bleed
+    // We need to set a temporary empty object that matches the expected type
+    form.setValue('details', {} as any);
+    
     // Reset details object when collaboration type changes
     switch (value) {
       case "Podcast Guest Appearance":
