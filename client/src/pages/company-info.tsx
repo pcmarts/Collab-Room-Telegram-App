@@ -163,7 +163,7 @@ export default function CompanyInfoForm() {
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Company Information</h1>
+          <h1 className="text-2xl font-bold">My Company</h1>
           <p className="text-muted-foreground mt-2">Manage your company details</p>
         </div>
 

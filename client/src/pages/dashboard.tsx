@@ -196,7 +196,7 @@ export default function Dashboard() {
             onClick={() => setLocation('/company-info')}
           >
             <Building className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Company Info</span>
+            <span className="text-xs">My Company</span>
           </Button>
         </div>
 
