@@ -29,7 +29,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { MobileCheck } from "@/components/MobileCheck";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -586,19 +585,18 @@ export default function CreateCollaboration() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Company Followers Filter */}
-                  <FormItem className="flex items-center space-x-3 space-y-0 pb-2">
+                  <div className="flex items-center space-x-3 mb-4">
                     <Switch
                       checked={filtersEnabled.companyFollowers}
                       onCheckedChange={() => toggleFilter('companyFollowers')}
-                      id="company-followers-toggle"
                     />
-                    <div>
-                      <Label htmlFor="company-followers-toggle" className="font-normal">Company Twitter Followers</Label>
+                    <div className="grid gap-0.5">
+                      <div className="text-base font-medium">Company Twitter Followers</div>
                       <p className="text-sm text-muted-foreground">
                         Set minimum company follower count
                       </p>
                     </div>
-                  </FormItem>
+                  </div>
                   
                   {filtersEnabled.companyFollowers && (
                     <FormField
@@ -628,19 +626,18 @@ export default function CreateCollaboration() {
                   )}
                   
                   {/* User Followers Filter */}
-                  <FormItem className="flex items-center space-x-3 space-y-0 pt-4 pb-2">
+                  <div className="flex items-center space-x-3 mb-4 mt-6">
                     <Switch
                       checked={filtersEnabled.userFollowers}
                       onCheckedChange={() => toggleFilter('userFollowers')}
-                      id="user-followers-toggle"
                     />
-                    <div>
-                      <Label htmlFor="user-followers-toggle" className="font-normal">User Twitter Followers</Label>
+                    <div className="grid gap-0.5">
+                      <div className="text-base font-medium">User Twitter Followers</div>
                       <p className="text-sm text-muted-foreground">
                         Set minimum user follower count
                       </p>
                     </div>
-                  </FormItem>
+                  </div>
                   
                   {filtersEnabled.userFollowers && (
                     <FormField
@@ -670,19 +667,18 @@ export default function CreateCollaboration() {
                   )}
                   
                   {/* Funding Stages Filter */}
-                  <FormItem className="flex items-center space-x-3 space-y-0 pt-4 pb-2">
+                  <div className="flex items-center space-x-3 mb-4 mt-6">
                     <Switch
                       checked={filtersEnabled.fundingStages}
                       onCheckedChange={() => toggleFilter('fundingStages')}
-                      id="funding-stages-toggle"
                     />
-                    <div>
-                      <Label htmlFor="funding-stages-toggle" className="font-normal">Funding Stages</Label>
+                    <div className="grid gap-0.5">
+                      <div className="text-base font-medium">Funding Stages</div>
                       <p className="text-sm text-muted-foreground">
                         Filter by company funding stages
                       </p>
                     </div>
-                  </FormItem>
+                  </div>
                   
                   {filtersEnabled.fundingStages && (
                     <FormField
@@ -721,19 +717,18 @@ export default function CreateCollaboration() {
                   )}
                   
                   {/* Token Status Filter */}
-                  <FormItem className="flex items-center space-x-3 space-y-0 pt-4 pb-2">
+                  <div className="flex items-center space-x-3 mb-4 mt-6">
                     <Switch
                       checked={filtersEnabled.tokenStatus}
                       onCheckedChange={() => toggleFilter('tokenStatus')}
-                      id="token-status-toggle"
                     />
-                    <div>
-                      <Label htmlFor="token-status-toggle" className="font-normal">Token Requirement</Label>
+                    <div className="grid gap-0.5">
+                      <div className="text-base font-medium">Token Requirement</div>
                       <p className="text-sm text-muted-foreground">
                         Only allow companies with tokens
                       </p>
                     </div>
-                  </FormItem>
+                  </div>
                   
                   {filtersEnabled.tokenStatus && (
                     <FormField
