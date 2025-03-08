@@ -60,7 +60,7 @@ export default function MarketingCollabs() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("host");
+  const [activeTab, setActiveTab] = useState("optin");
   const [showFilters, setShowFilters] = useState(false);
   
   const [filtersEnabled, setFiltersEnabled] = useState({
@@ -215,7 +215,7 @@ export default function MarketingCollabs() {
         backUrl="/dashboard"
       />
 
-      <Tabs defaultValue="host" onValueChange={setActiveTab}>
+      <Tabs defaultValue="optin" onValueChange={setActiveTab}>
         <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="optin">✔️ Discover</TabsTrigger>
