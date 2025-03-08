@@ -75,6 +75,12 @@ export class DatabaseStorage implements IStorage {
     // Make a clean copy
     let collabData = { ...collaboration };
     
+    // Validate creator_id is present
+    if (!collabData.creator_id) {
+      console.error("Missing creator_id in collaboration data");
+      throw new Error("creator_id is required for collaboration creation");
+    }
+    
     // Handle specific_date - remove if not needed
     if (collabData.date_type === 'any_future_date') {
       console.log("Removing specific_date for any_future_date option");
@@ -100,11 +106,16 @@ export class DatabaseStorage implements IStorage {
     
     console.log("Final prepared data:", preparedData);
     
-    const [newCollaboration] = await db
-      .insert(collaborations)
-      .values(preparedData)
-      .returning();
-    return newCollaboration;
+    try {
+      const [newCollaboration] = await db
+        .insert(collaborations)
+        .values(preparedData)
+        .returning();
+      return newCollaboration;
+    } catch (error) {
+      console.error("Database error inserting collaboration:", error);
+      throw error;
+    }
   }
   
   async getCollaboration(id: string): Promise<Collaboration | undefined> {
