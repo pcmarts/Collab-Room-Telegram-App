@@ -634,7 +634,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
         <PageHeader 
           title={isEditing ? "Edit Collaboration" : "Create Collaboration"} 
           subtitle={isEditing ? "Update your collaboration details" : "Offer collaboration opportunities"}
-          backUrl="/my-collaborations"
+          backUrl="/marketing-collabs"
         />
         
         <div className="p-4">
@@ -1202,7 +1202,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setLocation('/dashboard')}
+                  onClick={() => setLocation('/marketing-collabs')}
                 >
                   Cancel
                 </Button>
