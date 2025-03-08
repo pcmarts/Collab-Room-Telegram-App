@@ -293,36 +293,90 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
       // Get Telegram init data if available
       const telegramInitData = window.Telegram?.WebApp?.initData || '';
       
-      // Determine if we're creating or updating
-      const endpoint = isEditing ? `/api/collaborations/${id}` : '/api/collaborations';
-      const method = isEditing ? 'PATCH' : 'POST';
-      
-      console.log(`Submitting ${method} request to ${endpoint}`);
-      console.log(`isEditing: ${isEditing}, ID: ${id}`);
-      
-      // Use the correct type for apiRequest
-      const response = await fetch(endpoint, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-telegram-init-data': telegramInitData
-        },
-        body: JSON.stringify(formattedData),
-      });
-      
-      console.log(`Response from ${endpoint}: status ${response.status}`);
-
-      if (response.ok) {
-        toast({
-          title: "Success!",
-          description: isEditing 
-            ? "Your collaboration has been updated."
-            : "Your collaboration has been posted.",
-        });
-        setLocation('/marketing-collabs');
+      // For editing, we'll use a different approach since PATCH isn't working properly
+      if (isEditing && id) {
+        console.log(`Editing collaboration with ID: ${id}`);
+        
+        // Check if we should be handling an update
+        if (!id) {
+          throw new Error("Collaboration ID is required for updating");
+        }
+        
+        try {
+          // First, get the existing collaboration
+          const getResponse = await fetch(`/api/collaborations/get/${id}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'x-telegram-init-data': telegramInitData
+            }
+          });
+          
+          if (!getResponse.ok) {
+            throw new Error("Failed to get collaboration details for updating");
+          }
+          
+          // Now instead of a PATCH request, we'll use a direct update with the full data
+          // Create a POST request to a special update endpoint
+          const updateEndpoint = `/api/collaborations/update`;
+          
+          // Prepare the update data with the ID
+          const updateData = {
+            id: id,
+            ...formattedData
+          };
+          
+          console.log("Sending update data:", JSON.stringify(updateData));
+          
+          const updateResponse = await fetch(updateEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-telegram-init-data': telegramInitData
+            },
+            body: JSON.stringify(updateData),
+          });
+          
+          console.log(`Update response status: ${updateResponse.status}`);
+          
+          if (updateResponse.ok) {
+            toast({
+              title: "Success!",
+              description: "Your collaboration has been updated.",
+            });
+            // Force reload to ensure we see the updated data
+            window.location.href = '/marketing-collabs';
+            return;
+          } else {
+            const errorText = await updateResponse.text();
+            throw new Error(`Failed to update collaboration: ${errorText}`);
+          }
+        } catch (error) {
+          console.error("Error during update process:", error);
+          throw error;
+        }
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'create'} collaboration`);
+        // Handle creation normally
+        const response = await fetch('/api/collaborations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-telegram-init-data': telegramInitData
+          },
+          body: JSON.stringify(formattedData),
+        });
+        
+        console.log(`Creation response status: ${response.status}`);
+        
+        if (response.ok) {
+          toast({
+            title: "Success!",
+            description: "Your collaboration has been posted.",
+          });
+          setLocation('/marketing-collabs');
+        } else {
+          const errorText = await response.text();
+          throw new Error(`Failed to create collaboration: ${errorText}`);
+        }
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -1199,8 +1253,14 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
               </Card>
               
               {/* Sticky footer with submit button */}
-              <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 z-10 flex justify-center">
-                <Button type="submit" disabled={isSubmitting} className="w-full max-w-sm">
+              <div id="updateFormStatus" className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 z-10 flex justify-center">
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="w-full max-w-sm" 
+                  variant="default"
+                  size="lg"
+                >
                   {isSubmitting 
                     ? (isEditing ? "Updating..." : "Creating...") 
                     : (isEditing ? "Update Collaboration" : "Create Collaboration")}
