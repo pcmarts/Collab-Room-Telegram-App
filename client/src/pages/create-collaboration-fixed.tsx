@@ -263,127 +263,122 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
     fetchCollaboration();
   }, [id, form, toast]);
 
-  const onSubmit = async (data: CreateCollaboration) => {
-    console.log("Form data to be submitted:", data);
-    setIsSubmitting(true);
+  // Direct update button handler - bypassing regular form submit
+  const handleDirectUpdate = async () => {
+    if (!isEditing || !id) return;
+    
     try {
-      // Create a clean copy of the data without any type issues
-      let formattedData = { ...data };
+      // Get current form values
+      const currentData = form.getValues();
+      console.log("Current form data:", currentData);
       
-      // Handle specific_date - only include if date_type is specific_date
-      if (data.date_type === 'specific_date' && data.specific_date) {
-        // Ensure it's in YYYY-MM-DD format
-        const dateStr = String(data.specific_date);
-        console.log("Specific date before formatting:", dateStr);
+      // Get Telegram init data
+      const telegramInitData = window.Telegram?.WebApp?.initData || '';
+      
+      // Show updating state
+      setIsSubmitting(true);
+      
+      // Format the data to include ID
+      const updateData = {
+        id: id,
+        ...currentData,
+        // Handle specific fields
+        required_company_sectors: currentData.required_company_sectors || [],
+        required_funding_stages: currentData.required_funding_stages || [],
+      };
+      
+      // Explicitly send to our update endpoint
+      console.log("Sending direct update to collaboration:", id);
+      console.log("Update payload:", JSON.stringify(updateData));
+      
+      const response = await fetch("/api/collaborations/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-telegram-init-data": telegramInitData
+        },
+        body: JSON.stringify(updateData)
+      });
+      
+      const responseText = await response.text();
+      console.log("Update response:", response.status, responseText);
+      
+      if (response.ok) {
+        toast({
+          title: "Success!",
+          description: "Your collaboration has been updated successfully."
+        });
         
-        // We already have it in the correct format from the date picker
-        formattedData.specific_date = dateStr;
+        // Force navigation to ensure we reload the data
+        window.location.href = "/marketing-collabs";
       } else {
-        // Remove specific_date if not needed
+        throw new Error(`Failed to update: ${responseText}`);
+      }
+    } catch (error) {
+      console.error("Update error:", error);
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  // Regular form submission handler
+  const onSubmit = async (data: CreateCollaboration) => {
+    console.log("Form data being submitted:", data);
+    setIsSubmitting(true);
+    
+    try {
+      // For editing, we'll use the direct update handler
+      if (isEditing && id) {
+        // This should never actually be called for editing due to our custom submit handler
+        handleDirectUpdate();
+        return;
+      }
+      
+      // Handle creation normally
+      const formattedData = {
+        ...data,
+        required_company_sectors: data.required_company_sectors || [],
+        required_funding_stages: data.required_funding_stages || [],
+      };
+      
+      // Remove specific_date if not needed
+      if (data.date_type !== 'specific_date') {
         delete formattedData.specific_date;
       }
       
-      // Ensure specific optional fields are in proper format
-      formattedData = {
-        ...formattedData,
-        required_company_sectors: formattedData.required_company_sectors || [],
-        required_funding_stages: formattedData.required_funding_stages || [],
-      };
-      
-      // Get Telegram init data if available
+      // Get Telegram init data
       const telegramInitData = window.Telegram?.WebApp?.initData || '';
       
-      // For editing, we'll use a different approach since PATCH isn't working properly
-      if (isEditing && id) {
-        console.log(`Editing collaboration with ID: ${id}`);
-        
-        // Check if we should be handling an update
-        if (!id) {
-          throw new Error("Collaboration ID is required for updating");
-        }
-        
-        try {
-          // First, get the existing collaboration
-          const getResponse = await fetch(`/api/collaborations/get/${id}`, {
-            headers: {
-              'Content-Type': 'application/json',
-              'x-telegram-init-data': telegramInitData
-            }
-          });
-          
-          if (!getResponse.ok) {
-            throw new Error("Failed to get collaboration details for updating");
-          }
-          
-          // Now instead of a PATCH request, we'll use a direct update with the full data
-          // Create a POST request to a special update endpoint
-          const updateEndpoint = `/api/collaborations/update`;
-          
-          // Prepare the update data with the ID
-          const updateData = {
-            id: id,
-            ...formattedData
-          };
-          
-          console.log("Sending update data:", JSON.stringify(updateData));
-          
-          const updateResponse = await fetch(updateEndpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-telegram-init-data': telegramInitData
-            },
-            body: JSON.stringify(updateData),
-          });
-          
-          console.log(`Update response status: ${updateResponse.status}`);
-          
-          if (updateResponse.ok) {
-            toast({
-              title: "Success!",
-              description: "Your collaboration has been updated.",
-            });
-            // Force reload to ensure we see the updated data
-            window.location.href = '/marketing-collabs';
-            return;
-          } else {
-            const errorText = await updateResponse.text();
-            throw new Error(`Failed to update collaboration: ${errorText}`);
-          }
-        } catch (error) {
-          console.error("Error during update process:", error);
-          throw error;
-        }
-      } else {
-        // Handle creation normally
-        const response = await fetch('/api/collaborations', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-telegram-init-data': telegramInitData
-          },
-          body: JSON.stringify(formattedData),
+      const response = await fetch('/api/collaborations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-init-data': telegramInitData
+        },
+        body: JSON.stringify(formattedData),
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Success!",
+          description: "Your collaboration has been created successfully."
         });
-        
-        console.log(`Creation response status: ${response.status}`);
-        
-        if (response.ok) {
-          toast({
-            title: "Success!",
-            description: "Your collaboration has been posted.",
-          });
-          setLocation('/marketing-collabs');
-        } else {
-          const errorText = await response.text();
-          throw new Error(`Failed to create collaboration: ${errorText}`);
-        }
+        setLocation('/marketing-collabs');
+      } else {
+        const errorText = await response.text();
+        throw new Error(`Failed to create: ${errorText}`);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error("Submission error:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : `Failed to ${isEditing ? 'update' : 'create'} collaboration`,
-        variant: "destructive",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
@@ -1253,18 +1248,73 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
               </Card>
               
               {/* Sticky footer with submit button */}
-              <div id="updateFormStatus" className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 z-10 flex justify-center">
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting} 
-                  className="w-full max-w-sm" 
-                  variant="default"
-                  size="lg"
-                >
-                  {isSubmitting 
-                    ? (isEditing ? "Updating..." : "Creating...") 
-                    : (isEditing ? "Update Collaboration" : "Create Collaboration")}
-                </Button>
+              <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 z-10 flex justify-center">
+                {isEditing ? (
+                  // For editing, use a direct button outside the form
+                  <Button 
+                    type="button" 
+                    onClick={() => {
+                      const formData = form.getValues();
+                      console.log("Manual update with data:", formData);
+                      
+                      // Get Telegram init data
+                      const telegramInitData = window.Telegram?.WebApp?.initData || '';
+                      
+                      setIsSubmitting(true);
+                      
+                      // Manually send update request
+                      fetch(`/api/collaborations/${id}`, {
+                        method: "PATCH",
+                        headers: {
+                          "Content-Type": "application/json",
+                          "x-telegram-init-data": telegramInitData
+                        },
+                        body: JSON.stringify(formData)
+                      })
+                      .then(response => {
+                        console.log("Update response:", response.status);
+                        if (response.ok) {
+                          toast({
+                            title: "Success!",
+                            description: "Collaboration updated successfully"
+                          });
+                          window.location.href = "/marketing-collabs";
+                        } else {
+                          return response.text().then(text => {
+                            throw new Error(`Update failed: ${text}`);
+                          });
+                        }
+                      })
+                      .catch(error => {
+                        console.error("Update error:", error);
+                        toast({
+                          title: "Error",
+                          description: error.message || "Failed to update collaboration",
+                          variant: "destructive"
+                        });
+                      })
+                      .finally(() => {
+                        setIsSubmitting(false);
+                      });
+                    }}
+                    disabled={isSubmitting} 
+                    className="w-full max-w-sm bg-primary text-primary-foreground" 
+                    size="lg"
+                  >
+                    {isSubmitting ? "Updating..." : "Update Collaboration"}
+                  </Button>
+                ) : (
+                  // For creation, use the normal submit button
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting} 
+                    className="w-full max-w-sm" 
+                    variant="default"
+                    size="lg"
+                  >
+                    {isSubmitting ? "Creating..." : "Create Collaboration"}
+                  </Button>
+                )}
               </div>
               
               {/* Add padding at the bottom to prevent content from being hidden behind the sticky button */}
