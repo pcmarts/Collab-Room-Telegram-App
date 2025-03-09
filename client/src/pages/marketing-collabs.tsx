@@ -548,9 +548,14 @@ export default function MarketingCollabs() {
             ) : (
               <Button 
                 variant="outline" 
+                type="button"
                 size="sm"
                 className="flex-1 text-red-500 hover:text-red-600 hover:bg-red-50"
-                onClick={() => setCollabToDelete(collab.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setCollabToDelete(collab.id);
+                }}
               >
                 <Trash2 className="h-4 w-4 mr-1" /> Delete
               </Button>
@@ -809,6 +814,28 @@ export default function MarketingCollabs() {
 
   return (
     <div className="min-h-[100svh] bg-background">
+      {/* Delete Confirmation Dialog - Outside the form */}
+      <AlertDialog open={!!collabToDelete} onOpenChange={(open) => !open && setCollabToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Collaboration</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this collaboration 
+              and remove its data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCollabToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCollaboration}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    
       <PageHeader
         title="Marketing Collabs"
         subtitle="Select your preferred collaboration types"
@@ -1143,34 +1170,7 @@ export default function MarketingCollabs() {
                     </DialogContent>
                   </Dialog>
                   
-                  {/* Delete Confirmation Dialog */}
-                  <AlertDialog open={!!collabToDelete} onOpenChange={(open) => !open && setCollabToDelete(null)}>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Collaboration</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete this collaboration 
-                          and remove its data from our servers.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel onClick={(e) => {
-                            e.preventDefault(); // Prevent form submission
-                            e.stopPropagation(); // Stop event bubbling
-                          }}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={(e) => {
-                            e.preventDefault(); // Prevent form submission
-                            e.stopPropagation(); // Stop event bubbling
-                            handleDeleteCollaboration();
-                          }}
-                          className="bg-red-500 hover:bg-red-600"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+
                 </div>
               </TabsContent>
 
