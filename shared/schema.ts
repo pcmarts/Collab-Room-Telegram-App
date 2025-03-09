@@ -181,6 +181,7 @@ export const users = pgTable('users', {
   twitter_url: text('twitter_url'),
   twitter_followers: text('twitter_followers'),
   is_approved: boolean('is_approved').default(false),
+  is_admin: boolean('is_admin').default(false),
   applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });

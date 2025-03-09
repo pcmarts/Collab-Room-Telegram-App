@@ -15,6 +15,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByTelegramId(telegramId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  setUserAdminStatus(id: string, isAdmin: boolean): Promise<User | undefined>;
   
   // Collaboration methods
   createCollaboration(collaboration: any): Promise<Collaboration>;
@@ -67,6 +68,20 @@ export class DatabaseStorage implements IStorage {
       .values(insertUser)
       .returning();
     return user;
+  }
+  
+  async setUserAdminStatus(id: string, isAdmin: boolean): Promise<User | undefined> {
+    try {
+      const [updatedUser] = await db
+        .update(users)
+        .set({ is_admin: isAdmin })
+        .where(eq(users.id, id))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error("Error updating user admin status:", error);
+      throw error;
+    }
   }
   
   // Collaboration methods
