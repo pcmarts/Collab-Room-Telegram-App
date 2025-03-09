@@ -1453,23 +1453,6 @@ export default function MarketingCollabs() {
                   </Card>
                 )}
               </TabsContent>
-
-              <div className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t p-4 z-10">
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Preferences"
-                  )}
-                </Button>
-              </div>
             </form>
           </Form>
         </div>
