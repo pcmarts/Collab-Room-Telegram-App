@@ -4,6 +4,11 @@ import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+// Interface for component props
+interface MyCollaborationsProps {
+  collaborationId?: string;
+}
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +60,7 @@ import {
   Trash2
 } from "lucide-react";
 
-export default function MyCollaborations() {
+export default function MyCollaborations({ collaborationId }: MyCollaborationsProps = {}) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();

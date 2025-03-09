@@ -48,8 +48,12 @@ function Router() {
           <Route path="/apply" component={ApplicationForm} />
 
           {/* Collaboration Routes */}
-          <Route path="/browse-collaborations" component={BrowseCollaborations} />
-          <Route path="/create-collaboration" component={CreateCollaborationFixed} />
+          <Route path="/browse-collaborations">
+            {() => <BrowseCollaborations />}
+          </Route>
+          <Route path="/create-collaboration">
+            {() => <CreateCollaborationFixed />}
+          </Route>
           <Route path="/my-collaborations">
             <Redirect to="/marketing-collabs" />
           </Route>
