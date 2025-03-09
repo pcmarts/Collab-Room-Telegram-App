@@ -939,8 +939,8 @@ export default function MarketingCollabs() {
       <Tabs defaultValue="host" onValueChange={setActiveTab}>
         <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="host">🚀 Host Collaborations</TabsTrigger>
-            <TabsTrigger value="optin">✔️ Discover Opportunities</TabsTrigger>
+            <TabsTrigger value="host">Hosted Collabs</TabsTrigger>
+            <TabsTrigger value="optin"> 🔧 Discover Collab Settings</TabsTrigger>
           </TabsList>
         </div>
 
@@ -952,7 +952,7 @@ export default function MarketingCollabs() {
                   <div>
                     <Label className="text-lg">Discover Collaboration Opportunities</Label>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Select the types of collaborations you want to be matched with on the platform
+                      Select the types of collaborations you want to be shown on your discovery feed
                     </p>
                   </div>
                 </div>
@@ -1081,7 +1081,7 @@ export default function MarketingCollabs() {
                   <CardHeader>
                     <CardTitle>Collaboration Types to Discover</CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Select which types of collaborations you want to be matched with as a participant
+                      Select which types of collaborations for your company to be matched with as a participant
                     </p>
                   </CardHeader>
                   <CardContent>
@@ -1129,7 +1129,7 @@ export default function MarketingCollabs() {
                     <CardHeader>
                       <CardTitle>Twitter Co-Marketing Opportunities</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Choose specific Twitter collaboration formats you'd like to participate in
+                        Choose specific Twitter collaboration formats you'd like your company to participate in
                       </p>
                     </CardHeader>
                     <CardContent>
@@ -1196,7 +1196,7 @@ export default function MarketingCollabs() {
                               <div className="space-y-2">
                                 <h3 className="text-sm font-medium border-b pb-1 mb-2">Audience Building</h3>
                                 <div className="grid grid-cols-1 gap-2">
-                                  {["Twitter Space Co-Host", "Retweet & Boost", "Shoutout"].map((type) => (
+                                  {["Retweet & Boost", "Shoutout"].map((type) => (
                                     <FormItem 
                                       key={type} 
                                       className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3"
@@ -1236,7 +1236,7 @@ export default function MarketingCollabs() {
                     <div>
                       <Label className="text-lg">My Hosted Collaborations</Label>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Create and manage your own collaborations that others can apply to join
+                        Create and manage your own marketing collaborations that others can apply to join. Only your company details will be visable for potential matches, and only upon a match when you match your contact details will be shared. 
                       </p>
                     </div>
                     <Button 

@@ -115,7 +115,7 @@ export default function ProfileOverview() {
 
       toast({
         title: "Success!",
-        description: "Personal information updated successfully",
+        description: "Profile updated successfully",
       });
 
       setLocation("/dashboard");
@@ -135,7 +135,7 @@ export default function ProfileOverview() {
   return (
     <div className="min-h-[100svh] bg-background">
       <PageHeader
-        title="Personal Information"
+        title="My Profile"
         subtitle="Edit your profile details"
         backUrl="/dashboard"
       />
@@ -159,7 +159,7 @@ export default function ProfileOverview() {
               </div>
 
               <div>
-                <Label htmlFor="last_name">Last Name (Optional)</Label>
+                <Label htmlFor="last_name">Last Name</Label>
                 <Input
                   id="last_name"
                   name="last_name"
@@ -169,7 +169,7 @@ export default function ProfileOverview() {
               </div>
 
               <div>
-                <Label htmlFor="linkedin_url">LinkedIn URL (Optional)</Label>
+                <Label htmlFor="linkedin_url">LinkedIn URL</Label>
                 <Input
                   id="linkedin_url"
                   name="linkedin_url"
@@ -181,7 +181,7 @@ export default function ProfileOverview() {
               </div>
 
               <div>
-                <Label htmlFor="email">Email Address (Optional)</Label>
+                <Label htmlFor="email">Work Email Address</Label>
                 <Input
                   id="email"
                   name="email"
@@ -193,7 +193,7 @@ export default function ProfileOverview() {
               </div>
 
               <div>
-                <Label htmlFor="twitter_url">Twitter URL (Optional)</Label>
+                <Label htmlFor="twitter_url">Your Peronal Twitter URL</Label>
                 <Input
                   id="twitter_url"
                   name="twitter_url"
@@ -205,7 +205,7 @@ export default function ProfileOverview() {
               </div>
 
               <div>
-                <Label htmlFor="twitter_followers">Twitter Followers</Label>
+                <Label htmlFor="twitter_followers">Personal Twitter Followers</Label>
                 <Select
                   value={formData.twitter_followers}
                   onValueChange={(value) => handleSelectChange("twitter_followers", value)}
