@@ -1108,17 +1108,6 @@ export default function MarketingCollabs() {
                     </Card>
                   ) : (
                     <div className="space-y-3">
-                      {/* Debug info for collaboration data */}
-                      <Card className="mb-4 bg-slate-50">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Debug Info (Collaboration Data)</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-xs overflow-auto max-h-40">
-                          <pre>Count: {collaborations.length}</pre>
-                          <pre>Types: {collaborations.map(c => c.collab_type).join(', ')}</pre>
-                          <pre>First collab: {JSON.stringify(collaborations[0], null, 2)}</pre>
-                        </CardContent>
-                      </Card>
                       {collaborations.map(collab => renderCollaborationCard(collab))}
                     </div>
                   )}
