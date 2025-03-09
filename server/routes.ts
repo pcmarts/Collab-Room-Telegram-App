@@ -793,10 +793,32 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: 'User not found' });
       }
 
-      // Prepare collaboration data
-      const collabData: InsertCollaboration = {
+      // Prepare collaboration data from validated input
+      // We need to create a properly typed object for the database
+      const validatedData = result.data;
+      
+      // Create plain JavaScript object with all data
+      // This bypasses TypeScript's typing to avoid errors with array fields
+      const collabData = {
         creator_id: user.id,
-        ...result.data
+        collab_type: validatedData.collab_type,
+        title: validatedData.title,
+        description: validatedData.description,
+        date_type: validatedData.date_type,
+        specific_date: validatedData.specific_date,
+        is_free_collab: validatedData.is_free_collab,
+        required_token_status: validatedData.required_token_status || false,
+        min_company_followers: validatedData.min_company_followers || null,
+        min_user_followers: validatedData.min_user_followers || null,
+        details: validatedData.details,
+        // Convert arrays to ensure they're string arrays
+        topics: validatedData.topics.map(String),
+        required_company_sectors: validatedData.required_company_sectors 
+          ? validatedData.required_company_sectors.map(String) 
+          : [],
+        required_funding_stages: validatedData.required_funding_stages 
+          ? validatedData.required_funding_stages.map(String) 
+          : []
       };
 
       // Create the collaboration

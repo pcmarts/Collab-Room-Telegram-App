@@ -70,7 +70,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Collaboration methods
-  async createCollaboration(collaboration: InsertCollaboration): Promise<Collaboration> {
+  async createCollaboration(collaboration: any): Promise<Collaboration> {
     console.log("Creating collaboration with data:", collaboration);
     
     // Make a clean copy
@@ -95,15 +95,16 @@ export class DatabaseStorage implements IStorage {
     // Ensure array fields are properly formatted
     const preparedData = {
       ...collabData,
+      // Make sure each array field is properly formatted as an array of strings
       topics: Array.isArray(collabData.topics) 
-        ? collabData.topics 
-        : (collabData.topics ? [collabData.topics] : []),
+        ? collabData.topics.map(topic => String(topic))
+        : (collabData.topics ? [String(collabData.topics)] : []),
       required_company_sectors: Array.isArray(collabData.required_company_sectors) 
-        ? collabData.required_company_sectors 
-        : (collabData.required_company_sectors ? [collabData.required_company_sectors] : []),
+        ? collabData.required_company_sectors.map(sector => String(sector))
+        : (collabData.required_company_sectors ? [String(collabData.required_company_sectors)] : []),
       required_funding_stages: Array.isArray(collabData.required_funding_stages) 
-        ? collabData.required_funding_stages 
-        : (collabData.required_funding_stages ? [collabData.required_funding_stages] : []),
+        ? collabData.required_funding_stages.map(stage => String(stage))
+        : (collabData.required_funding_stages ? [String(collabData.required_funding_stages)] : []),
       created_at: new Date(),
       updated_at: new Date()
     };
