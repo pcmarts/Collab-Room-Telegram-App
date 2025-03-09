@@ -4,7 +4,8 @@ import { db } from "./db";
 import { 
   users, companies, preferences, events, user_events, 
   collaborations, collab_applications, collab_notifications,
-  createCollaborationSchema, applicationSchema, collabApplicationSchema
+  createCollaborationSchema, applicationSchema, collabApplicationSchema,
+  InsertCollaboration
 } from "../shared/schema";
 import { eq, and, not, desc } from 'drizzle-orm';
 import { sendApplicationConfirmation } from "./telegram";
@@ -180,9 +181,9 @@ export async function registerRoutes(app: Express) {
           ...result
         });
 
-      } catch (dbError) {
+      } catch (dbError: unknown) {
         console.error('Database error:', dbError);
-        throw new Error(`Failed to save application data: ${dbError.message}`);
+        throw new Error(`Failed to save application data: ${dbError instanceof Error ? dbError.message : String(dbError)}`);
       }
 
     } catch (error) {
