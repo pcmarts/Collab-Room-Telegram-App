@@ -8,7 +8,7 @@ import {
   InsertCollaboration
 } from "../shared/schema";
 import { eq, and, not, desc } from 'drizzle-orm';
-import { sendApplicationConfirmation, sendCollabApplicationNotification } from "./telegram";
+import { sendApplicationConfirmation } from "./telegram";
 import { storage } from "./storage";
 
 // Helper function to extract Telegram user data from request
@@ -1361,37 +1361,6 @@ export async function registerRoutes(app: Express) {
           is_sent: false,
           created_at: new Date()
         });
-
-        // Get the collaboration creator's Telegram ID
-        try {
-          // Find the collaboration creator
-          const creatorUser = await storage.getUser(collaboration.creator_id);
-          
-          if (creatorUser && creatorUser.telegram_id) {
-            // Get company info
-            const [company] = await db.select()
-              .from(companies)
-              .where(eq(companies.user_id, user.id));
-            
-            // Send Telegram notification with hyperlinked profile data
-            await sendCollabApplicationNotification(
-              creatorUser.telegram_id,
-              {
-                applicantName: `${user.first_name} ${user.last_name || ''}`,
-                applicantTwitter: user.twitter_url ? user.twitter_url.replace('https://twitter.com/', '').replace('@', '') : undefined,
-                applicantLinkedin: user.linkedin_url,
-                applicantPosition: company?.job_title,
-                companyName: company?.name || 'Unknown Company',
-                companyTwitter: company?.twitter_handle,
-                collaborationTitle: collaboration.title,
-                applicationId: application.id
-              }
-            );
-          }
-        } catch (telegramError) {
-          // Log the error but don't fail the application submission
-          console.error('Failed to send Telegram notification:', telegramError);
-        }
 
         res.status(201).json({
           success: true,
