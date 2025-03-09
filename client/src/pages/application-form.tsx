@@ -103,7 +103,7 @@ export default function ApplicationForm() {
         <form 
           ref={formRef}
           onSubmit={(e) => { e.preventDefault(); handleNext(); }} 
-          className="space-y-4"
+          className="space-y-4 pb-24"
         >
           <div>
             <Label htmlFor="first_name">First Name *</Label>
@@ -188,21 +188,24 @@ export default function ApplicationForm() {
               </SelectContent>
             </Select>
           </div>
-
-          <Button
-            type="submit"
-            className="w-full mt-6"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Continue to Company Info"
-            )}
-          </Button>
+          
+          {/* Floating Save Button */}
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Continue to Company Info"
+              )}
+            </Button>
+          </div>
         </form>
       </div>
     </div>

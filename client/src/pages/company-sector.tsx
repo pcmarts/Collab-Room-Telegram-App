@@ -87,7 +87,7 @@ export default function CompanySector() {
           <p className="text-muted-foreground mt-2">Select your company's sectors and technologies</p>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-6 pb-24">
           <div className="space-y-4">
             <Label>Company Sectors *</Label>
             <ScrollArea className="h-[300px] rounded-md border p-4">
@@ -111,20 +111,23 @@ export default function CompanySector() {
             </ScrollArea>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Continue to Company Details"
-            )}
-          </Button>
+          {/* Floating Save Button */}
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Continue to Company Details"
+              )}
+            </Button>
+          </div>
         </form>
       </div>
     </div>
