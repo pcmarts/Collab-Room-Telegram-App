@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 import {
   Form,
@@ -304,6 +304,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
       console.log("Update response:", response.status, responseText);
       
       if (response.ok) {
+        // Invalidate queries to refresh collaboration lists
+        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+        
         toast({
           title: "Success!",
           description: "Your collaboration has been updated successfully."
@@ -364,6 +367,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
       });
       
       if (response.ok) {
+        // Invalidate queries to refresh collaboration lists
+        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+        
         toast({
           title: "Success!",
           description: "Your collaboration has been created successfully."
