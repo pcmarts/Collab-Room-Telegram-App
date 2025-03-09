@@ -14,21 +14,17 @@ log('=== Initializing Server ===');
 try {
   log('Checking Telegram bot status...');
 
-  if (!bot && app.get('env') !== 'development') {
+  if (!bot) {
     throw new Error('Telegram bot not initialized');
   }
 
   // Try to get bot info to verify token works
-  if (app.get('env') === 'development') {
-    log('In development mode, skipping bot verification');
-  } else {
-    bot.getMe().then((botInfo) => {
-      log('Telegram bot verified:', botInfo.username);
-    }).catch((error) => {
-      console.error('Failed to verify bot:', error);
-      process.exit(1);
-    });
-  }
+  bot.getMe().then((botInfo) => {
+    log('Telegram bot verified:', botInfo.username);
+  }).catch((error) => {
+    console.error('Failed to verify bot:', error);
+    process.exit(1);
+  });
 
 } catch (error) {
   console.error('Critical error initializing Telegram bot:', error);

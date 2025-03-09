@@ -1,34 +1,16 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { db } from './db';
-import { users } from '../shared/schema';
+import { db } from "./db";
+import { users } from "@shared/schema";
 import { eq } from 'drizzle-orm';
 import { format } from 'date-fns';
 
-// Middleware token
-const token = process.env.TELEGRAM_BOT_TOKEN || 'development_token';
+if (!process.env.TELEGRAM_BOT_TOKEN) {
+  throw new Error('TELEGRAM_BOT_TOKEN is required');
+}
 
-// Create a mock bot for development
-const createMockBot = () => {
-  return {
-    getMe: () => Promise.resolve({ username: 'dev_bot' }),
-    sendMessage: (chatId: any, message: string) => {
-      console.log(`[MOCK BOT] Would send to ${chatId}: ${message}`);
-      return Promise.resolve();
-    },
-    setMyCommands: (commands: any) => Promise.resolve(),
-    on: (event: string, callback: any) => {
-      console.log(`[MOCK BOT] Event listener added for: ${event}`);
-    },
-    onText: (regex: any, callback: any) => {
-      console.log(`[MOCK BOT] onText listener added for regex: ${regex}`);
-    }
-  };
-};
-
-// Initialize the bot
-export const bot = process.env.NODE_ENV === 'development' 
-  ? createMockBot() as any 
-  : token ? new TelegramBot(token, { polling: false }) : null;
+if (!process.env.REPLIT_DOMAINS) {
+  throw new Error('REPLIT_DOMAINS is required');
+}
 
 // Get the webapp URL from environment
 const domain = process.env.REPLIT_DOMAINS.split(',')[0];
@@ -38,6 +20,11 @@ console.log('=== Telegram Bot Initialization ===');
 console.log('WebApp URL:', WEBAPP_URL);
 console.log('Domain:', domain);
 
+// Initialize bot with polling
+export const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { 
+  polling: true,
+  webHook: false // Explicitly disable webhook
+});
 
 // Send application confirmation message
 export async function sendApplicationConfirmation(chatId: number) {
