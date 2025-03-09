@@ -1001,12 +1001,12 @@ export default function MarketingCollabs() {
                 </Card>
 
                 {/* Twitter Co-Marketing Section - Conditional */}
-                {form.watch("enabledCollabs")?.includes("Co-Marketing on Twitter") && (
+                {form.watch("enabledCollabs")?.includes("Co-Marketing on Twitter") ? (
                   <Card>
                     <CardHeader>
                       <CardTitle>Twitter Co-Marketing Types</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Select specific Twitter collaboration formats
+                        Select which specific Twitter collaboration formats you're interested in
                       </p>
                     </CardHeader>
                     <CardContent>
@@ -1016,82 +1016,97 @@ export default function MarketingCollabs() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="space-y-4">
+                              {/* Content Creation Group */}
                               <div className="space-y-2">
                                 <h3 className="text-sm font-medium border-b pb-1 mb-2">Content Creation</h3>
                                 <div className="grid grid-cols-1 gap-2">
-                                  {["Thread Collab", "Joint Campaign"].map((type) => (
-                                    <FormItem 
-                                      key={type} 
+                                  {["Thread Collab", "Joint Campaign"].map((collabType) => (
+                                    <FormItem
+                                      key={collabType}
                                       className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3"
                                     >
                                       <FormControl>
                                         <Checkbox
-                                          checked={field.value?.includes(type)}
+                                          checked={field.value?.includes(collabType)}
                                           onCheckedChange={(checked) => {
                                             const currentTypes = field.value || [];
                                             if (checked) {
-                                              field.onChange([...currentTypes, type]);
+                                              field.onChange([...currentTypes, collabType]);
                                             } else {
-                                              field.onChange(currentTypes.filter(v => v !== type));
+                                              field.onChange(
+                                                currentTypes.filter(
+                                                  (value) => value !== collabType
+                                                )
+                                              );
                                             }
                                           }}
                                         />
                                       </FormControl>
-                                      <FormLabel className="font-normal">{type}</FormLabel>
+                                      <FormLabel className="font-normal">{collabType}</FormLabel>
                                     </FormItem>
                                   ))}
                                 </div>
                               </div>
-
+                              
+                              {/* User Engagement Group */}
                               <div className="space-y-2">
                                 <h3 className="text-sm font-medium border-b pb-1 mb-2">User Engagement</h3>
                                 <div className="grid grid-cols-1 gap-2">
-                                  {["Giveaway", "Poll/Q&A", "AMA"].map((type) => (
-                                    <FormItem 
-                                      key={type} 
+                                  {["Giveaway", "Poll/Q&A", "AMA"].map((collabType) => (
+                                    <FormItem
+                                      key={collabType}
                                       className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3"
                                     >
                                       <FormControl>
                                         <Checkbox
-                                          checked={field.value?.includes(type)}
+                                          checked={field.value?.includes(collabType)}
                                           onCheckedChange={(checked) => {
                                             const currentTypes = field.value || [];
                                             if (checked) {
-                                              field.onChange([...currentTypes, type]);
+                                              field.onChange([...currentTypes, collabType]);
                                             } else {
-                                              field.onChange(currentTypes.filter(v => v !== type));
+                                              field.onChange(
+                                                currentTypes.filter(
+                                                  (value) => value !== collabType
+                                                )
+                                              );
                                             }
                                           }}
                                         />
                                       </FormControl>
-                                      <FormLabel className="font-normal">{type}</FormLabel>
+                                      <FormLabel className="font-normal">{collabType}</FormLabel>
                                     </FormItem>
                                   ))}
                                 </div>
                               </div>
-
+                              
+                              {/* Audience Building Group */}
                               <div className="space-y-2">
                                 <h3 className="text-sm font-medium border-b pb-1 mb-2">Audience Building</h3>
                                 <div className="grid grid-cols-1 gap-2">
-                                  {["Twitter Space Co-Host", "Retweet & Boost", "Shoutout"].map((type) => (
-                                    <FormItem 
-                                      key={type} 
+                                  {["Twitter Space Co-Host", "Retweet & Boost", "Shoutout", "Tweet Swap", "Sponsored Tweet"].map((collabType) => (
+                                    <FormItem
+                                      key={collabType}
                                       className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3"
                                     >
                                       <FormControl>
                                         <Checkbox
-                                          checked={field.value?.includes(type)}
+                                          checked={field.value?.includes(collabType)}
                                           onCheckedChange={(checked) => {
                                             const currentTypes = field.value || [];
                                             if (checked) {
-                                              field.onChange([...currentTypes, type]);
+                                              field.onChange([...currentTypes, collabType]);
                                             } else {
-                                              field.onChange(currentTypes.filter(v => v !== type));
+                                              field.onChange(
+                                                currentTypes.filter(
+                                                  (value) => value !== collabType
+                                                )
+                                              );
                                             }
                                           }}
                                         />
                                       </FormControl>
-                                      <FormLabel className="font-normal">{type}</FormLabel>
+                                      <FormLabel className="font-normal">{collabType}</FormLabel>
                                     </FormItem>
                                   ))}
                                 </div>
@@ -1102,7 +1117,7 @@ export default function MarketingCollabs() {
                       />
                     </CardContent>
                   </Card>
-                )}
+                ) : null}
                 
                 {/* Individual tab save button removed - now using persistent button */}
               </TabsContent>
