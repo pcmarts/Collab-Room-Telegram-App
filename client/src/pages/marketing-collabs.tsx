@@ -939,8 +939,8 @@ export default function MarketingCollabs() {
       <Tabs defaultValue="host" onValueChange={setActiveTab}>
         <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="host">🚀 Host</TabsTrigger>
-            <TabsTrigger value="optin">✔️ Discover</TabsTrigger>
+            <TabsTrigger value="host">🚀 Host Collaborations</TabsTrigger>
+            <TabsTrigger value="optin">✔️ Discover Opportunities</TabsTrigger>
           </TabsList>
         </div>
 
@@ -949,7 +949,12 @@ export default function MarketingCollabs() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 relative pb-20">
               <TabsContent value="optin" className="space-y-4 mt-0">
                 <div className="flex items-center justify-between mb-4">
-                  <Label className="text-lg">Discover Collaborations</Label>
+                  <div>
+                    <Label className="text-lg">Discover Collaboration Opportunities</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Select the types of collaborations you want to be matched with on the platform
+                    </p>
+                  </div>
                 </div>
                 
                 {/* Filter Panel - Always visible */}
@@ -1074,9 +1079,9 @@ export default function MarketingCollabs() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Collaboration Types</CardTitle>
+                    <CardTitle>Collaboration Types to Discover</CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Select which types of marketing collaborations you're interested in discovering
+                      Select which types of collaborations you want to be matched with as a participant
                     </p>
                   </CardHeader>
                   <CardContent>
@@ -1122,9 +1127,9 @@ export default function MarketingCollabs() {
                 {form.watch("enabledCollabs")?.includes("Co-Marketing on Twitter") && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Twitter Co-Marketing Types</CardTitle>
+                      <CardTitle>Twitter Co-Marketing Opportunities</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Select specific Twitter collaboration formats
+                        Choose specific Twitter collaboration formats you'd like to participate in
                       </p>
                     </CardHeader>
                     <CardContent>
@@ -1228,7 +1233,12 @@ export default function MarketingCollabs() {
               <TabsContent value="host" className="space-y-4 mt-0">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between mb-4">
-                    <Label className="text-lg">My Active Collaborations</Label>
+                    <div>
+                      <Label className="text-lg">My Hosted Collaborations</Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Create and manage your own collaborations that others can apply to join
+                      </p>
+                    </div>
                     <Button 
                       variant="outline" 
                       size="sm"
