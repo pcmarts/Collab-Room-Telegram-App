@@ -208,7 +208,7 @@ export async function registerRoutes(app: Express) {
 
     try {
       const { 
-        company_name, job_title, website, twitter_handle, linkedin_url, 
+        company_name, job_title, website, twitter_handle, twitter_followers, linkedin_url, 
         funding_stage, has_token, token_ticker, blockchain_networks, tags,
         short_description, long_description 
       } = req.body;
@@ -259,6 +259,7 @@ export async function registerRoutes(app: Express) {
           job_title,
           website,
           twitter_handle,
+          twitter_followers,
           linkedin_url,
           funding_stage,
           has_token: Boolean(has_token),
