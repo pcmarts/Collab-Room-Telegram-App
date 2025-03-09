@@ -235,6 +235,9 @@ export default function MarketingCollabs() {
         
         // Refresh the collaborations data
         queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+        
+        // Do not redirect to dashboard, just close the dialog
+        // We stay on the current page
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to delete collaboration');
@@ -432,7 +435,8 @@ export default function MarketingCollabs() {
         duration: 2000
       });
 
-      setLocation('/dashboard');
+      // Stay on this page after saving preferences
+      // Only redirect when user explicitly wants to go to dashboard
     } catch (error) {
       console.error('Failed to update collaborations:', error);
       toast({
