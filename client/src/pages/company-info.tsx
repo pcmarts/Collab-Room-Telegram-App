@@ -30,7 +30,6 @@ export default function CompanyInfoForm() {
     job_title: '',
     website: '',
     twitter_url: '',
-    twitter_followers: '',
     linkedin_url: '',
     funding_stage: '',
     has_token: false,
@@ -49,7 +48,6 @@ export default function CompanyInfoForm() {
         job_title: profileData.company.job_title,
         website: profileData.company.website,
         twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : '',
-        twitter_followers: profileData.company.twitter_followers || '',
         linkedin_url: profileData.company.linkedin_url || '',
         funding_stage: profileData.company.funding_stage,
         has_token: profileData.company.has_token || false,
@@ -107,7 +105,6 @@ export default function CompanyInfoForm() {
         job_title: formData.job_title,
         website: formData.website,
         twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', ''),
-        twitter_followers: formData.twitter_followers,
         linkedin_url: formData.linkedin_url,
         funding_stage: formData.funding_stage,
         has_token: formData.has_token,
@@ -251,25 +248,6 @@ export default function CompanyInfoForm() {
               onChange={handleInputChange}
               placeholder="https://x.com/..."
             />
-          </div>
-
-          <div>
-            <Label htmlFor="twitter_followers">Company Twitter Follower Count</Label>
-            <Select
-              value={formData.twitter_followers || ''}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, twitter_followers: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select follower count" />
-              </SelectTrigger>
-              <SelectContent>
-                {TWITTER_FOLLOWER_COUNTS.map(count => (
-                  <SelectItem key={count} value={count}>
-                    {count}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div>
