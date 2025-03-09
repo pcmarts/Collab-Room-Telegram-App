@@ -44,8 +44,110 @@ function getTelegramUserFromRequest(req: Request) {
   }
 }
 
+// Middleware to check if the current user is an admin
+async function checkAdminMiddleware(req: Request, res: Response, next: NextFunction) {
+  try {
+    // Get Telegram user from request
+    const telegramUser = getTelegramUserFromRequest(req);
+    if (!telegramUser) {
+      return res.status(401).json({ error: "Unauthorized - Not logged in" });
+    }
+    
+    // Get user from database
+    const [user] = await db.select()
+      .from(users)
+      .where(eq(users.telegram_id, telegramUser.id.toString()));
+    
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized - User not found" });
+    }
+    
+    // Check if user is admin
+    if (!user.is_admin) {
+      return res.status(403).json({ error: "Forbidden - Admin access required" });
+    }
+    
+    // Admin check passed, continue
+    next();
+  } catch (error) {
+    console.error("Error in admin middleware:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
+  
+  // Admin API endpoints
+  app.get("/api/admin/check", async (req, res) => {
+    try {
+      // Get Telegram user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      // Get user from database
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      return res.json({ 
+        success: true, 
+        isAdmin: !!user.is_admin
+      });
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      return res.status(500).json({ error: "Failed to check admin status" });
+    }
+  });
+  
+  app.get("/api/admin/users", checkAdminMiddleware, async (req, res) => {
+    try {
+      const allUsers = await db.select().from(users);
+      
+      return res.json({ 
+        success: true, 
+        users: allUsers
+      });
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+  
+  app.post("/api/admin/set-user-admin-status", checkAdminMiddleware, async (req, res) => {
+    try {
+      const { userId, isAdmin } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+      
+      if (typeof isAdmin !== 'boolean') {
+        return res.status(400).json({ error: "isAdmin must be a boolean value" });
+      }
+      
+      const updatedUser = await storage.setUserAdminStatus(userId, isAdmin);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      return res.json({ 
+        success: true, 
+        user: updatedUser,
+        message: `User admin status ${isAdmin ? 'granted' : 'revoked'} successfully`
+      });
+    } catch (error) {
+      console.error("Error setting user admin status:", error);
+      return res.status(500).json({ error: "Failed to update user admin status" });
+    }
+  });
 
   app.post("/api/onboarding", async (req, res) => {
     console.log('============ DEBUG: Onboarding Endpoint ============');
