@@ -365,9 +365,12 @@ export default function MarketingCollabs() {
   // Load existing preferences when data is fetched
   useEffect(() => {
     if (profileData?.preferences) {
+      console.log("Loading preferences:", profileData.preferences);
+      
       // Extract collabs from the preferences
       const savedCollabsToHost = profileData.preferences.collabs_to_host || [];
       const collabsToDiscover = profileData.preferences.collabs_to_discover || [];
+      const savedTwitterCollabs = profileData.preferences.twitter_collabs || [];
       
       // Combine to get all enabled collabs
       const uniqueCollabs = new Set([...collabsToDiscover]);
@@ -375,18 +378,72 @@ export default function MarketingCollabs() {
       
       // Set initial state for collabs to host
       setCollabsToHost(savedCollabsToHost);
+
+      // Extract filter settings from excluded_tags
+      const excludedTags = profileData.preferences.excluded_tags || [];
       
-      // For now, we'll start with empty Twitter collabs as they're new
+      // Initialize filter values with defaults
+      let filterMatchingEnabled = false;
+      let filterTopics: string[] = [];
+      let filterCompanySectors: string[] = [];
+      let filterFundingStages: string[] = [];
+      let filterCompanyFollowers = TWITTER_FOLLOWER_COUNTS[0];
+      let filterUserFollowers = TWITTER_FOLLOWER_COUNTS[0];
+      let filterHasToken = false;
+      
+      // Process each tag to extract filter settings
+      excludedTags.forEach(tag => {
+        if (tag.startsWith('filter:')) {
+          const [prefix, type, ...valueParts] = tag.split(':');
+          const value = valueParts.join(':'); // Rejoin in case value contains colons
+          
+          switch (type) {
+            case 'matching_enabled':
+              filterMatchingEnabled = value === 'true';
+              break;
+            case 'topic':
+              filterTopics.push(value);
+              break;
+            case 'sector':
+              filterCompanySectors.push(value);
+              break;
+            case 'stage':
+              filterFundingStages.push(value);
+              break;
+            case 'company_followers':
+              filterCompanyFollowers = value;
+              break;
+            case 'user_followers':
+              filterUserFollowers = value;
+              break;
+            case 'has_token':
+              filterHasToken = value === 'true';
+              break;
+          }
+        }
+      });
+      
+      console.log("Loaded filter settings:", {
+        filterMatchingEnabled,
+        filterTopics,
+        filterCompanySectors,
+        filterFundingStages,
+        filterCompanyFollowers,
+        filterUserFollowers,
+        filterHasToken
+      });
+      
+      // Reset form with loaded values
       form.reset({
         enabledCollabs,
-        enabledTwitterCollabs: [],
-        matchingEnabled: false,
-        companySectors: [],
-        topics: [],
-        fundingStages: [],
-        hasToken: false,
-        companyFollowers: TWITTER_FOLLOWER_COUNTS[0],
-        userFollowers: TWITTER_FOLLOWER_COUNTS[0]
+        enabledTwitterCollabs: savedTwitterCollabs,
+        matchingEnabled: filterMatchingEnabled,
+        companySectors: filterCompanySectors,
+        topics: filterTopics,
+        fundingStages: filterFundingStages,
+        hasToken: filterHasToken,
+        companyFollowers: filterCompanyFollowers,
+        userFollowers: filterUserFollowers
       });
     }
   }, [profileData, form]);
