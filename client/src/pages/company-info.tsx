@@ -170,7 +170,7 @@ export default function CompanyInfoForm() {
           <p className="text-muted-foreground mt-2">Manage your company details</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pb-24">
           <div>
             <Label htmlFor="company_name">Company Name</Label>
             <Input
@@ -387,21 +387,24 @@ export default function CompanyInfoForm() {
               </div>
             ))}
           </div>
-
-          <Button
-            type="submit"
-            className="w-full mt-6"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save"
-            )}
-          </Button>
+          
+          {/* Floating Save Button */}
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </Button>
+          </div>
         </form>
       </div>
     </div>
