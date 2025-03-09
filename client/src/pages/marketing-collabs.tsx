@@ -471,6 +471,7 @@ export default function MarketingCollabs() {
   const onSubmit = async (data: MarketingCollabFormData) => {
     setIsSubmitting(true);
     console.log("Form data:", data);
+    console.log("Topics selected:", data.topics);
 
     try {
       // Convert filter settings to strings that can be stored in excluded_tags
@@ -478,6 +479,8 @@ export default function MarketingCollabs() {
       const filterTopics = data.topics?.map(topic => `filter:topic:${topic}`) || [];
       const filterSectors = data.companySectors?.map(sector => `filter:sector:${sector}`) || [];
       const filterFundingStages = data.fundingStages?.map(stage => `filter:stage:${stage}`) || [];
+      
+      console.log("Filter topics after mapping:", filterTopics);
       
       // Store all filter metadata with prefixes in an array
       const filterMetadata = [
@@ -496,14 +499,20 @@ export default function MarketingCollabs() {
       ];
       
       console.log("Saving filter data:", allFilterData);
+      console.log("Number of filter topics:", filterTopics.length);
       
       // Save preferences using the existing fields in the database
+      // IMPORTANT: We need to filter out any existing filter settings from the excluded_tags
+      // before adding our new ones to prevent duplicates or old settings persisting
+      const existingTags = profileData?.preferences?.excluded_tags || [];
+      const nonFilterTags = existingTags.filter(tag => !tag.startsWith('filter:'));
+      
       const updateData = {
         ...profileData?.preferences,
         collabs_to_host: collabsToHost,
         collabs_to_discover: data.enabledCollabs,
         twitter_collabs: data.enabledTwitterCollabs,
-        excluded_tags: allFilterData // Use excluded_tags to store filter data
+        excluded_tags: [...nonFilterTags, ...allFilterData] // Keep any real excluded tags plus our filter data
       };
 
       const response = await apiRequest('/api/preferences', 'POST', updateData);
