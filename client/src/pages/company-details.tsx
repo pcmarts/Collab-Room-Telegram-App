@@ -177,7 +177,7 @@ export default function CompanyDetails() {
           <p className="text-muted-foreground mt-2">Tell us about your company's token</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pb-24">
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Switch
@@ -219,20 +219,23 @@ export default function CompanyDetails() {
             </>
           )}
 
-          <Button
-            type="submit"
-            className="w-full mt-6"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              "Submit Application"
-            )}
-          </Button>
+          {/* Floating Save Button */}
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Application"
+              )}
+            </Button>
+          </div>
         </form>
       </div>
     </div>
