@@ -113,7 +113,6 @@ export default function MarketingCollabs() {
   
   // Collabs to host toggle state
   const [collabsToHost, setCollabsToHost] = useState<string[]>([]);
-  const [showFilters, setShowFilters] = useState(false);
   
   // Live collaborations toggle state
   const [activeCollabs, setActiveCollabs] = useState<Record<string, boolean>>({});
