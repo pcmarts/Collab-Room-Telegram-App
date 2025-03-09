@@ -1,4 +1,4 @@
-import type { Express, Request } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer } from "http";
 import { db } from "./db";
 import { 
@@ -50,7 +50,8 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
     // Get Telegram user from request
     const telegramUser = getTelegramUserFromRequest(req);
     if (!telegramUser) {
-      return res.status(401).json({ error: "Unauthorized - Not logged in" });
+      res.status(401);
+      return res.json({ error: "Unauthorized - Not logged in" });
     }
     
     // Get user from database
@@ -59,19 +60,22 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
       .where(eq(users.telegram_id, telegramUser.id.toString()));
     
     if (!user) {
-      return res.status(401).json({ error: "Unauthorized - User not found" });
+      res.status(401);
+      return res.json({ error: "Unauthorized - User not found" });
     }
     
     // Check if user is admin
     if (!user.is_admin) {
-      return res.status(403).json({ error: "Forbidden - Admin access required" });
+      res.status(403);
+      return res.json({ error: "Forbidden - Admin access required" });
     }
     
     // Admin check passed, continue
     next();
   } catch (error) {
     console.error("Error in admin middleware:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    res.status(500);
+    return res.json({ error: "Internal server error" });
   }
 }
 
@@ -84,7 +88,8 @@ export async function registerRoutes(app: Express) {
       // Get Telegram user from request
       const telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401);
+        return res.json({ error: "Unauthorized" });
       }
       
       // Get user from database
@@ -93,7 +98,8 @@ export async function registerRoutes(app: Express) {
         .where(eq(users.telegram_id, telegramUser.id.toString()));
       
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        res.status(404);
+        return res.json({ error: "User not found" });
       }
       
       return res.json({ 
@@ -102,7 +108,8 @@ export async function registerRoutes(app: Express) {
       });
     } catch (error) {
       console.error("Error checking admin status:", error);
-      return res.status(500).json({ error: "Failed to check admin status" });
+      res.status(500);
+      return res.json({ error: "Failed to check admin status" });
     }
   });
   
@@ -116,7 +123,8 @@ export async function registerRoutes(app: Express) {
       });
     } catch (error) {
       console.error("Error fetching users:", error);
-      return res.status(500).json({ error: "Failed to fetch users" });
+      res.status(500);
+      return res.json({ error: "Failed to fetch users" });
     }
   });
   
@@ -125,17 +133,20 @@ export async function registerRoutes(app: Express) {
       const { userId, isAdmin } = req.body;
       
       if (!userId) {
-        return res.status(400).json({ error: "User ID is required" });
+        res.status(400);
+        return res.json({ error: "User ID is required" });
       }
       
       if (typeof isAdmin !== 'boolean') {
-        return res.status(400).json({ error: "isAdmin must be a boolean value" });
+        res.status(400);
+        return res.json({ error: "isAdmin must be a boolean value" });
       }
       
       const updatedUser = await storage.setUserAdminStatus(userId, isAdmin);
       
       if (!updatedUser) {
-        return res.status(404).json({ error: "User not found" });
+        res.status(404);
+        return res.json({ error: "User not found" });
       }
       
       return res.json({ 
@@ -145,7 +156,8 @@ export async function registerRoutes(app: Express) {
       });
     } catch (error) {
       console.error("Error setting user admin status:", error);
-      return res.status(500).json({ error: "Failed to update user admin status" });
+      res.status(500);
+      return res.json({ error: "Failed to update user admin status" });
     }
   });
 
@@ -173,7 +185,8 @@ export async function registerRoutes(app: Express) {
 
       if (!telegramUser.id) {
         console.error('No Telegram user ID found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
+        res.status(400);
+        return res.json({ error: 'Invalid Telegram data' });
       }
 
       // Use Telegram username as handle
@@ -191,12 +204,14 @@ export async function registerRoutes(app: Express) {
         // Validate required fields based on operation type
         if (!first_name) {
           console.error('Missing required user fields');
-          return res.status(400).json({ error: 'First name is required' });
+          res.status(400);
+          return res.json({ error: 'First name is required' });
         }
 
         if (!isProfileUpdate && (!company_name || !job_title || !company_website || !funding_stage)) {
           console.error('Missing required company fields for new user');
-          return res.status(400).json({ error: 'Missing required company fields' });
+          res.status(400);
+          return res.json({ error: 'Missing required company fields' });
         }
 
         // Start a transaction
@@ -301,7 +316,8 @@ export async function registerRoutes(app: Express) {
         stack: error instanceof Error ? error.stack : undefined,
         name: error instanceof Error ? error.name : 'Unknown'
       });
-      res.status(500).json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
+      res.status(500);
+      return res.json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -320,14 +336,16 @@ export async function registerRoutes(app: Express) {
 
       if (!company_name || !job_title || !website || !funding_stage) {
         console.error('Missing required fields');
-        return res.status(400).json({ error: 'Missing required fields' });
+        res.status(400);
+        return res.json({ error: 'Missing required fields' });
       }
 
       // Get Telegram data from header
       const initData = req.headers['x-telegram-init-data'] as string;
       if (!initData) {
         console.error('No Telegram init data found in headers');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
+        res.status(400);
+        return res.json({ error: 'Invalid Telegram data' });
       }
 
       // Parse Telegram data
@@ -338,7 +356,8 @@ export async function registerRoutes(app: Express) {
 
       if (!telegramUser.id) {
         console.error('No Telegram user ID found in parsed data');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
+        res.status(400);
+        return res.json({ error: 'Invalid Telegram data' });
       }
 
       // Get user ID from telegram_id
@@ -348,7 +367,8 @@ export async function registerRoutes(app: Express) {
 
       if (!user) {
         console.error('User not found');
-        return res.status(404).json({ error: 'User not found' });
+        res.status(404);
+        return res.json({ error: 'User not found' });
       }
 
       try {
@@ -455,7 +475,8 @@ export async function registerRoutes(app: Express) {
 
       if (!notification_frequency) {
         console.error('Missing required field: notification_frequency');
-        return res.status(400).json({ error: 'Missing required field: notification_frequency' });
+        res.status(400);
+        return res.json({ error: 'Missing required field: notification_frequency' });
       }
       
       // Make arrays optional - use empty arrays if not provided
@@ -469,7 +490,8 @@ export async function registerRoutes(app: Express) {
       const initData = req.headers['x-telegram-init-data'] as string;
       if (!initData) {
         console.error('No Telegram init data found in headers');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
+        res.status(400);
+        return res.json({ error: 'Invalid Telegram data' });
       }
 
       // Parse Telegram data
@@ -480,7 +502,8 @@ export async function registerRoutes(app: Express) {
 
       if (!telegramUser.id) {
         console.error('No Telegram user ID found in parsed data');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
+        res.status(400);
+        return res.json({ error: 'Invalid Telegram data' });
       }
 
       // Get user ID from telegram_id
@@ -490,7 +513,8 @@ export async function registerRoutes(app: Express) {
 
       if (!user) {
         console.error('User not found');
-        return res.status(404).json({ error: 'User not found' });
+        res.status(404);
+        return res.json({ error: 'User not found' });
       }
 
       try {
@@ -592,7 +616,8 @@ export async function registerRoutes(app: Express) {
           };
         } else {
           console.error('No Telegram init data found');
-          return res.status(400).json({ error: 'Invalid Telegram data' });
+          res.status(400);
+          return res.json({ error: 'Invalid Telegram data' });
         }
       } else {
         // Parse Telegram data
@@ -602,7 +627,8 @@ export async function registerRoutes(app: Express) {
 
       if (!telegramUser?.id) {
         console.error('No Telegram user ID found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
+        res.status(400);
+        return res.json({ error: 'Invalid Telegram data' });
       }
 
       // Get user and related data
@@ -611,7 +637,8 @@ export async function registerRoutes(app: Express) {
         .where(eq(users.telegram_id, telegramUser.id.toString()));
 
       if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        res.status(404);
+        return res.json({ error: 'User not found' });
       }
 
       // Get company info
@@ -632,7 +659,8 @@ export async function registerRoutes(app: Express) {
 
     } catch (error) {
       console.error('Profile fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch profile data' });
+      res.status(500);
+      return res.json({ error: 'Failed to fetch profile data' });
     }
   });
 
