@@ -793,7 +793,7 @@ export async function registerRoutes(app: Express) {
       }
 
       // Prepare collaboration data
-      const collabData = {
+      const collabData: InsertCollaboration = {
         creator_id: user.id,
         ...result.data
       };
