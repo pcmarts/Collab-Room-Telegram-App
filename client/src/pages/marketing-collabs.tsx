@@ -416,21 +416,37 @@ export default function MarketingCollabs() {
     console.log("Form data:", data);
 
     try {
-      // Save all form data including filters
+      // Convert filter settings to strings that can be stored in excluded_tags
+      // Use a prefix to separate these from actual excluded tags
+      const filterTopics = data.topics?.map(topic => `filter:topic:${topic}`) || [];
+      const filterSectors = data.companySectors?.map(sector => `filter:sector:${sector}`) || [];
+      const filterFundingStages = data.fundingStages?.map(stage => `filter:stage:${stage}`) || [];
+      
+      // Store all filter metadata with prefixes in an array
+      const filterMetadata = [
+        ...(data.matchingEnabled ? [`filter:matching_enabled:true`] : []),
+        ...(data.companyFollowers ? [`filter:company_followers:${data.companyFollowers}`] : []),
+        ...(data.userFollowers ? [`filter:user_followers:${data.userFollowers}`] : []),
+        ...(data.hasToken ? [`filter:has_token:true`] : [])
+      ];
+      
+      // Combine all filter data
+      const allFilterData = [
+        ...filterTopics,
+        ...filterSectors,
+        ...filterFundingStages,
+        ...filterMetadata
+      ];
+      
+      console.log("Saving filter data:", allFilterData);
+      
+      // Save preferences using the existing fields in the database
       const updateData = {
         ...profileData?.preferences,
         collabs_to_host: collabsToHost,
         collabs_to_discover: data.enabledCollabs,
         twitter_collabs: data.enabledTwitterCollabs,
-        filter_settings: {
-          matchingEnabled: data.matchingEnabled,
-          topics: data.topics || [],
-          companySectors: data.companySectors || [],
-          companyFollowers: data.companyFollowers,
-          userFollowers: data.userFollowers,
-          fundingStages: data.fundingStages || [],
-          hasToken: data.hasToken
-        }
+        excluded_tags: allFilterData // Use excluded_tags to store filter data
       };
 
       const response = await apiRequest('/api/preferences', 'POST', updateData);
