@@ -391,6 +391,16 @@ export default function MarketingCollabs() {
       let filterUserFollowers = TWITTER_FOLLOWER_COUNTS[0] as typeof TWITTER_FOLLOWER_COUNTS[number];
       let filterHasToken = false;
       
+      // Initialize filter section toggle states
+      const initialFilterSections = {
+        topics: false,
+        companySectors: false,
+        companyFollowers: false,
+        userFollowers: false,
+        fundingStages: false,
+        hasToken: false
+      };
+      
       // Process each tag to extract filter settings
       excludedTags.forEach(tag => {
         if (tag.startsWith('filter:')) {
@@ -425,6 +435,15 @@ export default function MarketingCollabs() {
             case 'has_token':
               filterHasToken = value === 'true';
               break;
+            case 'section_enabled':
+              // Set the filter section toggle state if found
+              if (value === 'topics') initialFilterSections.topics = true;
+              if (value === 'companySectors') initialFilterSections.companySectors = true;
+              if (value === 'companyFollowers') initialFilterSections.companyFollowers = true;
+              if (value === 'userFollowers') initialFilterSections.userFollowers = true;
+              if (value === 'fundingStages') initialFilterSections.fundingStages = true;
+              if (value === 'hasToken') initialFilterSections.hasToken = true;
+              break;
           }
         }
       });
@@ -451,6 +470,9 @@ export default function MarketingCollabs() {
         companyFollowers: filterCompanyFollowers,
         userFollowers: filterUserFollowers
       });
+      
+      // Apply the loaded filter section toggle states
+      setFiltersEnabled(initialFilterSections);
     }
   }, [profileData, form]);
 
@@ -489,11 +511,19 @@ export default function MarketingCollabs() {
       console.log("Filter topics after mapping:", filterTopics);
       
       // Store all filter metadata with prefixes in an array
+      // Also save the filter section toggle states
       const filterMetadata = [
         ...(data.matchingEnabled ? [`filter:matching_enabled:true`] : []),
         ...(data.companyFollowers ? [`filter:company_followers:${data.companyFollowers}`] : []),
         ...(data.userFollowers ? [`filter:user_followers:${data.userFollowers}`] : []),
-        ...(data.hasToken ? [`filter:has_token:true`] : [])
+        ...(data.hasToken ? [`filter:has_token:true`] : []),
+        // Save the toggle state for each filter section
+        ...(filtersEnabled.topics ? [`filter:section_enabled:topics`] : []),
+        ...(filtersEnabled.companySectors ? [`filter:section_enabled:companySectors`] : []),
+        ...(filtersEnabled.companyFollowers ? [`filter:section_enabled:companyFollowers`] : []),
+        ...(filtersEnabled.userFollowers ? [`filter:section_enabled:userFollowers`] : []),
+        ...(filtersEnabled.fundingStages ? [`filter:section_enabled:fundingStages`] : []),
+        ...(filtersEnabled.hasToken ? [`filter:section_enabled:hasToken`] : [])
       ];
       
       // Combine all filter data
