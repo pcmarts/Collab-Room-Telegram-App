@@ -7,6 +7,14 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue 
+} from "@/components/ui/select";
+import { TWITTER_FOLLOWER_COUNTS } from "../../../shared/schema";
 
 export default function PersonalInfo() {
   const { toast } = useToast();
@@ -21,7 +29,9 @@ export default function PersonalInfo() {
     first_name: '',
     last_name: '',
     linkedin_url: 'https://linkedin.com/in/',
-    email: ''
+    email: '',
+    twitter_url: 'https://x.com/',
+    twitter_followers: ''
   });
 
   useEffect(() => {
@@ -30,7 +40,9 @@ export default function PersonalInfo() {
         first_name: profileData.user.first_name,
         last_name: profileData.user.last_name || '',
         linkedin_url: profileData.user.linkedin_url || 'https://linkedin.com/in/',
-        email: profileData.user.email || ''
+        email: profileData.user.email || '',
+        twitter_url: profileData.user.twitter_url || 'https://x.com/',
+        twitter_followers: profileData.user.twitter_followers || ''
       });
     } else {
       const savedData = sessionStorage.getItem('userFormData');
