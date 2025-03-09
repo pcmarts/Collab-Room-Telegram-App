@@ -87,8 +87,8 @@ const marketingCollabSchema = z.object({
   matchingEnabled: z.boolean().default(false),
   companySectors: z.array(z.string()).default([]),
   topics: z.array(z.string()).default([]),
-  companyFollowers: z.string().optional(),
-  userFollowers: z.string().optional(),
+  companyFollowers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
+  userFollowers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
   fundingStages: z.array(z.string()).default([]),
   hasToken: z.boolean().default(false)
 });
