@@ -20,9 +20,10 @@ export default function Welcome() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold">Welcome to Web3 Collab</h1>
+          <h1 className="text-2xl font-bold">🚪 The Collab Room</h1>
           <p className="text-muted-foreground">
-            Join our exclusive network of Web3 professionals and unlock collaboration opportunities
+                        <p>"Tinder" for Web3 Collabs & Conference Meetups</p>
+            <p>Privacy first - no contacts details shared unless you match</p>
           </p>
         </div>
 
