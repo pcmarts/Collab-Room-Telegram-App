@@ -8,7 +8,7 @@ import {
   InsertCollaboration
 } from "../shared/schema";
 import { eq, and, not, desc } from 'drizzle-orm';
-import { sendApplicationConfirmation } from "./telegram";
+import { sendApplicationConfirmation, sendCollabApplicationNotification } from "./telegram";
 import { storage } from "./storage";
 
 // Helper function to extract Telegram user data from request
