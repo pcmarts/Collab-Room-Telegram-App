@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { FUNDING_STAGES, BLOCKCHAIN_NETWORKS, COMPANY_TAG_CATEGORIES } from "@shared/schema";
+import { FUNDING_STAGES, BLOCKCHAIN_NETWORKS, COMPANY_TAG_CATEGORIES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
@@ -30,6 +30,7 @@ export default function CompanyInfoForm() {
     job_title: '',
     website: '',
     twitter_url: '',
+    twitter_followers: '',
     linkedin_url: '',
     funding_stage: '',
     has_token: false,
@@ -48,6 +49,7 @@ export default function CompanyInfoForm() {
         job_title: profileData.company.job_title,
         website: profileData.company.website,
         twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : '',
+        twitter_followers: profileData.company.twitter_followers || '',
         linkedin_url: profileData.company.linkedin_url || '',
         funding_stage: profileData.company.funding_stage,
         has_token: profileData.company.has_token || false,
@@ -248,6 +250,26 @@ export default function CompanyInfoForm() {
               onChange={handleInputChange}
               placeholder="https://x.com/..."
             />
+          </div>
+
+          <div>
+            <Label htmlFor="twitter_followers">Twitter Follower Count</Label>
+            <Select
+              value={formData.twitter_followers}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, twitter_followers: value }))}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select follower count range" />
+              </SelectTrigger>
+              <SelectContent>
+                {TWITTER_FOLLOWER_COUNTS.map(count => (
+                  <SelectItem key={count} value={count}>
+                    {count}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
