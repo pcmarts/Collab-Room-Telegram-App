@@ -387,8 +387,8 @@ export default function MarketingCollabs() {
       let filterTopics: string[] = [];
       let filterCompanySectors: string[] = [];
       let filterFundingStages: string[] = [];
-      let filterCompanyFollowers = TWITTER_FOLLOWER_COUNTS[0];
-      let filterUserFollowers = TWITTER_FOLLOWER_COUNTS[0];
+      let filterCompanyFollowers = TWITTER_FOLLOWER_COUNTS[0] as typeof TWITTER_FOLLOWER_COUNTS[number];
+      let filterUserFollowers = TWITTER_FOLLOWER_COUNTS[0] as typeof TWITTER_FOLLOWER_COUNTS[number];
       let filterHasToken = false;
       
       // Process each tag to extract filter settings
@@ -411,10 +411,16 @@ export default function MarketingCollabs() {
               filterFundingStages.push(value);
               break;
             case 'company_followers':
-              filterCompanyFollowers = value;
+              // Ensure value is one of the valid Twitter follower counts
+              filterCompanyFollowers = TWITTER_FOLLOWER_COUNTS.includes(value as any) 
+                ? value as typeof TWITTER_FOLLOWER_COUNTS[number]
+                : TWITTER_FOLLOWER_COUNTS[0];
               break;
             case 'user_followers':
-              filterUserFollowers = value;
+              // Ensure value is one of the valid Twitter follower counts
+              filterUserFollowers = TWITTER_FOLLOWER_COUNTS.includes(value as any)
+                ? value as typeof TWITTER_FOLLOWER_COUNTS[number]
+                : TWITTER_FOLLOWER_COUNTS[0];
               break;
             case 'has_token':
               filterHasToken = value === 'true';
