@@ -911,36 +911,8 @@ export async function registerRoutes(app: Express) {
       console.log('Found collaborations:', userCollabs.length);
       console.log('Collaborations data:', JSON.stringify(userCollabs).substring(0, 200) + '...');
       
-      // If no collaborations found, insert a sample one for testing
-      if (userCollabs.length === 0 && process.env.NODE_ENV !== 'production') {
-        console.log('No collaborations found, inserting a sample one for development');
-        
-        // Create sample collaboration for testing
-        const newCollab = await db.insert(collaborations).values({
-          id: crypto.randomUUID(),
-          creator_id: userId,
-          title: 'Sample Twitter Collaboration',
-          description: 'This is a sample collaboration for testing purposes',
-          collab_type: 'Twitter Co-marketing',
-          status: 'active',
-          date_type: 'flexible',
-          required_skills: ['social media', 'marketing'],
-          created_at: new Date(),
-          updated_at: new Date(),
-          details: {
-            twitterHandles: ['@samplehandle'],
-            followerCount: '1K-10K'
-          }
-        }).returning();
-        
-        console.log('Sample collaboration created:', newCollab);
-        
-        // Return the newly created collab
-        res.json(newCollab);
-      } else {
-        // Return found collaborations
-        res.json(userCollabs);
-      }
+      // Return found collaborations (empty array if none)
+      res.json(userCollabs);
 
     } catch (error) {
       console.error('Failed to fetch user collaborations:', error);
