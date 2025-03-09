@@ -84,7 +84,7 @@ async function handleStart(msg: TelegramBot.Message) {
       keyboard = {
         inline_keyboard: [[{
           text: "Apply to Join",
-          web_app: { url: `${WEBAPP_URL}/application-form` } 
+          web_app: { url: `${WEBAPP_URL}/welcome` } 
         }]]
       };
       welcomeMessage = '👋 Welcome to CollabRoom!\n\nWe\'re excited that you\'re interested in joining our community of innovative collaborators. Click below to start your application.';
@@ -163,7 +163,7 @@ async function handleStatus(msg: TelegramBot.Message) {
       const keyboard = {
         inline_keyboard: [[{
           text: "Apply to Join",
-          web_app: { url: `${WEBAPP_URL}/onboarding` }
+          web_app: { url: `${WEBAPP_URL}/welcome` }
         }]]
       };
       await bot.sendMessage(
