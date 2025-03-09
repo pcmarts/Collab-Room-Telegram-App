@@ -138,11 +138,14 @@ export default function MarketingCollabs() {
   const { data: collaborations, isLoading: isLoadingCollabs } = useQuery({
     queryKey: ['/api/collaborations/my'],
     queryFn: async () => {
+      console.log("Fetching collaborations from /api/collaborations/my");
       const response = await apiRequest('/api/collaborations/my', 'GET');
       if (!response.ok) {
         throw new Error("Failed to fetch collaborations");
       }
       const data = await response.json();
+      
+      console.log("Received collaborations data:", data);
       
       // Initialize activeCollabs state based on fetched data
       const statusMap: Record<string, boolean> = {};
@@ -152,7 +155,9 @@ export default function MarketingCollabs() {
       setActiveCollabs(statusMap);
       
       return data as Collaboration[];
-    }
+    },
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
   
   // Fetch user's applications
@@ -451,8 +456,10 @@ export default function MarketingCollabs() {
 
   // Render a collaboration card
   const renderCollaborationCard = (collab: Collaboration) => {
-    // Check if there are any pending applications
-    const pendingApplications = collab.applications?.filter(app => app.status === 'pending') || [];
+    // Get applications data from the applications array state
+    const pendingApplications = applications?.filter(app => 
+      app.collaboration_id === collab.id && app.status === 'pending'
+    ) || [];
     const hasApplications = pendingApplications.length > 0;
     
     // Get active state from local state or default to true
@@ -490,7 +497,7 @@ export default function MarketingCollabs() {
               <span>{collab.date_type === 'flexible' ? 'Flexible timing' : 'Specific date'}</span>
             </div>
             
-            {collab.has_compensation && (
+            {collab.is_free_collab === false && (
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <Coins className="h-3 w-3" />
                 <span>Paid opportunity</span>
@@ -499,7 +506,7 @@ export default function MarketingCollabs() {
             
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Clock className="h-3 w-3" />
-              <span>Created on {new Date(collab.created_at).toLocaleDateString()}</span>
+              <span>Created on {collab.created_at ? new Date(collab.created_at).toLocaleDateString() : 'recent'}</span>
             </div>
           </div>
           
@@ -568,20 +575,15 @@ export default function MarketingCollabs() {
   
   // Render an application card
   const renderApplicationCard = (application: CollabApplication) => {
-    // Parse the application data
-    let applicationData: ApplicationData = {} as ApplicationData;
-    try {
-      applicationData = application.application_data as unknown as ApplicationData;
-    } catch (error) {
-      console.error("Error parsing application data:", error);
-    }
+    // Parse the application data - add a type assertion for message field
+    const messageData = application.message ? JSON.parse(application.message) : {};
     
     // Get status badge variant
     const getStatusBadge = () => {
       switch (application.status) {
         case 'approved':
           return (
-            <Badge variant="success" className="flex items-center gap-1">
+            <Badge variant="default" className="flex items-center gap-1 bg-green-500">
               <Check className="h-3 w-3" /> Approved
             </Badge>
           );
@@ -606,29 +608,27 @@ export default function MarketingCollabs() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">
-                Applied on {new Date(application.created_at).toLocaleDateString()}
+                Applied on {application.created_at ? new Date(application.created_at).toLocaleDateString() : 'recent date'}
               </p>
               <CardTitle className="text-xl">
-                {application.collaboration?.title || "Collaboration Title"}
+                Collaboration Application
               </CardTitle>
             </div>
             {getStatusBadge()}
           </div>
         </CardHeader>
         <CardContent className="pb-2">
-          {applicationData.reason && (
+          {application.message && (
             <div className="mb-4">
-              <p className="text-sm font-medium mb-1">Your reason for applying:</p>
-              <p className="text-sm text-gray-600 line-clamp-3">{applicationData.reason}</p>
+              <p className="text-sm font-medium mb-1">Message with application:</p>
+              <p className="text-sm text-gray-600 line-clamp-3">{application.message}</p>
             </div>
           )}
           
-          {applicationData.experience && (
-            <div className="mb-4">
-              <p className="text-sm font-medium mb-1">Your experience:</p>
-              <p className="text-sm text-gray-600 line-clamp-2">{applicationData.experience}</p>
-            </div>
-          )}
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Clock className="h-3 w-3" />
+            <span>Status: {application.status}</span>
+          </div>
         </CardContent>
         <CardFooter>
           <Button 
@@ -681,26 +681,20 @@ export default function MarketingCollabs() {
   const renderApplicationDetails = () => {
     if (!selectedApplication) return null;
     
-    let applicationData: ApplicationData = {} as ApplicationData;
-    try {
-      applicationData = selectedApplication.application_data as unknown as ApplicationData;
-    } catch (error) {
-      console.error("Error parsing application data:", error);
-    }
-    
+    // Simplified application display using only the message field
     return (
       <div className="py-4">
         <div className="grid grid-cols-1 gap-4">
           <div>
-            <p className="font-medium">Applied For:</p>
-            <p className="text-sm">{selectedApplication.collaboration?.title || "Collaboration"}</p>
+            <p className="font-medium">Application ID:</p>
+            <p className="text-sm">{selectedApplication.id}</p>
           </div>
           
           <Separator />
           
           <div>
-            <p className="font-medium">Applicant:</p>
-            <p className="text-sm">{selectedApplication.user?.name || "User"}</p>
+            <p className="font-medium">Collaboration ID:</p>
+            <p className="text-sm">{selectedApplication.collaboration_id}</p>
           </div>
           
           <div>
@@ -711,7 +705,7 @@ export default function MarketingCollabs() {
                   <Clock className="h-3 w-3" /> Pending Review
                 </Badge>
               ) : selectedApplication.status === 'approved' ? (
-                <Badge variant="success" className="flex items-center w-fit gap-1">
+                <Badge variant="default" className="flex items-center w-fit gap-1 bg-green-500">
                   <Check className="h-3 w-3" /> Approved
                 </Badge>
               ) : (
@@ -724,35 +718,10 @@ export default function MarketingCollabs() {
           
           <Separator />
           
-          {applicationData.reason && (
+          {selectedApplication.message && (
             <div>
-              <p className="font-medium">Reason for Applying:</p>
-              <p className="text-sm mt-1">{applicationData.reason}</p>
-            </div>
-          )}
-          
-          {applicationData.experience && (
-            <div>
-              <p className="font-medium">Relevant Experience:</p>
-              <p className="text-sm mt-1">{applicationData.experience}</p>
-            </div>
-          )}
-          
-          {applicationData.portfolioLink && (
-            <div>
-              <p className="font-medium">Portfolio Link:</p>
-              <p className="text-sm mt-1 text-blue-500">
-                <a href={applicationData.portfolioLink} target="_blank" rel="noopener noreferrer">
-                  {applicationData.portfolioLink}
-                </a>
-              </p>
-            </div>
-          )}
-          
-          {applicationData.additionalInfo && (
-            <div>
-              <p className="font-medium">Additional Information:</p>
-              <p className="text-sm mt-1">{applicationData.additionalInfo}</p>
+              <p className="font-medium">Message:</p>
+              <p className="text-sm mt-1">{selectedApplication.message}</p>
             </div>
           )}
           

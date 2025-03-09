@@ -909,7 +909,11 @@ export async function registerRoutes(app: Express) {
         .where(eq(collaborations.creator_id, userId));
         
       console.log('Found collaborations:', userCollabs.length);
-      console.log('Collaborations data:', JSON.stringify(userCollabs).substring(0, 200) + '...');
+      console.log('Collaborations data:', JSON.stringify(userCollabs, null, 2));
+      
+      // Log the full list of collab types for debugging
+      const collabTypes = userCollabs.map(collab => collab.collab_type);
+      console.log('Collaboration types:', collabTypes);
       
       // Return found collaborations (empty array if none)
       res.json(userCollabs);
