@@ -1154,9 +1154,16 @@ export default function MarketingCollabs() {
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={(e) => {
+                            e.preventDefault(); // Prevent form submission
+                            e.stopPropagation(); // Stop event bubbling
+                          }}>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={handleDeleteCollaboration}
+                          onClick={(e) => {
+                            e.preventDefault(); // Prevent form submission
+                            e.stopPropagation(); // Stop event bubbling
+                            handleDeleteCollaboration();
+                          }}
                           className="bg-red-500 hover:bg-red-600"
                         >
                           Delete
