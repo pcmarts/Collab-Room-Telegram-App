@@ -820,7 +820,7 @@ export default function MarketingCollabs() {
 
         <div className="p-4 space-y-6 pt-2">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 relative pb-20">
               <TabsContent value="optin" className="space-y-4 mt-0">
                 <div className="flex items-center justify-between mb-4">
                   <Label className="text-lg">Discover Collaborations</Label>
@@ -1108,20 +1108,7 @@ export default function MarketingCollabs() {
                   </CardContent>
                 </Card>
                 
-                <Button 
-                  className="w-full mb-4"
-                  type="submit"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Discovery Preferences"
-                  )}
-                </Button>
+                {/* Individual tab save button removed - now using persistent button */}
               </TabsContent>
               
               <TabsContent value="host" className="space-y-4 mt-0">
@@ -1501,6 +1488,24 @@ export default function MarketingCollabs() {
                   </Card>
                 )}
               </TabsContent>
+              
+              {/* Persistent Save Button */}
+              <div className="fixed bottom-0 left-0 right-0 py-4 px-4 bg-background border-t shadow-md z-10">
+                <Button 
+                  className="w-full"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving Changes...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
             </form>
           </Form>
         </div>
