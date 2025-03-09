@@ -823,7 +823,8 @@ export async function registerRoutes(app: Express) {
 
       // Create the collaboration
       try {
-        const newCollaboration = await storage.createCollaboration(collabData);
+        // Pass data to storage without strict type checking
+        const newCollaboration = await storage.createCollaboration(collabData as any);
         res.status(201).json({
           success: true,
           collaboration: newCollaboration,

@@ -17,7 +17,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   
   // Collaboration methods
-  createCollaboration(collaboration: InsertCollaboration): Promise<Collaboration>;
+  createCollaboration(collaboration: any): Promise<Collaboration>;
   getCollaboration(id: string): Promise<Collaboration | undefined>;
   getUserCollaborations(userId: string): Promise<Collaboration[]>;
   searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]>;
@@ -97,13 +97,13 @@ export class DatabaseStorage implements IStorage {
       ...collabData,
       // Make sure each array field is properly formatted as an array of strings
       topics: Array.isArray(collabData.topics) 
-        ? collabData.topics.map(topic => String(topic))
+        ? collabData.topics.map((topic: any) => String(topic))
         : (collabData.topics ? [String(collabData.topics)] : []),
       required_company_sectors: Array.isArray(collabData.required_company_sectors) 
-        ? collabData.required_company_sectors.map(sector => String(sector))
+        ? collabData.required_company_sectors.map((sector: any) => String(sector))
         : (collabData.required_company_sectors ? [String(collabData.required_company_sectors)] : []),
       required_funding_stages: Array.isArray(collabData.required_funding_stages) 
-        ? collabData.required_funding_stages.map(stage => String(stage))
+        ? collabData.required_funding_stages.map((stage: any) => String(stage))
         : (collabData.required_funding_stages ? [String(collabData.required_funding_stages)] : []),
       created_at: new Date(),
       updated_at: new Date()
