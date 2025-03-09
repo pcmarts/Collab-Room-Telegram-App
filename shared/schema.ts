@@ -65,12 +65,16 @@ export const TWITTER_COLLAB_TYPES = [
   "Thread Collab",
   "Joint Campaign",
   "Giveaway",
+  "Twitter Space Co-Host",
   "Retweet & Boost",
+  "Sponsored Tweet",
   "Poll/Q&A",
+  "AMA",
   "Shoutout",
   "Tweet Swap",
   "Meme/Viral Collab",
-  "Twitter List Collab"
+  "Twitter List Collab",
+  "Exclusive Announcement"
 ] as const;
 
 export const AUDIENCE_SIZE_RANGES = [
@@ -398,7 +402,7 @@ export const researchReportDetailsSchema = z.object({
 // Newsletter Feature
 export const newsletterDetailsSchema = z.object({
   newsletter_name: z.string().min(2, "Newsletter name is required"),
-  topics: z.array(z.string()).min(1, "At least one topic is required"),
+  topics: z.array(z.enum(COLLAB_TOPICS)).min(1, "At least one topic is required"),
   audience_reach: z.enum(AUDIENCE_SIZE_RANGES),
   short_description: z.string().max(200, "Short description must be less than 200 characters")
 });
