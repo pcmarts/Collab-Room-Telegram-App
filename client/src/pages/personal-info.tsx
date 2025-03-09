@@ -150,6 +150,43 @@ export default function PersonalInfo() {
             />
           </div>
 
+          <div>
+            <Label htmlFor="twitter_url">My Personal Twitter URL</Label>
+            <Input
+              id="twitter_url"
+              name="twitter_url"
+              type="url"
+              value={formData.twitter_url}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="twitter_followers">My Twitter Follower Count</Label>
+            <Select
+              value={formData.twitter_followers}
+              onValueChange={(value) => {
+                const newFormData = {
+                  ...formData,
+                  twitter_followers: value
+                };
+                setFormData(newFormData);
+                sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select follower count" />
+              </SelectTrigger>
+              <SelectContent>
+                {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                  <SelectItem key={count} value={count}>
+                    {count}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <Button
             type="submit"
             className="w-full mt-6"

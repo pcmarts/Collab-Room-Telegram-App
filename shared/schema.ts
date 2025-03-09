@@ -37,7 +37,7 @@ export const COLLAB_TOPICS = [
 
 export const NOTIFICATION_FREQUENCIES = ["Instant", "Daily", "Weekly"] as const;
 
-export const FUNDING_STAGES = ["Pre-seed", "Seed", "Series A", "Series B+"] as const;
+export const FUNDING_STAGES = ["Not Applicable", "Pre-seed", "Seed", "Series A", "Series B+"] as const;
 
 export const BLOCKCHAIN_NETWORKS = [
   "Ethereum",
@@ -173,6 +173,7 @@ export const users = pgTable('users', {
   linkedin_url: text('linkedin_url'),
   email: text('email'),
   referral_code: text('referral_code'),
+  twitter_url: text('twitter_url'),
   twitter_followers: text('twitter_followers'),
   is_approved: boolean('is_approved').default(false),
   applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
@@ -326,6 +327,7 @@ export const applicationSchema = z.object({
   linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(),
   email: z.string().email("Please enter a valid email").optional().nullable(),
   referral_code: z.string().optional(),
+  twitter_url: z.string().url("Please enter a valid Twitter URL").optional().nullable(),
   twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
 
   // Company Information
