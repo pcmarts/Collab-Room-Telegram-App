@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User, Company, Preferences } from "@shared/schema";
+import { TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/PageHeader";
 
 interface ProfileData {
@@ -32,6 +34,8 @@ export default function ProfileOverview() {
     last_name: "",
     linkedin_url: "",
     email: "",
+    twitter_url: "",
+    twitter_followers: "",
   });
 
   // Update form data when profile is loaded
@@ -42,6 +46,8 @@ export default function ProfileOverview() {
         last_name: profile.user.last_name || "",
         linkedin_url: profile.user.linkedin_url || "",
         email: profile.user.email || "",
+        twitter_url: profile.user.twitter_url || "",
+        twitter_followers: profile.user.twitter_followers || "",
       });
     }
   }, [profile]);
@@ -70,6 +76,13 @@ export default function ProfileOverview() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  
+  const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -177,6 +190,37 @@ export default function ProfileOverview() {
                   onChange={handleInputChange}
                   placeholder="your@email.com"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="twitter_url">Twitter URL (Optional)</Label>
+                <Input
+                  id="twitter_url"
+                  name="twitter_url"
+                  type="url"
+                  value={formData.twitter_url}
+                  onChange={handleInputChange}
+                  placeholder="https://x.com/username"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="twitter_followers">Twitter Followers</Label>
+                <Select
+                  value={formData.twitter_followers}
+                  onValueChange={(value) => handleSelectChange("twitter_followers", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select follower count" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                      <SelectItem key={count} value={count}>
+                        {count}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
