@@ -95,6 +95,9 @@ export class DatabaseStorage implements IStorage {
     // Ensure array fields are properly formatted
     const preparedData = {
       ...collabData,
+      topics: Array.isArray(collabData.topics) 
+        ? collabData.topics 
+        : (collabData.topics ? [collabData.topics] : []),
       required_company_sectors: Array.isArray(collabData.required_company_sectors) 
         ? collabData.required_company_sectors 
         : (collabData.required_company_sectors ? [collabData.required_company_sectors] : []),
