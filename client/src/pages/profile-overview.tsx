@@ -223,8 +223,6 @@ export default function ProfileOverview() {
                 </Select>
               </div>
 
-
-
               <div>
                 <Label>Telegram Handle</Label>
                 <p className="text-sm text-muted-foreground">
