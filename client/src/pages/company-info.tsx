@@ -107,6 +107,7 @@ export default function CompanyInfoForm() {
         job_title: formData.job_title,
         website: formData.website,
         twitter_handle: formData.twitter_url.replace('https://x.com/', '').replace('@', ''),
+        twitter_followers: formData.twitter_followers,
         linkedin_url: formData.linkedin_url,
         funding_stage: formData.funding_stage,
         has_token: formData.has_token,
