@@ -172,11 +172,14 @@ export async function registerRoutes(app: Express) {
         });
 
         // After successful transaction
-        try {
-          await sendApplicationConfirmation(parseInt(telegram_id));
-        } catch (msgError) {
-          console.error('Failed to send confirmation message:', msgError);
-          // Don't throw here, as the application was still successful
+        // Only send confirmation for new users, not for profile updates
+        if (!isProfileUpdate) {
+          try {
+            await sendApplicationConfirmation(parseInt(telegram_id));
+          } catch (msgError) {
+            console.error('Failed to send confirmation message:', msgError);
+            // Don't throw here, as the application was still successful
+          }
         }
 
         res.json({
