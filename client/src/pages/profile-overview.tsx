@@ -105,7 +105,7 @@ export default function ProfileOverview() {
         initData: window.Telegram?.WebApp?.initData || "",
       };
 
-      const response = await apiRequest("POST", "/api/onboarding", submitData);
+      const response = await apiRequest("/api/onboarding", "POST", submitData);
 
       if (!response.ok) {
         throw new Error("Failed to update profile");

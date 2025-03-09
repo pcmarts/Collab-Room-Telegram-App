@@ -115,7 +115,7 @@ export default function CompanyInfoForm() {
         long_description: formData.long_description
       };
 
-      const response = await apiRequest('POST', '/api/company', submitData);
+      const response = await apiRequest('/api/company', 'POST', submitData);
 
       if (!response.ok) {
         const data = await response.json();
