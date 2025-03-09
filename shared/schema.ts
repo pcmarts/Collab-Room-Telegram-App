@@ -147,7 +147,8 @@ export const COMPANY_TAG_CATEGORIES = {
     "Security & Auditing"
   ],
   "Marketing & Growth": [
-    "Marketing & Growth Platforms"
+    "Marketing & Growth Platforms",
+    "Marketing Agency"
   ],
   "Infrastructure & Developer Tools": [
     "Smart Contract Development Platforms",

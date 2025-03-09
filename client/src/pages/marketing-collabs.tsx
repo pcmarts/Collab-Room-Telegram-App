@@ -939,8 +939,8 @@ export default function MarketingCollabs() {
       <Tabs defaultValue="host" onValueChange={setActiveTab}>
         <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="host">Hosted Collabs</TabsTrigger>
-            <TabsTrigger value="optin"> 🔧 Discover Collab Settings</TabsTrigger>
+            <TabsTrigger value="host">👋 Hosting</TabsTrigger>
+            <TabsTrigger value="optin"> 🚀 Discovery Feed</TabsTrigger>
           </TabsList>
         </div>
 
@@ -950,9 +950,9 @@ export default function MarketingCollabs() {
               <TabsContent value="optin" className="space-y-4 mt-0">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <Label className="text-lg">Discover Collaboration Opportunities</Label>
+                    <Label className="text-lg">Discovery feed settings</Label>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Select the types of collaborations you want to be shown on your discovery feed
+                      Select the types of marketing collabs hosted by others shown on your discovery feed
                     </p>
                   </div>
                 </div>
@@ -961,7 +961,7 @@ export default function MarketingCollabs() {
                 {(
                   <div className="space-y-4 mb-6 border rounded-lg p-4 bg-accent/10">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-base font-medium">Discovery Filters</h3>
+                      <h3 className="text-base font-medium">Discovery Feed Filters</h3>
                       <FormField
                         control={form.control}
                         name="matchingEnabled"
@@ -1079,7 +1079,7 @@ export default function MarketingCollabs() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Collaboration Types to Discover</CardTitle>
+                    <CardTitle>Discovery Feed: Collab Types</CardTitle>
                     <p className="text-sm text-muted-foreground">
                       Select which types of collaborations for your company to be matched with as a participant
                     </p>
@@ -1196,7 +1196,7 @@ export default function MarketingCollabs() {
                               <div className="space-y-2">
                                 <h3 className="text-sm font-medium border-b pb-1 mb-2">Audience Building</h3>
                                 <div className="grid grid-cols-1 gap-2">
-                                  {["Retweet & Boost", "Shoutout"].map((type) => (
+                                  {["Twitter Space Co-Host", "Retweet & Boost", "Shoutout"].map((type) => (
                                     <FormItem 
                                       key={type} 
                                       className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3"
@@ -1234,10 +1234,9 @@ export default function MarketingCollabs() {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <Label className="text-lg">My Hosted Collaborations</Label>
+                      <Label className="text-lg">Host a Marketing Collab</Label>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Create and manage your own marketing collaborations that others can apply to join. Only your company details will be visable for potential matches, and only upon a match when you match your contact details will be shared. 
-                      </p>
+                        Create and manage marketing collaborations that others can apply to join                     </p>
                     </div>
                     <Button 
                       variant="outline" 
