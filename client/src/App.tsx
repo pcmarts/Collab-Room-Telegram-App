@@ -11,6 +11,7 @@ import CompanySector from "@/pages/company-sector";
 import CompanyDetails from "@/pages/company-details";
 import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
+import ApplicationForm from "@/pages/application-form";
 import MarketingCollabs from "@/pages/marketing-collabs";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
@@ -43,6 +44,8 @@ function Router() {
           <Route path="/company-sector" component={CompanySector} />
           <Route path="/company-details" component={CompanyDetails} />
           <Route path="/application-status" component={ApplicationStatus} />
+          <Route path="/application-form" component={ApplicationForm} />
+          <Route path="/apply" component={ApplicationForm} />
 
           {/* Collaboration Routes */}
           <Route path="/browse-collaborations" component={BrowseCollaborations} />

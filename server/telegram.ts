@@ -80,15 +80,14 @@ async function handleStart(msg: TelegramBot.Message) {
     let welcomeMessage;
 
     if (!existingUser) {
-      // New user - show Apply button and send confirmation message
+      // New user - show Apply button
       keyboard = {
         inline_keyboard: [[{
           text: "Apply to Join",
-          web_app: { url: `${WEBAPP_URL}/apply` } 
+          web_app: { url: `${WEBAPP_URL}/application-form` } 
         }]]
       };
       welcomeMessage = '👋 Welcome to CollabRoom!\n\nWe\'re excited that you\'re interested in joining our community of innovative collaborators. Click below to start your application.';
-      await sendApplicationConfirmation(chatId); // Added confirmation message
     } else if (existingUser.is_approved) {
       // Approved user - show Dashboard button and Announcement Channel
       keyboard = {
@@ -175,7 +174,7 @@ async function handleStatus(msg: TelegramBot.Message) {
       return;
     }
 
-    const applicationDate = format(new Date(user.applied_at), 'MMMM d, yyyy');
+    const applicationDate = user.applied_at ? format(new Date(user.applied_at), 'MMMM d, yyyy') : 'Not available';
 
     let statusMessage;
     let keyboard;
