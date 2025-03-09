@@ -62,7 +62,8 @@ export default function CompanyBasics() {
 
   const handleNext = () => {
     if (!formData.company_name || !formData.job_title || !formData.website || 
-        !formData.twitter_url || !formData.linkedin_url || !formData.funding_stage) {
+        !formData.twitter_url || !formData.linkedin_url || !formData.funding_stage || 
+        !formData.twitter_followers) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -147,10 +148,11 @@ export default function CompanyBasics() {
           </div>
 
           <div>
-            <Label htmlFor="twitter_followers">Company Twitter Follower Count</Label>
+            <Label htmlFor="twitter_followers">Company Twitter Follower Count *</Label>
             <Select
               value={formData.twitter_followers}
               onValueChange={(value) => setFormData(prev => ({ ...prev, twitter_followers: value }))}
+              required
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select follower count" />
