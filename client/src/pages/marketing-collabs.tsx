@@ -824,19 +824,10 @@ export default function MarketingCollabs() {
               <TabsContent value="optin" className="space-y-4 mt-0">
                 <div className="flex items-center justify-between mb-4">
                   <Label className="text-lg">Discover Collaborations</Label>
-                  <Button 
-                    variant={showFilters ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center"
-                  >
-                    <Sliders className="h-4 w-4 mr-2" />
-                    {showFilters ? "Hide Filters" : "Show Filters"}
-                  </Button>
                 </div>
                 
-                {/* Filter Panel */}
-                {showFilters && (
+                {/* Filter Panel - Always visible */}
+                {(
                   <div className="space-y-4 mb-6 border rounded-lg p-4 bg-accent/10">
                     <div className="flex items-center justify-between">
                       <h3 className="text-base font-medium">Discovery Filters</h3>
@@ -949,19 +940,7 @@ export default function MarketingCollabs() {
                           )}
                         </div>
                         
-                        <Button 
-                          className="w-full"
-                          onClick={() => {
-                            toast({
-                              title: "Filters Applied",
-                              description: "Your discovery filters have been applied",
-                              duration: 2000
-                            });
-                            setShowFilters(false);
-                          }}
-                        >
-                          Apply Filters
-                        </Button>
+                        {/* Filter settings are automatically applied on save */}
                       </div>
                     )}
                   </div>
@@ -1015,7 +994,7 @@ export default function MarketingCollabs() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Twitter Collaborations</CardTitle>
+                    <CardTitle>Twitter Co-Marketing</CardTitle>
                     <p className="text-sm text-muted-foreground">
                       Select which types of Twitter collaborations you're interested in finding
                     </p>
@@ -1026,32 +1005,102 @@ export default function MarketingCollabs() {
                       name="enabledTwitterCollabs"
                       render={({ field }) => (
                         <FormItem>
-                          <div className="grid grid-cols-1 gap-2">
-                            {TWITTER_COLLAB_TYPES.map((collabType) => (
-                              <FormItem
-                                key={collabType}
-                                className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(collabType)}
-                                    onCheckedChange={(checked) => {
-                                      const currentTypes = field.value || [];
-                                      if (checked) {
-                                        field.onChange([...currentTypes, collabType]);
-                                      } else {
-                                        field.onChange(
-                                          currentTypes.filter(
-                                            (value) => value !== collabType
-                                          )
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal">{collabType}</FormLabel>
-                              </FormItem>
-                            ))}
+                          <div className="space-y-4">
+                            {/* Content Creation Group */}
+                            <div className="space-y-2">
+                              <h3 className="text-sm font-medium border-b pb-1 mb-2">Content Creation</h3>
+                              <div className="grid grid-cols-1 gap-2">
+                                {["Thread Collab", "Joint Campaign"].map((collabType) => (
+                                  <FormItem
+                                    key={collabType}
+                                    className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(collabType)}
+                                        onCheckedChange={(checked) => {
+                                          const currentTypes = field.value || [];
+                                          if (checked) {
+                                            field.onChange([...currentTypes, collabType]);
+                                          } else {
+                                            field.onChange(
+                                              currentTypes.filter(
+                                                (value) => value !== collabType
+                                              )
+                                            );
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">{collabType}</FormLabel>
+                                  </FormItem>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {/* User Engagement Group */}
+                            <div className="space-y-2">
+                              <h3 className="text-sm font-medium border-b pb-1 mb-2">User Engagement</h3>
+                              <div className="grid grid-cols-1 gap-2">
+                                {["Giveaway", "Poll/Q&A", "AMA"].map((collabType) => (
+                                  <FormItem
+                                    key={collabType}
+                                    className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(collabType)}
+                                        onCheckedChange={(checked) => {
+                                          const currentTypes = field.value || [];
+                                          if (checked) {
+                                            field.onChange([...currentTypes, collabType]);
+                                          } else {
+                                            field.onChange(
+                                              currentTypes.filter(
+                                                (value) => value !== collabType
+                                              )
+                                            );
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">{collabType}</FormLabel>
+                                  </FormItem>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {/* Audience Building Group */}
+                            <div className="space-y-2">
+                              <h3 className="text-sm font-medium border-b pb-1 mb-2">Audience Building</h3>
+                              <div className="grid grid-cols-1 gap-2">
+                                {["Twitter Space Co-Host", "Retweet & Boost", "Shoutout", "Tweet Swap", "Sponsored Tweet"].map((collabType) => (
+                                  <FormItem
+                                    key={collabType}
+                                    className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(collabType)}
+                                        onCheckedChange={(checked) => {
+                                          const currentTypes = field.value || [];
+                                          if (checked) {
+                                            field.onChange([...currentTypes, collabType]);
+                                          } else {
+                                            field.onChange(
+                                              currentTypes.filter(
+                                                (value) => value !== collabType
+                                              )
+                                            );
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">{collabType}</FormLabel>
+                                  </FormItem>
+                                ))}
+                              </div>
+                            </div>
                           </div>
                         </FormItem>
                       )}
