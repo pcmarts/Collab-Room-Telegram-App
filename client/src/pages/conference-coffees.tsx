@@ -306,8 +306,8 @@ export default function ConferenceCoffees() {
       <Tabs defaultValue="attending" onValueChange={setActiveTab}>
         <div className="sticky top-0 z-10 bg-background px-4 pt-4 pb-2 border-b">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="attending">✔️ Attending</TabsTrigger>
-            <TabsTrigger value="criteria">🔍 Coffee Match Criteria</TabsTrigger>
+            <TabsTrigger value="attending">Attending</TabsTrigger>
+            <TabsTrigger value="criteria">Preferences</TabsTrigger>
           </TabsList>
         </div>
 
@@ -364,9 +364,7 @@ export default function ConferenceCoffees() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Coffee Match Discovery</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Enable to find matches at conferences you're attending
-                    </p>
+                  
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <FormField
@@ -380,8 +378,8 @@ export default function ConferenceCoffees() {
                             </FormLabel>
                             <FormDescription>
                               {field.value
-                                ? "Matching enabled - you'll be matched with filtered contacts"
-                                : "Matching disabled - you'll be matched with everyone"}
+                                ? "Matching enabled - get ready to find matches at conferences you're attending"
+                                : "Matching disabled"}
                             </FormDescription>
                           </div>
                           <FormControl>
