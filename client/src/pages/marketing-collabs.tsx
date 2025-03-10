@@ -364,13 +364,15 @@ export default function MarketingCollabs() {
 
   // Load existing preferences when data is fetched
   useEffect(() => {
-    if (profileData?.preferences) {
+    if (profileData) {
       console.log("Loading preferences:", profileData.preferences);
+      console.log("Loading marketing preferences:", profileData.marketingPreferences);
       
-      // Extract collabs from the preferences
-      const savedCollabsToHost = profileData.preferences.collabs_to_host || [];
-      const collabsToDiscover = profileData.preferences.collabs_to_discover || [];
-      const savedTwitterCollabs = profileData.preferences.twitter_collabs || [];
+      // Extract collabs from marketing preferences (if they exist)
+      const marketingPrefs = profileData.marketingPreferences || {};
+      const savedCollabsToHost = marketingPrefs.collabs_to_host || [];
+      const collabsToDiscover = marketingPrefs.collabs_to_discover || [];
+      const savedTwitterCollabs = marketingPrefs.twitter_collabs || [];
       
       // Combine to get all enabled collabs
       const uniqueCollabs = new Set([...collabsToDiscover]);
@@ -379,27 +381,27 @@ export default function MarketingCollabs() {
       // Set initial state for collabs to host
       setCollabsToHost(savedCollabsToHost);
       
-      // Load filter toggle states from dedicated fields
+      // Load filter toggle states from dedicated fields in marketing preferences
       setFiltersEnabled({
-        topics: profileData.preferences.discovery_filter_topics_enabled ?? false,
-        companySectors: profileData.preferences.discovery_filter_company_sectors_enabled ?? false,
-        companyFollowers: profileData.preferences.discovery_filter_company_followers_enabled ?? false,
-        userFollowers: profileData.preferences.discovery_filter_user_followers_enabled ?? false,
-        fundingStages: profileData.preferences.discovery_filter_funding_stages_enabled ?? false,
-        hasToken: profileData.preferences.discovery_filter_token_status_enabled ?? false
+        topics: marketingPrefs.discovery_filter_topics_enabled ?? false,
+        companySectors: marketingPrefs.discovery_filter_company_sectors_enabled ?? false,
+        companyFollowers: marketingPrefs.discovery_filter_company_followers_enabled ?? false,
+        userFollowers: marketingPrefs.discovery_filter_user_followers_enabled ?? false,
+        fundingStages: marketingPrefs.discovery_filter_funding_stages_enabled ?? false,
+        hasToken: marketingPrefs.discovery_filter_token_status_enabled ?? false
       });
       
       console.log("Loaded discovery filter states:", {
-        topics: profileData.preferences.discovery_filter_topics_enabled,
-        companySectors: profileData.preferences.discovery_filter_company_sectors_enabled,
-        companyFollowers: profileData.preferences.discovery_filter_company_followers_enabled,
-        userFollowers: profileData.preferences.discovery_filter_user_followers_enabled,
-        fundingStages: profileData.preferences.discovery_filter_funding_stages_enabled,
-        hasToken: profileData.preferences.discovery_filter_token_status_enabled
+        topics: marketingPrefs.discovery_filter_topics_enabled,
+        companySectors: marketingPrefs.discovery_filter_company_sectors_enabled,
+        companyFollowers: marketingPrefs.discovery_filter_company_followers_enabled,
+        userFollowers: marketingPrefs.discovery_filter_user_followers_enabled,
+        fundingStages: marketingPrefs.discovery_filter_funding_stages_enabled,
+        hasToken: marketingPrefs.discovery_filter_token_status_enabled
       });
 
-      // Extract filter settings from excluded_tags
-      const excludedTags = profileData.preferences.excluded_tags || [];
+      // Extract filter settings from filtered_marketing_topics
+      const excludedTags = marketingPrefs.filtered_marketing_topics || [];
       
       // Initialize filter values with defaults
       let filterMatchingEnabled = false;
@@ -557,34 +559,17 @@ export default function MarketingCollabs() {
       console.log("Number of filter topics:", filterTopics.length);
       
       // Save preferences using the existing fields in the database
-      // IMPORTANT: We need to filter out any existing filter settings from the excluded_tags
+      // IMPORTANT: We need to filter out any existing filter settings from the filtered_marketing_topics
       // before adding our new ones to prevent duplicates or old settings persisting
-      const existingTags = profileData?.preferences?.excluded_tags || [];
+      const existingTags = profileData?.marketingPreferences?.filtered_marketing_topics || [];
       const nonFilterTags = existingTags.filter(tag => !tag.startsWith('filter:'));
       
       // Make sure we have a default for notification_frequency as it's required
       const notification_frequency = profileData?.preferences?.notification_frequency || "Daily";
       
-      // Save both the form data and the filter toggle states
-      const updateData = {
-        ...profileData?.preferences,
-        // Ensure required fields are included
-        notification_frequency,
-        
-        // Form data values
-        collabs_to_host: collabsToHost,
-        collabs_to_discover: data.enabledCollabs,
-        twitter_collabs: data.enabledTwitterCollabs,
-        excluded_tags: [...nonFilterTags, ...allFilterData], // Keep any real excluded tags plus our filter data
-        
-        // Filter toggle states in their dedicated fields
-        discovery_filter_enabled: data.matchingEnabled,
-        discovery_filter_topics_enabled: filtersEnabled.topics,
-        discovery_filter_company_sectors_enabled: filtersEnabled.companySectors,
-        discovery_filter_company_followers_enabled: filtersEnabled.companyFollowers,
-        discovery_filter_user_followers_enabled: filtersEnabled.userFollowers,
-        discovery_filter_funding_stages_enabled: filtersEnabled.fundingStages,
-        discovery_filter_token_status_enabled: filtersEnabled.hasToken
+      // For general preferences we only need notification frequency now
+      const generalPrefsData = {
+        notification_frequency
       };
       
       console.log("Saving filter toggle states:", {
@@ -615,9 +600,6 @@ export default function MarketingCollabs() {
       const marketingResponse = await apiRequest('/api/marketing-preferences', 'POST', marketingPrefsData);
       
       // Then update general preferences with notification frequency
-      const generalPrefsData = {
-        notification_frequency
-      };
       
       const response = await apiRequest('/api/preferences', 'POST', generalPrefsData);
 
