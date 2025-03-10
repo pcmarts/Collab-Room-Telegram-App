@@ -778,6 +778,19 @@ export async function registerRoutes(app: Express) {
           
         let result;
         
+        // Log specific details about filtered marketing topics for debugging
+        console.log('Received filtered_marketing_topics:', filtered_marketing_topics);
+        
+        // Count topic-related entries in filtered_marketing_topics
+        const topicEntries = (filtered_marketing_topics || []).filter(item => 
+          item.startsWith('filter:topic:')
+        );
+        console.log(`Found ${topicEntries.length} topic entries:`, topicEntries);
+        
+        // Extract just the topic values for easier debugging
+        const topicValues = topicEntries.map(item => item.replace('filter:topic:', ''));
+        console.log('Extracted topic values:', topicValues);
+        
         // Handle Marketing Preferences
         const marketingPrefsData = {
           collabs_to_discover: collabs_to_discover || [],
@@ -812,10 +825,11 @@ export async function registerRoutes(app: Express) {
           console.log('Created marketing preferences:', result);
         }
         
+        // Return a more explicitly formatted response to help client-side processing
         return res.json({
           success: true,
           message: 'Marketing preferences updated successfully',
-          marketingPreferences: result
+          marketingPrefs: result
         });
 
       } catch (dbError) {
@@ -979,10 +993,11 @@ export async function registerRoutes(app: Express) {
           console.log('Created conference preferences:', result);
         }
         
+        // Return a more explicitly formatted response to help client-side processing
         return res.json({
           success: true,
           message: 'Conference preferences updated successfully',
-          conferencePreferences: result
+          conferencePrefs: result
         });
 
       } catch (dbError) {

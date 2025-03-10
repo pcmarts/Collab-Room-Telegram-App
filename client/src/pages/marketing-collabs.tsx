@@ -399,6 +399,9 @@ export default function MarketingCollabs() {
         fundingStages: marketingPrefs.discovery_filter_funding_stages_enabled,
         hasToken: marketingPrefs.discovery_filter_token_status_enabled
       });
+      
+      // Debug - check if filtered_marketing_topics exists and contains topics
+      console.log("Raw filtered_marketing_topics:", marketingPrefs.filtered_marketing_topics);
 
       // Extract filter settings from filtered_marketing_topics
       const excludedTags = marketingPrefs.filtered_marketing_topics || [];
@@ -523,9 +526,13 @@ export default function MarketingCollabs() {
     console.log("Topics selected:", data.topics);
 
     try {
+      // Make sure data.topics is properly initialized and handle array or undefined
+      const selectedTopics = Array.isArray(data.topics) ? data.topics : [];
+      console.log("Selected topics (validated):", selectedTopics);
+      
       // Convert filter settings to strings that can be stored in excluded_tags
       // Use a prefix to separate these from actual excluded tags
-      const filterTopics = data.topics?.map(topic => `filter:topic:${topic}`) || [];
+      const filterTopics = selectedTopics.map(topic => `filter:topic:${topic}`);
       const filterSectors = data.companySectors?.map(sector => `filter:sector:${sector}`) || [];
       const filterFundingStages = data.fundingStages?.map(stage => `filter:stage:${stage}`) || [];
       
