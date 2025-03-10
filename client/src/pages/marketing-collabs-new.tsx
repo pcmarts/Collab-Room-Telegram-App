@@ -129,8 +129,9 @@ export default function MarketingCollabs() {
   const form = useForm<MarketingCollabFormData>({
     resolver: zodResolver(marketingCollabSchema),
     defaultValues: {
-      enabledCollabs: [],
-      enabledTwitterCollabs: [],
+      // By default, enable all collab types (opt-out approach)
+      enabledCollabs: [...COLLAB_TYPES],
+      enabledTwitterCollabs: [...TWITTER_COLLAB_TYPES],
       matchingEnabled: false,
       companySectors: [],
       topics: [],
