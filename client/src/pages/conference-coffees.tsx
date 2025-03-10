@@ -27,49 +27,39 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
+import { 
+  TWITTER_FOLLOWER_COUNTS, 
+  FUNDING_STAGES, 
+  COMPANY_TAG_CATEGORIES,
+} from "@shared/schema";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import {
-  COMPANY_TAG_CATEGORIES,
-  TWITTER_FOLLOWER_COUNTS,
-  FUNDING_STAGES,
-} from "@shared/schema";
 
-// Form schema for coffee match criteria
+// Define schema for coffee match criteria
 const coffeeMatchCriteriaSchema = z.object({
   matchingEnabled: z.boolean().default(false),
   companySectors: z.array(z.string()).default([]),
   companyFollowers: z.string().default(TWITTER_FOLLOWER_COUNTS[0]),
   userFollowers: z.string().default(TWITTER_FOLLOWER_COUNTS[0]),
   fundingStages: z.array(z.string()).default([]),
-  tokenStatus: z.boolean().default(false),
+  tokenStatus: z.boolean().default(false)
 });
 
 // Type for form data
 type CoffeeMatchCriteria = z.infer<typeof coffeeMatchCriteriaSchema>;
 
-// Helper function to handle PostgreSQL boolean values from API
-function isPostgresBooleanTrue(value: any): boolean {
-  return value === true || 
-         value === 't' || 
-         value === 'true' || 
-         value === 1 || 
-         value === '1';
-}
-
 export default function ConferenceCoffees() {
   const [activeTab, setActiveTab] = useState("attending");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [filtersEnabled, setFiltersEnabled] = useState({
-    companySectors: false,
-    companyFollowers: false,
-    userFollowers: false,
-    fundingStages: false,
-    tokenStatus: false,
-  });
+  
+  // Individual state variables for each toggle switch
+  const [companySectorsEnabled, setCompanySectorsEnabled] = useState(false);
+  const [companyFollowersEnabled, setCompanyFollowersEnabled] = useState(false);
+  const [userFollowersEnabled, setUserFollowersEnabled] = useState(false);
+  const [fundingStagesEnabled, setFundingStagesEnabled] = useState(false);
+  const [tokenStatusEnabled, setTokenStatusEnabled] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -154,28 +144,6 @@ export default function ConferenceCoffees() {
       userFollowers: TWITTER_FOLLOWER_COUNTS[0],
     },
   });
-
-  // Toggle filter visibility - Using hard boolean values to avoid type conversion issues
-  const toggleFilter = (filterName: keyof typeof filtersEnabled) => {
-    // Get current value with strict boolean conversion
-    // Force a true/false value rather than a truthy/falsy value
-    const currentValue = filtersEnabled[filterName] === true;
-    
-    // Log the state change
-    console.log(`Toggling filter ${filterName} from ${currentValue} to ${!currentValue}`);
-    
-    // Create a completely new object with explicit booleans instead of mutating previous state
-    const newState = {
-      companySectors: filterName === "companySectors" ? !currentValue : (filtersEnabled.companySectors === true),
-      companyFollowers: filterName === "companyFollowers" ? !currentValue : (filtersEnabled.companyFollowers === true),
-      userFollowers: filterName === "userFollowers" ? !currentValue : (filtersEnabled.userFollowers === true),
-      fundingStages: filterName === "fundingStages" ? !currentValue : (filtersEnabled.fundingStages === true),
-      tokenStatus: filterName === "tokenStatus" ? !currentValue : (filtersEnabled.tokenStatus === true)
-    };
-    
-    console.log(`New filter states:`, newState);
-    setFiltersEnabled(newState);
-  };
   
   // Load saved preferences when profile data is fetched
   useEffect(() => {
@@ -192,7 +160,7 @@ export default function ConferenceCoffees() {
         tokenStatus: prefs.coffee_match_token_status ?? false
       });
       
-      // For debugging only - Log raw filter states from database
+      // Log raw filter states for debugging
       console.log("Raw DB values for filters:", {
         companySectors: prefs.coffee_match_filter_company_sectors_enabled,
         companyFollowers: prefs.coffee_match_filter_company_followers_enabled, 
@@ -201,25 +169,21 @@ export default function ConferenceCoffees() {
         tokenStatus: prefs.coffee_match_filter_token_status_enabled
       });
       
-      // IMPORTANT: Always manually set filter states based on database values
-      // PostgreSQL returns 'f' for false, which is truthy in JavaScript
-      // We need to explicitly convert to proper booleans using strict equality
-      const updatedFilters = {
-        companySectors: prefs.coffee_match_filter_company_sectors_enabled === true,
-        companyFollowers: prefs.coffee_match_filter_company_followers_enabled === true,
-        userFollowers: prefs.coffee_match_filter_user_followers_enabled === true,
-        fundingStages: prefs.coffee_match_filter_funding_stages_enabled === true,
-        tokenStatus: prefs.coffee_match_filter_token_status_enabled === true
-      };
+      // Set filter states based on database values with strict equality checks
+      // This ensures PostgreSQL booleans are properly handled
+      setCompanySectorsEnabled(prefs.coffee_match_filter_company_sectors_enabled === true);
+      setCompanyFollowersEnabled(prefs.coffee_match_filter_company_followers_enabled === true);
+      setUserFollowersEnabled(prefs.coffee_match_filter_user_followers_enabled === true);
+      setFundingStagesEnabled(prefs.coffee_match_filter_funding_stages_enabled === true);
+      setTokenStatusEnabled(prefs.coffee_match_filter_token_status_enabled === true);
       
-      console.log("Loading coffee match filter states:", updatedFilters);
-      setFiltersEnabled(updatedFilters);
-      
-      // Log if no filters were enabled from saved preferences (for debugging only)
-      if (!Object.values(updatedFilters).some(Boolean)) {
-        console.log("No filters are currently enabled from saved preferences");
-        // We're not forcing filters on anymore - this was causing the issue
-      }
+      console.log("Loaded filter toggle states:", {
+        companySectors: companySectorsEnabled,
+        companyFollowers: companyFollowersEnabled,
+        userFollowers: userFollowersEnabled,
+        fundingStages: fundingStagesEnabled,
+        tokenStatus: tokenStatusEnabled
+      });
     }
   }, [profileData, form]);
 
@@ -230,7 +194,13 @@ export default function ConferenceCoffees() {
   const onSubmitCriteria = async (data: CoffeeMatchCriteria) => {
     setIsSubmitting(true);
     console.log("Submitting criteria:", data);
-    console.log("Filter toggle states:", filtersEnabled);
+    console.log("Filter toggle states:", {
+      companySectors: companySectorsEnabled,
+      companyFollowers: companyFollowersEnabled,
+      userFollowers: userFollowersEnabled,
+      fundingStages: fundingStagesEnabled,
+      tokenStatus: tokenStatusEnabled
+    });
 
     try {
       // Get current user preferences
@@ -240,16 +210,6 @@ export default function ConferenceCoffees() {
       
       // Make sure we have a default for notification_frequency as it's required
       const notification_frequency = profileData?.preferences?.notification_frequency || "Daily";
-      console.log("Using notification_frequency:", notification_frequency);
-      
-      // For debugging - show current value in database
-      console.log("Current filter toggle states in database:", {
-        companySectors: profileData?.preferences?.coffee_match_filter_company_sectors_enabled,
-        companyFollowers: profileData?.preferences?.coffee_match_filter_company_followers_enabled,
-        userFollowers: profileData?.preferences?.coffee_match_filter_user_followers_enabled,
-        fundingStages: profileData?.preferences?.coffee_match_filter_funding_stages_enabled,
-        tokenStatus: profileData?.preferences?.coffee_match_filter_token_status_enabled
-      });
       
       // Update the coffee match criteria fields and toggle states
       const updateData = {
@@ -265,12 +225,12 @@ export default function ConferenceCoffees() {
         coffee_match_funding_stages: data.fundingStages ?? [],
         coffee_match_token_status: data.tokenStatus,
         
-        // Filter toggle states - use explicit true/false values for PostgreSQL
-        coffee_match_filter_company_sectors_enabled: Boolean(filtersEnabled.companySectors),
-        coffee_match_filter_company_followers_enabled: Boolean(filtersEnabled.companyFollowers),
-        coffee_match_filter_user_followers_enabled: Boolean(filtersEnabled.userFollowers),
-        coffee_match_filter_funding_stages_enabled: Boolean(filtersEnabled.fundingStages),
-        coffee_match_filter_token_status_enabled: Boolean(filtersEnabled.tokenStatus)
+        // Filter toggle states - use explicit boolean values to avoid type issues
+        coffee_match_filter_company_sectors_enabled: companySectorsEnabled,
+        coffee_match_filter_company_followers_enabled: companyFollowersEnabled,
+        coffee_match_filter_user_followers_enabled: userFollowersEnabled,
+        coffee_match_filter_funding_stages_enabled: fundingStagesEnabled,
+        coffee_match_filter_token_status_enabled: tokenStatusEnabled
       };
       
       console.log("Sending updateData:", updateData);
@@ -453,13 +413,13 @@ export default function ConferenceCoffees() {
                       {/* Company Sectors Filter */}
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
-                          checked={filtersEnabled.companySectors}
-                          onCheckedChange={() => toggleFilter("companySectors")}
+                          checked={companySectorsEnabled}
+                          onCheckedChange={() => setCompanySectorsEnabled(!companySectorsEnabled)}
                         />
                         <Label>Filter by Company Sectors</Label>
                       </div>
 
-                      {filtersEnabled.companySectors && (
+                      {companySectorsEnabled && (
                         <FormField
                           control={form.control}
                           name="companySectors"
@@ -520,18 +480,16 @@ export default function ConferenceCoffees() {
                         />
                       )}
 
-                      {/* Twitter Followers Filter - Company */}
+                      {/* Company Followers Filter */}
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
-                          checked={filtersEnabled.companyFollowers}
-                          onCheckedChange={() =>
-                            toggleFilter("companyFollowers")
-                          }
+                          checked={companyFollowersEnabled}
+                          onCheckedChange={() => setCompanyFollowersEnabled(!companyFollowersEnabled)}
                         />
                         <Label>Minimum Company Followers</Label>
                       </div>
 
-                      {filtersEnabled.companyFollowers && (
+                      {companyFollowersEnabled && (
                         <FormField
                           control={form.control}
                           name="companyFollowers"
@@ -540,10 +498,11 @@ export default function ConferenceCoffees() {
                               <Select
                                 onValueChange={field.onChange}
                                 defaultValue={field.value}
+                                value={field.value}
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select min followers" />
+                                    <SelectValue placeholder="Select company follower count" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -559,16 +518,16 @@ export default function ConferenceCoffees() {
                         />
                       )}
 
-                      {/* Twitter Followers Filter - User */}
+                      {/* User Followers Filter */}
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
-                          checked={filtersEnabled.userFollowers}
-                          onCheckedChange={() => toggleFilter("userFollowers")}
+                          checked={userFollowersEnabled}
+                          onCheckedChange={() => setUserFollowersEnabled(!userFollowersEnabled)}
                         />
                         <Label>Minimum User Followers</Label>
                       </div>
 
-                      {filtersEnabled.userFollowers && (
+                      {userFollowersEnabled && (
                         <FormField
                           control={form.control}
                           name="userFollowers"
@@ -577,10 +536,11 @@ export default function ConferenceCoffees() {
                               <Select
                                 onValueChange={field.onChange}
                                 defaultValue={field.value}
+                                value={field.value}
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select min followers" />
+                                    <SelectValue placeholder="Select user follower count" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -596,22 +556,22 @@ export default function ConferenceCoffees() {
                         />
                       )}
 
-                      {/* Funding Stage Filter */}
+                      {/* Funding Stages Filter */}
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
-                          checked={filtersEnabled.fundingStages}
-                          onCheckedChange={() => toggleFilter("fundingStages")}
+                          checked={fundingStagesEnabled}
+                          onCheckedChange={() => setFundingStagesEnabled(!fundingStagesEnabled)}
                         />
                         <Label>Filter by Funding Stage</Label>
                       </div>
 
-                      {filtersEnabled.fundingStages && (
+                      {fundingStagesEnabled && (
                         <FormField
                           control={form.control}
                           name="fundingStages"
                           render={({ field }) => (
                             <FormItem>
-                              <div className="grid grid-cols-2 gap-2">
+                              <div className="space-y-2">
                                 {FUNDING_STAGES.map((stage) => (
                                   <FormItem
                                     key={stage}
@@ -652,29 +612,32 @@ export default function ConferenceCoffees() {
                       {/* Token Status Filter */}
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
-                          checked={filtersEnabled.tokenStatus}
-                          onCheckedChange={() => toggleFilter("tokenStatus")}
+                          checked={tokenStatusEnabled}
+                          onCheckedChange={() => setTokenStatusEnabled(!tokenStatusEnabled)}
                         />
                         <Label>Has Token</Label>
                       </div>
 
-                      {filtersEnabled.tokenStatus && (
+                      {tokenStatusEnabled && (
                         <FormField
                           control={form.control}
                           name="tokenStatus"
                           render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center space-x-2">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel>
-                                  Only show companies with a token
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base">
+                                  Projects must have a token
                                 </FormLabel>
+                                <FormDescription>
+                                  Only match with projects that have a token
+                                </FormDescription>
                               </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
                             </FormItem>
                           )}
                         />
@@ -683,21 +646,12 @@ export default function ConferenceCoffees() {
                   </Card>
                 )}
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span className="mr-2">Saving...</span>
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-r-transparent" />
-                    </>
-                  ) : (
-                    "Save Coffee Match Criteria"
-                  )}
-                </Button>
-              </form>
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Saving..." : "Save Criteria"}
+                  </Button>
+                </div>
+                </form>
               </Form>
             )}
           </TabsContent>
