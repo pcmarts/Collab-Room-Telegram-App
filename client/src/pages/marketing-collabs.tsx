@@ -557,16 +557,31 @@ export default function MarketingCollabs() {
       // for the most accurate representation of the current state
       const formValues = form.getValues();
       
-      // CRITICAL FIX: Make sure topics is always an array, even if empty
-      const finalTopics = Array.isArray(formValues.topics) ? 
-        formValues.topics : 
-        (Array.isArray(data.topics) ? data.topics : []);
+      // COMPLETE REWRITE OF TOPIC EXTRACTION
+      // This is a critical section that needs careful handling
       
-      console.log("⭐ FINAL TOPICS TO SAVE:", JSON.stringify(finalTopics));
+      // Print the current state of all checkbox elements for debugging
+      let checkboxStates: Record<string, boolean> = {};
+      document.querySelectorAll('input[type="checkbox"][name^="topics"]').forEach((element) => {
+        // Cast the Element to HTMLInputElement
+        const checkbox = element as HTMLInputElement;
+        const value = checkbox.value;
+        const isChecked = checkbox.checked;
+        checkboxStates[value] = isChecked;
+        console.log(`🔍 Checkbox "${value}" is ${isChecked ? "CHECKED" : "unchecked"}`);
+      });
+      console.log("📋 ALL checkbox states:", checkboxStates);
+      
+      // Get all checked topics directly from the DOM (most reliable method)
+      const checkedTopics = Array.from(
+        document.querySelectorAll('input[type="checkbox"][name^="topics"]:checked')
+      ).map((element) => (element as HTMLInputElement).value);
+      
+      console.log("⭐⭐⭐ DIRECTLY CHECKED TOPICS FROM DOM:", JSON.stringify(checkedTopics));
       
       // Convert filter settings to strings that can be stored in filtered_marketing_topics
       // Use a prefix to separate these from actual excluded tags
-      const filterTopics = finalTopics.map(topic => `filter:topic:${topic}`);
+      const filterTopics = checkedTopics.map(topic => `filter:topic:${topic}`);
       console.log("Mapped filter topics:", JSON.stringify(filterTopics));
       
       const filterSectors = Array.isArray(data.companySectors) ? 
@@ -1509,31 +1524,43 @@ export default function MarketingCollabs() {
                                   >
                                     <FormControl>
                                       <Checkbox
+                                        id={`topic-checkbox-${topic.toLowerCase().replace(/\s+/g, '-')}`}
+                                        name={`topics.${topic}`}
+                                        value={topic}
                                         checked={Array.isArray(field.value) && field.value.includes(topic)}
                                         onCheckedChange={(checked) => {
+                                          console.log(`🎯 Topic ${topic} checkbox changed to: ${checked}`);
+                                          
                                           // Ensure we're dealing with an array, initialize empty array if needed
                                           const currentTopics = Array.isArray(field.value) ? [...field.value] : [];
-                                          console.log(`Topic ${topic} checked: ${checked}, currentTopics:`, currentTopics);
+                                          console.log(`🎯 Current topics BEFORE update:`, currentTopics);
                                           
+                                          let newValue;
                                           if (checked) {
                                             // Only add if not already present
                                             if (!currentTopics.includes(topic)) {
-                                              const newValue = [...currentTopics, topic];
-                                              console.log(`Adding topic ${topic}, new value:`, newValue);
-                                              field.onChange(newValue);
-                                              
-                                              // Update the form value directly for consistency
-                                              form.setValue('topics', newValue);
+                                              newValue = [...currentTopics, topic];
+                                              console.log(`🎯 Adding topic ${topic}, new value:`, newValue);
+                                            } else {
+                                              // No change needed
+                                              newValue = currentTopics; 
                                             }
                                           } else {
                                             // Remove the topic
-                                            const newValue = currentTopics.filter(value => value !== topic);
-                                            console.log(`Removing topic ${topic}, new value:`, newValue);
-                                            field.onChange(newValue);
-                                            
-                                            // Update the form value directly for consistency
-                                            form.setValue('topics', newValue);
+                                            newValue = currentTopics.filter(value => value !== topic);
+                                            console.log(`🎯 Removing topic ${topic}, new value:`, newValue);
                                           }
+                                          
+                                          // Always update both ways to ensure consistency
+                                          field.onChange(newValue);
+                                          form.setValue('topics', newValue, { 
+                                            shouldValidate: true,
+                                            shouldDirty: true,
+                                            shouldTouch: true
+                                          });
+                                          
+                                          // Verify the update was applied correctly
+                                          console.log(`🎯 Form topics after update:`, form.getValues().topics);
                                         }}
                                       />
                                     </FormControl>
