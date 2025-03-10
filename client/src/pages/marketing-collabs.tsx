@@ -574,15 +574,15 @@ export default function MarketingCollabs() {
     console.log("🔴 Direct form topics array:", form.getValues("topics"));
 
     try {
-      // SIMPLIFIED APPROACH: Use our local state to get the selected topics
-      // This is much more reliable than trying to pull from form values
+      // CRITICAL FIX: Make sure selectedTopics is properly passed
       console.log("🚀 Using selectedTopics state for submission:", JSON.stringify(selectedTopics));
       
       // Force the form values to match our component state (extra safety measure)
       form.setValue("topics", selectedTopics, { shouldValidate: true });
       
-      // Keep the final selected topics reference for clarity in logs
-      const checkedTopics = [...selectedTopics];
+      // Create a new array from selectedTopics - defensive programming
+      // FIXED: Make sure we clone the array to avoid reference issues
+      const checkedTopics = selectedTopics && selectedTopics.length > 0 ? [...selectedTopics] : [];
       
       console.log("🚀 Final checked topics for submission:", JSON.stringify(checkedTopics));
       
@@ -628,14 +628,20 @@ export default function MarketingCollabs() {
       console.log("🔵 Final validated topics array for mapping:", JSON.stringify(validatedTopics));
       
       // Create the formatted topic strings
-      let filterTopics = validatedTopics.map(topic => `filter:topic:${topic}`);
+      // FIXED: Added extra safety check to ensure validatedTopics is an array before mapping
+      let filterTopics = Array.isArray(validatedTopics) 
+        ? validatedTopics.map(topic => `filter:topic:${topic}`)
+        : [];
       console.log("🔵 Mapped filter topics:", JSON.stringify(filterTopics));
       
-      // Verify the mapped array is valid
+      // Verify the mapped array is valid (extra safety check)
       if (!Array.isArray(filterTopics)) {
         console.error("🚨 filterTopics mapping failed, creating empty array");
         filterTopics = [];
       }
+      
+      // FIXED: Ensure every topic is a string (defensive programming)
+      filterTopics = filterTopics.filter(topic => typeof topic === 'string');
       
       console.log("🔵 Final filtered topics count:", filterTopics.length);
       
@@ -1589,26 +1595,30 @@ export default function MarketingCollabs() {
                                           // DIRECT STATE MANAGEMENT APPROACH
                                           // This is a completely different approach to checkbox handling
                                           
-                                          // 1. Get current topics from our local state
-                                          const currentTopics = [...selectedTopics];
-                                          console.log(`🚀 Current topics in state:`, currentTopics);
+                                          // FIXED: Improved topic tracking logic
+                                          // 1. Get current topics (ensure it's a NEW array to avoid reference issues)
+                                          const currentTopics = Array.isArray(selectedTopics) ? [...selectedTopics] : [];
+                                          console.log(`🚀 Current topics in state:`, JSON.stringify(currentTopics));
                                           
                                           // 2. Update our local selectedTopics state based on checkbox state
                                           let newTopics: string[];
                                           if (checked) {
                                             // Add the topic if it's not already there
-                                            newTopics = currentTopics.includes(topic)
+                                            // FIXED: More robust check for inclusion
+                                            const topicExists = currentTopics.includes(topic);
+                                            newTopics = topicExists
                                               ? currentTopics
                                               : [...currentTopics, topic];
-                                            console.log(`🚀 ADDING topic "${topic}"`);
+                                            console.log(`🚀 ADDING topic "${topic}" - already exists: ${topicExists}`);
                                           } else {
                                             // Remove the topic
                                             newTopics = currentTopics.filter(t => t !== topic);
-                                            console.log(`🚀 REMOVING topic "${topic}"`);
+                                            console.log(`🚀 REMOVING topic "${topic}" - new length: ${newTopics.length}`);
                                           }
                                           
-                                          // 3. Update our local state first
-                                          setSelectedTopics(newTopics);
+                                          // 3. Update our local state first - the most important part!
+                                          // FIXED: Force a new array to guarantee proper re-rendering
+                                          setSelectedTopics([...newTopics]);
                                           console.log(`🚀 Updated selectedTopics state to:`, newTopics);
                                           
                                           // 4. Now update the form in both ways
