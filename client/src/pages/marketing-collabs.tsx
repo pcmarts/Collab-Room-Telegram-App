@@ -367,10 +367,42 @@ export default function MarketingCollabs() {
   
   // Use a separate function to set form values after profile data is loaded
   const updateFormWithProfileData = (topics: string[] = []) => {
-    console.log("🏁 Setting form values with topics:", JSON.stringify(topics));
-    form.setValue("topics", topics);
-    // Verify the update
-    console.log("🏁 Updated form topics:", form.getValues().topics);
+    console.log("🔍 DEBUGGING: updateFormWithProfileData called with topics:", JSON.stringify(topics));
+    
+    // Make sure we're working with a valid array (defensive programming)
+    const validTopics = Array.isArray(topics) ? [...topics] : [];
+    
+    // First, update using setValue
+    form.setValue("topics", validTopics, {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    
+    // Then, manually update the form state
+    const formValues = form.getValues();
+    formValues.topics = validTopics;
+    
+    // Force a reset with the updated values to ensure React re-renders
+    form.reset({
+      ...formValues,
+      topics: validTopics
+    }, { 
+      keepValues: true,
+      keepDirty: true,
+      keepTouched: true,
+      keepIsValid: true,
+      keepErrors: false
+    });
+    
+    // Verify the update worked in all cases
+    console.log("🔍 AFTER UPDATE - Form topics via getValues():", form.getValues().topics);
+    console.log("🔍 AFTER UPDATE - Form topics direct access:", form.getValues().topics);
+    
+    // This helps us debug if the form values are correctly updated
+    setTimeout(() => {
+      console.log("🔍 AFTER TIMEOUT - Form topics:", form.getValues().topics);
+    }, 100);
   };
 
   // Load existing preferences when data is fetched
