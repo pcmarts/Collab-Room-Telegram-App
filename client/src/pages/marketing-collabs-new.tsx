@@ -38,7 +38,9 @@ import {
   FUNDING_STAGES, 
   type Collaboration,
   type CollabApplication,
-  type ApplicationData
+  type ApplicationData,
+  type MarketingPreferences,
+  type NotificationPreferences
 } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
@@ -320,22 +322,36 @@ export default function MarketingCollabs() {
 
   // Handle topic checkbox state management
   const handleTopicChange = (topic: string, checked: boolean) => {
+    console.log(`Topic change: ${topic} - ${checked ? 'Checked' : 'Unchecked'}`);
+    
     if (checked) {
       // Add topic to the selected topics
-      setSelectedTopics(prev => [...prev, topic]);
+      setSelectedTopics(prev => {
+        const newTopics = [...prev, topic];
+        console.log(`Selected topics after adding ${topic}:`, newTopics);
+        return newTopics;
+      });
       
       // Also update the form state to keep it in sync
       const currentTopics = form.getValues().topics || [];
       if (!currentTopics.includes(topic)) {
-        form.setValue('topics', [...currentTopics, topic]);
+        const newFormTopics = [...currentTopics, topic];
+        console.log(`Form topics after adding ${topic}:`, newFormTopics);
+        form.setValue('topics', newFormTopics);
       }
     } else {
       // Remove topic from selected topics
-      setSelectedTopics(prev => prev.filter(t => t !== topic));
+      setSelectedTopics(prev => {
+        const newTopics = prev.filter(t => t !== topic);
+        console.log(`Selected topics after removing ${topic}:`, newTopics);
+        return newTopics;
+      });
       
       // Also update the form state to keep it in sync
       const currentTopics = form.getValues().topics || [];
-      form.setValue('topics', currentTopics.filter(t => t !== topic));
+      const newFormTopics = currentTopics.filter(t => t !== topic);
+      console.log(`Form topics after removing ${topic}:`, newFormTopics);
+      form.setValue('topics', newFormTopics);
     }
   };
 
@@ -456,14 +472,18 @@ export default function MarketingCollabs() {
       
       // Filter out any existing filter entries from saved data
       const marketingPreferences = profileData?.marketingPreferences || {};
-      const existingTags = marketingPreferences?.filtered_marketing_topics || [];
+      // Use type assertion to ensure TypeScript understands the structure
+      const typedMarketingPrefs = marketingPreferences as MarketingPreferences;
+      const existingTags = typedMarketingPrefs.filtered_marketing_topics || [];
       const nonFilterTags = existingTags.filter((tag: string) => 
         typeof tag === 'string' && !tag.startsWith('filter:')
       );
       
       // For notification frequency
       const notificationPreferences = profileData?.notificationPreferences || {};
-      const notification_frequency = notificationPreferences?.notification_frequency || "Daily";
+      // Use type assertion for notification preferences
+      const typedNotificationPrefs = notificationPreferences as NotificationPreferences;
+      const notification_frequency = typedNotificationPrefs.notification_frequency || "Daily";
       
       // General preferences data
       const generalPrefsData = {

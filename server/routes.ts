@@ -720,11 +720,17 @@ export async function registerRoutes(app: Express) {
     // Log topics specifically for debugging
     const filtered_marketing_topics = req.body.filtered_marketing_topics || [];
     console.log('TOPICS DEBUG: filtered_marketing_topics array length:', filtered_marketing_topics.length);
-    console.log('TOPICS DEBUG: topics in filtered_marketing_topics:', 
-      filtered_marketing_topics
-        .filter(t => t && typeof t === 'string' && t.startsWith('filter:topic:'))
-        .map(t => t.replace('filter:topic:', ''))
-    );
+    console.log('TOPICS DEBUG: filtered_marketing_topics raw data:', JSON.stringify(filtered_marketing_topics));
+    
+    // Log all topic-related entries
+    const topicEntries = filtered_marketing_topics
+      .filter(t => t && typeof t === 'string' && t.startsWith('filter:topic:'));
+    console.log('TOPICS DEBUG: topic entries count:', topicEntries.length);
+    console.log('TOPICS DEBUG: topic entries raw data:', JSON.stringify(topicEntries));
+    
+    // Log extracted topic values
+    const topicValues = topicEntries.map(t => t.replace('filter:topic:', ''));
+    console.log('TOPICS DEBUG: extracted topic values:', JSON.stringify(topicValues));
 
     try {
       const {
