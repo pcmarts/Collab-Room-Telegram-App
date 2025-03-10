@@ -147,10 +147,10 @@ export default function ConferenceCoffees() {
   
   // Load saved preferences when profile data is fetched
   useEffect(() => {
-    if (profileData?.preferences) {
-      const prefs = profileData.preferences;
+    if (profileData?.conferencePreferences) {
+      const prefs = profileData.conferencePreferences;
       
-      // Set form values from saved preferences
+      // Set form values from saved conference preferences
       form.reset({
         matchingEnabled: prefs.coffee_match_enabled ?? false,
         companySectors: prefs.coffee_match_company_sectors ?? [],
@@ -211,12 +211,8 @@ export default function ConferenceCoffees() {
       // Make sure we have a default for notification_frequency as it's required
       const notification_frequency = profileData?.preferences?.notification_frequency || "Daily";
       
-      // Update the coffee match criteria fields and toggle states
-      const updateData = {
-        ...(profileData?.preferences || {}),
-        // Ensure required fields are included
-        notification_frequency,
-        
+      // Prepare conference preferences data
+      const conferencePrefsData = {
         // Form data values
         coffee_match_enabled: data.matchingEnabled,
         coffee_match_company_sectors: data.companySectors ?? [],
@@ -233,10 +229,10 @@ export default function ConferenceCoffees() {
         coffee_match_filter_token_status_enabled: tokenStatusEnabled
       };
       
-      console.log("Sending updateData:", updateData);
+      console.log("Sending conference preferences data:", conferencePrefsData);
 
-      // Save to the preferences API
-      const response = await apiRequest('/api/preferences', 'POST', updateData);
+      // Save to the conference preferences API endpoint
+      const response = await apiRequest('/api/conference-preferences', 'POST', conferencePrefsData);
       
       if (!response.ok) {
         // Try to get more detailed error information
@@ -256,13 +252,13 @@ export default function ConferenceCoffees() {
       // Log the successful response for debugging
       try {
         const responseData = await response.clone().json();
-        console.log("Successfully saved preferences:", responseData);
+        console.log("Successfully saved conference preferences:", responseData);
         console.log("Saved filter toggle states:", {
-          companySectors: responseData.preferences.coffee_match_filter_company_sectors_enabled,
-          companyFollowers: responseData.preferences.coffee_match_filter_company_followers_enabled,
-          userFollowers: responseData.preferences.coffee_match_filter_user_followers_enabled,
-          fundingStages: responseData.preferences.coffee_match_filter_funding_stages_enabled,
-          tokenStatus: responseData.preferences.coffee_match_filter_token_status_enabled
+          companySectors: responseData.conferencePrefs?.coffee_match_filter_company_sectors_enabled,
+          companyFollowers: responseData.conferencePrefs?.coffee_match_filter_company_followers_enabled,
+          userFollowers: responseData.conferencePrefs?.coffee_match_filter_user_followers_enabled,
+          fundingStages: responseData.conferencePrefs?.coffee_match_filter_funding_stages_enabled,
+          tokenStatus: responseData.conferencePrefs?.coffee_match_filter_token_status_enabled
         });
       } catch (e) {
         console.error("Could not parse response data:", e);
