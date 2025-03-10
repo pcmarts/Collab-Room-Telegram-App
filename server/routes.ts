@@ -446,7 +446,8 @@ export async function registerRoutes(app: Express) {
         stack: error instanceof Error ? error.stack : undefined,
         name: error instanceof Error ? error.name : 'Unknown'
       });
-      res.status(500).json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
+      res.status(500);
+      return res.json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -671,7 +672,8 @@ export async function registerRoutes(app: Express) {
       res.json(allEvents);
     } catch (error) {
       console.error('Failed to fetch events:', error);
-      res.status(500).json({ error: 'Failed to fetch events' });
+      res.status(500);
+      return res.json({ error: 'Failed to fetch events' });
     }
   });
   
@@ -1031,7 +1033,8 @@ export async function registerRoutes(app: Express) {
       res.json(updatedCollaboration);
     } catch (error) {
       console.error('Failed to update collaboration status:', error);
-      res.status(500).json({ error: 'Failed to update collaboration status' });
+      res.status(500);
+      return res.json({ error: 'Failed to update collaboration status' });
     }
   });
 
