@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -1020,12 +1021,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       checked={filtersEnabled.companySectors}
                       onCheckedChange={() => toggleFilter('companySectors')}
                     />
-                    <div className="grid gap-0.5">
-                      <div className="text-base font-medium">Company Sectors</div>
-                      <p className="text-sm text-muted-foreground">
-                        Filter by specific company sectors
-                      </p>
-                    </div>
+                    <Label>Filter by Company Sectors</Label>
                   </div>
                   
                   {filtersEnabled.companySectors && (
@@ -1033,40 +1029,16 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       control={form.control}
                       name="required_company_sectors"
                       render={({ field }) => (
-                        <FormItem className="ml-10">
-                          <div className="mb-2 font-medium">Required Company Sectors</div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Select the company sectors that can apply
-                          </p>
-                          <div className="flex justify-between mb-2">
-                            <Button 
-                              type="button" 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => {
-                                // Select all company sectors
-                                const allSectors = Object.values(COMPANY_TAG_CATEGORIES).flat();
-                                field.onChange(allSectors);
-                              }}
-                            >
-                              Select All
-                            </Button>
-                            <Button 
-                              type="button" 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => field.onChange([])}
-                            >
-                              Deselect All
-                            </Button>
-                          </div>
-                          <div className="max-h-[300px] overflow-y-auto p-3 border rounded-md">
+                        <FormItem>
+                          <div className="grid grid-cols-2 gap-2">
                             {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-                              <div key={category} className="mb-6">
-                                <div className="font-medium mb-3 text-base">{category}</div>
-                                <div className="grid grid-cols-1 gap-2">
+                              <div key={category} className="space-y-2 mb-4">
+                                <Label className="font-medium">{category}</Label>
+                                <div className="space-y-2">
                                   {tags.map((tag) => (
-                                    <FormItem key={tag} className="flex items-center space-x-3 space-y-0 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                                    <FormItem
+                                      key={tag}
+                                      className="flex flex-row items-start space-x-3 space-y-0 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
                                       onClick={() => {
                                         const currentValue = field.value || [];
                                         const isChecked = currentValue.includes(tag);
@@ -1075,7 +1047,8 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                                         } else {
                                           field.onChange([...currentValue, tag]);
                                         }
-                                      }}>
+                                      }}
+                                    >
                                       <FormControl>
                                         <Checkbox
                                           className="h-5 w-5"
@@ -1090,7 +1063,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                                           }}
                                         />
                                       </FormControl>
-                                      <div className="font-normal">{tag}</div>
+                                      <FormLabel className="text-sm font-normal">
+                                        {tag}
+                                      </FormLabel>
                                     </FormItem>
                                   ))}
                                 </div>
@@ -1109,12 +1084,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       checked={filtersEnabled.companyFollowers}
                       onCheckedChange={() => toggleFilter('companyFollowers')}
                     />
-                    <div className="grid gap-0.5">
-                      <div className="text-base font-medium">Company Twitter Followers</div>
-                      <p className="text-sm text-muted-foreground">
-                        Set minimum company follower count
-                      </p>
-                    </div>
+                    <Label>Minimum Company Followers</Label>
                   </div>
                   
                   {filtersEnabled.companyFollowers && (
@@ -1122,15 +1092,11 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       control={form.control}
                       name="min_company_followers"
                       render={({ field }) => (
-                        <FormItem className="ml-10">
-                          <div className="mb-2 font-medium">Minimum Company Twitter Followers</div>
+                        <FormItem>
                           <Select 
-                            onValueChange={(value) => {
-                              console.log("Setting min company followers to:", value);
-                              field.onChange(value);
-                            }} 
-                            value={field.value}
+                            onValueChange={field.onChange}
                             defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -1145,9 +1111,6 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormDescription className="text-xs">
-                            Current value: {field.value || "Not set"}
-                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1155,17 +1118,12 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                   )}
                   
                   {/* User Followers Filter */}
-                  <div className="flex items-center space-x-3 mb-4 mt-6">
+                  <div className="flex items-center space-x-3 mb-4">
                     <Switch
                       checked={filtersEnabled.userFollowers}
                       onCheckedChange={() => toggleFilter('userFollowers')}
                     />
-                    <div className="grid gap-0.5">
-                      <div className="text-base font-medium">User Twitter Followers</div>
-                      <p className="text-sm text-muted-foreground">
-                        Set minimum user follower count
-                      </p>
-                    </div>
+                    <Label>Minimum User Followers</Label>
                   </div>
                   
                   {filtersEnabled.userFollowers && (
@@ -1173,15 +1131,11 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       control={form.control}
                       name="min_user_followers"
                       render={({ field }) => (
-                        <FormItem className="ml-10">
-                          <div className="mb-2 font-medium">Minimum User Twitter Followers</div>
+                        <FormItem>
                           <Select 
-                            onValueChange={(value) => {
-                              console.log("Setting min user followers to:", value);
-                              field.onChange(value);
-                            }} 
-                            value={field.value}
+                            onValueChange={field.onChange}
                             defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -1196,9 +1150,6 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormDescription className="text-xs">
-                            Current value: {field.value || "Not set"}
-                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
