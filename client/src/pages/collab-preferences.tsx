@@ -40,17 +40,23 @@ export default function CollabPreferencesForm() {
   const [formData, setFormData] = useState({
     collabs_to_discover: [] as string[],
     notification_frequency: "",
-    excluded_tags: [] as string[],
+    filtered_marketing_topics: [] as string[],
+    twitter_collabs: [] as string[],
   });
 
   // Load existing preferences when data is fetched
   useEffect(() => {
-    if (isEditMode && profileData?.preferences) {
+    if (isEditMode && profileData) {
+      const { preferences, marketingPreferences } = profileData;
+      
       setFormData({
-        collabs_to_discover: profileData.preferences.collabs_to_discover || [],
-        notification_frequency:
-          profileData.preferences.notification_frequency || "",
-        excluded_tags: profileData.preferences.excluded_tags || [],
+        // General notification preferences
+        notification_frequency: preferences?.notification_frequency || "Daily",
+        
+        // Marketing specific preferences
+        collabs_to_discover: marketingPreferences?.collabs_to_discover || [],
+        filtered_marketing_topics: marketingPreferences?.filtered_marketing_topics || [],
+        twitter_collabs: marketingPreferences?.twitter_collabs || [],
       });
     }
   }, [isEditMode, profileData]);
@@ -189,9 +195,9 @@ export default function CollabPreferencesForm() {
   const toggleExcludedTag = (tag: string) => {
     setFormData((prev) => ({
       ...prev,
-      excluded_tags: prev.excluded_tags.includes(tag)
-        ? prev.excluded_tags.filter((t) => t !== tag)
-        : [...prev.excluded_tags, tag],
+      filtered_marketing_topics: prev.filtered_marketing_topics.includes(tag)
+        ? prev.filtered_marketing_topics.filter((t) => t !== tag)
+        : [...prev.filtered_marketing_topics, tag],
     }));
   };
 
@@ -262,7 +268,7 @@ export default function CollabPreferencesForm() {
                         <Button
                           key={tag}
                           type="button"
-                          variant={formData.excluded_tags.includes(tag) ? "outline" : "default"}
+                          variant={formData.filtered_marketing_topics.includes(tag) ? "outline" : "default"}
                           className="justify-start h-auto py-3 px-4"
                           onClick={() => toggleExcludedTag(tag)}
                         >
