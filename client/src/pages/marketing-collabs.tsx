@@ -516,8 +516,13 @@ export default function MarketingCollabs() {
 
   const onSubmit = async (data: MarketingCollabFormData) => {
     setIsSubmitting(true);
-    console.log("Form data:", JSON.stringify(data));
-    console.log("Topics selected:", JSON.stringify(data.topics));
+    console.log("🔴 FORM SUBMISSION STARTED");
+    console.log("🔴 Form data:", JSON.stringify(data));
+    console.log("🔴 Topics selected:", JSON.stringify(data.topics));
+    
+    // Get the raw form state for debugging
+    console.log("🔴 Raw form state:", form.getValues());
+    console.log("🔴 Direct form topics array:", form.getValues("topics"));
 
     try {
       // Make sure data.topics is properly initialized and handle array or undefined
@@ -622,11 +627,17 @@ export default function MarketingCollabs() {
       });
 
       // First update the marketing preferences with the filter settings
+      // Create a copy of the filter data array to make sure it's not modified
+      const filteredTopicsCopy = [...allFilterData];
+      
+      console.log("🔵 Final allFilterData before creating marketingPrefsData:", JSON.stringify(filteredTopicsCopy));
+      console.log("🔵 Number of topic entries:", filteredTopicsCopy.filter(item => item.startsWith('filter:topic:')).length);
+      
       const marketingPrefsData = {
         collabs_to_discover: data.enabledCollabs,
         collabs_to_host: collabsToHost,
         twitter_collabs: data.enabledTwitterCollabs,
-        filtered_marketing_topics: [...nonFilterTags, ...allFilterData],
+        filtered_marketing_topics: [...nonFilterTags, ...filteredTopicsCopy],
         discovery_filter_enabled: data.matchingEnabled,
         discovery_filter_topics_enabled: filtersEnabled.topics,
         discovery_filter_company_sectors_enabled: filtersEnabled.companySectors,
@@ -635,6 +646,8 @@ export default function MarketingCollabs() {
         discovery_filter_funding_stages_enabled: filtersEnabled.fundingStages,
         discovery_filter_token_status_enabled: filtersEnabled.hasToken
       };
+      
+      console.log("🔵 Final marketingPrefsData being sent to server:", JSON.stringify(marketingPrefsData));
       
       const marketingResponse = await apiRequest('/api/marketing-preferences', 'POST', marketingPrefsData);
       
