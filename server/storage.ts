@@ -1,10 +1,11 @@
 import { 
-  users, companies, collaborations, collab_applications, collab_notifications, preferences,
+  users, companies, collaborations, collab_applications, collab_notifications, 
+  preferences, marketing_preferences, conference_preferences,
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication,
   type CollabNotification, type InsertCollabNotification,
-  type Preferences
+  type Preferences, type MarketingPreferences, type ConferencePreferences
 } from "@shared/schema";
 import { z } from 'zod';
 import { db } from "./db";

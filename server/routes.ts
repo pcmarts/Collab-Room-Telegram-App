@@ -2,10 +2,11 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer } from "http";
 import { db } from "./db";
 import { 
-  users, companies, preferences, events, user_events, 
-  collaborations, collab_applications, collab_notifications,
+  users, companies, preferences, marketing_preferences, conference_preferences, 
+  events, user_events, collaborations, collab_applications, collab_notifications,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
-  InsertCollaboration
+  InsertCollaboration,
+  type MarketingPreferences, type ConferencePreferences
 } from "../shared/schema";
 import { eq, and, not, desc } from 'drizzle-orm';
 import { sendApplicationConfirmation } from "./telegram";
@@ -296,19 +297,40 @@ export async function registerRoutes(app: Express) {
 
             console.log('Created company:', company);
 
-            // 3. Create preferences record
+            // 3. Create general preferences record
             const [userPreferences] = await tx
               .insert(preferences)
               .values({
                 user_id: user.id,
-                collabs_to_discover: collabs_to_discover || [],
-                collabs_to_host: collabs_to_host || [],
-                notification_frequency: notification_frequency || 'Daily',
-                excluded_tags: excluded_tags || []
+                notification_frequency: notification_frequency || 'Daily'
               })
               .returning();
 
-            console.log('Created preferences:', userPreferences);
+            console.log('Created general preferences:', userPreferences);
+            
+            // 4. Create marketing preferences
+            const [marketingPrefs] = await tx
+              .insert(marketing_preferences)
+              .values({
+                user_id: user.id,
+                collabs_to_discover: collabs_to_discover || [],
+                collabs_to_host: collabs_to_host || [],
+                filtered_marketing_topics: excluded_tags || [] // Renamed from excluded_tags
+              })
+              .returning();
+              
+            console.log('Created marketing preferences:', marketingPrefs);
+            
+            // 5. Create conference preferences
+            const [conferencePrefs] = await tx
+              .insert(conference_preferences)
+              .values({
+                user_id: user.id,
+                coffee_match_enabled: false
+              })
+              .returning();
+              
+            console.log('Created conference preferences:', conferencePrefs);
 
             return { user, company, preferences: userPreferences };
           }
