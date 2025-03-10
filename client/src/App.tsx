@@ -16,6 +16,9 @@ import MarketingCollabs from "@/pages/marketing-collabs";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
 
+// Admin Pages
+import AdminUsers from "@/pages/admin/users";
+
 import BrowseCollaborations from "@/pages/browse-collaborations";
 import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
 import CreateCollaboration from "@/pages/create-collaboration";
@@ -77,6 +80,9 @@ function Router() {
           {/* Profile Routes */}
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route path="/company-info" component={CompanyInfo} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin/users" component={AdminUsers} />
 
           <Route path="/not-found" component={NotFound} />
           <Route path="*" component={NotFound} />
