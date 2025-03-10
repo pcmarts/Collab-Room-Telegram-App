@@ -915,7 +915,7 @@ export default function MarketingCollabs() {
         backUrl="/dashboard"
       />
       
-      <div className="container max-w-5xl px-4 py-6">
+      <div className="container max-w-5xl px-4 py-6 pb-24">
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
