@@ -197,7 +197,7 @@ export async function registerRoutes(app: Express) {
     try {
       const { 
         // User info
-        first_name, last_name, linkedin_url, email, initData, twitter_url, twitter_followers,
+        first_name, last_name, linkedin_url, email, initData, twitter_url, twitter_followers, timezone,
         // Company info
         company_name, company_website, twitter_handle, job_title, 
         funding_stage, has_token, token_ticker, blockchain_networks, tags,
@@ -256,6 +256,7 @@ export async function registerRoutes(app: Express) {
               email,
               twitter_url,
               twitter_followers,
+              timezone,
               applied_at: new Date()
             })
             .onConflictDoUpdate({
@@ -268,6 +269,7 @@ export async function registerRoutes(app: Express) {
                 email,
                 twitter_url,
                 twitter_followers,
+                timezone,
                 applied_at: new Date()
               }
             })
