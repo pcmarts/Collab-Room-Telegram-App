@@ -823,6 +823,24 @@ export async function registerRoutes(app: Express) {
           item && typeof item === 'string' && item.startsWith('filter:topic:')
         );
         console.log('SAVE OPERATION: Topics being saved:', JSON.stringify(saveTopicEntries.map(t => t.replace('filter:topic:', ''))));
+        console.log('SAVE OPERATION: Full filtered_marketing_topics array:', JSON.stringify(safeFilteredMarketingTopics));
+        
+        // Extra safety check - verify the array is valid before saving
+        if (!Array.isArray(safeFilteredMarketingTopics)) {
+          console.error('CRITICAL ERROR: safeFilteredMarketingTopics is not an array!', safeFilteredMarketingTopics);
+          // Force it to be an array in this case
+          safeFilteredMarketingTopics = [];
+        }
+        
+        // Check if any items in the array are not strings
+        const nonStringItems = safeFilteredMarketingTopics.filter(item => typeof item !== 'string');
+        if (nonStringItems.length > 0) {
+          console.error('CRITICAL ERROR: safeFilteredMarketingTopics contains non-string items!', nonStringItems);
+          // Filter out non-string items
+          safeFilteredMarketingTopics = safeFilteredMarketingTopics.filter(item => typeof item === 'string');
+        }
+        
+        console.log('FINAL SAVE OPERATION: filtered_marketing_topics array after safety checks:', JSON.stringify(safeFilteredMarketingTopics));
         
         // Handle Marketing Preferences
         const marketingPrefsData = {
