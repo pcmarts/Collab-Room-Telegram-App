@@ -716,6 +716,15 @@ export async function registerRoutes(app: Express) {
     console.log('============ DEBUG: Marketing Preferences Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
+    
+    // Log topics specifically for debugging
+    const filtered_marketing_topics = req.body.filtered_marketing_topics || [];
+    console.log('TOPICS DEBUG: filtered_marketing_topics array length:', filtered_marketing_topics.length);
+    console.log('TOPICS DEBUG: topics in filtered_marketing_topics:', 
+      filtered_marketing_topics
+        .filter(t => t && typeof t === 'string' && t.startsWith('filter:topic:'))
+        .map(t => t.replace('filter:topic:', ''))
+    );
 
     try {
       const {

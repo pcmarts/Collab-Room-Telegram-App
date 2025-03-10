@@ -551,7 +551,11 @@ export default function MarketingCollabs() {
       // Get the final topics to save from the form, using direct access to form values
       // for the most accurate representation of the current state
       const formValues = form.getValues();
-      const finalTopics = Array.isArray(formValues.topics) ? formValues.topics : [];
+      
+      // CRITICAL FIX: Make sure topics is always an array, even if empty
+      const finalTopics = Array.isArray(formValues.topics) ? 
+        formValues.topics : 
+        (Array.isArray(data.topics) ? data.topics : []);
       
       console.log("⭐ FINAL TOPICS TO SAVE:", JSON.stringify(finalTopics));
       
