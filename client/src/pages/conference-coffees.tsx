@@ -59,6 +59,7 @@ export default function ConferenceCoffees() {
   const [companyFollowersEnabled, setCompanyFollowersEnabled] = useState(false);
   const [userFollowersEnabled, setUserFollowersEnabled] = useState(false);
   const [fundingStagesEnabled, setFundingStagesEnabled] = useState(false);
+  const [tokenStatusEnabled, setTokenStatusEnabled] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -174,13 +175,14 @@ export default function ConferenceCoffees() {
       setCompanyFollowersEnabled(prefs.coffee_match_filter_company_followers_enabled === true);
       setUserFollowersEnabled(prefs.coffee_match_filter_user_followers_enabled === true);
       setFundingStagesEnabled(prefs.coffee_match_filter_funding_stages_enabled === true);
+      setTokenStatusEnabled(prefs.coffee_match_filter_token_status_enabled === true);
       
       console.log("Loaded filter toggle states:", {
         companySectors: companySectorsEnabled,
         companyFollowers: companyFollowersEnabled,
         userFollowers: userFollowersEnabled,
         fundingStages: fundingStagesEnabled,
-        tokenStatus: prefs.coffee_match_token_status
+        tokenStatus: tokenStatusEnabled
       });
     }
   }, [profileData, form]);
@@ -197,7 +199,7 @@ export default function ConferenceCoffees() {
       companyFollowers: companyFollowersEnabled,
       userFollowers: userFollowersEnabled,
       fundingStages: fundingStagesEnabled,
-      tokenStatus: data.tokenStatus
+      tokenStatus: tokenStatusEnabled
     });
 
     try {
@@ -602,25 +604,38 @@ export default function ConferenceCoffees() {
                       )}
 
                       {/* Token Status Filter */}
-                      <FormField
-                        control={form.control}
-                        name="tokenStatus"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Company has a live token
-                              </FormLabel>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
+                      <div className="flex items-center space-x-3 mb-4">
+                        <Switch
+                          checked={tokenStatusEnabled}
+                          onCheckedChange={() => setTokenStatusEnabled(!tokenStatusEnabled)}
+                        />
+                        <Label>Has Token</Label>
+                      </div>
+
+                      {tokenStatusEnabled && (
+                        <FormField
+                          control={form.control}
+                          name="tokenStatus"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base">
+                                  Projects must have a token
+                                </FormLabel>
+                                <FormDescription>
+                                  Only match with projects that have a token
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      )}
                     </CardContent>
                   </Card>
                 )}
