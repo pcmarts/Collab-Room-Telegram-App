@@ -85,7 +85,7 @@ export default function CreateCollaboration() {
         break;
       case "Twitter Spaces Guest":
         form.setValue('details', {
-          twitter_handle: "",
+          twitter_handle: "https://x.com/",
           space_topic: [],
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
         });
@@ -207,7 +207,7 @@ export default function CreateCollaboration() {
         // Set initial twitterSpacesDetailsSchema when this type is selected
         if (!form.getValues('details') || !('twitter_handle' in form.getValues('details'))) {
           form.setValue('details', {
-            twitter_handle: "",
+            twitter_handle: "https://x.com/",
             space_topic: [],
             host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
           });
@@ -220,9 +220,9 @@ export default function CreateCollaboration() {
               name="details.twitter_handle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Twitter Handle</FormLabel>
+                  <FormLabel>Twitter URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="@yourhandle" {...field} />
+                    <Input placeholder="https://x.com/yourhandle" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

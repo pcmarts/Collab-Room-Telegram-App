@@ -147,7 +147,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
         break;
       case "Twitter Spaces Guest":
         form.setValue('details', {
-          twitter_handle: "",
+          twitter_handle: "https://x.com/",
           space_topic: [],
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
         });
@@ -188,7 +188,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
       case "Co-Marketing on Twitter":
         form.setValue('details', {
           collaboration_types: [], // Multiple types can be selected
-          host_twitter_handle: "",
+          host_twitter_handle: "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
         });
         break;
@@ -474,9 +474,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
               name="details.twitter_handle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Twitter Handle</FormLabel>
+                  <FormLabel>Twitter URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="@yourhandle" {...field} />
+                    <Input placeholder="https://x.com/yourhandle" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -664,9 +664,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
               name="details.host_twitter_handle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Host Twitter Handle</FormLabel>
+                  <FormLabel>Host Twitter URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="@yourhandle" {...field} />
+                    <Input placeholder="https://x.com/yourhandle" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -861,9 +861,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       name="details.host_twitter_handle"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Host Twitter Handle</FormLabel>
+                          <FormLabel>Host Twitter URL</FormLabel>
                           <FormControl>
-                            <Input placeholder="@yourhandle" {...field} />
+                            <Input placeholder="https://x.com/yourhandle" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
