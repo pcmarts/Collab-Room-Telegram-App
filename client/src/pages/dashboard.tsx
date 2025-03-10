@@ -61,7 +61,7 @@ export default function Dashboard() {
         // Include marketing preferences
         collabs_to_discover: profile?.marketingPreferences?.collabs_to_discover || [],
         collabs_to_host: profile?.marketingPreferences?.collabs_to_host || [],
-        excluded_tags: profile?.marketingPreferences?.filtered_marketing_topics || [],
+        filtered_marketing_topics: profile?.marketingPreferences?.filtered_marketing_topics || [],
         twitter_collabs: profile?.marketingPreferences?.twitter_collabs || [],
         
         // Include conference preferences
@@ -115,7 +115,7 @@ export default function Dashboard() {
         // Include marketing preferences
         collabs_to_discover: profile?.marketingPreferences?.collabs_to_discover || [],
         collabs_to_host: profile?.marketingPreferences?.collabs_to_host || [],
-        excluded_tags: profile?.marketingPreferences?.filtered_marketing_topics || [],
+        filtered_marketing_topics: profile?.marketingPreferences?.filtered_marketing_topics || [],
         twitter_collabs: profile?.marketingPreferences?.twitter_collabs || [],
         
         // Include conference preferences
