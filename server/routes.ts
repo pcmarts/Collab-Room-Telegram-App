@@ -715,10 +715,20 @@ export async function registerRoutes(app: Express) {
   app.post("/api/marketing-preferences", async (req, res) => {
     console.log('============ DEBUG: Marketing Preferences Endpoint ============');
     console.log('Headers:', req.headers);
-    console.log('Body:', req.body);
+    console.log('Raw Body:', req.body);
+    
+    // Validate arrays
+    const collabs_to_discover = Array.isArray(req.body.collabs_to_discover) ? req.body.collabs_to_discover : [];
+    const collabs_to_host = Array.isArray(req.body.collabs_to_host) ? req.body.collabs_to_host : [];
+    const twitter_collabs = Array.isArray(req.body.twitter_collabs) ? req.body.twitter_collabs : [];
+    const filtered_marketing_topics = Array.isArray(req.body.filtered_marketing_topics) ? req.body.filtered_marketing_topics : [];
+    
+    console.log('DEBUG ARRAYS: collabs_to_discover:', JSON.stringify(collabs_to_discover));
+    console.log('DEBUG ARRAYS: collabs_to_host:', JSON.stringify(collabs_to_host));
+    console.log('DEBUG ARRAYS: twitter_collabs:', JSON.stringify(twitter_collabs));
+    console.log('DEBUG ARRAYS: filtered_marketing_topics:', JSON.stringify(filtered_marketing_topics));
     
     // Log topics specifically for debugging
-    const filtered_marketing_topics = req.body.filtered_marketing_topics || [];
     console.log('TOPICS DEBUG: filtered_marketing_topics array length:', filtered_marketing_topics.length);
     console.log('TOPICS DEBUG: filtered_marketing_topics raw data:', JSON.stringify(filtered_marketing_topics));
     

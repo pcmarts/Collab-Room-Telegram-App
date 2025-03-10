@@ -362,11 +362,27 @@ export class DatabaseStorage implements IStorage {
     // Check if preferences exist for this user
     const existingPrefs = await this.getUserMarketingPreferences(userId);
     
+    // Ensure all array fields are properly initialized and validated
+    const safePrefs = {
+      ...prefs,
+      collabs_to_discover: Array.isArray(prefs.collabs_to_discover) ? prefs.collabs_to_discover : [],
+      collabs_to_host: Array.isArray(prefs.collabs_to_host) ? prefs.collabs_to_host : [],
+      twitter_collabs: Array.isArray(prefs.twitter_collabs) ? prefs.twitter_collabs : [],
+      filtered_marketing_topics: Array.isArray(prefs.filtered_marketing_topics) ? prefs.filtered_marketing_topics : []
+    };
+    
+    console.log("STORAGE: Saving marketing preferences with arrays:", {
+      collabs_to_discover: safePrefs.collabs_to_discover,
+      collabs_to_host: safePrefs.collabs_to_host,
+      twitter_collabs: safePrefs.twitter_collabs,
+      filtered_marketing_topics: safePrefs.filtered_marketing_topics
+    });
+    
     if (existingPrefs) {
       // Update existing preferences
       const [updatedPrefs] = await db
         .update(marketing_preferences)
-        .set(prefs)
+        .set(safePrefs)
         .where(eq(marketing_preferences.id, existingPrefs.id))
         .returning();
       return updatedPrefs;
@@ -376,10 +392,10 @@ export class DatabaseStorage implements IStorage {
         .insert(marketing_preferences)
         .values({
           user_id: userId,
-          collabs_to_discover: prefs.collabs_to_discover || [],
-          collabs_to_host: prefs.collabs_to_host || [],
-          twitter_collabs: prefs.twitter_collabs || [],
-          filtered_marketing_topics: prefs.filtered_marketing_topics || [], // Renamed from excluded_tags
+          collabs_to_discover: safePrefs.collabs_to_discover,
+          collabs_to_host: safePrefs.collabs_to_host,
+          twitter_collabs: safePrefs.twitter_collabs,
+          filtered_marketing_topics: safePrefs.filtered_marketing_topics,
           discovery_filter_enabled: prefs.discovery_filter_enabled || false,
           discovery_filter_topics_enabled: prefs.discovery_filter_topics_enabled || false,
           discovery_filter_company_followers_enabled: prefs.discovery_filter_company_followers_enabled || false,
@@ -406,11 +422,25 @@ export class DatabaseStorage implements IStorage {
     // Check if preferences exist for this user
     const existingPrefs = await this.getUserConferencePreferences(userId);
     
+    // Ensure all array fields are properly initialized and validated
+    const safePrefs = {
+      ...prefs,
+      coffee_match_company_sectors: Array.isArray(prefs.coffee_match_company_sectors) ? prefs.coffee_match_company_sectors : [],
+      coffee_match_funding_stages: Array.isArray(prefs.coffee_match_funding_stages) ? prefs.coffee_match_funding_stages : [],
+      filtered_conference_sectors: Array.isArray(prefs.filtered_conference_sectors) ? prefs.filtered_conference_sectors : []
+    };
+    
+    console.log("STORAGE: Saving conference preferences with arrays:", {
+      coffee_match_company_sectors: safePrefs.coffee_match_company_sectors,
+      coffee_match_funding_stages: safePrefs.coffee_match_funding_stages,
+      filtered_conference_sectors: safePrefs.filtered_conference_sectors
+    });
+    
     if (existingPrefs) {
       // Update existing preferences
       const [updatedPrefs] = await db
         .update(conference_preferences)
-        .set(prefs)
+        .set(safePrefs)
         .where(eq(conference_preferences.id, existingPrefs.id))
         .returning();
       return updatedPrefs;
@@ -421,11 +451,12 @@ export class DatabaseStorage implements IStorage {
         .values({
           user_id: userId,
           coffee_match_enabled: prefs.coffee_match_enabled || false,
-          coffee_match_company_sectors: prefs.coffee_match_company_sectors || [],
+          coffee_match_company_sectors: safePrefs.coffee_match_company_sectors,
           coffee_match_company_followers: prefs.coffee_match_company_followers || null,
           coffee_match_user_followers: prefs.coffee_match_user_followers || null,
-          coffee_match_funding_stages: prefs.coffee_match_funding_stages || [],
+          coffee_match_funding_stages: safePrefs.coffee_match_funding_stages,
           coffee_match_token_status: prefs.coffee_match_token_status || false,
+          filtered_conference_sectors: safePrefs.filtered_conference_sectors, 
           coffee_match_filter_company_sectors_enabled: prefs.coffee_match_filter_company_sectors_enabled || false,
           coffee_match_filter_company_followers_enabled: prefs.coffee_match_filter_company_followers_enabled || false,
           coffee_match_filter_user_followers_enabled: prefs.coffee_match_filter_user_followers_enabled || false,
