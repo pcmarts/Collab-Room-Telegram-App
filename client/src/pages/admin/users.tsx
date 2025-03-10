@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -21,20 +21,29 @@ interface User {
 export default function AdminUsers() {
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Define interface for profile data
+  interface ProfileData {
+    user: {
+      id: string;
+      name?: string;
+      is_admin: boolean;
+    };
+  }
+
   // Check if current user is admin
-  const { data: currentUserData, isLoading: checkingAdmin } = useQuery({
+  const { data: currentUserData, isLoading: checkingAdmin } = useQuery<ProfileData>({
     queryKey: ['/api/profile']
   });
 
   // Effect to handle admin status update
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentUserData?.user?.is_admin) {
       setIsAdmin(true);
     }
   }, [currentUserData]);
 
   // Fetch all users
-  const { data: users, isLoading } = useQuery({
+  const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
     enabled: isAdmin
   });
