@@ -157,28 +157,7 @@ export default function Dashboard() {
 
 
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="bg-primary/5">
-            <CardContent className="p-4">
-              <div className="flex flex-col items-center">
-                <Users className="h-5 w-5 mb-1.5 text-primary" />
-                <span className="text-xl font-bold">0</span>
-                <span className="text-xs text-muted-foreground">Matches</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-primary/5">
-            <CardContent className="p-4">
-              <div className="flex flex-col items-center">
-                <Star className="h-5 w-5 mb-1.5 text-primary" />
-                <span className="text-xl font-bold">0</span>
-                <span className="text-xs text-muted-foreground">Opportunities</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stats Overview section removed as requested */}
 
         {/* Profile Actions */}
         <div className="grid grid-cols-2 gap-3">
