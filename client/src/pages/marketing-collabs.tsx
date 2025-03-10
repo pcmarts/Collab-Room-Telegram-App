@@ -455,13 +455,7 @@ export default function MarketingCollabs() {
               filterHasToken = value === 'true';
               break;
             case 'section_enabled':
-              // Set the filter section toggle state if found
-              if (value === 'topics') initialFilterSections.topics = true;
-              if (value === 'companySectors') initialFilterSections.companySectors = true;
-              if (value === 'companyFollowers') initialFilterSections.companyFollowers = true;
-              if (value === 'userFollowers') initialFilterSections.userFollowers = true;
-              if (value === 'fundingStages') initialFilterSections.fundingStages = true;
-              if (value === 'hasToken') initialFilterSections.hasToken = true;
+              // We now use the dedicated toggle fields instead
               break;
           }
         }
@@ -469,7 +463,6 @@ export default function MarketingCollabs() {
       
       // Debug log the extracted topics and filter states
       console.log("Extracted topics:", filterTopics);
-      console.log("Topics filter section state:", initialFilterSections.topics);
       
       console.log("Loaded filter settings:", {
         filterMatchingEnabled,
@@ -494,7 +487,6 @@ export default function MarketingCollabs() {
         userFollowers: filterUserFollowers
       });
       
-      // Don't apply initialFilterSections as we already set the toggle states above
       // Filter section toggle states are now loaded directly from dedicated fields
     }
   }, [profileData, form]);
