@@ -781,9 +781,13 @@ export async function registerRoutes(app: Express) {
         // Log specific details about filtered marketing topics for debugging
         console.log('MARKETING PREFERENCES DEBUG: Received filtered_marketing_topics:', JSON.stringify(filtered_marketing_topics));
         
+        // Ensure filtered_marketing_topics is an array
+        const safeFilteredTopics = Array.isArray(filtered_marketing_topics) ? filtered_marketing_topics : [];
+        console.log(`MARKETING PREFERENCES DEBUG: Safe filtered_marketing_topics (${safeFilteredTopics.length} items):`, JSON.stringify(safeFilteredTopics));
+        
         // Count topic-related entries in filtered_marketing_topics
-        const topicEntries = (filtered_marketing_topics || []).filter(item => 
-          item.startsWith('filter:topic:')
+        const topicEntries = safeFilteredTopics.filter(item => 
+          item && typeof item === 'string' && item.startsWith('filter:topic:')
         );
         console.log(`MARKETING PREFERENCES DEBUG: Found ${topicEntries.length} topic entries:`, JSON.stringify(topicEntries));
         
@@ -791,12 +795,24 @@ export async function registerRoutes(app: Express) {
         const topicValues = topicEntries.map(item => item.replace('filter:topic:', ''));
         console.log('MARKETING PREFERENCES DEBUG: Extracted topic values:', JSON.stringify(topicValues));
         
+        // Make sure all arrays are properly handled with sensible defaults
+        const safeCollabsToDiscover = Array.isArray(collabs_to_discover) ? collabs_to_discover : [];
+        const safeCollabsToHost = Array.isArray(collabs_to_host) ? collabs_to_host : [];
+        const safeFilteredMarketingTopics = Array.isArray(filtered_marketing_topics) ? filtered_marketing_topics : [];
+        const safeTwitterCollabs = Array.isArray(twitter_collabs) ? twitter_collabs : [];
+        
+        // Debug the specific topics that are being saved
+        const saveTopicEntries = safeFilteredMarketingTopics.filter(item => 
+          item && typeof item === 'string' && item.startsWith('filter:topic:')
+        );
+        console.log('SAVE OPERATION: Topics being saved:', JSON.stringify(saveTopicEntries.map(t => t.replace('filter:topic:', ''))));
+        
         // Handle Marketing Preferences
         const marketingPrefsData = {
-          collabs_to_discover: collabs_to_discover || [],
-          collabs_to_host: collabs_to_host || [],
-          filtered_marketing_topics: filtered_marketing_topics || [],
-          twitter_collabs: twitter_collabs || [],
+          collabs_to_discover: safeCollabsToDiscover,
+          collabs_to_host: safeCollabsToHost,
+          filtered_marketing_topics: safeFilteredMarketingTopics,
+          twitter_collabs: safeTwitterCollabs,
           // Include all filter toggles with proper defaults if not provided
           discovery_filter_enabled: discovery_filter_enabled === undefined ? false : discovery_filter_enabled,
           discovery_filter_topics_enabled: discovery_filter_topics_enabled === undefined ? false : discovery_filter_topics_enabled,

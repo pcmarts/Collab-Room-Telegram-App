@@ -401,7 +401,7 @@ export default function MarketingCollabs() {
       });
       
       // Debug - check if filtered_marketing_topics exists and contains topics
-      console.log("Raw filtered_marketing_topics:", marketingPrefs.filtered_marketing_topics);
+      console.log("Raw filtered_marketing_topics:", JSON.stringify(marketingPrefs.filtered_marketing_topics));
 
       // Extract filter settings from filtered_marketing_topics
       const excludedTags = marketingPrefs.filtered_marketing_topics || [];
@@ -414,6 +414,10 @@ export default function MarketingCollabs() {
       let filterCompanyFollowers = TWITTER_FOLLOWER_COUNTS[0] as typeof TWITTER_FOLLOWER_COUNTS[number];
       let filterUserFollowers = TWITTER_FOLLOWER_COUNTS[0] as typeof TWITTER_FOLLOWER_COUNTS[number];
       let filterHasToken = false;
+      
+      // Directly check for topic tags
+      const topicTags = excludedTags.filter(tag => tag.startsWith('filter:topic:'));
+      console.log("Topic tags found:", JSON.stringify(topicTags));
       
       // Initialize filter section toggle states
       const initialFilterSections = {
@@ -1101,17 +1105,24 @@ export default function MarketingCollabs() {
                                       >
                                         <FormControl>
                                           <Checkbox
-                                            checked={field.value?.includes(topic)}
+                                            checked={Array.isArray(field.value) && field.value.includes(topic)}
                                             onCheckedChange={(checked) => {
-                                              const currentTopics = field.value || [];
+                                              // Ensure we always have an array, even if field.value is undefined
+                                              const currentTopics = Array.isArray(field.value) ? [...field.value] : [];
+                                              console.log(`Topic ${topic} changed to ${checked ? 'checked' : 'unchecked'}`);
+                                              
                                               if (checked) {
-                                                field.onChange([...currentTopics, topic]);
+                                                // Add topic to array if not already present
+                                                if (!currentTopics.includes(topic)) {
+                                                  const newTopics = [...currentTopics, topic];
+                                                  console.log('New topics array:', newTopics);
+                                                  field.onChange(newTopics);
+                                                }
                                               } else {
-                                                field.onChange(
-                                                  currentTopics.filter(
-                                                    (value) => value !== topic
-                                                  )
-                                                );
+                                                // Remove topic from array
+                                                const newTopics = currentTopics.filter(value => value !== topic);
+                                                console.log('New topics array after removal:', newTopics);
+                                                field.onChange(newTopics);
                                               }
                                             }}
                                           />
