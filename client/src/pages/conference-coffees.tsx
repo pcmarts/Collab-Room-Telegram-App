@@ -622,9 +622,6 @@ export default function ConferenceCoffees() {
                                 <FormLabel className="text-base">
                                   Projects must have a token
                                 </FormLabel>
-                                <FormDescription>
-                                  Only match with projects that have a token
-                                </FormDescription>
                               </div>
                               <FormControl>
                                 <Switch
