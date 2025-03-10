@@ -36,6 +36,7 @@ export default function ProfileOverview() {
     email: "",
     twitter_url: "",
     twitter_followers: "",
+    timezone: "",
   });
 
   // Update form data when profile is loaded

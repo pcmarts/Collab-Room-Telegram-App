@@ -17,11 +17,12 @@ async function main() {
   const db = drizzle(client, { schema });
   
   try {
-    // Update the users table to add is_admin column
+    // Update the users table to add is_admin column and timezone column
     console.log('Updating the users table...');
     await client.unsafe(`
       ALTER TABLE users
-      ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
+      ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS timezone TEXT;
     `);
     
     // Update the preferences table
