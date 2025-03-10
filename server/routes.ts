@@ -779,17 +779,17 @@ export async function registerRoutes(app: Express) {
         let result;
         
         // Log specific details about filtered marketing topics for debugging
-        console.log('Received filtered_marketing_topics:', filtered_marketing_topics);
+        console.log('MARKETING PREFERENCES DEBUG: Received filtered_marketing_topics:', JSON.stringify(filtered_marketing_topics));
         
         // Count topic-related entries in filtered_marketing_topics
         const topicEntries = (filtered_marketing_topics || []).filter(item => 
           item.startsWith('filter:topic:')
         );
-        console.log(`Found ${topicEntries.length} topic entries:`, topicEntries);
+        console.log(`MARKETING PREFERENCES DEBUG: Found ${topicEntries.length} topic entries:`, JSON.stringify(topicEntries));
         
         // Extract just the topic values for easier debugging
         const topicValues = topicEntries.map(item => item.replace('filter:topic:', ''));
-        console.log('Extracted topic values:', topicValues);
+        console.log('MARKETING PREFERENCES DEBUG: Extracted topic values:', JSON.stringify(topicValues));
         
         // Handle Marketing Preferences
         const marketingPrefsData = {

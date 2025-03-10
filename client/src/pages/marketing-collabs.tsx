@@ -437,6 +437,7 @@ export default function MarketingCollabs() {
               break;
             case 'topic':
               filterTopics.push(value);
+              console.log(`Found topic tag: ${tag}, extracted value: ${value}`);
               break;
             case 'sector':
               filterCompanySectors.push(value);
@@ -471,6 +472,10 @@ export default function MarketingCollabs() {
           }
         }
       });
+      
+      // Debug log the extracted topics and filter states
+      console.log("Extracted topics:", filterTopics);
+      console.log("Topics filter section state:", initialFilterSections.topics);
       
       console.log("Loaded filter settings:", {
         filterMatchingEnabled,
@@ -522,29 +527,38 @@ export default function MarketingCollabs() {
 
   const onSubmit = async (data: MarketingCollabFormData) => {
     setIsSubmitting(true);
-    console.log("Form data:", data);
-    console.log("Topics selected:", data.topics);
+    console.log("Form data:", JSON.stringify(data));
+    console.log("Topics selected:", JSON.stringify(data.topics));
 
     try {
       // Make sure data.topics is properly initialized and handle array or undefined
       const selectedTopics = Array.isArray(data.topics) ? data.topics : [];
-      console.log("Selected topics (validated):", selectedTopics);
-      console.log("Topics from form data:", data.topics);
-      console.log("Form values:", form.getValues());
+      console.log("Selected topics (validated):", JSON.stringify(selectedTopics));
+      console.log("Topics from form data:", JSON.stringify(data.topics));
+      console.log("Form values:", JSON.stringify(form.getValues()));
       
       // Add extra debug output for the checkbox values
       if (data.topics === undefined || (Array.isArray(data.topics) && data.topics.length === 0)) {
         console.warn("⚠️ No topics were selected in the form!");
       }
       
+      // Explicitly check each checkbox in the COLLAB_TOPICS array to see what's checked
+      console.log("Explicitly checking each topic checkbox:");
+      const checkboxValues = {};
+      COLLAB_TOPICS.forEach(topic => {
+        const isChecked = selectedTopics.includes(topic);
+        checkboxValues[topic] = isChecked;
+      });
+      console.log("Individual topic checkbox states:", JSON.stringify(checkboxValues));
+      
       // Convert filter settings to strings that can be stored in excluded_tags
       // Use a prefix to separate these from actual excluded tags
       const filterTopics = selectedTopics.map(topic => `filter:topic:${topic}`);
-      console.log("Mapped filter topics:", filterTopics);
+      console.log("Mapped filter topics:", JSON.stringify(filterTopics));
       const filterSectors = data.companySectors?.map(sector => `filter:sector:${sector}`) || [];
       const filterFundingStages = data.fundingStages?.map(stage => `filter:stage:${stage}`) || [];
       
-      console.log("Filter topics after mapping:", filterTopics);
+      console.log("Filter topics after mapping:", JSON.stringify(filterTopics));
       
       // Store all filter metadata with prefixes in an array
       // Also save the filter section toggle states
