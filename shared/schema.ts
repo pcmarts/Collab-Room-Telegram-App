@@ -61,35 +61,6 @@ export const TWITTER_FOLLOWER_COUNTS = [
   "500K+"
 ] as const;
 
-export const TIMEZONES = [
-  "UTC-12:00",
-  "UTC-11:00",
-  "UTC-10:00",
-  "UTC-09:00",
-  "UTC-08:00", // PST
-  "UTC-07:00", // MST
-  "UTC-06:00", // CST
-  "UTC-05:00", // EST
-  "UTC-04:00",
-  "UTC-03:00",
-  "UTC-02:00",
-  "UTC-01:00",
-  "UTC+00:00", // GMT
-  "UTC+01:00", // CET
-  "UTC+02:00", // EET
-  "UTC+03:00",
-  "UTC+04:00",
-  "UTC+05:00",
-  "UTC+05:30", // IST
-  "UTC+06:00",
-  "UTC+07:00",
-  "UTC+08:00", // CST
-  "UTC+09:00", // JST
-  "UTC+10:00",
-  "UTC+11:00",
-  "UTC+12:00"
-] as const;
-
 export const TWITTER_COLLAB_TYPES = [
   "Thread Collab",
   "Joint Campaign",
@@ -209,7 +180,6 @@ export const users = pgTable('users', {
   referral_code: text('referral_code'),
   twitter_url: text('twitter_url'),
   twitter_followers: text('twitter_followers'),
-  timezone: text('timezone'),
   is_approved: boolean('is_approved').default(false),
   is_admin: boolean('is_admin').default(false),
   applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
@@ -388,7 +358,6 @@ export const applicationSchema = z.object({
   referral_code: z.string().optional(),
   twitter_url: z.string().url("Please enter a valid Twitter URL").optional().nullable(),
   twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
-  timezone: z.enum(TIMEZONES).optional(),
 
   // Company Information
   company_name: z.string().min(2, "Company name is required"),
