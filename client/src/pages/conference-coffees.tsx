@@ -202,9 +202,15 @@ export default function ConferenceCoffees() {
       const profileResponse = await apiRequest('/api/profile', 'GET');
       const profileData = await profileResponse.json();
       
+      // Make sure we have a default for notification_frequency as it's required
+      const notification_frequency = profileData.preferences.notification_frequency || "Daily";
+      
       // Update the coffee match criteria fields and toggle states
       const updateData = {
         ...profileData.preferences,
+        // Ensure required fields are included
+        notification_frequency,
+        
         // Form data values
         coffee_match_enabled: data.matchingEnabled,
         coffee_match_company_sectors: data.companySectors,

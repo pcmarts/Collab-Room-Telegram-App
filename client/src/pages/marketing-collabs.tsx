@@ -562,9 +562,15 @@ export default function MarketingCollabs() {
       const existingTags = profileData?.preferences?.excluded_tags || [];
       const nonFilterTags = existingTags.filter(tag => !tag.startsWith('filter:'));
       
+      // Make sure we have a default for notification_frequency as it's required
+      const notification_frequency = profileData?.preferences?.notification_frequency || "Daily";
+      
       // Save both the form data and the filter toggle states
       const updateData = {
         ...profileData?.preferences,
+        // Ensure required fields are included
+        notification_frequency,
+        
         // Form data values
         collabs_to_host: collabsToHost,
         collabs_to_discover: data.enabledCollabs,
