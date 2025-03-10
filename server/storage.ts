@@ -36,9 +36,17 @@ export interface IStorage {
   markNotificationAsRead(id: string): Promise<CollabNotification | undefined>;
   markNotificationAsSent(id: string): Promise<CollabNotification | undefined>;
   
-  // User preferences
+  // General user preferences
   getUserPreferences(userId: string): Promise<Preferences | undefined>;
   updateUserPreferences(userId: string, preferences: Partial<Preferences>): Promise<Preferences | undefined>;
+  
+  // Marketing preferences
+  getUserMarketingPreferences(userId: string): Promise<MarketingPreferences | undefined>;
+  updateUserMarketingPreferences(userId: string, preferences: Partial<MarketingPreferences>): Promise<MarketingPreferences | undefined>;
+  
+  // Conference preferences
+  getUserConferencePreferences(userId: string): Promise<ConferencePreferences | undefined>;
+  updateUserConferencePreferences(userId: string, preferences: Partial<ConferencePreferences>): Promise<ConferencePreferences | undefined>;
 }
 
 export interface CollaborationFilters {
@@ -297,17 +305,95 @@ export class DatabaseStorage implements IStorage {
         .insert(preferences)
         .values({
           user_id: userId,
-          notification_frequency: prefs.notification_frequency || 'Daily',
+          notification_frequency: prefs.notification_frequency || 'Daily'
+        })
+        .returning();
+      return newPrefs;
+    }
+  }
+  
+  // Marketing preferences methods
+  async getUserMarketingPreferences(userId: string): Promise<MarketingPreferences | undefined> {
+    const [userPreferences] = await db
+      .select()
+      .from(marketing_preferences)
+      .where(eq(marketing_preferences.user_id, userId));
+    return userPreferences;
+  }
+  
+  async updateUserMarketingPreferences(userId: string, prefs: Partial<MarketingPreferences>): Promise<MarketingPreferences | undefined> {
+    // Check if preferences exist for this user
+    const existingPrefs = await this.getUserMarketingPreferences(userId);
+    
+    if (existingPrefs) {
+      // Update existing preferences
+      const [updatedPrefs] = await db
+        .update(marketing_preferences)
+        .set(prefs)
+        .where(eq(marketing_preferences.id, existingPrefs.id))
+        .returning();
+      return updatedPrefs;
+    } else {
+      // Create new preferences
+      const [newPrefs] = await db
+        .insert(marketing_preferences)
+        .values({
+          user_id: userId,
           collabs_to_discover: prefs.collabs_to_discover || [],
           collabs_to_host: prefs.collabs_to_host || [],
-          excluded_tags: prefs.excluded_tags || [],
-          // Coffee match preferences
+          twitter_collabs: prefs.twitter_collabs || [],
+          filtered_marketing_topics: prefs.filtered_marketing_topics || [], // Renamed from excluded_tags
+          discovery_filter_enabled: prefs.discovery_filter_enabled || false,
+          discovery_filter_topics_enabled: prefs.discovery_filter_topics_enabled || false,
+          discovery_filter_company_followers_enabled: prefs.discovery_filter_company_followers_enabled || false,
+          discovery_filter_user_followers_enabled: prefs.discovery_filter_user_followers_enabled || false,
+          discovery_filter_funding_stages_enabled: prefs.discovery_filter_funding_stages_enabled || false,
+          discovery_filter_token_status_enabled: prefs.discovery_filter_token_status_enabled || false,
+          discovery_filter_company_sectors_enabled: prefs.discovery_filter_company_sectors_enabled || false
+        })
+        .returning();
+      return newPrefs;
+    }
+  }
+  
+  // Conference preferences methods
+  async getUserConferencePreferences(userId: string): Promise<ConferencePreferences | undefined> {
+    const [userPreferences] = await db
+      .select()
+      .from(conference_preferences)
+      .where(eq(conference_preferences.user_id, userId));
+    return userPreferences;
+  }
+  
+  async updateUserConferencePreferences(userId: string, prefs: Partial<ConferencePreferences>): Promise<ConferencePreferences | undefined> {
+    // Check if preferences exist for this user
+    const existingPrefs = await this.getUserConferencePreferences(userId);
+    
+    if (existingPrefs) {
+      // Update existing preferences
+      const [updatedPrefs] = await db
+        .update(conference_preferences)
+        .set(prefs)
+        .where(eq(conference_preferences.id, existingPrefs.id))
+        .returning();
+      return updatedPrefs;
+    } else {
+      // Create new preferences
+      const [newPrefs] = await db
+        .insert(conference_preferences)
+        .values({
+          user_id: userId,
           coffee_match_enabled: prefs.coffee_match_enabled || false,
           coffee_match_company_sectors: prefs.coffee_match_company_sectors || [],
           coffee_match_company_followers: prefs.coffee_match_company_followers || null,
           coffee_match_user_followers: prefs.coffee_match_user_followers || null,
           coffee_match_funding_stages: prefs.coffee_match_funding_stages || [],
-          coffee_match_token_status: prefs.coffee_match_token_status || false
+          coffee_match_token_status: prefs.coffee_match_token_status || false,
+          coffee_match_filter_company_sectors_enabled: prefs.coffee_match_filter_company_sectors_enabled || false,
+          coffee_match_filter_company_followers_enabled: prefs.coffee_match_filter_company_followers_enabled || false,
+          coffee_match_filter_user_followers_enabled: prefs.coffee_match_filter_user_followers_enabled || false,
+          coffee_match_filter_funding_stages_enabled: prefs.coffee_match_filter_funding_stages_enabled || false,
+          coffee_match_filter_token_status_enabled: prefs.coffee_match_filter_token_status_enabled || false
         })
         .returning();
       return newPrefs;

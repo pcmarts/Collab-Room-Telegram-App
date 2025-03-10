@@ -224,16 +224,39 @@ export const user_events = pgTable('user_events', {
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
-// Collaboration preferences
+// General user preferences
 export const preferences = pgTable('preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
   user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  // General preferences
+  // General preferences only
+  notification_frequency: text('notification_frequency').notNull(),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
+// Marketing collaboration preferences
+export const marketing_preferences = pgTable('marketing_preferences', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  // Marketing specific preferences
   collabs_to_discover: text('collabs_to_discover').array(),
   collabs_to_host: text('collabs_to_host').array(),
   twitter_collabs: text('twitter_collabs').array(),
-  notification_frequency: text('notification_frequency').notNull(),
-  excluded_tags: text('excluded_tags').array(),
+  filtered_marketing_topics: text('filtered_marketing_topics').array(), // Renamed from excluded_tags
+  // Discovery feed filter toggle states
+  discovery_filter_enabled: boolean('discovery_filter_enabled').default(false),
+  discovery_filter_topics_enabled: boolean('discovery_filter_topics_enabled').default(false),
+  discovery_filter_company_followers_enabled: boolean('discovery_filter_company_followers_enabled').default(false),
+  discovery_filter_user_followers_enabled: boolean('discovery_filter_user_followers_enabled').default(false),
+  discovery_filter_funding_stages_enabled: boolean('discovery_filter_funding_stages_enabled').default(false),
+  discovery_filter_token_status_enabled: boolean('discovery_filter_token_status_enabled').default(false),
+  discovery_filter_company_sectors_enabled: boolean('discovery_filter_company_sectors_enabled').default(false),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
+// Conference coffee preferences
+export const conference_preferences = pgTable('conference_preferences', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   // Coffee match preferences
   coffee_match_enabled: boolean('coffee_match_enabled').default(false),
   coffee_match_company_sectors: text('coffee_match_company_sectors').array(),
@@ -247,14 +270,6 @@ export const preferences = pgTable('preferences', {
   coffee_match_filter_user_followers_enabled: boolean('coffee_match_filter_user_followers_enabled').default(false),
   coffee_match_filter_funding_stages_enabled: boolean('coffee_match_filter_funding_stages_enabled').default(false),
   coffee_match_filter_token_status_enabled: boolean('coffee_match_filter_token_status_enabled').default(false),
-  // Discovery feed filter toggle states
-  discovery_filter_enabled: boolean('discovery_filter_enabled').default(false),
-  discovery_filter_topics_enabled: boolean('discovery_filter_topics_enabled').default(false),
-  discovery_filter_company_followers_enabled: boolean('discovery_filter_company_followers_enabled').default(false),
-  discovery_filter_user_followers_enabled: boolean('discovery_filter_user_followers_enabled').default(false),
-  discovery_filter_funding_stages_enabled: boolean('discovery_filter_funding_stages_enabled').default(false),
-  discovery_filter_token_status_enabled: boolean('discovery_filter_token_status_enabled').default(false),
-  discovery_filter_company_sectors_enabled: boolean('discovery_filter_company_sectors_enabled').default(false),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
@@ -321,6 +336,8 @@ export const collab_notifications = pgTable('collab_notifications', {
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
 export const insertPreferencesSchema = createInsertSchema(preferences);
+export const insertMarketingPreferencesSchema = createInsertSchema(marketing_preferences);
+export const insertConferencePreferencesSchema = createInsertSchema(conference_preferences);
 export const insertEventSchema = createInsertSchema(events);
 export const insertUserEventSchema = createInsertSchema(user_events);
 export const insertCollaborationSchema = createInsertSchema(collaborations);
@@ -331,6 +348,8 @@ export const insertCollabNotificationSchema = createInsertSchema(collab_notifica
 export type User = typeof users.$inferSelect;
 export type Company = typeof companies.$inferSelect;
 export type Preferences = typeof preferences.$inferSelect;
+export type MarketingPreferences = typeof marketing_preferences.$inferSelect;
+export type ConferencePreferences = typeof conference_preferences.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type UserEvent = typeof user_events.$inferSelect;
 export type Collaboration = typeof collaborations.$inferSelect;
@@ -340,6 +359,8 @@ export type CollabNotification = typeof collab_notifications.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type InsertPreferences = z.infer<typeof insertPreferencesSchema>;
+export type InsertMarketingPreferences = z.infer<typeof insertMarketingPreferencesSchema>;
+export type InsertConferencePreferences = z.infer<typeof insertConferencePreferencesSchema>;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
 export type InsertCollaboration = z.infer<typeof insertCollaborationSchema>;
