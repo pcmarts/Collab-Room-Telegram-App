@@ -492,8 +492,8 @@ export default function MarketingCollabs() {
         userFollowers: filterUserFollowers
       });
       
-      // Apply the loaded filter section toggle states
-      setFiltersEnabled(initialFilterSections);
+      // Don't apply initialFilterSections as we already set the toggle states above
+      // Filter section toggle states are now loaded directly from dedicated fields
     }
   }, [profileData, form]);
 
@@ -599,13 +599,31 @@ export default function MarketingCollabs() {
       
       const marketingResponse = await apiRequest('/api/marketing-preferences', 'POST', marketingPrefsData);
       
+      if (!marketingResponse.ok) {
+        throw new Error('Failed to update marketing preferences');
+      }
+      
+      // Log marketing preferences response
+      try {
+        const marketingData = await marketingResponse.clone().json();
+        console.log("Marketing preferences response:", marketingData);
+        
+        // Specifically check if topics are saved
+        if (marketingData.marketingPrefs?.filtered_marketing_topics) {
+          console.log("Saved topics:", marketingData.marketingPrefs.filtered_marketing_topics.filter(t => t.startsWith('filter:topic:')).map(t => t.replace('filter:topic:', '')));
+        }
+      } catch (e) {
+        console.error("Could not parse marketing response:", e);
+      }
+      
       // Then update general preferences with notification frequency
       const response = await apiRequest('/api/preferences', 'POST', generalPrefsData);
 
       if (!response.ok) {
-        throw new Error('Failed to update collaborations');
+        throw new Error('Failed to update general preferences');
       }
 
+      // Invalidate profile data to refresh the UI with new settings
       await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
 
       toast({
