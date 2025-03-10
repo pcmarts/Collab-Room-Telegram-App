@@ -1055,24 +1055,27 @@ export default function MarketingCollabs() {
                   </CardHeader>
                   
                   <CardContent className="space-y-6">
-                    {/* Topic Filter */}
-                    <div>
-                      <div className="flex justify-between items-center mb-4">
+                    {/* Only show filters when matching is enabled */}
+                    {form.watch("matchingEnabled") ? (
+                      <>
+                        {/* Topic Filter */}
                         <div>
-                          <h3 className="text-base font-medium">Filter by Topics</h3>
-                          <p className="text-sm text-gray-500">
-                            Only show collaborations in these topics
-                          </p>
-                        </div>
-                        <Switch 
-                          checked={filtersEnabled.topics}
-                          onCheckedChange={() => toggleFilter('topics')}
-                        />
-                      </div>
-                      
-                      {filtersEnabled.topics && (
-                        <div className="border rounded-lg p-4 bg-gray-50">
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          <div className="flex justify-between items-center mb-4">
+                            <div>
+                              <h3 className="text-base font-medium">Filter by Topics</h3>
+                              <p className="text-sm text-gray-500">
+                                Only show collaborations in these topics
+                              </p>
+                            </div>
+                            <Switch 
+                              checked={filtersEnabled.topics}
+                              onCheckedChange={() => toggleFilter('topics')}
+                            />
+                          </div>
+                          
+                          {filtersEnabled.topics && (
+                            <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {COLLAB_TOPICS.map((topic) => (
                               <div key={topic} className="flex items-center space-x-2">
                                 <Checkbox
@@ -1343,6 +1346,10 @@ export default function MarketingCollabs() {
                         </div>
                       )}
                     </div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Enable matching to access filtering options</p>
+                    )}
                   </CardContent>
                 </Card>
                 
