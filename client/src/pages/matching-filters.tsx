@@ -41,8 +41,8 @@ export default function MatchingFilters() {
     try {
       setIsSubmitting(true);
 
-      // Update conference preferences
-      const response = await apiRequest('POST', '/api/conference-preferences', {
+      // Make sure we have the API endpoint for conference preferences
+      const response = await apiRequest('/api/conference-preferences', 'POST', {
         filtered_conference_sectors: formData.filtered_conference_sectors
       });
 

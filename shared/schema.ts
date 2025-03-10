@@ -264,6 +264,8 @@ export const conference_preferences = pgTable('conference_preferences', {
   coffee_match_user_followers: text('coffee_match_user_followers'),
   coffee_match_funding_stages: text('coffee_match_funding_stages').array(),
   coffee_match_token_status: boolean('coffee_match_token_status').default(false),
+  // Conference sector filtering
+  filtered_conference_sectors: text('filtered_conference_sectors').array(),
   // Toggle states for coffee match filters
   coffee_match_filter_company_sectors_enabled: boolean('coffee_match_filter_company_sectors_enabled').default(false),
   coffee_match_filter_company_followers_enabled: boolean('coffee_match_filter_company_followers_enabled').default(false),
