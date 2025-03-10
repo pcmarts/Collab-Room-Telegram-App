@@ -939,13 +939,13 @@ export default function MarketingCollabs() {
                       name="enabledCollabs"
                       render={() => (
                         <FormItem>
-                          <div className="mb-4">
-                            <FormLabel className="text-base">Types of collaborations to discover</FormLabel>
-                            <FormDescription>
+                          <div className="mb-6">
+                            <FormLabel className="text-lg font-semibold">Types of collaborations to discover</FormLabel>
+                            <FormDescription className="text-sm mt-1">
                               Select which types of collaborations you'd like to find
                             </FormDescription>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 gap-4">
                             {COLLAB_TYPES.map((collabType) => (
                               <FormField
                                 key={collabType}
@@ -1064,7 +1064,7 @@ export default function MarketingCollabs() {
                                   render={({ field }) => (
                                     <FormItem
                                       key={collabType}
-                                      className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
+                                      className="flex flex-row items-center space-x-4 space-y-0 p-4 border rounded-md hover:bg-accent/10 mb-4 shadow-sm"
                                     >
                                       <FormControl>
                                         <Checkbox
@@ -1158,14 +1158,14 @@ export default function MarketingCollabs() {
                             <div className="border rounded-lg p-4 bg-background">
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {COLLAB_TOPICS.map((topic) => (
-                              <div key={topic} className="flex items-center p-2 border rounded-md hover:bg-accent/10 mb-2">
+                              <div key={topic} className="flex items-center p-4 border rounded-md hover:bg-accent/10 mb-3 shadow-sm">
                                 <Checkbox
                                   id={`topic-${topic}`}
                                   checked={selectedTopics.includes(topic)}
                                   onCheckedChange={(checked) => handleTopicChange(topic, !!checked)}
                                   data-topic-checkbox 
                                   data-topic-value={topic}
-                                  className="h-5 w-5 mr-3"
+                                  className="h-5 w-5 mr-4"
                                 />
                                 <label
                                   htmlFor={`topic-${topic}`}
@@ -1211,7 +1211,7 @@ export default function MarketingCollabs() {
                                         {tags.map((tag) => (
                                           <FormItem
                                             key={tag}
-                                            className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
+                                            className="flex flex-row items-center space-x-4 space-y-0 p-4 border rounded-md hover:bg-accent/10 mb-3 shadow-sm"
                                           >
                                             <FormControl>
                                               <Checkbox
@@ -1328,7 +1328,7 @@ export default function MarketingCollabs() {
                                   {FUNDING_STAGES.map((stage) => (
                                     <FormItem
                                       key={stage}
-                                      className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
+                                      className="flex flex-row items-center space-x-4 space-y-0 p-4 border rounded-md hover:bg-accent/10 mb-3 shadow-sm"
                                     >
                                       <FormControl>
                                         <Checkbox
