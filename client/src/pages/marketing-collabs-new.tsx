@@ -325,20 +325,22 @@ export default function MarketingCollabs() {
     console.log(`Topic change: ${topic} - ${checked ? 'Checked' : 'Unchecked'}`);
     
     if (checked) {
-      // Add topic to the selected topics
+      // Add topic to the selected topics - ensure we have a clean array without duplicates
       setSelectedTopics(prev => {
-        const newTopics = [...prev, topic];
+        // First remove any existing instance to avoid duplicates
+        const cleanPrev = prev.filter(t => t !== topic);
+        const newTopics = [...cleanPrev, topic];
         console.log(`Selected topics after adding ${topic}:`, newTopics);
         return newTopics;
       });
       
       // Also update the form state to keep it in sync
       const currentTopics = form.getValues().topics || [];
-      if (!currentTopics.includes(topic)) {
-        const newFormTopics = [...currentTopics, topic];
-        console.log(`Form topics after adding ${topic}:`, newFormTopics);
-        form.setValue('topics', newFormTopics);
-      }
+      // First remove any existing instance to avoid duplicates
+      const cleanCurrentTopics = currentTopics.filter(t => t !== topic);
+      const newFormTopics = [...cleanCurrentTopics, topic];
+      console.log(`Form topics after adding ${topic}:`, newFormTopics);
+      form.setValue('topics', newFormTopics, { shouldDirty: true, shouldValidate: true, shouldTouch: true });
     } else {
       // Remove topic from selected topics
       setSelectedTopics(prev => {
@@ -351,7 +353,7 @@ export default function MarketingCollabs() {
       const currentTopics = form.getValues().topics || [];
       const newFormTopics = currentTopics.filter(t => t !== topic);
       console.log(`Form topics after removing ${topic}:`, newFormTopics);
-      form.setValue('topics', newFormTopics);
+      form.setValue('topics', newFormTopics, { shouldDirty: true, shouldValidate: true, shouldTouch: true });
     }
   };
 
