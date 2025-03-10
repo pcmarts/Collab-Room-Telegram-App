@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express) {
         company_name, company_website, twitter_handle, job_title, 
         funding_stage, has_token, token_ticker, blockchain_networks, tags,
         // Preferences
-        collabs_to_discover, collabs_to_host, notification_frequency, excluded_tags
+        collabs_to_discover, collabs_to_host, notification_frequency, filtered_marketing_topics
       } = req.body;
 
       // Parse Telegram data
@@ -319,7 +319,7 @@ export async function registerRoutes(app: Express) {
                 user_id: user.id,
                 collabs_to_discover: collabs_to_discover || [],
                 collabs_to_host: collabs_to_host || [],
-                filtered_marketing_topics: excluded_tags || [] // Renamed from excluded_tags
+                filtered_marketing_topics: filtered_marketing_topics || [] // Marketing topics filter data
               })
               .returning();
               
@@ -519,7 +519,7 @@ export async function registerRoutes(app: Express) {
         // Marketing preferences 
         collabs_to_discover, 
         collabs_to_host, 
-        excluded_tags, // Will be stored as filtered_marketing_topics
+        filtered_marketing_topics, // Previously named excluded_tags
         twitter_collabs,
         
         // Conference preferences
@@ -546,7 +546,7 @@ export async function registerRoutes(app: Express) {
       // Make arrays optional - use empty arrays if not provided
       const collab_discover = Array.isArray(collabs_to_discover) ? collabs_to_discover : [];
       const collab_host = Array.isArray(collabs_to_host) ? collabs_to_host : [];
-      const filtered_topics = Array.isArray(excluded_tags) ? excluded_tags : []; // Renamed from excluded
+      const filtered_topics = Array.isArray(filtered_marketing_topics) ? filtered_marketing_topics : []; // Array of filtered marketing topics
       const company_sectors = Array.isArray(coffee_match_company_sectors) ? coffee_match_company_sectors : [];
       const funding_stages = Array.isArray(coffee_match_funding_stages) ? coffee_match_funding_stages : [];
       const twitter_collab_types = Array.isArray(twitter_collabs) ? twitter_collabs : [];
@@ -1173,7 +1173,7 @@ export async function registerRoutes(app: Express) {
           collabs_to_discover: [],
           collabs_to_host: [],
           twitter_collabs: [],
-          excluded_tags: []
+          filtered_marketing_topics: []
         },
         marketingPreferences,
         conferencePreferences
