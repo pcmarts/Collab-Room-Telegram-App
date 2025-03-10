@@ -508,14 +508,17 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', req.body);
 
     try {
-      const { 
+      const {
+        // General preferences
+        notification_frequency,
+        
+        // Marketing preferences 
         collabs_to_discover, 
         collabs_to_host, 
-        notification_frequency, 
-        excluded_tags,
-        // Twitter specific collabs
+        excluded_tags, // Will be stored as filtered_marketing_topics
         twitter_collabs,
-        // Coffee match preferences
+        
+        // Conference preferences
         coffee_match_enabled,
         coffee_match_company_sectors,
         coffee_match_company_followers,
@@ -539,9 +542,10 @@ export async function registerRoutes(app: Express) {
       // Make arrays optional - use empty arrays if not provided
       const collab_discover = Array.isArray(collabs_to_discover) ? collabs_to_discover : [];
       const collab_host = Array.isArray(collabs_to_host) ? collabs_to_host : [];
-      const excluded = Array.isArray(excluded_tags) ? excluded_tags : [];
+      const filtered_topics = Array.isArray(excluded_tags) ? excluded_tags : []; // Renamed from excluded
       const company_sectors = Array.isArray(coffee_match_company_sectors) ? coffee_match_company_sectors : [];
       const funding_stages = Array.isArray(coffee_match_funding_stages) ? coffee_match_funding_stages : [];
+      const twitter_collab_types = Array.isArray(twitter_collabs) ? twitter_collabs : [];
 
       // Get Telegram data from header
       const initData = req.headers['x-telegram-init-data'] as string;
@@ -579,67 +583,109 @@ export async function registerRoutes(app: Express) {
         const existingPreferences = await db.select()
           .from(preferences)
           .where(eq(preferences.user_id, user.id));
+          
+        const existingMarketingPrefs = await db.select()
+          .from(marketing_preferences)
+          .where(eq(marketing_preferences.user_id, user.id));
+          
+        const existingConferencePrefs = await db.select()
+          .from(conference_preferences)
+          .where(eq(conference_preferences.user_id, user.id));
 
-        let userPreferences;
-
-        const preferencesData = {
-          collabs_to_discover: collab_discover,
-          collabs_to_host: collab_host,
-          notification_frequency,
-          excluded_tags: excluded,
-          // Twitter specific preferences
-          twitter_collabs: Array.isArray(twitter_collabs) ? twitter_collabs : [],
-          // Include coffee match preferences
-          coffee_match_enabled: coffee_match_enabled === true,
-          coffee_match_company_sectors: company_sectors,
-          coffee_match_company_followers: coffee_match_company_followers || null,
-          coffee_match_user_followers: coffee_match_user_followers || null,
-          coffee_match_funding_stages: funding_stages,
-          coffee_match_token_status: coffee_match_token_status === true,
-          // Coffee match filter toggle states
-          coffee_match_filter_company_sectors_enabled: coffee_match_filter_company_sectors_enabled === true,
-          coffee_match_filter_company_followers_enabled: coffee_match_filter_company_followers_enabled === true,
-          coffee_match_filter_user_followers_enabled: coffee_match_filter_user_followers_enabled === true,
-          coffee_match_filter_funding_stages_enabled: coffee_match_filter_funding_stages_enabled === true,
-          coffee_match_filter_token_status_enabled: coffee_match_filter_token_status_enabled === true
-        };
-
-        if (existingPreferences.length > 0) {
-          // Update existing preferences
-          console.log('Updating existing preferences:', existingPreferences[0]);
-          [userPreferences] = await db.update(preferences)
-            .set(preferencesData)
-            .where(eq(preferences.user_id, user.id))
-            .returning();
-
-          console.log('Updated preferences:', userPreferences);
-          return res.json({
-            success: true,
-            preferences: userPreferences,
-            message: 'Preferences updated successfully'
-          });
-        }
-
-        // Create new preferences
-        console.log('Creating new preferences with data:', {
-          user_id: user.id,
-          ...preferencesData
+        // Start transaction to ensure all preferences are updated together
+        const result = await db.transaction(async (tx) => {
+          let generalPrefs;
+          let marketingPrefs;
+          let conferencePrefs;
+          
+          // 1. Handle General Preferences
+          if (existingPreferences.length > 0) {
+            // Update existing preferences
+            [generalPrefs] = await tx.update(preferences)
+              .set({ notification_frequency })
+              .where(eq(preferences.user_id, user.id))
+              .returning();
+            console.log('Updated general preferences:', generalPrefs);
+          } else {
+            // Create new preferences
+            [generalPrefs] = await tx.insert(preferences)
+              .values({
+                user_id: user.id,
+                notification_frequency
+              })
+              .returning();
+            console.log('Created general preferences:', generalPrefs);
+          }
+          
+          // 2. Handle Marketing Preferences
+          const marketingPrefsData = {
+            collabs_to_discover: collab_discover,
+            collabs_to_host: collab_host,
+            filtered_marketing_topics: filtered_topics, // Renamed from excluded_tags
+            twitter_collabs: twitter_collab_types
+          };
+          
+          if (existingMarketingPrefs.length > 0) {
+            // Update existing marketing preferences
+            [marketingPrefs] = await tx.update(marketing_preferences)
+              .set(marketingPrefsData)
+              .where(eq(marketing_preferences.user_id, user.id))
+              .returning();
+            console.log('Updated marketing preferences:', marketingPrefs);
+          } else {
+            // Create new marketing preferences
+            [marketingPrefs] = await tx.insert(marketing_preferences)
+              .values({
+                user_id: user.id,
+                ...marketingPrefsData
+              })
+              .returning();
+            console.log('Created marketing preferences:', marketingPrefs);
+          }
+          
+          // 3. Handle Conference Preferences
+          const conferencePrefsData = {
+            coffee_match_enabled: coffee_match_enabled === true,
+            coffee_match_company_sectors: company_sectors,
+            coffee_match_company_followers: coffee_match_company_followers || null,
+            coffee_match_user_followers: coffee_match_user_followers || null,
+            coffee_match_funding_stages: funding_stages,
+            coffee_match_token_status: coffee_match_token_status === true,
+            // Coffee match filter toggle states
+            coffee_match_filter_company_sectors_enabled: coffee_match_filter_company_sectors_enabled === true,
+            coffee_match_filter_company_followers_enabled: coffee_match_filter_company_followers_enabled === true,
+            coffee_match_filter_user_followers_enabled: coffee_match_filter_user_followers_enabled === true,
+            coffee_match_filter_funding_stages_enabled: coffee_match_filter_funding_stages_enabled === true,
+            coffee_match_filter_token_status_enabled: coffee_match_filter_token_status_enabled === true
+          };
+          
+          if (existingConferencePrefs.length > 0) {
+            // Update existing conference preferences
+            [conferencePrefs] = await tx.update(conference_preferences)
+              .set(conferencePrefsData)
+              .where(eq(conference_preferences.user_id, user.id))
+              .returning();
+            console.log('Updated conference preferences:', conferencePrefs);
+          } else {
+            // Create new conference preferences
+            [conferencePrefs] = await tx.insert(conference_preferences)
+              .values({
+                user_id: user.id,
+                ...conferencePrefsData
+              })
+              .returning();
+            console.log('Created conference preferences:', conferencePrefs);
+          }
+          
+          return { generalPrefs, marketingPrefs, conferencePrefs };
         });
-
-        [userPreferences] = await db
-          .insert(preferences)
-          .values({
-            user_id: user.id,
-            ...preferencesData
-          })
-          .returning();
-
-        console.log('Created preferences:', userPreferences);
-
+        
         return res.json({
           success: true,
-          preferences: userPreferences,
-          message: 'Preferences saved successfully'
+          preferences: result.generalPrefs,
+          marketingPreferences: result.marketingPrefs,
+          conferencePreferences: result.conferencePrefs,
+          message: 'All preferences updated successfully'
         });
 
       } catch (dbError) {
@@ -709,15 +755,27 @@ export async function registerRoutes(app: Express) {
         .from(companies)
         .where(eq(companies.user_id, user.id));
 
-      // Get preferences
+      // Get all preferences
       const [userPreferences] = await db.select()
         .from(preferences)
         .where(eq(preferences.user_id, user.id));
+        
+      // Get marketing preferences
+      const [marketingPreferences] = await db.select()
+        .from(marketing_preferences)
+        .where(eq(marketing_preferences.user_id, user.id));
+        
+      // Get conference preferences
+      const [conferencePreferences] = await db.select()
+        .from(conference_preferences)
+        .where(eq(conference_preferences.user_id, user.id));
 
       return res.json({
         user,
         company,
-        preferences: userPreferences
+        preferences: userPreferences,
+        marketingPreferences,
+        conferencePreferences
       });
 
     } catch (error) {

@@ -7,7 +7,13 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
 import { UserIcon, Users, Building, Star, Bell, Coffee, Calendar, Rocket, Plus } from 'lucide-react';
-import type { User as UserType, Company, Preferences } from '@shared/schema';
+import type { 
+  User as UserType, 
+  Company, 
+  Preferences, 
+  MarketingPreferences, 
+  ConferencePreferences 
+} from '@shared/schema';
 import { NOTIFICATION_FREQUENCIES } from '@shared/schema';
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -16,6 +22,8 @@ interface ProfileData {
   user: UserType;
   company: Company;
   preferences: Preferences;
+  marketingPreferences: MarketingPreferences;
+  conferencePreferences: ConferencePreferences;
 }
 
 export default function Dashboard() {
@@ -38,9 +46,28 @@ export default function Dashboard() {
       
       const newFrequency = enabled ? 'Daily' : 'Never';
       
+      // We need to preserve marketing and conference preferences
       const response = await apiRequest('/api/preferences', 'POST', {
-        ...profile?.preferences,
-        notification_frequency: newFrequency
+        notification_frequency: newFrequency,
+        
+        // Include marketing preferences
+        collabs_to_discover: profile?.marketingPreferences?.collabs_to_discover || [],
+        collabs_to_host: profile?.marketingPreferences?.collabs_to_host || [],
+        excluded_tags: profile?.marketingPreferences?.filtered_marketing_topics || [],
+        twitter_collabs: profile?.marketingPreferences?.twitter_collabs || [],
+        
+        // Include conference preferences
+        coffee_match_enabled: profile?.conferencePreferences?.coffee_match_enabled || false,
+        coffee_match_company_sectors: profile?.conferencePreferences?.coffee_match_company_sectors || [],
+        coffee_match_company_followers: profile?.conferencePreferences?.coffee_match_company_followers || null,
+        coffee_match_user_followers: profile?.conferencePreferences?.coffee_match_user_followers || null,
+        coffee_match_funding_stages: profile?.conferencePreferences?.coffee_match_funding_stages || [],
+        coffee_match_token_status: profile?.conferencePreferences?.coffee_match_token_status || false,
+        coffee_match_filter_company_sectors_enabled: profile?.conferencePreferences?.coffee_match_filter_company_sectors_enabled || false,
+        coffee_match_filter_company_followers_enabled: profile?.conferencePreferences?.coffee_match_filter_company_followers_enabled || false,
+        coffee_match_filter_user_followers_enabled: profile?.conferencePreferences?.coffee_match_filter_user_followers_enabled || false,
+        coffee_match_filter_funding_stages_enabled: profile?.conferencePreferences?.coffee_match_filter_funding_stages_enabled || false,
+        coffee_match_filter_token_status_enabled: profile?.conferencePreferences?.coffee_match_filter_token_status_enabled || false
       });
 
       if (!response.ok) {
@@ -70,9 +97,29 @@ export default function Dashboard() {
   const handleFrequencyChange = async (frequency: string) => {
     try {
       setIsSubmitting(true);
+      
+      // We need to preserve marketing and conference preferences
       const response = await apiRequest('/api/preferences', 'POST', {
-        ...profile?.preferences,
-        notification_frequency: frequency
+        notification_frequency: frequency,
+        
+        // Include marketing preferences
+        collabs_to_discover: profile?.marketingPreferences?.collabs_to_discover || [],
+        collabs_to_host: profile?.marketingPreferences?.collabs_to_host || [],
+        excluded_tags: profile?.marketingPreferences?.filtered_marketing_topics || [],
+        twitter_collabs: profile?.marketingPreferences?.twitter_collabs || [],
+        
+        // Include conference preferences
+        coffee_match_enabled: profile?.conferencePreferences?.coffee_match_enabled || false,
+        coffee_match_company_sectors: profile?.conferencePreferences?.coffee_match_company_sectors || [],
+        coffee_match_company_followers: profile?.conferencePreferences?.coffee_match_company_followers || null,
+        coffee_match_user_followers: profile?.conferencePreferences?.coffee_match_user_followers || null,
+        coffee_match_funding_stages: profile?.conferencePreferences?.coffee_match_funding_stages || [],
+        coffee_match_token_status: profile?.conferencePreferences?.coffee_match_token_status || false,
+        coffee_match_filter_company_sectors_enabled: profile?.conferencePreferences?.coffee_match_filter_company_sectors_enabled || false,
+        coffee_match_filter_company_followers_enabled: profile?.conferencePreferences?.coffee_match_filter_company_followers_enabled || false,
+        coffee_match_filter_user_followers_enabled: profile?.conferencePreferences?.coffee_match_filter_user_followers_enabled || false,
+        coffee_match_filter_funding_stages_enabled: profile?.conferencePreferences?.coffee_match_filter_funding_stages_enabled || false,
+        coffee_match_filter_token_status_enabled: profile?.conferencePreferences?.coffee_match_filter_token_status_enabled || false
       });
 
       if (!response.ok) {

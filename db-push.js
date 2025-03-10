@@ -1,6 +1,6 @@
 // Simple script to push the schema to the database
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { db } from './server/db.js';
+import { Pool } from 'pg';
 import * as schema from './shared/schema.js';
 
 async function main() {
@@ -12,9 +12,8 @@ async function main() {
     process.exit(1);
   }
   
-  // Create the client
-  const client = postgres(connectionString);
-  const db = drizzle(client, { schema });
+  // Create a raw pg pool for SQL queries
+  const pool = new Pool({ connectionString });
   
   try {
     // Update the users table to add is_admin column
