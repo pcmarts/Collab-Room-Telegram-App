@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Switch, Route, Redirect } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
@@ -27,6 +28,7 @@ import MyCollaborations from "@/pages/my-collaborations";
 import Apply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 function Router() {
   return (
@@ -97,11 +99,46 @@ function Router() {
 }
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Prefetch critical data
+    const prefetchData = async () => {
+      try {
+        // Prefetch profile data
+        await queryClient.prefetchQuery({
+          queryKey: ['/api/profile'],
+          queryFn: async () => {
+            const response = await fetch('/api/profile');
+            if (!response.ok) throw new Error('Failed to load profile');
+            return response.json();
+          }
+        });
+        
+        // Allow minimum time for loading screen visibility
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Mark loading as complete
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error prefetching data:', error);
+        // Even if prefetching fails, we should still show the app
+        setIsLoading(false);
+      }
+    };
+
+    prefetchData();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <MobileCheck>
-        <Router />
-      </MobileCheck>
+      {isLoading ? (
+        <LoadingScreen />
+      ) : (
+        <MobileCheck>
+          <Router />
+        </MobileCheck>
+      )}
       <Toaster />
     </QueryClientProvider>
   );
