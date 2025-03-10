@@ -1446,7 +1446,7 @@ export default function MarketingCollabs() {
           <TabsContent value="collaborations" className="mt-6 pb-24">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">My Collaborations</h2>
-              <Button onClick={() => setLocation('/create-collaboration')}>
+              <Button onClick={() => setLocation('/create-collaboration-fixed')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create New
               </Button>
@@ -1466,7 +1466,7 @@ export default function MarketingCollabs() {
                   <p className="text-gray-500 mb-4">
                     You haven't created any collaborations yet. Create your first one to start connecting!
                   </p>
-                  <Button onClick={() => setLocation('/create-collaboration')}>
+                  <Button onClick={() => setLocation('/create-collaboration-fixed')}>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Collaboration
                   </Button>
