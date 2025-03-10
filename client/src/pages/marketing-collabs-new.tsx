@@ -923,7 +923,7 @@ export default function MarketingCollabs() {
           </TabsList>
           
           {/* Preferences Tab */}
-          <TabsContent value="preferences" className="mt-6">
+          <TabsContent value="preferences" className="mt-6 pb-24">
             <Form {...form}>
               <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <Card>
@@ -954,11 +954,12 @@ export default function MarketingCollabs() {
                                 render={({ field }) => (
                                   <FormItem
                                     key={collabType}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                    className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
                                   >
                                     <FormControl>
                                       <Checkbox
                                         checked={field.value?.includes(collabType)}
+                                        className="h-5 w-5"
                                         onCheckedChange={(checked) => {
                                           // Handle special case for Twitter collaborations
                                           if (collabType === "Co-Marketing on Twitter") {
@@ -994,7 +995,40 @@ export default function MarketingCollabs() {
                                         }}
                                       />
                                     </FormControl>
-                                    <FormLabel className="font-normal">
+                                    <FormLabel className="font-normal w-full cursor-pointer" onClick={() => {
+                                      const newChecked = !field.value?.includes(collabType);
+                                      // Handle special case for Twitter collaborations
+                                      if (collabType === "Co-Marketing on Twitter") {
+                                        if (newChecked) {
+                                          // When selecting Twitter collab, add it to enabled collabs
+                                          field.onChange([...field.value, collabType]);
+                                          // If there are no Twitter collab types selected, add defaults
+                                          if (form.getValues().enabledTwitterCollabs.length === 0) {
+                                            // Enable some default Twitter collaboration types
+                                            form.setValue('enabledTwitterCollabs', 
+                                              [...TWITTER_COLLAB_TYPES.slice(0, 2)], 
+                                              { shouldDirty: true, shouldValidate: true }
+                                            );
+                                          }
+                                        } else {
+                                          // When deselecting Twitter collab, remove it from enabled collabs
+                                          field.onChange(field.value?.filter(value => value !== collabType));
+                                          // Clear all Twitter collaboration types
+                                          form.setValue('enabledTwitterCollabs', [], 
+                                            { shouldDirty: true, shouldValidate: true }
+                                          );
+                                        }
+                                      } else {
+                                        // Normal handling for other collaboration types
+                                        return newChecked
+                                          ? field.onChange([...field.value, collabType])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== collabType
+                                              )
+                                            )
+                                      }
+                                    }}>
                                       {collabType}
                                     </FormLabel>
                                   </FormItem>
@@ -1030,11 +1064,12 @@ export default function MarketingCollabs() {
                                   render={({ field }) => (
                                     <FormItem
                                       key={collabType}
-                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                      className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
                                     >
                                       <FormControl>
                                         <Checkbox
                                           checked={field.value?.includes(collabType)}
+                                          className="h-5 w-5"
                                           onCheckedChange={(checked) => {
                                             return checked
                                               ? field.onChange([...field.value, collabType])
@@ -1046,7 +1081,16 @@ export default function MarketingCollabs() {
                                           }}
                                         />
                                       </FormControl>
-                                      <FormLabel className="font-normal">
+                                      <FormLabel className="font-normal w-full cursor-pointer" onClick={() => {
+                                        const newChecked = !field.value?.includes(collabType);
+                                        return newChecked
+                                          ? field.onChange([...field.value, collabType])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== collabType
+                                              )
+                                            )
+                                      }}>
                                         {collabType}
                                       </FormLabel>
                                     </FormItem>
@@ -1114,17 +1158,19 @@ export default function MarketingCollabs() {
                             <div className="border rounded-lg p-4 bg-background">
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {COLLAB_TOPICS.map((topic) => (
-                              <div key={topic} className="flex items-center space-x-2">
+                              <div key={topic} className="flex items-center p-2 border rounded-md hover:bg-accent/10 mb-2">
                                 <Checkbox
                                   id={`topic-${topic}`}
                                   checked={selectedTopics.includes(topic)}
                                   onCheckedChange={(checked) => handleTopicChange(topic, !!checked)}
                                   data-topic-checkbox 
                                   data-topic-value={topic}
+                                  className="h-5 w-5 mr-3"
                                 />
                                 <label
                                   htmlFor={`topic-${topic}`}
-                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 w-full cursor-pointer"
+                                  onClick={() => handleTopicChange(topic, !selectedTopics.includes(topic))}
                                 >
                                   {topic}
                                 </label>
@@ -1165,11 +1211,12 @@ export default function MarketingCollabs() {
                                         {tags.map((tag) => (
                                           <FormItem
                                             key={tag}
-                                            className="flex flex-row items-start space-x-3 space-y-0"
+                                            className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
                                           >
                                             <FormControl>
                                               <Checkbox
                                                 checked={field.value.includes(tag)}
+                                                className="h-5 w-5"
                                                 onCheckedChange={(checked) => {
                                                   return checked
                                                     ? field.onChange([...field.value, tag])
@@ -1181,7 +1228,16 @@ export default function MarketingCollabs() {
                                                 }}
                                               />
                                             </FormControl>
-                                            <FormLabel className="text-sm font-normal">
+                                            <FormLabel className="text-sm font-normal w-full cursor-pointer" onClick={() => {
+                                              const newChecked = !field.value?.includes(tag);
+                                              return newChecked
+                                                ? field.onChange([...field.value, tag])
+                                                : field.onChange(
+                                                    field.value?.filter(
+                                                      (value) => value !== tag
+                                                    )
+                                                  )
+                                            }}>
                                               {tag}
                                             </FormLabel>
                                           </FormItem>
@@ -1272,11 +1328,12 @@ export default function MarketingCollabs() {
                                   {FUNDING_STAGES.map((stage) => (
                                     <FormItem
                                       key={stage}
-                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                      className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
                                     >
                                       <FormControl>
                                         <Checkbox
                                           checked={field.value.includes(stage)}
+                                          className="h-5 w-5"
                                           onCheckedChange={(checked) => {
                                             return checked
                                               ? field.onChange([...field.value, stage])
@@ -1288,7 +1345,16 @@ export default function MarketingCollabs() {
                                           }}
                                         />
                                       </FormControl>
-                                      <FormLabel className="font-normal">
+                                      <FormLabel className="font-normal w-full cursor-pointer" onClick={() => {
+                                        const newChecked = !field.value?.includes(stage);
+                                        return newChecked
+                                          ? field.onChange([...field.value, stage])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== stage
+                                              )
+                                            )
+                                      }}>
                                         {stage}
                                       </FormLabel>
                                     </FormItem>
@@ -1336,12 +1402,12 @@ export default function MarketingCollabs() {
                 </Card>
                 
                 <div className="fixed bottom-0 left-0 right-0 bg-background border-t py-4 px-6 shadow-lg z-10">
-                  <div className="container flex justify-end">
+                  <div className="container">
                     <Button 
                       type="button" 
                       onClick={handleDirectSubmit}
                       disabled={isSubmitting}
-                      className="min-w-[120px]"
+                      className="w-full"
                     >
                       {isSubmitting ? (
                         <>
