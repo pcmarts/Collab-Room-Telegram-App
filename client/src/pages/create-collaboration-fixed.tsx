@@ -60,7 +60,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
   const [showTwitterFields, setShowTwitterFields] = useState(false);
   const [isEditing, setIsEditing] = useState(Boolean(id));
 
-  // Track which filters are enabled
+  // Track which filters are enabled - now will be saved to database 
   const [filtersEnabled, setFiltersEnabled] = useState({
     companySectors: false,
     companyFollowers: false,
@@ -69,12 +69,27 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
     tokenStatus: false
   });
 
-  // Toggle filter visibility
+  // Toggle filter visibility and also update the form values for persistence
   const toggleFilter = (filterName: keyof typeof filtersEnabled) => {
+    const newValue = !filtersEnabled[filterName];
+    
+    // Update the state
     setFiltersEnabled(prev => ({
       ...prev,
-      [filterName]: !prev[filterName]
+      [filterName]: newValue
     }));
+    
+    // Map frontend filter names to database field names
+    const fieldMapping: Record<string, string> = {
+      companySectors: 'filter_company_sectors_enabled',
+      companyFollowers: 'filter_company_followers_enabled',
+      userFollowers: 'filter_user_followers_enabled',
+      fundingStages: 'filter_funding_stages_enabled',
+      tokenStatus: 'filter_token_status_enabled'
+    };
+    
+    // Update the corresponding form field
+    form.setValue(fieldMapping[filterName] as any, newValue);
   };
 
   const form = useForm<CreateCollaboration>({
@@ -87,6 +102,14 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
       specific_date: new Date().toISOString().split('T')[0], // Use ISO string format YYYY-MM-DD
       topics: [], // Initialize empty topics array
       is_free_collab: false, // This will require users to actively check the box
+      
+      // Add the filter toggle state fields with default values
+      filter_company_sectors_enabled: false,
+      filter_company_followers_enabled: false,
+      filter_user_followers_enabled: false,
+      filter_funding_stages_enabled: false,
+      filter_token_status_enabled: false,
+      
       required_company_sectors: [],
       required_funding_stages: [],
       required_token_status: false,
@@ -231,13 +254,13 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
               setSelectedCollabType(collab.collab_type);
               setShowTwitterFields(collab.collab_type === "Co-Marketing on Twitter");
               
-              // Update filter toggles based on data
+              // Update filter toggles based on saved toggle states or fall back to data existence
               setFiltersEnabled({
-                companySectors: Boolean(collab.required_company_sectors?.length),
-                companyFollowers: Boolean(collab.min_company_followers),
-                userFollowers: Boolean(collab.min_user_followers),
-                fundingStages: Boolean(collab.required_funding_stages?.length),
-                tokenStatus: Boolean(collab.required_token_status)
+                companySectors: collab.filter_company_sectors_enabled ?? Boolean(collab.required_company_sectors?.length),
+                companyFollowers: collab.filter_company_followers_enabled ?? Boolean(collab.min_company_followers),
+                userFollowers: collab.filter_user_followers_enabled ?? Boolean(collab.min_user_followers),
+                fundingStages: collab.filter_funding_stages_enabled ?? Boolean(collab.required_funding_stages?.length),
+                tokenStatus: collab.filter_token_status_enabled ?? Boolean(collab.required_token_status)
               });
             }
           } else {
