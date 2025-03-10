@@ -180,6 +180,7 @@ export const users = pgTable('users', {
   referral_code: text('referral_code'),
   twitter_url: text('twitter_url'),
   twitter_followers: text('twitter_followers'),
+  timezone: text('timezone'),
   is_approved: boolean('is_approved').default(false),
   is_admin: boolean('is_admin').default(false),
   applied_at: timestamp('applied_at', { withTimezone: true }).defaultNow(),
@@ -358,6 +359,7 @@ export const applicationSchema = z.object({
   referral_code: z.string().optional(),
   twitter_url: z.string().url("Please enter a valid Twitter URL").optional().nullable(),
   twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
+  timezone: z.string().optional(),
 
   // Company Information
   company_name: z.string().min(2, "Company name is required"),
