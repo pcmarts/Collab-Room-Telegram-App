@@ -1060,15 +1060,25 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                               Deselect All
                             </Button>
                           </div>
-                          <div className="max-h-[300px] overflow-y-auto p-2 border rounded-md">
+                          <div className="max-h-[300px] overflow-y-auto p-3 border rounded-md">
                             {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-                              <div key={category} className="mb-4">
-                                <div className="font-medium mb-2">{category}</div>
-                                <div className="grid grid-cols-2 gap-2">
+                              <div key={category} className="mb-6">
+                                <div className="font-medium mb-3 text-base">{category}</div>
+                                <div className="grid grid-cols-1 gap-2">
                                   {tags.map((tag) => (
-                                    <FormItem key={tag} className="flex items-center space-x-3 space-y-0">
+                                    <FormItem key={tag} className="flex items-center space-x-3 space-y-0 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                                      onClick={() => {
+                                        const currentValue = field.value || [];
+                                        const isChecked = currentValue.includes(tag);
+                                        if (isChecked) {
+                                          field.onChange(currentValue.filter((value) => value !== tag));
+                                        } else {
+                                          field.onChange([...currentValue, tag]);
+                                        }
+                                      }}>
                                       <FormControl>
                                         <Checkbox
+                                          className="h-5 w-5"
                                           checked={field.value?.includes(tag)}
                                           onCheckedChange={(checked) => {
                                             const currentValue = field.value || [];
@@ -1080,7 +1090,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                                           }}
                                         />
                                       </FormControl>
-                                      <div className="font-normal text-sm">{tag}</div>
+                                      <div className="font-normal">{tag}</div>
                                     </FormItem>
                                   ))}
                                 </div>
@@ -1240,11 +1250,21 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                               Deselect All
                             </Button>
                           </div>
-                          <div className="grid grid-cols-2 gap-2 mt-2">
+                          <div className="grid grid-cols-1 gap-2 mt-2">
                             {FUNDING_STAGES.map((stage) => (
-                              <FormItem key={stage} className="flex items-center space-x-3 space-y-0">
+                              <FormItem key={stage} className="flex items-center space-x-3 space-y-0 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                                onClick={() => {
+                                  const currentValue = field.value || [];
+                                  const isChecked = currentValue.includes(stage);
+                                  if (isChecked) {
+                                    field.onChange(currentValue.filter((value) => value !== stage));
+                                  } else {
+                                    field.onChange([...currentValue, stage]);
+                                  }
+                                }}>
                                 <FormControl>
                                   <Checkbox
+                                    className="h-5 w-5"
                                     checked={field.value?.includes(stage)}
                                     onCheckedChange={(checked) => {
                                       const currentValue = field.value || [];
@@ -1285,9 +1305,12 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       control={form.control}
                       name="required_token_status"
                       render={({ field }) => (
-                        <FormItem className="flex items-center space-x-3 space-y-0 ml-10">
+                        <FormItem 
+                          className="flex items-center space-x-3 space-y-0 ml-10 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                          onClick={() => field.onChange(!field.value)}>
                           <FormControl>
                             <Checkbox
+                              className="h-5 w-5"
                               checked={field.value}
                               onCheckedChange={field.onChange}
                             />
