@@ -925,8 +925,7 @@ export default function MarketingCollabs() {
       
       <PageHeader
         title="Marketing Collaborations"
-        subtitle="Manage your marketing collaborations and preferences"
-        backUrl="/"
+               backUrl="/"
       />
       
       <div className="container max-w-5xl px-4 py-6 pb-24">
@@ -954,7 +953,7 @@ export default function MarketingCollabs() {
                       render={() => (
                         <FormItem>
                           <div className="mb-4">
-                            <FormLabel className="text-base">r</FormLabel>
+                            <FormLabel className="text-base"></FormLabel>
                             <FormDescription>
                               
                             </FormDescription>
@@ -1445,10 +1444,12 @@ export default function MarketingCollabs() {
           <TabsContent value="collaborations" className="mt-6 pb-24">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">My Collaborations</h2>
-              <Button onClick={() => setLocation('/create-collaboration-fixed')}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create New
-              </Button>
+              {!isCollabsLoading && collaborations.length > 0 && (
+                <Button onClick={() => setLocation('/create-collaboration-fixed')}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create New
+                </Button>
+              )}
             </div>
             
             {isCollabsLoading ? (
