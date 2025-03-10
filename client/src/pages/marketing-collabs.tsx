@@ -555,14 +555,31 @@ export default function MarketingCollabs() {
       });
       console.log("Individual topic checkbox states:", JSON.stringify(checkboxValues));
       
-      // Convert filter settings to strings that can be stored in excluded_tags
-      // Use a prefix to separate these from actual excluded tags
-      const filterTopics = selectedTopics.map(topic => `filter:topic:${topic}`);
-      console.log("Mapped filter topics:", JSON.stringify(filterTopics));
-      const filterSectors = data.companySectors?.map(sector => `filter:sector:${sector}`) || [];
-      const filterFundingStages = data.fundingStages?.map(stage => `filter:stage:${stage}`) || [];
+      // Get topics directly from the form for consistency
+      const formTopics = form.getValues("topics");
+      const validatedTopics = Array.isArray(formTopics) ? formTopics : [];
       
-      console.log("Filter topics after mapping:", JSON.stringify(filterTopics));
+      console.log("⭐ Topics from form VALUES:", JSON.stringify(validatedTopics));
+      console.log("⭐ Topics from form DATA:", JSON.stringify(data.topics));
+      console.log("⭐ Topics from initial SELECTED TOPICS:", JSON.stringify(selectedTopics));
+      
+      // Final topics array with triple validation to ensure we have data
+      const finalTopics = validatedTopics.length > 0 ? validatedTopics : 
+                          (Array.isArray(data.topics) && data.topics.length > 0) ? data.topics :
+                          selectedTopics;
+      
+      console.log("⭐ FINAL TOPICS TO SAVE:", JSON.stringify(finalTopics));
+      
+      // Convert filter settings to strings that can be stored in filtered_marketing_topics
+      // Use a prefix to separate these from actual excluded tags
+      const filterTopics = finalTopics.map(topic => `filter:topic:${topic}`);
+      console.log("Mapped filter topics:", JSON.stringify(filterTopics));
+      
+      const filterSectors = Array.isArray(data.companySectors) ? 
+        data.companySectors.map(sector => `filter:sector:${sector}`) : [];
+        
+      const filterFundingStages = Array.isArray(data.fundingStages) ?
+        data.fundingStages.map(stage => `filter:stage:${stage}`) : [];
       
       // Store all filter metadata with prefixes in an array
       // Also save the filter section toggle states
@@ -1092,50 +1109,64 @@ export default function MarketingCollabs() {
                           </div>
 
                           {filtersEnabled.topics && (
-                            <FormField
-                              control={form.control}
-                              name="topics"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    {COLLAB_TOPICS.map((topic) => (
-                                      <FormItem
-                                        key={topic}
-                                        className="flex flex-row items-start space-x-3 space-y-0"
+                            <div className="space-y-2">
+                              <p className="text-sm mb-2">Select topics of interest:</p>
+                              <div className="grid grid-cols-2 gap-2">
+                                {COLLAB_TOPICS.map((topic) => {
+                                  // Create a unique id for this topic checkbox
+                                  const checkboxId = `topic-checkbox-${topic.replace(/\s+/g, '-').toLowerCase()}`;
+                                  
+                                  // Get current topics array from form
+                                  const topics = form.watch("topics") || [];
+                                  const isChecked = Array.isArray(topics) && topics.includes(topic);
+                                  
+                                  return (
+                                    <div key={topic} className="flex items-center space-x-2">
+                                      <Checkbox 
+                                        id={checkboxId}
+                                        checked={isChecked}
+                                        onCheckedChange={(checked) => {
+                                          // Get the current value to work with
+                                          const currentTopics = Array.isArray(form.getValues("topics")) 
+                                            ? [...form.getValues("topics")] 
+                                            : [];
+                                          
+                                          console.log(`Topic ${topic} changed to ${checked ? 'checked' : 'unchecked'}`);
+                                          
+                                          let newTopics;
+                                          if (checked) {
+                                            // Add the topic if it's not already in the array
+                                            if (!currentTopics.includes(topic)) {
+                                              newTopics = [...currentTopics, topic];
+                                            } else {
+                                              newTopics = currentTopics;
+                                            }
+                                          } else {
+                                            // Remove the topic
+                                            newTopics = currentTopics.filter(t => t !== topic);
+                                          }
+                                          
+                                          console.log(`Topics after change:`, newTopics);
+                                          
+                                          // Update the form
+                                          form.setValue("topics", newTopics, { 
+                                            shouldValidate: true,
+                                            shouldDirty: true,
+                                            shouldTouch: true
+                                          });
+                                        }}
+                                      />
+                                      <label 
+                                        htmlFor={checkboxId}
+                                        className="text-sm font-normal cursor-pointer"
                                       >
-                                        <FormControl>
-                                          <Checkbox
-                                            checked={Array.isArray(field.value) && field.value.includes(topic)}
-                                            onCheckedChange={(checked) => {
-                                              // Ensure we always have an array, even if field.value is undefined
-                                              const currentTopics = Array.isArray(field.value) ? [...field.value] : [];
-                                              console.log(`Topic ${topic} changed to ${checked ? 'checked' : 'unchecked'}`);
-                                              
-                                              if (checked) {
-                                                // Add topic to array if not already present
-                                                if (!currentTopics.includes(topic)) {
-                                                  const newTopics = [...currentTopics, topic];
-                                                  console.log('New topics array:', newTopics);
-                                                  field.onChange(newTopics);
-                                                }
-                                              } else {
-                                                // Remove topic from array
-                                                const newTopics = currentTopics.filter(value => value !== topic);
-                                                console.log('New topics array after removal:', newTopics);
-                                                field.onChange(newTopics);
-                                              }
-                                            }}
-                                          />
-                                        </FormControl>
-                                        <FormLabel className="text-sm font-normal">
-                                          {topic}
-                                        </FormLabel>
-                                      </FormItem>
-                                    ))}
-                                  </div>
-                                </FormItem>
-                              )}
-                            />
+                                        {topic}
+                                      </label>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           )}
                         </div>
 
