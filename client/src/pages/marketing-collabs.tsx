@@ -111,6 +111,9 @@ export default function MarketingCollabs() {
     hasToken: false
   });
   
+  // Local state to track selected topics (this will help us manage checkbox state directly)
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  
   // Collabs to host toggle state
   const [collabsToHost, setCollabsToHost] = useState<string[]>([]);
   
@@ -520,6 +523,9 @@ export default function MarketingCollabs() {
         filterHasToken
       });
       
+      // Update our local state for selected topics
+      setSelectedTopics(filterTopics);
+      
       // Reset form with loaded values
       form.reset({
         enabledCollabs,
@@ -568,52 +574,31 @@ export default function MarketingCollabs() {
     console.log("🔴 Direct form topics array:", form.getValues("topics"));
 
     try {
-      // Make sure data.topics is properly initialized and handle array or undefined
-      const selectedTopics = Array.isArray(data.topics) ? data.topics : [];
-      console.log("Selected topics (validated):", JSON.stringify(selectedTopics));
-      console.log("Topics from form data:", JSON.stringify(data.topics));
-      console.log("Form values:", JSON.stringify(form.getValues()));
+      // SIMPLIFIED APPROACH: Use our local state to get the selected topics
+      // This is much more reliable than trying to pull from form values
+      console.log("🚀 Using selectedTopics state for submission:", JSON.stringify(selectedTopics));
       
-      // Add extra debug output for the checkbox values
-      if (data.topics === undefined || (Array.isArray(data.topics) && data.topics.length === 0)) {
+      // Force the form values to match our component state (extra safety measure)
+      form.setValue("topics", selectedTopics, { shouldValidate: true });
+      
+      // Keep the final selected topics reference for clarity in logs
+      const checkedTopics = [...selectedTopics];
+      
+      console.log("🚀 Final checked topics for submission:", JSON.stringify(checkedTopics));
+      
+      // Add extra debug output for the checkbox values (just for debugging)
+      if (checkedTopics.length === 0) {
         console.warn("⚠️ No topics were selected in the form!");
       }
       
-      // Explicitly check each checkbox in the COLLAB_TOPICS array to see what's checked
-      console.log("Explicitly checking each topic checkbox:");
+      // Explicitly check each checkbox in the COLLAB_TOPICS array for logging
+      console.log("Explicitly checking each topic checkbox status:");
       const checkboxValues = {};
       COLLAB_TOPICS.forEach(topic => {
-        const isChecked = selectedTopics.includes(topic);
+        const isChecked = checkedTopics.includes(topic);
         checkboxValues[topic] = isChecked;
       });
       console.log("Individual topic checkbox states:", JSON.stringify(checkboxValues));
-      
-      // Get topics directly from the form for consistency
-      const formTopics = form.getValues("topics");
-      const validatedTopics = Array.isArray(formTopics) ? formTopics : [];
-      
-      console.log("⭐ Topics from form VALUES:", JSON.stringify(validatedTopics));
-      console.log("⭐ Topics from form DATA:", JSON.stringify(data.topics));
-      console.log("⭐ Topics from initial SELECTED TOPICS:", JSON.stringify(selectedTopics));
-      
-      // Get the final topics to save from the form, using direct access to form values
-      // for the most accurate representation of the current state
-      const formValues = form.getValues();
-      
-      // IMPROVED APPROACH FOR TOPIC EXTRACTION
-      // This uses multiple sources to ensure we have the correct data
-      
-      // 1. Get topics directly from the form
-      const formTopicsArray = form.getValues().topics || [];
-      
-      // 2. Ensure it's a proper array
-      let checkedTopics = Array.isArray(formTopicsArray) ? [...formTopicsArray] : [];
-      
-      // 3. If we somehow don't have topics in the form values, try from data
-      if (checkedTopics.length === 0 && Array.isArray(data.topics) && data.topics.length > 0) {
-        console.log("ℹ️ Using topics from data object instead of form values");
-        checkedTopics = [...data.topics];
-      }
       
       console.log("🔵 Final topics array for saving:", JSON.stringify(checkedTopics));
       
@@ -1568,65 +1553,49 @@ export default function MarketingCollabs() {
                                         id={`topic-checkbox-${topic.toLowerCase().replace(/\s+/g, '-')}`}
                                         name={`topics.${topic}`}
                                         value={topic}
-                                        checked={Array.isArray(field.value) && field.value.includes(topic)}
+                                        checked={selectedTopics.includes(topic)}
                                         onCheckedChange={(checked) => {
-                                          console.log(`🎯 Topic ${topic} checkbox changed to: ${checked ? "CHECKED" : "unchecked"}`);
+                                          console.log(`🚀 Topic ${topic} checkbox changed to: ${checked ? "CHECKED" : "unchecked"}`);
                                           
-                                          // COMPLETE REWRITE OF CHECKBOX HANDLING
-                                          // This is critical for making the form work
-
-                                          // 1. Get current topics as a fresh copy to avoid reference issues
-                                          const currentTopics = Array.isArray(field.value) 
-                                            ? [...field.value] 
-                                            : [];
-                                            
-                                          console.log(`🎯 Current topics array:`, currentTopics);
+                                          // DIRECT STATE MANAGEMENT APPROACH
+                                          // This is a completely different approach to checkbox handling
                                           
-                                          // 2. Create the new array based on checkbox state
-                                          let newTopics;
+                                          // 1. Get current topics from our local state
+                                          const currentTopics = [...selectedTopics];
+                                          console.log(`🚀 Current topics in state:`, currentTopics);
+                                          
+                                          // 2. Update our local selectedTopics state based on checkbox state
+                                          let newTopics: string[];
                                           if (checked) {
                                             // Add the topic if it's not already there
                                             newTopics = currentTopics.includes(topic)
-                                              ? currentTopics  // No change needed
-                                              : [...currentTopics, topic];  // Add the topic
-                                            console.log(`🎯 ADDING topic "${topic}"`);
+                                              ? currentTopics
+                                              : [...currentTopics, topic];
+                                            console.log(`🚀 ADDING topic "${topic}"`);
                                           } else {
                                             // Remove the topic
                                             newTopics = currentTopics.filter(t => t !== topic);
-                                            console.log(`🎯 REMOVING topic "${topic}"`);
+                                            console.log(`🚀 REMOVING topic "${topic}"`);
                                           }
                                           
-                                          // 3. Log what actually changed
-                                          console.log(`🎯 New topics array after ${checked ? "adding" : "removing"}:`, newTopics);
+                                          // 3. Update our local state first
+                                          setSelectedTopics(newTopics);
+                                          console.log(`🚀 Updated selectedTopics state to:`, newTopics);
                                           
-                                          // 4. Update the form in THREE different ways to ensure it works:
+                                          // 4. Now update the form in both ways
                                           
                                           // 4a. Update via field.onChange
                                           field.onChange(newTopics);
-                                          console.log(`🎯 Updated via field.onChange`);
                                           
-                                          // 4b. Update via form.setValue (this is the most reliable way)
+                                          // 4b. Update via form.setValue
                                           form.setValue('topics', newTopics, {
                                             shouldValidate: true,
                                             shouldDirty: true,
                                             shouldTouch: true,
                                           });
-                                          console.log(`🎯 Updated via form.setValue`);
                                           
-                                          // 4c. Also update our local state for component controlled values
-                                          updateFormWithProfileData(newTopics);
-                                          
-                                          // 5. Verify all updates worked
-                                          const finalTopics = form.getValues().topics;
-                                          console.log(`🎯 FINAL topics value:`, finalTopics);
-                                          
-                                          // 6. Check if the topic is actually in the final array
-                                          if (checked && (!finalTopics || !finalTopics.includes(topic))) {
-                                            console.warn(`⚠️ Topic ${topic} was not added correctly!`);
-                                            // One more attempt to force the update
-                                            const forcedUpdate = [...(finalTopics || []), topic];
-                                            form.setValue('topics', forcedUpdate, { shouldValidate: true });
-                                          }
+                                          // 5. Log final form state for debugging
+                                          console.log(`🚀 Form topics after update:`, form.getValues().topics);
                                         }}
                                       />
                                     </FormControl>
