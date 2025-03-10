@@ -607,8 +607,37 @@ export default function MarketingCollabs() {
       
       // Convert filter settings to strings that can be stored in filtered_marketing_topics
       // Use a prefix to separate these from actual excluded tags
-      const filterTopics = checkedTopics.map(topic => `filter:topic:${topic}`);
-      console.log("Mapped filter topics:", JSON.stringify(filterTopics));
+      
+      // Make absolutely sure our topic array is valid before mapping
+      let validatedTopics = [...checkedTopics]; // Create a new array we can modify
+      
+      if (!Array.isArray(validatedTopics)) {
+        console.warn("⚠️ checkedTopics is not an array, using selectedTopics state instead");
+        // Fallback to selectedTopics component state which should be reliable
+        console.log("⚠️ Using selectedTopics as fallback:", JSON.stringify(selectedTopics));
+        
+        // If selectedTopics is also invalid, create a final empty fallback
+        if (!Array.isArray(selectedTopics)) {
+          console.error("🚨 Neither checkedTopics nor selectedTopics is a valid array!");
+          validatedTopics = [];
+        } else {
+          validatedTopics = [...selectedTopics];
+        }
+      }
+      
+      console.log("🔵 Final validated topics array for mapping:", JSON.stringify(validatedTopics));
+      
+      // Create the formatted topic strings
+      let filterTopics = validatedTopics.map(topic => `filter:topic:${topic}`);
+      console.log("🔵 Mapped filter topics:", JSON.stringify(filterTopics));
+      
+      // Verify the mapped array is valid
+      if (!Array.isArray(filterTopics)) {
+        console.error("🚨 filterTopics mapping failed, creating empty array");
+        filterTopics = [];
+      }
+      
+      console.log("🔵 Final filtered topics count:", filterTopics.length);
       
       const filterSectors = Array.isArray(data.companySectors) ? 
         data.companySectors.map(sector => `filter:sector:${sector}`) : [];

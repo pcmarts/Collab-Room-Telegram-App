@@ -815,38 +815,30 @@ export async function registerRoutes(app: Express) {
         // Make sure all arrays are properly handled with sensible defaults
         const safeCollabsToDiscover = Array.isArray(collabs_to_discover) ? collabs_to_discover : [];
         const safeCollabsToHost = Array.isArray(collabs_to_host) ? collabs_to_host : [];
-        const safeFilteredMarketingTopics = Array.isArray(filtered_marketing_topics) ? filtered_marketing_topics : [];
         const safeTwitterCollabs = Array.isArray(twitter_collabs) ? twitter_collabs : [];
+
+        // Process filtered_marketing_topics with extra validation
+        // Create a new variable we can modify if needed
+        let processedTopics = Array.isArray(filtered_marketing_topics) ? [...filtered_marketing_topics] : [];
         
         // Debug the specific topics that are being saved
-        const saveTopicEntries = safeFilteredMarketingTopics.filter(item => 
+        const saveTopicEntries = processedTopics.filter(item => 
           item && typeof item === 'string' && item.startsWith('filter:topic:')
         );
         console.log('SAVE OPERATION: Topics being saved:', JSON.stringify(saveTopicEntries.map(t => t.replace('filter:topic:', ''))));
-        console.log('SAVE OPERATION: Full filtered_marketing_topics array:', JSON.stringify(safeFilteredMarketingTopics));
+        console.log('SAVE OPERATION: Full filtered_marketing_topics array:', JSON.stringify(processedTopics));
         
-        // Extra safety check - verify the array is valid before saving
-        if (!Array.isArray(safeFilteredMarketingTopics)) {
-          console.error('CRITICAL ERROR: safeFilteredMarketingTopics is not an array!', safeFilteredMarketingTopics);
-          // Force it to be an array in this case
-          safeFilteredMarketingTopics = [];
-        }
+        // Filter out any non-string items for safety
+        processedTopics = processedTopics.filter(item => typeof item === 'string');
         
-        // Check if any items in the array are not strings
-        const nonStringItems = safeFilteredMarketingTopics.filter(item => typeof item !== 'string');
-        if (nonStringItems.length > 0) {
-          console.error('CRITICAL ERROR: safeFilteredMarketingTopics contains non-string items!', nonStringItems);
-          // Filter out non-string items
-          safeFilteredMarketingTopics = safeFilteredMarketingTopics.filter(item => typeof item === 'string');
-        }
-        
-        console.log('FINAL SAVE OPERATION: filtered_marketing_topics array after safety checks:', JSON.stringify(safeFilteredMarketingTopics));
+        // Log the final validated array
+        console.log('FINAL SAVE OPERATION: filtered_marketing_topics array after safety checks:', JSON.stringify(processedTopics));
         
         // Handle Marketing Preferences
         const marketingPrefsData = {
           collabs_to_discover: safeCollabsToDiscover,
           collabs_to_host: safeCollabsToHost,
-          filtered_marketing_topics: safeFilteredMarketingTopics,
+          filtered_marketing_topics: processedTopics,
           twitter_collabs: safeTwitterCollabs,
           // Include all filter toggles with proper defaults if not provided
           discovery_filter_enabled: discovery_filter_enabled === undefined ? false : discovery_filter_enabled,
