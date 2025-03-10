@@ -254,6 +254,15 @@ export const collaborations = pgTable('collaborations', {
   status: text('status').notNull().default('active'),
   // Common filtering criteria
   topics: text('topics').array(), // Standardized topics for the collaboration
+  
+  // Filter toggle states - tracking whether each filter is enabled
+  filter_company_sectors_enabled: boolean('filter_company_sectors_enabled').default(false),
+  filter_company_followers_enabled: boolean('filter_company_followers_enabled').default(false),
+  filter_user_followers_enabled: boolean('filter_user_followers_enabled').default(false),
+  filter_funding_stages_enabled: boolean('filter_funding_stages_enabled').default(false),
+  filter_token_status_enabled: boolean('filter_token_status_enabled').default(false),
+  
+  // Filter criteria values
   required_company_sectors: text('required_company_sectors').array(),
   required_funding_stages: text('required_funding_stages').array(),
   required_token_status: boolean('required_token_status'),
@@ -438,6 +447,13 @@ export const createCollaborationSchema = z.object({
   is_free_collab: z.boolean().refine(val => val === true, {
     message: "You must confirm this is a free collaboration with no payments involved"
   }),
+  
+  // Filter toggle states
+  filter_company_sectors_enabled: z.boolean().optional().default(false),
+  filter_company_followers_enabled: z.boolean().optional().default(false),
+  filter_user_followers_enabled: z.boolean().optional().default(false),
+  filter_funding_stages_enabled: z.boolean().optional().default(false),
+  filter_token_status_enabled: z.boolean().optional().default(false),
   
   // Filtering criteria
   required_company_sectors: z.array(z.string()).optional(),
