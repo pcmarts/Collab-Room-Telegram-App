@@ -600,7 +600,6 @@ export default function MarketingCollabs() {
       const marketingResponse = await apiRequest('/api/marketing-preferences', 'POST', marketingPrefsData);
       
       // Then update general preferences with notification frequency
-      
       const response = await apiRequest('/api/preferences', 'POST', generalPrefsData);
 
       if (!response.ok) {
