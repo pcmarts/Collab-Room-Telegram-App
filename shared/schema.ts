@@ -241,6 +241,20 @@ export const preferences = pgTable('preferences', {
   coffee_match_user_followers: text('coffee_match_user_followers'),
   coffee_match_funding_stages: text('coffee_match_funding_stages').array(),
   coffee_match_token_status: boolean('coffee_match_token_status').default(false),
+  // Toggle states for coffee match filters
+  coffee_match_filter_company_sectors_enabled: boolean('coffee_match_filter_company_sectors_enabled').default(false),
+  coffee_match_filter_company_followers_enabled: boolean('coffee_match_filter_company_followers_enabled').default(false),
+  coffee_match_filter_user_followers_enabled: boolean('coffee_match_filter_user_followers_enabled').default(false),
+  coffee_match_filter_funding_stages_enabled: boolean('coffee_match_filter_funding_stages_enabled').default(false),
+  coffee_match_filter_token_status_enabled: boolean('coffee_match_filter_token_status_enabled').default(false),
+  // Discovery feed filter toggle states
+  discovery_filter_enabled: boolean('discovery_filter_enabled').default(false),
+  discovery_filter_topics_enabled: boolean('discovery_filter_topics_enabled').default(false),
+  discovery_filter_company_followers_enabled: boolean('discovery_filter_company_followers_enabled').default(false),
+  discovery_filter_user_followers_enabled: boolean('discovery_filter_user_followers_enabled').default(false),
+  discovery_filter_funding_stages_enabled: boolean('discovery_filter_funding_stages_enabled').default(false),
+  discovery_filter_token_status_enabled: boolean('discovery_filter_token_status_enabled').default(false),
+  discovery_filter_company_sectors_enabled: boolean('discovery_filter_company_sectors_enabled').default(false),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 

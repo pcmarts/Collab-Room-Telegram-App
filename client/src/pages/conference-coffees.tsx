@@ -169,13 +169,21 @@ export default function ConferenceCoffees() {
         tokenStatus: prefs.coffee_match_token_status ?? false
       });
       
-      // Update filters visibility based on what's saved
+      // Load filter toggle states from dedicated fields
       setFiltersEnabled({
-        companySectors: Array.isArray(prefs.coffee_match_company_sectors) && prefs.coffee_match_company_sectors.length > 0,
-        companyFollowers: !!prefs.coffee_match_company_followers,
-        userFollowers: !!prefs.coffee_match_user_followers,
-        fundingStages: Array.isArray(prefs.coffee_match_funding_stages) && prefs.coffee_match_funding_stages.length > 0,
-        tokenStatus: !!prefs.coffee_match_token_status
+        companySectors: prefs.coffee_match_filter_company_sectors_enabled ?? false,
+        companyFollowers: prefs.coffee_match_filter_company_followers_enabled ?? false,
+        userFollowers: prefs.coffee_match_filter_user_followers_enabled ?? false,
+        fundingStages: prefs.coffee_match_filter_funding_stages_enabled ?? false,
+        tokenStatus: prefs.coffee_match_filter_token_status_enabled ?? false
+      });
+      
+      console.log("Loaded coffee match filter states:", {
+        companySectors: prefs.coffee_match_filter_company_sectors_enabled,
+        companyFollowers: prefs.coffee_match_filter_company_followers_enabled,
+        userFollowers: prefs.coffee_match_filter_user_followers_enabled,
+        fundingStages: prefs.coffee_match_filter_funding_stages_enabled,
+        tokenStatus: prefs.coffee_match_filter_token_status_enabled
       });
     }
   }, [profileData, form]);
@@ -187,21 +195,30 @@ export default function ConferenceCoffees() {
   const onSubmitCriteria = async (data: CoffeeMatchCriteria) => {
     setIsSubmitting(true);
     console.log("Submitting criteria:", data);
+    console.log("Filter toggle states:", filtersEnabled);
 
     try {
       // Get current user preferences
       const profileResponse = await apiRequest('/api/profile', 'GET');
       const profileData = await profileResponse.json();
       
-      // Update only the coffee match criteria fields
+      // Update the coffee match criteria fields and toggle states
       const updateData = {
         ...profileData.preferences,
+        // Form data values
         coffee_match_enabled: data.matchingEnabled,
         coffee_match_company_sectors: data.companySectors,
         coffee_match_company_followers: data.companyFollowers,
         coffee_match_user_followers: data.userFollowers,
         coffee_match_funding_stages: data.fundingStages,
-        coffee_match_token_status: data.tokenStatus
+        coffee_match_token_status: data.tokenStatus,
+        
+        // Filter toggle states
+        coffee_match_filter_company_sectors_enabled: filtersEnabled.companySectors,
+        coffee_match_filter_company_followers_enabled: filtersEnabled.companyFollowers,
+        coffee_match_filter_user_followers_enabled: filtersEnabled.userFollowers,
+        coffee_match_filter_funding_stages_enabled: filtersEnabled.fundingStages,
+        coffee_match_filter_token_status_enabled: filtersEnabled.tokenStatus
       };
 
       // Save to the preferences API
