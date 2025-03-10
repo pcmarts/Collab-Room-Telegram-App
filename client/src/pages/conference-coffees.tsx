@@ -59,7 +59,6 @@ export default function ConferenceCoffees() {
   const [companyFollowersEnabled, setCompanyFollowersEnabled] = useState(false);
   const [userFollowersEnabled, setUserFollowersEnabled] = useState(false);
   const [fundingStagesEnabled, setFundingStagesEnabled] = useState(false);
-  const [tokenStatusEnabled, setTokenStatusEnabled] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -604,35 +603,25 @@ export default function ConferenceCoffees() {
                       )}
 
                       {/* Token Status Filter */}
-                      <div className="flex items-center space-x-3 mb-4">
-                        <Switch
-                          checked={tokenStatusEnabled}
-                          onCheckedChange={() => setTokenStatusEnabled(!tokenStatusEnabled)}
-                        />
-                        <Label>Has Token</Label>
-                      </div>
-
-                      {tokenStatusEnabled && (
-                        <FormField
-                          control={form.control}
-                          name="tokenStatus"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                              <div className="space-y-0.5">
-                                <FormLabel className="text-base">
-                                  Projects must have a token
-                                </FormLabel>
-                              </div>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      )}
+                      <FormField
+                        control={form.control}
+                        name="tokenStatus"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base">
+                                Company has a live token
+                              </FormLabel>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
                     </CardContent>
                   </Card>
                 )}
