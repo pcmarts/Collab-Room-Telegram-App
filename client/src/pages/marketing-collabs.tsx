@@ -361,6 +361,17 @@ export default function MarketingCollabs() {
       userFollowers: TWITTER_FOLLOWER_COUNTS[0]
     }
   });
+  
+  // Log form values on initialization for debugging
+  console.log("🏁 Form initialized with default values");
+  
+  // Use a separate function to set form values after profile data is loaded
+  const updateFormWithProfileData = (topics: string[] = []) => {
+    console.log("🏁 Setting form values with topics:", JSON.stringify(topics));
+    form.setValue("topics", topics);
+    // Verify the update
+    console.log("🏁 Updated form topics:", form.getValues().topics);
+  };
 
   // Load existing preferences when data is fetched
   useEffect(() => {
@@ -560,22 +571,16 @@ export default function MarketingCollabs() {
       // COMPLETE REWRITE OF TOPIC EXTRACTION
       // This is a critical section that needs careful handling
       
-      // Print the current state of all checkbox elements for debugging
-      let checkboxStates: Record<string, boolean> = {};
-      document.querySelectorAll('input[type="checkbox"][name^="topics"]').forEach((element) => {
-        // Cast the Element to HTMLInputElement
-        const checkbox = element as HTMLInputElement;
-        const value = checkbox.value;
-        const isChecked = checkbox.checked;
-        checkboxStates[value] = isChecked;
-        console.log(`🔍 Checkbox "${value}" is ${isChecked ? "CHECKED" : "unchecked"}`);
-      });
-      console.log("📋 ALL checkbox states:", checkboxStates);
+      // Skip DOM manipulation for now and fallback to form values
+      // since we're getting TypeScript errors with the direct DOM approach
       
-      // Get all checked topics directly from the DOM (most reliable method)
-      const checkedTopics = Array.from(
-        document.querySelectorAll('input[type="checkbox"][name^="topics"]:checked')
-      ).map((element) => (element as HTMLInputElement).value);
+      // Get checked topics directly from the form
+      const currentTopics = form.getValues().topics || [];
+      
+      console.log("📋 Topics from form:", JSON.stringify(currentTopics));
+      
+      // Create a copy to make sure we don't modify the original
+      const checkedTopics = Array.isArray(currentTopics) ? [...currentTopics] : [];
       
       console.log("⭐⭐⭐ DIRECTLY CHECKED TOPICS FROM DOM:", JSON.stringify(checkedTopics));
       
