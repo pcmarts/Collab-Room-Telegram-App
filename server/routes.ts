@@ -299,7 +299,7 @@ export async function registerRoutes(app: Express) {
           }
         }
 
-        res.json({
+        return res.json({
           success: true,
           message: isProfileUpdate ? 'Profile updated successfully' : 'Application submitted successfully',
           ...result
@@ -429,7 +429,7 @@ export async function registerRoutes(app: Express) {
 
         console.log('Created company:', company);
 
-        res.json({
+        return res.json({
           success: true,
           company,
           message: 'Company information saved successfully'
@@ -574,7 +574,7 @@ export async function registerRoutes(app: Express) {
 
         console.log('Created preferences:', userPreferences);
 
-        res.json({
+        return res.json({
           success: true,
           preferences: userPreferences,
           message: 'Preferences saved successfully'
@@ -652,7 +652,7 @@ export async function registerRoutes(app: Express) {
         .from(preferences)
         .where(eq(preferences.user_id, user.id));
 
-      res.json({
+      return res.json({
         user,
         company,
         preferences: userPreferences
@@ -669,7 +669,7 @@ export async function registerRoutes(app: Express) {
   app.get("/api/events", async (req, res) => {
     try {
       const allEvents = await db.select().from(events);
-      res.json(allEvents);
+      return res.json(allEvents);
     } catch (error) {
       console.error('Failed to fetch events:', error);
       res.status(500);
@@ -732,7 +732,7 @@ export async function registerRoutes(app: Express) {
         })
       );
 
-      res.json(applicationsWithCollabData);
+      return res.json(applicationsWithCollabData);
     } catch (error) {
       console.error('Failed to fetch user applications:', error);
       res.status(500).json({ error: 'Failed to fetch applications' });
@@ -965,7 +965,8 @@ export async function registerRoutes(app: Express) {
       try {
         // Pass data to storage without strict type checking
         const newCollaboration = await storage.createCollaboration(collabData as any);
-        res.status(201).json({
+        res.status(201);
+        return res.json({
           success: true,
           collaboration: newCollaboration,
           message: 'Collaboration created successfully'
@@ -1030,7 +1031,7 @@ export async function registerRoutes(app: Express) {
 
       // Update collaboration status
       const updatedCollaboration = await storage.updateCollaborationStatus(collabId, status);
-      res.json(updatedCollaboration);
+      return res.json(updatedCollaboration);
     } catch (error) {
       console.error('Failed to update collaboration status:', error);
       res.status(500);
@@ -1081,7 +1082,7 @@ export async function registerRoutes(app: Express) {
       console.log('Collaboration types:', collabTypes);
       
       // Return found collaborations (empty array if none)
-      res.json(userCollabs);
+      return res.json(userCollabs);
 
     } catch (error) {
       console.error('Failed to fetch user collaborations:', error);
@@ -1173,7 +1174,7 @@ export async function registerRoutes(app: Express) {
 
       // Get filtered collaborations
       const collaborations = await storage.searchCollaborations(user.id, filters);
-      res.json(collaborations);
+      return res.json(collaborations);
 
     } catch (error) {
       console.error('Failed to search collaborations:', error);
@@ -1272,7 +1273,7 @@ export async function registerRoutes(app: Express) {
           // await sendApplicationStatusUpdate(applicant.telegram_id, status, collaboration.title);
         }
 
-        res.json({
+        return res.json({
           success: true,
           application: updatedApplication,
           message: `Application ${status} successfully`
@@ -1522,7 +1523,7 @@ export async function registerRoutes(app: Express) {
   app.get("/api/events", async (req, res) => {
     try {
       const allEvents = await db.select().from(events);
-      res.json(allEvents);
+      return res.json(allEvents);
     } catch (error) {
       console.error('Failed to fetch events:', error);
       res.status(500).json({ error: 'Failed to fetch events' });
@@ -1585,7 +1586,7 @@ export async function registerRoutes(app: Express) {
         .from(user_events)
         .where(eq(user_events.user_id, userId));
 
-      res.json(userEventAttendance);
+      return res.json(userEventAttendance);
 
     } catch (error) {
       console.error('Failed to fetch user events:', error);
@@ -1636,7 +1637,7 @@ export async function registerRoutes(app: Express) {
 
       // Get user's notifications
       const notifications = await storage.getUserNotifications(user.id);
-      res.json(notifications);
+      return res.json(notifications);
 
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
@@ -1696,7 +1697,7 @@ export async function registerRoutes(app: Express) {
       // Mark notification as read
       const updatedNotification = await storage.markNotificationAsRead(id);
       
-      res.json({
+      return res.json({
         success: true,
         notification: updatedNotification,
         message: 'Notification marked as read'
@@ -1792,7 +1793,7 @@ export async function registerRoutes(app: Express) {
           });
       }
 
-      res.json({ success: true });
+      return res.json({ success: true });
 
     } catch (error) {
       console.error('Failed to toggle event attendance:', error);
@@ -1864,7 +1865,7 @@ export async function registerRoutes(app: Express) {
       await db.delete(user_events)
         .where(eq(user_events.id, id));
         
-      res.json({ success: true });
+      return res.json({ success: true });
       
     } catch (error) {
       console.error('Failed to delete event attendance:', error);
