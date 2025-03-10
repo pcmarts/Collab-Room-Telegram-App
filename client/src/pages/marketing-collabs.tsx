@@ -597,7 +597,29 @@ export default function MarketingCollabs() {
         discovery_filter_token_status_enabled: filtersEnabled.hasToken
       });
 
-      const response = await apiRequest('/api/preferences', 'POST', updateData);
+      // First update the marketing preferences with the filter settings
+      const marketingPrefsData = {
+        collabs_to_discover: data.enabledCollabs,
+        collabs_to_host: collabsToHost,
+        twitter_collabs: data.enabledTwitterCollabs,
+        filtered_marketing_topics: [...nonFilterTags, ...allFilterData],
+        discovery_filter_enabled: data.matchingEnabled,
+        discovery_filter_topics_enabled: filtersEnabled.topics,
+        discovery_filter_company_sectors_enabled: filtersEnabled.companySectors,
+        discovery_filter_company_followers_enabled: filtersEnabled.companyFollowers,
+        discovery_filter_user_followers_enabled: filtersEnabled.userFollowers,
+        discovery_filter_funding_stages_enabled: filtersEnabled.fundingStages,
+        discovery_filter_token_status_enabled: filtersEnabled.hasToken
+      };
+      
+      const marketingResponse = await apiRequest('/api/marketing-preferences', 'POST', marketingPrefsData);
+      
+      // Then update general preferences with notification frequency
+      const generalPrefsData = {
+        notification_frequency
+      };
+      
+      const response = await apiRequest('/api/preferences', 'POST', generalPrefsData);
 
       if (!response.ok) {
         throw new Error('Failed to update collaborations');
