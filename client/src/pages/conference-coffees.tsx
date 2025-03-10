@@ -646,11 +646,15 @@ export default function ConferenceCoffees() {
                   </Card>
                 )}
 
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Saving..." : "Save Criteria"}
-                  </Button>
-                </div>
+                {activeTab === "criteria" && (
+                  <div className="fixed bottom-0 left-0 right-0 bg-background py-4 px-4 border-t shadow-md flex justify-center z-10">
+                    <Button type="submit" disabled={isSubmitting} className="w-full max-w-md" size="lg">
+                      {isSubmitting ? "Saving..." : "Save Criteria"}
+                    </Button>
+                  </div>
+                )}
+                {/* Invisible spacer to ensure content isn't hidden behind fixed button */}
+                {activeTab === "criteria" && <div className="h-20"></div>}
                 </form>
               </Form>
             )}
