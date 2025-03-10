@@ -51,6 +51,15 @@ const coffeeMatchCriteriaSchema = z.object({
 // Type for form data
 type CoffeeMatchCriteria = z.infer<typeof coffeeMatchCriteriaSchema>;
 
+// Helper function to handle PostgreSQL boolean values from API
+function isPostgresBooleanTrue(value: any): boolean {
+  return value === true || 
+         value === 't' || 
+         value === 'true' || 
+         value === 1 || 
+         value === '1';
+}
+
 export default function ConferenceCoffees() {
   const [activeTab, setActiveTab] = useState("attending");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -146,23 +155,26 @@ export default function ConferenceCoffees() {
     },
   });
 
-  // Toggle filter visibility
+  // Toggle filter visibility - Using hard boolean values to avoid type conversion issues
   const toggleFilter = (filterName: keyof typeof filtersEnabled) => {
-    // Get current value explicitly
+    // Get current value with strict boolean conversion
+    // Force a true/false value rather than a truthy/falsy value
     const currentValue = filtersEnabled[filterName] === true;
     
     // Log the state change
     console.log(`Toggling filter ${filterName} from ${currentValue} to ${!currentValue}`);
     
-    // Set the new filter state with explicit boolean values
-    setFiltersEnabled((prev) => {
-      const newState = {
-        ...prev,
-        [filterName]: !currentValue
-      };
-      console.log(`New filter states:`, newState);
-      return newState;
-    });
+    // Create a completely new object with explicit booleans instead of mutating previous state
+    const newState = {
+      companySectors: filterName === "companySectors" ? !currentValue : (filtersEnabled.companySectors === true),
+      companyFollowers: filterName === "companyFollowers" ? !currentValue : (filtersEnabled.companyFollowers === true),
+      userFollowers: filterName === "userFollowers" ? !currentValue : (filtersEnabled.userFollowers === true),
+      fundingStages: filterName === "fundingStages" ? !currentValue : (filtersEnabled.fundingStages === true),
+      tokenStatus: filterName === "tokenStatus" ? !currentValue : (filtersEnabled.tokenStatus === true)
+    };
+    
+    console.log(`New filter states:`, newState);
+    setFiltersEnabled(newState);
   };
   
   // Load saved preferences when profile data is fetched
@@ -180,8 +192,7 @@ export default function ConferenceCoffees() {
         tokenStatus: prefs.coffee_match_token_status ?? false
       });
       
-      // DB values in PostgreSQL for boolean can be 't', 'f', true, false, etc.
-      // We need to explicitly check for the values that mean true
+      // For debugging only - Log raw filter states from database
       console.log("Raw DB values for filters:", {
         companySectors: prefs.coffee_match_filter_company_sectors_enabled,
         companyFollowers: prefs.coffee_match_filter_company_followers_enabled, 
@@ -190,7 +201,9 @@ export default function ConferenceCoffees() {
         tokenStatus: prefs.coffee_match_filter_token_status_enabled
       });
       
-      // Convert to boolean using correct type handling
+      // IMPORTANT: Always manually set filter states based on database values
+      // PostgreSQL returns 'f' for false, which is truthy in JavaScript
+      // We need to explicitly convert to proper booleans using strict equality
       const updatedFilters = {
         companySectors: prefs.coffee_match_filter_company_sectors_enabled === true,
         companyFollowers: prefs.coffee_match_filter_company_followers_enabled === true,
@@ -252,12 +265,12 @@ export default function ConferenceCoffees() {
         coffee_match_funding_stages: data.fundingStages ?? [],
         coffee_match_token_status: data.tokenStatus,
         
-        // Filter toggle states - IMPORTANT: force using true/false instead of potentially truthy/falsy values
-        coffee_match_filter_company_sectors_enabled: filtersEnabled.companySectors === true,
-        coffee_match_filter_company_followers_enabled: filtersEnabled.companyFollowers === true,
-        coffee_match_filter_user_followers_enabled: filtersEnabled.userFollowers === true,
-        coffee_match_filter_funding_stages_enabled: filtersEnabled.fundingStages === true,
-        coffee_match_filter_token_status_enabled: filtersEnabled.tokenStatus === true
+        // Filter toggle states - use explicit true/false values for PostgreSQL
+        coffee_match_filter_company_sectors_enabled: Boolean(filtersEnabled.companySectors),
+        coffee_match_filter_company_followers_enabled: Boolean(filtersEnabled.companyFollowers),
+        coffee_match_filter_user_followers_enabled: Boolean(filtersEnabled.userFollowers),
+        coffee_match_filter_funding_stages_enabled: Boolean(filtersEnabled.fundingStages),
+        coffee_match_filter_token_status_enabled: Boolean(filtersEnabled.tokenStatus)
       };
       
       console.log("Sending updateData:", updateData);
