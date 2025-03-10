@@ -805,7 +805,7 @@ export async function registerRoutes(app: Express) {
         console.log('MARKETING PREFERENCES DEBUG: Received filtered_marketing_topics:', JSON.stringify(filtered_marketing_topics));
         
         // Ensure filtered_marketing_topics is an array
-        const safeFilteredTopics = Array.isArray(filtered_marketing_topics) ? filtered_marketing_topics : [];
+        const safeFilteredTopics: string[] = Array.isArray(filtered_marketing_topics) ? filtered_marketing_topics.filter(item => typeof item === 'string') : [];
         console.log(`MARKETING PREFERENCES DEBUG: Safe filtered_marketing_topics (${safeFilteredTopics.length} items):`, JSON.stringify(safeFilteredTopics));
         
         // Count topic-related entries in filtered_marketing_topics
@@ -817,6 +817,11 @@ export async function registerRoutes(app: Express) {
         // Extract just the topic values for easier debugging
         const topicValues = topicEntries.map(item => item.replace('filter:topic:', ''));
         console.log('MARKETING PREFERENCES DEBUG: Extracted topic values:', JSON.stringify(topicValues));
+        
+        // Make sure all arrays are properly handled with sensible defaults
+        const safeCollabsToDiscover = Array.isArray(collabs_to_discover) ? collabs_to_discover : [];
+        const safeCollabsToHost = Array.isArray(collabs_to_host) ? collabs_to_host : [];
+        const safeTwitterCollabs = Array.isArray(twitter_collabs) ? twitter_collabs : [];
         
         // Check for potential duplicate topic entries and remove them
         const uniqueFilteredTopics: string[] = [];
@@ -837,90 +842,25 @@ export async function registerRoutes(app: Express) {
           uniqueFilteredTopics.push(item);
         }
         
+        // Create a variable to store our final topics array
+        let finalFilteredTopics: string[] = safeFilteredTopics;
+        
+        // Check if we need deduplication
         if (safeFilteredTopics.length !== uniqueFilteredTopics.length) {
           console.log(`MARKETING PREFERENCES DEBUG: Removed ${safeFilteredTopics.length - uniqueFilteredTopics.length} duplicate topic entries`);
-          // Create a new variable for the deduplicated array since we can't reassign the const
-          const dedupedFilteredTopics = uniqueFilteredTopics;
+          // Use the deduplicated array
+          finalFilteredTopics = uniqueFilteredTopics;
           console.log('MARKETING PREFERENCES DEBUG: Using deduplicated topics array');
-          
-          // In the next section, we'll use dedupedFilteredTopics instead of safeFilteredTopics
-          // Process filtered_marketing_topics with deduplicated array
-          let processedTopics = dedupedFilteredTopics;
-        
-          // Debug the specific topics that are being saved
-          const saveTopicEntries = processedTopics.filter(item => 
-            item && typeof item === 'string' && item.startsWith('filter:topic:')
-          );
-          console.log('SAVE OPERATION: Topics being saved:', JSON.stringify(saveTopicEntries.map(t => t.replace('filter:topic:', ''))));
-          console.log('SAVE OPERATION: Full filtered_marketing_topics array:', JSON.stringify(processedTopics));
-          
-          // Filter out any non-string items for safety
-          processedTopics = processedTopics.filter(item => typeof item === 'string');
-          
-          // Log the final validated array
-          console.log('FINAL SAVE OPERATION: filtered_marketing_topics array after safety checks:', JSON.stringify(processedTopics));
-          
-          // Continue with the rest of the function using processedTopics...
-          
-          // Handle Marketing Preferences
-          const marketingPrefsData = {
-            collabs_to_discover: safeCollabsToDiscover,
-            collabs_to_host: safeCollabsToHost,
-            filtered_marketing_topics: processedTopics,
-            twitter_collabs: safeTwitterCollabs,
-            // Include all filter toggles with proper defaults if not provided
-            discovery_filter_enabled: discovery_filter_enabled === undefined ? false : discovery_filter_enabled,
-            discovery_filter_topics_enabled: discovery_filter_topics_enabled === undefined ? false : discovery_filter_topics_enabled,
-            discovery_filter_company_sectors_enabled: discovery_filter_company_sectors_enabled === undefined ? false : discovery_filter_company_sectors_enabled,
-            discovery_filter_company_followers_enabled: discovery_filter_company_followers_enabled === undefined ? false : discovery_filter_company_followers_enabled,
-            discovery_filter_user_followers_enabled: discovery_filter_user_followers_enabled === undefined ? false : discovery_filter_user_followers_enabled,
-            discovery_filter_funding_stages_enabled: discovery_filter_funding_stages_enabled === undefined ? false : discovery_filter_funding_stages_enabled,
-            discovery_filter_token_status_enabled: discovery_filter_token_status_enabled === undefined ? false : discovery_filter_token_status_enabled
-          };
-          
-          // Need to return early here to avoid the code below which would be unreachable
-          if (existingMarketingPrefs.length > 0) {
-            // Update existing marketing preferences
-            [result] = await db.update(marketing_preferences)
-              .set(marketingPrefsData)
-              .where(eq(marketing_preferences.user_id, user.id))
-              .returning();
-            console.log('Updated marketing preferences:', result);
-          } else {
-            // Create new marketing preferences
-            [result] = await db.insert(marketing_preferences)
-              .values({
-                user_id: user.id,
-                ...marketingPrefsData
-              })
-              .returning();
-            console.log('Created marketing preferences:', result);
-          }
-          
-          // Return a more explicitly formatted response to help client-side processing
-          return res.json({
-            success: true,
-            message: 'Marketing preferences updated successfully',
-            marketingPrefs: result
-          });
         }
         
-        // If we didn't have duplicates, continue with the original code path
-        
-        // Make sure all arrays are properly handled with sensible defaults
-        const safeCollabsToDiscover = Array.isArray(collabs_to_discover) ? collabs_to_discover : [];
-        const safeCollabsToHost = Array.isArray(collabs_to_host) ? collabs_to_host : [];
-        const safeTwitterCollabs = Array.isArray(twitter_collabs) ? twitter_collabs : [];
-
-        // Process filtered_marketing_topics with extra validation
-        // Use safeFilteredTopics as the source since we've already deduped it
-        let processedTopics = safeFilteredTopics;
+        // Process filtered_marketing_topics with either original or deduplicated array
+        let processedTopics = finalFilteredTopics;
         
         // Debug the specific topics that are being saved
-        const saveTopicEntries = processedTopics.filter(item => 
+        const topicDebugEntries = processedTopics.filter(item => 
           item && typeof item === 'string' && item.startsWith('filter:topic:')
         );
-        console.log('SAVE OPERATION: Topics being saved:', JSON.stringify(saveTopicEntries.map(t => t.replace('filter:topic:', ''))));
+        console.log('SAVE OPERATION: Topics being saved:', JSON.stringify(topicDebugEntries.map(t => t.replace('filter:topic:', ''))));
         console.log('SAVE OPERATION: Full filtered_marketing_topics array:', JSON.stringify(processedTopics));
         
         // Filter out any non-string items for safety
