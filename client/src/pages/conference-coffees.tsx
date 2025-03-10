@@ -148,10 +148,21 @@ export default function ConferenceCoffees() {
 
   // Toggle filter visibility
   const toggleFilter = (filterName: keyof typeof filtersEnabled) => {
-    setFiltersEnabled((prev) => ({
-      ...prev,
-      [filterName]: !prev[filterName],
-    }));
+    // Get current value explicitly
+    const currentValue = filtersEnabled[filterName] === true;
+    
+    // Log the state change
+    console.log(`Toggling filter ${filterName} from ${currentValue} to ${!currentValue}`);
+    
+    // Set the new filter state with explicit boolean values
+    setFiltersEnabled((prev) => {
+      const newState = {
+        ...prev,
+        [filterName]: !currentValue
+      };
+      console.log(`New filter states:`, newState);
+      return newState;
+    });
   };
   
   // Load saved preferences when profile data is fetched
@@ -169,13 +180,23 @@ export default function ConferenceCoffees() {
         tokenStatus: prefs.coffee_match_token_status ?? false
       });
       
-      // Force setting the filter toggle states directly
+      // DB values in PostgreSQL for boolean can be 't', 'f', true, false, etc.
+      // We need to explicitly check for the values that mean true
+      console.log("Raw DB values for filters:", {
+        companySectors: prefs.coffee_match_filter_company_sectors_enabled,
+        companyFollowers: prefs.coffee_match_filter_company_followers_enabled, 
+        userFollowers: prefs.coffee_match_filter_user_followers_enabled,
+        fundingStages: prefs.coffee_match_filter_funding_stages_enabled,
+        tokenStatus: prefs.coffee_match_filter_token_status_enabled
+      });
+      
+      // Convert to boolean using correct type handling
       const updatedFilters = {
-        companySectors: Boolean(prefs.coffee_match_filter_company_sectors_enabled),
-        companyFollowers: Boolean(prefs.coffee_match_filter_company_followers_enabled),
-        userFollowers: Boolean(prefs.coffee_match_filter_user_followers_enabled),
-        fundingStages: Boolean(prefs.coffee_match_filter_funding_stages_enabled),
-        tokenStatus: Boolean(prefs.coffee_match_filter_token_status_enabled)
+        companySectors: prefs.coffee_match_filter_company_sectors_enabled === true,
+        companyFollowers: prefs.coffee_match_filter_company_followers_enabled === true,
+        userFollowers: prefs.coffee_match_filter_user_followers_enabled === true,
+        fundingStages: prefs.coffee_match_filter_funding_stages_enabled === true,
+        tokenStatus: prefs.coffee_match_filter_token_status_enabled === true
       };
       
       console.log("Loading coffee match filter states:", updatedFilters);
@@ -208,6 +229,15 @@ export default function ConferenceCoffees() {
       const notification_frequency = profileData?.preferences?.notification_frequency || "Daily";
       console.log("Using notification_frequency:", notification_frequency);
       
+      // For debugging - show current value in database
+      console.log("Current filter toggle states in database:", {
+        companySectors: profileData?.preferences?.coffee_match_filter_company_sectors_enabled,
+        companyFollowers: profileData?.preferences?.coffee_match_filter_company_followers_enabled,
+        userFollowers: profileData?.preferences?.coffee_match_filter_user_followers_enabled,
+        fundingStages: profileData?.preferences?.coffee_match_filter_funding_stages_enabled,
+        tokenStatus: profileData?.preferences?.coffee_match_filter_token_status_enabled
+      });
+      
       // Update the coffee match criteria fields and toggle states
       const updateData = {
         ...(profileData?.preferences || {}),
@@ -222,12 +252,12 @@ export default function ConferenceCoffees() {
         coffee_match_funding_stages: data.fundingStages ?? [],
         coffee_match_token_status: data.tokenStatus,
         
-        // Filter toggle states
-        coffee_match_filter_company_sectors_enabled: filtersEnabled.companySectors,
-        coffee_match_filter_company_followers_enabled: filtersEnabled.companyFollowers,
-        coffee_match_filter_user_followers_enabled: filtersEnabled.userFollowers,
-        coffee_match_filter_funding_stages_enabled: filtersEnabled.fundingStages,
-        coffee_match_filter_token_status_enabled: filtersEnabled.tokenStatus
+        // Filter toggle states - IMPORTANT: force using true/false instead of potentially truthy/falsy values
+        coffee_match_filter_company_sectors_enabled: filtersEnabled.companySectors === true,
+        coffee_match_filter_company_followers_enabled: filtersEnabled.companyFollowers === true,
+        coffee_match_filter_user_followers_enabled: filtersEnabled.userFollowers === true,
+        coffee_match_filter_funding_stages_enabled: filtersEnabled.fundingStages === true,
+        coffee_match_filter_token_status_enabled: filtersEnabled.tokenStatus === true
       };
       
       console.log("Sending updateData:", updateData);
