@@ -181,17 +181,10 @@ export default function ConferenceCoffees() {
       console.log("Loading coffee match filter states:", updatedFilters);
       setFiltersEnabled(updatedFilters);
       
-      // Enable some filters for testing if none are enabled
+      // Log if no filters were enabled from saved preferences (for debugging only)
       if (!Object.values(updatedFilters).some(Boolean)) {
-        console.log("No filters were enabled from saved preferences, forcing some on for testing");
-        // Force all filters on for testing purposes
-        setFiltersEnabled({
-          companySectors: true,
-          companyFollowers: true,
-          userFollowers: true,
-          fundingStages: true,
-          tokenStatus: true
-        });
+        console.log("No filters are currently enabled from saved preferences");
+        // We're not forcing filters on anymore - this was causing the issue
       }
     }
   }, [profileData, form]);
