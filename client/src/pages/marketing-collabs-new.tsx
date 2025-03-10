@@ -436,19 +436,23 @@ export default function MarketingCollabs() {
   const onSubmit = async (data: MarketingCollabFormData) => {
     try {
       setIsSubmitting(true);
-      console.log("Form submitted:", data);
+      console.log("Form submitted:", JSON.stringify(data, null, 2));
       
       // Collect checked topics from form and component state
       // This is more reliable than querying the DOM directly
       const topicsToSave = selectedTopics;
-      console.log("Selected topics to save:", topicsToSave);
+      console.log("Selected topics to save:", JSON.stringify(topicsToSave, null, 2));
       
       // Format topics for storage
       const formattedTopics = topicsToSave.map(topic => `filter:topic:${topic}`);
+      console.log("Formatted topics:", JSON.stringify(formattedTopics, null, 2));
       
       // Format other filter data
       const formattedSectors = data.companySectors.map(sector => `filter:sector:${sector}`);
       const formattedStages = data.fundingStages.map(stage => `filter:stage:${stage}`);
+      
+      console.log("Formatted sectors:", JSON.stringify(formattedSectors, null, 2));
+      console.log("Formatted stages:", JSON.stringify(formattedStages, null, 2));
       
       // Create metadata for filter toggles
       const filterMetadata = [
@@ -465,6 +469,8 @@ export default function MarketingCollabs() {
         ...(filtersEnabled.hasToken ? [`filter:section_enabled:hasToken`] : [])
       ];
       
+      console.log("Filter metadata:", JSON.stringify(filterMetadata, null, 2));
+      
       // Combine all filter data
       const allFilterData = [
         ...formattedTopics,
@@ -473,12 +479,18 @@ export default function MarketingCollabs() {
         ...filterMetadata
       ];
       
+      console.log("All filter data:", JSON.stringify(allFilterData, null, 2));
+      
       // Filter out any existing filter entries from saved data
       const marketingPreferences = profileData?.marketingPreferences || {} as MarketingPreferences;
       const existingTags = marketingPreferences.filtered_marketing_topics || [];
+      console.log("Existing filtered_marketing_topics:", JSON.stringify(existingTags, null, 2));
+      
       const nonFilterTags = existingTags.filter((tag: string) => 
         typeof tag === 'string' && !tag.startsWith('filter:')
       );
+      
+      console.log("Non-filter tags:", JSON.stringify(nonFilterTags, null, 2));
       
       // For notification frequency
       const notificationPreferences = profileData?.notificationPreferences || {} as NotificationPreferences;
@@ -504,25 +516,52 @@ export default function MarketingCollabs() {
         discovery_filter_token_status_enabled: filtersEnabled.hasToken
       };
       
-      console.log("Marketing preferences data being sent:", marketingPrefsData);
+      console.log("Marketing preferences data being sent:", JSON.stringify(marketingPrefsData, null, 2));
+      console.log("ARRAY CHECK - filtered_marketing_topics is array:", Array.isArray(marketingPrefsData.filtered_marketing_topics));
+      console.log("ARRAY CHECK - filtered_marketing_topics length:", marketingPrefsData.filtered_marketing_topics.length);
       
-      // Save marketing preferences
-      const marketingResponse = await apiRequest('/api/marketing-preferences', 'POST', marketingPrefsData);
+      // Add a manual submit button click trigger
+      console.log("Manually triggering form submission to API endpoint");
+      
+      // Save marketing preferences - with explicit array validation
+      const safeData = {
+        ...marketingPrefsData,
+        filtered_marketing_topics: Array.isArray(marketingPrefsData.filtered_marketing_topics) 
+          ? marketingPrefsData.filtered_marketing_topics 
+          : []
+      };
+      
+      console.log("Safe marketing data with array validation:", JSON.stringify(safeData, null, 2));
+      
+      // Perform the API requests in order
+      console.log("Sending API request to /api/marketing-preferences");
+      const marketingResponse = await apiRequest('/api/marketing-preferences', 'POST', safeData);
+      
+      console.log("Received marketing preferences response:", marketingResponse.status);
       
       if (!marketingResponse.ok) {
-        throw new Error('Failed to update marketing preferences');
+        const errorData = await marketingResponse.json().catch(() => ({}));
+        console.error("Marketing preferences error:", errorData);
+        throw new Error('Failed to update marketing preferences: ' + (errorData.error || ''));
       }
       
       // Save general preferences
+      console.log("Sending API request to /api/preferences");
       const generalResponse = await apiRequest('/api/preferences', 'POST', generalPrefsData);
       
+      console.log("Received general preferences response:", generalResponse.status);
+      
       if (!generalResponse.ok) {
-        throw new Error('Failed to update general preferences');
+        const errorData = await generalResponse.json().catch(() => ({}));
+        console.error("General preferences error:", errorData);
+        throw new Error('Failed to update general preferences: ' + (errorData.error || ''));
       }
       
       // Refresh profile data
+      console.log("Refreshing profile data");
       await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
       
+      console.log("Form submission completed successfully");
       toast({
         title: "Success!",
         description: "Your marketing collaboration preferences have been updated",
