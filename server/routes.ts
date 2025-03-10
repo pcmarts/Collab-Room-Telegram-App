@@ -499,7 +499,13 @@ export async function registerRoutes(app: Express) {
         coffee_match_company_followers,
         coffee_match_user_followers,
         coffee_match_funding_stages,
-        coffee_match_token_status
+        coffee_match_token_status,
+        // Coffee match filter toggle states
+        coffee_match_filter_company_sectors_enabled,
+        coffee_match_filter_company_followers_enabled,
+        coffee_match_filter_user_followers_enabled,
+        coffee_match_filter_funding_stages_enabled,
+        coffee_match_filter_token_status_enabled
       } = req.body;
 
       if (!notification_frequency) {
@@ -567,7 +573,13 @@ export async function registerRoutes(app: Express) {
           coffee_match_company_followers: coffee_match_company_followers || null,
           coffee_match_user_followers: coffee_match_user_followers || null,
           coffee_match_funding_stages: funding_stages,
-          coffee_match_token_status: coffee_match_token_status === true
+          coffee_match_token_status: coffee_match_token_status === true,
+          // Coffee match filter toggle states
+          coffee_match_filter_company_sectors_enabled: coffee_match_filter_company_sectors_enabled === true,
+          coffee_match_filter_company_followers_enabled: coffee_match_filter_company_followers_enabled === true,
+          coffee_match_filter_user_followers_enabled: coffee_match_filter_user_followers_enabled === true,
+          coffee_match_filter_funding_stages_enabled: coffee_match_filter_funding_stages_enabled === true,
+          coffee_match_filter_token_status_enabled: coffee_match_filter_token_status_enabled === true
         };
 
         if (existingPreferences.length > 0) {
