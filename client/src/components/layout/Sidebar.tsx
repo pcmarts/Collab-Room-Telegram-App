@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Layout, Users, Coffee, Megaphone, User, Building, Search, PlusCircle, ListChecks, Shield } from 'lucide-react';
+import { Layout, Users, Coffee, Megaphone, User, Building, PlusCircle, ListChecks, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import type { ProfileData } from '@/types/profile';

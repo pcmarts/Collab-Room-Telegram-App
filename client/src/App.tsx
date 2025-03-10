@@ -21,7 +21,7 @@ import ProfileOverview from "@/pages/profile-overview";
 // Admin Pages
 import AdminUsers from "@/pages/admin/users";
 
-import BrowseCollaborations from "@/pages/browse-collaborations";
+// BrowseCollaborations page removed as requested
 import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
 import CreateCollaboration from "@/pages/create-collaboration";
 import MyCollaborations from "@/pages/my-collaborations";
@@ -57,8 +57,9 @@ function Router() {
           <Route path="/apply" component={ApplicationForm} />
 
           {/* Collaboration Routes */}
+          {/* Redirect Browse Collaborations to Dashboard */}
           <Route path="/browse-collaborations">
-            {() => <BrowseCollaborations />}
+            <Redirect to="/dashboard" />
           </Route>
           <Route path="/create-collaboration">
             {() => <CreateCollaborationFixed />}
@@ -69,8 +70,9 @@ function Router() {
           <Route path="/apply/:id">
             {(params: {id: string}) => <Apply id={params.id} />}
           </Route>
+          {/* Redirect individual collaborations to Dashboard */}
           <Route path="/collaboration/:id">
-            {(params: {id: string}) => <BrowseCollaborations id={params.id} />}
+            <Redirect to="/dashboard" />
           </Route>
           {/* Edit collaboration route - supports both formats for backward compatibility */}
           <Route path="/edit-collaboration/:id">

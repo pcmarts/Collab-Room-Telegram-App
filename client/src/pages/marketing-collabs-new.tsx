@@ -1436,31 +1436,7 @@ export default function MarketingCollabs() {
               </Card>
             )}
             
-            <div className="mt-8">
-              <h2 className="text-xl font-bold mb-6">My Applications</h2>
-              
-              {isAppsLoading ? (
-                renderSkeletons()
-              ) : applications.length > 0 ? (
-                <div className="space-y-4">
-                  {applications.map((app: CollabApplication) => renderApplicationCard(app))}
-                </div>
-              ) : (
-                <Card className="p-6 text-center">
-                  <div className="flex flex-col items-center gap-2">
-                    <Info className="h-8 w-8 text-gray-400" />
-                    <h3 className="text-lg font-medium">No applications yet</h3>
-                    <p className="text-gray-500 mb-4">
-                      You haven't applied to any collaborations yet. Browse available collaborations to find opportunities!
-                    </p>
-                    <Button onClick={() => setLocation('/browse-collaborations')}>
-                      <Filter className="h-4 w-4 mr-2" />
-                      Browse Collaborations
-                    </Button>
-                  </div>
-                </Card>
-              )}
-            </div>
+            {/* My Applications section removed as requested */}
           </TabsContent>
         </Tabs>
       </div>
