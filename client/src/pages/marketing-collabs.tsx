@@ -568,21 +568,22 @@ export default function MarketingCollabs() {
       // for the most accurate representation of the current state
       const formValues = form.getValues();
       
-      // COMPLETE REWRITE OF TOPIC EXTRACTION
-      // This is a critical section that needs careful handling
+      // IMPROVED APPROACH FOR TOPIC EXTRACTION
+      // This uses multiple sources to ensure we have the correct data
       
-      // Skip DOM manipulation for now and fallback to form values
-      // since we're getting TypeScript errors with the direct DOM approach
+      // 1. Get topics directly from the form
+      const formTopicsArray = form.getValues().topics || [];
       
-      // Get checked topics directly from the form
-      const currentTopics = form.getValues().topics || [];
+      // 2. Ensure it's a proper array
+      let checkedTopics = Array.isArray(formTopicsArray) ? [...formTopicsArray] : [];
       
-      console.log("📋 Topics from form:", JSON.stringify(currentTopics));
+      // 3. If we somehow don't have topics in the form values, try from data
+      if (checkedTopics.length === 0 && Array.isArray(data.topics) && data.topics.length > 0) {
+        console.log("ℹ️ Using topics from data object instead of form values");
+        checkedTopics = [...data.topics];
+      }
       
-      // Create a copy to make sure we don't modify the original
-      const checkedTopics = Array.isArray(currentTopics) ? [...currentTopics] : [];
-      
-      console.log("⭐⭐⭐ DIRECTLY CHECKED TOPICS FROM DOM:", JSON.stringify(checkedTopics));
+      console.log("🔵 Final topics array for saving:", JSON.stringify(checkedTopics));
       
       // Convert filter settings to strings that can be stored in filtered_marketing_topics
       // Use a prefix to separate these from actual excluded tags
@@ -1534,38 +1535,63 @@ export default function MarketingCollabs() {
                                         value={topic}
                                         checked={Array.isArray(field.value) && field.value.includes(topic)}
                                         onCheckedChange={(checked) => {
-                                          console.log(`🎯 Topic ${topic} checkbox changed to: ${checked}`);
+                                          console.log(`🎯 Topic ${topic} checkbox changed to: ${checked ? "CHECKED" : "unchecked"}`);
                                           
-                                          // Ensure we're dealing with an array, initialize empty array if needed
-                                          const currentTopics = Array.isArray(field.value) ? [...field.value] : [];
-                                          console.log(`🎯 Current topics BEFORE update:`, currentTopics);
+                                          // COMPLETE REWRITE OF CHECKBOX HANDLING
+                                          // This is critical for making the form work
+
+                                          // 1. Get current topics as a fresh copy to avoid reference issues
+                                          const currentTopics = Array.isArray(field.value) 
+                                            ? [...field.value] 
+                                            : [];
+                                            
+                                          console.log(`🎯 Current topics array:`, currentTopics);
                                           
-                                          let newValue;
+                                          // 2. Create the new array based on checkbox state
+                                          let newTopics;
                                           if (checked) {
-                                            // Only add if not already present
-                                            if (!currentTopics.includes(topic)) {
-                                              newValue = [...currentTopics, topic];
-                                              console.log(`🎯 Adding topic ${topic}, new value:`, newValue);
-                                            } else {
-                                              // No change needed
-                                              newValue = currentTopics; 
-                                            }
+                                            // Add the topic if it's not already there
+                                            newTopics = currentTopics.includes(topic)
+                                              ? currentTopics  // No change needed
+                                              : [...currentTopics, topic];  // Add the topic
+                                            console.log(`🎯 ADDING topic "${topic}"`);
                                           } else {
                                             // Remove the topic
-                                            newValue = currentTopics.filter(value => value !== topic);
-                                            console.log(`🎯 Removing topic ${topic}, new value:`, newValue);
+                                            newTopics = currentTopics.filter(t => t !== topic);
+                                            console.log(`🎯 REMOVING topic "${topic}"`);
                                           }
                                           
-                                          // Always update both ways to ensure consistency
-                                          field.onChange(newValue);
-                                          form.setValue('topics', newValue, { 
+                                          // 3. Log what actually changed
+                                          console.log(`🎯 New topics array after ${checked ? "adding" : "removing"}:`, newTopics);
+                                          
+                                          // 4. Update the form in THREE different ways to ensure it works:
+                                          
+                                          // 4a. Update via field.onChange
+                                          field.onChange(newTopics);
+                                          console.log(`🎯 Updated via field.onChange`);
+                                          
+                                          // 4b. Update via form.setValue (this is the most reliable way)
+                                          form.setValue('topics', newTopics, {
                                             shouldValidate: true,
                                             shouldDirty: true,
-                                            shouldTouch: true
+                                            shouldTouch: true,
                                           });
+                                          console.log(`🎯 Updated via form.setValue`);
                                           
-                                          // Verify the update was applied correctly
-                                          console.log(`🎯 Form topics after update:`, form.getValues().topics);
+                                          // 4c. Also update our local state for component controlled values
+                                          updateFormWithProfileData(newTopics);
+                                          
+                                          // 5. Verify all updates worked
+                                          const finalTopics = form.getValues().topics;
+                                          console.log(`🎯 FINAL topics value:`, finalTopics);
+                                          
+                                          // 6. Check if the topic is actually in the final array
+                                          if (checked && (!finalTopics || !finalTopics.includes(topic))) {
+                                            console.warn(`⚠️ Topic ${topic} was not added correctly!`);
+                                            // One more attempt to force the update
+                                            const forcedUpdate = [...(finalTopics || []), topic];
+                                            form.setValue('topics', forcedUpdate, { shouldValidate: true });
+                                          }
                                         }}
                                       />
                                     </FormControl>
