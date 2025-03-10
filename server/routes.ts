@@ -703,6 +703,288 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Marketing Preferences API endpoint
+  app.post("/api/marketing-preferences", async (req, res) => {
+    console.log('============ DEBUG: Marketing Preferences Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+
+    try {
+      const {
+        collabs_to_discover, 
+        collabs_to_host, 
+        filtered_marketing_topics,
+        twitter_collabs,
+      } = req.body;
+
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      let telegramUser;
+
+      if (!initData) {
+        // In development, use fallback data if Telegram data is missing
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Using development fallback for Telegram data');
+          telegramUser = {
+            id: 123456789,
+            first_name: 'Dev',
+            username: 'dev_user'
+          };
+        } else {
+          console.error('No Telegram init data found in headers');
+          res.status(400);
+          return res.json({ error: 'Invalid Telegram data' });
+        }
+      } else {
+        try {
+          // Parse Telegram data using the helper
+          telegramUser = getTelegramUserFromRequest({ headers: { 'x-telegram-init-data': initData } } as Request);
+        } catch (error) {
+          console.error('Error parsing Telegram data:', error);
+          res.status(400);
+          return res.json({ error: 'Invalid Telegram data' });
+        }
+      }
+
+      if (!telegramUser.id) {
+        console.error('No Telegram user ID found in parsed data');
+        res.status(400);
+        return res.json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user ID from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found');
+        res.status(404);
+        return res.json({ error: 'User not found' });
+      }
+
+      try {
+        // Check if marketing preferences exist for this user
+        const existingMarketingPrefs = await db.select()
+          .from(marketing_preferences)
+          .where(eq(marketing_preferences.user_id, user.id));
+          
+        let result;
+        
+        // Handle Marketing Preferences
+        const marketingPrefsData = {
+          collabs_to_discover: collabs_to_discover || [],
+          collabs_to_host: collabs_to_host || [],
+          filtered_marketing_topics: filtered_marketing_topics || [],
+          twitter_collabs: twitter_collabs || []
+        };
+        
+        if (existingMarketingPrefs.length > 0) {
+          // Update existing marketing preferences
+          [result] = await db.update(marketing_preferences)
+            .set(marketingPrefsData)
+            .where(eq(marketing_preferences.user_id, user.id))
+            .returning();
+          console.log('Updated marketing preferences:', result);
+        } else {
+          // Create new marketing preferences
+          [result] = await db.insert(marketing_preferences)
+            .values({
+              user_id: user.id,
+              ...marketingPrefsData
+            })
+            .returning();
+          console.log('Created marketing preferences:', result);
+        }
+        
+        return res.json({
+          success: true,
+          message: 'Marketing preferences updated successfully',
+          marketingPreferences: result
+        });
+
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error(`Failed to save marketing preferences: ${dbError}`);
+      }
+
+    } catch (error) {
+      console.error('Detailed error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : 'Unknown'
+      });
+      res.status(500).json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+  
+  // Conference Preferences API endpoint
+  app.post("/api/conference-preferences", async (req, res) => {
+    console.log('============ DEBUG: Conference Preferences Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+
+    try {
+      const {
+        filtered_conference_sectors,
+        coffee_match_enabled,
+        coffee_match_company_sectors,
+        coffee_match_company_followers,
+        coffee_match_user_followers,
+        coffee_match_funding_stages,
+        coffee_match_token_status,
+        coffee_match_filter_company_sectors_enabled,
+        coffee_match_filter_company_followers_enabled,
+        coffee_match_filter_user_followers_enabled,
+        coffee_match_filter_funding_stages_enabled,
+        coffee_match_filter_token_status_enabled
+      } = req.body;
+
+      // Get Telegram data from header
+      const initData = req.headers['x-telegram-init-data'] as string;
+      let telegramUser;
+
+      if (!initData) {
+        // In development, use fallback data if Telegram data is missing
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Using development fallback for Telegram data');
+          telegramUser = {
+            id: 123456789,
+            first_name: 'Dev',
+            username: 'dev_user'
+          };
+        } else {
+          console.error('No Telegram init data found in headers');
+          res.status(400);
+          return res.json({ error: 'Invalid Telegram data' });
+        }
+      } else {
+        try {
+          // Parse Telegram data using the helper
+          telegramUser = getTelegramUserFromRequest({ headers: { 'x-telegram-init-data': initData } } as Request);
+        } catch (error) {
+          console.error('Error parsing Telegram data:', error);
+          res.status(400);
+          return res.json({ error: 'Invalid Telegram data' });
+        }
+      }
+
+      if (!telegramUser.id) {
+        console.error('No Telegram user ID found in parsed data');
+        res.status(400);
+        return res.json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user ID from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found');
+        res.status(404);
+        return res.json({ error: 'User not found' });
+      }
+
+      try {
+        // Check if conference preferences exist for this user
+        const existingConferencePrefs = await db.select()
+          .from(conference_preferences)
+          .where(eq(conference_preferences.user_id, user.id));
+          
+        let result;
+        
+        // Handle Conference Preferences
+        const updateData: any = {};
+        
+        // Only update fields that were provided in the request
+        if (filtered_conference_sectors !== undefined) {
+          updateData.filtered_conference_sectors = filtered_conference_sectors;
+        }
+        
+        if (coffee_match_enabled !== undefined) {
+          updateData.coffee_match_enabled = coffee_match_enabled === true;
+        }
+        
+        if (coffee_match_company_sectors !== undefined) {
+          updateData.coffee_match_company_sectors = coffee_match_company_sectors;
+        }
+        
+        if (coffee_match_company_followers !== undefined) {
+          updateData.coffee_match_company_followers = coffee_match_company_followers || null;
+        }
+        
+        if (coffee_match_user_followers !== undefined) {
+          updateData.coffee_match_user_followers = coffee_match_user_followers || null;
+        }
+        
+        if (coffee_match_funding_stages !== undefined) {
+          updateData.coffee_match_funding_stages = coffee_match_funding_stages;
+        }
+        
+        if (coffee_match_token_status !== undefined) {
+          updateData.coffee_match_token_status = coffee_match_token_status === true;
+        }
+        
+        if (coffee_match_filter_company_sectors_enabled !== undefined) {
+          updateData.coffee_match_filter_company_sectors_enabled = coffee_match_filter_company_sectors_enabled === true;
+        }
+        
+        if (coffee_match_filter_company_followers_enabled !== undefined) {
+          updateData.coffee_match_filter_company_followers_enabled = coffee_match_filter_company_followers_enabled === true;
+        }
+        
+        if (coffee_match_filter_user_followers_enabled !== undefined) {
+          updateData.coffee_match_filter_user_followers_enabled = coffee_match_filter_user_followers_enabled === true;
+        }
+        
+        if (coffee_match_filter_funding_stages_enabled !== undefined) {
+          updateData.coffee_match_filter_funding_stages_enabled = coffee_match_filter_funding_stages_enabled === true;
+        }
+        
+        if (coffee_match_filter_token_status_enabled !== undefined) {
+          updateData.coffee_match_filter_token_status_enabled = coffee_match_filter_token_status_enabled === true;
+        }
+        
+        if (existingConferencePrefs.length > 0) {
+          // Update existing conference preferences
+          [result] = await db.update(conference_preferences)
+            .set(updateData)
+            .where(eq(conference_preferences.user_id, user.id))
+            .returning();
+          console.log('Updated conference preferences:', result);
+        } else {
+          // Create new conference preferences
+          [result] = await db.insert(conference_preferences)
+            .values({
+              user_id: user.id,
+              ...updateData
+            })
+            .returning();
+          console.log('Created conference preferences:', result);
+        }
+        
+        return res.json({
+          success: true,
+          message: 'Conference preferences updated successfully',
+          conferencePreferences: result
+        });
+
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error(`Failed to save conference preferences: ${dbError}`);
+      }
+
+    } catch (error) {
+      console.error('Detailed error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : 'Unknown'
+      });
+      res.status(500).json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
   // Profile endpoint
   app.get("/api/profile", async (req, res) => {
     console.log('============ DEBUG: Profile Endpoint ============');

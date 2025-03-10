@@ -75,7 +75,7 @@ export default function CollabPreferencesForm() {
       }
 
       if (isEditMode) {
-        // For edit mode, update marketing preferences
+        // For edit mode, update marketing preferences with new endpoint
         const response = await apiRequest("POST", "/api/marketing-preferences", {
           collabs_to_discover: formData.collabs_to_discover,
           filtered_marketing_topics: formData.filtered_marketing_topics,
