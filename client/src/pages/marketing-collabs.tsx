@@ -378,6 +378,25 @@ export default function MarketingCollabs() {
       
       // Set initial state for collabs to host
       setCollabsToHost(savedCollabsToHost);
+      
+      // Load filter toggle states from dedicated fields
+      setFiltersEnabled({
+        topics: profileData.preferences.discovery_filter_topics_enabled ?? false,
+        companySectors: profileData.preferences.discovery_filter_company_sectors_enabled ?? false,
+        companyFollowers: profileData.preferences.discovery_filter_company_followers_enabled ?? false,
+        userFollowers: profileData.preferences.discovery_filter_user_followers_enabled ?? false,
+        fundingStages: profileData.preferences.discovery_filter_funding_stages_enabled ?? false,
+        hasToken: profileData.preferences.discovery_filter_token_status_enabled ?? false
+      });
+      
+      console.log("Loaded discovery filter states:", {
+        topics: profileData.preferences.discovery_filter_topics_enabled,
+        companySectors: profileData.preferences.discovery_filter_company_sectors_enabled,
+        companyFollowers: profileData.preferences.discovery_filter_company_followers_enabled,
+        userFollowers: profileData.preferences.discovery_filter_user_followers_enabled,
+        fundingStages: profileData.preferences.discovery_filter_funding_stages_enabled,
+        hasToken: profileData.preferences.discovery_filter_token_status_enabled
+      });
 
       // Extract filter settings from excluded_tags
       const excludedTags = profileData.preferences.excluded_tags || [];
@@ -543,13 +562,34 @@ export default function MarketingCollabs() {
       const existingTags = profileData?.preferences?.excluded_tags || [];
       const nonFilterTags = existingTags.filter(tag => !tag.startsWith('filter:'));
       
+      // Save both the form data and the filter toggle states
       const updateData = {
         ...profileData?.preferences,
+        // Form data values
         collabs_to_host: collabsToHost,
         collabs_to_discover: data.enabledCollabs,
         twitter_collabs: data.enabledTwitterCollabs,
-        excluded_tags: [...nonFilterTags, ...allFilterData] // Keep any real excluded tags plus our filter data
+        excluded_tags: [...nonFilterTags, ...allFilterData], // Keep any real excluded tags plus our filter data
+        
+        // Filter toggle states in their dedicated fields
+        discovery_filter_enabled: data.matchingEnabled,
+        discovery_filter_topics_enabled: filtersEnabled.topics,
+        discovery_filter_company_sectors_enabled: filtersEnabled.companySectors,
+        discovery_filter_company_followers_enabled: filtersEnabled.companyFollowers,
+        discovery_filter_user_followers_enabled: filtersEnabled.userFollowers,
+        discovery_filter_funding_stages_enabled: filtersEnabled.fundingStages,
+        discovery_filter_token_status_enabled: filtersEnabled.hasToken
       };
+      
+      console.log("Saving filter toggle states:", {
+        discovery_filter_enabled: data.matchingEnabled,
+        discovery_filter_topics_enabled: filtersEnabled.topics,
+        discovery_filter_company_sectors_enabled: filtersEnabled.companySectors,
+        discovery_filter_company_followers_enabled: filtersEnabled.companyFollowers,
+        discovery_filter_user_followers_enabled: filtersEnabled.userFollowers,
+        discovery_filter_funding_stages_enabled: filtersEnabled.fundingStages,
+        discovery_filter_token_status_enabled: filtersEnabled.hasToken
+      });
 
       const response = await apiRequest('/api/preferences', 'POST', updateData);
 
