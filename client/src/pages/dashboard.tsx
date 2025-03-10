@@ -198,7 +198,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Button
             className="h-24 flex-col bg-primary text-primary-foreground"
-            onClick={() => setLocation('/marketing-collabs')}
+            onClick={() => setLocation('/marketing-collabs-new')}
           >
             <Rocket className="h-6 w-6 mb-2" />
             <span className="text-sm font-medium">Marketing Collabs</span>

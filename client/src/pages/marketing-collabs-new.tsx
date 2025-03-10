@@ -456,14 +456,14 @@ export default function MarketingCollabs() {
       
       // Filter out any existing filter entries from saved data
       const marketingPreferences = profileData?.marketingPreferences || {};
-      const existingTags = marketingPreferences.filtered_marketing_topics || [];
+      const existingTags = marketingPreferences?.filtered_marketing_topics || [];
       const nonFilterTags = existingTags.filter((tag: string) => 
         typeof tag === 'string' && !tag.startsWith('filter:')
       );
       
       // For notification frequency
       const notificationPreferences = profileData?.notificationPreferences || {};
-      const notification_frequency = notificationPreferences.notification_frequency || "Daily";
+      const notification_frequency = notificationPreferences?.notification_frequency || "Daily";
       
       // General preferences data
       const generalPrefsData = {

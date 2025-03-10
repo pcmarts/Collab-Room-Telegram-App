@@ -25,7 +25,7 @@ export function Sidebar() {
     
     // Original items
     { href: '/collaborations', label: 'Collaborations', icon: Users },
-    { href: '/marketing-collabs', label: 'Marketing Collabs', icon: Megaphone },
+    { href: '/marketing-collabs-new', label: 'Marketing Collabs', icon: Megaphone },
     { href: '/conference-coffees', label: 'Conference Coffees', icon: Coffee },
     { href: '/profile-overview', label: 'Personal Info', icon: User },
     { href: '/company-info', label: 'Company Info', icon: Building }
