@@ -529,10 +529,18 @@ export default function MarketingCollabs() {
       // Make sure data.topics is properly initialized and handle array or undefined
       const selectedTopics = Array.isArray(data.topics) ? data.topics : [];
       console.log("Selected topics (validated):", selectedTopics);
+      console.log("Topics from form data:", data.topics);
+      console.log("Form values:", form.getValues());
+      
+      // Add extra debug output for the checkbox values
+      if (data.topics === undefined || (Array.isArray(data.topics) && data.topics.length === 0)) {
+        console.warn("⚠️ No topics were selected in the form!");
+      }
       
       // Convert filter settings to strings that can be stored in excluded_tags
       // Use a prefix to separate these from actual excluded tags
       const filterTopics = selectedTopics.map(topic => `filter:topic:${topic}`);
+      console.log("Mapped filter topics:", filterTopics);
       const filterSectors = data.companySectors?.map(sector => `filter:sector:${sector}`) || [];
       const filterFundingStages = data.fundingStages?.map(stage => `filter:stage:${stage}`) || [];
       
@@ -1443,17 +1451,20 @@ export default function MarketingCollabs() {
                                   >
                                     <FormControl>
                                       <Checkbox
-                                        checked={field.value?.includes(topic)}
+                                        checked={Array.isArray(field.value) && field.value.includes(topic)}
                                         onCheckedChange={(checked) => {
-                                          const currentTopics = field.value || [];
+                                          // Ensure we're dealing with an array
+                                          const currentTopics = Array.isArray(field.value) ? field.value : [];
+                                          console.log(`Topic ${topic} checked: ${checked}, currentTopics:`, currentTopics);
+                                          
                                           if (checked) {
-                                            field.onChange([...currentTopics, topic]);
+                                            const newValue = [...currentTopics, topic];
+                                            console.log(`Adding topic ${topic}, new value:`, newValue);
+                                            field.onChange(newValue);
                                           } else {
-                                            field.onChange(
-                                              currentTopics.filter(
-                                                (value) => value !== topic
-                                              )
-                                            );
+                                            const newValue = currentTopics.filter(value => value !== topic);
+                                            console.log(`Removing topic ${topic}, new value:`, newValue);
+                                            field.onChange(newValue);
                                           }
                                         }}
                                       />
@@ -1502,17 +1513,17 @@ export default function MarketingCollabs() {
                                           >
                                             <FormControl>
                                               <Checkbox
-                                                checked={field.value?.includes(tag)}
+                                                checked={Array.isArray(field.value) && field.value.includes(tag)}
                                                 onCheckedChange={(checked) => {
-                                                  const currentTags = field.value || [];
+                                                  // Ensure we're dealing with an array 
+                                                  const currentTags = Array.isArray(field.value) ? field.value : [];
+                                                  
                                                   if (checked) {
-                                                    field.onChange([...currentTags, tag]);
+                                                    const newValue = [...currentTags, tag];
+                                                    field.onChange(newValue);
                                                   } else {
-                                                    field.onChange(
-                                                      currentTags.filter(
-                                                        (value) => value !== tag
-                                                      )
-                                                    );
+                                                    const newValue = currentTags.filter(value => value !== tag);
+                                                    field.onChange(newValue);
                                                   }
                                                 }}
                                               />
@@ -1629,17 +1640,17 @@ export default function MarketingCollabs() {
                                   >
                                     <FormControl>
                                       <Checkbox
-                                        checked={field.value?.includes(stage)}
+                                        checked={Array.isArray(field.value) && field.value.includes(stage)}
                                         onCheckedChange={(checked) => {
-                                          const currentStages = field.value || [];
+                                          // Ensure we're dealing with an array
+                                          const currentStages = Array.isArray(field.value) ? field.value : [];
+                                          
                                           if (checked) {
-                                            field.onChange([...currentStages, stage]);
+                                            const newValue = [...currentStages, stage];
+                                            field.onChange(newValue);
                                           } else {
-                                            field.onChange(
-                                              currentStages.filter(
-                                                (value) => value !== stage
-                                              )
-                                            );
+                                            const newValue = currentStages.filter(value => value !== stage);
+                                            field.onChange(newValue);
                                           }
                                         }}
                                       />
