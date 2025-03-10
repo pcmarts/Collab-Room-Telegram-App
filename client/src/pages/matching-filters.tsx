@@ -23,14 +23,14 @@ export default function MatchingFilters() {
   });
 
   const [formData, setFormData] = useState({
-    excluded_tags: [] as string[]
+    filtered_conference_sectors: [] as string[]
   });
 
   // Load existing preferences when data is fetched
   useEffect(() => {
-    if (profileData?.preferences) {
+    if (profileData?.conferencePreferences) {
       setFormData({
-        excluded_tags: profileData.preferences.excluded_tags || []
+        filtered_conference_sectors: profileData.conferencePreferences.filtered_conference_sectors || []
       });
     }
   }, [profileData]);
@@ -41,22 +41,20 @@ export default function MatchingFilters() {
     try {
       setIsSubmitting(true);
 
-      const submitData = {
-        ...profileData?.preferences,
-        excluded_tags: formData.excluded_tags
-      };
-
-      const response = await apiRequest('POST', '/api/preferences', submitData);
+      // Update conference preferences
+      const response = await apiRequest('POST', '/api/conference-preferences', {
+        filtered_conference_sectors: formData.filtered_conference_sectors
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to update preferences');
+        throw new Error('Failed to update conference preferences');
       }
 
       await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
 
       toast({
         title: "Success!",
-        description: "Your matching filters have been updated",
+        description: "Your conference matching filters have been updated",
         duration: 2000
       });
 
@@ -85,9 +83,9 @@ export default function MatchingFilters() {
   const toggleExcludedTag = (tag: string) => {
     setFormData(prev => ({
       ...prev,
-      excluded_tags: prev.excluded_tags.includes(tag)
-        ? prev.excluded_tags.filter(t => t !== tag)
-        : [...prev.excluded_tags, tag]
+      filtered_conference_sectors: prev.filtered_conference_sectors.includes(tag)
+        ? prev.filtered_conference_sectors.filter(t => t !== tag)
+        : [...prev.filtered_conference_sectors, tag]
     }));
   };
 
@@ -102,17 +100,17 @@ export default function MatchingFilters() {
   return (
     <div className="min-h-[100svh] bg-background">
       <PageHeader
-        title="Matching Filters"
-        subtitle="Control what matches you see"
+        title="Conference Matching"
+        subtitle="Set your networking preferences"
         backUrl="/dashboard"
       />
 
       <div className="p-4 space-y-6">
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-4">
-            <Label className="text-lg">🔍 Company Filter</Label>
+            <Label className="text-lg">☕ Coffee Match Filters</Label>
             <p className="text-sm text-muted-foreground mb-4">
-              By default, all company types are included in your discovery feed. Deselect any tags below to exclude those types of companies from your matches.
+              By default, all company types are included in your coffee match suggestions. Deselect any sectors below to exclude those types of companies from your conference networking.
             </p>
 
             {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
@@ -137,7 +135,7 @@ export default function MatchingFilters() {
                       <Button
                         key={tag}
                         type="button"
-                        variant={formData.excluded_tags.includes(tag) ? "outline" : "default"}
+                        variant={formData.filtered_conference_sectors.includes(tag) ? "outline" : "default"}
                         className="justify-start h-auto py-3 px-4"
                         onClick={() => toggleExcludedTag(tag)}
                       >

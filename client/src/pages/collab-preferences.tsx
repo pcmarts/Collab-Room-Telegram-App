@@ -75,21 +75,31 @@ export default function CollabPreferencesForm() {
       }
 
       if (isEditMode) {
-        // For edit mode, just update preferences
-        const response = await apiRequest("POST", "/api/preferences", {
-          ...formData,
-          collabs_to_host: profileData?.preferences?.collabs_to_host || [],
+        // For edit mode, update marketing preferences
+        const response = await apiRequest("POST", "/api/marketing-preferences", {
+          collabs_to_discover: formData.collabs_to_discover,
+          filtered_marketing_topics: formData.filtered_marketing_topics,
+          twitter_collabs: formData.twitter_collabs
         });
 
         if (!response.ok) {
-          throw new Error("Failed to update preferences");
+          throw new Error("Failed to update marketing preferences");
+        }
+        
+        // Update notification frequency in general preferences
+        const prefResponse = await apiRequest("POST", "/api/preferences", {
+          notification_frequency: formData.notification_frequency
+        });
+        
+        if (!prefResponse.ok) {
+          throw new Error("Failed to update notification settings");
         }
 
         await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
 
         toast({
           title: "Success!",
-          description: "Your discovery preferences have been updated",
+          description: "Your marketing preferences have been updated",
           duration: 2000,
         });
 
@@ -110,7 +120,7 @@ export default function CollabPreferencesForm() {
           // User information
           first_name: userFormData.first_name,
           last_name: userFormData.last_name,
-          handle: window.Telegram?.WebApp?.initData?.user?.username || "",
+          handle: window.Telegram?.WebApp?.initDataUnsafe?.user?.username || "",
           linkedin_url: userFormData.linkedin_url,
           email: userFormData.email,
 
@@ -127,11 +137,13 @@ export default function CollabPreferencesForm() {
           blockchain_networks: companyFormData.blockchain_networks,
           company_tags: companyFormData.tags,
 
-          // Collaboration preferences
-          collabs_to_discover: formData.collabs_to_discover,
-          collabs_to_host: collabsFormData.collabs_to_host,
+          // General preferences
           notification_frequency: formData.notification_frequency,
-          excluded_tags: formData.excluded_tags,
+          
+          // Marketing preferences
+          collabs_to_discover: formData.collabs_to_discover,
+          collabs_to_host: collabsFormData.collabs_to_host || [],
+          filtered_marketing_topics: formData.filtered_marketing_topics,
 
           // Telegram data
           initData: window.Telegram?.WebApp?.initData || "",
