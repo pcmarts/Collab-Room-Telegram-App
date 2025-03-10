@@ -702,18 +702,26 @@ export default function MarketingCollabs() {
         discovery_filter_token_status_enabled: filtersEnabled.hasToken
       });
 
-      // First update the marketing preferences with the filter settings
-      // Create a copy of the filter data array to make sure it's not modified
-      const filteredTopicsCopy = [...allFilterData];
+      // FIXED: Use all filter topics directly, ensuring they're properly formatted
+      // These are now guaranteed to be properly formed from the checkbox values
+      console.log("🔵 Final filterTopics before creating marketingPrefsData:", JSON.stringify(filterTopics));
+      console.log("🔵 Number of topic entries:", filterTopics.length);
       
-      console.log("🔵 Final allFilterData before creating marketingPrefsData:", JSON.stringify(filteredTopicsCopy));
-      console.log("🔵 Number of topic entries:", filteredTopicsCopy.filter(item => item.startsWith('filter:topic:')).length);
+      // Create a proper array of all filters that ensures topic data is preserved
+      const allFilters = [
+        ...filterTopics,
+        ...filterSectors,
+        ...filterFundingStages,
+        ...filterMetadata
+      ];
+      
+      console.log("🔵 Complete filtered topics data being saved:", JSON.stringify(allFilters));
       
       const marketingPrefsData = {
         collabs_to_discover: data.enabledCollabs,
         collabs_to_host: collabsToHost,
         twitter_collabs: data.enabledTwitterCollabs,
-        filtered_marketing_topics: [...nonFilterTags, ...filteredTopicsCopy],
+        filtered_marketing_topics: [...nonFilterTags, ...allFilters],
         discovery_filter_enabled: data.matchingEnabled,
         discovery_filter_topics_enabled: filtersEnabled.topics,
         discovery_filter_company_sectors_enabled: filtersEnabled.companySectors,
