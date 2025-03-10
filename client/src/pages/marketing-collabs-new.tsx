@@ -1244,52 +1244,7 @@ export default function MarketingCollabs() {
                       )}
                     </div>
                     
-                    {/* User Followers Filter */}
-                    <div>
-                      <div className="flex justify-between items-center mb-4">
-                        <div>
-                          <h3 className="text-base font-medium">Filter by User Twitter Followers</h3>
-                          <p className="text-sm text-gray-500">
-                            Only show collaborations from users with at least this many followers
-                          </p>
-                        </div>
-                        <Switch 
-                          checked={filtersEnabled.userFollowers}
-                          onCheckedChange={() => toggleFilter('userFollowers')}
-                        />
-                      </div>
-                      
-                      {filtersEnabled.userFollowers && (
-                        <div className="border rounded-lg p-4 bg-background">
-                          <FormField
-                            control={form.control}
-                            name="userFollowers"
-                            render={({ field }) => (
-                              <FormItem>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
-                                  value={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select minimum followers" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                                      <SelectItem key={count} value={count}>
-                                        {count}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      )}
-                    </div>
+                    {/* User Followers Filter - Removed as requested */}
                     
                     {/* Funding Stages Filter */}
                     <div>
@@ -1380,25 +1335,27 @@ export default function MarketingCollabs() {
                   </CardContent>
                 </Card>
                 
-                <div className="flex justify-end">
-                  <Button 
-                    type="button" 
-                    onClick={handleDirectSubmit}
-                    disabled={isSubmitting}
-                    className="min-w-[120px]"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Preferences
-                      </>
-                    )}
-                  </Button>
+                <div className="fixed bottom-0 left-0 right-0 bg-background border-t py-4 px-6 shadow-lg z-10">
+                  <div className="container flex justify-end">
+                    <Button 
+                      type="button" 
+                      onClick={handleDirectSubmit}
+                      disabled={isSubmitting}
+                      className="min-w-[120px]"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Preferences
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </form>
             </Form>
