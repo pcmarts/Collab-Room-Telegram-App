@@ -4,12 +4,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Shield } from "lucide-react";
+import { Loader2, Shield, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { User, Company, Preferences } from "@shared/schema";
-import { TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
+import { TWITTER_FOLLOWER_COUNTS, TIMEZONES } from "@shared/schema";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/PageHeader";
 
@@ -49,6 +49,7 @@ export default function ProfileOverview() {
         email: profile.user.email || "",
         twitter_url: profile.user.twitter_url || "",
         twitter_followers: profile.user.twitter_followers || "",
+        timezone: profile.user.timezone || "",
       });
     }
   }, [profile]);
@@ -228,6 +229,31 @@ export default function ProfileOverview() {
                 <Label>Telegram Handle</Label>
                 <p className="text-sm text-muted-foreground">
                   @{profile.user.handle}
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="timezone" className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Your Timezone
+                </Label>
+                <Select
+                  value={formData.timezone}
+                  onValueChange={(value) => handleSelectChange("timezone", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your timezone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIMEZONES.map((timezone) => (
+                      <SelectItem key={timezone} value={timezone}>
+                        {timezone}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your timezone helps us better match you for coffee meetings and collaboration opportunities
                 </p>
               </div>
 
