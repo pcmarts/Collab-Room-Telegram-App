@@ -76,7 +76,7 @@ export default function CollabPreferencesForm() {
 
       if (isEditMode) {
         // For edit mode, update marketing preferences with new endpoint
-        const response = await apiRequest("POST", "/api/marketing-preferences", {
+        const response = await apiRequest("/api/marketing-preferences", "POST", {
           collabs_to_discover: formData.collabs_to_discover,
           filtered_marketing_topics: formData.filtered_marketing_topics,
           twitter_collabs: formData.twitter_collabs
@@ -87,7 +87,7 @@ export default function CollabPreferencesForm() {
         }
         
         // Update notification frequency in general preferences
-        const prefResponse = await apiRequest("POST", "/api/preferences", {
+        const prefResponse = await apiRequest("/api/preferences", "POST", {
           notification_frequency: formData.notification_frequency
         });
         
@@ -150,8 +150,8 @@ export default function CollabPreferencesForm() {
         };
 
         const response = await apiRequest(
-          "POST",
           "/api/onboarding",
+          "POST",
           submitData,
         );
 
