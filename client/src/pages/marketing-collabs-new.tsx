@@ -514,9 +514,9 @@ export default function MarketingCollabs() {
       }
       
       // Save general preferences
-      const response = await apiRequest('/api/preferences', 'POST', generalPrefsData);
+      const generalResponse = await apiRequest('/api/preferences', 'POST', generalPrefsData);
       
-      if (!response.ok) {
+      if (!generalResponse.ok) {
         throw new Error('Failed to update general preferences');
       }
       
