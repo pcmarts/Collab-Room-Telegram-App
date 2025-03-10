@@ -58,6 +58,7 @@ async function main() {
         coffee_match_user_followers TEXT,
         coffee_match_funding_stages TEXT[],
         coffee_match_token_status BOOLEAN DEFAULT FALSE,
+        filtered_conference_sectors TEXT[],
         coffee_match_filter_company_sectors_enabled BOOLEAN DEFAULT FALSE,
         coffee_match_filter_company_followers_enabled BOOLEAN DEFAULT FALSE,
         coffee_match_filter_user_followers_enabled BOOLEAN DEFAULT FALSE,
@@ -76,6 +77,17 @@ async function main() {
       ALTER COLUMN collabs_to_host DROP NOT NULL,
       ALTER COLUMN excluded_tags DROP NOT NULL;
     `);
+    
+    // Add filtered_conference_sectors if it doesn't exist
+    try {
+      console.log('Adding filtered_conference_sectors column if needed...');
+      await client.query(`
+        ALTER TABLE conference_preferences 
+        ADD COLUMN IF NOT EXISTS filtered_conference_sectors TEXT[];
+      `);
+    } catch (err) {
+      console.error('Error adding filtered_conference_sectors column:', err);
+    }
     
     console.log('Database migration completed successfully');
   } catch (error) {
