@@ -940,9 +940,9 @@ export default function MarketingCollabs() {
                       render={() => (
                         <FormItem>
                           <div className="mb-4">
-                            <FormLabel className="text-base">Types of collaborations to discover</FormLabel>
+                            <FormLabel className="text-base">r</FormLabel>
                             <FormDescription>
-                              Select which types of collaborations you'd like to find
+                              
                             </FormDescription>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1428,7 +1428,7 @@ export default function MarketingCollabs() {
           </TabsContent>
           
           {/* Collaborations Tab */}
-          <TabsContent value="collaborations" className="mt-6">
+          <TabsContent value="collaborations" className="mt-6 pb-24">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">My Collaborations</h2>
               <Button onClick={() => setLocation('/create-collaboration')}>
