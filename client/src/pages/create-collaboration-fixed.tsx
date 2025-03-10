@@ -1157,17 +1157,12 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                   )}
                   
                   {/* Funding Stages Filter */}
-                  <div className="flex items-center space-x-3 mb-4 mt-6">
+                  <div className="flex items-center space-x-3 mb-4">
                     <Switch
                       checked={filtersEnabled.fundingStages}
                       onCheckedChange={() => toggleFilter('fundingStages')}
                     />
-                    <div className="grid gap-0.5">
-                      <div className="text-base font-medium">Funding Stages</div>
-                      <p className="text-sm text-muted-foreground">
-                        Filter by company funding stages
-                      </p>
-                    </div>
+                    <Label>Filter by Funding Stage</Label>
                   </div>
                   
                   {filtersEnabled.fundingStages && (
@@ -1175,35 +1170,12 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       control={form.control}
                       name="required_funding_stages"
                       render={({ field }) => (
-                        <FormItem className="ml-10">
-                          <div className="mb-2 font-medium">Required Funding Stages</div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Select funding stages that are eligible to apply
-                          </p>
-                          <div className="flex justify-between mb-2">
-                            <Button 
-                              type="button" 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => {
-                                // Select all funding stages
-                                field.onChange([...FUNDING_STAGES]);
-                              }}
-                            >
-                              Select All
-                            </Button>
-                            <Button 
-                              type="button" 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => field.onChange([])}
-                            >
-                              Deselect All
-                            </Button>
-                          </div>
-                          <div className="grid grid-cols-1 gap-2 mt-2">
+                        <FormItem>
+                          <div className="space-y-2">
                             {FUNDING_STAGES.map((stage) => (
-                              <FormItem key={stage} className="flex items-center space-x-3 space-y-0 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                              <FormItem
+                                key={stage}
+                                className="flex flex-row items-start space-x-3 space-y-0 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
                                 onClick={() => {
                                   const currentValue = field.value || [];
                                   const isChecked = currentValue.includes(stage);
@@ -1212,7 +1184,8 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                                   } else {
                                     field.onChange([...currentValue, stage]);
                                   }
-                                }}>
+                                }}
+                              >
                                 <FormControl>
                                   <Checkbox
                                     className="h-5 w-5"
@@ -1227,7 +1200,9 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                                     }}
                                   />
                                 </FormControl>
-                                <div className="font-normal">{stage}</div>
+                                <FormLabel className="text-sm font-normal">
+                                  {stage}
+                                </FormLabel>
                               </FormItem>
                             ))}
                           </div>
@@ -1238,17 +1213,12 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                   )}
                   
                   {/* Token Status Filter */}
-                  <div className="flex items-center space-x-3 mb-4 mt-6">
+                  <div className="flex items-center space-x-3 mb-4">
                     <Switch
                       checked={filtersEnabled.tokenStatus}
                       onCheckedChange={() => toggleFilter('tokenStatus')}
                     />
-                    <div className="grid gap-0.5">
-                      <div className="text-base font-medium">Token Requirement</div>
-                      <p className="text-sm text-muted-foreground">
-                        Only allow companies with tokens
-                      </p>
-                    </div>
+                    <Label>Has Token</Label>
                   </div>
                   
                   {filtersEnabled.tokenStatus && (
@@ -1256,22 +1226,21 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                       control={form.control}
                       name="required_token_status"
                       render={({ field }) => (
-                        <FormItem 
-                          className="flex items-center space-x-3 space-y-0 ml-10 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
-                          onClick={() => field.onChange(!field.value)}>
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">
+                              Projects must have a token
+                            </FormLabel>
+                            <FormDescription>
+                              Only match with projects that have a token
+                            </FormDescription>
+                          </div>
                           <FormControl>
-                            <Checkbox
-                              className="h-5 w-5"
+                            <Switch
                               checked={field.value}
                               onCheckedChange={field.onChange}
                             />
                           </FormControl>
-                          <div>
-                            <div className="font-medium">Require Token</div>
-                            <p className="text-sm text-muted-foreground">
-                              Only companies with tokens can apply
-                            </p>
-                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
