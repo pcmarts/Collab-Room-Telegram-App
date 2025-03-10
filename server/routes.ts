@@ -715,6 +715,13 @@ export async function registerRoutes(app: Express) {
         collabs_to_host, 
         filtered_marketing_topics,
         twitter_collabs,
+        discovery_filter_enabled,
+        discovery_filter_topics_enabled,
+        discovery_filter_company_sectors_enabled,
+        discovery_filter_company_followers_enabled,
+        discovery_filter_user_followers_enabled,
+        discovery_filter_funding_stages_enabled,
+        discovery_filter_token_status_enabled
       } = req.body;
 
       // Get Telegram data from header
@@ -776,7 +783,15 @@ export async function registerRoutes(app: Express) {
           collabs_to_discover: collabs_to_discover || [],
           collabs_to_host: collabs_to_host || [],
           filtered_marketing_topics: filtered_marketing_topics || [],
-          twitter_collabs: twitter_collabs || []
+          twitter_collabs: twitter_collabs || [],
+          // Include all filter toggles with proper defaults if not provided
+          discovery_filter_enabled: discovery_filter_enabled === undefined ? false : discovery_filter_enabled,
+          discovery_filter_topics_enabled: discovery_filter_topics_enabled === undefined ? false : discovery_filter_topics_enabled,
+          discovery_filter_company_sectors_enabled: discovery_filter_company_sectors_enabled === undefined ? false : discovery_filter_company_sectors_enabled,
+          discovery_filter_company_followers_enabled: discovery_filter_company_followers_enabled === undefined ? false : discovery_filter_company_followers_enabled,
+          discovery_filter_user_followers_enabled: discovery_filter_user_followers_enabled === undefined ? false : discovery_filter_user_followers_enabled,
+          discovery_filter_funding_stages_enabled: discovery_filter_funding_stages_enabled === undefined ? false : discovery_filter_funding_stages_enabled,
+          discovery_filter_token_status_enabled: discovery_filter_token_status_enabled === undefined ? false : discovery_filter_token_status_enabled
         };
         
         if (existingMarketingPrefs.length > 0) {
