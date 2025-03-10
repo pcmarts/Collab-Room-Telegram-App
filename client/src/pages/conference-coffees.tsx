@@ -169,22 +169,32 @@ export default function ConferenceCoffees() {
         tokenStatus: prefs.coffee_match_token_status ?? false
       });
       
-      // Load filter toggle states from dedicated fields
-      setFiltersEnabled({
-        companySectors: prefs.coffee_match_filter_company_sectors_enabled ?? false,
-        companyFollowers: prefs.coffee_match_filter_company_followers_enabled ?? false,
-        userFollowers: prefs.coffee_match_filter_user_followers_enabled ?? false,
-        fundingStages: prefs.coffee_match_filter_funding_stages_enabled ?? false,
-        tokenStatus: prefs.coffee_match_filter_token_status_enabled ?? false
-      });
+      // Force setting the filter toggle states directly
+      const updatedFilters = {
+        companySectors: Boolean(prefs.coffee_match_filter_company_sectors_enabled),
+        companyFollowers: Boolean(prefs.coffee_match_filter_company_followers_enabled),
+        userFollowers: Boolean(prefs.coffee_match_filter_user_followers_enabled),
+        fundingStages: Boolean(prefs.coffee_match_filter_funding_stages_enabled),
+        tokenStatus: Boolean(prefs.coffee_match_filter_token_status_enabled)
+      };
       
-      console.log("Loaded coffee match filter states:", {
-        companySectors: prefs.coffee_match_filter_company_sectors_enabled,
-        companyFollowers: prefs.coffee_match_filter_company_followers_enabled,
-        userFollowers: prefs.coffee_match_filter_user_followers_enabled,
-        fundingStages: prefs.coffee_match_filter_funding_stages_enabled,
-        tokenStatus: prefs.coffee_match_filter_token_status_enabled
-      });
+      console.log("Loading coffee match filter states:", updatedFilters);
+      setFiltersEnabled(updatedFilters);
+      
+      // Enable some filters for testing if none are enabled
+      if (!Object.values(updatedFilters).some(Boolean)) {
+        console.log("No filters were enabled from saved preferences, forcing some on for testing");
+        // Uncomment this if you want to force filters on for testing
+        /*
+        setFiltersEnabled({
+          companySectors: true,
+          companyFollowers: true,
+          userFollowers: false,
+          fundingStages: false,
+          tokenStatus: false
+        });
+        */
+      }
     }
   }, [profileData, form]);
 
