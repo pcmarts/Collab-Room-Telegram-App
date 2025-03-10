@@ -174,14 +174,13 @@ export default function ConferenceCoffees() {
       setCompanyFollowersEnabled(prefs.coffee_match_filter_company_followers_enabled === true);
       setUserFollowersEnabled(prefs.coffee_match_filter_user_followers_enabled === true);
       setFundingStagesEnabled(prefs.coffee_match_filter_funding_stages_enabled === true);
-      setTokenStatusEnabled(prefs.coffee_match_filter_token_status_enabled === true);
       
       console.log("Loaded filter toggle states:", {
         companySectors: companySectorsEnabled,
         companyFollowers: companyFollowersEnabled,
         userFollowers: userFollowersEnabled,
         fundingStages: fundingStagesEnabled,
-        tokenStatus: tokenStatusEnabled
+        tokenStatus: prefs.coffee_match_token_status
       });
     }
   }, [profileData, form]);
@@ -198,7 +197,7 @@ export default function ConferenceCoffees() {
       companyFollowers: companyFollowersEnabled,
       userFollowers: userFollowersEnabled,
       fundingStages: fundingStagesEnabled,
-      tokenStatus: tokenStatusEnabled
+      tokenStatus: data.tokenStatus
     });
 
     try {
