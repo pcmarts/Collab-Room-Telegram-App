@@ -21,7 +21,6 @@ export function Sidebar() {
     { href: '/dashboard', label: 'Dashboard', icon: Layout },
     
     // Collaboration section
-    { href: '/browse-collaborations', label: 'Browse Collaborations', icon: Search },
     { href: '/create-collaboration', label: 'Create Collaboration', icon: PlusCircle },
     { href: '/my-collaborations', label: 'My Collaborations', icon: ListChecks },
     
