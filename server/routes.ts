@@ -14,7 +14,7 @@ import { storage } from "./storage";
 
 // Helper function to extract Telegram user data from request
 // This type allows us to accept either a full Request or just an object with the header we need
-type TelegramReq = Request | { headers: { 'x-telegram-init-data': string } };
+type TelegramReq = { headers: { 'x-telegram-init-data': string } | any };
 
 function getTelegramUserFromRequest(req: TelegramReq) {
   try {
@@ -1086,11 +1086,6 @@ export async function registerRoutes(app: Express) {
         .from(companies)
         .where(eq(companies.user_id, user.id));
 
-      // Get all preferences
-      const [userPreferences] = await db.select()
-        .from(preferences)
-        .where(eq(preferences.user_id, user.id));
-        
       // Get marketing preferences
       const [marketingPreferences] = await db.select()
         .from(marketing_preferences)
@@ -1100,11 +1095,26 @@ export async function registerRoutes(app: Express) {
       const [conferencePreferences] = await db.select()
         .from(conference_preferences)
         .where(eq(conference_preferences.user_id, user.id));
+        
+      // Get notification preferences
+      const [userPreferences] = await db.select()
+        .from(preferences)
+        .where(eq(preferences.user_id, user.id));
 
       return res.json({
         user,
         company,
-        preferences: userPreferences,
+        // Still return the preferences but with minimal data - we'll remove this in later versions
+        preferences: {
+          id: userPreferences?.id || '',
+          user_id: user.id,
+          notification_frequency: userPreferences?.notification_frequency || 'Daily',
+          // Empty fields that used to be in preferences but are now in specialized tables
+          collabs_to_discover: [],
+          collabs_to_host: [],
+          twitter_collabs: [],
+          excluded_tags: []
+        },
         marketingPreferences,
         conferencePreferences
       });
