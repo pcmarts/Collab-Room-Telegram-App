@@ -88,15 +88,7 @@ export default function CollabPreferencesForm() {
           throw new Error("Failed to update marketing preferences");
         }
         
-        // Update notification preferences
-        const prefResponse = await apiRequest("/api/notification-preferences", "POST", {
-          notification_frequency: formData.notification_frequency,
-          notifications_enabled: true
-        });
-        
-        if (!prefResponse.ok) {
-          throw new Error("Failed to update notification settings");
-        }
+        // No need to update notification preferences here, that's only done in dashboard
 
         await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
 

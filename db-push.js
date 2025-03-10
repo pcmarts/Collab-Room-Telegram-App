@@ -70,13 +70,44 @@ async function main() {
       );
     `);
     
-    // Update the preferences table
-    console.log('Updating the preferences table...');
+    // Create the notification_preferences table
+    console.log('Creating the notification_preferences table...');
     await client.query(`
-      ALTER TABLE preferences ALTER COLUMN collabs_to_discover DROP NOT NULL,
-      ALTER COLUMN collabs_to_host DROP NOT NULL,
-      ALTER COLUMN excluded_tags DROP NOT NULL;
+      CREATE TABLE IF NOT EXISTS notification_preferences (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        notifications_enabled BOOLEAN DEFAULT TRUE,
+        notification_frequency TEXT DEFAULT 'Daily',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        UNIQUE(user_id)
+      );
     `);
+    
+    // Try to update the preferences table if it exists
+    try {
+      console.log('Checking for preferences table...');
+      const tableExists = await client.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'preferences'
+        );
+      `);
+      
+      if (tableExists.rows[0].exists) {
+        console.log('Updating the preferences table...');
+        await client.query(`
+          ALTER TABLE preferences ALTER COLUMN collabs_to_discover DROP NOT NULL,
+          ALTER COLUMN collabs_to_host DROP NOT NULL,
+          ALTER COLUMN excluded_tags DROP NOT NULL;
+        `);
+      } else {
+        console.log('Preferences table does not exist, skipping...');
+      }
+    } catch (err) {
+      console.warn('Could not update preferences table:', err.message);
+    }
     
     // Add filtered_conference_sectors if it doesn't exist
     try {
