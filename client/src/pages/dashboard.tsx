@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
-import { UserIcon, Users, Building, Star, Bell, Coffee, Calendar, Rocket, Plus } from 'lucide-react';
+import { UserIcon, Users, Building, Star, Bell, Coffee, Calendar, Rocket, Plus, Settings } from 'lucide-react';
 import type { 
   User as UserType, 
   Company, 
@@ -184,80 +184,62 @@ export default function Dashboard() {
       </div>
 
       <div className="p-4 space-y-4 pb-safe">
-        {/* Marketing Collaboration Section */}
-        <div className="space-y-3 mb-6">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Rocket className="h-5 w-5" />
-            Marketing Collaborations
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              className="h-20 flex-col bg-primary text-primary-foreground"
-              onClick={() => setLocation('/marketing-collabs')}
-            >
-              <Rocket className="h-6 w-6 mb-2" />
-              <span className="text-sm font-medium">Manage Collabs</span>
-            </Button>
-            <Button
-              className="h-20 flex-col"
-              variant="outline"
-              onClick={() => setLocation('/collab-preferences')}
-            >
-              <Star className="h-5 w-5 mb-1.5" />
-              <span className="text-xs">Collab Preferences</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Conference Networking Section */}
-        <div className="space-y-3 mb-6">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Coffee className="h-5 w-5" />
-            Conference Networking
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              className="h-20 flex-col bg-primary text-primary-foreground"
-              onClick={() => setLocation('/conference-coffees')}
-            >
-              <Coffee className="h-6 w-6 mb-2" />
-              <span className="text-sm font-medium">Coffee Matches</span>
-            </Button>
-            <Button
-              className="h-20 flex-col"
-              variant="outline"
-              onClick={() => setLocation('/matching-filters')}
-            >
-              <Star className="h-5 w-5 mb-1.5" />
-              <span className="text-xs">Match Preferences</span>
-            </Button>
-          </div>
+        {/* Main Actions */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <Button
+            className="h-24 flex-col bg-primary text-primary-foreground"
+            onClick={() => setLocation('/marketing-collabs')}
+          >
+            <Rocket className="h-6 w-6 mb-2" />
+            <span className="text-sm font-medium">Marketing Collabs</span>
+          </Button>
+          <Button
+            className="h-24 flex-col bg-primary text-primary-foreground"
+            onClick={() => setLocation('/conference-coffees')}
+          >
+            <Coffee className="h-6 w-6 mb-2" />
+            <span className="text-sm font-medium">Conferences</span>
+          </Button>
         </div>
 
         {/* Profile Actions */}
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <UserIcon className="h-5 w-5" />
-            Profile Management
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              className="h-20 flex-col"
-              onClick={() => setLocation('/profile-overview')}
-            >
-              <UserIcon className="h-5 w-5 mb-1.5" />
-              <span className="text-xs">My Profile</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-20 flex-col"
-              onClick={() => setLocation('/company-info')}
-            >
-              <Building className="h-5 w-5 mb-1.5" />
-              <span className="text-xs">My Company</span>
-            </Button>
-          </div>
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
+            onClick={() => setLocation('/profile-overview')}
+          >
+            <UserIcon className="h-5 w-5 mb-1.5" />
+            <span className="text-xs">My Profile</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
+            onClick={() => setLocation('/company-info')}
+          >
+            <Building className="h-5 w-5 mb-1.5" />
+            <span className="text-xs">My Company</span>
+          </Button>
+        </div>
+        
+        {/* Preferences Actions */}
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
+            onClick={() => setLocation('/collab-preferences')}
+          >
+            <Star className="h-5 w-5 mb-1.5" />
+            <span className="text-xs">Collab Preferences</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-col"
+            onClick={() => setLocation('/matching-filters')}
+          >
+            <Settings className="h-5 w-5 mb-1.5" />
+            <span className="text-xs">Match Filters</span>
+          </Button>
         </div>
 
         {/* Notification Settings */}
