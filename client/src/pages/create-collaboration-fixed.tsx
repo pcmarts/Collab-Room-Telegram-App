@@ -1114,45 +1114,6 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                     />
                   )}
                   
-                  {/* User Followers Filter */}
-                  <div className="flex items-center space-x-3 mb-4">
-                    <Switch
-                      checked={filtersEnabled.userFollowers}
-                      onCheckedChange={() => toggleFilter('userFollowers')}
-                    />
-                    <Label>Minimum User Followers</Label>
-                  </div>
-                  
-                  {filtersEnabled.userFollowers && (
-                    <FormField
-                      control={form.control}
-                      name="min_user_followers"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select 
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select minimum followers" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                                <SelectItem key={count} value={count}>
-                                  {count}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                  
                   {/* Funding Stages Filter */}
                   <div className="flex items-center space-x-3 mb-4">
                     <Switch
