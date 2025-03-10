@@ -12,7 +12,7 @@ import CompanyDetails from "@/pages/company-details";
 import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
 import ApplicationForm from "@/pages/application-form";
-import MarketingCollabs from "@/pages/marketing-collabs";
+
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
@@ -38,7 +38,9 @@ function Router() {
           </Route>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/collaborations" component={Collaborations} />
-          <Route path="/marketing-collabs" component={MarketingCollabs} />
+          <Route path="/marketing-collabs">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
           <Route path="/conference-coffees" component={ConferenceCoffees} />
 

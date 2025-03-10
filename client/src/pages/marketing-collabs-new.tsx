@@ -1330,29 +1330,19 @@ export default function MarketingCollabs() {
                         </div>
                         <Switch 
                           checked={filtersEnabled.hasToken}
-                          onCheckedChange={() => toggleFilter('hasToken')}
+                          onCheckedChange={(checked) => {
+                            toggleFilter('hasToken');
+                            form.setValue('hasToken', checked);
+                          }}
                         />
                       </div>
                       
                       {filtersEnabled.hasToken && (
                         <div className="border rounded-lg p-4 bg-background">
-                          <FormField
-                            control={form.control}
-                            name="hasToken"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal">
-                                  Only show companies with a token
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
+                          <p className="text-sm text-muted-foreground">
+                            When enabled, your feed will only show collaborations from companies 
+                            that have their own token
+                          </p>
                         </div>
                       )}
                     </div>
