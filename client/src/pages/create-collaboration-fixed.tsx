@@ -65,7 +65,6 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
   const [filtersEnabled, setFiltersEnabled] = useState({
     companySectors: false,
     companyFollowers: false,
-    userFollowers: false,
     fundingStages: false,
     tokenStatus: false
   });
@@ -84,7 +83,6 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
     const fieldMapping: Record<string, string> = {
       companySectors: 'filter_company_sectors_enabled',
       companyFollowers: 'filter_company_followers_enabled',
-      userFollowers: 'filter_user_followers_enabled',
       fundingStages: 'filter_funding_stages_enabled',
       tokenStatus: 'filter_token_status_enabled'
     };
@@ -259,7 +257,6 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
               setFiltersEnabled({
                 companySectors: collab.filter_company_sectors_enabled ?? Boolean(collab.required_company_sectors?.length),
                 companyFollowers: collab.filter_company_followers_enabled ?? Boolean(collab.min_company_followers),
-                userFollowers: collab.filter_user_followers_enabled ?? Boolean(collab.min_user_followers),
                 fundingStages: collab.filter_funding_stages_enabled ?? Boolean(collab.required_funding_stages?.length),
                 tokenStatus: collab.filter_token_status_enabled ?? Boolean(collab.required_token_status)
               });
