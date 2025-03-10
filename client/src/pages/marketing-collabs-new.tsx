@@ -927,7 +927,7 @@ export default function MarketingCollabs() {
       <PageHeader
         title="Marketing Collaborations"
         subtitle="Manage your marketing collaborations and preferences"
-        backUrl="/dashboard"
+        backUrl="/"
       />
       
       <div className="container max-w-5xl px-4 py-6 pb-24">

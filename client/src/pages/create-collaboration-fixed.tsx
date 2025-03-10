@@ -712,7 +712,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
         <PageHeader 
           title={isEditing ? "Edit Collaboration" : "Create Collaboration"} 
           subtitle={isEditing ? "Update your collaboration details" : "Offer collaboration opportunities"}
-          backUrl="/marketing-collabs"
+          backUrl="/marketing-collabs-new"
         />
         
         <div className="p-4">
