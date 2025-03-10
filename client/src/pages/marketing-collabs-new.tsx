@@ -342,10 +342,11 @@ export default function MarketingCollabs() {
   // Load existing preferences when profile data is fetched
   useEffect(() => {
     if (profileData) {
-      console.log("Loading marketing preferences:", profileData.marketingPreferences);
+      const marketingPreferences = profileData.marketingPreferences || {};
+      console.log("Loading marketing preferences:", marketingPreferences);
       
       // Extract data from marketing preferences
-      const marketingPrefs = profileData.marketingPreferences || {};
+      const marketingPrefs = marketingPreferences;
       const savedCollabsToHost = marketingPrefs.collabs_to_host || [];
       const collabsToDiscover = marketingPrefs.collabs_to_discover || [];
       const savedTwitterCollabs = marketingPrefs.twitter_collabs || [];
@@ -454,13 +455,15 @@ export default function MarketingCollabs() {
       ];
       
       // Filter out any existing filter entries from saved data
-      const existingTags = profileData?.marketingPreferences?.filtered_marketing_topics || [];
+      const marketingPreferences = profileData?.marketingPreferences || {};
+      const existingTags = marketingPreferences.filtered_marketing_topics || [];
       const nonFilterTags = existingTags.filter((tag: string) => 
         typeof tag === 'string' && !tag.startsWith('filter:')
       );
       
       // For notification frequency
-      const notification_frequency = profileData?.notificationPreferences?.notification_frequency || "Daily";
+      const notificationPreferences = profileData?.notificationPreferences || {};
+      const notification_frequency = notificationPreferences.notification_frequency || "Daily";
       
       // General preferences data
       const generalPrefsData = {
