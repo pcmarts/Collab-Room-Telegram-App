@@ -1074,7 +1074,7 @@ export default function MarketingCollabs() {
                           </div>
                           
                           {filtersEnabled.topics && (
-                            <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
+                            <div className="border rounded-lg p-4 bg-background">
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {COLLAB_TOPICS.map((topic) => (
                               <div key={topic} className="flex items-center space-x-2">
@@ -1114,7 +1114,7 @@ export default function MarketingCollabs() {
                       </div>
                       
                       {filtersEnabled.companySectors && (
-                        <div className="border rounded-lg p-4 bg-gray-50">
+                        <div className="border rounded-lg p-4 bg-background">
                           <FormField
                             control={form.control}
                             name="companySectors"
@@ -1176,7 +1176,7 @@ export default function MarketingCollabs() {
                       </div>
                       
                       {filtersEnabled.companyFollowers && (
-                        <div className="border rounded-lg p-4 bg-gray-50">
+                        <div className="border rounded-lg p-4 bg-background">
                           <FormField
                             control={form.control}
                             name="companyFollowers"
@@ -1223,7 +1223,7 @@ export default function MarketingCollabs() {
                       </div>
                       
                       {filtersEnabled.userFollowers && (
-                        <div className="border rounded-lg p-4 bg-gray-50">
+                        <div className="border rounded-lg p-4 bg-background">
                           <FormField
                             control={form.control}
                             name="userFollowers"
@@ -1270,7 +1270,7 @@ export default function MarketingCollabs() {
                       </div>
                       
                       {filtersEnabled.fundingStages && (
-                        <div className="border rounded-lg p-4 bg-gray-50">
+                        <div className="border rounded-lg p-4 bg-background">
                           <FormField
                             control={form.control}
                             name="fundingStages"
@@ -1325,7 +1325,7 @@ export default function MarketingCollabs() {
                       </div>
                       
                       {filtersEnabled.hasToken && (
-                        <div className="border rounded-lg p-4 bg-gray-50">
+                        <div className="border rounded-lg p-4 bg-background">
                           <FormField
                             control={form.control}
                             name="hasToken"
