@@ -406,8 +406,8 @@ export default function MarketingCollabs() {
       // Extract filter settings from filtered_marketing_topics
       const excludedTags = marketingPrefs.filtered_marketing_topics || [];
       
-      // Initialize filter values with defaults
-      let filterMatchingEnabled = false;
+      // Initialize filter values with defaults from dedicated fields where available
+      let filterMatchingEnabled = marketingPrefs.discovery_filter_enabled ?? false;
       let filterTopics: string[] = [];
       let filterCompanySectors: string[] = [];
       let filterFundingStages: string[] = [];
@@ -418,16 +418,6 @@ export default function MarketingCollabs() {
       // Directly check for topic tags
       const topicTags = excludedTags.filter(tag => tag.startsWith('filter:topic:'));
       console.log("Topic tags found:", JSON.stringify(topicTags));
-      
-      // Initialize filter section toggle states
-      const initialFilterSections = {
-        topics: false,
-        companySectors: false,
-        companyFollowers: false,
-        userFollowers: false,
-        fundingStages: false,
-        hasToken: false
-      };
       
       // Process each tag to extract filter settings
       excludedTags.forEach(tag => {
