@@ -13,7 +13,10 @@ import { sendApplicationConfirmation } from "./telegram";
 import { storage } from "./storage";
 
 // Helper function to extract Telegram user data from request
-function getTelegramUserFromRequest(req: Request) {
+// This type allows us to accept either a full Request or just an object with the header we need
+type TelegramReq = Request | { headers: { 'x-telegram-init-data': string } };
+
+function getTelegramUserFromRequest(req: TelegramReq) {
   try {
     const initData = req.headers['x-telegram-init-data'] as string;
     if (!initData) {
