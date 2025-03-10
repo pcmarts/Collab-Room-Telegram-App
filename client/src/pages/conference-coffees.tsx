@@ -201,22 +201,24 @@ export default function ConferenceCoffees() {
       // Get current user preferences
       const profileResponse = await apiRequest('/api/profile', 'GET');
       const profileData = await profileResponse.json();
+      console.log("Current profile data:", profileData);
       
       // Make sure we have a default for notification_frequency as it's required
-      const notification_frequency = profileData.preferences.notification_frequency || "Daily";
+      const notification_frequency = profileData?.preferences?.notification_frequency || "Daily";
+      console.log("Using notification_frequency:", notification_frequency);
       
       // Update the coffee match criteria fields and toggle states
       const updateData = {
-        ...profileData.preferences,
+        ...(profileData?.preferences || {}),
         // Ensure required fields are included
         notification_frequency,
         
         // Form data values
         coffee_match_enabled: data.matchingEnabled,
-        coffee_match_company_sectors: data.companySectors,
+        coffee_match_company_sectors: data.companySectors ?? [],
         coffee_match_company_followers: data.companyFollowers,
         coffee_match_user_followers: data.userFollowers,
-        coffee_match_funding_stages: data.fundingStages,
+        coffee_match_funding_stages: data.fundingStages ?? [],
         coffee_match_token_status: data.tokenStatus,
         
         // Filter toggle states
@@ -226,12 +228,25 @@ export default function ConferenceCoffees() {
         coffee_match_filter_funding_stages_enabled: filtersEnabled.fundingStages,
         coffee_match_filter_token_status_enabled: filtersEnabled.tokenStatus
       };
+      
+      console.log("Sending updateData:", updateData);
 
       // Save to the preferences API
       const response = await apiRequest('/api/preferences', 'POST', updateData);
       
       if (!response.ok) {
-        throw new Error('Failed to save coffee match criteria');
+        // Try to get more detailed error information
+        let errorMessage = 'Failed to save coffee match criteria';
+        try {
+          const errorData = await response.json();
+          console.error("Error response:", errorData);
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (jsonError) {
+          console.error("Could not parse error response as JSON");
+        }
+        throw new Error(errorMessage);
       }
 
       // Invalidate profile data to refresh
@@ -245,7 +260,7 @@ export default function ConferenceCoffees() {
       console.error("Failed to save criteria:", error);
       toast({
         title: "Failed to save criteria",
-        description: "Please try again later",
+        description: error instanceof Error ? error.message : "Please try again later",
         variant: "destructive",
       });
     } finally {
