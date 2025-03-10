@@ -36,11 +36,9 @@ function Router() {
       <div className="w-full px-4 py-2">
         <Switch>
           <Route path="/">
-            <Redirect to="/marketing-collabs-new" />
+            <Redirect to="/dashboard" />
           </Route>
-          <Route path="/dashboard">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
+          <Route path="/dashboard" component={Dashboard} />
           <Route path="/collaborations">
             <Redirect to="/marketing-collabs-new" />
           </Route>
