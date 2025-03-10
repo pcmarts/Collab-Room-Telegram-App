@@ -419,7 +419,14 @@ export default function MarketingCollabs() {
       const topicTags = excludedTags.filter(tag => tag.startsWith('filter:topic:'));
       console.log("Topic tags found:", JSON.stringify(topicTags));
       
-      // Process each tag to extract filter settings
+      // Extract topic values directly from the filter:topic: prefixed tags
+      filterTopics = topicTags.map(tag => {
+        const value = tag.replace('filter:topic:', '');
+        console.log(`Found topic tag: ${tag}, extracted value: ${value}`);
+        return value;
+      });
+      
+      // Process each tag to extract other filter settings
       excludedTags.forEach(tag => {
         if (tag.startsWith('filter:')) {
           const [prefix, type, ...valueParts] = tag.split(':');
@@ -428,10 +435,6 @@ export default function MarketingCollabs() {
           switch (type) {
             case 'matching_enabled':
               filterMatchingEnabled = value === 'true';
-              break;
-            case 'topic':
-              filterTopics.push(value);
-              console.log(`Found topic tag: ${tag}, extracted value: ${value}`);
               break;
             case 'sector':
               filterCompanySectors.push(value);
@@ -545,10 +548,10 @@ export default function MarketingCollabs() {
       console.log("⭐ Topics from form DATA:", JSON.stringify(data.topics));
       console.log("⭐ Topics from initial SELECTED TOPICS:", JSON.stringify(selectedTopics));
       
-      // Final topics array with triple validation to ensure we have data
-      const finalTopics = validatedTopics.length > 0 ? validatedTopics : 
-                          (Array.isArray(data.topics) && data.topics.length > 0) ? data.topics :
-                          selectedTopics;
+      // Get the final topics to save from the form, using direct access to form values
+      // for the most accurate representation of the current state
+      const formValues = form.getValues();
+      const finalTopics = Array.isArray(formValues.topics) ? formValues.topics : [];
       
       console.log("⭐ FINAL TOPICS TO SAVE:", JSON.stringify(finalTopics));
       
@@ -1491,18 +1494,28 @@ export default function MarketingCollabs() {
                                       <Checkbox
                                         checked={Array.isArray(field.value) && field.value.includes(topic)}
                                         onCheckedChange={(checked) => {
-                                          // Ensure we're dealing with an array
-                                          const currentTopics = Array.isArray(field.value) ? field.value : [];
+                                          // Ensure we're dealing with an array, initialize empty array if needed
+                                          const currentTopics = Array.isArray(field.value) ? [...field.value] : [];
                                           console.log(`Topic ${topic} checked: ${checked}, currentTopics:`, currentTopics);
                                           
                                           if (checked) {
-                                            const newValue = [...currentTopics, topic];
-                                            console.log(`Adding topic ${topic}, new value:`, newValue);
-                                            field.onChange(newValue);
+                                            // Only add if not already present
+                                            if (!currentTopics.includes(topic)) {
+                                              const newValue = [...currentTopics, topic];
+                                              console.log(`Adding topic ${topic}, new value:`, newValue);
+                                              field.onChange(newValue);
+                                              
+                                              // Update the form value directly for consistency
+                                              form.setValue('topics', newValue);
+                                            }
                                           } else {
+                                            // Remove the topic
                                             const newValue = currentTopics.filter(value => value !== topic);
                                             console.log(`Removing topic ${topic}, new value:`, newValue);
                                             field.onChange(newValue);
+                                            
+                                            // Update the form value directly for consistency
+                                            form.setValue('topics', newValue);
                                           }
                                         }}
                                       />
@@ -1554,14 +1567,23 @@ export default function MarketingCollabs() {
                                                 checked={Array.isArray(field.value) && field.value.includes(tag)}
                                                 onCheckedChange={(checked) => {
                                                   // Ensure we're dealing with an array 
-                                                  const currentTags = Array.isArray(field.value) ? field.value : [];
+                                                  const currentTags = Array.isArray(field.value) ? [...field.value] : [];
                                                   
                                                   if (checked) {
-                                                    const newValue = [...currentTags, tag];
-                                                    field.onChange(newValue);
+                                                    // Only add if not already present
+                                                    if (!currentTags.includes(tag)) {
+                                                      const newValue = [...currentTags, tag];
+                                                      field.onChange(newValue);
+                                                      
+                                                      // Update the form value directly for consistency
+                                                      form.setValue('companySectors', newValue);
+                                                    }
                                                   } else {
                                                     const newValue = currentTags.filter(value => value !== tag);
                                                     field.onChange(newValue);
+                                                    
+                                                    // Update the form value directly for consistency
+                                                    form.setValue('companySectors', newValue);
                                                   }
                                                 }}
                                               />
@@ -1681,14 +1703,23 @@ export default function MarketingCollabs() {
                                         checked={Array.isArray(field.value) && field.value.includes(stage)}
                                         onCheckedChange={(checked) => {
                                           // Ensure we're dealing with an array
-                                          const currentStages = Array.isArray(field.value) ? field.value : [];
+                                          const currentStages = Array.isArray(field.value) ? [...field.value] : [];
                                           
                                           if (checked) {
-                                            const newValue = [...currentStages, stage];
-                                            field.onChange(newValue);
+                                            // Only add if not already present
+                                            if (!currentStages.includes(stage)) {
+                                              const newValue = [...currentStages, stage];
+                                              field.onChange(newValue);
+                                              
+                                              // Update the form value directly for consistency
+                                              form.setValue('fundingStages', newValue);
+                                            }
                                           } else {
                                             const newValue = currentStages.filter(value => value !== stage);
                                             field.onChange(newValue);
+                                            
+                                            // Update the form value directly for consistency
+                                            form.setValue('fundingStages', newValue);
                                           }
                                         }}
                                       />
