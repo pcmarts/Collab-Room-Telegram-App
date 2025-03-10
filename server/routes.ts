@@ -117,10 +117,8 @@ export async function registerRoutes(app: Express) {
     try {
       const allUsers = await db.select().from(users);
       
-      return res.json({ 
-        success: true, 
-        users: allUsers
-      });
+      // Return array of users directly for frontend compatibility
+      return res.json(allUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500);
@@ -136,6 +134,36 @@ export async function registerRoutes(app: Express) {
         res.status(400);
         return res.json({ error: "User ID is required" });
       }
+      
+      if (typeof isAdmin !== 'boolean') {
+        res.status(400);
+        return res.json({ error: "isAdmin must be a boolean value" });
+      }
+      
+      const updatedUser = await storage.setUserAdminStatus(userId, isAdmin);
+      
+      if (!updatedUser) {
+        res.status(404);
+        return res.json({ error: "User not found" });
+      }
+      
+      return res.json({ 
+        success: true, 
+        user: updatedUser,
+        message: `User admin status ${isAdmin ? 'granted' : 'revoked'} successfully`
+      });
+    } catch (error) {
+      console.error("Error setting user admin status:", error);
+      res.status(500);
+      return res.json({ error: "Failed to update user admin status" });
+    }
+  });
+  
+  // For compatibility with frontend - additional endpoint that matches our frontend implementation
+  app.patch("/api/admin/users/:userId/admin-status", checkAdminMiddleware, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { isAdmin } = req.body;
       
       if (typeof isAdmin !== 'boolean') {
         res.status(400);
