@@ -47,11 +47,13 @@ export default function CollabPreferencesForm() {
   // Load existing preferences when data is fetched
   useEffect(() => {
     if (isEditMode && profileData) {
-      const { preferences, marketingPreferences } = profileData;
+      const { preferences, notificationPreferences, marketingPreferences } = profileData;
       
       setFormData({
-        // General notification preferences
-        notification_frequency: preferences?.notification_frequency || "Daily",
+        // General notification preferences (use new data structure if available, fall back to old)
+        notification_frequency: notificationPreferences?.notification_frequency || 
+                                preferences?.notification_frequency || 
+                                "Daily",
         
         // Marketing specific preferences
         collabs_to_discover: marketingPreferences?.collabs_to_discover || [],
@@ -86,9 +88,10 @@ export default function CollabPreferencesForm() {
           throw new Error("Failed to update marketing preferences");
         }
         
-        // Update notification frequency in general preferences
-        const prefResponse = await apiRequest("/api/preferences", "POST", {
-          notification_frequency: formData.notification_frequency
+        // Update notification preferences
+        const prefResponse = await apiRequest("/api/notification-preferences", "POST", {
+          notification_frequency: formData.notification_frequency,
+          notifications_enabled: true
         });
         
         if (!prefResponse.ok) {

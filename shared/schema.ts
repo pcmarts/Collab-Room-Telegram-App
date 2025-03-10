@@ -224,12 +224,12 @@ export const user_events = pgTable('user_events', {
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
-// General user preferences
-export const preferences = pgTable('preferences', {
+// Notification preferences
+export const notification_preferences = pgTable('notification_preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
   user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  // General preferences only
-  notification_frequency: text('notification_frequency').notNull(),
+  notifications_enabled: boolean('notifications_enabled').default(true),
+  notification_frequency: text('notification_frequency', { enum: NOTIFICATION_FREQUENCIES }).notNull().default('Daily'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
@@ -337,7 +337,7 @@ export const collab_notifications = pgTable('collab_notifications', {
 // Schema validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
-export const insertPreferencesSchema = createInsertSchema(preferences);
+export const insertNotificationPreferencesSchema = createInsertSchema(notification_preferences);
 export const insertMarketingPreferencesSchema = createInsertSchema(marketing_preferences);
 export const insertConferencePreferencesSchema = createInsertSchema(conference_preferences);
 export const insertEventSchema = createInsertSchema(events);
@@ -349,7 +349,7 @@ export const insertCollabNotificationSchema = createInsertSchema(collab_notifica
 // Types
 export type User = typeof users.$inferSelect;
 export type Company = typeof companies.$inferSelect;
-export type Preferences = typeof preferences.$inferSelect;
+export type NotificationPreferences = typeof notification_preferences.$inferSelect;
 export type MarketingPreferences = typeof marketing_preferences.$inferSelect;
 export type ConferencePreferences = typeof conference_preferences.$inferSelect;
 export type Event = typeof events.$inferSelect;
@@ -360,7 +360,7 @@ export type CollabNotification = typeof collab_notifications.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
-export type InsertPreferences = z.infer<typeof insertPreferencesSchema>;
+export type InsertNotificationPreferences = z.infer<typeof insertNotificationPreferencesSchema>;
 export type InsertMarketingPreferences = z.infer<typeof insertMarketingPreferencesSchema>;
 export type InsertConferencePreferences = z.infer<typeof insertConferencePreferencesSchema>;
 export type InsertEvent = z.infer<typeof insertEventSchema>;

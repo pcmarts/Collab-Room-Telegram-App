@@ -1,11 +1,11 @@
 import { 
   users, companies, collaborations, collab_applications, collab_notifications, 
-  preferences, marketing_preferences, conference_preferences,
+  notification_preferences, marketing_preferences, conference_preferences,
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication,
   type CollabNotification, type InsertCollabNotification,
-  type Preferences, type MarketingPreferences, type ConferencePreferences
+  type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "@shared/schema";
 import { z } from 'zod';
 import { db } from "./db";
@@ -37,9 +37,9 @@ export interface IStorage {
   markNotificationAsRead(id: string): Promise<CollabNotification | undefined>;
   markNotificationAsSent(id: string): Promise<CollabNotification | undefined>;
   
-  // General user preferences
-  getUserPreferences(userId: string): Promise<Preferences | undefined>;
-  updateUserPreferences(userId: string, preferences: Partial<Preferences>): Promise<Preferences | undefined>;
+  // Notification preferences
+  getUserNotificationPreferences(userId: string): Promise<NotificationPreferences | undefined>;
+  updateUserNotificationPreferences(userId: string, preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences | undefined>;
   
   // Marketing preferences
   getUserMarketingPreferences(userId: string): Promise<MarketingPreferences | undefined>;
@@ -314,33 +314,34 @@ export class DatabaseStorage implements IStorage {
     return notification;
   }
   
-  // User preferences
-  async getUserPreferences(userId: string): Promise<Preferences | undefined> {
+  // Notification preferences
+  async getUserNotificationPreferences(userId: string): Promise<NotificationPreferences | undefined> {
     const [userPreferences] = await db
       .select()
-      .from(preferences)
-      .where(eq(preferences.user_id, userId));
+      .from(notification_preferences)
+      .where(eq(notification_preferences.user_id, userId));
     return userPreferences;
   }
   
-  async updateUserPreferences(userId: string, prefs: Partial<Preferences>): Promise<Preferences | undefined> {
-    // Check if preferences exist for this user
-    const existingPrefs = await this.getUserPreferences(userId);
+  async updateUserNotificationPreferences(userId: string, prefs: Partial<NotificationPreferences>): Promise<NotificationPreferences | undefined> {
+    // Check if notification preferences exist for this user
+    const existingPrefs = await this.getUserNotificationPreferences(userId);
     
     if (existingPrefs) {
       // Update existing preferences
       const [updatedPrefs] = await db
-        .update(preferences)
+        .update(notification_preferences)
         .set(prefs)
-        .where(eq(preferences.id, existingPrefs.id))
+        .where(eq(notification_preferences.id, existingPrefs.id))
         .returning();
       return updatedPrefs;
     } else {
       // Create new preferences
       const [newPrefs] = await db
-        .insert(preferences)
+        .insert(notification_preferences)
         .values({
           user_id: userId,
+          notifications_enabled: prefs.notifications_enabled !== undefined ? prefs.notifications_enabled : true,
           notification_frequency: prefs.notification_frequency || 'Daily'
         })
         .returning();

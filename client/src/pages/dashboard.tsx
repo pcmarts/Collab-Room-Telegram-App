@@ -10,7 +10,7 @@ import { UserIcon, Users, Building, Star, Bell, Coffee, Calendar, Rocket, Plus, 
 import type { 
   User as UserType, 
   Company, 
-  Preferences, 
+  NotificationPreferences, 
   MarketingPreferences, 
   ConferencePreferences 
 } from '@shared/schema';
@@ -21,7 +21,9 @@ import { apiRequest } from "@/lib/queryClient";
 interface ProfileData {
   user: UserType;
   company: Company;
-  preferences: Preferences;
+  // Keep preferences for backward compatibility
+  preferences: any;
+  notificationPreferences: NotificationPreferences;
   marketingPreferences: MarketingPreferences;
   conferencePreferences: ConferencePreferences;
 }
@@ -34,9 +36,13 @@ export default function Dashboard() {
     queryKey: ['/api/profile']
   });
 
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    profile?.notificationPreferences?.notifications_enabled ?? true
+  );
   const [notificationFrequency, setNotificationFrequency] = useState(
-    profile?.preferences?.notification_frequency || 'Daily'
+    profile?.notificationPreferences?.notification_frequency || 
+    profile?.preferences?.notification_frequency || 
+    'Daily'
   );
 
   const handleNotificationSettingsChange = async (enabled: boolean) => {
@@ -46,9 +52,11 @@ export default function Dashboard() {
       
       const newFrequency = enabled ? 'Daily' : 'Never';
       
-      // We need to preserve marketing and conference preferences
+      // Update notification preferences
       const response = await apiRequest('/api/preferences', 'POST', {
+        // Notification preferences
         notification_frequency: newFrequency,
+        notifications_enabled: enabled,
         
         // Include marketing preferences
         collabs_to_discover: profile?.marketingPreferences?.collabs_to_discover || [],
@@ -98,9 +106,11 @@ export default function Dashboard() {
     try {
       setIsSubmitting(true);
       
-      // We need to preserve marketing and conference preferences
+      // Update notification preferences
       const response = await apiRequest('/api/preferences', 'POST', {
+        // Notification preferences
         notification_frequency: frequency,
+        notifications_enabled: notificationsEnabled,
         
         // Include marketing preferences
         collabs_to_discover: profile?.marketingPreferences?.collabs_to_discover || [],

@@ -8,13 +8,7 @@ import { Loader2, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
-import type { 
-  User, 
-  Company, 
-  NotificationPreferences,
-  MarketingPreferences,
-  ConferencePreferences
-} from "@shared/schema";
+import type { User, Company, Preferences } from "@shared/schema";
 import { TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -22,11 +16,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 interface ProfileData {
   user: User;
   company: Company;
-  // Keep preferences for backward compatibility
-  preferences: any;
-  notificationPreferences: NotificationPreferences;
-  marketingPreferences: MarketingPreferences;
-  conferencePreferences: ConferencePreferences;
+  preferences: Preferences;
 }
 
 export default function ProfileOverview() {
@@ -203,7 +193,7 @@ export default function ProfileOverview() {
               </div>
 
               <div>
-                <Label htmlFor="twitter_url">Your Personal Twitter URL</Label>
+                <Label htmlFor="twitter_url">Your Peronal Twitter URL</Label>
                 <Input
                   id="twitter_url"
                   name="twitter_url"
@@ -266,7 +256,7 @@ export default function ProfileOverview() {
               <div>
                 <h3 className="font-medium mb-1">Privacy Protected</h3>
                 <p className="text-sm text-muted-foreground">
-                  When matching, only your company details are visible to others. Your personal information is hidden, and is only shared after a successful mutual match.
+                  When matching, only your company details are visible to others. Your personal information hidden, and is only shared after a successful mutual match.
                 </p>
               </div>
             </div>

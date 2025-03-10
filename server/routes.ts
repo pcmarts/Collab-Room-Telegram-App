@@ -2,11 +2,11 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer } from "http";
 import { db } from "./db";
 import { 
-  users, companies, preferences, marketing_preferences, conference_preferences, 
+  users, companies, notification_preferences, marketing_preferences, conference_preferences, 
   events, user_events, collaborations, collab_applications, collab_notifications,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
   InsertCollaboration,
-  type MarketingPreferences, type ConferencePreferences
+  type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "../shared/schema";
 import { eq, and, not, desc } from 'drizzle-orm';
 import { sendApplicationConfirmation } from "./telegram";
@@ -300,16 +300,17 @@ export async function registerRoutes(app: Express) {
 
             console.log('Created company:', company);
 
-            // 3. Create general preferences record
-            const [userPreferences] = await tx
-              .insert(preferences)
+            // 3. Create notification preferences record
+            const [notificationPrefs] = await tx
+              .insert(notification_preferences)
               .values({
                 user_id: user.id,
+                notifications_enabled: true,
                 notification_frequency: notification_frequency || 'Daily'
               })
               .returning();
 
-            console.log('Created general preferences:', userPreferences);
+            console.log('Created notification preferences:', notificationPrefs);
             
             // 4. Create marketing preferences
             const [marketingPrefs] = await tx
@@ -335,7 +336,7 @@ export async function registerRoutes(app: Express) {
               
             console.log('Created conference preferences:', conferencePrefs);
 
-            return { user, company, preferences: userPreferences };
+            return { user, company, notificationPreferences: notificationPrefs };
           }
 
           return { user };
@@ -582,10 +583,10 @@ export async function registerRoutes(app: Express) {
       }
 
       try {
-        // Check if preferences exist for this user
-        const existingPreferences = await db.select()
-          .from(preferences)
-          .where(eq(preferences.user_id, user.id));
+        // Check if notification preferences exist for this user
+        const existingNotificationPrefs = await db.select()
+          .from(notification_preferences)
+          .where(eq(notification_preferences.user_id, user.id));
           
         const existingMarketingPrefs = await db.select()
           .from(marketing_preferences)
@@ -601,23 +602,27 @@ export async function registerRoutes(app: Express) {
           let marketingPrefs;
           let conferencePrefs;
           
-          // 1. Handle General Preferences
-          if (existingPreferences.length > 0) {
-            // Update existing preferences
-            [generalPrefs] = await tx.update(preferences)
-              .set({ notification_frequency })
-              .where(eq(preferences.user_id, user.id))
+          // 1. Handle Notification Preferences
+          if (existingNotificationPrefs.length > 0) {
+            // Update existing notification preferences
+            [generalPrefs] = await tx.update(notification_preferences)
+              .set({ 
+                notification_frequency,
+                notifications_enabled: true
+              })
+              .where(eq(notification_preferences.user_id, user.id))
               .returning();
-            console.log('Updated general preferences:', generalPrefs);
+            console.log('Updated notification preferences:', generalPrefs);
           } else {
-            // Create new preferences
-            [generalPrefs] = await tx.insert(preferences)
+            // Create new notification preferences
+            [generalPrefs] = await tx.insert(notification_preferences)
               .values({
                 user_id: user.id,
+                notifications_enabled: true,
                 notification_frequency
               })
               .returning();
-            console.log('Created general preferences:', generalPrefs);
+            console.log('Created notification preferences:', generalPrefs);
           }
           
           // 2. Handle Marketing Preferences
@@ -1097,18 +1102,19 @@ export async function registerRoutes(app: Express) {
         .where(eq(conference_preferences.user_id, user.id));
         
       // Get notification preferences
-      const [userPreferences] = await db.select()
-        .from(preferences)
-        .where(eq(preferences.user_id, user.id));
+      const [notificationPrefs] = await db.select()
+        .from(notification_preferences)
+        .where(eq(notification_preferences.user_id, user.id))
+        .catch(() => [null]); // Catch error if table doesn't exist yet
 
       return res.json({
         user,
         company,
-        // Still return the preferences but with minimal data - we'll remove this in later versions
+        // Still return the preferences object for backward compatibility
         preferences: {
-          id: userPreferences?.id || '',
+          id: '',
           user_id: user.id,
-          notification_frequency: userPreferences?.notification_frequency || 'Daily',
+          notification_frequency: notificationPrefs?.notification_frequency || 'Daily',
           // Empty fields that used to be in preferences but are now in specialized tables
           collabs_to_discover: [],
           collabs_to_host: [],
