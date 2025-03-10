@@ -178,7 +178,7 @@ export default function MarketingCollabs() {
       const response = await apiRequest(
         `/api/collaborations/${id}/status`, 
         'PATCH',
-        { status: isActive ? 'active' : 'inactive' }
+        { status: isActive ? 'active' : 'paused' }
       );
       
       if (!response.ok) {
@@ -584,9 +584,8 @@ export default function MarketingCollabs() {
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
-              <Badge className="mb-2">{collab.collab_type}</Badge>
               <CardTitle className="text-xl">
-                {collab.title === "Collaboration" ? collab.collab_type : collab.title}
+                {collab.collab_type}
               </CardTitle>
             </div>
             {hasApplications && (
@@ -597,11 +596,11 @@ export default function MarketingCollabs() {
           </div>
         </CardHeader>
         <CardContent className="pb-2">
-          <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-            {collab.description.includes("Created using Collab Room") 
-              ? collab.description.replace("Created using Collab Room.", "").trim() 
-              : collab.description}
-          </p>
+          {collab.description && collab.description !== "Created using Collab Room" && (
+            <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+              {collab.description}
+            </p>
+          )}
           
           <div className="flex flex-wrap gap-2 mb-4">
             <div className="flex items-center gap-1 text-xs text-gray-500">
