@@ -468,6 +468,21 @@ export default function MarketingCollabs() {
         ...toggleStates
       ];
       
+      // Add company followers value to filtered topics if enabled
+      if (filtersEnabled.companyFollowers && currentFormValues.companyFollowers) {
+        allFilteredTopics.push(`filter:company_followers:${currentFormValues.companyFollowers}`);
+      }
+      
+      // Add user followers value to filtered topics if enabled
+      if (filtersEnabled.userFollowers && currentFormValues.userFollowers) {
+        allFilteredTopics.push(`filter:user_followers:${currentFormValues.userFollowers}`);
+      }
+      
+      // Add token filter if enabled
+      if (filtersEnabled.hasToken && currentFormValues.hasToken) {
+        allFilteredTopics.push('filter:has_token:true');
+      }
+      
       // Build marketing preferences data
       const marketingPrefsData = {
         // These must be arrays
