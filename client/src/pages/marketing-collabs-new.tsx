@@ -954,12 +954,12 @@ export default function MarketingCollabs() {
                                 render={({ field }) => (
                                   <FormItem
                                     key={collabType}
-                                    className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
+                                    className="flex flex-row items-center space-x-4 space-y-0 p-4 border rounded-md hover:bg-accent/10 mb-3 shadow-sm"
                                   >
                                     <FormControl>
                                       <Checkbox
                                         checked={field.value?.includes(collabType)}
-                                        className="h-5 w-5"
+                                        className="h-5 w-5 mr-2"
                                         onCheckedChange={(checked) => {
                                           // Handle special case for Twitter collaborations
                                           if (collabType === "Co-Marketing on Twitter") {
@@ -1069,7 +1069,7 @@ export default function MarketingCollabs() {
                                       <FormControl>
                                         <Checkbox
                                           checked={field.value?.includes(collabType)}
-                                          className="h-5 w-5"
+                                          className="h-5 w-5 mr-2"
                                           onCheckedChange={(checked) => {
                                             return checked
                                               ? field.onChange([...field.value, collabType])
@@ -1216,7 +1216,7 @@ export default function MarketingCollabs() {
                                             <FormControl>
                                               <Checkbox
                                                 checked={field.value.includes(tag)}
-                                                className="h-5 w-5"
+                                                className="h-5 w-5 mr-2"
                                                 onCheckedChange={(checked) => {
                                                   return checked
                                                     ? field.onChange([...field.value, tag])
@@ -1333,7 +1333,7 @@ export default function MarketingCollabs() {
                                       <FormControl>
                                         <Checkbox
                                           checked={field.value.includes(stage)}
-                                          className="h-5 w-5"
+                                          className="h-5 w-5 mr-2"
                                           onCheckedChange={(checked) => {
                                             return checked
                                               ? field.onChange([...field.value, stage])
