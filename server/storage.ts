@@ -164,6 +164,10 @@ export class DatabaseStorage implements IStorage {
   }
   
   async searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
+    // First get the user's marketing preferences to apply any filtering
+    const marketingPrefs = await this.getUserMarketingPreferences(userId);
+    
+    // Build the base query
     let query = db
       .select()
       .from(collaborations)
@@ -174,12 +178,43 @@ export class DatabaseStorage implements IStorage {
         )
       );
     
-    // Apply filters
+    // Apply type filters from request
     if (filters.collabTypes && filters.collabTypes.length > 0) {
       query = query.where(inArray(collaborations.collab_type, filters.collabTypes));
     }
     
-    // Other filters would be added here...
+    // Apply topic filters if enabled in marketing preferences
+    if (marketingPrefs?.discovery_filter_topics_enabled && 
+        marketingPrefs?.filtered_marketing_topics && 
+        marketingPrefs.filtered_marketing_topics.length > 0) {
+      
+      console.log(`Filtering by excluded topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
+      
+      // This is a more complex filter - we want to exclude collaborations that have ANY of the filtered topics
+      query = query.where(sql`NOT (${collaborations.topics} && ${marketingPrefs.filtered_marketing_topics}::text[])`);
+    }
+    
+    // Apply company followers filter if enabled
+    if (marketingPrefs?.discovery_filter_company_followers_enabled && filters.minCompanyFollowers) {
+      query = query.where(sql`${collaborations.min_company_followers} >= ${filters.minCompanyFollowers}`);
+    }
+    
+    // Apply user followers filter if enabled
+    if (marketingPrefs?.discovery_filter_user_followers_enabled && filters.minUserFollowers) {
+      query = query.where(sql`${collaborations.min_user_followers} >= ${filters.minUserFollowers}`);
+    }
+    
+    // Apply token status filter if enabled
+    if (marketingPrefs?.discovery_filter_token_status_enabled && filters.hasToken !== undefined) {
+      query = query.where(eq(collaborations.required_token_status, filters.hasToken));
+    }
+    
+    // Apply funding stages filter if enabled
+    if (marketingPrefs?.discovery_filter_funding_stages_enabled && 
+        filters.fundingStages && 
+        filters.fundingStages.length > 0) {
+      query = query.where(sql`${collaborations.required_funding_stages} && ${filters.fundingStages}::text[]`);
+    }
     
     return query.orderBy(desc(collaborations.created_at));
   }
