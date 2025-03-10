@@ -748,7 +748,7 @@ export async function registerRoutes(app: Express) {
       } else {
         try {
           // Parse Telegram data using the helper
-          telegramUser = getTelegramUserFromRequest({ headers: { 'x-telegram-init-data': initData } } as Request);
+          telegramUser = getTelegramUserFromRequest({ headers: { 'x-telegram-init-data': initData } });
         } catch (error) {
           console.error('Error parsing Telegram data:', error);
           res.status(400);
@@ -909,7 +909,7 @@ export async function registerRoutes(app: Express) {
       } else {
         try {
           // Parse Telegram data using the helper
-          telegramUser = getTelegramUserFromRequest({ headers: { 'x-telegram-init-data': initData } } as Request);
+          telegramUser = getTelegramUserFromRequest({ headers: { 'x-telegram-init-data': initData } });
         } catch (error) {
           console.error('Error parsing Telegram data:', error);
           res.status(400);
