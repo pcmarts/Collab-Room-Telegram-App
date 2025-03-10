@@ -649,7 +649,7 @@ export default function MarketingCollabs() {
               variant="outline"
               size="sm"
               className="flex-1"
-              onClick={() => setLocation(`/collaboration/edit/${collab.id}`)}
+              onClick={() => setLocation(`/edit-collaboration/${collab.id}`)}
             >
               Edit
             </Button>

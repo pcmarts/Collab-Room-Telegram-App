@@ -94,7 +94,7 @@ function Router() {
             <Redirect to="/marketing-collabs-new" />
           </Route>
           <Route path="/edit-collaboration/:id">
-            <Redirect to="/marketing-collabs-new" />
+            {(params) => <CreateCollaborationFixed id={params.id} />}
           </Route>
           <Route path="/collaboration/edit/:id">
             <Redirect to="/marketing-collabs-new" />
