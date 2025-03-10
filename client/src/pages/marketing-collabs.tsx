@@ -585,6 +585,9 @@ export default function MarketingCollabs() {
       
       console.log("🔵 Final topics array for saving:", JSON.stringify(checkedTopics));
       
+      // Log topics for debugging
+      console.log("⭐⭐⭐ FINAL CHECKED TOPICS:", JSON.stringify(checkedTopics));
+      
       // Convert filter settings to strings that can be stored in filtered_marketing_topics
       // Use a prefix to separate these from actual excluded tags
       const filterTopics = checkedTopics.map(topic => `filter:topic:${topic}`);
