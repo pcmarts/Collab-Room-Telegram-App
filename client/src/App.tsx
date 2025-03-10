@@ -15,6 +15,7 @@ import ApplicationStatus from "@/pages/application-status";
 import ApplicationForm from "@/pages/application-form";
 
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
+import MarketingPreferences from "@/pages/marketing-preferences";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
 
@@ -48,6 +49,7 @@ function Router() {
             <Redirect to="/marketing-collabs-new" />
           </Route>
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
+          <Route path="/marketing-preferences" component={MarketingPreferences} />
           <Route path="/conference-coffees" component={ConferenceCoffees} />
 
           {/* Application Flow - all redirected to Marketing Collabs */}

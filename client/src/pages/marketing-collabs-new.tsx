@@ -321,40 +321,25 @@ export default function MarketingCollabs() {
     }));
   };
 
-  // Handle topic checkbox state management
+  // Handle topic checkbox state management - simplified to avoid infinite loops
   const handleTopicChange = (topic: string, checked: boolean) => {
-    console.log(`Topic change: ${topic} - ${checked ? 'Checked' : 'Unchecked'}`);
+    // Create a new reference to avoid state mutations
+    let newTopics;
     
     if (checked) {
-      // Add topic to the selected topics - ensure we have a clean array without duplicates
-      setSelectedTopics(prev => {
-        // First remove any existing instance to avoid duplicates
-        const cleanPrev = prev.filter(t => t !== topic);
-        const newTopics = [...cleanPrev, topic];
-        console.log(`Selected topics after adding ${topic}:`, newTopics);
-        return newTopics;
-      });
-      
-      // Also update the form state to keep it in sync
-      const currentTopics = form.getValues().topics || [];
-      // First remove any existing instance to avoid duplicates
-      const cleanCurrentTopics = currentTopics.filter(t => t !== topic);
-      const newFormTopics = [...cleanCurrentTopics, topic];
-      console.log(`Form topics after adding ${topic}:`, newFormTopics);
-      form.setValue('topics', newFormTopics, { shouldDirty: true, shouldValidate: true, shouldTouch: true });
+      // Add topic if it's not already there
+      if (!selectedTopics.includes(topic)) {
+        newTopics = [...selectedTopics, topic];
+        setSelectedTopics(newTopics);
+        form.setValue('topics', newTopics, { shouldDirty: true });
+      }
     } else {
-      // Remove topic from selected topics
-      setSelectedTopics(prev => {
-        const newTopics = prev.filter(t => t !== topic);
-        console.log(`Selected topics after removing ${topic}:`, newTopics);
-        return newTopics;
-      });
-      
-      // Also update the form state to keep it in sync
-      const currentTopics = form.getValues().topics || [];
-      const newFormTopics = currentTopics.filter(t => t !== topic);
-      console.log(`Form topics after removing ${topic}:`, newFormTopics);
-      form.setValue('topics', newFormTopics, { shouldDirty: true, shouldValidate: true, shouldTouch: true });
+      // Remove topic if it's there
+      if (selectedTopics.includes(topic)) {
+        newTopics = selectedTopics.filter(t => t !== topic);
+        setSelectedTopics(newTopics);
+        form.setValue('topics', newTopics, { shouldDirty: true });
+      }
     }
   };
 
@@ -925,7 +910,7 @@ export default function MarketingCollabs() {
           {/* Preferences Tab */}
           <TabsContent value="preferences" className="mt-6 pb-24">
             <Form {...form}>
-              <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pb-24">
                 <Card>
                   <CardHeader>
                     <CardTitle>Collaboration Discovery</CardTitle>
@@ -954,7 +939,34 @@ export default function MarketingCollabs() {
                                 render={({ field }) => (
                                   <FormItem
                                     key={collabType}
-                                    className="flex flex-row items-center space-x-4 space-y-0 p-4 border rounded-md hover:bg-accent/10 mb-3 shadow-sm"
+                                    className="flex flex-row items-center space-x-3 space-y-0 p-3 border rounded-md hover:bg-accent/10 mb-2 shadow-sm cursor-pointer"
+                                    onClick={() => {
+                                      const newChecked = !field.value?.includes(collabType);
+                                      if (collabType === "Co-Marketing on Twitter") {
+                                        if (newChecked) {
+                                          field.onChange([...field.value, collabType]);
+                                          if (form.getValues().enabledTwitterCollabs.length === 0) {
+                                            form.setValue('enabledTwitterCollabs', 
+                                              [...TWITTER_COLLAB_TYPES.slice(0, 2)], 
+                                              { shouldDirty: true, shouldValidate: true }
+                                            );
+                                          }
+                                        } else {
+                                          field.onChange(field.value?.filter(value => value !== collabType));
+                                          form.setValue('enabledTwitterCollabs', [], 
+                                            { shouldDirty: true, shouldValidate: true }
+                                          );
+                                        }
+                                      } else {
+                                        return newChecked
+                                          ? field.onChange([...field.value, collabType])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== collabType
+                                              )
+                                            )
+                                      }
+                                    }}
                                   >
                                     <FormControl>
                                       <Checkbox
@@ -1064,7 +1076,17 @@ export default function MarketingCollabs() {
                                   render={({ field }) => (
                                     <FormItem
                                       key={collabType}
-                                      className="flex flex-row items-center space-x-4 space-y-0 p-4 border rounded-md hover:bg-accent/10 mb-4 shadow-sm"
+                                      className="flex flex-row items-center space-x-3 space-y-0 p-3 border rounded-md hover:bg-accent/10 mb-2 shadow-sm cursor-pointer"
+                                      onClick={() => {
+                                        const newChecked = !field.value?.includes(collabType);
+                                        return newChecked
+                                          ? field.onChange([...field.value, collabType])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== collabType
+                                              )
+                                            )
+                                      }}
                                     >
                                       <FormControl>
                                         <Checkbox
@@ -1157,27 +1179,27 @@ export default function MarketingCollabs() {
                           {filtersEnabled.topics && (
                             <div className="border rounded-lg p-4 bg-background">
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {COLLAB_TOPICS.map((topic) => (
-                              <div key={topic} className="flex items-center p-4 border rounded-md hover:bg-accent/10 mb-3 shadow-sm">
-                                <Checkbox
-                                  id={`topic-${topic}`}
-                                  checked={selectedTopics.includes(topic)}
-                                  onCheckedChange={(checked) => handleTopicChange(topic, !!checked)}
-                                  data-topic-checkbox 
-                                  data-topic-value={topic}
-                                  className="h-5 w-5 mr-4"
-                                />
-                                <label
-                                  htmlFor={`topic-${topic}`}
-                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 w-full cursor-pointer"
-                                  onClick={() => handleTopicChange(topic, !selectedTopics.includes(topic))}
-                                >
-                                  {topic}
-                                </label>
+                                {COLLAB_TOPICS.map((topic) => (
+                                  <button
+                                    type="button"
+                                    key={topic}
+                                    className="flex items-center p-3 border rounded-md hover:bg-accent/10 mb-2 shadow-sm cursor-pointer text-left"
+                                    onClick={() => handleTopicChange(topic, !selectedTopics.includes(topic))}
+                                  >
+                                    <div className={`h-5 w-5 mr-4 border rounded-sm flex items-center justify-center ${selectedTopics.includes(topic) ? 'bg-primary border-primary' : 'border-gray-300'}`}>
+                                      {selectedTopics.includes(topic) && (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check">
+                                          <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                      )}
+                                    </div>
+                                    <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 w-full">
+                                      {topic}
+                                    </span>
+                                  </button>
+                                ))}
                               </div>
-                            ))}
-                          </div>
-                        </div>
+                            </div>
                       )}
                     </div>
                     
@@ -1209,26 +1231,11 @@ export default function MarketingCollabs() {
                                       <h4 className="font-medium mb-2">{category}</h4>
                                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                                         {tags.map((tag) => (
-                                          <FormItem
+                                          <button
+                                            type="button"
                                             key={tag}
-                                            className="flex flex-row items-center space-x-4 space-y-0 p-4 border rounded-md hover:bg-accent/10 mb-3 shadow-sm"
-                                          >
-                                            <FormControl>
-                                              <Checkbox
-                                                checked={field.value.includes(tag)}
-                                                className="h-5 w-5 mr-2"
-                                                onCheckedChange={(checked) => {
-                                                  return checked
-                                                    ? field.onChange([...field.value, tag])
-                                                    : field.onChange(
-                                                        field.value?.filter(
-                                                          (value) => value !== tag
-                                                        )
-                                                      )
-                                                }}
-                                              />
-                                            </FormControl>
-                                            <FormLabel className="text-sm font-normal w-full cursor-pointer" onClick={() => {
+                                            className="flex items-center p-3 border rounded-md hover:bg-accent/10 mb-2 shadow-sm cursor-pointer text-left"
+                                            onClick={() => {
                                               const newChecked = !field.value?.includes(tag);
                                               return newChecked
                                                 ? field.onChange([...field.value, tag])
@@ -1237,10 +1244,19 @@ export default function MarketingCollabs() {
                                                       (value) => value !== tag
                                                     )
                                                   )
-                                            }}>
+                                            }}
+                                          >
+                                            <div className={`h-5 w-5 mr-4 border rounded-sm flex items-center justify-center ${field.value.includes(tag) ? 'bg-primary border-primary' : 'border-gray-300'}`}>
+                                              {field.value.includes(tag) && (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check">
+                                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                              )}
+                                            </div>
+                                            <span className="text-sm font-normal w-full cursor-pointer">
                                               {tag}
-                                            </FormLabel>
-                                          </FormItem>
+                                            </span>
+                                          </button>
                                         ))}
                                       </div>
                                     </div>
@@ -1324,28 +1340,13 @@ export default function MarketingCollabs() {
                             name="fundingStages"
                             render={({ field }) => (
                               <FormItem>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 gap-3">
                                   {FUNDING_STAGES.map((stage) => (
-                                    <FormItem
+                                    <button
+                                      type="button"
                                       key={stage}
-                                      className="flex flex-row items-center space-x-4 space-y-0 p-4 border rounded-md hover:bg-accent/10 mb-3 shadow-sm"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value.includes(stage)}
-                                          className="h-5 w-5 mr-2"
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value, stage])
-                                              : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== stage
-                                                  )
-                                                )
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal w-full cursor-pointer" onClick={() => {
+                                      className="flex items-center p-3 border rounded-md hover:bg-accent/10 mb-2 shadow-sm cursor-pointer text-left"
+                                      onClick={() => {
                                         const newChecked = !field.value?.includes(stage);
                                         return newChecked
                                           ? field.onChange([...field.value, stage])
@@ -1354,10 +1355,19 @@ export default function MarketingCollabs() {
                                                 (value) => value !== stage
                                               )
                                             )
-                                      }}>
+                                      }}
+                                    >
+                                      <div className={`h-5 w-5 mr-4 border rounded-sm flex items-center justify-center ${field.value.includes(stage) ? 'bg-primary border-primary' : 'border-gray-300'}`}>
+                                        {field.value.includes(stage) && (
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <span className="text-sm font-normal w-full">
                                         {stage}
-                                      </FormLabel>
-                                    </FormItem>
+                                      </span>
+                                    </button>
                                   ))}
                                 </div>
                               </FormItem>
@@ -1385,14 +1395,7 @@ export default function MarketingCollabs() {
                         />
                       </div>
                       
-                      {filtersEnabled.hasToken && (
-                        <div className="border rounded-lg p-4 bg-background">
-                          <p className="text-sm text-muted-foreground">
-                            When enabled, your feed will only show collaborations from companies 
-                            that have their own token
-                          </p>
-                        </div>
-                      )}
+                      {/* Token filter description removed as requested */}
                     </div>
                       </>
                     ) : (
