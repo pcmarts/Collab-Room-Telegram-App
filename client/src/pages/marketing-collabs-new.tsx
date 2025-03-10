@@ -471,19 +471,15 @@ export default function MarketingCollabs() {
       ];
       
       // Filter out any existing filter entries from saved data
-      const marketingPreferences = profileData?.marketingPreferences || {};
-      // Use type assertion to ensure TypeScript understands the structure
-      const typedMarketingPrefs = marketingPreferences as MarketingPreferences;
-      const existingTags = typedMarketingPrefs.filtered_marketing_topics || [];
+      const marketingPreferences = profileData?.marketingPreferences || {} as MarketingPreferences;
+      const existingTags = marketingPreferences.filtered_marketing_topics || [];
       const nonFilterTags = existingTags.filter((tag: string) => 
         typeof tag === 'string' && !tag.startsWith('filter:')
       );
       
       // For notification frequency
-      const notificationPreferences = profileData?.notificationPreferences || {};
-      // Use type assertion for notification preferences
-      const typedNotificationPrefs = notificationPreferences as NotificationPreferences;
-      const notification_frequency = typedNotificationPrefs.notification_frequency || "Daily";
+      const notificationPreferences = profileData?.notificationPreferences || {} as NotificationPreferences;
+      const notification_frequency = notificationPreferences.notification_frequency || "Daily";
       
       // General preferences data
       const generalPrefsData = {

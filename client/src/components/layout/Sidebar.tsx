@@ -2,18 +2,20 @@ import { Link, useLocation } from 'wouter';
 import { Layout, Users, Coffee, Megaphone, User, Building, Search, PlusCircle, ListChecks, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
+import type { ProfileData } from '@/types/profile';
 
 export function Sidebar() {
   const [location] = useLocation();
   
   // Get user profile data to check admin status
-  const { data: profileData } = useQuery({
+  const { data: profileData } = useQuery<ProfileData>({
     queryKey: ['/api/profile'],
     retry: false,
     refetchOnWindowFocus: false,
   });
   
-  const isAdmin = profileData?.user?.is_admin || false;
+  // Default to false if data isn't loaded yet
+  const isAdmin = profileData && profileData.user ? profileData.user.is_admin : false;
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: Layout },
