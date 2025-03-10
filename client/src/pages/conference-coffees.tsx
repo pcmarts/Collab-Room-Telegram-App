@@ -184,16 +184,14 @@ export default function ConferenceCoffees() {
       // Enable some filters for testing if none are enabled
       if (!Object.values(updatedFilters).some(Boolean)) {
         console.log("No filters were enabled from saved preferences, forcing some on for testing");
-        // Uncomment this if you want to force filters on for testing
-        /*
+        // Force all filters on for testing purposes
         setFiltersEnabled({
           companySectors: true,
           companyFollowers: true,
-          userFollowers: false,
-          fundingStages: false,
-          tokenStatus: false
+          userFollowers: true,
+          fundingStages: true,
+          tokenStatus: true
         });
-        */
       }
     }
   }, [profileData, form]);
@@ -257,6 +255,21 @@ export default function ConferenceCoffees() {
           console.error("Could not parse error response as JSON");
         }
         throw new Error(errorMessage);
+      }
+      
+      // Log the successful response for debugging
+      try {
+        const responseData = await response.clone().json();
+        console.log("Successfully saved preferences:", responseData);
+        console.log("Saved filter toggle states:", {
+          companySectors: responseData.preferences.coffee_match_filter_company_sectors_enabled,
+          companyFollowers: responseData.preferences.coffee_match_filter_company_followers_enabled,
+          userFollowers: responseData.preferences.coffee_match_filter_user_followers_enabled,
+          fundingStages: responseData.preferences.coffee_match_filter_funding_stages_enabled,
+          tokenStatus: responseData.preferences.coffee_match_filter_token_status_enabled
+        });
+      } catch (e) {
+        console.error("Could not parse response data:", e);
       }
 
       // Invalidate profile data to refresh
