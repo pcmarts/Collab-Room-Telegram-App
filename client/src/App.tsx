@@ -32,65 +32,88 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 
 function Router() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="w-full">
+    <div className="min-h-screen bg-background w-full">
+      <div className="w-full px-4 py-2">
         <Switch>
           <Route path="/">
-            <Redirect to="/dashboard" />
+            <Redirect to="/marketing-collabs-new" />
           </Route>
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/collaborations" component={Collaborations} />
+          <Route path="/dashboard">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
+          <Route path="/collaborations">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
           <Route path="/marketing-collabs">
             <Redirect to="/marketing-collabs-new" />
           </Route>
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
           <Route path="/conference-coffees" component={ConferenceCoffees} />
 
-          {/* Application Flow */}
-          <Route path="/welcome" component={Welcome} />
-          <Route path="/personal-info" component={PersonalInfo} />
-          <Route path="/company-basics" component={CompanyBasics} />
-          <Route path="/company-sector" component={CompanySector} />
-          <Route path="/company-details" component={CompanyDetails} />
-          <Route path="/application-status" component={ApplicationStatus} />
-          <Route path="/application-form" component={ApplicationForm} />
-          <Route path="/apply" component={ApplicationForm} />
+          {/* Application Flow - all redirected to Marketing Collabs */}
+          <Route path="/welcome">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
+          <Route path="/personal-info">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
+          <Route path="/company-basics">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
+          <Route path="/company-sector">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
+          <Route path="/company-details">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
+          <Route path="/application-status">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
+          <Route path="/application-form">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
+          <Route path="/apply">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
 
-          {/* Collaboration Routes */}
-          {/* Redirect Browse Collaborations to Dashboard */}
+          {/* All collaboration routes redirected to Marketing Collabs page */}
           <Route path="/browse-collaborations">
-            <Redirect to="/dashboard" />
+            <Redirect to="/marketing-collabs-new" />
           </Route>
           <Route path="/create-collaboration">
-            {() => <CreateCollaborationFixed />}
+            <Redirect to="/marketing-collabs-new" />
           </Route>
           <Route path="/my-collaborations">
             <Redirect to="/marketing-collabs-new" />
           </Route>
           <Route path="/apply/:id">
-            {(params: {id: string}) => <Apply id={params.id} />}
+            <Redirect to="/marketing-collabs-new" />
           </Route>
-          {/* Redirect individual collaborations to Dashboard */}
           <Route path="/collaboration/:id">
-            <Redirect to="/dashboard" />
+            <Redirect to="/marketing-collabs-new" />
           </Route>
-          {/* Edit collaboration route - supports both formats for backward compatibility */}
           <Route path="/edit-collaboration/:id">
-            {(params: {id: string}) => <CreateCollaborationFixed id={params.id} />}
+            <Redirect to="/marketing-collabs-new" />
           </Route>
           <Route path="/collaboration/edit/:id">
-            {(params: {id: string}) => <CreateCollaborationFixed id={params.id} />}
+            <Redirect to="/marketing-collabs-new" />
           </Route>
           <Route path="/collaboration/:id/applications">
-            {(params: {id: string}) => <MyCollaborations collaborationId={params.id} />}
+            <Redirect to="/marketing-collabs-new" />
           </Route>
 
-          {/* Profile Routes */}
-          <Route path="/profile-overview" component={ProfileOverview} />
-          <Route path="/company-info" component={CompanyInfo} />
+          {/* Profile Routes redirected to Marketing Collabs */}
+          <Route path="/profile-overview">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
+          <Route path="/company-info">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
           
-          {/* Admin Routes */}
-          <Route path="/admin/users" component={AdminUsers} />
+          {/* Admin Routes redirected to Marketing Collabs */}
+          <Route path="/admin/users">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
 
           <Route path="/not-found" component={NotFound} />
           <Route path="*" component={NotFound} />
