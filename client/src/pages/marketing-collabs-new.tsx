@@ -25,7 +25,8 @@ import {
   Trash2,
   Filter,
   Info,
-  Save
+  Save,
+  Plus
 } from "lucide-react";
 import { 
   COLLAB_TYPES, 
@@ -136,18 +137,18 @@ export default function MarketingCollabs() {
     }
   });
 
-  // Data fetching
-  const { data: profileData, isLoading: isProfileLoading } = useQuery({
+  // Data fetching with type safety
+  const { data: profileData, isLoading: isProfileLoading } = useQuery<ProfileData>({
     queryKey: ['/api/profile'],
     refetchOnWindowFocus: false,
   });
   
-  const { data: collaborations = [], isLoading: isCollabsLoading } = useQuery({
+  const { data: collaborations = [], isLoading: isCollabsLoading } = useQuery<Collaboration[]>({
     queryKey: ['/api/collaborations/my'],
     refetchOnWindowFocus: false,
   });
 
-  const { data: applications = [], isLoading: isAppsLoading } = useQuery({
+  const { data: applications = [], isLoading: isAppsLoading } = useQuery<CollabApplication[]>({
     queryKey: ['/api/my-applications'],
     refetchOnWindowFocus: false,
   });
