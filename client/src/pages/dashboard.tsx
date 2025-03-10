@@ -232,25 +232,7 @@ export default function Dashboard() {
           </Button>
         </div>
         
-        {/* Preferences Actions */}
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/collab-preferences')}
-          >
-            <Star className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Collab Preferences</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/matching-filters')}
-          >
-            <Settings className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">Match Filters</span>
-          </Button>
-        </div>
+        {/* Removed Preferences Actions as requested */}
 
         {/* Notification Settings */}
         <Card>

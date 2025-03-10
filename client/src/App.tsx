@@ -101,12 +101,16 @@ function Router() {
             <Redirect to="/marketing-collabs-new" />
           </Route>
 
-          {/* Profile Routes redirected to Marketing Collabs */}
-          <Route path="/profile-overview">
-            <Redirect to="/marketing-collabs-new" />
+          {/* Profile Routes */}
+          <Route path="/profile-overview" component={ProfileOverview} />
+          <Route path="/company-info" component={CompanyInfo} />
+
+          {/* Redirects for removed preference pages */}
+          <Route path="/collab-preferences">
+            <Redirect to="/dashboard" />
           </Route>
-          <Route path="/company-info">
-            <Redirect to="/marketing-collabs-new" />
+          <Route path="/matching-filters">
+            <Redirect to="/dashboard" />
           </Route>
           
           {/* Admin Routes redirected to Marketing Collabs */}
