@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Switch } from "@/components/ui/switch";
 import { FUNDING_STAGES, BLOCKCHAIN_NETWORKS, COMPANY_TAG_CATEGORIES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -156,20 +157,14 @@ export default function CompanyInfoForm() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex items-center justify-between mb-8">
-          <Button variant="ghost" onClick={() => setLocation('/dashboard')} className="flex items-center">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Cancel
-          </Button>
-        </div>
+    <div className="min-h-[100svh] bg-background">
+      <PageHeader
+        title="My Company"
+        subtitle="Manage your company details"
+        backUrl="/dashboard"
+      />
 
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">My Company</h1>
-          <p className="text-muted-foreground mt-2">Manage your company details</p>
-        </div>
-
+      <div className="p-4 space-y-6">
         <form onSubmit={handleSubmit} className="space-y-4 pb-24">
           <div>
             <Label htmlFor="company_name">Company Name</Label>
