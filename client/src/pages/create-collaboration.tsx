@@ -107,13 +107,34 @@ export default function CreateCollaboration() {
   const onSubmit = async (data: CreateCollaboration) => {
     setIsSubmitting(true);
     try {
-      // Match form data to schema
+      // Match form data to schema and include new standardized fields
       const formattedData = {
         ...data,
         // Ensure specific optional fields are in proper format
         required_company_sectors: data.required_company_sectors || [],
         required_funding_stages: data.required_funding_stages || [],
+        
+        // Add standardized fields for consistent filtering across all tables
+        company_tags: data.required_company_sectors || [], // Map to new standardized field
+        company_twitter_followers: data.min_company_followers, // Map to new standardized field
+        twitter_followers: data.min_user_followers, // Map to new standardized field
+        funding_stage: data.required_funding_stages && data.required_funding_stages.length > 0 
+          ? data.required_funding_stages[0] // Take first item if array has values
+          : null,
+        company_has_token: data.required_token_status || false, // Map to new standardized field
+        company_blockchain_networks: data.required_blockchain_networks || [], // Map to new standardized field
+        
+        // Set filter toggle states based on whether requirements are specified
+        filter_company_sectors_enabled: Array.isArray(data.required_company_sectors) && data.required_company_sectors.length > 0,
+        filter_company_followers_enabled: !!data.min_company_followers && data.min_company_followers !== TWITTER_FOLLOWER_COUNTS[0],
+        filter_user_followers_enabled: !!data.min_user_followers && data.min_user_followers !== TWITTER_FOLLOWER_COUNTS[0],
+        filter_funding_stages_enabled: Array.isArray(data.required_funding_stages) && data.required_funding_stages.length > 0,
+        filter_token_status_enabled: !!data.required_token_status,
+        filter_blockchain_networks_enabled: Array.isArray(data.required_blockchain_networks) && data.required_blockchain_networks.length > 0
       };
+      
+      // Log the data being submitted
+      console.log("Submitting collaboration with standardized fields:", formattedData);
       
       const response = await apiRequest('/api/collaborations', {
         method: 'POST',

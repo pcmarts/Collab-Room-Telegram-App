@@ -80,20 +80,29 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 
-// Marketing Collab Schema - keeping the same structure for compatibility
+// Marketing Collab Schema with updated fields for direct DB mapping
 const marketingCollabSchema = z.object({
   // Opt-in settings for discovery and hosting
   enabledCollabs: z.array(z.string()).default([]),
   enabledTwitterCollabs: z.array(z.string()).default([]),
   
-  // Filter settings
+  // Filter settings - these map to specific DB fields now
   matchingEnabled: z.boolean().default(false),
-  companySectors: z.array(z.string()).default([]),
-  topics: z.array(z.string()).default([]),
-  companyFollowers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
-  userFollowers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
-  fundingStages: z.array(z.string()).default([]),
-  hasToken: z.boolean().default(false)
+  companySectors: z.array(z.string()).default([]), // Will be mapped to company_tags
+  topics: z.array(z.string()).default([]), // Will be stored in filtered_marketing_topics
+  companyFollowers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(), // Maps to company_twitter_followers
+  userFollowers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(), // Maps to twitter_followers
+  fundingStages: z.array(z.string()).default([]), // Maps to funding_stage
+  hasToken: z.boolean().default(false), // Maps to company_has_token
+  
+  // New standardized fields for consistent filtering
+  company_twitter_followers: z.string().optional(),
+  twitter_followers: z.string().optional(),
+  funding_stage: z.string().optional(),
+  company_has_token: z.boolean().default(false),
+  company_token_ticker: z.string().optional(),
+  company_blockchain_networks: z.array(z.string()).default([]),
+  company_tags: z.array(z.string()).default([])
 });
 
 type MarketingCollabFormData = z.infer<typeof marketingCollabSchema>;
@@ -446,7 +455,7 @@ export default function MarketingCollabs() {
       console.log("Topics to save:", selectedTopics); 
       console.log("Formatted topics:", formattedTopics);
       
-      // Format other filter data
+      // Format other filter data (still keep for backward compatibility)
       const formattedSectors = currentFormValues.companySectors.map(sector => `filter:sector:${sector}`);
       const formattedStages = currentFormValues.fundingStages.map(stage => `filter:stage:${stage}`);
       
@@ -460,7 +469,7 @@ export default function MarketingCollabs() {
         ...(filtersEnabled.hasToken ? [`filter:section_enabled:hasToken`] : [])
       ];
       
-      // Combine all filter tags
+      // Combine all filter tags (still keep for backward compatibility)
       const allFilteredTopics = [
         ...formattedTopics,
         ...formattedSectors,
@@ -483,9 +492,9 @@ export default function MarketingCollabs() {
         allFilteredTopics.push('filter:has_token:true');
       }
       
-      // Build marketing preferences data
+      // Build marketing preferences data with new standardized fields
       const marketingPrefsData = {
-        // These must be arrays
+        // Original array fields
         collabs_to_discover: [...currentFormValues.enabledCollabs],
         collabs_to_host: [...collabsToHost],
         twitter_collabs: [...currentFormValues.enabledTwitterCollabs],
@@ -498,7 +507,14 @@ export default function MarketingCollabs() {
         discovery_filter_company_followers_enabled: filtersEnabled.companyFollowers,
         discovery_filter_user_followers_enabled: filtersEnabled.userFollowers,
         discovery_filter_funding_stages_enabled: filtersEnabled.fundingStages,
-        discovery_filter_token_status_enabled: filtersEnabled.hasToken
+        discovery_filter_token_status_enabled: filtersEnabled.hasToken,
+        
+        // New standardized fields mapped directly from form values
+        company_tags: currentFormValues.companySectors, // Map sectors to company_tags
+        company_twitter_followers: filtersEnabled.companyFollowers ? currentFormValues.companyFollowers : null,
+        twitter_followers: filtersEnabled.userFollowers ? currentFormValues.userFollowers : null,
+        funding_stage: currentFormValues.fundingStages.length > 0 ? currentFormValues.fundingStages[0] : null,
+        company_has_token: filtersEnabled.hasToken ? currentFormValues.hasToken : false
       };
       
       // Ensure all arrays are properly defined
