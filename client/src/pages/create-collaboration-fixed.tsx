@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
@@ -118,13 +118,8 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
     }
   });
 
-  // Setup default detail fields based on collaboration type
-  useEffect(() => {
-    // Since we've moved "Co-Marketing on Twitter" to the top of the list
-    handleCollabTypeChange(COLLAB_TYPES[0]);
-  }, []);
-
-  const handleCollabTypeChange = (value: typeof COLLAB_TYPES[number]) => {
+  // Define handleCollabTypeChange with useCallback to prevent recreation on every render
+  const handleCollabTypeChange = useCallback((value: typeof COLLAB_TYPES[number]) => {
     setSelectedCollabType(value);
     form.setValue("collab_type", value);
     
@@ -199,7 +194,13 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
         });
         break;
     }
-  };
+  }, [form, setSelectedCollabType, setShowTwitterFields]);
+  
+  // Setup default detail fields based on collaboration type
+  useEffect(() => {
+    // Since we've moved "Co-Marketing on Twitter" to the top of the list
+    handleCollabTypeChange(COLLAB_TYPES[0]);
+  }, [handleCollabTypeChange]);
 
   // Fetch collaboration data if editing
   useEffect(() => {
@@ -995,7 +996,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                   />
                   
                   {/* Specific collaboration type fields */}
-                  {selectedCollabType && !showTwitterFields && renderCollabTypeSpecificFields() && (
+                  {selectedCollabType && !showTwitterFields && (
                     <div className="pt-4 border-t mt-6">
                       <h3 className="text-lg font-medium mb-4">Additional Information</h3>
                       {renderCollabTypeSpecificFields()}
