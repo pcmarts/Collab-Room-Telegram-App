@@ -390,7 +390,11 @@ export default function MarketingCollabs() {
         userFollowers: !!marketingPrefs.discovery_filter_user_followers_enabled,
         fundingStages: !!marketingPrefs.discovery_filter_funding_stages_enabled,
         hasToken: !!marketingPrefs.discovery_filter_token_status_enabled,
-        blockchainNetworks: false // Will be enabled when blockchain network filtering is added
+        // Check if blockchain network filter was previously enabled or default to false
+        blockchainNetworks: !!(marketingPrefs.discovery_filter_blockchain_networks_enabled || 
+          (marketingPrefs.filtered_marketing_topics || []).some(item => 
+            typeof item === 'string' && item.startsWith('filter:blockchain_network:')
+          ))
       });
       
       setCollabsToHost(savedCollabsToHost);
@@ -409,6 +413,7 @@ export default function MarketingCollabs() {
       let filterCompanyFollowers: string = TWITTER_FOLLOWER_COUNTS[0];
       let filterUserFollowers: string = TWITTER_FOLLOWER_COUNTS[0];
       let filterHasToken: boolean = false;
+      let filterBlockchainNetworks: string[] = [];
       let filterMatchingEnabled: boolean = !!marketingPrefs.discovery_filter_enabled;
       
       // Process saved filter data from filtered_marketing_topics
@@ -426,6 +431,8 @@ export default function MarketingCollabs() {
             filterHasToken = true;
           } else if (item === 'filter:matching_enabled:true') {
             filterMatchingEnabled = true;
+          } else if (item.startsWith('filter:blockchain_network:')) {
+            filterBlockchainNetworks.push(item.replace('filter:blockchain_network:', ''));
           }
         }
       });
@@ -440,7 +447,8 @@ export default function MarketingCollabs() {
         fundingStages: filterFundingStages,
         hasToken: filterHasToken,
         companyFollowers: filterCompanyFollowers as typeof TWITTER_FOLLOWER_COUNTS[number],
-        userFollowers: filterUserFollowers as typeof TWITTER_FOLLOWER_COUNTS[number]
+        userFollowers: filterUserFollowers as typeof TWITTER_FOLLOWER_COUNTS[number],
+        blockchainNetworks: filterBlockchainNetworks
       });
     }
   }, [profileData, form]);
