@@ -754,7 +754,15 @@ export async function registerRoutes(app: Express) {
         discovery_filter_company_followers_enabled,
         discovery_filter_user_followers_enabled,
         discovery_filter_funding_stages_enabled,
-        discovery_filter_token_status_enabled
+        discovery_filter_token_status_enabled,
+        discovery_filter_blockchain_networks_enabled,
+        // Direct field values for filter criteria
+        company_tags,
+        company_twitter_followers,
+        twitter_followers,
+        funding_stage,
+        company_has_token,
+        company_blockchain_networks
       } = req.body;
 
       // Get Telegram data from header
@@ -879,20 +887,42 @@ export async function registerRoutes(app: Express) {
         // Log the final validated array
         console.log('FINAL SAVE OPERATION: filtered_marketing_topics array after safety checks:', JSON.stringify(processedTopics));
         
-        // Handle Marketing Preferences
+        // Validate the direct field values
+        const safeCompanyTags = Array.isArray(company_tags) ? company_tags : null;
+        const safeCompanyBlockchainNetworks = Array.isArray(company_blockchain_networks) ? company_blockchain_networks : null;
+        
+        // Log the direct field values for debugging
+        console.log('DIRECT FIELDS DEBUG: company_tags:', JSON.stringify(safeCompanyTags));
+        console.log('DIRECT FIELDS DEBUG: company_blockchain_networks:', JSON.stringify(safeCompanyBlockchainNetworks));
+        console.log('DIRECT FIELDS DEBUG: company_twitter_followers:', company_twitter_followers);
+        console.log('DIRECT FIELDS DEBUG: twitter_followers:', twitter_followers);
+        console.log('DIRECT FIELDS DEBUG: funding_stage:', funding_stage);
+        console.log('DIRECT FIELDS DEBUG: company_has_token:', company_has_token);
+        
+        // Handle Marketing Preferences with direct field values
         const marketingPrefsData = {
           collabs_to_discover: safeCollabsToDiscover,
           collabs_to_host: safeCollabsToHost,
           filtered_marketing_topics: processedTopics,
-          twitter_collabs: safeTwitterCollabs,
-          // Include all filter toggles with proper defaults if not provided
+          // No longer using twitter_collabs as they're now in filtered_marketing_topics
+          
+          // All filter toggle states
           discovery_filter_enabled: discovery_filter_enabled === undefined ? false : discovery_filter_enabled,
           discovery_filter_topics_enabled: discovery_filter_topics_enabled === undefined ? false : discovery_filter_topics_enabled,
           discovery_filter_company_sectors_enabled: discovery_filter_company_sectors_enabled === undefined ? false : discovery_filter_company_sectors_enabled,
           discovery_filter_company_followers_enabled: discovery_filter_company_followers_enabled === undefined ? false : discovery_filter_company_followers_enabled,
           discovery_filter_user_followers_enabled: discovery_filter_user_followers_enabled === undefined ? false : discovery_filter_user_followers_enabled,
           discovery_filter_funding_stages_enabled: discovery_filter_funding_stages_enabled === undefined ? false : discovery_filter_funding_stages_enabled,
-          discovery_filter_token_status_enabled: discovery_filter_token_status_enabled === undefined ? false : discovery_filter_token_status_enabled
+          discovery_filter_token_status_enabled: discovery_filter_token_status_enabled === undefined ? false : discovery_filter_token_status_enabled,
+          discovery_filter_blockchain_networks_enabled: discovery_filter_blockchain_networks_enabled === undefined ? false : discovery_filter_blockchain_networks_enabled,
+          
+          // Direct field values for filter criteria
+          company_tags: safeCompanyTags,
+          company_twitter_followers: company_twitter_followers || null,
+          twitter_followers: twitter_followers || null,
+          funding_stage: funding_stage || null,
+          company_has_token: company_has_token === undefined ? false : company_has_token,
+          company_blockchain_networks: safeCompanyBlockchainNetworks
         };
         
         if (existingMarketingPrefs.length > 0) {
