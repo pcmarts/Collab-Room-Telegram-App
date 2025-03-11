@@ -491,11 +491,13 @@ export const createCollaborationSchema = z.object({
   filter_user_followers_enabled: z.boolean().optional().default(false),
   filter_funding_stages_enabled: z.boolean().optional().default(false),
   filter_token_status_enabled: z.boolean().optional().default(false),
+  filter_blockchain_networks_enabled: z.boolean().optional().default(false),
   
   // Filtering criteria
   required_company_sectors: z.array(z.string()).optional(),
   required_funding_stages: z.array(z.enum(FUNDING_STAGES)).optional(),
   required_token_status: z.boolean().optional(),
+  required_blockchain_networks: z.array(z.enum(BLOCKCHAIN_NETWORKS)).optional(),
   min_company_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
   min_user_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
   

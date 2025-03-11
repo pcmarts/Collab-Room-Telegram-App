@@ -79,10 +79,12 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
       filter_user_followers_enabled: false,
       filter_funding_stages_enabled: false,
       filter_token_status_enabled: false,
+      filter_blockchain_networks_enabled: false,
       
       required_company_sectors: [],
       required_funding_stages: [],
       required_token_status: false,
+      required_blockchain_networks: [],
       min_company_followers: TWITTER_FOLLOWER_COUNTS[0],
       min_user_followers: TWITTER_FOLLOWER_COUNTS[0],
       details: {}
@@ -260,6 +262,10 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 (!values.required_funding_stages || !Array.isArray(values.required_funding_stages) || values.required_funding_stages.length === 0)) {
         canProceed = false;
         errorMessage = "Please select at least one funding stage when that filter is enabled";
+      } else if (values.filter_blockchain_networks_enabled && 
+                (!values.required_blockchain_networks || !Array.isArray(values.required_blockchain_networks) || values.required_blockchain_networks.length === 0)) {
+        canProceed = false;
+        errorMessage = "Please select at least one blockchain network when that filter is enabled";
       }
     }
     
@@ -312,6 +318,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
         ...data,
         required_company_sectors: data.required_company_sectors || [],
         required_funding_stages: data.required_funding_stages || [],
+        required_blockchain_networks: data.required_blockchain_networks || [],
       };
       
       // Remove specific_date if not needed
@@ -1041,6 +1048,56 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                   }}
                 />
               </div>
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium">Blockchain Network Requirements</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Only show to companies on these blockchain networks
+                  </p>
+                </div>
+                <Switch
+                  checked={form.watch('filter_blockchain_networks_enabled')}
+                  onCheckedChange={(checked) => {
+                    form.setValue('filter_blockchain_networks_enabled', checked);
+                  }}
+                />
+              </div>
+              
+              {form.watch('filter_blockchain_networks_enabled') && (
+                <FormField
+                  control={form.control}
+                  name="required_blockchain_networks"
+                  render={() => (
+                    <FormItem>
+                      <div className="grid grid-cols-1 gap-2">
+                        {BLOCKCHAIN_NETWORKS.map((network) => (
+                          <Button
+                            key={network}
+                            type="button"
+                            variant={form.watch('required_blockchain_networks')?.includes(network) ? "default" : "outline"}
+                            className="justify-start h-auto py-3 px-4 w-full"
+                            onClick={() => {
+                              const currentNetworks = form.watch('required_blockchain_networks') || [];
+                              const updatedNetworks = currentNetworks.includes(network)
+                                ? currentNetworks.filter(n => n !== network)
+                                : [...currentNetworks, network];
+                              form.setValue('required_blockchain_networks', updatedNetworks);
+                            }}
+                          >
+                            <span className="text-left">{network}</span>
+                          </Button>
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
           </div>
         );
