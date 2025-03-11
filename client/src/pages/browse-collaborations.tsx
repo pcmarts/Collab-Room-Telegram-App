@@ -467,6 +467,27 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
             }
           </div>
         )}
+        
+        {/* Display blockchain networks if available */}
+        {collab.company_blockchain_networks && collab.company_blockchain_networks.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            <div className="w-full text-xs text-gray-500 mb-1">Blockchain Networks:</div>
+            {Array.isArray(collab.company_blockchain_networks) && 
+              collab.company_blockchain_networks.slice(0, 3).map((network, idx) => (
+                <Badge key={idx} variant="outline" className="text-xs">
+                  {network}
+                </Badge>
+              ))
+            }
+            {Array.isArray(collab.company_blockchain_networks) && 
+              collab.company_blockchain_networks.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{collab.company_blockchain_networks.length - 3} more
+                </Badge>
+              )
+            }
+          </div>
+        )}
       </CardContent>
       <CardFooter className="flex gap-2">
         <Button 
@@ -588,6 +609,23 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
                     singleCollaboration.required_company_sectors.map((sector, idx) => (
                       <Badge key={idx} variant="secondary" className="text-xs">
                         {sector}
+                      </Badge>
+                    ))
+                  }
+                </div>
+              </div>
+            )}
+            
+            {/* Display blockchain networks in detail view if available */}
+            {singleCollaboration.company_blockchain_networks && 
+             singleCollaboration.company_blockchain_networks.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium mb-1">Blockchain Networks</h3>
+                <div className="flex flex-wrap gap-1">
+                  {Array.isArray(singleCollaboration.company_blockchain_networks) && 
+                    singleCollaboration.company_blockchain_networks.map((network, idx) => (
+                      <Badge key={idx} variant="outline" className="text-xs">
+                        {network}
                       </Badge>
                     ))
                   }

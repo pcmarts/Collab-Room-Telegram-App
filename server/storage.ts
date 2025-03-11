@@ -406,13 +406,15 @@ export class DatabaseStorage implements IStorage {
           collabs_to_host: safePrefs.collabs_to_host,
           twitter_collabs: safePrefs.twitter_collabs,
           filtered_marketing_topics: safePrefs.filtered_marketing_topics,
+          company_blockchain_networks: safePrefs.company_blockchain_networks,
           discovery_filter_enabled: prefs.discovery_filter_enabled || false,
           discovery_filter_topics_enabled: prefs.discovery_filter_topics_enabled || false,
           discovery_filter_company_followers_enabled: prefs.discovery_filter_company_followers_enabled || false,
           discovery_filter_user_followers_enabled: prefs.discovery_filter_user_followers_enabled || false,
           discovery_filter_funding_stages_enabled: prefs.discovery_filter_funding_stages_enabled || false,
           discovery_filter_token_status_enabled: prefs.discovery_filter_token_status_enabled || false,
-          discovery_filter_company_sectors_enabled: prefs.discovery_filter_company_sectors_enabled || false
+          discovery_filter_company_sectors_enabled: prefs.discovery_filter_company_sectors_enabled || false,
+          discovery_filter_blockchain_networks_enabled: prefs.discovery_filter_blockchain_networks_enabled || false
         })
         .returning();
       return newPrefs;
