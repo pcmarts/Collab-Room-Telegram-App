@@ -31,13 +31,15 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 
 import {
   AUDIENCE_SIZE_RANGES,
   COLLAB_TYPES,
   COLLAB_TOPICS,
   COMPANY_CATEGORIES,
+  COMPANY_TAG_CATEGORIES,
+  ALL_COMPANY_TAGS,
   FUNDING_STAGES,
   TWITTER_FOLLOWER_COUNTS,
   TWITTER_COLLAB_TYPES,
@@ -56,6 +58,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedCollabType, setSelectedCollabType] = useState<string>(COLLAB_TYPES[0]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   
   // Initialize with basic form data
   const form = useForm<CreateCollaboration>({
@@ -204,6 +207,15 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
+  };
+  
+  // Toggle category expansion
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
 
   // Handle form submission
