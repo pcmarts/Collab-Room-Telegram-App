@@ -497,6 +497,13 @@ export default function MarketingCollabs() {
         allFilteredTopics.push('filter:has_token:true');
       }
       
+      // Add blockchain networks if enabled
+      if (filtersEnabled.blockchainNetworks && currentFormValues.blockchainNetworks?.length > 0) {
+        currentFormValues.blockchainNetworks.forEach(network => {
+          allFilteredTopics.push(`filter:blockchain_network:${network}`);
+        });
+      }
+      
       // Build marketing preferences data with new standardized fields
       const marketingPrefsData = {
         // Original array fields
@@ -1429,6 +1436,71 @@ export default function MarketingCollabs() {
                             When enabled, your feed will only show collaborations from companies 
                             that have their own token
                           </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Blockchain Networks Filter */}
+                    <div className="mt-6">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-base font-medium">Filter by Blockchain Networks</h3>
+                          <p className="text-sm text-gray-500">
+                            Only show collaborations from companies on these networks
+                          </p>
+                        </div>
+                        <Switch 
+                          checked={filtersEnabled.blockchainNetworks}
+                          onCheckedChange={() => toggleFilter('blockchainNetworks')}
+                        />
+                      </div>
+                      
+                      {filtersEnabled.blockchainNetworks && (
+                        <div className="border rounded-lg p-4 bg-background">
+                          <FormField
+                            control={form.control}
+                            name="blockchainNetworks"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="grid grid-cols-2 gap-3">
+                                  {BLOCKCHAIN_NETWORKS.map((network) => (
+                                    <FormItem
+                                      key={network}
+                                      className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value.includes(network)}
+                                          className="h-5 w-5"
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...field.value, network])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                    (value) => value !== network
+                                                  )
+                                                )
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="font-normal w-full cursor-pointer" onClick={() => {
+                                        const newChecked = !field.value?.includes(network);
+                                        return newChecked
+                                          ? field.onChange([...field.value, network])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== network
+                                              )
+                                            )
+                                      }}>
+                                        {network}
+                                      </FormLabel>
+                                    </FormItem>
+                                  ))}
+                                </div>
+                              </FormItem>
+                            )}
+                          />
                         </div>
                       )}
                     </div>
