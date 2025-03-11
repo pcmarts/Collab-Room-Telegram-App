@@ -23,6 +23,7 @@ import AdminUsers from "@/pages/admin/users";
 
 // BrowseCollaborations page removed as requested
 import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
+import CreateCollaborationSteps from "@/pages/create-collaboration-steps";
 import CreateCollaboration from "@/pages/create-collaboration";
 import MyCollaborations from "@/pages/my-collaborations";
 import Apply from "@/pages/apply";
