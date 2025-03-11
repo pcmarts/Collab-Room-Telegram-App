@@ -262,6 +262,16 @@ export const marketing_preferences = pgTable('marketing_preferences', {
   collabs_to_host: text('collabs_to_host').array(),
   twitter_collabs: text('twitter_collabs').array(),
   filtered_marketing_topics: text('filtered_marketing_topics').array(), // Renamed from excluded_tags
+  
+  // Matching user and company fields for consistent filtering - same structure as user and company tables
+  twitter_followers: text('twitter_followers'), // Match user.twitter_followers field
+  company_twitter_followers: text('company_twitter_followers'), // Match companies.twitter_followers field
+  funding_stage: text('funding_stage'), // Match companies.funding_stage field
+  company_has_token: boolean('company_has_token').default(false), // Match companies.has_token field
+  company_token_ticker: text('company_token_ticker'), // Match companies.token_ticker field
+  company_blockchain_networks: text('company_blockchain_networks').array(), // Match companies.blockchain_networks field
+  company_tags: text('company_tags').array(), // Match companies.tags field
+  
   // Discovery feed filter toggle states
   discovery_filter_enabled: boolean('discovery_filter_enabled').default(false),
   discovery_filter_topics_enabled: boolean('discovery_filter_topics_enabled').default(false),
@@ -279,13 +289,26 @@ export const conference_preferences = pgTable('conference_preferences', {
   user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   // Coffee match preferences
   coffee_match_enabled: boolean('coffee_match_enabled').default(false),
+  
+  // Matching user and company fields for consistent filtering - same structure as user and company tables
+  twitter_followers: text('twitter_followers'), // Match user.twitter_followers field
+  company_twitter_followers: text('company_twitter_followers'), // Match companies.twitter_followers field
+  funding_stage: text('funding_stage'), // Match companies.funding_stage field
+  company_has_token: boolean('company_has_token').default(false), // Match companies.has_token field
+  company_token_ticker: text('company_token_ticker'), // Match companies.token_ticker field
+  company_blockchain_networks: text('company_blockchain_networks').array(), // Match companies.blockchain_networks field
+  company_tags: text('company_tags').array(), // Match companies.tags field
+  
+  // Legacy fields - keep for backward compatibility but use new fields above
   coffee_match_company_sectors: text('coffee_match_company_sectors').array(),
   coffee_match_company_followers: text('coffee_match_company_followers'),
   coffee_match_user_followers: text('coffee_match_user_followers'),
   coffee_match_funding_stages: text('coffee_match_funding_stages').array(),
   coffee_match_token_status: boolean('coffee_match_token_status').default(false),
+  
   // Conference sector filtering
   filtered_conference_sectors: text('filtered_conference_sectors').array(),
+  
   // Toggle states for coffee match filters
   coffee_match_filter_company_sectors_enabled: boolean('coffee_match_filter_company_sectors_enabled').default(false),
   coffee_match_filter_company_followers_enabled: boolean('coffee_match_filter_company_followers_enabled').default(false),
@@ -306,6 +329,15 @@ export const collaborations = pgTable('collaborations', {
   // Common filtering criteria
   topics: text('topics').array(), // Standardized topics for the collaboration
   
+  // Matching user and company fields for consistent filtering - same structure as user and company tables
+  twitter_followers: text('twitter_followers'), // Match user.twitter_followers field
+  company_twitter_followers: text('company_twitter_followers'), // Match companies.twitter_followers field
+  funding_stage: text('funding_stage'), // Match companies.funding_stage field
+  company_has_token: boolean('company_has_token').default(false), // Match companies.has_token field
+  company_token_ticker: text('company_token_ticker'), // Match companies.token_ticker field
+  company_blockchain_networks: text('company_blockchain_networks').array(), // Match companies.blockchain_networks field
+  company_tags: text('company_tags').array(), // Match companies.tags field
+  
   // Filter toggle states - tracking whether each filter is enabled
   filter_company_sectors_enabled: boolean('filter_company_sectors_enabled').default(false),
   filter_company_followers_enabled: boolean('filter_company_followers_enabled').default(false),
@@ -314,13 +346,14 @@ export const collaborations = pgTable('collaborations', {
   filter_token_status_enabled: boolean('filter_token_status_enabled').default(false),
   filter_blockchain_networks_enabled: boolean('filter_blockchain_networks_enabled').default(false),
   
-  // Filter criteria values
+  // Legacy filter criteria values - keep for backward compatibility but use new fields above
   required_company_sectors: text('required_company_sectors').array(),
   required_funding_stages: text('required_funding_stages').array(),
   required_token_status: boolean('required_token_status'),
   required_blockchain_networks: text('required_blockchain_networks').array(),
   min_company_followers: text('min_company_followers'),
   min_user_followers: text('min_user_followers'),
+  
   // Free collaboration confirmation
   is_free_collab: boolean('is_free_collab').notNull().default(true),
   // Type-specific details stored as JSON
@@ -507,6 +540,15 @@ export const createCollaborationSchema = z.object({
     message: "You must confirm this is a free collaboration with no payments involved"
   }),
   
+  // Standardized filtering fields matching user and company tables
+  twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
+  company_twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
+  funding_stage: z.enum(FUNDING_STAGES).optional(),
+  company_has_token: z.boolean().optional(),
+  company_token_ticker: z.string().optional(),
+  company_blockchain_networks: z.array(z.enum(BLOCKCHAIN_NETWORKS)).optional(),
+  company_tags: z.array(z.string()).optional(),
+  
   // Filter toggle states
   filter_company_sectors_enabled: z.boolean().optional().default(false),
   filter_company_followers_enabled: z.boolean().optional().default(false),
@@ -515,7 +557,7 @@ export const createCollaborationSchema = z.object({
   filter_token_status_enabled: z.boolean().optional().default(false),
   filter_blockchain_networks_enabled: z.boolean().optional().default(false),
   
-  // Filtering criteria
+  // Legacy filtering criteria (for backward compatibility)
   required_company_sectors: z.array(z.string()).optional(),
   required_funding_stages: z.array(z.enum(FUNDING_STAGES)).optional(),
   required_token_status: z.boolean().optional(),
