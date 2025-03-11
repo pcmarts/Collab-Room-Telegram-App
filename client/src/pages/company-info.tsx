@@ -377,18 +377,15 @@ export default function CompanyInfoForm() {
                   {expandedCategories.includes(category) && (
                     <div className="p-4 pt-0 grid grid-cols-1 gap-3">
                       {tags.map(tag => (
-                        <div
+                        <Button
                           key={tag}
-                          className="flex items-center w-full rounded-md border hover:bg-accent/50 cursor-pointer transition-colors"
+                          type="button"
+                          variant={formData.tags.includes(tag) ? "default" : "outline"}
+                          className="justify-start h-auto py-3 px-4 w-full"
                           onClick={() => toggleTag(tag)}
                         >
-                          <div className={`flex items-center w-full p-3 ${formData.tags.includes(tag) ? 'font-medium' : ''}`}>
-                            <div className="flex-1 text-left">{tag}</div>
-                            {formData.tags.includes(tag) && (
-                              <div className="h-2 w-2 rounded-full bg-primary ml-2"></div>
-                            )}
-                          </div>
-                        </div>
+                          <span className="text-left">{tag}</span>
+                        </Button>
                       ))}
                     </div>
                   )}
