@@ -1700,7 +1700,8 @@ export async function registerRoutes(app: Express) {
         minCompanyFollowers: req.query.minCompanyFollowers as string | undefined,
         minUserFollowers: req.query.minUserFollowers as string | undefined,
         hasToken: req.query.hasToken ? req.query.hasToken === 'true' : undefined,
-        fundingStages: req.query.fundingStages ? (req.query.fundingStages as string).split(',') : undefined
+        fundingStages: req.query.fundingStages ? (req.query.fundingStages as string).split(',') : undefined,
+        blockchainNetworks: req.query.blockchainNetworks ? (req.query.blockchainNetworks as string).split(',') : undefined
       };
 
       // Get filtered collaborations

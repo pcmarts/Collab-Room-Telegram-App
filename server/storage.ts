@@ -57,6 +57,7 @@ export interface CollaborationFilters {
   minUserFollowers?: string;
   hasToken?: boolean;
   fundingStages?: string[];
+  blockchainNetworks?: string[];
 }
 
 export class DatabaseStorage implements IStorage {
@@ -214,6 +215,13 @@ export class DatabaseStorage implements IStorage {
         filters.fundingStages && 
         filters.fundingStages.length > 0) {
       query = query.where(sql`${collaborations.required_funding_stages} && ${filters.fundingStages}::text[]`);
+    }
+    
+    // Apply blockchain networks filter if enabled
+    if (marketingPrefs?.discovery_filter_blockchain_networks_enabled && 
+        filters.blockchainNetworks && 
+        filters.blockchainNetworks.length > 0) {
+      query = query.where(sql`${collaborations.company_blockchain_networks} && ${filters.blockchainNetworks}::text[]`);
     }
     
     return query.orderBy(desc(collaborations.created_at));
