@@ -240,23 +240,30 @@ export default function ProfileOverview() {
                 </p>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full mt-6"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving Changes...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
-              </Button>
+              {/* Added space to account for fixed bottom button */}
+              <div className="h-16"></div>
             </form>
           </CardContent>
         </Card>
+        
+        {/* Fixed position Save button */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isSubmitting}
+            onClick={(e) => handleSubmit(e)}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving Changes...
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
+        </div>
 
         {/* Privacy Notice moved to bottom */}
         <Card className="bg-primary/5 border-primary/10">
