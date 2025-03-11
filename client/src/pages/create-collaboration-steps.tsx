@@ -45,13 +45,17 @@ import {
   type CreateCollaboration
 } from "@shared/schema";
 
-export default function CreateCollaborationSteps() {
+interface CreateCollaborationProps {
+  id?: string;
+}
+
+export default function CreateCollaborationSteps({ id }: CreateCollaborationProps = {}) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedCollabType, setSelectedCollabType] = useState(COLLAB_TYPES[0]);
+  const [selectedCollabType, setSelectedCollabType] = useState<string>(COLLAB_TYPES[0]);
   
   // Initialize with basic form data
   const form = useForm<CreateCollaboration>({
@@ -99,7 +103,7 @@ export default function CreateCollaborationSteps() {
 
   // When collaboration type changes
   const handleCollabTypeChange = (value: string) => {
-    setSelectedCollabType(value as typeof COLLAB_TYPES[number]);
+    setSelectedCollabType(value);
     form.setValue("collab_type", value as typeof COLLAB_TYPES[number]);
     
     // Reset details to avoid field bleeding

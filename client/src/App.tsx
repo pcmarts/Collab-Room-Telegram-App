@@ -82,7 +82,12 @@ function Router() {
           <Route path="/create-collaboration">
             <Redirect to="/marketing-collabs-new" />
           </Route>
-          <Route path="/create-collaboration-fixed" component={CreateCollaborationFixed} />
+          <Route path="/create-collaboration-fixed">
+            {() => <CreateCollaborationFixed />}
+          </Route>
+          <Route path="/create-collaboration-steps">
+            {() => <CreateCollaborationSteps />}
+          </Route>
           <Route path="/my-collaborations">
             <Redirect to="/marketing-collabs-new" />
           </Route>
