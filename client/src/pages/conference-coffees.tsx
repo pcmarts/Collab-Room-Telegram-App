@@ -211,9 +211,9 @@ export default function ConferenceCoffees() {
       // Make sure we have a default for notification_frequency as it's required
       const notification_frequency = profileData?.preferences?.notification_frequency || "Daily";
       
-      // Prepare conference preferences data
+      // Prepare conference preferences data with new standardized fields
       const conferencePrefsData = {
-        // Form data values
+        // Legacy fields kept for backward compatibility
         coffee_match_enabled: data.matchingEnabled,
         coffee_match_company_sectors: data.companySectors ?? [],
         coffee_match_company_followers: data.companyFollowers,
@@ -226,7 +226,16 @@ export default function ConferenceCoffees() {
         coffee_match_filter_company_followers_enabled: companyFollowersEnabled,
         coffee_match_filter_user_followers_enabled: userFollowersEnabled,
         coffee_match_filter_funding_stages_enabled: fundingStagesEnabled,
-        coffee_match_filter_token_status_enabled: tokenStatusEnabled
+        coffee_match_filter_token_status_enabled: tokenStatusEnabled,
+        
+        // New standardized fields for consistent filtering across all tables
+        company_tags: data.companySectors ?? [], // Map sectors to company_tags
+        company_twitter_followers: companyFollowersEnabled ? data.companyFollowers : null,
+        twitter_followers: userFollowersEnabled ? data.userFollowers : null,
+        funding_stage: data.fundingStages && data.fundingStages.length > 0 
+          ? data.fundingStages[0] // Take first item if array has values
+          : null,
+        company_has_token: tokenStatusEnabled ? data.tokenStatus : false
       };
       
       console.log("Sending conference preferences data:", conferencePrefsData);
