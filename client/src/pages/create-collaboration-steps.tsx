@@ -1046,6 +1046,11 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                   onCheckedChange={(checked) => {
                     form.setValue('filter_token_status_enabled', checked);
                     form.setValue('required_token_status', checked);
+                    
+                    // If token status is enabled, also enable blockchain networks requirement
+                    if (checked) {
+                      form.setValue('filter_blockchain_networks_enabled', true);
+                    }
                   }}
                 />
               </div>
@@ -1065,7 +1070,14 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                   checked={form.watch('filter_blockchain_networks_enabled')}
                   onCheckedChange={(checked) => {
                     form.setValue('filter_blockchain_networks_enabled', checked);
+                    
+                    // If blockchain network filtering is disabled, clear selected networks
+                    if (!checked) {
+                      form.setValue('required_blockchain_networks', []);
+                    }
                   }}
+                  // Disable the blockchain network filter if token status is disabled
+                  disabled={!form.watch('filter_token_status_enabled')}
                 />
               </div>
               
