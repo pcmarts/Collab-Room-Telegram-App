@@ -348,39 +348,53 @@ export default function CompanyInfoForm() {
               Select tags that best describe your company's focus areas in web3.
             </p>
 
-            {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-              <div key={category} className="border rounded-lg overflow-hidden">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full flex justify-between items-center p-4"
-                  onClick={() => toggleCategory(category)}
-                >
-                  <span className="font-medium">{category}</span>
-                  {expandedCategories.includes(category) ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </Button>
-
-                {expandedCategories.includes(category) && (
-                  <div className="p-4 pt-0 grid grid-cols-1 gap-2">
-                    {tags.map(tag => (
-                      <Button
-                        key={tag}
-                        type="button"
-                        variant={formData.tags.includes(tag) ? "default" : "outline"}
-                        className="justify-start h-auto py-3 px-4"
-                        onClick={() => toggleTag(tag)}
-                      >
-                        <span className="text-left">{tag}</span>
-                      </Button>
-                    ))}
+            {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => {
+              // Count how many tags from this category are selected
+              const selectedCount = formData.tags.filter(tag => tags.includes(tag)).length;
+              
+              return (
+                <div key={category} className="border rounded-lg overflow-hidden">
+                  {/* Make the entire header row clickable */}
+                  <div 
+                    className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
+                    onClick={() => toggleCategory(category)}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">{category}</span>
+                      {selectedCount > 0 && (
+                        <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
+                          {selectedCount}
+                        </span>
+                      )}
+                    </div>
+                    {expandedCategories.includes(category) ? (
+                      <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {expandedCategories.includes(category) && (
+                    <div className="p-4 pt-0 grid grid-cols-1 gap-3">
+                      {tags.map(tag => (
+                        <div
+                          key={tag}
+                          className="flex items-center w-full rounded-md border hover:bg-accent/50 cursor-pointer transition-colors"
+                          onClick={() => toggleTag(tag)}
+                        >
+                          <div className={`flex items-center w-full p-3 ${formData.tags.includes(tag) ? 'font-medium' : ''}`}>
+                            <div className="flex-1 text-left">{tag}</div>
+                            {formData.tags.includes(tag) && (
+                              <div className="h-2 w-2 rounded-full bg-primary ml-2"></div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
           
           {/* Floating Save Button */}
