@@ -390,7 +390,7 @@ export default function MarketingCollabs() {
         userFollowers: !!marketingPrefs.discovery_filter_user_followers_enabled,
         fundingStages: !!marketingPrefs.discovery_filter_funding_stages_enabled,
         hasToken: !!marketingPrefs.discovery_filter_token_status_enabled,
-        blockchainNetworks: !!marketingPrefs.discovery_filter_blockchain_networks_enabled
+        blockchainNetworks: false // Will be enabled when blockchain network filtering is added
       });
       
       setCollabsToHost(savedCollabsToHost);
@@ -470,7 +470,8 @@ export default function MarketingCollabs() {
         ...(filtersEnabled.companyFollowers ? [`filter:section_enabled:companyFollowers`] : []),
         ...(filtersEnabled.userFollowers ? [`filter:section_enabled:userFollowers`] : []),
         ...(filtersEnabled.fundingStages ? [`filter:section_enabled:fundingStages`] : []),
-        ...(filtersEnabled.hasToken ? [`filter:section_enabled:hasToken`] : [])
+        ...(filtersEnabled.hasToken ? [`filter:section_enabled:hasToken`] : []),
+        ...(filtersEnabled.blockchainNetworks ? [`filter:section_enabled:blockchainNetworks`] : [])
       ];
       
       // Combine all filter tags (still keep for backward compatibility)
@@ -513,12 +514,16 @@ export default function MarketingCollabs() {
         discovery_filter_funding_stages_enabled: filtersEnabled.fundingStages,
         discovery_filter_token_status_enabled: filtersEnabled.hasToken,
         
+        // Discovery filter toggle for blockchain networks
+        discovery_filter_blockchain_networks_enabled: filtersEnabled.blockchainNetworks,
+        
         // New standardized fields mapped directly from form values
         company_tags: currentFormValues.companySectors, // Map sectors to company_tags
         company_twitter_followers: filtersEnabled.companyFollowers ? currentFormValues.companyFollowers : null,
         twitter_followers: filtersEnabled.userFollowers ? currentFormValues.userFollowers : null,
         funding_stage: currentFormValues.fundingStages.length > 0 ? currentFormValues.fundingStages[0] : null,
-        company_has_token: filtersEnabled.hasToken ? currentFormValues.hasToken : false
+        company_has_token: filtersEnabled.hasToken ? currentFormValues.hasToken : false,
+        company_blockchain_networks: currentFormValues.blockchainNetworks || []
       };
       
       // Ensure all arrays are properly defined
