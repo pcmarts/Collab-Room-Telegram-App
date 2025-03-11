@@ -416,26 +416,41 @@ export default function MarketingCollabs() {
       let filterBlockchainNetworks: string[] = [];
       let filterMatchingEnabled: boolean = !!marketingPrefs.discovery_filter_enabled;
       
-      // Process saved filter data from filtered_marketing_topics
+      // Extract topics only from filtered_marketing_topics
       (marketingPrefs.filtered_marketing_topics || []).forEach((item: string) => {
-        if (typeof item === 'string') {
-          if (item.startsWith('filter:sector:')) {
-            filterCompanySectors.push(item.replace('filter:sector:', ''));
-          } else if (item.startsWith('filter:stage:')) {
-            filterFundingStages.push(item.replace('filter:stage:', ''));
-          } else if (item.startsWith('filter:company_followers:')) {
-            filterCompanyFollowers = item.replace('filter:company_followers:', '');
-          } else if (item.startsWith('filter:user_followers:')) {
-            filterUserFollowers = item.replace('filter:user_followers:', '');
-          } else if (item === 'filter:has_token:true') {
-            filterHasToken = true;
-          } else if (item === 'filter:matching_enabled:true') {
-            filterMatchingEnabled = true;
-          } else if (item.startsWith('filter:blockchain_network:')) {
-            filterBlockchainNetworks.push(item.replace('filter:blockchain_network:', ''));
-          }
+        if (typeof item === 'string' && item.startsWith('filter:topic:')) {
+          // Get only the topic name from the prefixed string
+          topicEntries.push(item.replace('filter:topic:', ''));
         }
       });
+      
+      // Read data from dedicated standardized fields
+      if (marketingPrefs.company_tags && Array.isArray(marketingPrefs.company_tags)) {
+        filterCompanySectors = marketingPrefs.company_tags;
+      }
+      
+      if (marketingPrefs.funding_stage) {
+        filterFundingStages = [marketingPrefs.funding_stage];
+      }
+      
+      if (marketingPrefs.company_twitter_followers) {
+        filterCompanyFollowers = marketingPrefs.company_twitter_followers;
+      }
+      
+      if (marketingPrefs.twitter_followers) {
+        filterUserFollowers = marketingPrefs.twitter_followers;
+      }
+      
+      if (marketingPrefs.company_has_token !== null) {
+        filterHasToken = !!marketingPrefs.company_has_token;
+      }
+      
+      if (marketingPrefs.company_blockchain_networks && Array.isArray(marketingPrefs.company_blockchain_networks)) {
+        filterBlockchainNetworks = marketingPrefs.company_blockchain_networks;
+      }
+      
+      // Get matching enabled setting
+      filterMatchingEnabled = !!marketingPrefs.discovery_filter_enabled;
       
       // Reset form with loaded values
       form.reset({
@@ -467,58 +482,21 @@ export default function MarketingCollabs() {
       console.log("Topics to save:", selectedTopics); 
       console.log("Formatted topics:", formattedTopics);
       
-      // Format other filter data (still keep for backward compatibility)
-      const formattedSectors = currentFormValues.companySectors.map(sector => `filter:sector:${sector}`);
-      const formattedStages = currentFormValues.fundingStages.map(stage => `filter:stage:${stage}`);
+      // We no longer need to format and combine filter criteria for filtered_marketing_topics
+      // All criteria are now stored in their dedicated fields
+      console.log("Using dedicated fields for filter criteria instead of filtered_marketing_topics");
       
-      // Filter toggle states
-      const toggleStates = [
-        ...(filtersEnabled.topics ? [`filter:section_enabled:topics`] : []),
-        ...(filtersEnabled.companySectors ? [`filter:section_enabled:companySectors`] : []),
-        ...(filtersEnabled.companyFollowers ? [`filter:section_enabled:companyFollowers`] : []),
-        ...(filtersEnabled.userFollowers ? [`filter:section_enabled:userFollowers`] : []),
-        ...(filtersEnabled.fundingStages ? [`filter:section_enabled:fundingStages`] : []),
-        ...(filtersEnabled.hasToken ? [`filter:section_enabled:hasToken`] : []),
-        ...(filtersEnabled.blockchainNetworks ? [`filter:section_enabled:blockchainNetworks`] : [])
-      ];
-      
-      // Combine all filter tags (still keep for backward compatibility)
-      const allFilteredTopics = [
-        ...formattedTopics,
-        ...formattedSectors,
-        ...formattedStages,
-        ...toggleStates
-      ];
-      
-      // Add company followers value to filtered topics if enabled
-      if (filtersEnabled.companyFollowers && currentFormValues.companyFollowers) {
-        allFilteredTopics.push(`filter:company_followers:${currentFormValues.companyFollowers}`);
-      }
-      
-      // Add user followers value to filtered topics if enabled
-      if (filtersEnabled.userFollowers && currentFormValues.userFollowers) {
-        allFilteredTopics.push(`filter:user_followers:${currentFormValues.userFollowers}`);
-      }
-      
-      // Add token filter if enabled
-      if (filtersEnabled.hasToken && currentFormValues.hasToken) {
-        allFilteredTopics.push('filter:has_token:true');
-      }
-      
-      // Add blockchain networks if enabled
-      if (filtersEnabled.blockchainNetworks && currentFormValues.blockchainNetworks?.length > 0) {
-        currentFormValues.blockchainNetworks.forEach(network => {
-          allFilteredTopics.push(`filter:blockchain_network:${network}`);
-        });
-      }
-      
-      // Build marketing preferences data with new standardized fields
+      // Build marketing preferences data with standardized fields
       const marketingPrefsData = {
-        // Original array fields
+        // Array fields for collab types
         collabs_to_discover: [...currentFormValues.enabledCollabs],
         collabs_to_host: [...collabsToHost],
         twitter_collabs: [...currentFormValues.enabledTwitterCollabs],
-        filtered_marketing_topics: [...allFilteredTopics],
+        
+        // Only store actual topics in filtered_marketing_topics (not filter criteria)
+        filtered_marketing_topics: filtersEnabled.topics 
+          ? selectedTopics.map(topic => `filter:topic:${topic}`) 
+          : [],
         
         // Discovery filter toggle states
         discovery_filter_enabled: currentFormValues.matchingEnabled,
@@ -528,17 +506,17 @@ export default function MarketingCollabs() {
         discovery_filter_user_followers_enabled: filtersEnabled.userFollowers,
         discovery_filter_funding_stages_enabled: filtersEnabled.fundingStages,
         discovery_filter_token_status_enabled: filtersEnabled.hasToken,
-        
-        // Discovery filter toggle for blockchain networks
         discovery_filter_blockchain_networks_enabled: filtersEnabled.blockchainNetworks,
         
-        // New standardized fields mapped directly from form values
-        company_tags: currentFormValues.companySectors, // Map sectors to company_tags
+        // Standardized fields for actual data values - each in their proper field
+        company_tags: filtersEnabled.companySectors ? currentFormValues.companySectors : null,
         company_twitter_followers: filtersEnabled.companyFollowers ? currentFormValues.companyFollowers : null,
         twitter_followers: filtersEnabled.userFollowers ? currentFormValues.userFollowers : null,
-        funding_stage: currentFormValues.fundingStages.length > 0 ? currentFormValues.fundingStages[0] : null,
-        company_has_token: filtersEnabled.hasToken ? currentFormValues.hasToken : false,
-        company_blockchain_networks: currentFormValues.blockchainNetworks || []
+        funding_stage: filtersEnabled.fundingStages && currentFormValues.fundingStages.length > 0 ? 
+          currentFormValues.fundingStages[0] : null,
+        company_has_token: filtersEnabled.hasToken ? currentFormValues.hasToken : null,
+        company_blockchain_networks: filtersEnabled.blockchainNetworks ? 
+          currentFormValues.blockchainNetworks : null
       };
       
       // Ensure all arrays are properly defined

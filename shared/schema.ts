@@ -280,6 +280,7 @@ export const marketing_preferences = pgTable('marketing_preferences', {
   discovery_filter_funding_stages_enabled: boolean('discovery_filter_funding_stages_enabled').default(false),
   discovery_filter_token_status_enabled: boolean('discovery_filter_token_status_enabled').default(false),
   discovery_filter_company_sectors_enabled: boolean('discovery_filter_company_sectors_enabled').default(false),
+  discovery_filter_blockchain_networks_enabled: boolean('discovery_filter_blockchain_networks_enabled').default(false),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
