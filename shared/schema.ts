@@ -53,6 +53,26 @@ export const BLOCKCHAIN_NETWORKS = [
   "Other"
 ] as const;
 
+export const BLOCKCHAIN_NETWORK_CATEGORIES = {
+  "Layer 1 Blockchains": [
+    "Ethereum",
+    "Solana",
+    "Cardano",
+    "Tron",
+    "Tezos",
+    "Stellar",
+    "Avalanche"
+  ],
+  "Layer 2 & Sidechains": [
+    "Polygon",
+    "Binance Smart Chain (BSC)",
+    "Fantom"
+  ],
+  "Other Networks": [
+    "Other"
+  ]
+} as const;
+
 export const TWITTER_FOLLOWER_COUNTS = [
   "0-1K",
   "1K-10K",
@@ -292,11 +312,13 @@ export const collaborations = pgTable('collaborations', {
   filter_user_followers_enabled: boolean('filter_user_followers_enabled').default(false),
   filter_funding_stages_enabled: boolean('filter_funding_stages_enabled').default(false),
   filter_token_status_enabled: boolean('filter_token_status_enabled').default(false),
+  filter_blockchain_networks_enabled: boolean('filter_blockchain_networks_enabled').default(false),
   
   // Filter criteria values
   required_company_sectors: text('required_company_sectors').array(),
   required_funding_stages: text('required_funding_stages').array(),
   required_token_status: boolean('required_token_status'),
+  required_blockchain_networks: text('required_blockchain_networks').array(),
   min_company_followers: text('min_company_followers'),
   min_user_followers: text('min_user_followers'),
   // Free collaboration confirmation

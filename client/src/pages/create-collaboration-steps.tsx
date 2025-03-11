@@ -44,6 +44,7 @@ import {
   TWITTER_FOLLOWER_COUNTS,
   TWITTER_COLLAB_TYPES,
   BLOCKCHAIN_NETWORKS,
+  BLOCKCHAIN_NETWORK_CATEGORIES,
   createCollaborationSchema,
   type CreateCollaboration
 } from "@shared/schema";
@@ -1074,25 +1075,57 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                   name="required_blockchain_networks"
                   render={() => (
                     <FormItem>
-                      <div className="grid grid-cols-1 gap-2">
-                        {BLOCKCHAIN_NETWORKS.map((network) => (
-                          <Button
-                            key={network}
-                            type="button"
-                            variant={form.watch('required_blockchain_networks')?.includes(network) ? "default" : "outline"}
-                            className="justify-start h-auto py-3 px-4 w-full"
-                            onClick={() => {
-                              const currentNetworks = form.watch('required_blockchain_networks') || [];
-                              const updatedNetworks = currentNetworks.includes(network)
-                                ? currentNetworks.filter(n => n !== network)
-                                : [...currentNetworks, network];
-                              form.setValue('required_blockchain_networks', updatedNetworks);
-                            }}
-                          >
-                            <span className="text-left">{network}</span>
-                          </Button>
-                        ))}
-                      </div>
+                      {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
+                        // Count how many networks from this category are selected
+                        const selectedCount = (form.watch('required_blockchain_networks') || []).filter(
+                          (network) => networks.includes(network as typeof BLOCKCHAIN_NETWORKS[number])
+                        ).length;
+                        
+                        return (
+                          <div key={category} className="border rounded-lg overflow-hidden mb-3">
+                            <div 
+                              className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
+                              onClick={() => toggleCategory(category)}
+                            >
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium">{category}</span>
+                                {selectedCount > 0 && (
+                                  <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
+                                    {selectedCount}
+                                  </span>
+                                )}
+                              </div>
+                              {expandedCategories.includes(category) ? (
+                                <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                              )}
+                            </div>
+
+                            {expandedCategories.includes(category) && (
+                              <div className="p-4 pt-0 grid grid-cols-1 gap-3">
+                                {networks.map(network => (
+                                  <Button
+                                    key={network}
+                                    type="button"
+                                    variant={(form.watch('required_blockchain_networks') || []).includes(network) ? "default" : "outline"}
+                                    className="justify-start h-auto py-3 px-4 w-full"
+                                    onClick={() => {
+                                      const currentNetworks = form.watch('required_blockchain_networks') || [];
+                                      const updatedNetworks = currentNetworks.includes(network)
+                                        ? currentNetworks.filter(n => n !== network)
+                                        : [...currentNetworks, network];
+                                      form.setValue('required_blockchain_networks', updatedNetworks);
+                                    }}
+                                  >
+                                    <span className="text-left">{network}</span>
+                                  </Button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                       <FormMessage />
                     </FormItem>
                   )}
