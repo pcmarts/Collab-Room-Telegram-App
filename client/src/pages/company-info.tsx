@@ -307,7 +307,9 @@ export default function CompanyInfoForm() {
 
             {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => {
               // Count how many tags from this category are selected
-              const selectedCount = formData.tags.filter(tag => tags.includes(tag)).length;
+              const selectedCount = formData.tags.filter(
+                (tag) => (tags as readonly string[]).some(t => t === tag)
+              ).length;
               
               return (
                 <div key={category} className="border rounded-lg overflow-hidden">
@@ -337,7 +339,7 @@ export default function CompanyInfoForm() {
                         <Button
                           key={tag}
                           type="button"
-                          variant={formData.tags.includes(tag) ? "default" : "outline"}
+                          variant={formData.tags.some(t => t === tag) ? "default" : "outline"}
                           className="justify-start h-auto py-3 px-4 w-full"
                           onClick={() => toggleTag(tag)}
                         >
