@@ -59,6 +59,7 @@ interface CollaborationFilters {
   minUserFollowers: string;
   hasToken: boolean;
   fundingStages: string[];
+  blockchainNetworks: string[]; // Added blockchain networks filter
 }
 
 interface BrowseCollaborationsProps {
@@ -78,6 +79,7 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
     minUserFollowers: "",
     hasToken: false,
     fundingStages: [],
+    blockchainNetworks: [],
   });
   
   // Filter open state (for mobile)
@@ -220,6 +222,7 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
       minUserFollowers: "",
       hasToken: false,
       fundingStages: [],
+      blockchainNetworks: [],
     });
     setSearchTerm("");
     setDebouncedSearchTerm("");
@@ -354,6 +357,36 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
               ))}
             </div>
           </div>
+        </div>
+      </div>
+      
+      <Separator />
+      
+      <div>
+        <h3 className="font-medium mb-3">Blockchain Networks</h3>
+        <div className="space-y-4">
+          {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
+            <div key={category} className="space-y-2">
+              <h4 className="text-sm font-medium">{category}</h4>
+              <div className="space-y-2 ml-2">
+                {networks.map(network => (
+                  <div key={network} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`network-${network}`}
+                      checked={filters.blockchainNetworks.includes(network)}
+                      onCheckedChange={() => toggleFilterValue("blockchainNetworks", network)}
+                    />
+                    <label
+                      htmlFor={`network-${network}`}
+                      className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {network}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
       
