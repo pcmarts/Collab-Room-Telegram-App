@@ -172,128 +172,20 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
   };
 
   // Move to next step
-  const nextStep = async () => {
-    // Trigger validation for the current form fields
-    const result = await form.trigger();
+  const nextStep = () => {
+    let canProceed = true;
     
-    if (!result) {
-      // If validation fails, show a toast message
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields before proceeding.",
-        variant: "destructive"
-      });
-      return;
-    }
+    // Skip validation for now and let users proceed to next step
+    canProceed = true;
     
-    // Additional validation for specific steps
-    let isValid = true;
-    let errorMessage = "";
-    
-    if (currentStep === 0) {
-      // Step 1: Basic info validation
-      const values = form.getValues();
-      
-      // Check if required fields are filled
-      if (!values.title?.trim()) {
-        isValid = false;
-        errorMessage = "Title is required";
-      } else if (!values.description?.trim()) {
-        isValid = false;
-        errorMessage = "Description is required";
-      } else if (!values.collab_type) {
-        isValid = false;
-        errorMessage = "Please select a collaboration type";
-      } else if (!values.date_type) {
-        isValid = false;
-        errorMessage = "Please select a date preference";
-      } else if (values.date_type === "specific_date" && !values.specific_date) {
-        isValid = false;
-        errorMessage = "Please select a specific date";
-      } else if (!values.topics || values.topics.length === 0) {
-        isValid = false;
-        errorMessage = "Please select at least one topic";
-      }
-    } else if (currentStep === 1) {
-      // Step 2: Details validation (depends on collab type)
-      const details = form.getValues("details");
-      const collabType = form.getValues("collab_type");
-      
-      if (!details || Object.keys(details).length === 0) {
-        isValid = false;
-        errorMessage = "Please fill in all required details";
+    // If validation passes, proceed to next step or submit
+    if (canProceed) {
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(currentStep + 1);
       } else {
-        // Specific validation based on collaboration type
-        switch (collabType) {
-          case "Podcast Guest Appearance":
-            if (!details.podcast_name?.trim()) {
-              isValid = false;
-              errorMessage = "Podcast name is required";
-            } else if (!details.short_description?.trim()) {
-              isValid = false;
-              errorMessage = "Short description is required";
-            }
-            break;
-            
-          case "Twitter Spaces Guest":
-            if (!details.twitter_handle?.trim() || !details.twitter_handle.startsWith("https://x.com/")) {
-              isValid = false;
-              errorMessage = "Valid Twitter handle is required (must start with https://x.com/)";
-            } else if (!details.space_topic || details.space_topic.length === 0) {
-              isValid = false;
-              errorMessage = "Please select at least one space topic";
-            }
-            break;
-            
-          case "Co-Marketing on Twitter":
-            if (!details.collaboration_types || details.collaboration_types.length === 0) {
-              isValid = false;
-              errorMessage = "Please select at least one collaboration type";
-            } else if (!details.host_twitter_handle?.trim() || !details.host_twitter_handle.startsWith("https://x.com/")) {
-              isValid = false;
-              errorMessage = "Valid Twitter handle is required (must start with https://x.com/)";
-            }
-            break;
-            
-          // Add validation for other collab types as needed
-        }
+        // Submit the form if on the last step
+        handleSubmit();
       }
-    } else if (currentStep === 2) {
-      // Step 3: Matching requirements validation
-      const values = form.getValues();
-      
-      // Validate enabled filters have selections
-      if (values.filter_company_sectors_enabled && (!values.required_company_sectors || values.required_company_sectors.length === 0)) {
-        isValid = false;
-        errorMessage = "Please select at least one company sector";
-      } else if (values.filter_company_followers_enabled && !values.min_company_followers) {
-        isValid = false;
-        errorMessage = "Please select minimum company followers";
-      } else if (values.filter_user_followers_enabled && !values.min_user_followers) {
-        isValid = false;
-        errorMessage = "Please select minimum user followers";
-      } else if (values.filter_funding_stages_enabled && (!values.required_funding_stages || values.required_funding_stages.length === 0)) {
-        isValid = false;
-        errorMessage = "Please select at least one funding stage";
-      }
-    }
-    
-    if (!isValid) {
-      // Show error message
-      toast({
-        title: "Validation Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Proceed to next step or submit
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      // Submit the form if on the last step
-      handleSubmit();
     }
   };
 
