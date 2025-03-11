@@ -43,6 +43,7 @@ import {
   FUNDING_STAGES,
   TWITTER_FOLLOWER_COUNTS,
   TWITTER_COLLAB_TYPES,
+  BLOCKCHAIN_NETWORKS,
   createCollaborationSchema,
   type CreateCollaboration
 } from "@shared/schema";
