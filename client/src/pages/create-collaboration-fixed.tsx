@@ -942,7 +942,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
                             Deselect All
                           </Button>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2 border rounded-md">
+                        <div className="grid grid-cols-2 gap-2 p-2 border rounded-md">
                           {COLLAB_TOPICS.map((topic) => (
                             <FormItem key={topic} className="flex items-center space-x-3 space-y-0">
                               <FormControl>
