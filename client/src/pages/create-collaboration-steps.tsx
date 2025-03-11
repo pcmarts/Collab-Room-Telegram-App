@@ -334,10 +334,6 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <SelectContent>
                       <SelectItem value="specific_date">Specific Date</SelectItem>
                       <SelectItem value="any_future_date">Any Future Date</SelectItem>
-                      <SelectItem value="this_week">This Week</SelectItem>
-                      <SelectItem value="next_week">Next Week</SelectItem>
-                      <SelectItem value="this_month">This Month</SelectItem>
-                      <SelectItem value="next_month">Next Month</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>
