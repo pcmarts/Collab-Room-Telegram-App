@@ -120,6 +120,18 @@ async function main() {
       console.error('Error adding filtered_conference_sectors column:', err);
     }
     
+    // Add blockchain networks filter to collaborations table if needed
+    try {
+      console.log('Adding blockchain networks filter columns to collaborations table...');
+      await client.query(`
+        ALTER TABLE collaborations 
+        ADD COLUMN IF NOT EXISTS filter_blockchain_networks_enabled BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS required_blockchain_networks TEXT[] DEFAULT '{}';
+      `);
+    } catch (err) {
+      console.error('Error adding blockchain networks filter columns:', err);
+    }
+    
     console.log('Database migration completed successfully');
   } catch (error) {
     console.error('Error during migration:', error);
