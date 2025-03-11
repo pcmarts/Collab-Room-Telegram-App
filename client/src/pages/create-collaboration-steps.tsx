@@ -870,6 +870,53 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
+                  <h3 className="text-lg font-medium">Minimum User Twitter Followers</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Set a minimum follower requirement for applicants
+                  </p>
+                </div>
+                <Switch
+                  checked={form.watch('filter_user_followers_enabled')}
+                  onCheckedChange={(checked) => {
+                    form.setValue('filter_user_followers_enabled', checked);
+                  }}
+                />
+              </div>
+              
+              {form.watch('filter_user_followers_enabled') && (
+                <FormField
+                  control={form.control}
+                  name="min_user_followers"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select minimum followers" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                            <SelectItem key={count} value={count}>
+                              {count}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
                   <h3 className="text-lg font-medium">Token Status Requirement</h3>
                   <p className="text-sm text-muted-foreground">
                     Only show to companies with a live token
