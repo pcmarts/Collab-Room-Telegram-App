@@ -380,7 +380,11 @@ export default function MarketingCollabs() {
       const marketingPrefs = marketingPreferences;
       const savedCollabsToHost = marketingPrefs.collabs_to_host || [];
       const collabsToDiscover = marketingPrefs.collabs_to_discover || [];
-      const savedTwitterCollabs = marketingPrefs.twitter_collabs || [];
+      
+      // Extract Twitter collaborations from filtered_marketing_topics
+      const savedTwitterCollabs = (marketingPrefs.filtered_marketing_topics || [])
+        .filter((item: string) => item.startsWith('twitter_collab:'))
+        .map((item: string) => item.replace('twitter_collab:', ''));
       
       // Load filter toggle states from dedicated fields
       setFiltersEnabled({
@@ -390,11 +394,7 @@ export default function MarketingCollabs() {
         userFollowers: !!marketingPrefs.discovery_filter_user_followers_enabled,
         fundingStages: !!marketingPrefs.discovery_filter_funding_stages_enabled,
         hasToken: !!marketingPrefs.discovery_filter_token_status_enabled,
-        // Check if blockchain network filter was previously enabled or default to false
-        blockchainNetworks: !!(marketingPrefs.discovery_filter_blockchain_networks_enabled || 
-          (marketingPrefs.filtered_marketing_topics || []).some(item => 
-            typeof item === 'string' && item.startsWith('filter:blockchain_network:')
-          ))
+        blockchainNetworks: !!marketingPrefs.discovery_filter_blockchain_networks_enabled
       });
       
       setCollabsToHost(savedCollabsToHost);
@@ -407,7 +407,7 @@ export default function MarketingCollabs() {
       console.log("Extracted topics from saved preferences:", topicEntries);
       setSelectedTopics(topicEntries);
       
-      // Extract other filter values
+      // Extract other filter values from their dedicated fields
       let filterCompanySectors: string[] = [];
       let filterFundingStages: string[] = [];
       let filterCompanyFollowers: string = TWITTER_FOLLOWER_COUNTS[0];
@@ -416,15 +416,7 @@ export default function MarketingCollabs() {
       let filterBlockchainNetworks: string[] = [];
       let filterMatchingEnabled: boolean = !!marketingPrefs.discovery_filter_enabled;
       
-      // Extract topics only from filtered_marketing_topics
-      (marketingPrefs.filtered_marketing_topics || []).forEach((item: string) => {
-        if (typeof item === 'string' && item.startsWith('filter:topic:')) {
-          // Get only the topic name from the prefixed string
-          topicEntries.push(item.replace('filter:topic:', ''));
-        }
-      });
-      
-      // Read data from dedicated standardized fields
+      // Read data from dedicated standardized fields as per your request
       if (marketingPrefs.company_tags && Array.isArray(marketingPrefs.company_tags)) {
         filterCompanySectors = marketingPrefs.company_tags;
       }
@@ -449,8 +441,7 @@ export default function MarketingCollabs() {
         filterBlockchainNetworks = marketingPrefs.company_blockchain_networks;
       }
       
-      // Get matching enabled setting
-      filterMatchingEnabled = !!marketingPrefs.discovery_filter_enabled;
+      console.log("Loading blockchain networks from preferences:", filterBlockchainNetworks);
       
       // Reset form with loaded values
       form.reset({
@@ -463,7 +454,15 @@ export default function MarketingCollabs() {
         hasToken: filterHasToken,
         companyFollowers: filterCompanyFollowers as typeof TWITTER_FOLLOWER_COUNTS[number],
         userFollowers: filterUserFollowers as typeof TWITTER_FOLLOWER_COUNTS[number],
-        blockchainNetworks: filterBlockchainNetworks
+        blockchainNetworks: filterBlockchainNetworks,
+        
+        // Also set the direct DB field values for consistency
+        company_tags: filterCompanySectors,
+        funding_stage: filterFundingStages.length > 0 ? filterFundingStages[0] : undefined,
+        company_twitter_followers: filterCompanyFollowers,
+        twitter_followers: filterUserFollowers, 
+        company_has_token: filterHasToken,
+        company_blockchain_networks: filterBlockchainNetworks
       });
     }
   }, [profileData, form]);
@@ -486,17 +485,21 @@ export default function MarketingCollabs() {
       // All criteria are now stored in their dedicated fields
       console.log("Using dedicated fields for filter criteria instead of filtered_marketing_topics");
       
-      // Build marketing preferences data with standardized fields
+      // Build marketing preferences data with standardized fields - everything mapped to direct DB fields
       const marketingPrefsData = {
-        // Array fields for collab types
+        // Only store collab types in filtered_marketing_topics
         collabs_to_discover: [...currentFormValues.enabledCollabs],
         collabs_to_host: [...collabsToHost],
-        twitter_collabs: [...currentFormValues.enabledTwitterCollabs],
         
-        // Only store actual topics in filtered_marketing_topics (not filter criteria)
-        filtered_marketing_topics: filtersEnabled.topics 
-          ? selectedTopics.map(topic => `filter:topic:${topic}`) 
-          : [],
+        // Store Twitter collabs in filtered_marketing_topics
+        filtered_marketing_topics: [
+          // Include topics if topics filter is enabled
+          ...(filtersEnabled.topics 
+            ? selectedTopics.map(topic => `filter:topic:${topic}`) 
+            : []),
+          // Include twitter collabs
+          ...currentFormValues.enabledTwitterCollabs.map(collabType => `twitter_collab:${collabType}`)
+        ],
         
         // Discovery filter toggle states
         discovery_filter_enabled: currentFormValues.matchingEnabled,
@@ -508,7 +511,7 @@ export default function MarketingCollabs() {
         discovery_filter_token_status_enabled: filtersEnabled.hasToken,
         discovery_filter_blockchain_networks_enabled: filtersEnabled.blockchainNetworks,
         
-        // Standardized fields for actual data values - each in their proper field
+        // Direct field mappings for each filter criteria as you requested
         company_tags: filtersEnabled.companySectors ? currentFormValues.companySectors : null,
         company_twitter_followers: filtersEnabled.companyFollowers ? currentFormValues.companyFollowers : null,
         twitter_followers: filtersEnabled.userFollowers ? currentFormValues.userFollowers : null,
