@@ -36,6 +36,7 @@ import {
   COMPANY_TAG_CATEGORIES,
   AUDIENCE_SIZE_RANGES,
   FUNDING_STAGES, 
+  BLOCKCHAIN_NETWORKS,
   type Collaboration,
   type CollabApplication,
   type ApplicationData,
@@ -94,6 +95,7 @@ const marketingCollabSchema = z.object({
   userFollowers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(), // Maps to twitter_followers
   fundingStages: z.array(z.string()).default([]), // Maps to funding_stage
   hasToken: z.boolean().default(false), // Maps to company_has_token
+  blockchainNetworks: z.array(z.string()).default([]), // Maps to company_blockchain_networks
   
   // New standardized fields for consistent filtering
   company_twitter_followers: z.string().optional(),
@@ -124,7 +126,8 @@ export default function MarketingCollabs() {
     companyFollowers: false,
     userFollowers: false,
     fundingStages: false,
-    hasToken: false
+    hasToken: false,
+    blockchainNetworks: false
   });
   
   // Collaborations and applications management
@@ -386,7 +389,8 @@ export default function MarketingCollabs() {
         companyFollowers: !!marketingPrefs.discovery_filter_company_followers_enabled,
         userFollowers: !!marketingPrefs.discovery_filter_user_followers_enabled,
         fundingStages: !!marketingPrefs.discovery_filter_funding_stages_enabled,
-        hasToken: !!marketingPrefs.discovery_filter_token_status_enabled
+        hasToken: !!marketingPrefs.discovery_filter_token_status_enabled,
+        blockchainNetworks: !!marketingPrefs.discovery_filter_blockchain_networks_enabled
       });
       
       setCollabsToHost(savedCollabsToHost);
