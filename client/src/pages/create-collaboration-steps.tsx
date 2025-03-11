@@ -174,18 +174,110 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
   // Move to next step
   const nextStep = () => {
     let canProceed = true;
+    let errorMessage = "";
     
-    // Skip validation for now and let users proceed to next step
-    canProceed = true;
+    // Validation logic based on current step
+    if (currentStep === 0) {
+      // Basic info validation
+      const values = form.getValues();
+      
+      // Check title and description
+      if (!values.title?.trim()) {
+        canProceed = false;
+        errorMessage = "Title is required";
+      } else if (!values.description?.trim()) {
+        canProceed = false;
+        errorMessage = "Description is required";
+      } else if (!values.collab_type) {
+        canProceed = false;
+        errorMessage = "Please select a collaboration type";
+      } else if (!values.date_type) {
+        canProceed = false;
+        errorMessage = "Please select a date preference";
+      } else if (values.date_type === "specific_date" && !values.specific_date) {
+        canProceed = false;
+        errorMessage = "Please select a specific date";
+      } else if (!values.topics || values.topics.length === 0) {
+        canProceed = false;
+        errorMessage = "Please select at least one topic";
+      }
+    } 
+    else if (currentStep === 1) {
+      // Details validation based on collaboration type
+      const details = form.getValues("details") || {};
+      const collabType = form.getValues("collab_type");
+      
+      if (collabType === "Podcast Guest Appearance") {
+        if (!details.podcast_name?.trim()) {
+          canProceed = false;
+          errorMessage = "Podcast name is required";
+        } else if (!details.short_description?.trim()) {
+          canProceed = false;
+          errorMessage = "Short description is required";
+        }
+      }
+      else if (collabType === "Twitter Spaces Guest") {
+        if (!details.twitter_handle?.trim()) {
+          canProceed = false;
+          errorMessage = "Twitter handle is required";
+        } else if (!details.twitter_handle.startsWith("https://x.com/")) {
+          canProceed = false;
+          errorMessage = "Twitter handle must start with https://x.com/";
+        } else if (!details.space_topic || !Array.isArray(details.space_topic) || details.space_topic.length === 0) {
+          canProceed = false;
+          errorMessage = "Please select at least one space topic";
+        }
+      }
+      else if (collabType === "Co-Marketing on Twitter") {
+        if (!details.collaboration_types || !Array.isArray(details.collaboration_types) || details.collaboration_types.length === 0) {
+          canProceed = false;
+          errorMessage = "Please select at least one collaboration type";
+        } else if (!details.host_twitter_handle?.trim()) {
+          canProceed = false;
+          errorMessage = "Twitter handle is required";
+        } else if (!details.host_twitter_handle.startsWith("https://x.com/")) {
+          canProceed = false;
+          errorMessage = "Twitter handle must start with https://x.com/";
+        }
+      }
+    }
+    else if (currentStep === 2) {
+      // Validate enabled filters have selections
+      const values = form.getValues();
+      
+      if (values.filter_company_sectors_enabled && 
+          (!values.required_company_sectors || !Array.isArray(values.required_company_sectors) || values.required_company_sectors.length === 0)) {
+        canProceed = false;
+        errorMessage = "Please select at least one company sector when that filter is enabled";
+      } else if (values.filter_company_followers_enabled && !values.min_company_followers) {
+        canProceed = false;
+        errorMessage = "Please select minimum company followers";
+      } else if (values.filter_user_followers_enabled && !values.min_user_followers) {
+        canProceed = false;
+        errorMessage = "Please select minimum user followers";
+      } else if (values.filter_funding_stages_enabled && 
+                (!values.required_funding_stages || !Array.isArray(values.required_funding_stages) || values.required_funding_stages.length === 0)) {
+        canProceed = false;
+        errorMessage = "Please select at least one funding stage when that filter is enabled";
+      }
+    }
+    
+    // Show error message if validation fails
+    if (!canProceed) {
+      toast({
+        title: "Validation Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      return;
+    }
     
     // If validation passes, proceed to next step or submit
-    if (canProceed) {
-      if (currentStep < steps.length - 1) {
-        setCurrentStep(currentStep + 1);
-      } else {
-        // Submit the form if on the last step
-        handleSubmit();
-      }
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Submit the form if on the last step
+      handleSubmit();
     }
   };
 
