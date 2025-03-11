@@ -376,7 +376,7 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
             <div key={category} className="space-y-2">
               <h4 className="text-sm font-medium">{category}</h4>
               <div className="space-y-2 ml-2">
-                {(networks as string[]).map(network => (
+                {([...networks] as string[]).map(network => (
                   <div key={network} className="flex items-center space-x-2">
                     <Checkbox
                       id={`network-${network}`}

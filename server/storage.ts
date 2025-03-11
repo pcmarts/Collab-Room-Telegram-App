@@ -376,14 +376,16 @@ export class DatabaseStorage implements IStorage {
       collabs_to_discover: Array.isArray(prefs.collabs_to_discover) ? prefs.collabs_to_discover : [],
       collabs_to_host: Array.isArray(prefs.collabs_to_host) ? prefs.collabs_to_host : [],
       twitter_collabs: Array.isArray(prefs.twitter_collabs) ? prefs.twitter_collabs : [],
-      filtered_marketing_topics: Array.isArray(prefs.filtered_marketing_topics) ? prefs.filtered_marketing_topics : []
+      filtered_marketing_topics: Array.isArray(prefs.filtered_marketing_topics) ? prefs.filtered_marketing_topics : [],
+      company_blockchain_networks: Array.isArray(prefs.company_blockchain_networks) ? prefs.company_blockchain_networks : []
     };
     
     console.log("STORAGE: Saving marketing preferences with arrays:", {
       collabs_to_discover: safePrefs.collabs_to_discover,
       collabs_to_host: safePrefs.collabs_to_host,
       twitter_collabs: safePrefs.twitter_collabs,
-      filtered_marketing_topics: safePrefs.filtered_marketing_topics
+      filtered_marketing_topics: safePrefs.filtered_marketing_topics,
+      company_blockchain_networks: safePrefs.company_blockchain_networks
     });
     
     if (existingPrefs) {
