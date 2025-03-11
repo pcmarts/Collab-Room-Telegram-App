@@ -299,49 +299,6 @@ export default function CompanyInfoForm() {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="has_token"
-                checked={formData.has_token}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, has_token: checked }))}
-              />
-              <Label htmlFor="has_token">Live Token?</Label>
-            </div>
-          </div>
-
-          {formData.has_token && (
-            <>
-              <div>
-                <Label htmlFor="token_ticker">Token Ticker</Label>
-                <Input
-                  id="token_ticker"
-                  name="token_ticker"
-                  value={formData.token_ticker}
-                  onChange={handleInputChange}
-                  required={formData.has_token}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Blockchain Networks</Label>
-                <div className="grid grid-cols-1 gap-2">
-                  {BLOCKCHAIN_NETWORKS.map(network => (
-                    <Button
-                      key={network}
-                      type="button"
-                      variant={formData.blockchain_networks.includes(network) ? "default" : "outline"}
-                      className="justify-start"
-                      onClick={() => toggleBlockchain(network)}
-                    >
-                      {network}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
           <div className="space-y-4 pt-4">
             <Label className="text-lg">Your Company Sector</Label>
             <p className="text-sm text-muted-foreground">
@@ -393,6 +350,49 @@ export default function CompanyInfoForm() {
               );
             })}
           </div>
+
+          <div className="space-y-2 pt-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="has_token"
+                checked={formData.has_token}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, has_token: checked }))}
+              />
+              <Label htmlFor="has_token">Live Token?</Label>
+            </div>
+          </div>
+
+          {formData.has_token && (
+            <>
+              <div>
+                <Label htmlFor="token_ticker">Token Ticker</Label>
+                <Input
+                  id="token_ticker"
+                  name="token_ticker"
+                  value={formData.token_ticker}
+                  onChange={handleInputChange}
+                  required={formData.has_token}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Blockchain Networks</Label>
+                <div className="grid grid-cols-1 gap-2">
+                  {BLOCKCHAIN_NETWORKS.map(network => (
+                    <Button
+                      key={network}
+                      type="button"
+                      variant={formData.blockchain_networks.includes(network) ? "default" : "outline"}
+                      className="justify-start"
+                      onClick={() => toggleBlockchain(network)}
+                    >
+                      {network}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
           
           {/* Floating Save Button */}
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
