@@ -47,6 +47,7 @@ import {
   TWITTER_FOLLOWER_COUNTS,
   FUNDING_STAGES,
   BLOCKCHAIN_NETWORKS,
+  BLOCKCHAIN_NETWORK_CATEGORIES,
   ALL_COMPANY_TAGS,
   type Collaboration,
 } from "@shared/schema";
@@ -154,6 +155,12 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
       if (filters.fundingStages.length > 0) {
         filters.fundingStages.forEach(stage => {
           queryParams.append("fundingStages", stage);
+        });
+      }
+      
+      if (filters.blockchainNetworks.length > 0) {
+        filters.blockchainNetworks.forEach(network => {
+          queryParams.append("blockchainNetworks", network);
         });
       }
       
@@ -369,7 +376,7 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
             <div key={category} className="space-y-2">
               <h4 className="text-sm font-medium">{category}</h4>
               <div className="space-y-2 ml-2">
-                {networks.map(network => (
+                {(networks as string[]).map(network => (
                   <div key={network} className="flex items-center space-x-2">
                     <Checkbox
                       id={`network-${network}`}
