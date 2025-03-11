@@ -726,40 +726,63 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                   name="required_company_sectors"
                   render={() => (
                     <FormItem>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {COMPANY_CATEGORIES.map((category) => (
-                          <FormField
-                            key={category}
-                            control={form.control}
-                            name="required_company_sectors"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={category}
-                                  className="flex flex-row items-center space-x-3 space-y-0"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(category)}
-                                      onCheckedChange={(checked) => {
-                                        const updatedSectors = checked
-                                          ? [...(field.value || []), category]
-                                          : (field.value || [])?.filter(
-                                              (s) => s !== category
-                                            );
-                                        field.onChange(updatedSectors);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="text-sm font-normal cursor-pointer flex-grow">
-                                    {category}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
-                        ))}
-                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Select tags that best describe the company sectors you want to target
+                      </p>
+                      
+                      {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => {
+                        // Count how many tags from this category are selected
+                        const selectedCount = form.watch('required_company_sectors')?.filter(
+                          (tag) => (tags as readonly string[]).some(t => t === tag)
+                        ).length || 0;
+                        
+                        return (
+                          <div key={category} className="border rounded-lg overflow-hidden mb-3">
+                            {/* Make the entire header row clickable */}
+                            <div 
+                              className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
+                              onClick={() => toggleCategory(category)}
+                            >
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium">{category}</span>
+                                {selectedCount > 0 && (
+                                  <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
+                                    {selectedCount}
+                                  </span>
+                                )}
+                              </div>
+                              {expandedCategories.includes(category) ? (
+                                <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                              )}
+                            </div>
+
+                            {expandedCategories.includes(category) && (
+                              <div className="p-4 pt-0 grid grid-cols-1 gap-3">
+                                {tags.map(tag => (
+                                  <Button
+                                    key={tag}
+                                    type="button"
+                                    variant={form.watch('required_company_sectors')?.includes(tag) ? "default" : "outline"}
+                                    className="justify-start h-auto py-3 px-4 w-full"
+                                    onClick={() => {
+                                      const currentSectors = form.watch('required_company_sectors') || [];
+                                      const updatedSectors = currentSectors.includes(tag)
+                                        ? currentSectors.filter(t => t !== tag)
+                                        : [...currentSectors, tag];
+                                      form.setValue('required_company_sectors', updatedSectors);
+                                    }}
+                                  >
+                                    <span className="text-left">{tag}</span>
+                                  </Button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
