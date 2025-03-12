@@ -592,6 +592,38 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="details.estimated_reach"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Estimated Reach</FormLabel>
+                      <FormControl>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select podcast reach" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {AUDIENCE_SIZE_RANGES.map((size) => (
+                              <SelectItem key={size} value={size}>
+                                {size}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormDescription>
+                        Approximate number of listeners per episode
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </>
             )}
             
@@ -789,11 +821,242 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
               </>
             )}
             
-            {/* Add more type-specific fields as needed for other collaboration types */}
-            {/* For brevity, only showing 3 types here - add others following the same pattern */}
+            {selectedCollabType === "Blog Post Feature" && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="details.blog_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Blog Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter blog name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="details.blog_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Blog URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://yourblog.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="details.short_description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Short Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Brief description of your blog" 
+                          className="min-h-[80px]"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
             
-            {/* Default message for other collaboration types */}
-            {!["Podcast Guest Appearance", "Twitter Spaces Guest", "Co-Marketing on Twitter"].includes(selectedCollabType) && (
+            {selectedCollabType === "Newsletter Feature" && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="details.newsletter_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Newsletter Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter newsletter name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="details.newsletter_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Newsletter URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://newsletter-signup.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="details.total_subscribers"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Subscribers</FormLabel>
+                      <FormControl>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select subscriber count" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {AUDIENCE_SIZE_RANGES.map((size) => (
+                              <SelectItem key={size} value={size}>
+                                {size}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+            
+            {selectedCollabType === "Report & Research Feature" && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="details.report_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Report Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter report name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="details.short_description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Short Description of Report</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Brief description of your report or research" 
+                          className="min-h-[80px]"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="details.audience_reach"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Audience Reach</FormLabel>
+                      <FormControl>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select audience size" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {AUDIENCE_SIZE_RANGES.map((size) => (
+                              <SelectItem key={size} value={size}>
+                                {size}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+            
+            {selectedCollabType === "Live Stream Guest Appearance" && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="details.stream_platform"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Streaming Platform</FormLabel>
+                      <FormControl>
+                        <Input placeholder="YouTube, Twitch, etc." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="details.previous_stream_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>URL to Previous Livestreams</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://yourstreamexample.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="details.audience_size"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Average Audience Size</FormLabel>
+                      <FormControl>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select audience size" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {AUDIENCE_SIZE_RANGES.map((size) => (
+                              <SelectItem key={size} value={size}>
+                                {size}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+            
+            {/* Default message for collaboration types without custom fields */}
+            {!["Podcast Guest Appearance", "Twitter Spaces Guest", "Co-Marketing on Twitter", 
+               "Blog Post Feature", "Newsletter Feature", "Report & Research Feature", 
+               "Live Stream Guest Appearance"].includes(selectedCollabType) && (
               <div className="text-center py-8">
                 <p>Please provide details for your {selectedCollabType} collaboration.</p>
                 <p className="text-sm text-muted-foreground mt-2">
