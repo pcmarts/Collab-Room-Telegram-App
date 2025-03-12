@@ -838,7 +838,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
                 <FormField
                   control={form.control}
-                  name="details.blog_url"
+                  name="details.blog_link"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Blog URL</FormLabel>
@@ -1010,7 +1010,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
                 <FormField
                   control={form.control}
-                  name="details.previous_stream_url"
+                  name="details.previous_stream_link"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>URL to Previous Livestreams</FormLabel>
@@ -1023,7 +1023,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
                 <FormField
                   control={form.control}
-                  name="details.audience_size"
+                  name="details.expected_audience_size"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Average Audience Size</FormLabel>
