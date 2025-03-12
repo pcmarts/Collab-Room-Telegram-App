@@ -838,6 +838,19 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
                 <FormField
                   control={form.control}
+                  name="details.blog_topic"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Blog Topic</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter blog topic" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="details.blog_link"
                   render={({ field }) => (
                     <FormItem>
