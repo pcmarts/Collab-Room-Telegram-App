@@ -1535,7 +1535,32 @@ export async function registerRoutes(app: Express) {
           : [],
         required_funding_stages: validatedData.required_funding_stages 
           ? validatedData.required_funding_stages.map(String) 
-          : []
+          : [],
+        required_blockchain_networks: validatedData.required_blockchain_networks
+          ? validatedData.required_blockchain_networks.map(String)
+          : [],
+        
+        // Add standardized fields for consistent filtering across all tables
+        company_tags: validatedData.required_company_sectors 
+          ? validatedData.required_company_sectors.map(String)
+          : [],
+        company_twitter_followers: validatedData.min_company_followers,
+        twitter_followers: validatedData.min_user_followers,
+        funding_stage: validatedData.required_funding_stages && validatedData.required_funding_stages.length > 0
+          ? validatedData.required_funding_stages[0]
+          : null,
+        company_has_token: validatedData.required_token_status || false,
+        company_blockchain_networks: validatedData.required_blockchain_networks
+          ? validatedData.required_blockchain_networks.map(String)
+          : [],
+        
+        // Set filter toggle states based on whether requirements are specified
+        filter_company_sectors_enabled: Array.isArray(validatedData.required_company_sectors) && validatedData.required_company_sectors.length > 0,
+        filter_company_followers_enabled: !!validatedData.min_company_followers,
+        filter_user_followers_enabled: !!validatedData.min_user_followers,
+        filter_funding_stages_enabled: Array.isArray(validatedData.required_funding_stages) && validatedData.required_funding_stages.length > 0,
+        filter_token_status_enabled: !!validatedData.required_token_status,
+        filter_blockchain_networks_enabled: Array.isArray(validatedData.required_blockchain_networks) && validatedData.required_blockchain_networks.length > 0
       };
 
       // Create the collaboration
