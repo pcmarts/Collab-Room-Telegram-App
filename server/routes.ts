@@ -899,12 +899,28 @@ export async function registerRoutes(app: Express) {
         console.log('DIRECT FIELDS DEBUG: funding_stage:', funding_stage);
         console.log('DIRECT FIELDS DEBUG: company_has_token:', company_has_token);
         
+        // Check if blockchain networks filter is enabled but the networks array is null or empty
+        if (discovery_filter_blockchain_networks_enabled && (!safeCompanyBlockchainNetworks || safeCompanyBlockchainNetworks.length === 0)) {
+          console.log('WARNING: Blockchain networks filter is enabled but no networks are selected');
+        }
+        
+        // Extract blockchain networks from form data
+        let blockchainNetworks = safeCompanyBlockchainNetworks;
+        
+        // Create dedicated blockchain networks filter data structure
+        if (discovery_filter_blockchain_networks_enabled && blockchainNetworks) {
+          console.log('BLOCKCHAIN NETWORKS: Storing selected blockchain networks:', JSON.stringify(blockchainNetworks));
+        } else {
+          console.log('BLOCKCHAIN NETWORKS: No blockchain networks selected or filter disabled');
+          // If filter is disabled, set to null
+          blockchainNetworks = null;
+        }
+        
         // Handle Marketing Preferences with direct field values
         const marketingPrefsData = {
           collabs_to_discover: safeCollabsToDiscover,
           collabs_to_host: safeCollabsToHost,
           filtered_marketing_topics: processedTopics,
-          // No longer using twitter_collabs as they're now in filtered_marketing_topics
           
           // All filter toggle states
           discovery_filter_enabled: discovery_filter_enabled === undefined ? false : discovery_filter_enabled,
@@ -916,13 +932,13 @@ export async function registerRoutes(app: Express) {
           discovery_filter_token_status_enabled: discovery_filter_token_status_enabled === undefined ? false : discovery_filter_token_status_enabled,
           discovery_filter_blockchain_networks_enabled: discovery_filter_blockchain_networks_enabled === undefined ? false : discovery_filter_blockchain_networks_enabled,
           
-          // Direct field values for filter criteria
-          company_tags: safeCompanyTags,
-          company_twitter_followers: company_twitter_followers || null,
-          twitter_followers: twitter_followers || null,
-          funding_stage: funding_stage || null,
-          company_has_token: company_has_token === undefined ? false : company_has_token,
-          company_blockchain_networks: safeCompanyBlockchainNetworks
+          // Direct field values for each filter criteria
+          company_tags: discovery_filter_company_sectors_enabled ? safeCompanyTags : null,
+          company_twitter_followers: discovery_filter_company_followers_enabled ? company_twitter_followers : null,
+          twitter_followers: discovery_filter_user_followers_enabled ? twitter_followers : null,
+          funding_stage: discovery_filter_funding_stages_enabled ? (funding_stage || null) : null,
+          company_has_token: discovery_filter_token_status_enabled ? (company_has_token === undefined ? false : company_has_token) : null,
+          company_blockchain_networks: blockchainNetworks
         };
         
         if (existingMarketingPrefs.length > 0) {
