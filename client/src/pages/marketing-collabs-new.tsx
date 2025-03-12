@@ -379,12 +379,18 @@ export default function MarketingCollabs() {
       // Extract data from marketing preferences
       const marketingPrefs = marketingPreferences;
       const savedCollabsToHost = marketingPrefs.collabs_to_host || [];
-      const collabsToDiscover = marketingPrefs.collabs_to_discover || [];
       
-      // Extract Twitter collaborations from filtered_marketing_topics
-      const savedTwitterCollabs = (marketingPrefs.filtered_marketing_topics || [])
+      // Split collabs_to_discover into regular collabs and twitter collabs
+      const allCollabsToDiscover = marketingPrefs.collabs_to_discover || [];
+      
+      // Extract Twitter collaborations from collabs_to_discover
+      const savedTwitterCollabs = allCollabsToDiscover
         .filter((item: string) => item.startsWith('twitter_collab:'))
         .map((item: string) => item.replace('twitter_collab:', ''));
+        
+      // Extract regular collaboration types (non-twitter) from collabs_to_discover
+      const collabsToDiscover = allCollabsToDiscover
+        .filter((item: string) => !item.startsWith('twitter_collab:'));
       
       // Load filter toggle states from dedicated fields
       setFiltersEnabled({
@@ -487,18 +493,20 @@ export default function MarketingCollabs() {
       
       // Build marketing preferences data with standardized fields - everything mapped to direct DB fields
       const marketingPrefsData = {
-        // Only store collab types in filtered_marketing_topics
-        collabs_to_discover: [...currentFormValues.enabledCollabs],
+        // Store both regular collab types and twitter collabs in collabs_to_discover
+        collabs_to_discover: [
+          ...currentFormValues.enabledCollabs,
+          // Add twitter collabs with their prefix to collabs_to_discover
+          ...currentFormValues.enabledTwitterCollabs.map(collabType => `twitter_collab:${collabType}`)
+        ],
         collabs_to_host: [...collabsToHost],
         
-        // Store Twitter collabs in filtered_marketing_topics
+        // Only store topic filters in filtered_marketing_topics
         filtered_marketing_topics: [
           // Include topics if topics filter is enabled
           ...(filtersEnabled.topics 
             ? selectedTopics.map(topic => `filter:topic:${topic}`) 
-            : []),
-          // Include twitter collabs
-          ...currentFormValues.enabledTwitterCollabs.map(collabType => `twitter_collab:${collabType}`)
+            : [])
         ],
         
         // Discovery filter toggle states
