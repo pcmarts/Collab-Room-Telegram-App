@@ -124,7 +124,8 @@ export default function CreateCollaboration() {
           title: "Success!",
           description: "Your collaboration has been posted.",
         });
-        setLocation('/my-collabs');
+        // Redirect to the "My Collaborations" tab on marketing-collabs-new
+        setLocation('/marketing-collabs-new?tab=my');
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to create collaboration');

@@ -117,7 +117,11 @@ export default function MarketingCollabs() {
   
   // Core state management
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState("preferences");
+  // Check for the tab parameter in the URL to set initial active tab
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('tab') === 'my' ? 'collaborations' : 'preferences';
+  });
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [collabsToHost, setCollabsToHost] = useState<string[]>([]);
   const [filtersEnabled, setFiltersEnabled] = useState({

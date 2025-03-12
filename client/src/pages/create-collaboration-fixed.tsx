@@ -396,7 +396,8 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
           title: "Success!",
           description: "Your collaboration has been created successfully."
         });
-        setLocation('/marketing-collabs');
+        // Redirect to the "My Collaborations" tab on marketing-collabs-new
+        setLocation('/marketing-collabs-new?tab=my');
       } else {
         const errorText = await response.text();
         throw new Error(`Failed to create: ${errorText}`);
