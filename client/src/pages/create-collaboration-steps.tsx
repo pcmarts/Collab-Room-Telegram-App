@@ -320,6 +320,24 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
         required_company_sectors: data.required_company_sectors || [],
         required_funding_stages: data.required_funding_stages || [],
         required_blockchain_networks: data.required_blockchain_networks || [],
+        
+        // Add standardized fields for consistent filtering across all tables
+        company_tags: data.required_company_sectors || [],
+        company_twitter_followers: data.min_company_followers,
+        twitter_followers: data.min_user_followers,
+        funding_stage: data.required_funding_stages && data.required_funding_stages.length > 0
+          ? data.required_funding_stages[0]
+          : null,
+        company_has_token: data.required_token_status || false,
+        company_blockchain_networks: data.required_blockchain_networks || [],
+        
+        // Set filter toggle states based on whether requirements are specified
+        filter_company_sectors_enabled: Array.isArray(data.required_company_sectors) && data.required_company_sectors.length > 0,
+        filter_company_followers_enabled: !!data.min_company_followers,
+        filter_user_followers_enabled: !!data.min_user_followers,
+        filter_funding_stages_enabled: Array.isArray(data.required_funding_stages) && data.required_funding_stages.length > 0,
+        filter_token_status_enabled: !!data.required_token_status,
+        filter_blockchain_networks_enabled: Array.isArray(data.required_blockchain_networks) && data.required_blockchain_networks.length > 0
       };
       
       // Remove specific_date if not needed
