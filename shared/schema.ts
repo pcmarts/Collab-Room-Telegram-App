@@ -72,6 +72,7 @@ export const BLOCKCHAIN_NETWORKS = [
 
 export const BLOCKCHAIN_NETWORK_CATEGORIES = {
     "Layer 1 Blockchains": [
+      "Bitcoin",
       "Ethereum",
       "Binance Smart Chain (BSC)",
       "Solana",

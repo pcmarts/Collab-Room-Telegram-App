@@ -3,18 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { BLOCKCHAIN_NETWORKS } from "@shared/schema";
+import { BLOCKCHAIN_NETWORKS, BLOCKCHAIN_NETWORK_CATEGORIES } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function CompanyDetails() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['Layer 1 Blockchains']);
 
   const { data: profileData } = useQuery<ProfileData>({
     queryKey: ['/api/profile']
@@ -40,6 +42,11 @@ export default function CompanyDetails() {
       }
     }
   }, [profileData]);
+  
+  // Save form data to session storage whenever it changes
+  useEffect(() => {
+    sessionStorage.setItem('companyDetailsData', JSON.stringify(formData));
+  }, [formData]);
 
   const toggleNetwork = (network: string) => {
     setFormData(prev => ({
@@ -48,6 +55,14 @@ export default function CompanyDetails() {
         ? prev.blockchain_networks.filter(n => n !== network)
         : [...prev.blockchain_networks, network]
     }));
+  };
+  
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category) 
+        : [...prev, category]
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -201,18 +216,58 @@ export default function CompanyDetails() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Blockchain Networks *</Label>
-                <div className="flex flex-wrap gap-2">
-                  {BLOCKCHAIN_NETWORKS.map(network => (
-                    <Badge
-                      key={network}
-                      variant={formData.blockchain_networks.includes(network) ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => toggleNetwork(network)}
-                    >
-                      {network}
-                    </Badge>
+              <div className="space-y-4">
+                <div>
+                  <Label>Blockchain Networks *</Label>
+                  {/* Networks selection count */}
+                  {formData.blockchain_networks.length > 0 && (
+                    <div className="flex mt-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {formData.blockchain_networks.length} {formData.blockchain_networks.length === 1 ? 'network' : 'networks'} selected
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-3">
+                  {/* Categorized network selection */}
+                  {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
+                    <div key={category} className="border rounded p-3">
+                      <div 
+                        className="flex justify-between items-center cursor-pointer"
+                        onClick={() => toggleCategory(category)}
+                      >
+                        <div className="font-medium">{category}</div>
+                        <div>
+                          {expandedCategories.includes(category) ? 
+                            <ChevronUp className="h-4 w-4" /> : 
+                            <ChevronDown className="h-4 w-4" />
+                          }
+                        </div>
+                      </div>
+                      
+                      {expandedCategories.includes(category) && (
+                        <div className="grid grid-cols-2 gap-2 mt-3">
+                          {networks.map((network) => (
+                            <div
+                              key={network}
+                              className={`flex flex-row items-center space-x-3 p-2 border rounded-md hover:bg-accent/10 cursor-pointer ${
+                                formData.blockchain_networks.includes(network) ? 'bg-accent/10' : ''
+                              }`}
+                              onClick={() => toggleNetwork(network)}
+                            >
+                              <Checkbox
+                                checked={formData.blockchain_networks.includes(network)}
+                                className="h-5 w-5"
+                              />
+                              <span className="font-normal text-sm">
+                                {network}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
