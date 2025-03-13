@@ -124,7 +124,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
       case "Twitter Spaces Guest":
         newDetails = { 
           twitter_handle: "https://x.com/", 
-          space_topic: [], 
+          // Removed space_topic as topics are now captured at the platform level
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
         };
         break;
