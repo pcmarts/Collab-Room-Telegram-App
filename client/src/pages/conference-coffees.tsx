@@ -62,6 +62,7 @@ export default function ConferenceCoffees() {
   const [userFollowersEnabled, setUserFollowersEnabled] = useState(false);
   const [fundingStagesEnabled, setFundingStagesEnabled] = useState(false);
   const [tokenStatusEnabled, setTokenStatusEnabled] = useState(false);
+  const [blockchainNetworksEnabled, setBlockchainNetworksEnabled] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -160,7 +161,8 @@ export default function ConferenceCoffees() {
         companyFollowers: prefs.coffee_match_company_followers ?? TWITTER_FOLLOWER_COUNTS[0],
         userFollowers: prefs.coffee_match_user_followers ?? TWITTER_FOLLOWER_COUNTS[0],
         fundingStages: prefs.coffee_match_funding_stages ?? [],
-        tokenStatus: prefs.coffee_match_token_status ?? false
+        tokenStatus: prefs.coffee_match_token_status ?? false,
+        blockchainNetworks: prefs.company_blockchain_networks ?? []
       });
       
       // Log raw filter states for debugging
@@ -169,7 +171,8 @@ export default function ConferenceCoffees() {
         companyFollowers: prefs.coffee_match_filter_company_followers_enabled, 
         userFollowers: prefs.coffee_match_filter_user_followers_enabled,
         fundingStages: prefs.coffee_match_filter_funding_stages_enabled,
-        tokenStatus: prefs.coffee_match_filter_token_status_enabled
+        tokenStatus: prefs.coffee_match_filter_token_status_enabled,
+        blockchainNetworks: prefs.coffee_match_filter_blockchain_networks_enabled
       });
       
       // Set filter states based on database values with strict equality checks
@@ -179,13 +182,15 @@ export default function ConferenceCoffees() {
       setUserFollowersEnabled(prefs.coffee_match_filter_user_followers_enabled === true);
       setFundingStagesEnabled(prefs.coffee_match_filter_funding_stages_enabled === true);
       setTokenStatusEnabled(prefs.coffee_match_filter_token_status_enabled === true);
+      setBlockchainNetworksEnabled(prefs.coffee_match_filter_blockchain_networks_enabled === true);
       
       console.log("Loaded filter toggle states:", {
         companySectors: companySectorsEnabled,
         companyFollowers: companyFollowersEnabled,
         userFollowers: userFollowersEnabled,
         fundingStages: fundingStagesEnabled,
-        tokenStatus: tokenStatusEnabled
+        tokenStatus: tokenStatusEnabled,
+        blockchainNetworks: blockchainNetworksEnabled
       });
     }
   }, [profileData, form]);
@@ -202,7 +207,8 @@ export default function ConferenceCoffees() {
       companyFollowers: companyFollowersEnabled,
       userFollowers: userFollowersEnabled,
       fundingStages: fundingStagesEnabled,
-      tokenStatus: tokenStatusEnabled
+      tokenStatus: tokenStatusEnabled,
+      blockchainNetworks: blockchainNetworksEnabled
     });
 
     try {
@@ -230,6 +236,7 @@ export default function ConferenceCoffees() {
         coffee_match_filter_user_followers_enabled: userFollowersEnabled,
         coffee_match_filter_funding_stages_enabled: fundingStagesEnabled,
         coffee_match_filter_token_status_enabled: tokenStatusEnabled,
+        coffee_match_filter_blockchain_networks_enabled: blockchainNetworksEnabled,
         
         // New standardized fields for consistent filtering across all tables
         company_tags: data.companySectors ?? [], // Map sectors to company_tags
@@ -238,7 +245,8 @@ export default function ConferenceCoffees() {
         funding_stage: data.fundingStages && data.fundingStages.length > 0 
           ? data.fundingStages[0] // Take first item if array has values
           : null,
-        company_has_token: tokenStatusEnabled ? data.tokenStatus : false
+        company_has_token: tokenStatusEnabled ? data.tokenStatus : false,
+        company_blockchain_networks: blockchainNetworksEnabled ? data.blockchainNetworks : []
       };
       
       console.log("Sending conference preferences data:", conferencePrefsData);
@@ -270,7 +278,8 @@ export default function ConferenceCoffees() {
           companyFollowers: responseData.conferencePrefs?.coffee_match_filter_company_followers_enabled,
           userFollowers: responseData.conferencePrefs?.coffee_match_filter_user_followers_enabled,
           fundingStages: responseData.conferencePrefs?.coffee_match_filter_funding_stages_enabled,
-          tokenStatus: responseData.conferencePrefs?.coffee_match_filter_token_status_enabled
+          tokenStatus: responseData.conferencePrefs?.coffee_match_filter_token_status_enabled,
+          blockchainNetworks: responseData.conferencePrefs?.coffee_match_filter_blockchain_networks_enabled
         });
       } catch (e) {
         console.error("Could not parse response data:", e);
