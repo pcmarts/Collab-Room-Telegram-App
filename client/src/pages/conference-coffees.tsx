@@ -32,6 +32,7 @@ import {
   TWITTER_FOLLOWER_COUNTS, 
   FUNDING_STAGES, 
   COMPANY_TAG_CATEGORIES,
+  BLOCKCHAIN_NETWORKS,
 } from "@shared/schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,7 +45,8 @@ const coffeeMatchCriteriaSchema = z.object({
   companyFollowers: z.string().default(TWITTER_FOLLOWER_COUNTS[0]),
   userFollowers: z.string().default(TWITTER_FOLLOWER_COUNTS[0]),
   fundingStages: z.array(z.string()).default([]),
-  tokenStatus: z.boolean().default(false)
+  tokenStatus: z.boolean().default(false),
+  blockchainNetworks: z.array(z.string()).default([])
 });
 
 // Type for form data
@@ -142,6 +144,7 @@ export default function ConferenceCoffees() {
       tokenStatus: false,
       companyFollowers: TWITTER_FOLLOWER_COUNTS[0],
       userFollowers: TWITTER_FOLLOWER_COUNTS[0],
+      blockchainNetworks: [],
     },
   });
   
