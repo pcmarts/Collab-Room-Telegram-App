@@ -37,6 +37,7 @@ import {
   AUDIENCE_SIZE_RANGES,
   FUNDING_STAGES, 
   BLOCKCHAIN_NETWORKS,
+  BLOCKCHAIN_NETWORK_CATEGORIES,
   type Collaboration,
   type CollabApplication,
   type ApplicationData,

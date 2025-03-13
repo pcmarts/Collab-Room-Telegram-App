@@ -1444,7 +1444,7 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                           {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
                             // Count how many networks are selected in this category
                             const selectedCount = (field.value || []).filter(
-                              (network) => networks.includes(network)
+                              (network) => networks.includes(network as any)
                             ).length;
                             
                             return (
