@@ -657,6 +657,53 @@ export default function ConferenceCoffees() {
                           )}
                         />
                       )}
+
+                      {/* Blockchain Networks Filter */}
+                      <div className="flex items-center space-x-3 mb-4">
+                        <Switch
+                          checked={blockchainNetworksEnabled}
+                          onCheckedChange={() => setBlockchainNetworksEnabled(!blockchainNetworksEnabled)}
+                        />
+                        <Label>Filter by Blockchain Networks</Label>
+                      </div>
+
+                      {blockchainNetworksEnabled && (
+                        <FormField
+                          control={form.control}
+                          name="blockchainNetworks"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="space-y-2">
+                                {BLOCKCHAIN_NETWORKS.map((network) => (
+                                  <FormItem
+                                    key={network}
+                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(network)}
+                                        onCheckedChange={(checked) => {
+                                          const currentNetworks = field.value || [];
+                                          if (checked) {
+                                            field.onChange([...currentNetworks, network]);
+                                          } else {
+                                            field.onChange(
+                                              currentNetworks.filter((value) => value !== network)
+                                            );
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="text-sm font-normal">
+                                      {network}
+                                    </FormLabel>
+                                  </FormItem>
+                                ))}
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                      )}
                     </CardContent>
                   </Card>
                 )}
