@@ -849,19 +849,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="details.blog_topic"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Blog Topic</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter blog topic" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Blog topic field removed as we already capture topics at the top level */}
                 <FormField
                   control={form.control}
                   name="details.blog_link"
