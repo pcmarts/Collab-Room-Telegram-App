@@ -72,7 +72,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
       date_type: "specific_date",
       specific_date: new Date().toISOString().split('T')[0],
       topics: [],
-      is_free_collab: false,
+      is_free_collab: true, // Default to true since we only want free collaborations
       
       // Filter fields
       filter_company_sectors_enabled: false,
@@ -525,14 +525,27 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                   <FormControl>
                     <Checkbox
                       checked={field.value}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        // Always default to true since we only want free collaborations
+                        field.onChange(true);
+                        // If someone tries to uncheck, show a warning
+                        if (!checked) {
+                          toast({
+                            title: "Free collaborations only",
+                            description: "Only free collaborations are allowed on our platform.",
+                            variant: "destructive"
+                          });
+                        }
+                      }}
+                      disabled={true} // Make it impossible to uncheck
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Free Collaboration</FormLabel>
+                    <FormLabel>Free Collaboration (Required)</FormLabel>
                     <FormDescription>
-                      Check this if you're offering this collaboration for free
+                      All collaborations on our platform must be free with no payments involved
                     </FormDescription>
+                    <FormMessage>This field is required</FormMessage>
                   </div>
                 </FormItem>
               )}
