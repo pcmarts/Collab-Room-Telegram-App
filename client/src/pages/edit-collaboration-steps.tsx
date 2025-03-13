@@ -41,6 +41,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface EditCollaborationProps {
   id?: string;
