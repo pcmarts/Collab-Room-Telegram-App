@@ -307,6 +307,11 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
         // Handle specific fields
         required_company_sectors: currentData.required_company_sectors || [],
         required_funding_stages: currentData.required_funding_stages || [],
+        
+        // Add standardized fields with defaults
+        funding_stage: currentData.required_funding_stages && currentData.required_funding_stages.length > 0
+          ? currentData.required_funding_stages[0]
+          : "Not Applicable", // Default to "Not Applicable" when no funding stage is selected
       };
       
       // Explicitly send to our update endpoint
