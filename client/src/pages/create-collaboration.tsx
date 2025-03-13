@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import {
   Form,
@@ -28,6 +29,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { MobileCheck } from "@/components/MobileCheck";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -585,48 +587,76 @@ export default function CreateCollaboration() {
                   <FormField
                     control={form.control}
                     name="required_blockchain_networks"
-                    render={() => (
+                    render={({ field }) => (
                       <FormItem>
                         <div className="mb-4">
                           <FormLabel className="text-base">Blockchain Networks</FormLabel>
                           <FormDescription>
                             Select the blockchain networks that are relevant for this collaboration
                           </FormDescription>
+                          {/* Show selected count badge */}
+                          {field.value && field.value.length > 0 && (
+                            <div className="flex mt-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {field.value.length} {field.value.length === 1 ? 'network' : 'networks'} selected
+                              </Badge>
+                            </div>
+                          )}
                         </div>
-                        <div className="space-y-2">
-                          {BLOCKCHAIN_NETWORKS.map((network) => (
-                            <FormField
-                              key={network}
-                              control={form.control}
-                              name="required_blockchain_networks"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={network}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(network)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value || [], network])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== network
-                                                )
-                                              )
+                        
+                        <div className="space-y-3">
+                          {/* Categorized network selection with collapsible sections */}
+                          {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
+                            // Count selected networks in this category
+                            const selectedCount = (field.value || []).filter(
+                              network => networks.includes(network as typeof BLOCKCHAIN_NETWORKS[number])
+                            ).length;
+                            
+                            return (
+                              <div key={category} className="border rounded-lg overflow-hidden">
+                                <div 
+                                  className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
+                                  onClick={() => toggleCategory(category)}
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <span className="font-medium">{category}</span>
+                                    {selectedCount > 0 && (
+                                      <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
+                                        {selectedCount}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {expandedCategories.includes(category) ? (
+                                    <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                                  )}
+                                </div>
+                                
+                                {expandedCategories.includes(category) && (
+                                  <div className="p-4 pt-0 grid grid-cols-1 gap-3">
+                                    {networks.map(network => (
+                                      <Button
+                                        key={network}
+                                        type="button"
+                                        variant={(field.value || []).includes(network) ? "default" : "outline"}
+                                        className="justify-start h-auto py-3 px-4 w-full"
+                                        onClick={() => {
+                                          const currentNetworks = field.value || [];
+                                          const updatedNetworks = currentNetworks.includes(network)
+                                            ? currentNetworks.filter(n => n !== network)
+                                            : [...currentNetworks, network];
+                                          field.onChange(updatedNetworks);
                                         }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="font-normal">
-                                      {network}
-                                    </FormLabel>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
+                                      >
+                                        <span className="text-left">{network}</span>
+                                      </Button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                         <FormMessage />
                       </FormItem>
