@@ -32,7 +32,7 @@ import {
   TWITTER_FOLLOWER_COUNTS, 
   FUNDING_STAGES, 
   COMPANY_TAG_CATEGORIES,
-  BLOCKCHAIN_NETWORKS,
+  BLOCKCHAIN_NETWORK_CATEGORIES,
 } from "@shared/schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -664,7 +664,7 @@ export default function ConferenceCoffees() {
                           checked={blockchainNetworksEnabled}
                           onCheckedChange={() => setBlockchainNetworksEnabled(!blockchainNetworksEnabled)}
                         />
-                        <Label>Filter by Blockchain Networks</Label>
+                        <Label>Blockchain Network Requirements</Label>
                       </div>
 
                       {blockchainNetworksEnabled && (
@@ -673,31 +673,41 @@ export default function ConferenceCoffees() {
                           name="blockchainNetworks"
                           render={({ field }) => (
                             <FormItem>
-                              <div className="space-y-2">
-                                {BLOCKCHAIN_NETWORKS.map((network) => (
-                                  <FormItem
-                                    key={network}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(network)}
-                                        onCheckedChange={(checked) => {
-                                          const currentNetworks = field.value || [];
-                                          if (checked) {
-                                            field.onChange([...currentNetworks, network]);
-                                          } else {
-                                            field.onChange(
-                                              currentNetworks.filter((value) => value !== network)
-                                            );
-                                          }
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="text-sm font-normal">
-                                      {network}
-                                    </FormLabel>
-                                  </FormItem>
+                              <FormDescription>
+                                Select the blockchain networks you want to match with
+                              </FormDescription>
+                              <div className="space-y-4">
+                                {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
+                                  <div key={category} className="space-y-2">
+                                    <h4 className="text-sm font-medium text-muted-foreground">{category}</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                      {networks.map((network) => (
+                                        <FormItem
+                                          key={network}
+                                          className="flex flex-row items-start space-x-3 space-y-0"
+                                        >
+                                          <FormControl>
+                                            <Checkbox
+                                              checked={field.value?.includes(network)}
+                                              onCheckedChange={(checked) => {
+                                                const currentNetworks = field.value || [];
+                                                if (checked) {
+                                                  field.onChange([...currentNetworks, network]);
+                                                } else {
+                                                  field.onChange(
+                                                    currentNetworks.filter((value) => value !== network)
+                                                  );
+                                                }
+                                              }}
+                                            />
+                                          </FormControl>
+                                          <FormLabel className="text-sm font-normal">
+                                            {network}
+                                          </FormLabel>
+                                        </FormItem>
+                                      ))}
+                                    </div>
+                                  </div>
                                 ))}
                               </div>
                             </FormItem>
