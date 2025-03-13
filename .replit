@@ -40,3 +40,12 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Restart Manual "
+mode = "sequential"
+author = 40175426
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"

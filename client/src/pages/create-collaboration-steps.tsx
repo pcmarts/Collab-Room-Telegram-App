@@ -227,10 +227,8 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
         } else if (!details.twitter_handle.startsWith("https://x.com/")) {
           canProceed = false;
           errorMessage = "Twitter handle must start with https://x.com/";
-        } else if (!details.space_topic || !Array.isArray(details.space_topic) || details.space_topic.length === 0) {
-          canProceed = false;
-          errorMessage = "Please select at least one space topic";
         }
+        // Removed space_topic validation as topics are captured at the top level
       }
       else if (collabType === "Co-Marketing on Twitter") {
         if (!details.collaboration_types || !Array.isArray(details.collaboration_types) || details.collaboration_types.length === 0) {
@@ -658,55 +656,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="details.space_topic"
-                  render={() => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel>Space Topics</FormLabel>
-                        <FormDescription>
-                          Select topics for your Twitter Space
-                        </FormDescription>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {COLLAB_TOPICS.map((topic) => (
-                          <FormField
-                            key={topic}
-                            control={form.control}
-                            name="details.space_topic"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={topic}
-                                  className="flex flex-row items-center space-x-3 space-y-0"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(topic)}
-                                      onCheckedChange={(checked) => {
-                                        const updatedTopics = checked
-                                          ? [...(field.value || []), topic]
-                                          : (field.value || [])?.filter(
-                                              (t) => t !== topic
-                                            );
-                                        field.onChange(updatedTopics);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="text-sm font-normal cursor-pointer flex-grow">
-                                    {topic}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Space topics field removed - topics are now captured at the platform level */}
                 <FormField
                   control={form.control}
                   name="details.host_follower_count"
