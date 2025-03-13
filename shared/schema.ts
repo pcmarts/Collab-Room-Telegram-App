@@ -482,7 +482,7 @@ export const podcastDetailsSchema = z.object({
 // Twitter Spaces Guest
 export const twitterSpacesDetailsSchema = z.object({
   twitter_handle: z.string().min(1, "Twitter handle is required"),
-  space_topic: z.array(z.string()).min(1, "At least one topic is required"),
+  // Removed space_topic validation as topics are captured at the top level
   host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS)
 });
 
@@ -495,14 +495,15 @@ export const liveStreamDetailsSchema = z.object({
   stream_platform: z.string().min(2, "Streaming platform is required").optional(),
   previous_stream_link: z.string().url("Please enter a valid stream link").optional(),
   audience_size: z.enum(AUDIENCE_SIZE_RANGES).optional(),
-  expected_audience_size: z.enum(AUDIENCE_SIZE_RANGES),
-  topics: z.array(z.string()).min(1, "At least one topic is required")
+  expected_audience_size: z.enum(AUDIENCE_SIZE_RANGES)
+  // Removed topics validation as topics are captured at the top level
 });
 
 // Report & Research Feature
 export const researchReportDetailsSchema = z.object({
   report_name: z.string().min(2, "Report name is required").optional(),
-  research_topic: z.array(z.string()).min(1, "At least one topic is required"),
+  // Removed research_topic validation as topics are captured at the top level
+  research_topic: z.array(z.string()).optional(),
   target_audience: z.string().min(2, "Target audience is required"),
   short_description: z.string().max(200, "Short description must be less than 200 characters").optional(),
   audience_reach: z.enum(AUDIENCE_SIZE_RANGES).optional(),
@@ -513,7 +514,8 @@ export const researchReportDetailsSchema = z.object({
 export const newsletterDetailsSchema = z.object({
   newsletter_name: z.string().min(2, "Newsletter name is required"),
   newsletter_url: z.string().url("Please enter a valid newsletter URL").optional(),
-  topics: z.array(z.enum(COLLAB_TOPICS)).min(1, "At least one topic is required"),
+  // Removed topics validation as topics are captured at the top level of the form
+  topics: z.array(z.enum(COLLAB_TOPICS)).optional(),
   audience_reach: z.enum(AUDIENCE_SIZE_RANGES),
   total_subscribers: z.enum(AUDIENCE_SIZE_RANGES).optional(),
   short_description: z.string().max(200, "Short description must be less than 200 characters")
