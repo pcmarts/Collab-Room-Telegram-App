@@ -24,6 +24,7 @@ import AdminUsers from "@/pages/admin/users";
 // BrowseCollaborations page removed as requested
 import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
 import CreateCollaborationSteps from "@/pages/create-collaboration-steps";
+import EditCollaborationSteps from "@/pages/edit-collaboration-steps";
 import CreateCollaboration from "@/pages/create-collaboration";
 import MyCollaborations from "@/pages/my-collaborations";
 import Apply from "@/pages/apply";
@@ -98,7 +99,7 @@ function Router() {
             <Redirect to="/marketing-collabs-new" />
           </Route>
           <Route path="/edit-collaboration/:id">
-            {(params) => <CreateCollaborationFixed id={params.id} />}
+            {(params) => <EditCollaborationSteps id={params.id} />}
           </Route>
           <Route path="/collaboration/edit/:id">
             <Redirect to="/marketing-collabs-new" />
