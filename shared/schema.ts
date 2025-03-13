@@ -40,9 +40,12 @@ export const NOTIFICATION_FREQUENCIES = ["Instant", "Daily", "Weekly"] as const;
 export const FUNDING_STAGES = ["Not Applicable", "Pre-seed", "Seed", "Series A", "Series B+"] as const;
 
 export const BLOCKCHAIN_NETWORKS = [
+  "Bitcoin",
   "Ethereum",
   "Binance Smart Chain (BSC)",
   "Solana",
+  "Ripple",
+  "Sui",
   "Polygon",
   "Avalanche",
   "Cardano",
@@ -62,8 +65,11 @@ export const BLOCKCHAIN_NETWORKS = [
   "Arbitrum",
   "Optimism",
   "Base",
+  "Linea",
+  "Scroll",
+  "Lightning Network",
   "Starknet",
-  "zkSync",
+  "zkSync", 
   "Injective",
   "Mantle",
   "Metis",
