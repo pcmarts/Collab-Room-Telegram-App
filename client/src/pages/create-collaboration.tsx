@@ -35,6 +35,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import {
   AUDIENCE_SIZE_RANGES,
   BLOCKCHAIN_NETWORKS,
+  BLOCKCHAIN_NETWORK_CATEGORIES,
   COLLAB_TYPES,
   COMPANY_CATEGORIES,
   COMPANY_TAG_CATEGORIES,
@@ -51,6 +52,16 @@ export default function CreateCollaboration() {
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollabType, setSelectedCollabType] = useState<typeof COLLAB_TYPES[number] | "">("");
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  
+  // Function to toggle category expansion
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
 
   const form = useForm<CreateCollaboration>({
     resolver: zodResolver(createCollaborationSchema),
