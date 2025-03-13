@@ -26,7 +26,9 @@ import {
   Filter,
   Info,
   Save,
-  Plus
+  Plus,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { 
   COLLAB_TYPES, 
@@ -125,6 +127,7 @@ export default function MarketingCollabs() {
   });
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [collabsToHost, setCollabsToHost] = useState<string[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [filtersEnabled, setFiltersEnabled] = useState({
     topics: false,
     companySectors: false, 
@@ -336,6 +339,15 @@ export default function MarketingCollabs() {
       ...prev,
       [filterName]: !prev[filterName],
     }));
+  };
+  
+  // Toggle category expansion
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
 
   // Handle topic checkbox state management
@@ -1464,40 +1476,71 @@ export default function MarketingCollabs() {
                             name="blockchainNetworks"
                             render={({ field }) => (
                               <FormItem>
-                                <div className="grid grid-cols-2 gap-3">
-                                  {BLOCKCHAIN_NETWORKS.map((network) => (
-                                    <FormItem
-                                      key={network}
-                                      className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value.includes(network)}
-                                          className="h-5 w-5"
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value, network])
-                                              : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== network
-                                                  )
-                                                )
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal w-full cursor-pointer" onClick={() => {
-                                        const newChecked = !field.value?.includes(network);
-                                        return newChecked
-                                          ? field.onChange([...field.value, network])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (value) => value !== network
-                                              )
-                                            )
-                                      }}>
-                                        {network}
-                                      </FormLabel>
-                                    </FormItem>
+                                <div className="space-y-4">
+                                  {/* Show selection count */}
+                                  {field.value.length > 0 && (
+                                    <div className="flex justify-between items-center">
+                                      <Badge variant="secondary" className="text-xs">
+                                        {field.value.length} {field.value.length === 1 ? 'network' : 'networks'} selected
+                                      </Badge>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Categorized network selection */}
+                                  {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
+                                    <div key={category} className="border rounded p-3">
+                                      <div 
+                                        className="flex justify-between items-center cursor-pointer mb-2"
+                                        onClick={() => toggleCategory(category)}
+                                      >
+                                        <div className="font-medium">{category}</div>
+                                        <div>
+                                          {expandedCategories.includes(category) ? 
+                                            <ChevronUp className="h-4 w-4" /> : 
+                                            <ChevronDown className="h-4 w-4" />
+                                          }
+                                        </div>
+                                      </div>
+                                      
+                                      {expandedCategories.includes(category) && (
+                                        <div className="grid grid-cols-2 gap-2 mt-3">
+                                          {networks.map((network) => (
+                                            <FormItem
+                                              key={network}
+                                              className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-1"
+                                            >
+                                              <FormControl>
+                                                <Checkbox
+                                                  checked={field.value.includes(network)}
+                                                  className="h-5 w-5"
+                                                  onCheckedChange={(checked) => {
+                                                    return checked
+                                                      ? field.onChange([...field.value, network])
+                                                      : field.onChange(
+                                                          field.value?.filter(
+                                                            (value) => value !== network
+                                                          )
+                                                        )
+                                                  }}
+                                                />
+                                              </FormControl>
+                                              <FormLabel className="font-normal w-full cursor-pointer" onClick={() => {
+                                                const newChecked = !field.value?.includes(network);
+                                                return newChecked
+                                                  ? field.onChange([...field.value, network])
+                                                  : field.onChange(
+                                                      field.value?.filter(
+                                                        (value) => value !== network
+                                                      )
+                                                    )
+                                              }}>
+                                                {network}
+                                              </FormLabel>
+                                            </FormItem>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
                                   ))}
                                 </div>
                               </FormItem>
@@ -1506,7 +1549,7 @@ export default function MarketingCollabs() {
                         </div>
                       )}
                     </div>
-                      </>
+                    </>
                     ) : (
                       <p className="text-sm text-gray-500 italic">Enable matching to access filtering options</p>
                     )}
