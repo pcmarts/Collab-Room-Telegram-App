@@ -7,7 +7,7 @@ import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Switch } from "@/components/ui/switch";
-import { FUNDING_STAGES, BLOCKCHAIN_NETWORKS, COMPANY_TAG_CATEGORIES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
+import { FUNDING_STAGES, BLOCKCHAIN_NETWORK_CATEGORIES, COMPANY_TAG_CATEGORIES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
@@ -377,21 +377,57 @@ export default function CompanyInfoForm() {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label>Blockchain Networks</Label>
-                <div className="grid grid-cols-1 gap-2">
-                  {BLOCKCHAIN_NETWORKS.map(network => (
-                    <Button
-                      key={network}
-                      type="button"
-                      variant={formData.blockchain_networks.includes(network) ? "default" : "outline"}
-                      className="justify-start"
-                      onClick={() => toggleBlockchain(network)}
-                    >
-                      {network}
-                    </Button>
-                  ))}
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Select the blockchain networks your token is deployed on.
+                </p>
+                
+                {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
+                  // Count how many networks from this category are selected
+                  const selectedCount = formData.blockchain_networks.filter(
+                    (network) => networks.includes(network)
+                  ).length;
+                  
+                  return (
+                    <div key={category} className="border rounded-lg overflow-hidden">
+                      <div 
+                        className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
+                        onClick={() => toggleCategory(category)}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">{category}</span>
+                          {selectedCount > 0 && (
+                            <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
+                              {selectedCount}
+                            </span>
+                          )}
+                        </div>
+                        {expandedCategories.includes(category) ? (
+                          <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                        )}
+                      </div>
+                      
+                      {expandedCategories.includes(category) && (
+                        <div className="p-4 pt-0 grid grid-cols-1 gap-3">
+                          {networks.map(network => (
+                            <Button
+                              key={network}
+                              type="button"
+                              variant={formData.blockchain_networks.includes(network) ? "default" : "outline"}
+                              className="justify-start h-auto py-3 px-4 w-full"
+                              onClick={() => toggleBlockchain(network)}
+                            >
+                              <span className="text-left">{network}</span>
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}
