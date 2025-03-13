@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar } from "lucide-react";
+import { Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { Event, UserEvent } from "@shared/schema";
 import type { ProfileData } from "@/types/profile";
@@ -27,6 +27,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { 
   TWITTER_FOLLOWER_COUNTS, 
@@ -671,47 +672,81 @@ export default function ConferenceCoffees() {
                         <FormField
                           control={form.control}
                           name="blockchainNetworks"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormDescription>
-                                Select the blockchain networks you want to match with
-                              </FormDescription>
-                              <div className="space-y-4">
-                                {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
-                                  <div key={category} className="space-y-2">
-                                    <h4 className="text-sm font-medium text-muted-foreground">{category}</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                      {networks.map((network) => (
-                                        <FormItem
-                                          key={network}
-                                          className="flex flex-row items-start space-x-3 space-y-0"
+                          render={({ field }) => {
+                            // Add state for expanded categories
+                            const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+                            
+                            // Toggle category expansion
+                            const toggleCategory = (category: string) => {
+                              setExpandedCategories(prev =>
+                                prev.includes(category)
+                                  ? prev.filter(c => c !== category)
+                                  : [...prev, category]
+                              );
+                            };
+                            
+                            return (
+                              <FormItem>
+                                <FormDescription>
+                                  Select the blockchain networks you want to match with
+                                </FormDescription>
+                                <div className="space-y-3">
+                                  {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
+                                    // Count how many networks are selected in this category
+                                    const selectedCount = (field.value || []).filter(
+                                      (network) => networks.includes(network as any)
+                                    ).length;
+                                    
+                                    return (
+                                      <div key={category} className="border rounded-lg overflow-hidden">
+                                        <div 
+                                          className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
+                                          onClick={() => toggleCategory(category)}
                                         >
-                                          <FormControl>
-                                            <Checkbox
-                                              checked={field.value?.includes(network)}
-                                              onCheckedChange={(checked) => {
-                                                const currentNetworks = field.value || [];
-                                                if (checked) {
-                                                  field.onChange([...currentNetworks, network]);
-                                                } else {
-                                                  field.onChange(
-                                                    currentNetworks.filter((value) => value !== network)
-                                                  );
-                                                }
-                                              }}
-                                            />
-                                          </FormControl>
-                                          <FormLabel className="text-sm font-normal">
-                                            {network}
-                                          </FormLabel>
-                                        </FormItem>
-                                      ))}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </FormItem>
-                          )}
+                                          <div className="flex items-center space-x-2">
+                                            <span className="font-medium">{category}</span>
+                                            {selectedCount > 0 && (
+                                              <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
+                                                {selectedCount}
+                                              </span>
+                                            )}
+                                          </div>
+                                          {expandedCategories.includes(category) ? (
+                                            <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                                          ) : (
+                                            <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                                          )}
+                                        </div>
+                                        
+                                        {expandedCategories.includes(category) && (
+                                          <div className="p-4 pt-0 grid grid-cols-1 gap-3">
+                                            {networks.map(network => (
+                                              <Button
+                                                key={network}
+                                                type="button"
+                                                variant={(field.value || []).includes(network) ? "default" : "outline"}
+                                                className="justify-start h-auto py-3 px-4 w-full"
+                                                onClick={() => {
+                                                  const currentNetworks = field.value || [];
+                                                  const updatedNetworks = currentNetworks.includes(network)
+                                                    ? currentNetworks.filter(n => n !== network)
+                                                    : [...currentNetworks, network];
+                                                  field.onChange(updatedNetworks);
+                                                }}
+                                              >
+                                                <span className="text-left">{network}</span>
+                                              </Button>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            );
+                          }}
                         />
                       )}
                     </CardContent>
