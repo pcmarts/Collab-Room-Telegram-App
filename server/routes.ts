@@ -1000,7 +1000,9 @@ export async function registerRoutes(app: Express) {
         coffee_match_filter_company_followers_enabled,
         coffee_match_filter_user_followers_enabled,
         coffee_match_filter_funding_stages_enabled,
-        coffee_match_filter_token_status_enabled
+        coffee_match_filter_token_status_enabled,
+        coffee_match_filter_blockchain_networks_enabled,
+        company_blockchain_networks
       } = req.body;
 
       // Get Telegram data from header
@@ -1107,6 +1109,16 @@ export async function registerRoutes(app: Express) {
         
         if (coffee_match_filter_token_status_enabled !== undefined) {
           updateData.coffee_match_filter_token_status_enabled = coffee_match_filter_token_status_enabled === true;
+        }
+        
+        // Add blockchain networks enabled filter
+        if (coffee_match_filter_blockchain_networks_enabled !== undefined) {
+          updateData.coffee_match_filter_blockchain_networks_enabled = coffee_match_filter_blockchain_networks_enabled === true;
+        }
+        
+        // Add blockchain networks array
+        if (company_blockchain_networks !== undefined) {
+          updateData.company_blockchain_networks = Array.isArray(company_blockchain_networks) ? company_blockchain_networks : [];
         }
         
         if (existingConferencePrefs.length > 0) {
