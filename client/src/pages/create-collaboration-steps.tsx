@@ -149,10 +149,8 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
       case "Newsletter Feature":
         newDetails = {
           newsletter_name: "",
-          newsletter_url: "",
           topics: [],
           audience_reach: AUDIENCE_SIZE_RANGES[0],
-          total_subscribers: AUDIENCE_SIZE_RANGES[0],
           short_description: ""
         };
         break;
@@ -232,21 +230,6 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
         } else if (!details.space_topic || !Array.isArray(details.space_topic) || details.space_topic.length === 0) {
           canProceed = false;
           errorMessage = "Please select at least one space topic";
-        }
-      }
-      else if (collabType === "Newsletter Feature") {
-        if (!details.newsletter_name?.trim()) {
-          canProceed = false;
-          errorMessage = "Newsletter name is required";
-        } else if (!details.newsletter_url?.trim()) {
-          canProceed = false;
-          errorMessage = "Newsletter URL is required";
-        } else if (!details.topics || !Array.isArray(details.topics) || details.topics.length === 0) {
-          canProceed = false;
-          errorMessage = "Please select at least one topic for your newsletter";
-        } else if (!details.short_description?.trim()) {
-          canProceed = false;
-          errorMessage = "Short description is required";
         }
       }
       else if (collabType === "Co-Marketing on Twitter") {
@@ -929,49 +912,6 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
                 <FormField
                   control={form.control}
-                  name="details.topics"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Topics</FormLabel>
-                      <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
-                        {COLLAB_TOPICS.map((topic) => (
-                          <FormField
-                            key={topic}
-                            control={form.control}
-                            name="details.topics"
-                            render={({ field }) => {
-                              const value = field.value || [];
-                              return (
-                                <FormItem
-                                  key={topic}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={value.includes(topic)}
-                                      onCheckedChange={(checked) => {
-                                        const updated = checked
-                                          ? [...value, topic]
-                                          : value.filter((t) => t !== topic);
-                                        field.onChange(updated);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="text-sm font-normal cursor-pointer">
-                                    {topic}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
                   name="details.total_subscribers"
                   render={({ field }) => (
                     <FormItem>
@@ -994,23 +934,6 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                             ))}
                           </SelectContent>
                         </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="details.short_description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Short Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Brief description of your newsletter" 
-                          className="min-h-[80px]"
-                          {...field} 
-                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
