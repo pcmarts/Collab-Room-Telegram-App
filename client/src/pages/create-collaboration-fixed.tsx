@@ -377,7 +377,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
         twitter_followers: data.min_user_followers,
         funding_stage: data.required_funding_stages && data.required_funding_stages.length > 0
           ? data.required_funding_stages[0]
-          : null,
+          : "Not Applicable", // Default to "Not Applicable" when no funding stage is selected
         company_has_token: data.required_token_status || false,
         company_blockchain_networks: data.required_blockchain_networks || [],
         
