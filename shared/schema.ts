@@ -44,34 +44,67 @@ export const BLOCKCHAIN_NETWORKS = [
   "Binance Smart Chain (BSC)",
   "Solana",
   "Polygon",
+  "Avalanche",
   "Cardano",
+  "Cosmos",
+  "Polkadot",
   "Tron",
+  "Near Protocol",
+  "Fantom",
   "Tezos",
   "Stellar",
-  "Avalanche",
-  "Fantom",
+  "Algorand",
+  "Hedera",
+  "Internet Computer (ICP)",
+  "Elrond (MultiversX)",
+  "Kava",
+  "EOS",
+  "Arbitrum",
+  "Optimism",
+  "Base",
+  "Starknet",
+  "zkSync",
+  "Injective",
+  "Mantle",
+  "Metis",
   "Other"
 ] as const;
 
 export const BLOCKCHAIN_NETWORK_CATEGORIES = {
-  "Layer 1 Blockchains": [
-    "Ethereum",
-    "Solana",
-    "Cardano",
-    "Tron",
-    "Tezos",
-    "Stellar",
-    "Avalanche"
-  ],
-  "Layer 2 & Sidechains": [
-    "Polygon",
-    "Binance Smart Chain (BSC)",
-    "Fantom"
-  ],
-  "Other Networks": [
-    "Other"
-  ]
-} as const;
+    "Layer 1 Blockchains": [
+      "Ethereum",
+      "Binance Smart Chain (BSC)",
+      "Solana",
+      "Polygon",
+      "Avalanche",
+      "Cardano",
+      "Cosmos",
+      "Polkadot",
+      "Tron",
+      "Near Protocol",
+      "Fantom",
+      "Tezos",
+      "Stellar",
+      "Algorand",
+      "Hedera",
+      "Internet Computer (ICP)",
+      "Elrond (MultiversX)",
+      "EOS",
+    ],
+    "Layer 2 & Sidechains": [
+      "Arbitrum",
+      "Optimism",
+      "Base",
+      "Starknet",
+      "zkSync",
+      "Injective",
+      "Mantle",
+      "Metis"
+    ],
+    "Other Networks": [
+      "Other"
+    ]
+  } as const;
 
 export const TWITTER_FOLLOWER_COUNTS = [
   "0-1K",
