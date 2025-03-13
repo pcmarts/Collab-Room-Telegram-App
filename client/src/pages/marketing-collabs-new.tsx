@@ -1262,46 +1262,56 @@ export default function MarketingCollabs() {
                             name="companySectors"
                             render={({ field }) => (
                               <FormItem>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div className="space-y-4">
+                                  {/* Show selection count */}
+                                  {field.value.length > 0 && (
+                                    <div className="flex justify-between items-center">
+                                      <Badge variant="secondary" className="text-xs">
+                                        {field.value.length} {field.value.length === 1 ? 'sector' : 'sectors'} selected
+                                      </Badge>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Categorized sector selection */}
                                   {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-                                    <div key={category} className="col-span-full mb-4">
-                                      <h4 className="font-medium mb-2">{category}</h4>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                                        {tags.map((tag) => (
-                                          <FormItem
-                                            key={tag}
-                                            className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
-                                          >
-                                            <FormControl>
-                                              <Checkbox
-                                                checked={field.value.includes(tag)}
-                                                className="h-5 w-5"
-                                                onCheckedChange={(checked) => {
-                                                  return checked
-                                                    ? field.onChange([...field.value, tag])
-                                                    : field.onChange(
-                                                        field.value?.filter(
-                                                          (value) => value !== tag
-                                                        )
-                                                      )
-                                                }}
-                                              />
-                                            </FormControl>
-                                            <FormLabel className="text-sm font-normal w-full cursor-pointer" onClick={() => {
-                                              const newChecked = !field.value?.includes(tag);
-                                              return newChecked
-                                                ? field.onChange([...field.value, tag])
-                                                : field.onChange(
-                                                    field.value?.filter(
-                                                      (value) => value !== tag
-                                                    )
-                                                  )
-                                            }}>
-                                              {tag}
-                                            </FormLabel>
-                                          </FormItem>
-                                        ))}
+                                    <div key={category} className="border rounded p-3">
+                                      <div 
+                                        className="flex justify-between items-center cursor-pointer mb-2"
+                                        onClick={() => toggleCategory(category)}
+                                      >
+                                        <div className="font-medium">{category}</div>
+                                        <div>
+                                          {expandedCategories.includes(category) ? 
+                                            <ChevronUp className="h-4 w-4" /> : 
+                                            <ChevronDown className="h-4 w-4" />
+                                          }
+                                        </div>
                                       </div>
+                                      
+                                      {expandedCategories.includes(category) && (
+                                        <div className="grid grid-cols-2 gap-2 mt-3">
+                                          {tags.map((tag) => (
+                                            <Button
+                                              key={tag}
+                                              type="button"
+                                              variant={field.value.includes(tag) ? "default" : "outline"}
+                                              className="h-auto py-2 px-3 justify-start text-left font-normal whitespace-normal"
+                                              onClick={() => {
+                                                const newChecked = !field.value.includes(tag);
+                                                return newChecked
+                                                  ? field.onChange([...field.value, tag])
+                                                  : field.onChange(
+                                                      field.value.filter(
+                                                        (value) => value !== tag
+                                                      )
+                                                    )
+                                              }}
+                                            >
+                                              {tag}
+                                            </Button>
+                                          ))}
+                                        </div>
+                                      )}
                                     </div>
                                   ))}
                                 </div>
@@ -1383,41 +1393,38 @@ export default function MarketingCollabs() {
                             name="fundingStages"
                             render={({ field }) => (
                               <FormItem>
-                                <div className="grid grid-cols-2 gap-3">
-                                  {FUNDING_STAGES.map((stage) => (
-                                    <FormItem
-                                      key={stage}
-                                      className="flex flex-row items-center space-x-3 space-y-0 p-2 border rounded-md hover:bg-accent/10 mb-2"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value.includes(stage)}
-                                          className="h-5 w-5"
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value, stage])
-                                              : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== stage
-                                                  )
+                                <div className="space-y-4">
+                                  {/* Show selection count */}
+                                  {field.value.length > 0 && (
+                                    <div className="flex justify-between items-center">
+                                      <Badge variant="secondary" className="text-xs">
+                                        {field.value.length} {field.value.length === 1 ? 'stage' : 'stages'} selected
+                                      </Badge>
+                                    </div>
+                                  )}
+                                  
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {FUNDING_STAGES.map((stage) => (
+                                      <Button
+                                        key={stage}
+                                        type="button"
+                                        variant={field.value.includes(stage) ? "default" : "outline"}
+                                        className="h-auto py-2 px-3 justify-start text-left font-normal"
+                                        onClick={() => {
+                                          const newChecked = !field.value.includes(stage);
+                                          return newChecked
+                                            ? field.onChange([...field.value, stage])
+                                            : field.onChange(
+                                                field.value.filter(
+                                                  (value) => value !== stage
                                                 )
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal w-full cursor-pointer" onClick={() => {
-                                        const newChecked = !field.value?.includes(stage);
-                                        return newChecked
-                                          ? field.onChange([...field.value, stage])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (value) => value !== stage
                                               )
-                                            )
-                                      }}>
+                                        }}
+                                      >
                                         {stage}
-                                      </FormLabel>
-                                    </FormItem>
-                                  ))}
+                                      </Button>
+                                    ))}
+                                  </div>
                                 </div>
                               </FormItem>
                             )}
