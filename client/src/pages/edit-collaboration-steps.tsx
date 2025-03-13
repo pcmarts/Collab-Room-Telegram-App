@@ -7,6 +7,7 @@ import {
   COLLAB_TYPES, 
   COLLAB_TOPICS,
   TWITTER_FOLLOWER_COUNTS,
+  TWITTER_COLLAB_TYPES,
   AUDIENCE_SIZE_RANGES,
   COMPANY_TAG_CATEGORIES,
   BLOCKCHAIN_NETWORKS,
@@ -755,8 +756,8 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                         </FormDescription>
                       </div>
                       <div className="space-y-2">
-                        {/* You should use TWITTER_COLLAB_TYPES here */}
-                        {["Tweet", "Thread", "DM Group", "Space"].map((type) => (
+                        {/* Using TWITTER_COLLAB_TYPES from schema */}
+                        {TWITTER_COLLAB_TYPES.map((type) => (
                           <FormField
                             key={type}
                             control={form.control}
@@ -772,7 +773,7 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                                       checked={field.value?.includes(type)}
                                       onCheckedChange={(checked) => {
                                         const updatedTypes = checked
-                                          ? [...(field.value || []), type]
+                                          ? [...(field.value || []), type as any]
                                           : (field.value || [])?.filter(
                                               (t) => t !== type
                                             );
