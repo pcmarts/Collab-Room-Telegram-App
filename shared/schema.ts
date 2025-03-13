@@ -316,6 +316,7 @@ export const conference_preferences = pgTable('conference_preferences', {
   coffee_match_filter_user_followers_enabled: boolean('coffee_match_filter_user_followers_enabled').default(false),
   coffee_match_filter_funding_stages_enabled: boolean('coffee_match_filter_funding_stages_enabled').default(false),
   coffee_match_filter_token_status_enabled: boolean('coffee_match_filter_token_status_enabled').default(false),
+  coffee_match_filter_blockchain_networks_enabled: boolean('coffee_match_filter_blockchain_networks_enabled').default(false),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
