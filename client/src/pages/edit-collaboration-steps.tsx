@@ -10,7 +10,7 @@ import {
   TWITTER_COLLAB_TYPES,
   AUDIENCE_SIZE_RANGES,
   COMPANY_TAG_CATEGORIES,
-  BLOCKCHAIN_NETWORKS,
+  BLOCKCHAIN_NETWORK_CATEGORIES,
   FUNDING_STAGES,
   createCollaborationSchema, 
   type CreateCollaboration 
@@ -1431,40 +1431,71 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
               
               {form.watch('filter_blockchain_networks_enabled') && (
                 <div className="pl-4 border-l-2 border-gray-200">
-                  <div className="grid grid-cols-2 gap-2">
-                    {BLOCKCHAIN_NETWORKS.map(network => (
-                      <FormField
-                        key={network}
-                        control={form.control}
-                        name="required_blockchain_networks"
-                        render={({ field }) => {
-                          return (
-                            <FormItem
-                              key={network}
-                              className="flex flex-row items-center space-x-3 space-y-0"
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(network)}
-                                  onCheckedChange={(checked) => {
-                                    const updatedNetworks = checked
-                                      ? [...(field.value || []), network]
-                                      : (field.value || [])?.filter(
-                                          (n) => n !== network
-                                        );
-                                    field.onChange(updatedNetworks);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="text-sm font-normal cursor-pointer">
-                                {network}
-                              </FormLabel>
-                            </FormItem>
-                          );
-                        }}
-                      />
-                    ))}
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="required_blockchain_networks"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormDescription>
+                          Select the blockchain networks that are required for this collaboration
+                        </FormDescription>
+                        <div className="space-y-3">
+                          {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
+                            // Count how many networks are selected in this category
+                            const selectedCount = (field.value || []).filter(
+                              (network) => networks.includes(network)
+                            ).length;
+                            
+                            return (
+                              <div key={category} className="border rounded-lg overflow-hidden">
+                                <div 
+                                  className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
+                                  onClick={() => toggleCategory(category)}
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <span className="font-medium">{category}</span>
+                                    {selectedCount > 0 && (
+                                      <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
+                                        {selectedCount}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {expandedCategories.includes(category) ? (
+                                    <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                                  )}
+                                </div>
+                                
+                                {expandedCategories.includes(category) && (
+                                  <div className="p-4 pt-0 grid grid-cols-1 gap-3">
+                                    {networks.map(network => (
+                                      <Button
+                                        key={network}
+                                        type="button"
+                                        variant={(field.value || []).includes(network) ? "default" : "outline"}
+                                        className="justify-start h-auto py-3 px-4 w-full"
+                                        onClick={() => {
+                                          const currentNetworks = field.value || [];
+                                          const updatedNetworks = currentNetworks.includes(network)
+                                            ? currentNetworks.filter(n => n !== network)
+                                            : [...currentNetworks, network];
+                                          field.onChange(updatedNetworks);
+                                        }}
+                                      >
+                                        <span className="text-left">{network}</span>
+                                      </Button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               )}
             </div>
