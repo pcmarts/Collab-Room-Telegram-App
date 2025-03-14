@@ -194,13 +194,19 @@ export default function CompanyDetails() {
       <div className="p-4">
         <form onSubmit={handleSubmit} className="space-y-4 pb-24">
           <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="has_token"
-                checked={formData.has_token}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, has_token: checked }))}
-              />
-              <Label htmlFor="has_token">Does your company have a token?</Label>
+            <div className="flex items-center justify-between border rounded-lg p-4">
+              <Label htmlFor="has_token" className="text-sm font-medium">
+                Does your company have a token?
+              </Label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">No</span>
+                <Switch
+                  id="has_token"
+                  checked={formData.has_token}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, has_token: checked }))}
+                />
+                <span className="text-sm text-muted-foreground">Yes</span>
+              </div>
             </div>
           </div>
 
