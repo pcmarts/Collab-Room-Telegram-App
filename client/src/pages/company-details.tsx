@@ -5,14 +5,14 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { BLOCKCHAIN_NETWORKS, BLOCKCHAIN_NETWORK_CATEGORIES } from "@shared/schema";
+import { BLOCKCHAIN_NETWORKS, BLOCKCHAIN_NETWORK_CATEGORIES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function CompanyDetails() {
   const { toast } = useToast();
@@ -27,7 +27,9 @@ export default function CompanyDetails() {
   const [formData, setFormData] = useState({
     has_token: false,
     token_ticker: '',
-    blockchain_networks: [] as string[]
+    blockchain_networks: [] as string[],
+    linkedin_url: 'https://linkedin.com/company/',
+    twitter_followers: ''
   });
 
   useEffect(() => {
@@ -35,7 +37,9 @@ export default function CompanyDetails() {
       setFormData({
         has_token: profileData.company.has_token || false,
         token_ticker: profileData.company.token_ticker || '',
-        blockchain_networks: profileData.company.blockchain_networks || []
+        blockchain_networks: profileData.company.blockchain_networks || [],
+        linkedin_url: profileData.company.linkedin_url || 'https://linkedin.com/company/',
+        twitter_followers: profileData.company.twitter_followers || ''
       });
     } else {
       const savedData = sessionStorage.getItem('companyDetailsData');
@@ -96,7 +100,7 @@ export default function CompanyDetails() {
       }
 
       if (!basicData.company_name || !basicData.website || !basicData.job_title ||
-        !basicData.twitter_url || !basicData.linkedin_url || !basicData.funding_stage) {
+        !basicData.twitter_url || !basicData.funding_stage) {
         throw new Error('Please complete all company information fields');
       }
 
@@ -120,6 +124,8 @@ export default function CompanyDetails() {
         handle,
         linkedin_url: userFormData.linkedin_url,
         email: userFormData.email,
+        twitter_url: userFormData.twitter_url,
+        twitter_followers: userFormData.twitter_followers,
 
         // Company information
         company_name: basicData.company_name,
@@ -131,6 +137,8 @@ export default function CompanyDetails() {
         token_ticker: formData.has_token ? formData.token_ticker : undefined,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
         tags: sectorData.company_tags,
+        linkedin_url: formData.linkedin_url,
+        twitter_followers: formData.twitter_followers,
 
         // Referral code
         referral_code: sessionStorage.getItem('referralCode') || '',
@@ -193,6 +201,36 @@ export default function CompanyDetails() {
 
       <div className="p-4">
         <form onSubmit={handleSubmit} className="space-y-4 pb-24">
+          <div>
+            <Label htmlFor="linkedin_url">Company LinkedIn URL</Label>
+            <Input
+              id="linkedin_url"
+              value={formData.linkedin_url}
+              onChange={(e) => setFormData(prev => ({ ...prev, linkedin_url: e.target.value }))}
+              type="url"
+              placeholder="https://linkedin.com/company/your-company"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="twitter_followers">Company Twitter Follower Count</Label>
+            <Select
+              value={formData.twitter_followers}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, twitter_followers: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select follower count" />
+              </SelectTrigger>
+              <SelectContent>
+                {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                  <SelectItem key={count} value={count}>
+                    {count}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2">
             <div className="flex items-center justify-between border rounded-lg p-4">
               <Label htmlFor="has_token" className="text-sm font-medium">

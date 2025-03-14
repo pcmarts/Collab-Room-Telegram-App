@@ -72,6 +72,7 @@ export default function PersonalInfo() {
       return;
     }
 
+    // Store all form data including twitter info
     sessionStorage.setItem('userFormData', JSON.stringify(formData));
     setLocation('/company-basics');
   };
