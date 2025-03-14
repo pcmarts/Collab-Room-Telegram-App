@@ -79,60 +79,55 @@ export default function PersonalInfo() {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <div className="max-w-md mx-auto">
-        {/* Compact header section */}
-        <div className="flex items-center mb-4">
+      <div className="max-w-md mx-auto space-y-6">
+        <div className="flex items-center justify-between mb-8">
           <Button
             variant="ghost"
             onClick={() => setLocation('/apply')}
-            className="flex items-center p-2"
+            className="flex items-center"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
         </div>
 
-        {/* Progress indicator */}
-        <div className="flex items-center justify-center gap-1.5 mb-4">
-          <div className="w-2 h-2 rounded-full bg-primary"></div>
-          <div className="w-2 h-2 rounded-full bg-primary/50"></div>
-          <div className="w-2 h-2 rounded-full bg-primary/50"></div>
-          <div className="w-2 h-2 rounded-full bg-primary/50"></div>
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="w-3 h-3 rounded-full bg-primary"></div>
+          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
         </div>
 
-        {/* Compact header text */}
-        <div className="text-center mb-4">
-          <h1 className="text-xl font-bold">Tell Us About Yourself</h1>
-          <p className="text-sm text-muted-foreground">Share your details to help us know you better</p>
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold">Tell Us About Yourself</h1>
+          <p className="text-muted-foreground mt-2">Share your details to help us know you better</p>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-3 pb-20">
+        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-24">
           <div>
-            <Label htmlFor="first_name" className="text-sm">First Name *</Label>
+            <Label htmlFor="first_name">First Name *</Label>
             <Input
               id="first_name"
               name="first_name"
               value={formData.first_name}
               onChange={handleInputChange}
               required
-              className="h-9"
             />
           </div>
 
           <div>
-            <Label htmlFor="last_name" className="text-sm">Last Name *</Label>
+            <Label htmlFor="last_name">Last Name *</Label>
             <Input
               id="last_name"
               name="last_name"
               value={formData.last_name}
               onChange={handleInputChange}
               required
-              className="h-9"
             />
           </div>
 
           <div>
-            <Label htmlFor="linkedin_url" className="text-sm">LinkedIn URL *</Label>
+            <Label htmlFor="linkedin_url">LinkedIn URL *</Label>
             <Input
               id="linkedin_url"
               name="linkedin_url"
@@ -140,12 +135,11 @@ export default function PersonalInfo() {
               value={formData.linkedin_url}
               onChange={handleInputChange}
               required
-              className="h-9"
             />
           </div>
 
           <div>
-            <Label htmlFor="email" className="text-sm">Company Email Address *</Label>
+            <Label htmlFor="email">Company Email Address *</Label>
             <Input
               id="email"
               name="email"
@@ -153,24 +147,22 @@ export default function PersonalInfo() {
               value={formData.email}
               onChange={handleInputChange}
               required
-              className="h-9"
             />
           </div>
 
           <div>
-            <Label htmlFor="twitter_url" className="text-sm">My Personal Twitter URL</Label>
+            <Label htmlFor="twitter_url">My Personal Twitter URL</Label>
             <Input
               id="twitter_url"
               name="twitter_url"
               type="url"
               value={formData.twitter_url}
               onChange={handleInputChange}
-              className="h-9"
             />
           </div>
 
           <div>
-            <Label htmlFor="twitter_followers" className="text-sm">My Twitter Follower Count</Label>
+            <Label htmlFor="twitter_followers">My Twitter Follower Count</Label>
             <Select
               value={formData.twitter_followers}
               onValueChange={(value) => {
@@ -182,7 +174,7 @@ export default function PersonalInfo() {
                 sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
               }}
             >
-              <SelectTrigger className="h-9">
+              <SelectTrigger>
                 <SelectValue placeholder="Select follower count" />
               </SelectTrigger>
               <SelectContent>
@@ -194,12 +186,12 @@ export default function PersonalInfo() {
               </SelectContent>
             </Select>
           </div>
-
+          
           {/* Floating Save Button */}
-          <div className="fixed bottom-0 left-0 right-0 p-3 bg-background border-t border-border shadow-lg">
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
             <Button
               type="submit"
-              className="w-full h-9"
+              className="w-full"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
