@@ -72,8 +72,14 @@ export default function PersonalInfo() {
       return;
     }
 
-    // Store all form data including twitter info
-    sessionStorage.setItem('userFormData', JSON.stringify(formData));
+    // Store all form data including social media info
+    const completeFormData = {
+      ...formData,
+      twitter_followers: formData.twitter_followers || '',  // Ensure this is never undefined
+      linkedin_url: formData.linkedin_url || 'https://linkedin.com/in/',  // Ensure this is never undefined
+    };
+
+    sessionStorage.setItem('userFormData', JSON.stringify(completeFormData));
     setLocation('/company-basics');
   };
 
