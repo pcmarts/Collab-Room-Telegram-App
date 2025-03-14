@@ -11,6 +11,7 @@ import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function CompanyDetails() {
   const { toast } = useToast();
@@ -42,7 +43,7 @@ export default function CompanyDetails() {
       }
     }
   }, [profileData]);
-  
+
   // Save form data to session storage whenever it changes
   useEffect(() => {
     sessionStorage.setItem('companyDetailsData', JSON.stringify(formData));
@@ -56,13 +57,22 @@ export default function CompanyDetails() {
         : [...prev.blockchain_networks, network]
     }));
   };
-  
+
   const toggleCategory = (category: string) => {
     setExpandedCategories(prev => 
       prev.includes(category) 
         ? prev.filter(c => c !== category) 
         : [...prev, category]
     );
+  };
+
+  const clearCategorySelections = (category: string) => {
+    setFormData(prev => ({
+      ...prev,
+      blockchain_networks: prev.blockchain_networks.filter(network => 
+        !BLOCKCHAIN_NETWORK_CATEGORIES[category].includes(network)
+      )
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -221,53 +231,77 @@ export default function CompanyDetails() {
                   <Label>Blockchain Networks *</Label>
                   {/* Networks selection count */}
                   {formData.blockchain_networks.length > 0 && (
-                    <div className="flex mt-2">
+                    <div className="flex items-center justify-between mt-2">
                       <Badge variant="secondary" className="text-xs">
                         {formData.blockchain_networks.length} {formData.blockchain_networks.length === 1 ? 'network' : 'networks'} selected
                       </Badge>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setFormData(prev => ({ ...prev, blockchain_networks: [] }))}
+                      >
+                        Clear all
+                      </Button>
                     </div>
                   )}
                 </div>
-                
+
                 <div className="space-y-3">
                   {/* Categorized network selection */}
                   {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
-                    <div key={category} className="border rounded p-3">
+                    <Card key={category} className="border rounded-lg overflow-hidden">
                       <div 
-                        className="flex justify-between items-center cursor-pointer"
+                        className="flex justify-between items-center p-4 cursor-pointer hover:bg-accent"
                         onClick={() => toggleCategory(category)}
                       >
                         <div className="font-medium">{category}</div>
-                        <div>
+                        <div className="flex items-center gap-2">
+                          {/* Category-specific selection count */}
+                          {formData.blockchain_networks.filter(network => networks.includes(network)).length > 0 && (
+                            <Badge variant="secondary" className="text-xs">
+                              {formData.blockchain_networks.filter(network => networks.includes(network)).length}
+                            </Badge>
+                          )}
                           {expandedCategories.includes(category) ? 
                             <ChevronUp className="h-4 w-4" /> : 
                             <ChevronDown className="h-4 w-4" />
                           }
                         </div>
                       </div>
-                      
+
                       {expandedCategories.includes(category) && (
-                        <div className="grid grid-cols-2 gap-2 mt-3">
-                          {networks.map((network) => (
-                            <div
-                              key={network}
-                              className={`flex flex-row items-center space-x-3 p-2 border rounded-md hover:bg-accent/10 cursor-pointer ${
-                                formData.blockchain_networks.includes(network) ? 'bg-accent/10' : ''
-                              }`}
-                              onClick={() => toggleNetwork(network)}
-                            >
-                              <Checkbox
-                                checked={formData.blockchain_networks.includes(network)}
-                                className="h-5 w-5"
-                              />
-                              <span className="font-normal text-sm">
-                                {network}
-                              </span>
+                        <CardContent className="pt-2">
+                          {/* Clear category button */}
+                          {formData.blockchain_networks.some(network => networks.includes(network)) && (
+                            <div className="flex justify-end mb-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => clearCategorySelections(category)}
+                              >
+                                Clear
+                              </Button>
                             </div>
-                          ))}
-                        </div>
+                          )}
+
+                          <div className="grid grid-cols-2 gap-2">
+                            {networks.map((network) => (
+                              <Button
+                                key={network}
+                                type="button"
+                                variant={formData.blockchain_networks.includes(network) ? "default" : "outline"}
+                                className="h-auto py-2 px-3 justify-start text-left font-normal"
+                                onClick={() => toggleNetwork(network)}
+                              >
+                                {network}
+                              </Button>
+                            ))}
+                          </div>
+                        </CardContent>
                       )}
-                    </div>
+                    </Card>
                   ))}
                 </div>
               </div>
