@@ -7,12 +7,12 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue 
+  SelectValue
 } from "@/components/ui/select";
 import { TWITTER_FOLLOWER_COUNTS } from "../../../shared/schema";
 
@@ -104,26 +104,29 @@ export default function PersonalInfo() {
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-24">
-          <div>
-            <Label htmlFor="first_name">First Name *</Label>
-            <Input
-              id="first_name"
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
+          {/* Name fields in a grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="first_name">First Name *</Label>
+              <Input
+                id="first_name"
+                name="first_name"
+                value={formData.first_name}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="last_name">Last Name *</Label>
-            <Input
-              id="last_name"
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleInputChange}
-              required
-            />
+            <div>
+              <Label htmlFor="last_name">Last Name *</Label>
+              <Input
+                id="last_name"
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
           </div>
 
           <div>
@@ -186,7 +189,7 @@ export default function PersonalInfo() {
               </SelectContent>
             </Select>
           </div>
-          
+
           {/* Floating Save Button */}
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
             <Button
