@@ -47,6 +47,87 @@ export async function sendApplicationConfirmation(chatId: number) {
   }
 }
 
+// Notify admins about new user applications
+interface NewUserNotification {
+  telegram_id: string;
+  first_name: string;
+  last_name?: string;
+  company_name: string;
+  job_title: string;
+}
+
+export async function notifyAdminsNewUser(userData: NewUserNotification) {
+  try {
+    // Get all admin users
+    const adminUsers = await db.select()
+      .from(users)
+      .where(eq(users.is_admin, true));
+
+    if (!adminUsers.length) {
+      console.warn('No admin users found to notify');
+      return;
+    }
+
+    const message = `🆕 New User Application!\n\n`
+      + `Name: ${userData.first_name} ${userData.last_name || ''}\n`
+      + `Company: ${userData.company_name}\n`
+      + `Role: ${userData.job_title}\n\n`
+      + `Click below to review the application:`;
+
+    const keyboard = {
+      inline_keyboard: [[{
+        text: "Review Application",
+        web_app: { url: `${WEBAPP_URL}/admin/users` }
+      }]]
+    };
+
+    // Send notification to each admin
+    for (const admin of adminUsers) {
+      try {
+        await bot.sendMessage(
+          parseInt(admin.telegram_id),
+          message,
+          { reply_markup: keyboard }
+        );
+        console.log(`Notification sent to admin ${admin.telegram_id}`);
+      } catch (error) {
+        console.error(`Failed to send notification to admin ${admin.telegram_id}:`, error);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to notify admins:', error);
+  }
+}
+
+// Notify user when their application is approved
+export async function notifyUserApproved(chatId: number) {
+  const keyboard = {
+    inline_keyboard: [
+      [{
+        text: "Access Dashboard",
+        web_app: { url: `${WEBAPP_URL}/dashboard` }
+      }],
+      [{
+        text: "📣 Join Announcement Channel",
+        url: "https://t.me/TheMarketingDAO"
+      }]
+    ]
+  };
+
+  try {
+    await bot.sendMessage(
+      chatId,
+      "🎉 Congratulations! Your application has been approved!\n\n"
+      + "Welcome to CollabRoom! You now have full access to the platform.\n\n"
+      + "Click below to access your dashboard and join our announcement channel for updates.",
+      { reply_markup: keyboard }
+    );
+    console.log('Approval notification sent successfully');
+  } catch (error) {
+    console.error('Failed to send approval notification:', error);
+  }
+}
+
 // Basic error handling
 bot.on('polling_error', (error) => {
   console.error('=== Telegram Bot Polling Error ===');

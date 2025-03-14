@@ -9,7 +9,7 @@ import {
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "../shared/schema";
 import { eq, and, not, desc } from 'drizzle-orm';
-import { sendApplicationConfirmation } from "./telegram";
+import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved } from "./telegram";
 import { storage } from "./storage";
 
 // Helper function to extract Telegram user data from request
@@ -193,6 +193,51 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // New route to approve a user
+  app.post("/api/admin/approve-user", checkAdminMiddleware, async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        res.status(400);
+        return res.json({ error: "User ID is required" });
+      }
+
+      // Get the user to approve
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.id, userId));
+      
+      if (!user) {
+        res.status(404);
+        return res.json({ error: "User not found" });
+      }
+
+      // Update user approval status
+      const [updatedUser] = await db.update(users)
+        .set({ is_approved: true })
+        .where(eq(users.id, userId))
+        .returning();
+
+      // Send Telegram notification to the approved user
+      try {
+        await notifyUserApproved(parseInt(user.telegram_id));
+      } catch (msgError) {
+        console.error('Failed to send user approval notification:', msgError);
+      }
+
+      return res.json({
+        success: true,
+        user: updatedUser,
+        message: "User approved successfully"
+      });
+    } catch (error) {
+      console.error("Error approving user:", error);
+      res.status(500);
+      return res.json({ error: "Failed to approve user" });
+    }
+  });
+
   app.post("/api/onboarding", async (req, res) => {
     console.log('============ DEBUG: Onboarding Endpoint ============');
     console.log('Headers:', req.headers);
@@ -346,9 +391,19 @@ export async function registerRoutes(app: Express) {
         // Only send confirmation for new users, not for profile updates
         if (!isProfileUpdate) {
           try {
+            // Send confirmation to user
             await sendApplicationConfirmation(parseInt(telegram_id));
+            
+            // Notify admins about new user
+            await notifyAdminsNewUser({
+              telegram_id,
+              first_name,
+              last_name,
+              company_name,
+              job_title
+            });
           } catch (msgError) {
-            console.error('Failed to send confirmation message:', msgError);
+            console.error('Failed to send notifications:', msgError);
             // Don't throw here, as the application was still successful
           }
         }
