@@ -16,6 +16,10 @@ export default function PersonalInfo() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
 
+  // Get Telegram username from WebApp data
+  const telegramData = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const telegramUsername = telegramData?.username || 'Not available';
+
   const { data: profileData } = useQuery<ProfileData>({
     queryKey: ['/api/profile']
   });
@@ -168,6 +172,16 @@ export default function PersonalInfo() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="telegram_username">My Telegram Username</Label>
+            <Input
+              id="telegram_username"
+              value={`@${telegramUsername}`}
+              disabled
+              className="bg-muted"
+            />
           </div>
 
           {/* Floating Save Button */}
