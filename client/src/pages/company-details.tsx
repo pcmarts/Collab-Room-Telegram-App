@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { BLOCKCHAIN_NETWORKS, BLOCKCHAIN_NETWORK_CATEGORIES } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
+import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 
 export default function CompanyDetails() {
   const { toast } = useToast();
@@ -59,9 +60,9 @@ export default function CompanyDetails() {
   };
 
   const toggleCategory = (category: string) => {
-    setExpandedCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category) 
+    setExpandedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
         : [...prev, category]
     );
   };
@@ -69,7 +70,7 @@ export default function CompanyDetails() {
   const clearCategorySelections = (category: string) => {
     setFormData(prev => ({
       ...prev,
-      blockchain_networks: prev.blockchain_networks.filter(network => 
+      blockchain_networks: prev.blockchain_networks.filter(network =>
         !BLOCKCHAIN_NETWORK_CATEGORIES[category].includes(network)
       )
     }));
@@ -94,8 +95,8 @@ export default function CompanyDetails() {
         throw new Error('Telegram username is required');
       }
 
-      if (!basicData.company_name || !basicData.website || !basicData.job_title || 
-          !basicData.twitter_url || !basicData.linkedin_url || !basicData.funding_stage) {
+      if (!basicData.company_name || !basicData.website || !basicData.job_title ||
+        !basicData.twitter_url || !basicData.linkedin_url || !basicData.funding_stage) {
         throw new Error('Please complete all company information fields');
       }
 
@@ -181,27 +182,16 @@ export default function CompanyDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex items-center justify-between mb-8">
-          <Button variant="ghost" onClick={() => setLocation('/company-sector')} className="flex items-center">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </div>
+    <div className="min-h-screen bg-background">
+      <OnboardingHeader
+        title="Token Information"
+        subtitle="Tell us about your company's token"
+        step={4}
+        totalSteps={4}
+        backUrl="/company-sector"
+      />
 
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary"></div>
-        </div>
-
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Token Information</h1>
-          <p className="text-muted-foreground mt-2">Tell us about your company's token</p>
-        </div>
-
+      <div className="p-4">
         <form onSubmit={handleSubmit} className="space-y-4 pb-24">
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
@@ -251,7 +241,7 @@ export default function CompanyDetails() {
                   {/* Categorized network selection */}
                   {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
                     <Card key={category} className="border rounded-lg overflow-hidden">
-                      <div 
+                      <div
                         className="flex justify-between items-center p-4 cursor-pointer hover:bg-accent"
                         onClick={() => toggleCategory(category)}
                       >
@@ -263,8 +253,8 @@ export default function CompanyDetails() {
                               {formData.blockchain_networks.filter(network => networks.includes(network)).length}
                             </Badge>
                           )}
-                          {expandedCategories.includes(category) ? 
-                            <ChevronUp className="h-4 w-4" /> : 
+                          {expandedCategories.includes(category) ?
+                            <ChevronUp className="h-4 w-4" /> :
                             <ChevronDown className="h-4 w-4" />
                           }
                         </div>

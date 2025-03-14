@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { COMPANY_TAG_CATEGORIES } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 
 export default function CompanySector() {
   const { toast } = useToast();
@@ -79,32 +80,17 @@ export default function CompanySector() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex items-center justify-between mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => setLocation('/company-basics')}
-            className="flex items-center"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </div>
+    <div className="min-h-screen bg-background">
+      <OnboardingHeader
+        title="Company Sector"
+        subtitle="Select your company's sectors and technologies"
+        step={3}
+        totalSteps={4}
+        backUrl="/company-basics"
+      />
 
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-        </div>
-
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Company Sector</h1>
-          <p className="text-muted-foreground mt-2">Select your company's sectors and technologies</p>
-        </div>
-
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-6 pb-24">
+      <div className="p-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-24">
           <div className="space-y-4">
             <Label>Company Sectors *</Label>
 

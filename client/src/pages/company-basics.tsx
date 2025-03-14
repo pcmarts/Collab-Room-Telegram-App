@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FUNDING_STAGES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
+import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 
 export default function CompanyBasics() {
   const { toast } = useToast();
@@ -73,33 +74,21 @@ export default function CompanyBasics() {
       return;
     }
 
-    // Store form data and proceed to next step
     sessionStorage.setItem('companyFormData', JSON.stringify(formData));
     setLocation('/company-sector');
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex items-center justify-between mb-8">
-          <Button variant="ghost" onClick={() => setLocation('/personal-info')} className="flex items-center">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </div>
+    <div className="min-h-screen bg-background">
+      <OnboardingHeader
+        title="Company Basics"
+        subtitle="Tell us about your company"
+        step={2}
+        totalSteps={4}
+        backUrl="/personal-info"
+      />
 
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-        </div>
-
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Company Basics</h1>
-          <p className="text-muted-foreground mt-2">Tell us about your company</p>
-        </div>
-
+      <div className="p-4">
         <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-24">
           <div>
             <Label htmlFor="company_name">Company Name *</Label>
@@ -198,7 +187,7 @@ export default function CompanyBasics() {
               </SelectContent>
             </Select>
           </div>
-          
+
           {/* Floating Save Button */}
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
             <Button

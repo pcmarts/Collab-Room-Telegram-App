@@ -3,18 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TWITTER_FOLLOWER_COUNTS } from "../../../shared/schema";
+import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 
 export default function PersonalInfo() {
   const { toast } = useToast();
@@ -78,31 +73,16 @@ export default function PersonalInfo() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex items-center justify-between mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => setLocation('/apply')}
-            className="flex items-center"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </div>
+    <div className="min-h-screen bg-background">
+      <OnboardingHeader
+        title="Tell Us About Yourself"
+        subtitle="Share your details to help us know you better"
+        step={1}
+        totalSteps={4}
+        backUrl="/apply"
+      />
 
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-3 h-3 rounded-full bg-primary"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-        </div>
-
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Tell Us About Yourself</h1>
-          <p className="text-muted-foreground mt-2">Share your details to help us know you better</p>
-        </div>
-
+      <div className="p-4">
         <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-24">
           {/* Name fields in a grid */}
           <div className="grid grid-cols-2 gap-4">
