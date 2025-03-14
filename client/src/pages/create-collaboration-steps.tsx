@@ -46,34 +46,38 @@ import {
   BLOCKCHAIN_NETWORKS,
   BLOCKCHAIN_NETWORK_CATEGORIES,
   createCollaborationSchema,
-  type CreateCollaboration
+  type CreateCollaboration,
 } from "@shared/schema";
 
 interface CreateCollaborationProps {
   id?: string;
 }
 
-export default function CreateCollaborationSteps({ id }: CreateCollaborationProps = {}) {
+export default function CreateCollaborationSteps({
+  id,
+}: CreateCollaborationProps = {}) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedCollabType, setSelectedCollabType] = useState<string>(COLLAB_TYPES[0]);
+  const [selectedCollabType, setSelectedCollabType] = useState<string>(
+    COLLAB_TYPES[0],
+  );
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  
+
   // Initialize with basic form data
   const form = useForm<CreateCollaboration>({
     resolver: zodResolver(createCollaborationSchema),
     defaultValues: {
-      title: "Collaboration", 
+      title: "Collaboration",
       description: "Created using Collab Room",
       collab_type: COLLAB_TYPES[0],
       date_type: "specific_date",
-      specific_date: new Date().toISOString().split('T')[0],
+      specific_date: new Date().toISOString().split("T")[0],
       topics: [],
       is_free_collab: true, // Default to true since we only want free collaborations
-      
+
       // Filter fields
       filter_company_sectors_enabled: false,
       filter_company_followers_enabled: false,
@@ -81,51 +85,55 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
       filter_funding_stages_enabled: false,
       filter_token_status_enabled: false,
       filter_blockchain_networks_enabled: false,
-      
+
       required_company_sectors: [],
       required_funding_stages: [],
       required_token_status: false,
       required_blockchain_networks: [],
       min_company_followers: TWITTER_FOLLOWER_COUNTS[0],
       min_user_followers: TWITTER_FOLLOWER_COUNTS[0],
-      details: {}
-    }
+      details: {},
+    },
   });
 
   // Define the steps in our wizard
   const steps = [
-    { 
-      title: "Basic Information", 
-      description: "Select the type of collaboration you want to create" 
+    {
+      title: "Basic Information",
+      description: "Select the type of collaboration you want to create",
     },
-    { 
-      title: "Collaboration Details", 
-      description: "Fill out the specific details for your collaboration" 
+    {
+      title: "Collaboration Details",
+      description: "Fill out the specific details for your collaboration",
     },
-    { 
-      title: "Matching Requirements", 
-      description: "Set criteria for who can apply to your collaboration" 
-    }
+    {
+      title: "Matching Requirements",
+      description: "Set criteria for who can apply to your collaboration",
+    },
   ];
 
   // When collaboration type changes
   const handleCollabTypeChange = (value: string) => {
     setSelectedCollabType(value);
-    form.setValue("collab_type", value as typeof COLLAB_TYPES[number]);
-    
+    form.setValue("collab_type", value as (typeof COLLAB_TYPES)[number]);
+
     // Reset details to avoid field bleeding
     let newDetails = {};
-    
+
     // Set proper initial values based on type
-    switch(value) {
+    switch (value) {
       case "Podcast Guest Appearance":
-        newDetails = { podcast_name: "", short_description: "", podcast_link: "" };
+        newDetails = {
+          podcast_name: "",
+          short_description: "",
+          podcast_link: "",
+        };
         break;
       case "Twitter Spaces Guest":
-        newDetails = { 
-          twitter_handle: "https://x.com/", 
+        newDetails = {
+          twitter_handle: "https://x.com/",
           // Removed space_topic as topics are now captured at the platform level
-          host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
+          host_follower_count: TWITTER_FOLLOWER_COUNTS[0],
         };
         break;
       case "Live Stream Guest Appearance":
@@ -136,14 +144,14 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
           specific_date: "",
           previous_stream_link: "",
           expected_audience_size: AUDIENCE_SIZE_RANGES[0],
-          topics: []
+          topics: [],
         };
         break;
       case "Report & Research Feature":
         newDetails = {
           research_topic: [],
           target_audience: "",
-          estimated_release_date: ""
+          estimated_release_date: "",
         };
         break;
       case "Newsletter Feature":
@@ -151,27 +159,31 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
           newsletter_name: "",
           topics: [],
           audience_reach: AUDIENCE_SIZE_RANGES[0],
-          short_description: ""
+          short_description: "",
         };
         break;
       case "Blog Post Feature":
         newDetails = {
           blog_topic: "",
           blog_link: "",
-          estimated_release_date: ""
+          estimated_release_date: "",
         };
         break;
       case "Co-Marketing on Twitter":
         newDetails = {
           collaboration_types: [],
           host_twitter_handle: "https://x.com/",
-          host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
+          host_follower_count: TWITTER_FOLLOWER_COUNTS[0],
         };
         break;
       default:
-        newDetails = { podcast_name: "", short_description: "", podcast_link: "" };
+        newDetails = {
+          podcast_name: "",
+          short_description: "",
+          podcast_link: "",
+        };
     }
-    
+
     form.setValue("details", newDetails as any);
   };
 
@@ -179,12 +191,12 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
   const nextStep = () => {
     let canProceed = true;
     let errorMessage = "";
-    
+
     // Validation logic based on current step
     if (currentStep === 0) {
       // Basic info validation
       const values = form.getValues();
-      
+
       // Check title and description
       if (!values.title?.trim()) {
         canProceed = false;
@@ -198,19 +210,21 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
       } else if (!values.date_type) {
         canProceed = false;
         errorMessage = "Please select a date preference";
-      } else if (values.date_type === "specific_date" && !values.specific_date) {
+      } else if (
+        values.date_type === "specific_date" &&
+        !values.specific_date
+      ) {
         canProceed = false;
         errorMessage = "Please select a specific date";
       } else if (!values.topics || values.topics.length === 0) {
         canProceed = false;
         errorMessage = "Please select at least one topic";
       }
-    } 
-    else if (currentStep === 1) {
+    } else if (currentStep === 1) {
       // Details validation based on collaboration type
       const details = form.getValues("details") || {};
       const collabType = form.getValues("collab_type");
-      
+
       if (collabType === "Podcast Guest Appearance") {
         if (!details.podcast_name?.trim()) {
           canProceed = false;
@@ -219,8 +233,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
           canProceed = false;
           errorMessage = "Short description is required";
         }
-      }
-      else if (collabType === "Twitter Spaces Guest") {
+      } else if (collabType === "Twitter Spaces Guest") {
         if (!details.twitter_handle?.trim()) {
           canProceed = false;
           errorMessage = "Twitter handle is required";
@@ -229,9 +242,12 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
           errorMessage = "Twitter handle must start with https://x.com/";
         }
         // Removed space_topic validation as topics are captured at the top level
-      }
-      else if (collabType === "Co-Marketing on Twitter") {
-        if (!details.collaboration_types || !Array.isArray(details.collaboration_types) || details.collaboration_types.length === 0) {
+      } else if (collabType === "Co-Marketing on Twitter") {
+        if (
+          !details.collaboration_types ||
+          !Array.isArray(details.collaboration_types) ||
+          details.collaboration_types.length === 0
+        ) {
           canProceed = false;
           errorMessage = "Please select at least one collaboration type";
         } else if (!details.host_twitter_handle?.trim()) {
@@ -242,42 +258,62 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
           errorMessage = "Twitter handle must start with https://x.com/";
         }
       }
-    }
-    else if (currentStep === 2) {
+    } else if (currentStep === 2) {
       // Validate enabled filters have selections
       const values = form.getValues();
-      
-      if (values.filter_company_sectors_enabled && 
-          (!values.required_company_sectors || !Array.isArray(values.required_company_sectors) || values.required_company_sectors.length === 0)) {
+
+      if (
+        values.filter_company_sectors_enabled &&
+        (!values.required_company_sectors ||
+          !Array.isArray(values.required_company_sectors) ||
+          values.required_company_sectors.length === 0)
+      ) {
         canProceed = false;
-        errorMessage = "Please select at least one company sector when that filter is enabled";
-      } else if (values.filter_company_followers_enabled && !values.min_company_followers) {
+        errorMessage =
+          "Please select at least one company sector when that filter is enabled";
+      } else if (
+        values.filter_company_followers_enabled &&
+        !values.min_company_followers
+      ) {
         canProceed = false;
         errorMessage = "Please select minimum company followers";
-      } else if (values.filter_user_followers_enabled && !values.min_user_followers) {
+      } else if (
+        values.filter_user_followers_enabled &&
+        !values.min_user_followers
+      ) {
         canProceed = false;
         errorMessage = "Please select minimum user followers";
-      } else if (values.filter_funding_stages_enabled && 
-                (!values.required_funding_stages || !Array.isArray(values.required_funding_stages) || values.required_funding_stages.length === 0)) {
+      } else if (
+        values.filter_funding_stages_enabled &&
+        (!values.required_funding_stages ||
+          !Array.isArray(values.required_funding_stages) ||
+          values.required_funding_stages.length === 0)
+      ) {
         canProceed = false;
-        errorMessage = "Please select at least one funding stage when that filter is enabled";
-      } else if (values.filter_blockchain_networks_enabled && 
-                (!values.required_blockchain_networks || !Array.isArray(values.required_blockchain_networks) || values.required_blockchain_networks.length === 0)) {
+        errorMessage =
+          "Please select at least one funding stage when that filter is enabled";
+      } else if (
+        values.filter_blockchain_networks_enabled &&
+        (!values.required_blockchain_networks ||
+          !Array.isArray(values.required_blockchain_networks) ||
+          values.required_blockchain_networks.length === 0)
+      ) {
         canProceed = false;
-        errorMessage = "Please select at least one blockchain network when that filter is enabled";
+        errorMessage =
+          "Please select at least one blockchain network when that filter is enabled";
       }
     }
-    
+
     // Show error message if validation fails
     if (!canProceed) {
       toast({
         title: "Validation Error",
         description: errorMessage,
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     // If validation passes, proceed to next step or submit
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -293,13 +329,13 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
       setCurrentStep(currentStep - 1);
     }
   };
-  
+
   // Toggle category expansion
   const toggleCategory = (category: string) => {
-    setExpandedCategories(prev =>
+    setExpandedCategories((prev) =>
       prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
+        ? prev.filter((c) => c !== category)
+        : [...prev, category],
     );
   };
 
@@ -307,64 +343,72 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
-      
+
       // Get the form data
       const data = form.getValues();
       console.log("Form data being submitted:", data);
-      
+
       // Format the data
       const formattedData = {
         ...data,
         required_company_sectors: data.required_company_sectors || [],
         required_funding_stages: data.required_funding_stages || [],
         required_blockchain_networks: data.required_blockchain_networks || [],
-        
+
         // Add standardized fields for consistent filtering across all tables
         company_tags: data.required_company_sectors || [],
         company_twitter_followers: data.min_company_followers,
         twitter_followers: data.min_user_followers,
-        funding_stage: data.required_funding_stages && data.required_funding_stages.length > 0
-          ? data.required_funding_stages[0]
-          : "Not Applicable", // Default to "Not Applicable" when no funding stage is selected
+        funding_stage:
+          data.required_funding_stages &&
+          data.required_funding_stages.length > 0
+            ? data.required_funding_stages[0]
+            : "Not Applicable", // Default to "Not Applicable" when no funding stage is selected
         company_has_token: data.required_token_status || false,
         company_blockchain_networks: data.required_blockchain_networks || [],
-        
+
         // Set filter toggle states based on whether requirements are specified
-        filter_company_sectors_enabled: Array.isArray(data.required_company_sectors) && data.required_company_sectors.length > 0,
+        filter_company_sectors_enabled:
+          Array.isArray(data.required_company_sectors) &&
+          data.required_company_sectors.length > 0,
         filter_company_followers_enabled: !!data.min_company_followers,
         filter_user_followers_enabled: !!data.min_user_followers,
-        filter_funding_stages_enabled: Array.isArray(data.required_funding_stages) && data.required_funding_stages.length > 0,
+        filter_funding_stages_enabled:
+          Array.isArray(data.required_funding_stages) &&
+          data.required_funding_stages.length > 0,
         filter_token_status_enabled: !!data.required_token_status,
-        filter_blockchain_networks_enabled: Array.isArray(data.required_blockchain_networks) && data.required_blockchain_networks.length > 0
+        filter_blockchain_networks_enabled:
+          Array.isArray(data.required_blockchain_networks) &&
+          data.required_blockchain_networks.length > 0,
       };
-      
+
       // Remove specific_date if not needed
-      if (data.date_type !== 'specific_date') {
+      if (data.date_type !== "specific_date") {
         delete formattedData.specific_date;
       }
-      
+
       // Get Telegram init data
-      const telegramInitData = window.Telegram?.WebApp?.initData || '';
-      
-      const response = await fetch('/api/collaborations', {
-        method: 'POST',
+      const telegramInitData = window.Telegram?.WebApp?.initData || "";
+
+      const response = await fetch("/api/collaborations", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-telegram-init-data': telegramInitData
+          "Content-Type": "application/json",
+          "x-telegram-init-data": telegramInitData,
         },
         body: JSON.stringify(formattedData),
       });
-      
+
       if (response.ok) {
         // Invalidate queries to refresh collaboration lists
-        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
-        
+        queryClient.invalidateQueries({ queryKey: ["/api/collaborations/my"] });
+
         toast({
           title: "Success!",
-          description: "Your collaboration has been created successfully."
+          description: "Your collaboration has been created successfully.",
         });
         // Redirect to the "My Collaborations" tab on marketing-collabs-new
-        setLocation('/marketing-collabs-new?tab=my');
+        setLocation("/marketing-collabs-new?tab=my");
       } else {
         const errorText = await response.text();
         throw new Error(`Failed to create: ${errorText}`);
@@ -373,8 +417,9 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
       console.error("Submission error:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive"
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -420,25 +465,26 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="date_type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date Preference</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
+                  <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a date preference" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="specific_date">Specific Date</SelectItem>
-                      <SelectItem value="any_future_date">Any Future Date</SelectItem>
+                      <SelectItem value="specific_date">
+                        Specific Date
+                      </SelectItem>
+                      <SelectItem value="any_future_date">
+                        Any Future Date
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>
@@ -448,8 +494,8 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 </FormItem>
               )}
             />
-            
-            {form.watch('date_type') === 'specific_date' && (
+
+            {form.watch("date_type") === "specific_date" && (
               <FormField
                 control={form.control}
                 name="specific_date"
@@ -464,7 +510,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 )}
               />
             )}
-            
+
             <FormField
               control={form.control}
               name="topics"
@@ -494,9 +540,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                                   onCheckedChange={(checked) => {
                                     const updatedTopics = checked
                                       ? [...field.value, topic]
-                                      : field.value?.filter(
-                                          (t) => t !== topic
-                                        );
+                                      : field.value?.filter((t) => t !== topic);
                                     field.onChange(updatedTopics);
                                   }}
                                 />
@@ -514,7 +558,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="is_free_collab"
@@ -530,8 +574,9 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                         if (!checked) {
                           toast({
                             title: "Free collaborations only",
-                            description: "Only free collaborations are allowed on our platform.",
-                            variant: "destructive"
+                            description:
+                              "Only free collaborations are allowed on our platform.",
+                            variant: "destructive",
                           });
                         }
                       }}
@@ -541,7 +586,8 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                   <div className="space-y-1 leading-none">
                     <FormLabel>Free Collaboration (Required)</FormLabel>
                     <FormDescription>
-                      All collaborations on our platform must be free with no payments involved
+                      All collaborations on our platform must be free with no
+                      payments involved
                     </FormDescription>
                     <FormMessage>This field is required</FormMessage>
                   </div>
@@ -550,7 +596,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
             />
           </div>
         );
-      
+
       case 1:
         // Render different fields based on the selected collaboration type
         return (
@@ -577,10 +623,10 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <FormItem>
                       <FormLabel>Short Description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Brief description of your podcast" 
+                        <Textarea
+                          placeholder="Brief description of your podcast"
                           className="min-h-[80px]"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -594,9 +640,9 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <FormItem>
                       <FormLabel>Podcast Link</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="https://your-podcast-url.com" 
-                          {...field} 
+                        <Input
+                          placeholder="https://your-podcast-url.com"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -610,8 +656,8 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <FormItem>
                       <FormLabel>Estimated Reach</FormLabel>
                       <FormControl>
-                        <Select 
-                          onValueChange={field.onChange} 
+                        <Select
+                          onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -637,7 +683,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
               </>
             )}
-            
+
             {selectedCollabType === "Twitter Spaces Guest" && (
               <>
                 <FormField
@@ -645,9 +691,13 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                   name="details.twitter_handle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Twitter Handle</FormLabel>
+                      <FormLabel>Host Twitter Handle</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://x.com/username" {...field} />
+                        <Input
+                          defaultValue="https://x.com/"
+                          placeholder="https://x.com/username"
+                          {...field}
+                        />
                       </FormControl>
                       <FormDescription>
                         Must include full URL (https://x.com/)
@@ -686,7 +736,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
               </>
             )}
-            
+
             {selectedCollabType === "Co-Marketing on Twitter" && (
               <>
                 <FormField
@@ -697,7 +747,8 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                       <div className="mb-4">
                         <FormLabel>Collaboration Types</FormLabel>
                         <FormDescription>
-                          Select the types of Twitter collaborations you're interested in
+                          Select the types of Twitter collaborations you're
+                          interested in
                         </FormDescription>
                       </div>
                       <div className="space-y-2">
@@ -719,7 +770,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                                         const updatedTypes = checked
                                           ? [...(field.value || []), type]
                                           : (field.value || [])?.filter(
-                                              (t) => t !== type
+                                              (t) => t !== type,
                                             );
                                         field.onChange(updatedTypes);
                                       }}
@@ -743,12 +794,16 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                   name="details.host_twitter_handle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Twitter Handle</FormLabel>
+                      <FormLabel>Host Twitter Handle</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://x.com/username" {...field} />
+                        <Input
+                          placeholder="https://x.com/username"
+                          defaultValue="https://x.com/"
+                          {...field}
+                        />
                       </FormControl>
                       <FormDescription>
-                        Must include full URL (https://x.com/)
+                        Must include full URL (https://x.com/handle)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -783,7 +838,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
               </>
             )}
-            
+
             {selectedCollabType === "Blog Post Feature" && (
               <>
                 <FormField
@@ -820,10 +875,10 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <FormItem>
                       <FormLabel>Short Description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Brief description of your blog" 
+                        <Textarea
+                          placeholder="Brief description of your blog"
                           className="min-h-[80px]"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -832,7 +887,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
               </>
             )}
-            
+
             {selectedCollabType === "Newsletter Feature" && (
               <>
                 <FormField
@@ -855,7 +910,10 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <FormItem>
                       <FormLabel>Newsletter URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://newsletter-signup.com" {...field} />
+                        <Input
+                          placeholder="https://newsletter-signup.com"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -868,8 +926,8 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <FormItem>
                       <FormLabel>Total Subscribers</FormLabel>
                       <FormControl>
-                        <Select 
-                          onValueChange={field.onChange} 
+                        <Select
+                          onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -892,7 +950,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
               </>
             )}
-            
+
             {selectedCollabType === "Report & Research Feature" && (
               <>
                 <FormField
@@ -915,10 +973,10 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <FormItem>
                       <FormLabel>Short Description of Report</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Brief description of your report or research" 
+                        <Textarea
+                          placeholder="Brief description of your report or research"
                           className="min-h-[80px]"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -932,8 +990,8 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <FormItem>
                       <FormLabel>Audience Reach</FormLabel>
                       <FormControl>
-                        <Select 
-                          onValueChange={field.onChange} 
+                        <Select
+                          onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -956,7 +1014,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
               </>
             )}
-            
+
             {selectedCollabType === "Live Stream Guest Appearance" && (
               <>
                 <FormField
@@ -979,7 +1037,10 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <FormItem>
                       <FormLabel>URL to Previous Livestreams</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://yourstreamexample.com" {...field} />
+                        <Input
+                          placeholder="https://yourstreamexample.com"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -992,8 +1053,8 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                     <FormItem>
                       <FormLabel>Average Audience Size</FormLabel>
                       <FormControl>
-                        <Select 
-                          onValueChange={field.onChange} 
+                        <Select
+                          onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -1016,128 +1077,170 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
               </>
             )}
-            
+
             {/* Default message for collaboration types without custom fields */}
-            {!["Podcast Guest Appearance", "Twitter Spaces Guest", "Co-Marketing on Twitter", 
-               "Blog Post Feature", "Newsletter Feature", "Report & Research Feature", 
-               "Live Stream Guest Appearance"].includes(selectedCollabType) && (
+            {![
+              "Podcast Guest Appearance",
+              "Twitter Spaces Guest",
+              "Co-Marketing on Twitter",
+              "Blog Post Feature",
+              "Newsletter Feature",
+              "Report & Research Feature",
+              "Live Stream Guest Appearance",
+            ].includes(selectedCollabType) && (
               <div className="text-center py-8">
-                <p>Please provide details for your {selectedCollabType} collaboration.</p>
+                <p>
+                  Please provide details for your {selectedCollabType}{" "}
+                  collaboration.
+                </p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Additional fields specific to this collaboration type will be added soon.
+                  Additional fields specific to this collaboration type will be
+                  added soon.
                 </p>
               </div>
             )}
           </div>
         );
-      
+
       case 2:
         return (
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-medium">Company Sector Requirements</h3>
+                  <h3 className="text-lg font-medium">
+                    Company Sector Requirements
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     Only show to companies in these sectors
                   </p>
                 </div>
                 <Switch
-                  checked={form.watch('filter_company_sectors_enabled')}
+                  checked={form.watch("filter_company_sectors_enabled")}
                   onCheckedChange={(checked) => {
-                    form.setValue('filter_company_sectors_enabled', checked);
+                    form.setValue("filter_company_sectors_enabled", checked);
                   }}
                 />
               </div>
-              
-              {form.watch('filter_company_sectors_enabled') && (
+
+              {form.watch("filter_company_sectors_enabled") && (
                 <FormField
                   control={form.control}
                   name="required_company_sectors"
                   render={() => (
                     <FormItem>
                       <p className="text-sm text-muted-foreground mb-3">
-                        Select tags that best describe the company sectors you want to target
+                        Select tags that best describe the company sectors you
+                        want to target
                       </p>
-                      
-                      {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => {
-                        // Count how many tags from this category are selected
-                        const selectedCount = form.watch('required_company_sectors')?.filter(
-                          (tag) => (tags as readonly string[]).some(t => t === tag)
-                        ).length || 0;
-                        
-                        return (
-                          <div key={category} className="border rounded-lg overflow-hidden mb-3">
-                            {/* Make the entire header row clickable */}
-                            <div 
-                              className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
-                              onClick={() => toggleCategory(category)}
+
+                      {Object.entries(COMPANY_TAG_CATEGORIES).map(
+                        ([category, tags]) => {
+                          // Count how many tags from this category are selected
+                          const selectedCount =
+                            form
+                              .watch("required_company_sectors")
+                              ?.filter((tag) =>
+                                (tags as readonly string[]).some(
+                                  (t) => t === tag,
+                                ),
+                              ).length || 0;
+
+                          return (
+                            <div
+                              key={category}
+                              className="border rounded-lg overflow-hidden mb-3"
                             >
-                              <div className="flex items-center space-x-2">
-                                <span className="font-medium">{category}</span>
-                                {selectedCount > 0 && (
-                                  <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
-                                    {selectedCount}
+                              {/* Make the entire header row clickable */}
+                              <div
+                                className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
+                                onClick={() => toggleCategory(category)}
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <span className="font-medium">
+                                    {category}
                                   </span>
+                                  {selectedCount > 0 && (
+                                    <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
+                                      {selectedCount}
+                                    </span>
+                                  )}
+                                </div>
+                                {expandedCategories.includes(category) ? (
+                                  <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 flex-shrink-0" />
                                 )}
                               </div>
-                              {expandedCategories.includes(category) ? (
-                                <ChevronUp className="h-4 w-4 flex-shrink-0" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4 flex-shrink-0" />
+
+                              {expandedCategories.includes(category) && (
+                                <div className="p-4 pt-0 grid grid-cols-1 gap-3">
+                                  {tags.map((tag) => (
+                                    <Button
+                                      key={tag}
+                                      type="button"
+                                      variant={
+                                        form
+                                          .watch("required_company_sectors")
+                                          ?.includes(tag)
+                                          ? "default"
+                                          : "outline"
+                                      }
+                                      className="justify-start h-auto py-3 px-4 w-full"
+                                      onClick={() => {
+                                        const currentSectors =
+                                          form.watch(
+                                            "required_company_sectors",
+                                          ) || [];
+                                        const updatedSectors =
+                                          currentSectors.includes(tag)
+                                            ? currentSectors.filter(
+                                                (t) => t !== tag,
+                                              )
+                                            : [...currentSectors, tag];
+                                        form.setValue(
+                                          "required_company_sectors",
+                                          updatedSectors,
+                                        );
+                                      }}
+                                    >
+                                      <span className="text-left">{tag}</span>
+                                    </Button>
+                                  ))}
+                                </div>
                               )}
                             </div>
-
-                            {expandedCategories.includes(category) && (
-                              <div className="p-4 pt-0 grid grid-cols-1 gap-3">
-                                {tags.map(tag => (
-                                  <Button
-                                    key={tag}
-                                    type="button"
-                                    variant={form.watch('required_company_sectors')?.includes(tag) ? "default" : "outline"}
-                                    className="justify-start h-auto py-3 px-4 w-full"
-                                    onClick={() => {
-                                      const currentSectors = form.watch('required_company_sectors') || [];
-                                      const updatedSectors = currentSectors.includes(tag)
-                                        ? currentSectors.filter(t => t !== tag)
-                                        : [...currentSectors, tag];
-                                      form.setValue('required_company_sectors', updatedSectors);
-                                    }}
-                                  >
-                                    <span className="text-left">{tag}</span>
-                                  </Button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                          );
+                        },
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               )}
             </div>
-            
+
             <Separator />
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-medium">Minimum Company Twitter Followers</h3>
+                  <h3 className="text-lg font-medium">
+                    Minimum Company Twitter Followers
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     Set a minimum follower requirement for companies
                   </p>
                 </div>
                 <Switch
-                  checked={form.watch('filter_company_followers_enabled')}
+                  checked={form.watch("filter_company_followers_enabled")}
                   onCheckedChange={(checked) => {
-                    form.setValue('filter_company_followers_enabled', checked);
+                    form.setValue("filter_company_followers_enabled", checked);
                   }}
                 />
               </div>
-              
-              {form.watch('filter_company_followers_enabled') && (
+
+              {form.watch("filter_company_followers_enabled") && (
                 <FormField
                   control={form.control}
                   name="min_company_followers"
@@ -1165,26 +1268,28 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
               )}
             </div>
-            
+
             <Separator />
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-medium">Funding Stage Requirements</h3>
+                  <h3 className="text-lg font-medium">
+                    Funding Stage Requirements
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     Only show to companies in these funding stages
                   </p>
                 </div>
                 <Switch
-                  checked={form.watch('filter_funding_stages_enabled')}
+                  checked={form.watch("filter_funding_stages_enabled")}
                   onCheckedChange={(checked) => {
-                    form.setValue('filter_funding_stages_enabled', checked);
+                    form.setValue("filter_funding_stages_enabled", checked);
                   }}
                 />
               </div>
-              
-              {form.watch('filter_funding_stages_enabled') && (
+
+              {form.watch("filter_funding_stages_enabled") && (
                 <FormField
                   control={form.control}
                   name="required_funding_stages"
@@ -1209,7 +1314,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                                         const updatedStages = checked
                                           ? [...(field.value || []), stage]
                                           : (field.value || [])?.filter(
-                                              (s) => s !== stage
+                                              (s) => s !== stage,
                                             );
                                         field.onChange(updatedStages);
                                       }}
@@ -1229,26 +1334,28 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
               )}
             </div>
-            
+
             <Separator />
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-medium">Minimum User Twitter Followers</h3>
+                  <h3 className="text-lg font-medium">
+                    Minimum User Twitter Followers
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     Set a minimum follower requirement for applicants
                   </p>
                 </div>
                 <Switch
-                  checked={form.watch('filter_user_followers_enabled')}
+                  checked={form.watch("filter_user_followers_enabled")}
                   onCheckedChange={(checked) => {
-                    form.setValue('filter_user_followers_enabled', checked);
+                    form.setValue("filter_user_followers_enabled", checked);
                   }}
                 />
               </div>
-              
-              {form.watch('filter_user_followers_enabled') && (
+
+              {form.watch("filter_user_followers_enabled") && (
                 <FormField
                   control={form.control}
                   name="min_user_followers"
@@ -1276,114 +1383,151 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 />
               )}
             </div>
-            
+
             <Separator />
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-medium">Token Status Requirement</h3>
+                  <h3 className="text-lg font-medium">
+                    Token Status Requirement
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     Only show to companies with a live token
                   </p>
                 </div>
                 <Switch
-                  checked={form.watch('filter_token_status_enabled')}
+                  checked={form.watch("filter_token_status_enabled")}
                   onCheckedChange={(checked) => {
-                    form.setValue('filter_token_status_enabled', checked);
-                    form.setValue('required_token_status', checked);
-                    
+                    form.setValue("filter_token_status_enabled", checked);
+                    form.setValue("required_token_status", checked);
+
                     // If token status is enabled, also enable blockchain networks requirement
                     if (checked) {
-                      form.setValue('filter_blockchain_networks_enabled', true);
+                      form.setValue("filter_blockchain_networks_enabled", true);
                     }
                   }}
                 />
               </div>
             </div>
-            
+
             <Separator />
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-medium">Blockchain Network Requirements</h3>
+                  <h3 className="text-lg font-medium">
+                    Blockchain Network Requirements
+                  </h3>
                   <p className="text-sm text-muted-foreground">
                     Only show to companies on these blockchain networks
                   </p>
                 </div>
                 <Switch
-                  checked={form.watch('filter_blockchain_networks_enabled')}
+                  checked={form.watch("filter_blockchain_networks_enabled")}
                   onCheckedChange={(checked) => {
-                    form.setValue('filter_blockchain_networks_enabled', checked);
-                    
+                    form.setValue(
+                      "filter_blockchain_networks_enabled",
+                      checked,
+                    );
+
                     // If blockchain network filtering is disabled, clear selected networks
                     if (!checked) {
-                      form.setValue('required_blockchain_networks', []);
+                      form.setValue("required_blockchain_networks", []);
                     }
                   }}
                   // Disable the blockchain network filter if token status is disabled
-                  disabled={!form.watch('filter_token_status_enabled')}
+                  disabled={!form.watch("filter_token_status_enabled")}
                 />
               </div>
-              
-              {form.watch('filter_blockchain_networks_enabled') && (
+
+              {form.watch("filter_blockchain_networks_enabled") && (
                 <FormField
                   control={form.control}
                   name="required_blockchain_networks"
                   render={() => (
                     <FormItem>
-                      {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
-                        // Count how many networks from this category are selected
-                        const selectedCount = (form.watch('required_blockchain_networks') || []).filter(
-                          (network) => networks.includes(network as typeof BLOCKCHAIN_NETWORKS[number])
-                        ).length;
-                        
-                        return (
-                          <div key={category} className="border rounded-lg overflow-hidden mb-3">
-                            <div 
-                              className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
-                              onClick={() => toggleCategory(category)}
+                      {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(
+                        ([category, networks]) => {
+                          // Count how many networks from this category are selected
+                          const selectedCount = (
+                            form.watch("required_blockchain_networks") || []
+                          ).filter((network) =>
+                            networks.includes(
+                              network as (typeof BLOCKCHAIN_NETWORKS)[number],
+                            ),
+                          ).length;
+
+                          return (
+                            <div
+                              key={category}
+                              className="border rounded-lg overflow-hidden mb-3"
                             >
-                              <div className="flex items-center space-x-2">
-                                <span className="font-medium">{category}</span>
-                                {selectedCount > 0 && (
-                                  <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
-                                    {selectedCount}
+                              <div
+                                className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
+                                onClick={() => toggleCategory(category)}
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <span className="font-medium">
+                                    {category}
                                   </span>
+                                  {selectedCount > 0 && (
+                                    <span className="inline-flex items-center justify-center bg-primary text-primary-foreground text-xs rounded-full h-5 px-2">
+                                      {selectedCount}
+                                    </span>
+                                  )}
+                                </div>
+                                {expandedCategories.includes(category) ? (
+                                  <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 flex-shrink-0" />
                                 )}
                               </div>
-                              {expandedCategories.includes(category) ? (
-                                <ChevronUp className="h-4 w-4 flex-shrink-0" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4 flex-shrink-0" />
+
+                              {expandedCategories.includes(category) && (
+                                <div className="p-4 pt-0 grid grid-cols-1 gap-3">
+                                  {networks.map((network) => (
+                                    <Button
+                                      key={network}
+                                      type="button"
+                                      variant={
+                                        (
+                                          form.watch(
+                                            "required_blockchain_networks",
+                                          ) || []
+                                        ).includes(network)
+                                          ? "default"
+                                          : "outline"
+                                      }
+                                      className="justify-start h-auto py-3 px-4 w-full"
+                                      onClick={() => {
+                                        const currentNetworks =
+                                          form.watch(
+                                            "required_blockchain_networks",
+                                          ) || [];
+                                        const updatedNetworks =
+                                          currentNetworks.includes(network)
+                                            ? currentNetworks.filter(
+                                                (n) => n !== network,
+                                              )
+                                            : [...currentNetworks, network];
+                                        form.setValue(
+                                          "required_blockchain_networks",
+                                          updatedNetworks,
+                                        );
+                                      }}
+                                    >
+                                      <span className="text-left">
+                                        {network}
+                                      </span>
+                                    </Button>
+                                  ))}
+                                </div>
                               )}
                             </div>
-
-                            {expandedCategories.includes(category) && (
-                              <div className="p-4 pt-0 grid grid-cols-1 gap-3">
-                                {networks.map(network => (
-                                  <Button
-                                    key={network}
-                                    type="button"
-                                    variant={(form.watch('required_blockchain_networks') || []).includes(network) ? "default" : "outline"}
-                                    className="justify-start h-auto py-3 px-4 w-full"
-                                    onClick={() => {
-                                      const currentNetworks = form.watch('required_blockchain_networks') || [];
-                                      const updatedNetworks = currentNetworks.includes(network)
-                                        ? currentNetworks.filter(n => n !== network)
-                                        : [...currentNetworks, network];
-                                      form.setValue('required_blockchain_networks', updatedNetworks);
-                                    }}
-                                  >
-                                    <span className="text-left">{network}</span>
-                                  </Button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                          );
+                        },
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1392,7 +1536,7 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
             </div>
           </div>
         );
-      
+
       default:
         return <div>Unknown step</div>;
     }
@@ -1400,17 +1544,17 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
 
   return (
     <div className="container max-w-3xl pb-16">
-      <PageHeader 
-        title="Create Collaboration" 
+      <PageHeader
+        title="Create Collaboration"
         subtitle="Create a new collaboration opportunity"
         backUrl="/marketing-collabs-new"
       />
-      
+
       <div className="space-y-8">
         {/* Progress indicator */}
         <div className="flex justify-between mb-8">
           {steps.map((step, index) => (
-            <div 
+            <div
               key={index}
               className={`flex-1 ${
                 index < steps.length - 1 ? "border-t-2 border-border" : ""
@@ -1418,8 +1562,8 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                 index === currentStep
                   ? "text-primary"
                   : index < currentStep
-                  ? "text-primary"
-                  : "text-muted-foreground"
+                    ? "text-primary"
+                    : "text-muted-foreground"
               } relative`}
             >
               <div
@@ -1427,21 +1571,29 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
                   index === currentStep
                     ? "bg-primary text-white"
                     : index < currentStep
-                    ? "bg-primary text-white"
-                    : "bg-muted text-muted-foreground"
+                      ? "bg-primary text-white"
+                      : "bg-muted text-muted-foreground"
                 } absolute -top-4 ${index === 0 ? "left-0" : index === steps.length - 1 ? "right-0" : "left-1/2 -translate-x-1/2"}`}
               >
                 {index + 1}
               </div>
               {!isMobile && (
-                <div className={`mt-6 ${
-                  index === 0 ? "text-left" : index === steps.length - 1 ? "text-right" : "text-center"
-                }`}>
-                  <p className={`text-sm font-medium ${
-                    index === currentStep
-                      ? "text-foreground"
-                      : "text-muted-foreground"
-                  }`}>
+                <div
+                  className={`mt-6 ${
+                    index === 0
+                      ? "text-left"
+                      : index === steps.length - 1
+                        ? "text-right"
+                        : "text-center"
+                  }`}
+                >
+                  <p
+                    className={`text-sm font-medium ${
+                      index === currentStep
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                    }`}
+                  >
                     {step.title}
                   </p>
                 </div>
@@ -1449,24 +1601,24 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
             </div>
           ))}
         </div>
-        
+
         {/* Step title and description */}
         <div className="mb-6">
           <h2 className="text-xl font-bold">{steps[currentStep].title}</h2>
-          <p className="text-muted-foreground">{steps[currentStep].description}</p>
+          <p className="text-muted-foreground">
+            {steps[currentStep].description}
+          </p>
         </div>
-        
+
         {/* Form content */}
         <Card>
           <CardContent className="pt-6">
             <Form {...form}>
-              <form className="space-y-6">
-                {renderStepContent()}
-              </form>
+              <form className="space-y-6">{renderStepContent()}</form>
             </Form>
           </CardContent>
         </Card>
-        
+
         {/* Navigation buttons */}
         <div className="fixed bottom-0 left-0 w-full bg-background border-t border-border p-4 flex justify-between">
           <Button
@@ -1477,19 +1629,17 @@ export default function CreateCollaborationSteps({ id }: CreateCollaborationProp
           >
             Previous
           </Button>
-          
-          <Button
-            type="button"
-            onClick={nextStep}
-            disabled={isSubmitting}
-          >
+
+          <Button type="button" onClick={nextStep} disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 {currentStep === steps.length - 1 ? "Creating..." : "Next"}
               </>
+            ) : currentStep === steps.length - 1 ? (
+              "Create Collaboration"
             ) : (
-              currentStep === steps.length - 1 ? "Create Collaboration" : "Next"
+              "Next"
             )}
           </Button>
         </div>
