@@ -150,13 +150,13 @@ export default function CompanySector() {
                         </div>
                       )}
 
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 gap-2">
                         {tags.map(tag => (
                           <Button
                             key={tag}
                             type="button"
                             variant={formData.company_tags.includes(tag) ? "default" : "outline"}
-                            className="h-auto py-2 px-3 justify-start text-left font-normal"
+                            className="h-auto py-2 px-3 justify-start text-left font-normal w-full"
                             onClick={() => toggleTag(tag)}
                           >
                             {tag}
