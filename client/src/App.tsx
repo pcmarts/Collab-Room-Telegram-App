@@ -37,52 +37,25 @@ function Router() {
     <div className="min-h-screen bg-background w-full">
       <div className="w-full px-4 py-2">
         <Switch>
+          {/* Welcome and Application Flow */}
+          <Route path="/welcome" component={Welcome} />
+          <Route path="/personal-info" component={PersonalInfo} />
+          <Route path="/company-basics" component={CompanyBasics} />
+          <Route path="/company-sector" component={CompanySector} />
+          <Route path="/company-details" component={CompanyDetails} />
+          <Route path="/application-status" component={ApplicationStatus} />
+          <Route path="/application-form" component={ApplicationForm} />
+          <Route path="/apply" component={Apply} />
+
+          {/* Main App Routes - require authentication */}
           <Route path="/">
-            <Redirect to="/dashboard" />
+            <Redirect to="/welcome" />
           </Route>
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/collaborations">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/marketing-collabs">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
           <Route path="/conference-coffees" component={ConferenceCoffees} />
 
-          {/* Application Flow - all redirected to Marketing Collabs */}
-          <Route path="/welcome">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/personal-info">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/company-basics">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/company-sector">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/company-details">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/application-status">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/application-form">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/apply">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-
-          {/* All collaboration routes redirected to Marketing Collabs page */}
-          <Route path="/browse-collaborations">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/create-collaboration">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
+          {/* Collaboration Management */}
           <Route path="/create-collaboration-fixed">
             {() => <CreateCollaborationFixed />}
           </Route>
@@ -92,35 +65,15 @@ function Router() {
           <Route path="/my-collaborations">
             <Redirect to="/marketing-collabs-new" />
           </Route>
-          <Route path="/apply/:id">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/collaboration/:id">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
           <Route path="/edit-collaboration/:id">
             {(params) => <EditCollaborationSteps id={params.id} />}
-          </Route>
-          <Route path="/collaboration/edit/:id">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/collaboration/:id/applications">
-            <Redirect to="/marketing-collabs-new" />
           </Route>
 
           {/* Profile Routes */}
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route path="/company-info" component={CompanyInfo} />
 
-          {/* Redirects for removed preference pages */}
-          <Route path="/collab-preferences">
-            <Redirect to="/dashboard" />
-          </Route>
-          <Route path="/matching-filters">
-            <Redirect to="/dashboard" />
-          </Route>
-          
-          {/* Admin Routes redirected to Marketing Collabs */}
+          {/* Admin Routes */}
           <Route path="/admin/users">
             <Redirect to="/marketing-collabs-new" />
           </Route>
@@ -145,14 +98,20 @@ function App() {
           queryKey: ['/api/profile'],
           queryFn: async () => {
             const response = await fetch('/api/profile');
-            if (!response.ok) throw new Error('Failed to load profile');
+            if (!response.ok) {
+              // If profile not found, don't throw error - user might be new
+              if (response.status === 404) {
+                return null;
+              }
+              throw new Error('Failed to load profile');
+            }
             return response.json();
           }
         });
-        
+
         // Allow minimum time for loading screen visibility
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // Mark loading as complete
         setIsLoading(false);
       } catch (error) {
