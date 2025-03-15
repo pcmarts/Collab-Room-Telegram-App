@@ -86,6 +86,8 @@ export default function CompanyDetails() {
       const sectorData = JSON.parse(sessionStorage.getItem('companySectorData') || '{}');
       const userFormData = JSON.parse(sessionStorage.getItem('userFormData') || '{}');
 
+      console.log('Company form data from session storage:', basicData); // Debug log
+
       // Get Telegram username from the initData
       const telegramData = window.Telegram?.WebApp?.initDataUnsafe?.user;
       const handle = telegramData?.username;
@@ -101,15 +103,6 @@ export default function CompanyDetails() {
 
       if (!sectorData.company_tags?.length) {
         throw new Error('Please select at least one company sector');
-      }
-
-      if (formData.has_token) {
-        if (!formData.token_ticker) {
-          throw new Error('Token ticker is required when you have a token');
-        }
-        if (!formData.blockchain_networks.length) {
-          throw new Error('Please select at least one blockchain network');
-        }
       }
 
       const submitData = {
@@ -128,12 +121,12 @@ export default function CompanyDetails() {
         twitter_handle: basicData.twitter_url.replace("https://x.com/", "").replace("@", ""),
         job_title: basicData.job_title,
         funding_stage: basicData.funding_stage,
+        linkedin_url: basicData.linkedin_url, 
+        twitter_followers: basicData.twitter_followers, 
         has_token: formData.has_token,
         token_ticker: formData.has_token ? formData.token_ticker : undefined,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
         tags: sectorData.company_tags,
-        linkedin_url: basicData.linkedin_url,
-        twitter_followers: basicData.twitter_followers,
 
         // Referral code
         referral_code: sessionStorage.getItem('referralCode') || '',
@@ -142,7 +135,7 @@ export default function CompanyDetails() {
         initData: window.Telegram?.WebApp?.initData || ''
       };
 
-      console.log('Submitting application data:', submitData);
+      console.log('Final submission data:', submitData); // Debug log
 
       const response = await fetch('/api/onboarding', {
         method: 'POST',

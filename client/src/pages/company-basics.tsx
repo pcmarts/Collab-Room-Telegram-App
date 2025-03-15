@@ -62,6 +62,7 @@ export default function CompanyBasics() {
   };
 
   const handleNext = () => {
+    // Validate all required fields
     if (!formData.company_name || !formData.job_title || !formData.website || 
         !formData.twitter_url || !formData.linkedin_url || !formData.funding_stage || 
         !formData.twitter_followers) {
@@ -74,7 +75,15 @@ export default function CompanyBasics() {
       return;
     }
 
-    sessionStorage.setItem('companyFormData', JSON.stringify(formData));
+    // Store complete form data
+    const completeFormData = {
+      ...formData,
+      linkedin_url: formData.linkedin_url.trim(),  // Ensure clean URL
+      twitter_followers: formData.twitter_followers // Ensure this is stored
+    };
+
+    console.log('Storing company form data:', completeFormData); // Debug log
+    sessionStorage.setItem('companyFormData', JSON.stringify(completeFormData));
     setLocation('/company-sector');
   };
 
