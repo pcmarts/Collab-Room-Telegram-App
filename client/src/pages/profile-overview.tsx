@@ -4,13 +4,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Shield } from "lucide-react";
+import { Loader2, Shield, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
-import type { 
-  User, 
-  Company, 
+import type {
+  User,
+  Company,
   NotificationPreferences,
   MarketingPreferences,
   ConferencePreferences
@@ -91,7 +91,7 @@ export default function ProfileOverview() {
       [name]: value,
     }));
   };
-  
+
   const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -245,9 +245,9 @@ export default function ProfileOverview() {
             </form>
           </CardContent>
         </Card>
-        
+
         {/* Fixed position Save button */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+        <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t border-border shadow-lg z-50">
           <Button
             type="submit"
             className="w-full"
@@ -257,10 +257,13 @@ export default function ProfileOverview() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving Changes...
+                Saving...
               </>
             ) : (
-              "Save Changes"
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
+              </>
             )}
           </Button>
         </div>

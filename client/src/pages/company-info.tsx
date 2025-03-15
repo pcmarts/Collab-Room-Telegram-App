@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Switch } from "@/components/ui/switch";
@@ -310,11 +310,11 @@ export default function CompanyInfoForm() {
               const selectedCount = formData.tags.filter(
                 (tag) => (tags as readonly string[]).some(t => t === tag)
               ).length;
-              
+
               return (
                 <div key={category} className="border rounded-lg overflow-hidden">
                   {/* Make the entire header row clickable */}
-                  <div 
+                  <div
                     className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
                     onClick={() => toggleCategory(category)}
                   >
@@ -382,16 +382,16 @@ export default function CompanyInfoForm() {
                 <p className="text-sm text-muted-foreground">
                   Select the blockchain networks your token is deployed on.
                 </p>
-                
+
                 {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
                   // Count how many networks from this category are selected
                   const selectedCount = formData.blockchain_networks.filter(
                     (network) => networks.includes(network)
                   ).length;
-                  
+
                   return (
                     <div key={category} className="border rounded-lg overflow-hidden">
-                      <div 
+                      <div
                         className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
                         onClick={() => toggleCategory(category)}
                       >
@@ -409,7 +409,7 @@ export default function CompanyInfoForm() {
                           <ChevronDown className="h-4 w-4 flex-shrink-0" />
                         )}
                       </div>
-                      
+
                       {expandedCategories.includes(category) && (
                         <div className="p-4 pt-0 grid grid-cols-1 gap-3">
                           {networks.map(network => (
@@ -431,9 +431,9 @@ export default function CompanyInfoForm() {
               </div>
             </>
           )}
-          
+
           {/* Floating Save Button */}
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+          <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t border-border shadow-lg z-50">
             <Button
               type="submit"
               className="w-full"
@@ -445,7 +445,10 @@ export default function CompanyInfoForm() {
                   Saving...
                 </>
               ) : (
-                "Save"
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save
+                </>
               )}
             </Button>
           </div>

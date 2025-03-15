@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { Calendar, ChevronDown, ChevronUp, Save, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { Event, UserEvent } from "@shared/schema";
 import type { ProfileData } from "@/types/profile";
@@ -29,9 +29,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { 
-  TWITTER_FOLLOWER_COUNTS, 
-  FUNDING_STAGES, 
+import {
+  TWITTER_FOLLOWER_COUNTS,
+  FUNDING_STAGES,
   COMPANY_TAG_CATEGORIES,
   BLOCKCHAIN_NETWORK_CATEGORIES,
 } from "@shared/schema";
@@ -56,7 +56,7 @@ type CoffeeMatchCriteria = z.infer<typeof coffeeMatchCriteriaSchema>;
 export default function ConferenceCoffees() {
   const [activeTab, setActiveTab] = useState("attending");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Individual state variables for each toggle switch
   const [companySectorsEnabled, setCompanySectorsEnabled] = useState(false);
   const [companyFollowersEnabled, setCompanyFollowersEnabled] = useState(false);
@@ -90,7 +90,7 @@ export default function ConferenceCoffees() {
     queryKey: ["/api/user-events"],
     staleTime: 60 * 1000, // 1 minute
   });
-  
+
   // Fetch user profile to get saved preferences
   const { data: profileData, isLoading: profileLoading } = useQuery<ProfileData>({
     queryKey: ['/api/profile'],
@@ -149,12 +149,12 @@ export default function ConferenceCoffees() {
       blockchainNetworks: [],
     },
   });
-  
+
   // Load saved preferences when profile data is fetched
   useEffect(() => {
     if (profileData?.conferencePreferences) {
       const prefs = profileData.conferencePreferences;
-      
+
       // Set form values from saved conference preferences
       form.reset({
         matchingEnabled: prefs.coffee_match_enabled ?? false,
@@ -165,17 +165,17 @@ export default function ConferenceCoffees() {
         tokenStatus: prefs.coffee_match_token_status ?? false,
         blockchainNetworks: prefs.company_blockchain_networks ?? []
       });
-      
+
       // Log raw filter states for debugging
       console.log("Raw DB values for filters:", {
         companySectors: prefs.coffee_match_filter_company_sectors_enabled,
-        companyFollowers: prefs.coffee_match_filter_company_followers_enabled, 
+        companyFollowers: prefs.coffee_match_filter_company_followers_enabled,
         userFollowers: prefs.coffee_match_filter_user_followers_enabled,
         fundingStages: prefs.coffee_match_filter_funding_stages_enabled,
         tokenStatus: prefs.coffee_match_filter_token_status_enabled,
         blockchainNetworks: prefs.coffee_match_filter_blockchain_networks_enabled
       });
-      
+
       // Set filter states based on database values with strict equality checks
       // This ensures PostgreSQL booleans are properly handled
       setCompanySectorsEnabled(prefs.coffee_match_filter_company_sectors_enabled === true);
@@ -184,7 +184,7 @@ export default function ConferenceCoffees() {
       setFundingStagesEnabled(prefs.coffee_match_filter_funding_stages_enabled === true);
       setTokenStatusEnabled(prefs.coffee_match_filter_token_status_enabled === true);
       setBlockchainNetworksEnabled(prefs.coffee_match_filter_blockchain_networks_enabled === true);
-      
+
       console.log("Loaded filter toggle states:", {
         companySectors: companySectorsEnabled,
         companyFollowers: companyFollowersEnabled,
@@ -217,10 +217,10 @@ export default function ConferenceCoffees() {
       const profileResponse = await apiRequest('/api/profile', 'GET');
       const profileData = await profileResponse.json();
       console.log("Current profile data:", profileData);
-      
+
       // Make sure we have a default for notification_frequency as it's required
       const notification_frequency = profileData?.preferences?.notification_frequency || "Daily";
-      
+
       // Prepare conference preferences data with new standardized fields
       const conferencePrefsData = {
         // Legacy fields kept for backward compatibility
@@ -230,7 +230,7 @@ export default function ConferenceCoffees() {
         coffee_match_user_followers: data.userFollowers,
         coffee_match_funding_stages: data.fundingStages ?? [],
         coffee_match_token_status: data.tokenStatus,
-        
+
         // Filter toggle states - use explicit boolean values to avoid type issues
         coffee_match_filter_company_sectors_enabled: companySectorsEnabled,
         coffee_match_filter_company_followers_enabled: companyFollowersEnabled,
@@ -238,23 +238,23 @@ export default function ConferenceCoffees() {
         coffee_match_filter_funding_stages_enabled: fundingStagesEnabled,
         coffee_match_filter_token_status_enabled: tokenStatusEnabled,
         coffee_match_filter_blockchain_networks_enabled: blockchainNetworksEnabled,
-        
+
         // New standardized fields for consistent filtering across all tables
         company_tags: data.companySectors ?? [], // Map sectors to company_tags
         company_twitter_followers: companyFollowersEnabled ? data.companyFollowers : null,
         twitter_followers: userFollowersEnabled ? data.userFollowers : null,
-        funding_stage: data.fundingStages && data.fundingStages.length > 0 
+        funding_stage: data.fundingStages && data.fundingStages.length > 0
           ? data.fundingStages[0] // Take first item if array has values
           : null,
         company_has_token: tokenStatusEnabled ? data.tokenStatus : false,
         company_blockchain_networks: blockchainNetworksEnabled ? data.blockchainNetworks : []
       };
-      
+
       console.log("Sending conference preferences data:", conferencePrefsData);
 
       // Save to the conference preferences API endpoint
       const response = await apiRequest('/api/conference-preferences', 'POST', conferencePrefsData);
-      
+
       if (!response.ok) {
         // Try to get more detailed error information
         let errorMessage = 'Failed to save coffee match criteria';
@@ -269,7 +269,7 @@ export default function ConferenceCoffees() {
         }
         throw new Error(errorMessage);
       }
-      
+
       // Log the successful response for debugging
       try {
         const responseData = await response.clone().json();
@@ -383,49 +383,41 @@ export default function ConferenceCoffees() {
                   onSubmit={form.handleSubmit(onSubmitCriteria)}
                   className="space-y-6"
                 >
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Coffee Match Discovery</CardTitle>
-                  
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="matchingEnabled"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base text-primary">
-                              Enable Coffee Match Discovery
-                            </FormLabel>
-                            <FormDescription>
-                              {field.value
-                                ? "Matching enabled - get ready to find matches at conferences you're attending"
-                                : "Matching disabled"}
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
-
-                {matchingEnabled && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Filtering Criteria (optional)</CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        Set optional requirements for who you'd like to meet at
-                        conferences
-                      </p>
+                      <CardTitle>Coffee Match Discovery</CardTitle>
+
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="matchingEnabled"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base text-primary">
+                                Enable Coffee Match Discovery
+                              </FormLabel>
+                              <FormDescription>
+                                {field.value
+                                  ? "Matching enabled - get ready to find matches at conferences you're attending"
+                                  : "Matching disabled"}
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </CardContent>
+                  </Card>
+
+                  {matchingEnabled && (
+                    <form onSubmit={form.handleSubmit(onSubmitCriteria)}>
                       {/* Company Sectors Filter */}
                       <div className="flex items-center space-x-3 mb-4">
                         <Switch
@@ -675,7 +667,7 @@ export default function ConferenceCoffees() {
                           render={({ field }) => {
                             // Add state for expanded categories
                             const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-                            
+
                             // Toggle category expansion
                             const toggleCategory = (category: string) => {
                               setExpandedCategories(prev =>
@@ -684,7 +676,7 @@ export default function ConferenceCoffees() {
                                   : [...prev, category]
                               );
                             };
-                            
+
                             return (
                               <FormItem>
                                 <FormDescription>
@@ -696,10 +688,10 @@ export default function ConferenceCoffees() {
                                     const selectedCount = (field.value || []).filter(
                                       (network) => networks.includes(network as any)
                                     ).length;
-                                    
+
                                     return (
                                       <div key={category} className="border rounded-lg overflow-hidden">
-                                        <div 
+                                        <div
                                           className="w-full flex justify-between items-center p-4 cursor-pointer hover:bg-accent/50"
                                           onClick={() => toggleCategory(category)}
                                         >
@@ -717,7 +709,7 @@ export default function ConferenceCoffees() {
                                             <ChevronDown className="h-4 w-4 flex-shrink-0" />
                                           )}
                                         </div>
-                                        
+
                                         {expandedCategories.includes(category) && (
                                           <div className="p-4 pt-0 grid grid-cols-1 gap-3">
                                             {networks.map(network => (
@@ -749,19 +741,31 @@ export default function ConferenceCoffees() {
                           }}
                         />
                       )}
-                    </CardContent>
-                  </Card>
-                )}
+                      {/* Updated Floating Save Button */}
+                      <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t border-border shadow-lg z-50">
+                        <Button
+                          type="submit"
+                          className="w-full"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="h-4 w-4 mr-2" />
+                              Save Preferences
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  )}
 
-                {activeTab === "criteria" && (
-                  <div className="fixed bottom-0 left-0 right-0 bg-background py-4 px-4 border-t shadow-md flex justify-center z-10">
-                    <Button type="submit" disabled={isSubmitting} className="w-full max-w-md" size="lg">
-                      {isSubmitting ? "Saving..." : "Save Criteria"}
-                    </Button>
-                  </div>
-                )}
-                {/* Invisible spacer to ensure content isn't hidden behind fixed button */}
-                {activeTab === "criteria" && <div className="h-20"></div>}
+                  {/* Invisible spacer to ensure content isn't hidden behind fixed button */}
+                  {activeTab === "criteria" && <div className="h-20"></div>}
                 </form>
               </Form>
             )}

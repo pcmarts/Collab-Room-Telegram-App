@@ -144,6 +144,7 @@ export default function MarketingCollabs() {
   const [collabToDelete, setCollabToDelete] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [processingApplicationId, setProcessingApplicationId] = useState<string | null>(null);
+  
 
   // Form initialization
   const form = useForm<MarketingCollabFormData>({
@@ -971,7 +972,7 @@ export default function MarketingCollabs() {
       
       <PageHeader
         title="Marketing Collaborations"
-               backUrl="/"
+        backUrl="/"
       />
       
       <div className="container max-w-5xl px-4 py-6 pb-24">
@@ -1563,27 +1564,26 @@ export default function MarketingCollabs() {
                   </CardContent>
                 </Card>
                 
-                <div className="fixed bottom-0 left-0 right-0 bg-background border-t py-4 px-6 shadow-lg z-10">
-                  <div className="container">
-                    <Button 
-                      type="button" 
-                      onClick={handleDirectSubmit}
-                      disabled={isSubmitting}
-                      className="w-full"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="mr-2 h-4 w-4" />
-                          Save Preferences
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                {/* Floating Save Button */}
+                <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t border-border shadow-lg z-50">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSubmitting}
+                    onClick={handleDirectSubmit}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Preferences
+                      </>
+                    )}
+                  </Button>
                 </div>
               </form>
             </Form>

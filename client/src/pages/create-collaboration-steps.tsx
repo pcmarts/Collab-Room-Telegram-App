@@ -1643,7 +1643,33 @@ export default function CreateCollaborationSteps({
             )}
           </Button>
         </div>
+        {/* Floating Save Button */}
+        <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t border-border shadow-lg z-50">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Continue"
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
 }
+const COLLAB_TYPES = [
+  "Podcast Guest Appearance",
+  "Twitter Spaces Guest",
+  "Co-Marketing on Twitter",
+  "Blog Post Feature", 
+  "Newsletter Feature",
+  "Report & Research Feature",
+  "Live Stream Guest Appearance",
+] as const;
