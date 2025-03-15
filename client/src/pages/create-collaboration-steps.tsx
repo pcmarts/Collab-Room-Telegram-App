@@ -1646,9 +1646,10 @@ export default function CreateCollaborationSteps({
         {/* Floating Save Button */}
         <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t border-border shadow-lg z-50">
           <Button
-            type="submit"
+            type="button"
             className="w-full"
             disabled={isSubmitting}
+            onClick={nextStep}
           >
             {isSubmitting ? (
               <>
