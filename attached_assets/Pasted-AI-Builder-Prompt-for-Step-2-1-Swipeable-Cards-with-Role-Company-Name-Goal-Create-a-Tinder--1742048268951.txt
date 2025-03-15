@@ -1,0 +1,74 @@
+AI Builder Prompt for Step 2.1 (Swipeable Cards with Role & Company Name)
+
+🎯 Goal:
+Create a Tinder-style swipe interaction for collaboration matching using Framer Motion, while displaying:
+	•	User’s Role Title (e.g., VP of Marketing)
+	•	Company Name
+	•	Collaboration Type (e.g., Co-Marketing, Podcast Guest, etc.)
+
+📌 AI Builder Instructions:
+
+1. Implement Swipeable Card Layout
+	•	Each card should display:
+	•	User’s Role Title (e.g., VP of Marketing)
+	•	Company Name (e.g., Blockchain Weekly)
+	•	Collaboration Type (e.g., Podcast Guest)
+	•	Design for one card at a time in the Discover section.
+
+2. Enable Swipe Actions (Framer Motion)
+
+Swipe Left (Pass)
+	•	User Action: Swipes the card to the left.
+	•	Effect:
+	•	Card animates off-screen to the left.
+	•	Next card slides in smoothly.
+	•	Card is removed from the stack (not saved).
+	•	Visual Feedback:
+	•	Slight red glow when swiping left.
+	•	Card fades out as it moves left.
+
+Swipe Right (Request Collaboration)
+	•	User Action: Swipes the card to the right.
+	•	Effect:
+	•	Card animates off-screen to the right.
+	•	Next card slides in smoothly.
+	•	The collaboration request is stored (placeholder for now).
+	•	Visual Feedback:
+	•	Slight green glow when swiping right.
+	•	A brief checkmark animation appears before the card disappears.
+
+Tap (More Info / Flip Card)
+	•	User Action: Taps the card.
+	•	Effect:
+	•	The card flips (animated rotation) to show detailed information about the user and the collaboration.
+	•	Tap again to flip back to the original view.
+	•	Visual Feedback:
+	•	Card rotates around the Y-axis for a smooth flip effect.
+
+3. Use Dummy Data for Testing
+	•	Create at least 3 test collaboration cards with different roles & companies.
+	•	Example:
+
+const testCollabs = [
+  { id: 1, role: "VP of Marketing", company: "Web3 Insights", collaborationType: "Podcast Guest" },
+  { id: 2, role: "Head of Growth", company: "Crypto Innovators", collaborationType: "Co-Marketing" },
+  { id: 3, role: "Community Lead", company: "Blockchain Weekly", collaborationType: "Newsletter Feature" }
+];
+
+
+	•	Make sure new cards replace old ones after swiping.
+
+4. Implement Visual & Mobile Optimizations
+	•	Cards should scale properly on mobile screens.
+	•	Keep the design minimal and professional.
+	•	Ensure animations feel smooth and natural.
+
+✅ Testing Checklist:
+
+✅ Swipe Left: Card disappears left (Pass)
+✅ Swipe Right: Card disappears right (Request)
+✅ Tap: Card flips to show more details
+✅ Next card appears smoothly after swipe
+✅ Mobile-friendly UI layout
+
+💡 Once this is working, we’ll move to Step 2.2 (Differentiating Incoming vs Outgoing Requests). Let me know when you’re ready! 🚀

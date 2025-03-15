@@ -8,19 +8,25 @@ const DUMMY_CARDS = [
     id: "1",
     title: "Looking for Podcast Guest",
     companyName: "Web3 Insights",
-    description: "Join our weekly podcast discussing the latest trends in blockchain technology and DeFi innovations. We're looking for experts to share insights on recent developments.",
+    roleTitle: "Head of Content",
+    collaborationType: "Podcast Guest Appearance",
+    description: "Join our weekly podcast discussing the latest trends in blockchain technology and DeFi innovations. We're looking for experts to share insights on recent developments. Episodes typically run for 45-60 minutes with a focus on educational content for our growing audience.",
   },
   {
     id: "2",
     title: "Twitter Space Co-host Needed",
     companyName: "CryptoTech Solutions",
-    description: "We're hosting a Twitter Space about the future of NFTs and digital collectibles. Seeking a co-host with experience in the NFT space.",
+    roleTitle: "Community Manager",
+    collaborationType: "Twitter Spaces Guest",
+    description: "We're hosting a Twitter Space about the future of NFTs and digital collectibles. Seeking a co-host with experience in the NFT space to help facilitate discussion and share expertise with our community.",
   },
   {
     id: "3",
     title: "Blog Collaboration Opportunity",
     companyName: "DeFi Daily",
-    description: "Looking for guest writers to contribute to our blog about decentralized finance. Topics include yield farming, liquidity pools, and emerging DeFi protocols.",
+    roleTitle: "Content Director",
+    collaborationType: "Blog Post Feature",
+    description: "Looking for guest writers to contribute to our blog about decentralized finance. Topics include yield farming, liquidity pools, and emerging DeFi protocols. Articles should be between 1000-2000 words with a focus on technical analysis.",
   },
 ];
 
@@ -53,7 +59,7 @@ export default function DiscoverPage() {
         <h1 className="text-2xl font-bold mb-6">Discover</h1>
 
         <div className="relative w-full aspect-[3/4] mx-auto">
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {cards.map((card, index) => (
               <div 
                 key={card.id}
