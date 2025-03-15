@@ -35,12 +35,12 @@ export default function CompanyBasics() {
   useEffect(() => {
     if (profileData?.company) {
       setFormData({
-        company_name: profileData.company.name,
-        job_title: profileData.company.job_title,
-        website: profileData.company.website,
+        company_name: profileData.company.name || '',
+        job_title: profileData.company.job_title || '',
+        website: profileData.company.website || 'https://www.',
         twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : 'https://x.com/',
         linkedin_url: profileData.company.linkedin_url || 'https://linkedin.com/company/',
-        funding_stage: profileData.company.funding_stage,
+        funding_stage: profileData.company.funding_stage || '',
         twitter_followers: profileData.company.twitter_followers || ''
       });
     } else {
@@ -53,12 +53,10 @@ export default function CompanyBasics() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const newFormData = {
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value
-    };
-    setFormData(newFormData);
-    sessionStorage.setItem('companyFormData', JSON.stringify(newFormData));
+    }));
   };
 
   const handleNext = () => {
@@ -75,15 +73,24 @@ export default function CompanyBasics() {
       return;
     }
 
-    // Store complete form data
+    // Store complete form data ensuring all fields are properly included
     const completeFormData = {
-      ...formData,
-      linkedin_url: formData.linkedin_url.trim(),  // Ensure clean URL
-      twitter_followers: formData.twitter_followers // Ensure this is stored
+      company_name: formData.company_name,
+      job_title: formData.job_title,
+      website: formData.website,
+      twitter_url: formData.twitter_url.trim(),
+      linkedin_url: formData.linkedin_url.trim(),
+      funding_stage: formData.funding_stage,
+      twitter_followers: formData.twitter_followers
     };
 
-    console.log('Storing company form data:', completeFormData); // Debug log
+    // Debug log to verify data
+    console.log('Saving company form data:', completeFormData);
+
+    // Save to session storage
     sessionStorage.setItem('companyFormData', JSON.stringify(completeFormData));
+
+    // Navigate to next page
     setLocation('/company-sector');
   };
 

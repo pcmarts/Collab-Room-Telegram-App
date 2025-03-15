@@ -11,7 +11,8 @@ export default function Welcome() {
   const handleContinue = () => {
     // Store referral code if provided
     if (referralCode) {
-      sessionStorage.setItem('referralCode', referralCode);
+      console.log('Storing referral code:', referralCode); // Debug log
+      sessionStorage.setItem('referralCode', referralCode.trim());
     }
     setLocation('/personal-info');
   };
@@ -22,7 +23,7 @@ export default function Welcome() {
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">🚪 The Collab Room</h1>
           <p className="text-muted-foreground">
-                        <p>"Tinder" for Web3 Collabs & Conference Meetups</p>
+            <p>"Tinder" for Web3 Collabs & Conference Meetups</p>
             <p>Privacy first - no contacts details shared unless you match</p>
           </p>
         </div>
