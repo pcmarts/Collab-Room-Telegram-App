@@ -338,7 +338,7 @@ export async function registerRoutes(app: Express) {
                 name: company_name,
                 job_title,
                 website: company_website,
-                twitter_handle, // Store full URL without parsing
+                twitter_handle: twitter_handle, // Store the full URL directly
                 twitter_followers: company_twitter_followers,
                 linkedin_url: company_linkedin_url,
                 funding_stage,
