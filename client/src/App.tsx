@@ -59,7 +59,7 @@ function Router() {
           <Route path="/discover" component={DiscoverPage} />
           <Route path="/matches" component={MatchesPage} />
           <Route path="/settings">
-            <Redirect to="/marketing-collabs-new" />
+            <Redirect to="/dashboard" />
           </Route>
 
           {/* Existing Routes */}
