@@ -90,7 +90,7 @@ export default function PersonalInfo() {
         subtitle="Share your details to help us know you better"
         step={1}
         totalSteps={4}
-        backUrl="/apply"
+        backUrl="/welcome"
       />
 
       <div className="p-4">
