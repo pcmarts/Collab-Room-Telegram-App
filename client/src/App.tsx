@@ -109,6 +109,11 @@ function Router() {
         </Layout>
       </Route>
 
+      {/* Handle legacy route */}
+      <Route path="/marketing-collabs-new">
+        <Redirect to="/discover" />
+      </Route>
+
       {/* Other Routes */}
       <Route path="/conference-coffees">
         <Layout>
