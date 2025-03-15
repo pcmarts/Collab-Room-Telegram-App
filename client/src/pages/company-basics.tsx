@@ -73,18 +73,18 @@ export default function CompanyBasics() {
       return;
     }
 
-    // Store complete form data ensuring all fields are properly included
+    // Create complete form data object with trimming
     const completeFormData = {
-      company_name: formData.company_name,
-      job_title: formData.job_title,
-      website: formData.website,
+      company_name: formData.company_name.trim(),
+      job_title: formData.job_title.trim(),
+      website: formData.website.trim(),
       twitter_url: formData.twitter_url.trim(),
       linkedin_url: formData.linkedin_url.trim(),
       funding_stage: formData.funding_stage,
       twitter_followers: formData.twitter_followers
     };
 
-    // Debug log to verify data
+    // Debug log
     console.log('Saving company form data:', completeFormData);
 
     // Save to session storage

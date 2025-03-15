@@ -9,10 +9,14 @@ export default function Welcome() {
   const [referralCode, setReferralCode] = useState('');
 
   const handleContinue = () => {
-    // Store referral code if provided
-    if (referralCode) {
-      console.log('Storing referral code:', referralCode); // Debug log
-      sessionStorage.setItem('referralCode', referralCode.trim());
+    if (referralCode.trim()) {
+      // Store referral code if provided and log it
+      const cleanReferralCode = referralCode.trim();
+      console.log('Storing referral code:', cleanReferralCode);
+      sessionStorage.setItem('referralCode', cleanReferralCode);
+    } else {
+      // Clear any existing referral code if none provided
+      sessionStorage.removeItem('referralCode');
     }
     setLocation('/personal-info');
   };
@@ -23,8 +27,10 @@ export default function Welcome() {
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">🚪 The Collab Room</h1>
           <p className="text-muted-foreground">
-            <p>"Tinder" for Web3 Collabs & Conference Meetups</p>
-            <p>Privacy first - no contacts details shared unless you match</p>
+            "Tinder" for Web3 Collabs & Conference Meetups
+          </p>
+          <p className="text-muted-foreground">
+            Privacy first - no contacts details shared unless you match
           </p>
         </div>
 
