@@ -14,7 +14,7 @@ import CompanyDetails from "@/pages/company-details";
 import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
 import ApplicationForm from "@/pages/application-form";
-import MarketingCollabsNew from "@/pages/marketing-collabs-new";
+import Discover from "@/pages/discover";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
 import MyMatches from "@/pages/my-matches";
@@ -95,7 +95,7 @@ function Router() {
       {/* Bottom Nav Routes */}
       <Route path="/discover">
         <Layout>
-          <MarketingCollabsNew />
+          <Discover />
         </Layout>
       </Route>
       <Route path="/my-matches">
