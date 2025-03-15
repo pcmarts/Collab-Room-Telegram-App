@@ -67,7 +67,7 @@ export function SwipeableCard({ data, onSwipe, active }: SwipeableCardProps) {
           damping: 20,
         }}
       >
-        <Card className="w-full h-full p-6 cursor-grab active:cursor-grabbing bg-card">
+        <Card className="w-full h-full p-6 cursor-grab active:cursor-grabbing bg-card select-none">
           {!isFlipped ? (
             // Front of card
             <div className="flex flex-col h-full" onClick={() => setIsFlipped(true)}>
@@ -84,7 +84,7 @@ export function SwipeableCard({ data, onSwipe, active }: SwipeableCardProps) {
           ) : (
             // Back of card
             <div 
-              className="flex flex-col h-full transform rotate-180"
+              className="flex flex-col h-full transform rotate-180 select-none"
               onClick={() => setIsFlipped(false)}
             >
               <h3 className="text-xl font-semibold mb-4">{data.title}</h3>
