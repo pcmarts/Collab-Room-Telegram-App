@@ -247,9 +247,11 @@ export async function registerRoutes(app: Express) {
       const { 
         // User info
         first_name, last_name, linkedin_url, email, initData, twitter_url, twitter_followers,
+        referral_code, // Add referral code
         // Company info
         company_name, company_website, twitter_handle, job_title, 
         funding_stage, has_token, token_ticker, blockchain_networks, tags,
+        company_linkedin_url, company_twitter_followers, // Add company social media fields
         // Preferences
         collabs_to_discover, collabs_to_host, notification_frequency, filtered_marketing_topics
       } = req.body;
@@ -305,6 +307,7 @@ export async function registerRoutes(app: Express) {
               email,
               twitter_url,
               twitter_followers,
+              referral_code,
               applied_at: new Date()
             })
             .onConflictDoUpdate({
@@ -317,6 +320,7 @@ export async function registerRoutes(app: Express) {
                 email,
                 twitter_url,
                 twitter_followers,
+                referral_code,
                 applied_at: new Date()
               }
             })
@@ -335,6 +339,8 @@ export async function registerRoutes(app: Express) {
                 job_title,
                 website: company_website,
                 twitter_handle: twitter_handle?.replace('https://x.com/', '').replace('@', ''),
+                twitter_followers: company_twitter_followers,
+                linkedin_url: company_linkedin_url,
                 funding_stage,
                 has_token: Boolean(has_token),
                 token_ticker: has_token ? token_ticker : null,

@@ -32,10 +32,12 @@ export default function ReferralCodeForm() {
         handle: window.Telegram?.WebApp?.initDataUnsafe?.user?.username || '',
         linkedin_url: userFormData.linkedin_url,
         email: userFormData.email,
+        referral_code: referralCode, // Add referral code to submission
 
         // Company information
         company_name: companyFormData.company_name,
         company_website: companyFormData.website,
+        company_linkedin_url: companyFormData.company_linkedin_url, // Add company LinkedIn URL
         twitter_handle: companyFormData.twitter_url?.replace("https://x.com/", "").replace("@", ""),
         job_title: companyFormData.job_title,
         funding_stage: companyFormData.funding_stage,
@@ -43,11 +45,7 @@ export default function ReferralCodeForm() {
         token_ticker: companyFormData.token_ticker,
         blockchain_networks: companyFormData.blockchain_networks,
         company_tags: companyFormData.tags,
-        short_description: companyFormData.short_description,
-        long_description: companyFormData.long_description,
-
-        // Referral code
-        referral_code: referralCode,
+        company_twitter_followers: companyFormData.company_twitter_followers, // Add company Twitter followers
 
         // Telegram data
         initData: window.Telegram?.WebApp?.initData || '',

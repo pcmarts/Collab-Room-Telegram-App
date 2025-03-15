@@ -478,23 +478,24 @@ export const applicationSchema = z.object({
   handle: z.string().min(1, "Telegram handle is required"),
   linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(),
   email: z.string().email("Please enter a valid email").optional().nullable(),
-  referral_code: z.string().optional(),
+  referral_code: z.string().optional().nullable(), // Updated to match the database schema
   twitter_url: z.string().url("Please enter a valid Twitter URL").optional().nullable(),
   twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
 
   // Company Information
   company_name: z.string().min(2, "Company name is required"),
   company_website: z.string().url("Please enter a valid website URL"),
+  company_linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(), // Added company LinkedIn URL
   short_description: z.string().max(150, "Short description must be less than 150 characters").optional(),
   long_description: z.string().max(1000, "Long description must be less than 1000 characters").optional(),
   twitter_handle: z.string().min(1, "Twitter handle is required"),
+  company_twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(), // Added company Twitter followers
   job_title: z.string().min(1, "Job title is required"),
   funding_stage: z.enum(FUNDING_STAGES),
   has_token: z.boolean(),
   token_ticker: z.string().optional(),
   blockchain_networks: z.array(z.enum(BLOCKCHAIN_NETWORKS)).optional(),
   company_tags: z.array(z.string()).optional(),
-  company_twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
 
   // Telegram data
   initData: z.string()

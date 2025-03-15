@@ -71,9 +71,11 @@ export default function CompanyBasics() {
       job_title: formData.job_title.trim(),
       website: formData.website.trim(),
       twitter_url: formData.twitter_url.trim(),
-      linkedin_url: formData.linkedin_url.trim(), 
+      linkedin_url: formData.linkedin_url.trim(),
+      company_linkedin_url: formData.linkedin_url.trim(), 
       funding_stage: formData.funding_stage,
-      twitter_followers: formData.twitter_followers 
+      twitter_followers: formData.twitter_followers,
+      company_twitter_followers: formData.twitter_followers 
     };
 
     // Debug log
