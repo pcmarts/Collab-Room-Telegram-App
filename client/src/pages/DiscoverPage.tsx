@@ -1,6 +1,9 @@
 import { useState, useRef } from "react";
 import { motion, useMotionValue, useTransform, useAnimation } from "framer-motion";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { X, Info, Check } from "lucide-react";
+import { CollaborationDialog } from "@/components/CollaborationDialog";
 
 const DUMMY_CARDS = [
   {
@@ -32,6 +35,7 @@ const DUMMY_CARDS = [
 export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cards, setCards] = useState(DUMMY_CARDS);
+  const [showDialog, setShowDialog] = useState(false);
   const cardElem = useRef(null);
 
   const x = useMotionValue(0);
@@ -45,43 +49,32 @@ export default function DiscoverPage() {
     ["rgba(239, 68, 68, 0.1)", "rgba(255, 255, 255, 0)", "rgba(34, 197, 94, 0.1)"]
   );
 
-  const handleDragEnd = async (_: any, info: any) => {
-    const threshold = 100;
-    if (Math.abs(info.offset.x) > threshold) {
-      setConstrained(false);
-      const direction = info.offset.x > 0 ? "right" : "left";
+  const handleSwipe = async (direction: 'left' | 'right') => {
+    setConstrained(false);
+    const parentWidth = cardElem.current?.parentNode.getBoundingClientRect().width || 1000;
+    const childWidth = cardElem.current?.getBoundingClientRect().width || 500;
+    const flyAwayDistance = direction === "left"
+      ? -parentWidth / 2 - childWidth / 2
+      : parentWidth / 2 + childWidth / 2;
 
-      // Calculate fly-away distance
-      const parentWidth = cardElem.current?.parentNode.getBoundingClientRect().width || 1000;
-      const childWidth = cardElem.current?.getBoundingClientRect().width || 500;
-      const flyAwayDistance = direction === "left"
-        ? -parentWidth / 2 - childWidth / 2
-        : parentWidth / 2 + childWidth / 2;
+    await controls.start({
+      x: flyAwayDistance,
+      transition: { duration: 0.3 }
+    });
 
-      // Animate the card off screen
-      await controls.start({
-        x: flyAwayDistance,
-        transition: { duration: 0.3 }
-      });
+    console.log(`Swiped ${direction} on card:`, cards[currentIndex]);
 
-      // Log the action
-      console.log(`Swiped ${direction} on card:`, cards[currentIndex]);
+    setCurrentIndex((prev) => {
+      if (prev === cards.length - 1) {
+        setCards([...DUMMY_CARDS].sort(() => Math.random() - 0.5));
+        return 0;
+      }
+      return prev + 1;
+    });
 
-      // Update index
-      setCurrentIndex((prev) => {
-        if (prev === cards.length - 1) {
-          // Reset to beginning and shuffle cards
-          setCards([...DUMMY_CARDS].sort(() => Math.random() - 0.5));
-          return 0;
-        }
-        return prev + 1;
-      });
-
-      // Reset position for next card
-      x.set(0);
-      setConstrained(true);
-      controls.set({ x: 0 });
-    }
+    x.set(0);
+    setConstrained(true);
+    controls.set({ x: 0 });
   };
 
   const currentCard = cards[currentIndex];
@@ -122,7 +115,12 @@ export default function DiscoverPage() {
             drag="x"
             dragConstraints={constrained && { left: 0, right: 0 }}
             dragElastic={1}
-            onDragEnd={handleDragEnd}
+            onDragEnd={(_, info) => {
+              const threshold = 100;
+              if (Math.abs(info.offset.x) > threshold) {
+                handleSwipe(info.offset.x > 0 ? "right" : "left");
+              }
+            }}
             whileTap={{ cursor: "grabbing" }}
           >
             <Card className="w-full h-full p-6 select-none cursor-grab active:cursor-grabbing">
@@ -135,6 +133,36 @@ export default function DiscoverPage() {
                 <p className="text-sm text-muted-foreground">{currentCard.roleTitle}</p>
               </div>
               <p className="text-sm text-muted-foreground mt-4">{currentCard.description}</p>
+
+              {/* Action Buttons */}
+              <div className="absolute bottom-6 left-6 right-6">
+                <div className="flex justify-between gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
+                    onClick={() => handleSwipe("left")}
+                  >
+                    <X className="h-6 w-6" />
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="icon"
+                    className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
+                    onClick={() => setShowDialog(true)}
+                  >
+                    <Info className="h-6 w-6" />
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="icon"
+                    className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
+                    onClick={() => handleSwipe("right")}
+                  >
+                    <Check className="h-6 w-6" />
+                  </Button>
+                </div>
+              </div>
             </Card>
           </motion.div>
         </div>
@@ -144,6 +172,13 @@ export default function DiscoverPage() {
           <p>Swipe right to request collaboration</p>
           <p>Swipe left to pass</p>
         </div>
+
+        {/* Detailed View Dialog */}
+        <CollaborationDialog
+          isOpen={showDialog}
+          onClose={() => setShowDialog(false)}
+          collaboration={currentCard}
+        />
       </div>
     </div>
   );
