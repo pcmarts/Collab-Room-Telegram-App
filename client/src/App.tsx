@@ -3,8 +3,10 @@ import { Switch, Route, Redirect } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
+import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import Dashboard from "@/pages/dashboard";
-import Collaborations from "@/pages/collaborations";
+import DiscoverPage from "@/pages/DiscoverPage";
+import MatchesPage from "@/pages/MatchesPage";
 import Welcome from "@/pages/welcome";
 import PersonalInfo from "@/pages/personal-info";
 import CompanyBasics from "@/pages/company-basics";
@@ -21,7 +23,6 @@ import ProfileOverview from "@/pages/profile-overview";
 // Admin Pages
 import AdminUsers from "@/pages/admin/users";
 
-// BrowseCollaborations page removed as requested
 import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
 import CreateCollaborationSteps from "@/pages/create-collaboration-steps";
 import EditCollaborationSteps from "@/pages/edit-collaboration-steps";
@@ -35,7 +36,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 function Router() {
   return (
     <div className="min-h-screen bg-background w-full">
-      <div className="w-full px-4 py-2">
+      <div className="w-full px-4 py-2 pb-20"> {/* Added padding bottom for bottom navigation */}
         <Switch>
           {/* Welcome and Application Flow */}
           <Route path="/welcome" component={Welcome} />
@@ -45,12 +46,23 @@ function Router() {
           <Route path="/company-details" component={CompanyDetails} />
           <Route path="/application-status" component={ApplicationStatus} />
           <Route path="/application-form" component={ApplicationForm} />
-          <Route path="/apply" component={Apply} />
-
-          {/* Main App Routes - require authentication */}
-          <Route path="/">
-            <Redirect to="/welcome" />
+          <Route path="/apply/:id">
+            {(params) => <Apply id={params.id} />}
           </Route>
+
+          {/* Main App Routes */}
+          <Route path="/">
+            <Redirect to="/discover" />
+          </Route>
+
+          {/* New Tab Routes */}
+          <Route path="/discover" component={DiscoverPage} />
+          <Route path="/matches" component={MatchesPage} />
+          <Route path="/settings">
+            <Redirect to="/marketing-collabs-new" />
+          </Route>
+
+          {/* Existing Routes */}
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
           <Route path="/conference-coffees" component={ConferenceCoffees} />
@@ -81,6 +93,7 @@ function Router() {
           <Route path="/not-found" component={NotFound} />
           <Route path="*" component={NotFound} />
         </Switch>
+        <BottomNavigation />
       </div>
     </div>
   );

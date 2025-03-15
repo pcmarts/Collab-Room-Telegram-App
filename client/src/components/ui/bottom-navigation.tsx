@@ -1,0 +1,48 @@
+import * as React from "react"
+import { Link, useLocation } from "wouter"
+import { LayoutGrid, Settings, MessageSquare } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+const BottomNavigation = () => {
+  const [location] = useLocation()
+
+  const navItems = [
+    {
+      label: "Discover",
+      icon: LayoutGrid,
+      href: "/discover",
+    },
+    {
+      label: "Settings",
+      icon: Settings,
+      href: "/settings",
+    },
+    {
+      label: "My Matches",
+      icon: MessageSquare,
+      href: "/matches",
+    },
+  ]
+
+  return (
+    <nav className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border">
+      <div className="grid h-full grid-cols-3 mx-auto">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "flex flex-col items-center justify-center px-3 hover:bg-accent",
+              location === item.href && "text-primary"
+            )}
+          >
+            <item.icon className="w-6 h-6" />
+            <span className="text-xs">{item.label}</span>
+          </Link>
+        ))}
+      </div>
+    </nav>
+  )
+}
+
+export { BottomNavigation }
