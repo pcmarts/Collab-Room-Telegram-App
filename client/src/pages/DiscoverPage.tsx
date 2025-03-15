@@ -49,13 +49,12 @@ export default function DiscoverPage() {
 
         <div className="relative w-full aspect-[3/4] mx-auto">
           {DUMMY_CARDS.map((card, index) => (
-            <div key={card.id} style={{ display: index < currentIndex ? 'none' : 'block' }}>
-              <SwipeableCard
-                data={card}
-                onSwipe={handleSwipe}
-                active={index === currentIndex}
-              />
-            </div>
+            <SwipeableCard
+              key={card.id}
+              data={card}
+              onSwipe={handleSwipe}
+              active={index === currentIndex}
+            />
           ))}
         </div>
 
