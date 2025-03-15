@@ -1,33 +1,133 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ProfileData } from '@/types/profile';
 import { format } from 'date-fns';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { FileCheck } from 'lucide-react';
+import { FileCheck, Loader2, RefreshCcw } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function ApplicationStatus() {
-  const { data: profile, isLoading } = useQuery<ProfileData>({
-    queryKey: ['/api/profile']
-  });
+  const queryClient = useQueryClient();
   const [_, setLocation] = useLocation();
+  const [countdown, setCountdown] = useState(30);
+  const [showReload, setShowReload] = useState(false);
+  const [processingState, setProcessingState] = useState('initializing');
+
+  // Configure query with retries and immediate refetch
+  const { data: profile, isLoading, isError, refetch } = useQuery<ProfileData>({
+    queryKey: ['/api/profile'],
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    retry: 5,
+    retryDelay: 2000,
+    staleTime: 0,
+    gcTime: 0
+  });
+
+  // Effect to refetch data and manage countdown
+  useEffect(() => {
+    // Invalidate and refetch when component mounts
+    queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+    console.log('Fetching profile data...');
+
+    let attempts = 0;
+    const maxAttempts = 30;
+
+    // Update processing state message based on attempts
+    const updateProcessingState = (attempt: number) => {
+      if (attempt < 10) {
+        setProcessingState('initializing');
+      } else if (attempt < 20) {
+        setProcessingState('processing');
+      } else {
+        setProcessingState('finalizing');
+      }
+    };
+
+    // Set up periodic refetch until data is available
+    const retryInterval = setInterval(() => {
+      if (!profile?.user) {
+        console.log('Profile data not found, retrying...', { attempts });
+        updateProcessingState(attempts);
+        refetch();
+        attempts++;
+        setCountdown(maxAttempts - attempts);
+
+        if (attempts >= maxAttempts) {
+          clearInterval(retryInterval);
+          setShowReload(true);
+          console.log('Max attempts reached, showing reload option');
+        }
+      } else {
+        console.log('Profile data found:', profile);
+        clearInterval(retryInterval);
+        setShowReload(false);
+      }
+    }, 1000);
+
+    // Cleanup interval
+    return () => clearInterval(retryInterval);
+  }, [queryClient, refetch, profile]);
+
+  const getProcessingMessage = () => {
+    switch (processingState) {
+      case 'initializing':
+        return 'Initializing your application...';
+      case 'processing':
+        return 'Processing your application data...';
+      case 'finalizing':
+        return 'Finalizing your application status...';
+      default:
+        return 'Loading your application status...';
+    }
+  };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[100svh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex flex-col items-center justify-center min-h-[100svh] bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">{getProcessingMessage()}</p>
+        <p className="text-sm text-muted-foreground mt-2">
+          Please wait {countdown} seconds while we process your application
+        </p>
+      </div>
+    );
+  }
+
+  if (isError || showReload) {
+    return (
+      <div className="p-4 text-center min-h-[100svh] flex flex-col items-center justify-center bg-background">
+        <h1 className="text-2xl font-bold mb-4">Still Processing Application</h1>
+        <p className="text-muted-foreground mb-4">
+          {isError 
+            ? "We're having trouble loading your application status."
+            : "We're still processing your application submission. Please try again."}
+        </p>
+        <Button 
+          onClick={() => {
+            setShowReload(false);
+            setCountdown(30);
+            setProcessingState('initializing');
+            refetch();
+          }}
+          className="flex items-center gap-2"
+        >
+          <RefreshCcw className="h-4 w-4" />
+          Try Again
+        </Button>
       </div>
     );
   }
 
   if (!profile?.user) {
     return (
-      <div className="p-4 text-center min-h-[100svh] flex flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold mb-4">No Application Found</h1>
-        <p className="text-muted-foreground mb-4">Please complete the application process.</p>
-        <Button className="w-full max-w-xs" onClick={() => setLocation('/apply')}>
-          Start Application
-        </Button>
+      <div className="p-4 text-center min-h-[100svh] flex flex-col items-center justify-center bg-background">
+        <h1 className="text-2xl font-bold mb-4">Processing Application</h1>
+        <p className="text-muted-foreground mb-4">
+          {getProcessingMessage()}
+        </p>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }

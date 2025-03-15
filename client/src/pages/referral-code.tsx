@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,12 +11,35 @@ export default function ReferralCodeForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
   const [referralCode, setReferralCode] = useState('');
+  const [processingMessage, setProcessingMessage] = useState('');
+
+  // Function to check if profile exists
+  const checkProfileExists = async (maxAttempts = 30) => {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const response = await fetch('/api/profile');
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.user) {
+            console.log('Profile found:', data);
+            return true;
+          }
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log(`Profile check attempt ${attempt + 1}/${maxAttempts}`);
+      } catch (error) {
+        console.error('Error checking profile:', error);
+      }
+    }
+    return false;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       setIsSubmitting(true);
+      setProcessingMessage('Submitting your application...');
 
       // Store the referral code in session storage
       sessionStorage.setItem('referralCode', referralCode);
@@ -39,7 +62,7 @@ export default function ReferralCodeForm() {
         // Company information
         company_name: companyFormData.company_name,
         company_website: companyFormData.website,
-        twitter_handle: companyFormData.twitter_url, // Use the full URL instead of parsing
+        twitter_handle: companyFormData.twitter_url, // Store full URL
         job_title: companyFormData.job_title,
         funding_stage: companyFormData.funding_stage,
         has_token: companyFormData.has_token,
@@ -53,6 +76,9 @@ export default function ReferralCodeForm() {
         initData: window.Telegram?.WebApp?.initData || '',
       };
 
+      console.log('Starting application submission...', submitData);
+      setProcessingMessage('Processing your application...');
+
       const response = await fetch('/api/onboarding', {
         method: 'POST',
         headers: {
@@ -62,8 +88,13 @@ export default function ReferralCodeForm() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit application');
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to submit application');
       }
+
+      // Wait for the response data
+      const data = await response.json();
+      console.log('Application submission successful:', data);
 
       // Clear session storage after successful submission
       sessionStorage.removeItem('userFormData');
@@ -73,10 +104,26 @@ export default function ReferralCodeForm() {
       toast({
         title: "Application Submitted!",
         description: "We'll review your application and notify you through Telegram.",
-        duration: 2000
+        duration: 5000
       });
 
-      setLocation('/application-status');
+      // Wait for profile to be available
+      setProcessingMessage('Finalizing your application...');
+      console.log('Waiting for profile data to be available...');
+      const profileExists = await checkProfileExists();
+
+      if (profileExists) {
+        console.log('Profile data confirmed, proceeding to application status page...');
+        setLocation('/application-status');
+      } else {
+        console.log('Profile data not found after maximum attempts');
+        toast({
+          variant: "destructive",
+          title: "Processing Delay",
+          description: "Please wait a moment and try refreshing the application status page."
+        });
+        setLocation('/application-status');
+      }
 
     } catch (error) {
       console.error('Form submission error:', error);
@@ -87,6 +134,7 @@ export default function ReferralCodeForm() {
       });
     } finally {
       setIsSubmitting(false);
+      setProcessingMessage('');
     }
   };
 
@@ -117,14 +165,22 @@ export default function ReferralCodeForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4 pb-24">
           <div>
-            <Label htmlFor="referral_code">Referral Code (Optional)</Label>
+            <Label htmlFor="referral-code">Referral Code (Optional)</Label>
             <Input
-              id="referral_code"
+              id="referral-code"
               value={referralCode}
               onChange={(e) => setReferralCode(e.target.value)}
               placeholder="Enter your referral code"
             />
           </div>
+
+          {/* Processing message */}
+          {processingMessage && (
+            <div className="text-center text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+              {processingMessage}
+            </div>
+          )}
 
           {/* Floating Save Button */}
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">

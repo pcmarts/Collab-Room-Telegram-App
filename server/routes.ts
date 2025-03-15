@@ -295,6 +295,8 @@ export async function registerRoutes(app: Express) {
 
         // Start a transaction
         const result = await db.transaction(async (tx) => {
+          console.log('Starting database transaction...');
+          
           // 1. Create or update user
           const [user] = await tx
             .insert(users)
@@ -338,7 +340,7 @@ export async function registerRoutes(app: Express) {
                 name: company_name,
                 job_title,
                 website: company_website,
-                twitter_handle: twitter_handle, // Store the full URL directly
+                twitter_handle: twitter_handle, // Store the full URL
                 twitter_followers: company_twitter_followers,
                 linkedin_url: company_linkedin_url,
                 funding_stage,
@@ -350,6 +352,16 @@ export async function registerRoutes(app: Express) {
               .returning();
 
             console.log('Created company:', company);
+
+            // Verify the company record was created
+            const [verifyCompany] = await tx.select()
+              .from(companies)
+              .where(eq(companies.id, company.id));
+              
+            if (!verifyCompany) {
+              throw new Error('Company record verification failed');
+            }
+            console.log('Company record verified:', verifyCompany);
 
             // 3. Create notification preferences record
             const [notificationPrefs] = await tx
@@ -390,10 +402,29 @@ export async function registerRoutes(app: Express) {
             return { user, company, notificationPreferences: notificationPrefs };
           }
 
+          // Verify the user record
+          const [verifyUser] = await tx.select()
+            .from(users)
+            .where(eq(users.id, user.id));
+            
+          if (!verifyUser) {
+            throw new Error('User record verification failed');
+          }
+          console.log('User record verified:', verifyUser);
+
           return { user };
         });
 
         // After successful transaction
+        console.log('Transaction completed successfully:', result);
+        
+        // Final verification of the records before sending response
+        const verifiedUser = await db.select()
+          .from(users)
+          .where(eq(users.telegram_id, telegram_id));
+          
+        console.log('Final verification - User record exists:', verifiedUser.length > 0);
+        
         // Only send confirmation for new users, not for profile updates
         if (!isProfileUpdate) {
           try {
