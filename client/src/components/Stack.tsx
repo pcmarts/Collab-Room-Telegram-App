@@ -3,6 +3,7 @@ import { SwipeableCard } from "./SwipeableCard";
 
 export const Stack = ({ onVote, children, ...props }) => {
   const [stack, setStack] = useState(Children.toArray(children));
+  const [originalStack] = useState(Children.toArray(children)); // Keep original array
 
   // return new array with last item removed
   const pop = (array) => {
@@ -14,9 +15,13 @@ export const Stack = ({ onVote, children, ...props }) => {
   const handleVote = (item, vote) => {
     // update the stack
     let newStack = pop(stack);
-    setStack(newStack);
 
-    // run function from onVote prop, passing the current item and value of vote
+    // If stack becomes empty, reset it with original cards
+    if (newStack.length === 0) {
+      newStack = [...originalStack];
+    }
+
+    setStack(newStack);
     onVote(item, vote);
   };
 
