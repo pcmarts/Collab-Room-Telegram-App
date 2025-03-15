@@ -38,7 +38,7 @@ export default function CompanyBasics() {
         company_name: profileData.company.name || '',
         job_title: profileData.company.job_title || '',
         website: profileData.company.website || 'https://www.',
-        twitter_url: profileData.company.twitter_url || 'https://x.com/', //Corrected line
+        twitter_url: profileData.company.twitter_url || 'https://x.com/',
         linkedin_url: profileData.company.linkedin_url || 'https://linkedin.com/company/',
         funding_stage: profileData.company.funding_stage || '',
         twitter_followers: profileData.company.twitter_followers || ''
@@ -71,6 +71,7 @@ export default function CompanyBasics() {
       job_title: formData.job_title.trim(),
       website: formData.website.trim(),
       twitter_url: formData.twitter_url.trim(),
+      twitter_handle: formData.twitter_url.trim(), 
       linkedin_url: formData.linkedin_url.trim(),
       company_linkedin_url: formData.linkedin_url.trim(), 
       funding_stage: formData.funding_stage,
