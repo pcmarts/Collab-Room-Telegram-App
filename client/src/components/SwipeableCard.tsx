@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { motion, useMotionValue, useAnimation } from "framer-motion";
 import { Card as UICard } from "@/components/ui/card";
 
-export const Card = ({ children, onVote, ...props }) => {
+export const Card = ({ children, onVote, drag, ...props }) => {
   const cardElem = useRef(null);
 
   const x = useMotionValue(0);
@@ -24,7 +24,6 @@ export const Card = ({ children, onVote, ...props }) => {
     return result;
   };
 
-  // Determine direction of swipe based on velocity
   const getDirection = () => {
     return velocity >= 1 ? "right" : velocity <= -1 ? "left" : undefined;
   };
@@ -48,6 +47,11 @@ export const Card = ({ children, onVote, ...props }) => {
       controls.start({
         x: flyAwayDistance(direction)
       });
+
+      // Call onVote after the animation
+      setTimeout(() => {
+        onVote(direction === "right");
+      }, 200);
     }
   };
 
@@ -57,7 +61,10 @@ export const Card = ({ children, onVote, ...props }) => {
         const childNode = cardElem.current;
         const parentNode = cardElem.current.parentNode;
         const result = getVote(childNode, parentNode);
-        result !== undefined && onVote(result ? "right" : "left"); //Adapt onVote to accept "left" or "right"
+        if (result !== undefined) {
+          // Don't call onVote here, wait for flyAway
+          console.log("Card position:", result ? "right" : "left");
+        }
       }
     });
 
@@ -66,18 +73,19 @@ export const Card = ({ children, onVote, ...props }) => {
 
   return (
     <motion.div
-      className="absolute w-full"
+      className="absolute w-full select-none"
       animate={controls}
       dragConstraints={constrained && { left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={1}
       ref={cardElem}
       style={{ x }}
+      drag={drag}
       onDrag={getTrajectory}
       onDragEnd={() => flyAway(500)}
       whileTap={{ scale: 1.1 }}
       {...props}
     >
-      <UICard className="w-full h-full p-6 select-none">
+      <UICard className="w-full h-full p-6">
         {children}
       </UICard>
     </motion.div>

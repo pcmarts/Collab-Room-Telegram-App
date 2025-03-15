@@ -1,7 +1,6 @@
 import React, { useState, Children } from "react";
 import { Card } from "./SwipeableCard";
 
-// Basic default styles for container
 export const Stack = ({ onVote, children }) => {
   const [stack, setStack] = useState(Children.toArray(children));
 
@@ -27,7 +26,7 @@ export const Stack = ({ onVote, children }) => {
         let isTop = index === stack.length - 1;
         return (
           <Card
-            drag={isTop} // Only top card is draggable
+            drag={isTop ? "x" : false} // Only top card is draggable
             key={item.key || index}
             onVote={(result) => handleVote(item, result)}
           >
