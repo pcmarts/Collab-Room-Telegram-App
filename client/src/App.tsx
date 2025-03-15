@@ -16,7 +16,6 @@ import ApplicationForm from "@/pages/application-form";
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
-import MatchingPreferences from "@/pages/matching-preferences"; // Added new import
 
 // Admin Pages
 import AdminUsers from "@/pages/admin/users";
@@ -45,7 +44,6 @@ function Router() {
           <Route path="/application-status" component={ApplicationStatus} />
           <Route path="/application-form" component={ApplicationForm} />
           <Route path="/apply" component={Apply} />
-          <Route path="/matching-preferences" component={MatchingPreferences} /> {/* Added new route */}
 
           {/* Main App Routes - require authentication */}
           <Route path="/">
