@@ -81,12 +81,14 @@ export default function CompanyDetails() {
     try {
       setIsSubmitting(true);
 
-      // Get required data from session storage
+      // Get all required data from session storage
       const basicData = JSON.parse(sessionStorage.getItem('companyFormData') || '{}');
       const sectorData = JSON.parse(sessionStorage.getItem('companySectorData') || '{}');
       const userFormData = JSON.parse(sessionStorage.getItem('userFormData') || '{}');
+      const referralCode = sessionStorage.getItem('referralCode');
 
       console.log('Company form data from session storage:', basicData); // Debug log
+      console.log('Referral code from session storage:', referralCode); // Debug log
 
       // Get Telegram username from the initData
       const telegramData = window.Telegram?.WebApp?.initDataUnsafe?.user;
@@ -97,7 +99,8 @@ export default function CompanyDetails() {
       }
 
       if (!basicData.company_name || !basicData.website || !basicData.job_title ||
-        !basicData.twitter_url || !basicData.funding_stage) {
+          !basicData.twitter_url || !basicData.funding_stage || !basicData.linkedin_url || 
+          !basicData.twitter_followers) {
         throw new Error('Please complete all company information fields');
       }
 
@@ -114,6 +117,7 @@ export default function CompanyDetails() {
         email: userFormData.email,
         twitter_url: userFormData.twitter_url,
         twitter_followers: userFormData.twitter_followers,
+        referral_code: referralCode || '', // Ensure referral code is included
 
         // Company information
         company_name: basicData.company_name,
@@ -121,15 +125,12 @@ export default function CompanyDetails() {
         twitter_handle: basicData.twitter_url.replace("https://x.com/", "").replace("@", ""),
         job_title: basicData.job_title,
         funding_stage: basicData.funding_stage,
-        linkedin_url: basicData.linkedin_url, 
-        twitter_followers: basicData.twitter_followers, 
+        linkedin_url: basicData.linkedin_url, // Company LinkedIn URL
+        twitter_followers: basicData.twitter_followers, // Company Twitter followers
         has_token: formData.has_token,
         token_ticker: formData.has_token ? formData.token_ticker : undefined,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
         tags: sectorData.company_tags,
-
-        // Referral code
-        referral_code: sessionStorage.getItem('referralCode') || '',
 
         // Telegram data
         initData: window.Telegram?.WebApp?.initData || ''
