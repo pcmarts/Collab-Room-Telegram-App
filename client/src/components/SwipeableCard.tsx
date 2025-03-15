@@ -18,7 +18,7 @@ interface SwipeableCardProps {
 export function SwipeableCard({ data, onSwipe, active }: SwipeableCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 0, 200], [-30, 0, 30]);
+  const rotate = useTransform(x, [-400, 0, 400], [-50, 0, 50]);
 
   // Add background color transform for swipe feedback
   const background = useTransform(
@@ -53,7 +53,8 @@ export function SwipeableCard({ data, onSwipe, active }: SwipeableCardProps) {
         background,
       }}
       drag="x"
-      dragConstraints={{ left: 0, right: 0 }}
+      dragConstraints={{ left: -1000, right: 1000 }}
+      dragElastic={0.7}
       onDragEnd={handleDragEnd}
       whileDrag={{ scale: 1.05 }}
       animate={{ rotateY: isFlipped ? 180 : 0 }}
