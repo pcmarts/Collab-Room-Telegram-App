@@ -3,6 +3,7 @@ import { Switch, Route, Redirect } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
+import { BottomNav } from "@/components/layout/BottomNav";
 import Dashboard from "@/pages/dashboard";
 import Collaborations from "@/pages/collaborations";
 import Welcome from "@/pages/welcome";
@@ -16,71 +17,128 @@ import ApplicationForm from "@/pages/application-form";
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
+import MyMatches from "@/pages/my-matches";
 
 // Admin Pages
 import AdminUsers from "@/pages/admin/users";
-
-import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
-import CreateCollaborationSteps from "@/pages/create-collaboration-steps";
-import EditCollaborationSteps from "@/pages/edit-collaboration-steps";
-import CreateCollaboration from "@/pages/create-collaboration";
-import MyCollaborations from "@/pages/my-collaborations";
 import Apply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
 
+interface LayoutProps {
+  children: React.ReactNode;
+  hideNav?: boolean;
+}
+
+function Layout({ children, hideNav = false }: LayoutProps) {
+  return (
+    <div className="min-h-screen bg-background w-full pb-16">
+      <div className="w-full px-4 py-2">
+        {children}
+      </div>
+      {!hideNav && <BottomNav />}
+    </div>
+  );
+}
+
 function Router() {
   return (
-    <div className="min-h-screen bg-background w-full">
-      <div className="w-full px-4 py-2">
-        <Switch>
-          {/* Welcome and Application Flow */}
-          <Route path="/welcome" component={Welcome} />
-          <Route path="/personal-info" component={PersonalInfo} />
-          <Route path="/company-basics" component={CompanyBasics} />
-          <Route path="/company-sector" component={CompanySector} />
-          <Route path="/company-details" component={CompanyDetails} />
-          <Route path="/application-status" component={ApplicationStatus} />
-          <Route path="/application-form" component={ApplicationForm} />
-          <Route path="/apply" component={Apply} />
+    <Switch>
+      {/* Welcome and Application Flow */}
+      <Route path="/welcome">
+        <Layout hideNav>
+          <Welcome />
+        </Layout>
+      </Route>
+      <Route path="/personal-info">
+        <Layout hideNav>
+          <PersonalInfo />
+        </Layout>
+      </Route>
+      <Route path="/company-basics">
+        <Layout hideNav>
+          <CompanyBasics />
+        </Layout>
+      </Route>
+      <Route path="/company-sector">
+        <Layout hideNav>
+          <CompanySector />
+        </Layout>
+      </Route>
+      <Route path="/company-details">
+        <Layout hideNav>
+          <CompanyDetails />
+        </Layout>
+      </Route>
+      <Route path="/application-status">
+        <Layout hideNav>
+          <ApplicationStatus />
+        </Layout>
+      </Route>
+      <Route path="/application-form">
+        <Layout hideNav>
+          <ApplicationForm />
+        </Layout>
+      </Route>
+      <Route path="/apply">
+        <Layout hideNav>
+          <Apply />
+        </Layout>
+      </Route>
 
-          {/* Main App Routes - require authentication */}
-          <Route path="/">
-            <Redirect to="/welcome" />
-          </Route>
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
-          <Route path="/conference-coffees" component={ConferenceCoffees} />
+      {/* Main App Routes - require authentication */}
+      <Route path="/">
+        <Redirect to="/welcome" />
+      </Route>
 
-          {/* Collaboration Management */}
-          <Route path="/create-collaboration-fixed">
-            {() => <CreateCollaborationFixed />}
-          </Route>
-          <Route path="/create-collaboration-steps">
-            {() => <CreateCollaborationSteps />}
-          </Route>
-          <Route path="/my-collaborations">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/edit-collaboration/:id">
-            {(params) => <EditCollaborationSteps id={params.id} />}
-          </Route>
+      {/* Bottom Nav Routes */}
+      <Route path="/discover">
+        <Layout>
+          <MarketingCollabsNew />
+        </Layout>
+      </Route>
+      <Route path="/my-matches">
+        <Layout>
+          <MyMatches />
+        </Layout>
+      </Route>
+      <Route path="/dashboard">
+        <Layout>
+          <Dashboard />
+        </Layout>
+      </Route>
 
-          {/* Profile Routes */}
-          <Route path="/profile-overview" component={ProfileOverview} />
-          <Route path="/company-info" component={CompanyInfo} />
+      {/* Other Routes */}
+      <Route path="/conference-coffees">
+        <Layout>
+          <ConferenceCoffees />
+        </Layout>
+      </Route>
 
-          {/* Admin Routes */}
-          <Route path="/admin/users">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
+      {/* Profile Routes */}
+      <Route path="/profile-overview">
+        <Layout>
+          <ProfileOverview />
+        </Layout>
+      </Route>
+      <Route path="/company-info">
+        <Layout>
+          <CompanyInfo />
+        </Layout>
+      </Route>
 
-          <Route path="/not-found" component={NotFound} />
-          <Route path="*" component={NotFound} />
-        </Switch>
-      </div>
-    </div>
+      <Route path="/not-found">
+        <Layout>
+          <NotFound />
+        </Layout>
+      </Route>
+      <Route>
+        <Layout>
+          <NotFound />
+        </Layout>
+      </Route>
+    </Switch>
   );
 }
 
