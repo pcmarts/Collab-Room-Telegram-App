@@ -1,8 +1,7 @@
-import { useState } from "react"
-import { Stack } from "@/components/Stack"
-import styled from "@emotion/styled"
+import { useState } from "react";
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import { Card } from "@/components/ui/card";
 
-// Dummy data for testing
 const DUMMY_CARDS = [
   {
     id: "1",
@@ -10,7 +9,7 @@ const DUMMY_CARDS = [
     companyName: "Web3 Insights",
     roleTitle: "Head of Content",
     collaborationType: "Podcast Guest Appearance",
-    description: "Join our weekly podcast discussing the latest trends in blockchain technology and DeFi innovations. We're looking for experts to share insights on recent developments. Episodes typically run for 45-60 minutes with a focus on educational content for our growing audience.",
+    description: "Join our weekly podcast discussing the latest trends in blockchain technology and DeFi innovations.",
   },
   {
     id: "2",
@@ -18,7 +17,7 @@ const DUMMY_CARDS = [
     companyName: "CryptoTech Solutions",
     roleTitle: "Community Manager",
     collaborationType: "Twitter Spaces Guest",
-    description: "We're hosting a Twitter Space about the future of NFTs and digital collectibles. Seeking a co-host with experience in the NFT space to help facilitate discussion and share expertise with our community.",
+    description: "We're hosting a Twitter Space about the future of NFTs and digital collectibles.",
   },
   {
     id: "3",
@@ -26,45 +25,99 @@ const DUMMY_CARDS = [
     companyName: "DeFi Daily",
     roleTitle: "Content Director",
     collaborationType: "Blog Post Feature",
-    description: "Looking for guest writers to contribute to our blog about decentralized finance. Topics include yield farming, liquidity pools, and emerging DeFi protocols. Articles should be between 1000-2000 words with a focus on technical analysis.",
+    description: "Looking for guest writers to contribute to our blog about decentralized finance.",
   },
 ];
 
 export default function DiscoverPage() {
-  const handleVote = (item, vote) => {
-    console.log(item.props, vote ? "liked" : "disliked");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [cards, setCards] = useState(DUMMY_CARDS);
+
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-30, 30]);
+  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
+  const background = useTransform(
+    x,
+    [-200, 0, 200],
+    ["rgba(239, 68, 68, 0.1)", "rgba(255, 255, 255, 0)", "rgba(34, 197, 94, 0.1)"]
+  );
+
+  const handleDragEnd = (_: any, info: any) => {
+    const threshold = 100;
+    if (Math.abs(info.offset.x) > threshold) {
+      const direction = info.offset.x > 0 ? "right" : "left";
+
+      // Log the action
+      console.log(`Swiped ${direction} on card:`, cards[currentIndex]);
+
+      // Update index
+      setCurrentIndex((prev) => {
+        if (prev === cards.length - 1) {
+          // Reset to beginning and shuffle cards
+          setCards([...DUMMY_CARDS].sort(() => Math.random() - 0.5));
+          return 0;
+        }
+        return prev + 1;
+      });
+    }
   };
+
+  const currentCard = cards[currentIndex];
 
   return (
     <div className="min-h-[100svh] bg-background">
-      <div className="container max-w-md mx-auto py-6 relative min-h-[80vh]">
+      <div className="container max-w-md mx-auto py-6">
         <h1 className="text-2xl font-bold mb-6">Discover</h1>
 
-        <div className="relative w-full aspect-[3/4] mx-auto">
-          <Stack onVote={handleVote}>
-            {DUMMY_CARDS.map((card) => (
-              <div key={card.id} data-value={card.id} className="bg-card rounded-lg w-full h-full">
+        <div className="relative w-full aspect-[3/4]">
+          {/* Background Card (Next in Stack) */}
+          {currentIndex < cards.length - 1 && (
+            <div className="absolute inset-0 transform scale-[0.95] opacity-50">
+              <Card className="w-full h-full p-6 select-none">
                 <div className="text-sm font-medium text-muted-foreground mb-2">
-                  {card.collaborationType}
+                  {cards[currentIndex + 1].collaborationType}
                 </div>
-                <h3 className="text-2xl font-semibold mb-2">{card.title}</h3>
-                <div className="flex flex-col space-y-1 mb-4">
-                  <p className="text-lg">{card.companyName}</p>
-                  <p className="text-sm text-muted-foreground">{card.roleTitle}</p>
+                <h3 className="text-2xl font-semibold mb-2">{cards[currentIndex + 1].title}</h3>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-lg">{cards[currentIndex + 1].companyName}</p>
+                  <p className="text-sm text-muted-foreground">{cards[currentIndex + 1].roleTitle}</p>
                 </div>
-                <p className="text-sm text-muted-foreground mt-auto">
-                  Tap for more info
-                </p>
+              </Card>
+            </div>
+          )}
+
+          {/* Current Card */}
+          <motion.div
+            className="absolute inset-0"
+            style={{
+              x,
+              rotate,
+              opacity,
+              background,
+            }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            onDragEnd={handleDragEnd}
+            whileTap={{ cursor: "grabbing" }}
+          >
+            <Card className="w-full h-full p-6 select-none cursor-grab active:cursor-grabbing">
+              <div className="text-sm font-medium text-muted-foreground mb-2">
+                {currentCard.collaborationType}
               </div>
-            ))}
-          </Stack>
+              <h3 className="text-2xl font-semibold mb-2">{currentCard.title}</h3>
+              <div className="flex flex-col space-y-1">
+                <p className="text-lg">{currentCard.companyName}</p>
+                <p className="text-sm text-muted-foreground">{currentCard.roleTitle}</p>
+              </div>
+              <p className="text-sm text-muted-foreground mt-4">{currentCard.description}</p>
+            </Card>
+          </motion.div>
         </div>
 
         {/* Instructions */}
         <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>Swipe right to request collaboration</p>
           <p>Swipe left to pass</p>
-          <p>Tap card to see more details</p>
         </div>
       </div>
     </div>
