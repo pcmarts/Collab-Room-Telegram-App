@@ -9,6 +9,7 @@ import {
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "../shared/schema";
 import { eq, and, not, desc } from 'drizzle-orm';
+import { calculateMatchScore, findMatches } from './services/matchingService';
 import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved } from "./telegram";
 import { storage } from "./storage";
 
@@ -468,6 +469,100 @@ export async function registerRoutes(app: Express) {
   });
 
   // Company information endpoint
+  // Unified matching endpoint that works for both marketing and conference matches 
+  app.post("/api/matches", async (req, res) => {
+    try {
+      // Get user from Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        res.status(401);
+        return res.json({ error: "Unauthorized" });
+      }
+
+      const { matchType = 'marketing' } = req.body; // 'marketing' or 'conference'
+      
+      // Get current user and their company
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+        
+      if (!user) {
+        res.status(404);
+        return res.json({ error: "User not found" });
+      }
+
+      const [company] = await db.select()
+        .from(companies)
+        .where(eq(companies.user_id, user.id));
+        
+      if (!company) {
+        res.status(404);
+        return res.json({ error: "Company not found" });
+      }
+
+      // Get user preferences based on match type
+      const prefsTable = matchType === 'marketing' ? marketing_preferences : conference_preferences;
+      const [prefs] = await db.select()
+        .from(prefsTable)
+        .where(eq(prefsTable.user_id, user.id));
+        
+      if (!prefs) {
+        res.status(404);
+        return res.json({ error: "Preferences not found" });
+      }
+
+      // Get potential matches (excluding current user)
+      const potentialMatches = await db.select({
+        user: users,
+        company: companies
+      })
+      .from(users)
+      .innerJoin(companies, eq(users.id, companies.user_id))
+      .where(not(eq(users.id, user.id)))
+      .orderBy(desc(users.applied_at));
+
+      // Find matches using the matching service  
+      const matches = await findMatches(
+        prefs,
+        company,
+        user,
+        potentialMatches,
+        0.6 // Minimum match score threshold
+      );
+
+      return res.json({
+        success: true,
+        matches: matches.map(match => ({
+          ...match,
+          // Only include non-sensitive user and company information
+          user: {
+            id: match.user.id,
+            first_name: match.user.first_name,
+            last_name: match.user.last_name,
+            handle: match.user.handle,
+            twitter_url: match.user.twitter_url,
+            linkedin_url: match.user.linkedin_url
+          },
+          company: {
+            name: match.company.name,
+            website: match.company.website,
+            twitter_handle: match.company.twitter_handle,
+            funding_stage: match.company.funding_stage,
+            has_token: match.company.has_token,
+            token_ticker: match.company.token_ticker,
+            blockchain_networks: match.company.blockchain_networks,
+            tags: match.company.tags
+          }
+        }))
+      });
+
+    } catch (error) {
+      console.error('Error in match finding:', error);
+      res.status(500);
+      return res.json({ error: 'Failed to find matches' });
+    }
+  });
+
   app.post("/api/company", async (req, res) => {
     console.log('============ DEBUG: Company Endpoint ============');
     console.log('Headers:', req.headers);
