@@ -338,7 +338,7 @@ export async function registerRoutes(app: Express) {
                 name: company_name,
                 job_title,
                 website: company_website,
-                twitter_handle: twitter_handle?.replace('https://x.com/', '').replace('@', ''),
+                twitter_handle: twitter_handle, // Store full URL
                 twitter_followers: company_twitter_followers,
                 linkedin_url: company_linkedin_url,
                 funding_stage,
