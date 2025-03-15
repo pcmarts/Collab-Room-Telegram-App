@@ -51,14 +51,6 @@ export default function CompanyBasics() {
     }
   }, [profileData]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   const handleNext = () => {
     // Validate all required fields
     if (!formData.company_name || !formData.job_title || !formData.website || 
@@ -79,9 +71,9 @@ export default function CompanyBasics() {
       job_title: formData.job_title.trim(),
       website: formData.website.trim(),
       twitter_url: formData.twitter_url.trim(),
-      linkedin_url: formData.linkedin_url.trim(),
+      linkedin_url: formData.linkedin_url.trim(), 
       funding_stage: formData.funding_stage,
-      twitter_followers: formData.twitter_followers
+      twitter_followers: formData.twitter_followers 
     };
 
     // Debug log
@@ -112,7 +104,7 @@ export default function CompanyBasics() {
               id="company_name"
               name="company_name"
               value={formData.company_name}
-              onChange={handleInputChange}
+              onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
               required
             />
           </div>
@@ -123,7 +115,7 @@ export default function CompanyBasics() {
               id="job_title"
               name="job_title"
               value={formData.job_title}
-              onChange={handleInputChange}
+              onChange={(e) => setFormData(prev => ({ ...prev, job_title: e.target.value }))}
               required
             />
           </div>
@@ -135,7 +127,7 @@ export default function CompanyBasics() {
               name="website"
               type="url"
               value={formData.website}
-              onChange={handleInputChange}
+              onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
               required
             />
           </div>
@@ -147,7 +139,7 @@ export default function CompanyBasics() {
               name="twitter_url"
               type="url"
               value={formData.twitter_url}
-              onChange={handleInputChange}
+              onChange={(e) => setFormData(prev => ({ ...prev, twitter_url: e.target.value }))}
               required
             />
           </div>
@@ -179,7 +171,7 @@ export default function CompanyBasics() {
               name="linkedin_url"
               type="url"
               value={formData.linkedin_url}
-              onChange={handleInputChange}
+              onChange={(e) => setFormData(prev => ({ ...prev, linkedin_url: e.target.value }))}
               required
             />
           </div>

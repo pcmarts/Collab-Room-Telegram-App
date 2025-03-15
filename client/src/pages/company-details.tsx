@@ -44,37 +44,6 @@ export default function CompanyDetails() {
     }
   }, [profileData]);
 
-  // Save form data to session storage whenever it changes
-  useEffect(() => {
-    sessionStorage.setItem('companyDetailsData', JSON.stringify(formData));
-  }, [formData]);
-
-  const toggleNetwork = (network: string) => {
-    setFormData(prev => ({
-      ...prev,
-      blockchain_networks: prev.blockchain_networks.includes(network)
-        ? prev.blockchain_networks.filter(n => n !== network)
-        : [...prev.blockchain_networks, network]
-    }));
-  };
-
-  const toggleCategory = (category: string) => {
-    setExpandedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
-  };
-
-  const clearCategorySelections = (category: string) => {
-    setFormData(prev => ({
-      ...prev,
-      blockchain_networks: prev.blockchain_networks.filter(network =>
-        !BLOCKCHAIN_NETWORK_CATEGORIES[category].includes(network)
-      )
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -87,8 +56,9 @@ export default function CompanyDetails() {
       const userFormData = JSON.parse(sessionStorage.getItem('userFormData') || '{}');
       const referralCode = sessionStorage.getItem('referralCode');
 
-      console.log('Company form data from session storage:', basicData); // Debug log
-      console.log('Referral code from session storage:', referralCode); // Debug log
+      console.log('Company basic data:', basicData); // Debug log
+      console.log('User form data:', userFormData); // Debug log
+      console.log('Referral code:', referralCode); // Debug log
 
       // Get Telegram username from the initData
       const telegramData = window.Telegram?.WebApp?.initDataUnsafe?.user;
@@ -99,8 +69,7 @@ export default function CompanyDetails() {
       }
 
       if (!basicData.company_name || !basicData.website || !basicData.job_title ||
-          !basicData.twitter_url || !basicData.funding_stage || !basicData.linkedin_url || 
-          !basicData.twitter_followers) {
+          !basicData.twitter_url || !basicData.funding_stage) {
         throw new Error('Please complete all company information fields');
       }
 
@@ -109,15 +78,15 @@ export default function CompanyDetails() {
       }
 
       const submitData = {
-        // User Information
+        // User information
         first_name: userFormData.first_name,
         last_name: userFormData.last_name,
         handle,
-        linkedin_url: userFormData.linkedin_url,
+        linkedin_url: userFormData.linkedin_url, // Personal LinkedIn URL
         email: userFormData.email,
         twitter_url: userFormData.twitter_url,
         twitter_followers: userFormData.twitter_followers,
-        referral_code: referralCode || '', // Ensure referral code is included
+        referral_code: referralCode, // Include referral code for user
 
         // Company information
         company_name: basicData.company_name,
@@ -125,12 +94,12 @@ export default function CompanyDetails() {
         twitter_handle: basicData.twitter_url.replace("https://x.com/", "").replace("@", ""),
         job_title: basicData.job_title,
         funding_stage: basicData.funding_stage,
-        linkedin_url: basicData.linkedin_url, // Company LinkedIn URL
-        twitter_followers: basicData.twitter_followers, // Company Twitter followers
         has_token: formData.has_token,
         token_ticker: formData.has_token ? formData.token_ticker : undefined,
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
         tags: sectorData.company_tags,
+        company_linkedin_url: basicData.linkedin_url, // Company LinkedIn URL
+        company_twitter_followers: basicData.twitter_followers, // Company Twitter followers
 
         // Telegram data
         initData: window.Telegram?.WebApp?.initData || ''
@@ -147,8 +116,7 @@ export default function CompanyDetails() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit application');
+        throw new Error('Failed to submit application');
       }
 
       // Clear session storage after successful submission
@@ -176,6 +144,32 @@ export default function CompanyDetails() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const toggleNetwork = (network: string) => {
+    setFormData(prev => ({
+      ...prev,
+      blockchain_networks: prev.blockchain_networks.includes(network)
+        ? prev.blockchain_networks.filter(n => n !== network)
+        : [...prev.blockchain_networks, network]
+    }));
+  };
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
+  const clearCategorySelections = (category: string) => {
+    setFormData(prev => ({
+      ...prev,
+      blockchain_networks: prev.blockchain_networks.filter(network =>
+        !BLOCKCHAIN_NETWORK_CATEGORIES[category].includes(network)
+      )
+    }));
   };
 
   return (
@@ -222,7 +216,6 @@ export default function CompanyDetails() {
               <div className="space-y-4">
                 <div>
                   <Label>Blockchain Networks *</Label>
-                  {/* Networks selection count */}
                   {formData.blockchain_networks.length > 0 && (
                     <div className="flex items-center justify-between mt-2">
                       <Badge variant="secondary" className="text-xs">
@@ -241,7 +234,6 @@ export default function CompanyDetails() {
                 </div>
 
                 <div className="space-y-3">
-                  {/* Categorized network selection */}
                   {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
                     <Card key={category} className="border rounded-lg overflow-hidden">
                       <div
@@ -250,7 +242,6 @@ export default function CompanyDetails() {
                       >
                         <div className="font-medium">{category}</div>
                         <div className="flex items-center gap-2">
-                          {/* Category-specific selection count */}
                           {formData.blockchain_networks.filter(network => networks.includes(network)).length > 0 && (
                             <Badge variant="secondary" className="text-xs">
                               {formData.blockchain_networks.filter(network => networks.includes(network)).length}
@@ -265,7 +256,6 @@ export default function CompanyDetails() {
 
                       {expandedCategories.includes(category) && (
                         <CardContent className="pt-2">
-                          {/* Clear category button */}
                           {formData.blockchain_networks.some(network => networks.includes(network)) && (
                             <div className="flex justify-end mb-2">
                               <Button
