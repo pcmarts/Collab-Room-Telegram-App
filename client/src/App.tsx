@@ -100,18 +100,35 @@ function App() {
 
   useEffect(() => {
     // Initialize Telegram WebApp
-    if (window.Telegram?.WebApp) {
+    const initializeTelegramWebApp = () => {
+      if (!window.Telegram?.WebApp) {
+        console.log('Telegram WebApp not found');
+        return;
+      }
+
       try {
         // Tell Telegram web app that we're ready
         window.Telegram.WebApp.ready();
+        console.log('WebApp ready signal sent');
 
-        // Request fullscreen mode
-        window.Telegram.WebApp.web_app_request_fullscreen();
-        console.log('Fullscreen request sent successfully');
+        // Set a small delay to ensure the WebApp is fully initialized
+        setTimeout(() => {
+          try {
+            // Request fullscreen mode
+            window.Telegram.WebApp.web_app_request_fullscreen();
+            console.log('Fullscreen request sent');
+          } catch (fullscreenError) {
+            console.error('Failed to request fullscreen:', fullscreenError);
+          }
+        }, 100);
+
       } catch (error) {
         console.error('Error initializing Telegram WebApp:', error);
       }
-    }
+    };
+
+    // Initialize immediately
+    initializeTelegramWebApp();
 
     // Prefetch critical data
     const prefetchData = async () => {
