@@ -1664,12 +1664,3 @@ export default function CreateCollaborationSteps({
     </div>
   );
 }
-const COLLAB_TYPES = [
-  "Podcast Guest Appearance",
-  "Twitter Spaces Guest",
-  "Co-Marketing on Twitter",
-  "Blog Post Feature", 
-  "Newsletter Feature",
-  "Report & Research Feature",
-  "Live Stream Guest Appearance",
-] as const;
