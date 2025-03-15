@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Card } from "@/components/ui/card";
 
 interface SwipeableCardProps {
@@ -17,10 +17,28 @@ interface SwipeableCardProps {
 
 export function SwipeableCard({ data, onSwipe, active }: SwipeableCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 0, 200], [-30, 0, 30]);
+
+  // Add background color transform for swipe feedback
+  const background = useTransform(
+    x,
+    [-200, 0, 200],
+    ["rgba(239, 68, 68, 0.1)", "rgba(255, 255, 255, 0)", "rgba(34, 197, 94, 0.1)"]
+  );
 
   const handleDragEnd = (event: any, info: any) => {
     if (Math.abs(info.offset.x) > 100) {
-      onSwipe(info.offset.x > 0 ? "right" : "left");
+      const direction = info.offset.x > 0 ? "right" : "left";
+
+      // Animate the card off screen
+      const targetX = direction === "right" ? 1000 : -1000;
+      x.set(targetX);
+
+      // Notify parent after a short delay to allow animation to play
+      setTimeout(() => {
+        onSwipe(direction);
+      }, 200);
     }
   };
 
@@ -28,16 +46,18 @@ export function SwipeableCard({ data, onSwipe, active }: SwipeableCardProps) {
 
   return (
     <motion.div
-      drag={!isFlipped ? "x" : false}
+      className="absolute inset-0 touch-none"
+      style={{ 
+        x,
+        rotate,
+        background,
+      }}
+      drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       onDragEnd={handleDragEnd}
       whileDrag={{ scale: 1.05 }}
-      animate={{ 
-        rotateY: isFlipped ? 180 : 0,
-        transition: { duration: 0.5 }
-      }}
-      className="absolute inset-0 touch-none"
-      style={{ perspective: "1000px" }}
+      animate={{ rotateY: isFlipped ? 180 : 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
       <Card className="w-full h-full p-6 select-none bg-card">
         {!isFlipped ? (
