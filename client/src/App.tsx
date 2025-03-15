@@ -101,11 +101,16 @@ function App() {
   useEffect(() => {
     // Initialize Telegram WebApp
     if (window.Telegram?.WebApp) {
-      // Tell Telegram web app that we're ready
-      window.Telegram.WebApp.ready();
+      try {
+        // Tell Telegram web app that we're ready
+        window.Telegram.WebApp.ready();
 
-      // Expand to full screen
-      window.Telegram.WebApp.expand();
+        // Request fullscreen mode
+        window.Telegram.WebApp.web_app_request_fullscreen();
+        console.log('Fullscreen request sent successfully');
+      } catch (error) {
+        console.error('Error initializing Telegram WebApp:', error);
+      }
     }
 
     // Prefetch critical data
