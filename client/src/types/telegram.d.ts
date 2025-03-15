@@ -14,7 +14,6 @@ interface TelegramWebApp {
   };
   close(): void;
   ready(): void;
-  web_app_request_fullscreen(): void;
 }
 
 interface Window {

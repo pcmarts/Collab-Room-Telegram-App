@@ -4,7 +4,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
-import { Button } from "@/components/ui/button";
 import Dashboard from "@/pages/dashboard";
 import DiscoverPage from "@/pages/DiscoverPage";
 import MatchesPage from "@/pages/MatchesPage";
@@ -31,36 +30,9 @@ import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
 
 function Router() {
-  // Add function to handle fullscreen request
-  const handleFullscreenRequest = () => {
-    console.log('Attempting to request fullscreen...');
-    try {
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.web_app_request_fullscreen();
-        console.log('Fullscreen request sent successfully');
-      } else {
-        console.log('Telegram WebApp not available');
-      }
-    } catch (error) {
-      console.error('Error requesting fullscreen:', error);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background w-full">
-      {/* Add fullscreen button at the top */}
-      {window.Telegram?.WebApp && (
-        <div className="fixed top-4 right-4 z-50">
-          <Button
-            onClick={handleFullscreenRequest}
-            variant="outline"
-            size="sm"
-          >
-            Fullscreen
-          </Button>
-        </div>
-      )}
-      <div className="w-full px-4 py-2 pb-20">
+      <div className="w-full px-4 py-2 pb-20"> {/* Added padding bottom for bottom navigation */}
         <Switch>
           {/* Welcome and Application Flow */}
           <Route path="/welcome" component={Welcome} />
@@ -129,13 +101,11 @@ function App() {
   useEffect(() => {
     // Initialize Telegram WebApp
     if (window.Telegram?.WebApp) {
-      try {
-        // Tell Telegram web app that we're ready
-        window.Telegram.WebApp.ready();
-        console.log('WebApp ready signal sent');
-      } catch (error) {
-        console.error('Error initializing Telegram WebApp:', error);
-      }
+      // Tell Telegram web app that we're ready
+      window.Telegram.WebApp.ready();
+
+      // Expand to full screen
+      window.Telegram.WebApp.expand();
     }
 
     // Prefetch critical data
