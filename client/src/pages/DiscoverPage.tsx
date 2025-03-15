@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion, useMotionValue, useTransform, useAnimation } from "framer-motion";
 import { Card } from "@/components/ui/card";
 
 const DUMMY_CARDS = [
@@ -32,8 +32,11 @@ const DUMMY_CARDS = [
 export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cards, setCards] = useState(DUMMY_CARDS);
+  const cardElem = useRef(null);
 
   const x = useMotionValue(0);
+  const controls = useAnimation();
+  const [constrained, setConstrained] = useState(true);
   const rotate = useTransform(x, [-200, 200], [-30, 30]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
   const background = useTransform(
@@ -42,10 +45,24 @@ export default function DiscoverPage() {
     ["rgba(239, 68, 68, 0.1)", "rgba(255, 255, 255, 0)", "rgba(34, 197, 94, 0.1)"]
   );
 
-  const handleDragEnd = (_: any, info: any) => {
+  const handleDragEnd = async (_: any, info: any) => {
     const threshold = 100;
     if (Math.abs(info.offset.x) > threshold) {
+      setConstrained(false);
       const direction = info.offset.x > 0 ? "right" : "left";
+
+      // Calculate fly-away distance
+      const parentWidth = cardElem.current?.parentNode.getBoundingClientRect().width || 1000;
+      const childWidth = cardElem.current?.getBoundingClientRect().width || 500;
+      const flyAwayDistance = direction === "left"
+        ? -parentWidth / 2 - childWidth / 2
+        : parentWidth / 2 + childWidth / 2;
+
+      // Animate the card off screen
+      await controls.start({
+        x: flyAwayDistance,
+        transition: { duration: 0.3 }
+      });
 
       // Log the action
       console.log(`Swiped ${direction} on card:`, cards[currentIndex]);
@@ -59,6 +76,11 @@ export default function DiscoverPage() {
         }
         return prev + 1;
       });
+
+      // Reset position for next card
+      x.set(0);
+      setConstrained(true);
+      controls.set({ x: 0 });
     }
   };
 
@@ -89,14 +111,17 @@ export default function DiscoverPage() {
           {/* Current Card */}
           <motion.div
             className="absolute inset-0"
+            ref={cardElem}
             style={{
               x,
               rotate,
               opacity,
               background,
             }}
+            animate={controls}
             drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
+            dragConstraints={constrained && { left: 0, right: 0 }}
+            dragElastic={1}
             onDragEnd={handleDragEnd}
             whileTap={{ cursor: "grabbing" }}
           >
