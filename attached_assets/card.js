@@ -1,15 +1,22 @@
-import { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { motion, useMotionValue, useAnimation } from "framer-motion";
-import { Card as UICard } from "@/components/ui/card";
+import styled from "@emotion/styled";
 
-export const Card = ({ children, onVote, ...props }) => {
+const StyledCard = styled(motion.div)`
+  position: absolute;
+`;
+
+export const Card = ({ children, style, onVote, id, ...props }) => {
+  // motion stuff
   const cardElem = useRef(null);
 
   const x = useMotionValue(0);
   const controls = useAnimation();
 
   const [constrained, setConstrained] = useState(true);
+
   const [direction, setDirection] = useState();
+
   const [velocity, setVelocity] = useState();
 
   const getVote = (childNode, parentNode) => {
@@ -24,7 +31,7 @@ export const Card = ({ children, onVote, ...props }) => {
     return result;
   };
 
-  // Determine direction of swipe based on velocity
+  // determine direction of swipe based on velocity
   const getDirection = () => {
     return velocity >= 1 ? "right" : velocity <= -1 ? "left" : undefined;
   };
@@ -36,7 +43,8 @@ export const Card = ({ children, onVote, ...props }) => {
 
   const flyAway = (min) => {
     const flyAwayDistance = (direction) => {
-      const parentWidth = cardElem.current.parentNode.getBoundingClientRect().width;
+      const parentWidth = cardElem.current.parentNode.getBoundingClientRect()
+        .width;
       const childWidth = cardElem.current.getBoundingClientRect().width;
       return direction === "left"
         ? -parentWidth / 2 - childWidth / 2
@@ -57,7 +65,7 @@ export const Card = ({ children, onVote, ...props }) => {
         const childNode = cardElem.current;
         const parentNode = cardElem.current.parentNode;
         const result = getVote(childNode, parentNode);
-        result !== undefined && onVote(result ? "right" : "left"); //Adapt onVote to accept "left" or "right"
+        result !== undefined && onVote(result);
       }
     });
 
@@ -65,8 +73,7 @@ export const Card = ({ children, onVote, ...props }) => {
   });
 
   return (
-    <motion.div
-      className="absolute w-full"
+    <StyledCard
       animate={controls}
       dragConstraints={constrained && { left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={1}
@@ -77,9 +84,7 @@ export const Card = ({ children, onVote, ...props }) => {
       whileTap={{ scale: 1.1 }}
       {...props}
     >
-      <UICard className="w-full h-full p-6 select-none">
-        {children}
-      </UICard>
-    </motion.div>
+      {children}
+    </StyledCard>
   );
 };

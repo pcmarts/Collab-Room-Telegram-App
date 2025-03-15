@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { SwipeableCard } from "@/components/SwipeableCard"
+import { Stack } from "@/components/Stack"
 
 // Dummy data for testing
 const DUMMY_CARDS = [
@@ -30,16 +30,8 @@ const DUMMY_CARDS = [
 ];
 
 export default function DiscoverPage() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const handleSwipe = (direction: "left" | "right") => {
-    console.log(`Swiped ${direction} on card ${DUMMY_CARDS[currentIndex].id}`);
-
-    if (direction === "right") {
-      console.log("Match requested!");
-    }
-
-    setCurrentIndex((prev) => (prev === DUMMY_CARDS.length - 1 ? 0 : prev + 1));
+  const handleVote = (item, vote) => {
+    console.log(item, vote ? "liked" : "disliked");
   };
 
   return (
@@ -48,14 +40,23 @@ export default function DiscoverPage() {
         <h1 className="text-2xl font-bold mb-6">Discover</h1>
 
         <div className="relative w-full aspect-[3/4] mx-auto">
-          {DUMMY_CARDS.map((card, index) => (
-            <SwipeableCard
-              key={card.id}
-              data={card}
-              onSwipe={handleSwipe}
-              active={index === currentIndex}
-            />
-          ))}
+          <Stack onVote={handleVote}>
+            {DUMMY_CARDS.map((card) => (
+              <div key={card.id} data-value={card.id}>
+                <div className="text-sm font-medium text-muted-foreground mb-2">
+                  {card.collaborationType}
+                </div>
+                <h3 className="text-2xl font-semibold mb-2">{card.title}</h3>
+                <div className="flex flex-col space-y-1 mb-4">
+                  <p className="text-lg">{card.companyName}</p>
+                  <p className="text-sm text-muted-foreground">{card.roleTitle}</p>
+                </div>
+                <p className="text-sm text-muted-foreground mt-auto">
+                  Tap for more info
+                </p>
+              </div>
+            ))}
+          </Stack>
         </div>
 
         {/* Instructions */}
