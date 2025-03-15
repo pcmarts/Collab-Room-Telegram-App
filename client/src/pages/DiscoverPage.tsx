@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { SwipeableCard } from "@/components/SwipeableCard"
-import { motion, AnimatePresence } from "framer-motion"
 
 // Dummy data for testing
 const DUMMY_CARDS = [
@@ -31,26 +30,16 @@ const DUMMY_CARDS = [
 ];
 
 export default function DiscoverPage() {
-  const [cards, setCards] = useState(DUMMY_CARDS);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleSwipe = (direction: "left" | "right") => {
-    // Log the swipe action
-    console.log(`Swiped ${direction} on card ${cards[currentIndex].id}`);
+    console.log(`Swiped ${direction} on card ${DUMMY_CARDS[currentIndex].id}`);
 
-    // In a real app, we would handle the match request here
     if (direction === "right") {
-      // Handle match request
       console.log("Match requested!");
     }
 
-    // Move to next card
-    if (currentIndex < cards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      // Reset to beginning when we run out of cards
-      setCurrentIndex(0);
-    }
+    setCurrentIndex((prev) => (prev === DUMMY_CARDS.length - 1 ? 0 : prev + 1));
   };
 
   return (
@@ -59,20 +48,15 @@ export default function DiscoverPage() {
         <h1 className="text-2xl font-bold mb-6">Discover</h1>
 
         <div className="relative w-full aspect-[3/4] mx-auto">
-          <AnimatePresence mode="wait">
-            {cards.map((card, index) => (
-              <div 
-                key={card.id}
-                className={`absolute inset-0 ${index < currentIndex ? 'hidden' : ''}`}
-              >
-                <SwipeableCard
-                  data={card}
-                  onSwipe={handleSwipe}
-                  active={index === currentIndex}
-                />
-              </div>
-            ))}
-          </AnimatePresence>
+          {DUMMY_CARDS.map((card, index) => (
+            <div key={card.id} style={{ display: index < currentIndex ? 'none' : 'block' }}>
+              <SwipeableCard
+                data={card}
+                onSwipe={handleSwipe}
+                active={index === currentIndex}
+              />
+            </div>
+          ))}
         </div>
 
         {/* Instructions */}
@@ -83,5 +67,5 @@ export default function DiscoverPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
