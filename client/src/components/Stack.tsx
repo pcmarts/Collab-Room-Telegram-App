@@ -1,10 +1,10 @@
 import React, { useState, Children } from "react";
-import { Card } from "./SwipeableCard";
+import { SwipeableCard } from "./SwipeableCard";
 
-export const Stack = ({ onVote, children }) => {
+export const Stack = ({ onVote, children, ...props }) => {
   const [stack, setStack] = useState(Children.toArray(children));
 
-  // Return new array with last item removed
+  // return new array with last item removed
   const pop = (array) => {
     return array.filter((_, index) => {
       return index < array.length - 1;
@@ -12,26 +12,28 @@ export const Stack = ({ onVote, children }) => {
   };
 
   const handleVote = (item, vote) => {
-    // Update the stack
+    // update the stack
     let newStack = pop(stack);
     setStack(newStack);
 
-    // Run function from onVote prop, passing the current item and value of vote
+    // run function from onVote prop, passing the current item and value of vote
     onVote(item, vote);
   };
 
   return (
-    <div className="w-full overflow-hidden flex justify-center items-center relative">
+    <div className="w-full overflow-hidden flex justify-center items-center relative" {...props}>
       {stack.map((item, index) => {
         let isTop = index === stack.length - 1;
         return (
-          <Card
-            drag={isTop ? "x" : false} // Only top card is draggable
+          <SwipeableCard
             key={item.key || index}
             onVote={(result) => handleVote(item, result)}
+            style={{
+              zIndex: index * 10
+            }}
           >
             {item}
-          </Card>
+          </SwipeableCard>
         );
       })}
     </div>

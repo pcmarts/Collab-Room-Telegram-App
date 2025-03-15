@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Stack } from "@/components/Stack"
+import styled from "@emotion/styled"
 
 // Dummy data for testing
 const DUMMY_CARDS = [
@@ -31,7 +32,7 @@ const DUMMY_CARDS = [
 
 export default function DiscoverPage() {
   const handleVote = (item, vote) => {
-    console.log(item, vote ? "liked" : "disliked");
+    console.log(item.props, vote ? "liked" : "disliked");
   };
 
   return (
@@ -42,7 +43,7 @@ export default function DiscoverPage() {
         <div className="relative w-full aspect-[3/4] mx-auto">
           <Stack onVote={handleVote}>
             {DUMMY_CARDS.map((card) => (
-              <div key={card.id} data-value={card.id}>
+              <div key={card.id} data-value={card.id} className="bg-card rounded-lg w-full h-full">
                 <div className="text-sm font-medium text-muted-foreground mb-2">
                   {card.collaborationType}
                 </div>
