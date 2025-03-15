@@ -13,15 +13,14 @@ import CompanyDetails from "@/pages/company-details";
 import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
 import ApplicationForm from "@/pages/application-form";
-
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
+import MatchingPreferences from "@/pages/matching-preferences"; // Added new import
 
 // Admin Pages
 import AdminUsers from "@/pages/admin/users";
 
-// BrowseCollaborations page removed as requested
 import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
 import CreateCollaborationSteps from "@/pages/create-collaboration-steps";
 import EditCollaborationSteps from "@/pages/edit-collaboration-steps";
@@ -46,6 +45,7 @@ function Router() {
           <Route path="/application-status" component={ApplicationStatus} />
           <Route path="/application-form" component={ApplicationForm} />
           <Route path="/apply" component={Apply} />
+          <Route path="/matching-preferences" component={MatchingPreferences} /> {/* Added new route */}
 
           {/* Main App Routes - require authentication */}
           <Route path="/">
