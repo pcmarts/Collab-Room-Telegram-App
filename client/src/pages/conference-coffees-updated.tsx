@@ -312,9 +312,8 @@ export default function ConferenceCoffees() {
                               
                                 {/* Categorized sector selection with per-category badges */}
                                 {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => {
-                                  // Calculate how many items in this category are selected - fix type error
-                                  const selectedCount = (field.value as string[])
-                                    .filter(item => tags.includes(item)).length || 0;
+                                  // Calculate how many items in this category are selected
+                                  const selectedCount = field.value?.filter(item => tags.includes(item)).length || 0;
                                   
                                   return (
                                     <div key={category} className="border rounded p-3">

@@ -130,15 +130,6 @@ export default function MarketingCollabs() {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [collabsToHost, setCollabsToHost] = useState<string[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-
-  // Add the missing toggleFilter function
-  const toggleFilter = (filterName: keyof typeof filtersEnabled) => {
-    setFiltersEnabled(prev => ({
-      ...prev,
-      [filterName]: !prev[filterName]
-    }));
-  };
-
   const [filtersEnabled, setFiltersEnabled] = useState({
     topics: false,
     companySectors: false, 
@@ -273,7 +264,7 @@ export default function MarketingCollabs() {
                                   {/* Category-specific selection count badge */}
                                   {field.value.filter(tag => tags.includes(tag)).length > 0 && (
                                     <Badge variant="secondary" className="text-xs">
-                                      {(field.value as string[]).filter(tag => tags.includes(tag)).length}
+                                      {field.value.filter(tag => tags.includes(tag)).length}
                                     </Badge>
                                   )}
                                   {expandedCategories.includes(category) ? 
