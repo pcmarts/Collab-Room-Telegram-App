@@ -15,14 +15,10 @@ import CompanyDetails from "@/pages/company-details";
 import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
 import ApplicationForm from "@/pages/application-form";
-
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
-
-// Admin Pages
 import AdminUsers from "@/pages/admin/users";
-
 import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
 import CreateCollaborationSteps from "@/pages/create-collaboration-steps";
 import EditCollaborationSteps from "@/pages/edit-collaboration-steps";
@@ -103,6 +99,15 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Initialize Telegram WebApp
+    if (window.Telegram?.WebApp) {
+      // Tell Telegram web app that we're ready
+      window.Telegram.WebApp.ready();
+
+      // Expand to full screen
+      window.Telegram.WebApp.expand();
+    }
+
     // Prefetch critical data
     const prefetchData = async () => {
       try {
