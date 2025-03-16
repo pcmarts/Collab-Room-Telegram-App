@@ -60,16 +60,16 @@ function Router() {
             {(params) => <Apply id={params.id} />}
           </Route>
 
-          {/* Main App Routes */}
-          <Route path="/">
-            <Redirect to="/discover" />
-          </Route>
-
           {/* New Tab Routes */}
           <Route path="/discover" component={DiscoverPage} />
           <Route path="/matches" component={MatchesPage} />
           <Route path="/settings">
             <Redirect to="/dashboard" />
+          </Route>
+
+          {/* Root Route */}
+          <Route path="/">
+            <Redirect to="/discover" />
           </Route>
 
           {/* Existing Routes */}
