@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { Coffee, Presentation, Inbox, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CollaborationDialogProps {
@@ -35,21 +35,30 @@ export function CollaborationDialog({ isOpen, onClose, collaboration }: Collabor
       case 'marketing':
         return (
           <div className="flex gap-2 mb-4">
-            <Badge variant="outline" className="bg-blue-50">{collaboration.collaborationType}</Badge>
+            <Badge variant="outline" className="bg-blue-50 flex items-center gap-1">
+              <Presentation className="h-3 w-3" />
+              {collaboration.collaborationType}
+            </Badge>
             <Badge variant="outline" className="bg-green-50">{`${collaboration.roleTitle} at ${collaboration.companyName}`}</Badge>
           </div>
         );
       case 'conference':
         return (
           <div className="flex gap-2 mb-4">
-            <Badge variant="outline" className="bg-purple-50">{collaboration.eventName}</Badge>
+            <Badge variant="outline" className="bg-purple-50 flex items-center gap-1">
+              <Coffee className="h-3 w-3" />
+              {collaboration.eventName}
+            </Badge>
             <Badge variant="outline" className="bg-green-50">{`${collaboration.roleTitle} at ${collaboration.companyName}`}</Badge>
           </div>
         );
       case 'request':
         return (
           <div className="flex gap-2 mb-4">
-            <Badge variant="outline" className="bg-orange-50">Collaboration Request</Badge>
+            <Badge variant="outline" className="bg-orange-50 flex items-center gap-1">
+              <Inbox className="h-3 w-3" />
+              Collaboration Request
+            </Badge>
             <Badge variant="outline" className="bg-green-50">
               {`${collaboration.requestingUser?.role} at ${collaboration.requestingUser?.company}`}
             </Badge>
