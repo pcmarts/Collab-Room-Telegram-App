@@ -13,6 +13,7 @@ const DUMMY_MATCHES = [
     roleTitle: "VP of Marketing",
     matchDate: "March 15, 2025",
     collaborationType: "Marketing",
+    matchedPerson: "Alex Thompson",
   },
   {
     id: "2",
@@ -21,6 +22,7 @@ const DUMMY_MATCHES = [
     roleTitle: "Community Manager",
     matchDate: "March 14, 2025",
     collaborationType: "Conference",
+    matchedPerson: "Maria Garcia",
   },
   {
     id: "3",
@@ -29,6 +31,7 @@ const DUMMY_MATCHES = [
     roleTitle: "Content Director",
     matchDate: "March 13, 2025",
     collaborationType: "Marketing",
+    matchedPerson: "James Wilson",
   },
 ];
 
@@ -53,6 +56,7 @@ export default function MatchesPage() {
               <CardContent>
                 <div className="flex justify-between items-center">
                   <div className="space-y-1">
+                    <p className="text-sm font-medium">{match.matchedPerson}</p>
                     <p className="text-sm text-muted-foreground">{match.roleTitle}</p>
                     <p className="text-xs text-muted-foreground">Matched on {match.matchDate}</p>
                   </div>
