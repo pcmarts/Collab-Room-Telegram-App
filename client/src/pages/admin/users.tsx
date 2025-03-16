@@ -150,41 +150,44 @@ export default function AdminUsers() {
                   </div>
                 ) : (
                   approvedUsers.map((user: User) => (
-                    <Card key={user.id} className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
+                    <Card key={user.id} className="p-6">
+                      <div className="space-y-4">
+                        {/* User Info Section */}
+                        <div className="space-y-3">
                           <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            <span className="font-medium">
+                            <User className="h-5 w-5 text-muted-foreground" />
+                            <span className="font-medium text-lg">
                               {user.first_name} {user.last_name}
-                            </span>
-                            <span className="text-muted-foreground">
-                              (@{user.handle})
                             </span>
                           </div>
 
+                          <div className="text-sm text-muted-foreground ml-7">
+                            @{user.handle}
+                          </div>
+
                           {user.email && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <AtSign className="h-4 w-4" />
-                              <span>{user.email}</span>
+                            <div className="flex items-center gap-2 ml-7">
+                              <AtSign className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{user.email}</span>
                             </div>
                           )}
 
                           {user.company && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Building className="h-4 w-4" />
-                              <span>{user.company.name}</span>
-                              <span className="text-muted-foreground">
-                                • {user.company.job_title}
-                              </span>
+                            <div className="flex items-center gap-2 ml-7">
+                              <Building className="h-4 w-4 text-muted-foreground" />
+                              <div className="text-sm">
+                                <span className="font-medium">{user.company.name}</span>
+                                <span className="text-muted-foreground"> • {user.company.job_title}</span>
+                              </div>
                             </div>
                           )}
                         </div>
 
-                        <div className="flex gap-2">
+                        {/* Action Buttons - Full width on mobile, inline on desktop */}
+                        <div className="space-y-2 sm:space-y-0 sm:space-x-2 sm:flex sm:justify-end pt-2">
                           <Button
                             variant="outline"
-                            size="sm"
+                            className="w-full sm:w-auto"
                             onClick={() => handleMessageUser(user.handle)}
                           >
                             <MessageCircle className="w-4 h-4 mr-2" />
@@ -192,7 +195,7 @@ export default function AdminUsers() {
                           </Button>
                           <Button
                             variant="default"
-                            size="sm"
+                            className="w-full sm:w-auto"
                             onClick={() => handleImpersonate(user.telegram_id)}
                             disabled={startImpersonationMutation.isPending}
                           >
