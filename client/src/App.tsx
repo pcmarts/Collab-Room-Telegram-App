@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, Route, Redirect } from "wouter";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -29,10 +29,24 @@ import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
 
+// Application form routes that should not show bottom navigation
+const APPLICATION_ROUTES = [
+  '/welcome',
+  '/personal-info',
+  '/company-basics',
+  '/company-sector',
+  '/company-details',
+  '/application-status',
+  '/application-form'
+];
+
 function Router() {
+  const [location] = useLocation();
+  const showBottomNav = !APPLICATION_ROUTES.includes(location);
+
   return (
     <div className="min-h-screen bg-background w-full">
-      <div className="w-full px-4 py-2 pb-20"> {/* Added padding bottom for bottom navigation */}
+      <div className={`w-full px-4 py-2 ${showBottomNav ? 'pb-20' : ''}`}>
         <Switch>
           {/* Welcome and Application Flow */}
           <Route path="/welcome" component={Welcome} />
@@ -89,7 +103,7 @@ function Router() {
           <Route path="/not-found" component={NotFound} />
           <Route path="*" component={NotFound} />
         </Switch>
-        <BottomNavigation />
+        {showBottomNav && <BottomNavigation />}
       </div>
     </div>
   );
