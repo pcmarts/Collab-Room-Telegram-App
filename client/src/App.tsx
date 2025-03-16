@@ -71,7 +71,9 @@ function Router() {
           {/* New Tab Routes */}
           <Route path="/discover" component={DiscoverPage} />
           <Route path="/matches" component={MatchesPage} />
-          <Route path="/settings" component={Settings} />
+          <Route path="/settings">
+            <Redirect to="/dashboard" />
+          </Route>
 
           {/* Existing Routes */}
           <Route path="/dashboard" component={Dashboard} />
