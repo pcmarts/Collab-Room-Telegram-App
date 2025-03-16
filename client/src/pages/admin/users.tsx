@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { queryClient } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
+import { Calendar, Building2, AtSign } from 'lucide-react';
 
-// Define minimal User interface for this component
+// Define expanded User interface for this component
 interface User {
   id: string;
   telegram_id: string;
@@ -19,28 +19,25 @@ interface User {
   email?: string;
   handle?: string;
   is_admin: boolean;
+  is_approved: boolean;
+  applied_at: string;
+  linkedin_url?: string;
+  twitter_url?: string;
+  twitter_followers?: string;
+  // Add any other relevant fields
 }
 
 export default function AdminUsers() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [, setLocation] = useLocation();
 
-  // Define interface for profile data
-  interface ProfileData {
-    user: {
-      id: string;
-      name?: string;
-      is_admin: boolean;
-    };
-  }
-
   // Check if current user is admin
-  const { data: currentUserData, isLoading: checkingAdmin } = useQuery<ProfileData>({
+  const { data: currentUserData, isLoading: checkingAdmin } = useQuery({
     queryKey: ['/api/profile']
   });
 
   // Effect to handle admin status update
-  useEffect(() => {
+  React.useEffect(() => {
     if (currentUserData?.user?.is_admin) {
       setIsAdmin(true);
     }
@@ -53,71 +50,37 @@ export default function AdminUsers() {
     retry: false
   });
 
-  // Mutation for toggling admin status
-  const toggleAdminMutation = useMutation({
-    mutationFn: async ({ userId, isAdmin }: { userId: string; isAdmin: boolean }) => {
-      const response = await apiRequest(`/api/admin/users/${userId}/admin-status`, 'PATCH', {
-        isAdmin
+  // Mutation for approving a user
+  const approveUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await apiRequest('/api/admin/approve-user', 'POST', {
+        userId
       });
       return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       toast({
-        title: 'Success',
-        description: 'User admin status has been updated.',
+        title: "Success",
+        description: "User has been approved"
       });
     },
     onError: (error) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update admin status"
-      });
-    },
-  });
-
-  // Mutation for starting impersonation
-  const startImpersonationMutation = useMutation({
-    mutationFn: async (telegram_id: string) => {
-      const response = await apiRequest('/api/admin/impersonate', 'POST', {
-        telegram_id
-      });
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-      toast({
-        title: "Impersonation Started",
-        description: "You are now viewing the application as the selected user"
-      });
-      // Redirect to dashboard after impersonation starts
-      setLocation('/dashboard');
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to start impersonation"
+        description: "Failed to approve user"
       });
     }
   });
 
-  const handleToggleAdmin = (userId: string, currentAdminStatus: boolean) => {
-    toggleAdminMutation.mutate({
-      userId,
-      isAdmin: !currentAdminStatus,
-    });
-  };
-
-  const handleImpersonate = (telegram_id: string) => {
-    startImpersonationMutation.mutate(telegram_id);
-  };
+  // Filter for unapproved users
+  const pendingUsers = users.filter(user => !user.is_approved);
 
   if (checkingAdmin) {
     return (
       <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Admin - Users" backUrl="/dashboard" />
+        <PageHeader title="Pending Applications" backUrl="/dashboard" />
         <div className="mt-8">Loading...</div>
       </div>
     );
@@ -126,12 +89,12 @@ export default function AdminUsers() {
   if (!isAdmin) {
     return (
       <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Admin - Users" backUrl="/dashboard" />
+        <PageHeader title="Pending Applications" backUrl="/dashboard" />
         <Card className="mt-8">
           <CardHeader>
             <CardTitle>Access Denied</CardTitle>
             <CardDescription>
-              You do not have permission to access this page. Only administrators can manage users.
+              You do not have permission to access this page.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -141,72 +104,88 @@ export default function AdminUsers() {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <PageHeader title="Admin - Users" backUrl="/dashboard" />
+      <PageHeader title="Pending Applications" backUrl="/dashboard" />
 
       <div className="mt-8">
         <Card>
           <CardHeader>
-            <CardTitle>Manage Users</CardTitle>
+            <CardTitle>Review Applications</CardTitle>
             <CardDescription>
-              View and manage all users registered in the platform. Toggle admin permissions and impersonate users as needed.
+              Review and approve new user applications. {pendingUsers.length} pending applications.
             </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div>Loading users...</div>
+              <div>Loading applications...</div>
             ) : (
-              <div className="space-y-4">
-                {/* Header row - hidden on mobile */}
-                <div className="hidden md:grid md:grid-cols-4 font-semibold py-2 border-b">
-                  <div>Username</div>
-                  <div>Email/Telegram</div>
-                  <div>Admin</div>
-                  <div>Actions</div>
-                </div>
-                {users?.length === 0 ? (
+              <div className="space-y-6">
+                {pendingUsers.length === 0 ? (
                   <div className="py-4 text-center text-muted-foreground">
-                    No users found
+                    No pending applications
                   </div>
                 ) : (
-                  users?.map((user: User) => (
-                    <div key={user.id} className="flex flex-col md:grid md:grid-cols-4 gap-2 md:gap-4 py-4 border-b">
-                      {/* Mobile labels */}
-                      <div className="md:hidden font-semibold">User Info:</div>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{user.first_name} {user.last_name}</span>
-                      </div>
+                  pendingUsers.map((user: User) => (
+                    <Card key={user.id} className="p-4">
+                      <div className="space-y-4">
+                        {/* User Basic Info */}
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold">
+                              {user.first_name} {user.last_name}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              @{user.handle || 'No handle'}
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => approveUserMutation.mutate(user.id)}
+                            disabled={approveUserMutation.isPending}
+                          >
+                            Approve Application
+                          </Button>
+                        </div>
 
-                      <div className="flex flex-col">
-                        <span>{user.email || 'No email'}</span>
-                        <span className="text-sm text-muted-foreground">
-                          ID: {user.telegram_id}
-                        </span>
-                      </div>
+                        {/* Contact & Social */}
+                        <div className="grid gap-2 text-sm">
+                          {user.email && (
+                            <div className="flex items-center gap-2">
+                              <AtSign className="h-4 w-4" />
+                              <span>{user.email}</span>
+                            </div>
+                          )}
+                          {user.linkedin_url && (
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-4 w-4" />
+                              <a href={user.linkedin_url} target="_blank" rel="noopener noreferrer" 
+                                 className="text-primary hover:underline">
+                                LinkedIn Profile
+                              </a>
+                            </div>
+                          )}
+                        </div>
 
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          className="data-[state=checked]:bg-primary"
-                          checked={user.is_admin}
-                          onCheckedChange={() => handleToggleAdmin(user.id, user.is_admin)}
-                          disabled={toggleAdminMutation.isPending}
-                        />
-                        <Label htmlFor={`admin-${user.id}`}>
-                          {user.is_admin ? 'Admin' : 'User'}
-                        </Label>
-                      </div>
+                        {/* Twitter Info */}
+                        {user.twitter_url && (
+                          <div className="text-sm">
+                            <a href={user.twitter_url} target="_blank" rel="noopener noreferrer" 
+                               className="text-primary hover:underline">
+                              Twitter Profile
+                            </a>
+                            {user.twitter_followers && (
+                              <span className="ml-2 text-muted-foreground">
+                                ({user.twitter_followers} followers)
+                              </span>
+                            )}
+                          </div>
+                        )}
 
-                      <div>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="w-full md:w-auto"
-                          onClick={() => handleImpersonate(user.telegram_id)}
-                          disabled={startImpersonationMutation.isPending}
-                        >
-                          Impersonate
-                        </Button>
+                        {/* Application Date */}
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          <span>Applied on {new Date(user.applied_at).toLocaleDateString()}</span>
+                        </div>
                       </div>
-                    </div>
+                    </Card>
                   ))
                 )}
               </div>
