@@ -57,7 +57,7 @@ type TelegramReq = TelegramRequest | {
 
 function getTelegramUserFromRequest(req: TelegramReq) {
   try {
-    // If impersonating and the request is not to an admin endpoint, return impersonated user
+    // If impersonating and the request is not to an admin endpoint, return impersonated user  
     if (req.session?.impersonating && !req.path?.startsWith('/api/admin')) {
       return req.session.impersonating.impersonatedUser;
     }
@@ -146,6 +146,50 @@ export async function registerRoutes(app: Express) {
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
   }));
+
+  // Profile API endpoint
+  app.get("/api/profile", async (req: TelegramRequest, res: Response) => {
+    try {
+      console.log('============ DEBUG: Profile Endpoint ============');
+      console.log('Headers:', req.headers);
+
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        res.status(401);
+        return res.json({ error: "Unauthorized" });
+      }
+
+      // Get user from database
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        res.status(404);
+        return res.json({ error: "User not found" });
+      }
+
+      // Get company information
+      const [company] = await db.select()
+        .from(companies)
+        .where(eq(companies.user_id, user.id));
+
+      // Add impersonation information to the response
+      const response = {
+        user,
+        company,
+        impersonating: req.session?.impersonating ? {
+          originalUser: req.session.impersonating.originalUser
+        } : null
+      };
+
+      return res.json(response);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      res.status(500);
+      return res.json({ error: "Internal server error" });
+    }
+  });
   
   // Admin API endpoints
   app.get("/api/admin/check", async (req, res) => {
