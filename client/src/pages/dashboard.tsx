@@ -237,7 +237,7 @@ export default function Dashboard() {
           <Button
             variant="outline"
             className="w-full h-16 flex items-center justify-start gap-3"
-            onClick={() => setLocation('/admin/users')}
+            onClick={() => setLocation('/admin')}
           >
             <Settings className="h-5 w-5" />
             <span>Admin Panel</span>

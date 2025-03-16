@@ -24,7 +24,7 @@ export default function AdminDashboard() {
   if (checkingAdmin) {
     return (
       <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Admin Dashboard" backUrl="/dashboard" />
+        <PageHeader title="Admin Dashboard" backUrl="/admin" />
         <div className="mt-8">Loading...</div>
       </div>
     );
@@ -33,7 +33,7 @@ export default function AdminDashboard() {
   if (!isAdmin) {
     return (
       <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Admin Dashboard" backUrl="/dashboard" />
+        <PageHeader title="Admin Dashboard" backUrl="/admin" />
         <Card className="mt-8">
           <CardHeader>
             <CardTitle>Access Denied</CardTitle>
@@ -48,8 +48,8 @@ export default function AdminDashboard() {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <PageHeader title="Admin Dashboard" backUrl="/dashboard" />
-      
+      <PageHeader title="Admin Dashboard" backUrl="/admin" />
+
       <div className="mt-8 grid gap-6 md:grid-cols-2">
         {/* Applications Card */}
         <Card className="relative overflow-hidden">
