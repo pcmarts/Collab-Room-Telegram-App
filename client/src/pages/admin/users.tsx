@@ -105,7 +105,7 @@ export default function AdminUsers() {
   if (checkingAdmin) {
     return (
       <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Manage Users" backUrl="/dashboard" />
+        <PageHeader title="Manage Users" backUrl="/admin" />
         <div className="mt-8">Loading...</div>
       </div>
     );
@@ -114,7 +114,7 @@ export default function AdminUsers() {
   if (!isAdmin) {
     return (
       <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Manage Users" backUrl="/dashboard" />
+        <PageHeader title="Manage Users" backUrl="/admin" />
         <Card className="mt-8">
           <CardHeader>
             <CardTitle>Access Denied</CardTitle>
@@ -129,7 +129,7 @@ export default function AdminUsers() {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <PageHeader title="Manage Users" backUrl="/dashboard" />
+      <PageHeader title="Manage Users" backUrl="/admin" />
 
       <div className="mt-8">
         <Card>

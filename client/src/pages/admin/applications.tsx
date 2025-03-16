@@ -170,7 +170,7 @@ export default function AdminApplications() {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <PageHeader title="Pending Applications" backUrl="/dashboard" />
+      <PageHeader title="Pending Applications" backUrl="/admin" />
 
       <div className="mt-8">
         <Card>
@@ -249,7 +249,7 @@ export default function AdminApplications() {
                 {selectedUser?.linkedin_url && (
                   <div className="flex items-center gap-2">
                     <LinkedinIcon className="h-4 w-4" />
-                    <a href={selectedUser.linkedin_url} target="_blank" rel="noopener noreferrer" 
+                    <a href={selectedUser.linkedin_url} target="_blank" rel="noopener noreferrer"
                        className="text-primary hover:underline">LinkedIn Profile</a>
                   </div>
                 )}
@@ -257,7 +257,7 @@ export default function AdminApplications() {
                 {selectedUser?.twitter_url && (
                   <div className="flex items-center gap-2">
                     <Twitter className="h-4 w-4" />
-                    <a href={selectedUser.twitter_url} target="_blank" rel="noopener noreferrer" 
+                    <a href={selectedUser.twitter_url} target="_blank" rel="noopener noreferrer"
                        className="text-primary hover:underline">Twitter Profile</a>
                     {selectedUser.twitter_followers && (
                       <span className="text-sm text-muted-foreground">
@@ -297,7 +297,7 @@ export default function AdminApplications() {
 
                   <div className="flex items-center gap-2">
                     <Building className="h-4 w-4" />
-                    <a href={selectedUser.company.website} target="_blank" rel="noopener noreferrer" 
+                    <a href={selectedUser.company.website} target="_blank" rel="noopener noreferrer"
                        className="text-primary hover:underline">
                       Company Website
                     </a>
@@ -306,7 +306,7 @@ export default function AdminApplications() {
                   {selectedUser.company.linkedin_url && (
                     <div className="flex items-center gap-2">
                       <LinkedinIcon className="h-4 w-4" />
-                      <a href={selectedUser.company.linkedin_url} target="_blank" rel="noopener noreferrer" 
+                      <a href={selectedUser.company.linkedin_url} target="_blank" rel="noopener noreferrer"
                          className="text-primary hover:underline">Company LinkedIn</a>
                     </div>
                   )}
@@ -314,8 +314,8 @@ export default function AdminApplications() {
                   {selectedUser.company.twitter_handle && (
                     <div className="flex items-center gap-2">
                       <Twitter className="h-4 w-4" />
-                      <a href={`https://twitter.com/${selectedUser.company.twitter_handle}`} 
-                         target="_blank" rel="noopener noreferrer" 
+                      <a href={`https://twitter.com/${selectedUser.company.twitter_handle}`}
+                         target="_blank" rel="noopener noreferrer"
                          className="text-primary hover:underline">
                         @{selectedUser.company.twitter_handle}
                       </a>
