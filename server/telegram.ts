@@ -4,8 +4,13 @@ import { users } from "@shared/schema";
 import { eq } from 'drizzle-orm';
 import { format } from 'date-fns';
 
-if (!process.env.TELEGRAM_BOT_TOKEN) {
-  throw new Error('TELEGRAM_BOT_TOKEN is required');
+// Choose bot token based on environment
+const BOT_TOKEN = process.env.NODE_ENV === 'production' 
+  ? process.env.TELEGRAM_BOT_TOKEN 
+  : process.env.TELEGRAM_TEST_BOT_TOKEN;
+
+if (!BOT_TOKEN) {
+  throw new Error('Telegram bot token is required');
 }
 
 if (!process.env.REPLIT_DOMAINS) {
@@ -16,8 +21,14 @@ if (!process.env.REPLIT_DOMAINS) {
 const domain = process.env.REPLIT_DOMAINS.split(',')[0];
 const WEBAPP_URL = `https://${domain}`;
 
+console.log('=== Telegram Bot Configuration ===');
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Using token type:', process.env.NODE_ENV === 'production' ? 'Production' : 'Development');
+console.log('Token prefix:', BOT_TOKEN.substring(0, 10) + '...');
+console.log('WebApp URL:', WEBAPP_URL);
+
 // Initialize bot with polling and minimal logging
-export const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { 
+export const bot = new TelegramBot(BOT_TOKEN, { 
   polling: true,
   webHook: false 
 });
