@@ -1,8 +1,13 @@
 import { useState, useRef } from "react";
-import { motion, useMotionValue, useTransform, useAnimation } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  useAnimation,
+} from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Info, Check, Coffee, Calendar, Megaphone } from "lucide-react";
+import { X, Info, Check, Coffee, Calendar, Megaphone, Twitter, Linkedin, Building } from "lucide-react";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { Badge } from "@/components/ui/badge";
 
@@ -18,6 +23,10 @@ const DUMMY_CARDS = [
     description: "Join our weekly podcast discussing the latest trends in blockchain technology and DeFi innovations.",
     goals: "Share insights about DeFi innovations and reach new audience segments",
     expectations: "45-minute podcast session, preparation meeting required",
+    companyTwitter: "web3insights",
+    twitterFollowers: "25.6K",
+    companyLinkedIn: "web3insights",
+    companySector: "Web3 Media & Content",
   },
   {
     id: "2",
@@ -29,6 +38,10 @@ const DUMMY_CARDS = [
     availability: "April 15-17, 2025",
     preferredTopics: ["DeFi", "NFT Gaming", "Web3 Social"],
     description: "Looking to connect with fellow Web3 enthusiasts during ETH Lisbon",
+    companyTwitter: "cryptotechsol",
+    twitterFollowers: "12.8K",
+    companyLinkedIn: "cryptotech-solutions",
+    companySector: "Blockchain Infrastructure",
   },
   {
     id: "3",
@@ -39,6 +52,10 @@ const DUMMY_CARDS = [
     requestingUser: "Sarah Chen",
     requestReason: "Your expertise in DeFi would be valuable for our upcoming Twitter Space about emerging DeFi trends",
     description: "Would love to have you as a speaker in our Twitter Space about DeFi trends",
+    companyTwitter: "defidaily",
+    twitterFollowers: "45.2K",
+    companyLinkedIn: "defi-daily",
+    companySector: "DeFi News & Analysis",
   },
 ];
 
@@ -104,20 +121,26 @@ export default function DiscoverPage() {
   const background = useTransform(
     x,
     [-200, 0, 200],
-    ["rgba(239, 68, 68, 0.1)", "rgba(255, 255, 255, 0)", "rgba(34, 197, 94, 0.1)"]
+    [
+      "rgba(239, 68, 68, 0.1)",
+      "rgba(255, 255, 255, 0)",
+      "rgba(34, 197, 94, 0.1)",
+    ],
   );
 
-  const handleSwipe = async (direction: 'left' | 'right') => {
+  const handleSwipe = async (direction: "left" | "right") => {
     setConstrained(false);
-    const parentWidth = cardElem.current?.parentElement?.getBoundingClientRect().width || 1000;
+    const parentWidth =
+      cardElem.current?.parentElement?.getBoundingClientRect().width || 1000;
     const childWidth = cardElem.current?.getBoundingClientRect().width || 500;
-    const flyAwayDistance = direction === "left"
-      ? -parentWidth / 2 - childWidth / 2
-      : parentWidth / 2 + childWidth / 2;
+    const flyAwayDistance =
+      direction === "left"
+        ? -parentWidth / 2 - childWidth / 2
+        : parentWidth / 2 + childWidth / 2;
 
     await controls.start({
       x: flyAwayDistance,
-      transition: { duration: 0.3 }
+      transition: { duration: 0.3 },
     });
 
     console.log(`Swiped ${direction} on card:`, cards[currentIndex]);
@@ -139,11 +162,11 @@ export default function DiscoverPage() {
 
   const renderCard = (card) => {
     switch (card.type) {
-      case 'marketing':
+      case "marketing":
         return <MarketingCard data={card} />;
-      case 'conference':
+      case "conference":
         return <ConferenceCard data={card} />;
-      case 'request':
+      case "request":
         return <RequestCard data={card} />;
       default:
         return null;
@@ -193,15 +216,15 @@ export default function DiscoverPage() {
               {/* Action Buttons */}
               <div className="absolute bottom-6 left-6 right-6">
                 <div className="flex justify-between gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
                     onClick={() => handleSwipe("left")}
                   >
                     <X className="h-6 w-6" />
                   </Button>
-                  <Button 
+                  <Button
                     variant="outline"
                     size="icon"
                     className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
@@ -209,7 +232,7 @@ export default function DiscoverPage() {
                   >
                     <Info className="h-6 w-6" />
                   </Button>
-                  <Button 
+                  <Button
                     variant="outline"
                     size="icon"
                     className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
