@@ -117,7 +117,7 @@ export default function AdminUsers() {
 
   if (checkingAdmin) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto py-6 px-4">
         <PageHeader title="Admin - Users" backUrl="/dashboard" />
         <div className="mt-8">Loading...</div>
       </div>
@@ -126,7 +126,7 @@ export default function AdminUsers() {
 
   if (!isAdmin) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto py-6 px-4">
         <PageHeader title="Admin - Users" backUrl="/dashboard" />
         <Card className="mt-8">
           <CardHeader>
@@ -141,7 +141,7 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto py-6 px-4">
       <PageHeader title="Admin - Users" backUrl="/dashboard" />
 
       <div className="mt-8">
@@ -157,7 +157,8 @@ export default function AdminUsers() {
               <div>Loading users...</div>
             ) : (
               <div className="space-y-4">
-                <div className="grid grid-cols-4 font-semibold py-2 border-b">
+                {/* Header row - hidden on mobile */}
+                <div className="hidden md:grid md:grid-cols-4 font-semibold py-2 border-b">
                   <div>Username</div>
                   <div>Email/Telegram</div>
                   <div>Admin</div>
@@ -169,16 +170,23 @@ export default function AdminUsers() {
                   </div>
                 ) : (
                   users?.map((user: User) => (
-                    <div key={user.id} className="grid grid-cols-4 py-2 border-b items-center">
-                      <div>{user.first_name} {user.last_name}</div>
-                      <div>
-                        {user.email || 'No email'} 
-                        <div className="text-sm text-muted-foreground">
-                          Telegram ID: {user.telegram_id}
-                        </div>
+                    <div key={user.id} className="flex flex-col md:grid md:grid-cols-4 gap-2 md:gap-4 py-4 border-b">
+                      {/* Mobile labels */}
+                      <div className="md:hidden font-semibold">User Info:</div>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{user.first_name} {user.last_name}</span>
                       </div>
+
+                      <div className="flex flex-col">
+                        <span>{user.email || 'No email'}</span>
+                        <span className="text-sm text-muted-foreground">
+                          ID: {user.telegram_id}
+                        </span>
+                      </div>
+
                       <div className="flex items-center space-x-2">
                         <Switch 
+                          className="data-[state=checked]:bg-primary"
                           checked={user.is_admin} 
                           onCheckedChange={() => handleToggleAdmin(user.id, user.is_admin)}
                           disabled={toggleAdminMutation.isPending}
@@ -187,10 +195,12 @@ export default function AdminUsers() {
                           {user.is_admin ? 'Admin' : 'User'}
                         </Label>
                       </div>
+
                       <div>
                         <Button
                           variant="secondary"
                           size="sm"
+                          className="w-full md:w-auto"
                           onClick={() => handleImpersonate(user.telegram_id)}
                           disabled={startImpersonationMutation.isPending}
                         >
