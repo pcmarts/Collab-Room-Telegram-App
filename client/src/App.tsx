@@ -73,7 +73,9 @@ function Router() {
           </Route>
 
           {/* Existing Routes */}
-          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/dashboard">
+            <Redirect to="/discover" />
+          </Route>
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
           <Route path="/conference-coffees" component={ConferenceCoffees} />
 
