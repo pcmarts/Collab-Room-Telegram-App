@@ -2,12 +2,33 @@ import { useState, useRef } from "react";
 import { motion, useMotionValue, useTransform, useAnimation } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Info, Check } from "lucide-react";
+import { X, Info, Check, Calendar, Megaphone, HandshakeIcon } from "lucide-react";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
+import { cn } from "@/lib/utils";
 
-const DUMMY_CARDS = [
+type CollaborationType = "marketing" | "conference" | "request";
+
+interface CollaborationCard {
+  id: string;
+  type: CollaborationType;
+  title: string;
+  companyName: string;
+  roleTitle: string;
+  collaborationType: string;
+  description: string;
+  eventName?: string;
+  availableTimes?: string[];
+  requestingUser?: {
+    name: string;
+    role: string;
+    company: string;
+  };
+}
+
+const DUMMY_CARDS: CollaborationCard[] = [
   {
     id: "1",
+    type: "marketing",
     title: "Looking for Podcast Guest",
     companyName: "Ethereum Foundation",
     roleTitle: "VP Marketing",
@@ -16,19 +37,28 @@ const DUMMY_CARDS = [
   },
   {
     id: "2",
-    title: "Twitter Space Co-host Needed",
+    type: "conference",
+    title: "Coffee Chat at ETH Lisbon",
     companyName: "Polygon",
     roleTitle: "Community Manager",
-    collaborationType: "Twitter Spaces Guest",
-    description: "We're hosting a Twitter Space about the future of NFTs and digital collectibles.",
+    collaborationType: "Conference Meeting",
+    description: "Looking to connect with other community managers to discuss growth strategies.",
+    eventName: "ETH Lisbon 2025",
+    availableTimes: ["March 20th, 10:00-12:00", "March 21st, 14:00-16:00"],
   },
   {
     id: "3",
-    title: "Blog Collaboration Opportunity",
+    type: "request",
+    title: "Collaboration Request",
     companyName: "Rarible",
     roleTitle: "Content Director",
     collaborationType: "Blog Post Feature",
-    description: "Looking for guest writers to contribute to our blog about decentralized finance.",
+    description: "I'd love to collaborate on a joint blog post about the future of NFTs.",
+    requestingUser: {
+      name: "Sarah Chen",
+      role: "Head of Content",
+      company: "Rarible",
+    },
   },
 ];
 
@@ -36,7 +66,7 @@ export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cards, setCards] = useState(DUMMY_CARDS);
   const [showDialog, setShowDialog] = useState(false);
-  const cardElem = useRef(null);
+  const cardElem = useRef<HTMLDivElement>(null);
 
   const x = useMotionValue(0);
   const controls = useAnimation();
@@ -50,9 +80,11 @@ export default function DiscoverPage() {
   );
 
   const handleSwipe = async (direction: 'left' | 'right') => {
+    if (!cardElem.current?.parentElement) return;
+
     setConstrained(false);
-    const parentWidth = cardElem.current?.parentNode.getBoundingClientRect().width || 1000;
-    const childWidth = cardElem.current?.getBoundingClientRect().width || 500;
+    const parentWidth = cardElem.current.parentElement.getBoundingClientRect().width;
+    const childWidth = cardElem.current.getBoundingClientRect().width;
     const flyAwayDistance = direction === "left"
       ? -parentWidth / 2 - childWidth / 2
       : parentWidth / 2 + childWidth / 2;
@@ -79,6 +111,17 @@ export default function DiscoverPage() {
 
   const currentCard = cards[currentIndex];
 
+  const getCardIcon = (type: CollaborationType) => {
+    switch (type) {
+      case "marketing":
+        return <Megaphone className="h-5 w-5 text-primary/60" />;
+      case "conference":
+        return <Calendar className="h-5 w-5 text-blue-500/60" />;
+      case "request":
+        return <HandshakeIcon className="h-5 w-5 text-orange-500/60" />;
+    }
+  };
+
   return (
     <div className="min-h-[100svh] bg-background">
       <div className="container max-w-md mx-auto py-6">
@@ -88,8 +131,16 @@ export default function DiscoverPage() {
           {/* Background Card (Next in Stack) */}
           {currentIndex < cards.length - 1 && (
             <div className="absolute inset-0 transform scale-[0.95] opacity-50">
-              <Card className="w-full h-full p-6 select-none">
-                <div className="text-sm font-medium text-muted-foreground mb-2">
+              <Card className={cn(
+                "w-full h-full p-6 select-none",
+                {
+                  "border-primary/20": cards[currentIndex + 1].type === "marketing",
+                  "border-blue-500/20": cards[currentIndex + 1].type === "conference",
+                  "border-orange-500/20": cards[currentIndex + 1].type === "request",
+                }
+              )}>
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                  {getCardIcon(cards[currentIndex + 1].type)}
                   {cards[currentIndex + 1].collaborationType}
                 </div>
                 <h3 className="text-2xl font-semibold mb-2">{cards[currentIndex + 1].title}</h3>
@@ -123,8 +174,16 @@ export default function DiscoverPage() {
             }}
             whileTap={{ cursor: "grabbing" }}
           >
-            <Card className="w-full h-full p-6 select-none cursor-grab active:cursor-grabbing">
-              <div className="text-sm font-medium text-muted-foreground mb-2">
+            <Card className={cn(
+              "w-full h-full p-6 select-none cursor-grab active:cursor-grabbing",
+              {
+                "border-primary/20 bg-card": currentCard.type === "marketing",
+                "border-blue-500/20 bg-blue-50 dark:bg-blue-900/10": currentCard.type === "conference",
+                "border-orange-500/20 bg-orange-50 dark:bg-orange-900/10": currentCard.type === "request",
+              }
+            )}>
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                {getCardIcon(currentCard.type)}
                 {currentCard.collaborationType}
               </div>
               <h3 className="text-2xl font-semibold mb-2">{currentCard.title}</h3>
@@ -133,6 +192,25 @@ export default function DiscoverPage() {
                 <p className="text-sm text-muted-foreground">{currentCard.roleTitle}</p>
               </div>
               <p className="text-sm text-muted-foreground mt-4">{currentCard.description}</p>
+
+              {currentCard.type === "conference" && currentCard.eventName && (
+                <div className="mt-4 p-3 rounded-md bg-blue-100 dark:bg-blue-900/20">
+                  <p className="font-medium text-sm">{currentCard.eventName}</p>
+                  {currentCard.availableTimes?.map((time, i) => (
+                    <p key={i} className="text-sm text-muted-foreground">{time}</p>
+                  ))}
+                </div>
+              )}
+
+              {currentCard.type === "request" && currentCard.requestingUser && (
+                <div className="mt-4 p-3 rounded-md bg-orange-100 dark:bg-orange-900/20">
+                  <p className="font-medium text-sm">Requested by:</p>
+                  <p className="text-sm">{currentCard.requestingUser.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {currentCard.requestingUser.role} at {currentCard.requestingUser.company}
+                  </p>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="absolute bottom-6 left-6 right-6">
