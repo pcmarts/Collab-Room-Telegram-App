@@ -10,7 +10,7 @@ export function ImpersonationBanner() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isImpersonating, setIsImpersonating] = useState(false);
-  
+
   useEffect(() => {
     // Check if we're impersonating by looking at session
     const checkImpersonation = async () => {
@@ -22,24 +22,25 @@ export function ImpersonationBanner() {
         console.error('Error checking impersonation status:', error);
       }
     };
-    
+
     checkImpersonation();
   }, []);
 
   const handleStopImpersonation = async () => {
     try {
       await apiRequest('/api/admin/stop-impersonation', {
-        method: 'POST'
+        method: 'POST',
+        body: {}  // Empty body as we just need to end impersonation
       });
 
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-      
+
       toast({
         title: "Impersonation Ended",
         description: "Returned to admin account"
       });
-      
+
       // Redirect to admin page
       setLocation('/admin/users');
     } catch (error) {
