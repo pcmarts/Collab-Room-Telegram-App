@@ -9,15 +9,15 @@ const DUMMY_CARDS = [
   {
     id: "1",
     title: "Looking for Podcast Guest",
-    companyName: "Web3 Insights",
-    roleTitle: "Head of Content",
+    companyName: "Ethereum Foundation",
+    roleTitle: "VP Marketing",
     collaborationType: "Podcast Guest Appearance",
     description: "Join our weekly podcast discussing the latest trends in blockchain technology and DeFi innovations.",
   },
   {
     id: "2",
     title: "Twitter Space Co-host Needed",
-    companyName: "CryptoTech Solutions",
+    companyName: "Polygon",
     roleTitle: "Community Manager",
     collaborationType: "Twitter Spaces Guest",
     description: "We're hosting a Twitter Space about the future of NFTs and digital collectibles.",
@@ -25,7 +25,7 @@ const DUMMY_CARDS = [
   {
     id: "3",
     title: "Blog Collaboration Opportunity",
-    companyName: "DeFi Daily",
+    companyName: "Rarible",
     roleTitle: "Content Director",
     collaborationType: "Blog Post Feature",
     description: "Looking for guest writers to contribute to our blog about decentralized finance.",
