@@ -60,10 +60,22 @@ export default function AdminUsers() {
   // Mutation for starting impersonation
   const startImpersonationMutation = useMutation({
     mutationFn: async (telegram_id: string) => {
-      const response = await apiRequest('/api/admin/impersonate', 'POST', {
-        telegram_id
+      console.log('Starting impersonation for:', telegram_id);
+      const response = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ telegram_id }),
+        credentials: 'include' // Important for session handling
       });
-      return response;
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to start impersonation');
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
@@ -74,11 +86,12 @@ export default function AdminUsers() {
       // Redirect to dashboard after impersonation starts
       setLocation('/dashboard');
     },
-    onError: (error) => {
+    onError: (error: Error) => {
+      console.error('Impersonation error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to start impersonation"
+        description: error.message || "Failed to start impersonation"
       });
     }
   });
