@@ -57,8 +57,14 @@ type TelegramReq = TelegramRequest | {
 
 function getTelegramUserFromRequest(req: TelegramReq) {
   try {
+    console.log('============ DEBUG: getTelegramUserFromRequest ============');
+    console.log('Request path:', req.path);
+    console.log('Session impersonating:', req.session?.impersonating);
+    console.log('Headers:', req.headers);
+    
     // If impersonating and the request is not to an admin endpoint, return impersonated user  
     if (req.session?.impersonating && !req.path?.startsWith('/api/admin')) {
+      console.log('Using impersonated user:', req.session.impersonating.impersonatedUser);
       return req.session.impersonating.impersonatedUser;
     }
 
@@ -79,6 +85,7 @@ function getTelegramUserFromRequest(req: TelegramReq) {
     // Parse Telegram data
     const decodedInitData = new URLSearchParams(initData);
     const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+    console.log('Using actual Telegram user:', telegramUser);
     
     if (!telegramUser.id) {
       console.error('No Telegram user ID found in parsed data');
@@ -87,7 +94,7 @@ function getTelegramUserFromRequest(req: TelegramReq) {
     
     return telegramUser;
   } catch (error) {
-    console.error('Error parsing Telegram data:', error);
+    console.error('Error in getTelegramUserFromRequest:', error);
     return null;
   }
 }
@@ -442,73 +449,79 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/onboarding", async (req, res) => {
+  app.post("/api/onboarding", async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Onboarding Endpoint ============');
     console.log('Headers:', req.headers);
+    console.log('Session:', req.session);
     console.log('Body:', req.body);
 
     try {
       const { 
-        // User info
-        first_name, last_name, linkedin_url, email, initData, twitter_url, twitter_followers,
-        referral_code, // Add referral code
-        // Company info
+        first_name, last_name, linkedin_url, email, twitter_url, twitter_followers,
+        referral_code,
         company_name, company_website, twitter_handle, job_title, 
         funding_stage, has_token, token_ticker, blockchain_networks, tags,
-        company_linkedin_url, company_twitter_followers, // Add company social media fields
-        // Preferences
+        company_linkedin_url, company_twitter_followers,
         collabs_to_discover, collabs_to_host, notification_frequency, filtered_marketing_topics
       } = req.body;
 
-      // Parse Telegram data
-      console.log('Parsing Telegram data');
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      console.log('Decoded Telegram user:', telegramUser);
-
-      if (!telegramUser.id) {
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
         console.error('No Telegram user ID found');
         res.status(400);
         return res.json({ error: 'Invalid Telegram data' });
       }
 
-      // Use Telegram username as handle
-      const telegram_id = telegramUser.id.toString();
-      const handle = telegramUser.username;
+      console.log('Telegram user for onboarding:', telegramUser);
 
-      try {
-        // Check if this is a profile update or full onboarding
-        const existingUser = await db.select()
-          .from(users)
-          .where(eq(users.telegram_id, telegram_id));
+      // Check if user exists
+      const existingUsers = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
 
-        const isProfileUpdate = existingUser.length > 0;
+      const isProfileUpdate = existingUsers.length > 0;
+      const existingUser = existingUsers[0];
+      console.log('Is profile update?', isProfileUpdate);
+      console.log('Existing user:', existingUser);
 
-        // Validate required fields based on operation type
-        if (!first_name) {
-          console.error('Missing required user fields');
-          res.status(400);
-          return res.json({ error: 'First name is required' });
-        }
+      if (!first_name) {
+        console.error('Missing required user fields');
+        res.status(400);
+        return res.json({ error: 'First name is required' });
+      }
 
-        if (!isProfileUpdate && (!company_name || !job_title || !company_website || !funding_stage)) {
-          console.error('Missing required company fields for new user');
-          res.status(400);
-          return res.json({ error: 'Missing required company fields' });
-        }
-
-        // Start a transaction
-        const result = await db.transaction(async (tx) => {
-          console.log('Starting database transaction...');
-          
-          // 1. Create or update user
-          const [user] = await tx
-            .insert(users)
-            .values({
-              telegram_id,
+      // Start a transaction
+      const result = await db.transaction(async (tx) => {
+        console.log('Starting database transaction...');
+        
+        let user;
+        
+        if (isProfileUpdate) {
+          // Update existing user - preserving telegram_id and handle
+          [user] = await tx
+            .update(users)
+            .set({
               first_name,
               last_name,
-              handle,
+              linkedin_url,
+              email,
+              twitter_url,
+              twitter_followers,
+              referral_code,
+              // Do not update telegram_id or handle
+            })
+            .where(eq(users.telegram_id, telegramUser.id.toString()))
+            .returning();
+        } else {
+          // Create new user
+          [user] = await tx
+            .insert(users)
+            .values({
+              telegram_id: telegramUser.id.toString(),
+              handle: telegramUser.username,
+              first_name,
+              last_name,
               linkedin_url,
               email,
               twitter_url,
@@ -516,149 +529,91 @@ export async function registerRoutes(app: Express) {
               referral_code,
               applied_at: new Date()
             })
-            .onConflictDoUpdate({
-              target: users.telegram_id,
-              set: {
-                first_name,
-                last_name,
-                handle,
-                linkedin_url,
-                email,
-                twitter_url,
-                twitter_followers,
-                referral_code,
-                applied_at: new Date()
-              }
+            .returning();
+        }
+
+        console.log('User after update/create:', user);
+
+        if (!user) {
+          throw new Error('Failed to update/create user');
+        }
+
+        // Only handle company and preferences for new users
+        if (!isProfileUpdate) {
+          if (!company_name || !job_title || !company_website || !funding_stage) {
+            throw new Error('Missing required company fields for new user');
+          }
+
+          // Create company record
+          const [company] = await tx
+            .insert(companies)
+            .values({
+              user_id: user.id,
+              name: company_name,
+              job_title,
+              website: company_website,
+              twitter_handle,
+              twitter_followers: company_twitter_followers,
+              linkedin_url: company_linkedin_url,
+              funding_stage,
+              has_token: Boolean(has_token),
+              token_ticker: has_token ? token_ticker : null,
+              blockchain_networks: has_token ? blockchain_networks : [],
+              tags: tags || []
             })
             .returning();
 
-          console.log('Created/Updated user:', user);
+          console.log('Created company:', company);
 
-          // Only handle company and preferences for full onboarding
-          if (!isProfileUpdate) {
-            // 2. Create company record
-            const [company] = await tx
-              .insert(companies)
-              .values({
-                user_id: user.id,
-                name: company_name,
-                job_title,
-                website: company_website,
-                twitter_handle: twitter_handle, // Store the full URL
-                twitter_followers: company_twitter_followers,
-                linkedin_url: company_linkedin_url,
-                funding_stage,
-                has_token: Boolean(has_token),
-                token_ticker: has_token ? token_ticker : null,
-                blockchain_networks: has_token ? blockchain_networks : [],
-                tags: tags || []
-              })
-              .returning();
+          // Create notification preferences
+          const [notificationPrefs] = await tx
+            .insert(notification_preferences)
+            .values({
+              user_id: user.id,
+              notifications_enabled: true,
+              notification_frequency: notification_frequency || 'Daily'
+            })
+            .returning();
 
-            console.log('Created company:', company);
-
-            // Verify the company record was created
-            const [verifyCompany] = await tx.select()
-              .from(companies)
-              .where(eq(companies.id, company.id));
-              
-            if (!verifyCompany) {
-              throw new Error('Company record verification failed');
-            }
-            console.log('Company record verified:', verifyCompany);
-
-            // 3. Create notification preferences record
-            const [notificationPrefs] = await tx
-              .insert(notification_preferences)
-              .values({
-                user_id: user.id,
-                notifications_enabled: true,
-                notification_frequency: notification_frequency || 'Daily'
-              })
-              .returning();
-
-            console.log('Created notification preferences:', notificationPrefs);
-            
-            // 4. Create marketing preferences
-            const [marketingPrefs] = await tx
-              .insert(marketing_preferences)
-              .values({
-                user_id: user.id,
-                collabs_to_discover: collabs_to_discover || [],
-                collabs_to_host: collabs_to_host || [],
-                filtered_marketing_topics: filtered_marketing_topics || [] // Marketing topics filter data
-              })
-              .returning();
-              
-            console.log('Created marketing preferences:', marketingPrefs);
-            
-            // 5. Create conference preferences
-            const [conferencePrefs] = await tx
-              .insert(conference_preferences)
-              .values({
-                user_id: user.id,
-                coffee_match_enabled: false
-              })
-              .returning();
-              
-            console.log('Created conference preferences:', conferencePrefs);
-
-            return { user, company, notificationPreferences: notificationPrefs };
-          }
-
-          // Verify the user record
-          const [verifyUser] = await tx.select()
-            .from(users)
-            .where(eq(users.id, user.id));
-            
-          if (!verifyUser) {
-            throw new Error('User record verification failed');
-          }
-          console.log('User record verified:', verifyUser);
-
-          return { user };
-        });
-
-        // After successful transaction
-        console.log('Transaction completed successfully:', result);
-        
-        // Final verification of the records before sending response
-        const verifiedUser = await db.select()
-          .from(users)
-          .where(eq(users.telegram_id, telegram_id));
+          console.log('Created notification preferences:', notificationPrefs);
           
-        console.log('Final verification - User record exists:', verifiedUser.length > 0);
-        
-        // Only send confirmation for new users, not for profile updates
-        if (!isProfileUpdate) {
-          try {
-            // Send confirmation to user
-            await sendApplicationConfirmation(parseInt(telegram_id));
+          // Create marketing preferences
+          const [marketingPrefs] = await tx
+            .insert(marketing_preferences)
+            .values({
+              user_id: user.id,
+              collabs_to_discover: collabs_to_discover || [],
+              collabs_to_host: collabs_to_host || [],
+              filtered_marketing_topics: filtered_marketing_topics || []
+            })
+            .returning();
             
-            // Notify admins about new user
-            await notifyAdminsNewUser({
-              telegram_id,
-              first_name,
-              last_name,
-              company_name,
-              job_title
-            });
-          } catch (msgError) {
-            console.error('Failed to send notifications:', msgError);
-            // Don't throw here, as the application was still successful
-          }
+          console.log('Created marketing preferences:', marketingPrefs);
+          
+          // Create conference preferences
+          const [conferencePrefs] = await tx
+            .insert(conference_preferences)
+            .values({
+              user_id: user.id,
+              coffee_match_enabled: false
+            })
+            .returning();
+            
+          console.log('Created conference preferences:', conferencePrefs);
+
+          return { user, company, notificationPreferences: notificationPrefs };
         }
 
-        return res.json({
-          success: true,
-          message: isProfileUpdate ? 'Profile updated successfully' : 'Application submitted successfully',
-          ...result
-        });
+        return { user };
+      });
 
-      } catch (dbError: unknown) {
-        console.error('Database error:', dbError);
-        throw new Error(`Failed to save application data: ${dbError instanceof Error ? dbError.message : String(dbError)}`);
-      }
+      console.log('Transaction completed successfully:', result);
+
+      return res.json({
+        success: true,
+        message: isProfileUpdate ? 'Profile updated successfully' : 'Application submitted successfully',
+        ...result
+      });
 
     } catch (error) {
       console.error('Detailed error:', {
@@ -672,7 +627,7 @@ export async function registerRoutes(app: Express) {
   });
 
   // Company information endpoint
-  app.post("/api/company", async (req, res) => {
+  app.post("/api/company", async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Company Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
@@ -690,22 +645,10 @@ export async function registerRoutes(app: Express) {
         return res.json({ error: 'Missing required fields' });
       }
 
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      if (!initData) {
-        console.error('No Telegram init data found in headers');
-        res.status(400);
-        return res.json({ error: 'Invalid Telegram data' });
-      }
-
-      // Parse Telegram data
-      console.log('Parsing Telegram data:', initData);
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      console.log('Decoded Telegram user:', telegramUser);
-
-      if (!telegramUser.id) {
-        console.error('No Telegram user ID found in parsed data');
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
         res.status(400);
         return res.json({ error: 'Invalid Telegram data' });
       }
@@ -802,7 +745,7 @@ export async function registerRoutes(app: Express) {
   });
 
   // Preferences endpoint
-  app.post("/api/preferences", async (req, res) => {
+  app.post("/api/preferences", async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Preferences Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
@@ -847,22 +790,10 @@ export async function registerRoutes(app: Express) {
       const funding_stages = Array.isArray(coffee_match_funding_stages) ? coffee_match_funding_stages : [];
       const twitter_collab_types = Array.isArray(twitter_collabs) ? twitter_collabs : [];
 
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      if (!initData) {
-        console.error('No Telegram init data found in headers');
-        res.status(400);
-        return res.json({ error: 'Invalid Telegram data' });
-      }
-
-      // Parse Telegram data
-      console.log('Parsing Telegram data:', initData);
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      console.log('Decoded Telegram user:', telegramUser);
-
-      if (!telegramUser.id) {
-        console.error('No Telegram user ID found in parsed data');
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
         res.status(400);
         return res.json({ error: 'Invalid Telegram data' });
       }
@@ -1007,8 +938,46 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // My Collaborations endpoint
+  app.get("/api/collaborations/my", async (req: TelegramRequest, res) => {
+    console.log('============ DEBUG: My Collaborations Endpoint ============');
+    console.log('Headers:', req.headers);
+
+    try {
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Get user ID from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get collaborations for this user
+      const myCollaborations = await db
+        .select()
+        .from(collaborations)
+        .where(eq(collaborations.user_id, user.id))
+        .orderBy(desc(collaborations.created_at));
+
+      return res.json(myCollaborations);
+
+    } catch (error) {
+      console.error('Error fetching collaborations:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Marketing Preferences API endpoint
-  app.post("/api/marketing-preferences", async (req, res) => {
+  app.post("/api/marketing-preferences", async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Marketing Preferences Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Raw Body:', req.body);
@@ -1061,39 +1030,21 @@ export async function registerRoutes(app: Express) {
         company_blockchain_networks
       } = req.body;
 
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      let telegramUser;
-
-      if (!initData) {
-        // In development, use fallback data if Telegram data is missing
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using development fallback for Telegram data');
-          telegramUser = {
-            id: 123456789,
-            first_name: 'Dev',
-            username: 'dev_user'
-          };
-        } else {
-          console.error('No Telegram init data found in headers');
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
+        if (process.env.NODE_ENV === 'production') {
           res.status(400);
           return res.json({ error: 'Invalid Telegram data' });
         }
-      } else {
-        try {
-          // Parse Telegram data using the helper
-          telegramUser = getTelegramUserFromRequest({ headers: { 'x-telegram-init-data': initData } });
-        } catch (error) {
-          console.error('Error parsing Telegram data:', error);
-          res.status(400);
-          return res.json({ error: 'Invalid Telegram data' });
-        }
-      }
-
-      if (!telegramUser.id) {
-        console.error('No Telegram user ID found in parsed data');
-        res.status(400);
-        return res.json({ error: 'Invalid Telegram data' });
+        // In development, fallback to test user
+        console.log('Using development fallback for Telegram data');
+        telegramUser = {
+          id: '123456789',
+          first_name: 'Dev',
+          username: 'dev_user'
+        };
       }
 
       // Get user ID from telegram_id
@@ -1278,7 +1229,7 @@ export async function registerRoutes(app: Express) {
   });
   
   // Conference Preferences API endpoint
-  app.post("/api/conference-preferences", async (req, res) => {
+  app.post("/api/conference-preferences", async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Conference Preferences Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
@@ -1301,39 +1252,21 @@ export async function registerRoutes(app: Express) {
         company_blockchain_networks
       } = req.body;
 
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      let telegramUser;
-
-      if (!initData) {
-        // In development, use fallback data if Telegram data is missing
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using development fallback for Telegram data');
-          telegramUser = {
-            id: 123456789,
-            first_name: 'Dev',
-            username: 'dev_user'
-          };
-        } else {
-          console.error('No Telegram init data found in headers');
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
+        if (process.env.NODE_ENV === 'production') {
           res.status(400);
           return res.json({ error: 'Invalid Telegram data' });
         }
-      } else {
-        try {
-          // Parse Telegram data using the helper
-          telegramUser = getTelegramUserFromRequest({ headers: { 'x-telegram-init-data': initData } });
-        } catch (error) {
-          console.error('Error parsing Telegram data:', error);
-          res.status(400);
-          return res.json({ error: 'Invalid Telegram data' });
-        }
-      }
-
-      if (!telegramUser.id) {
-        console.error('No Telegram user ID found in parsed data');
-        res.status(400);
-        return res.json({ error: 'Invalid Telegram data' });
+        // In development, fallback to test user
+        console.log('Using development fallback for Telegram data');
+        telegramUser = {
+          id: '123456789',
+          first_name: 'Dev',
+          username: 'dev_user'
+        };
       }
 
       // Get user ID from telegram_id
@@ -1458,40 +1391,28 @@ export async function registerRoutes(app: Express) {
   });
 
   // Profile endpoint
-  app.get("/api/profile", async (req, res) => {
+  app.get("/api/profile", async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Profile Endpoint ============');
     console.log('Headers:', req.headers);
 
     try {
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      let telegramUser;
-
-      if (!initData) {
-        // In development, use fallback data if Telegram data is missing
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using development fallback for Telegram data');
-          telegramUser = {
-            id: '1211030693',
-            username: 'test_user',
-            first_name: 'Test',
-            last_name: 'User'
-          };
-        } else {
-          console.error('No Telegram init data found');
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
+        if (process.env.NODE_ENV === 'production') {
           res.status(400);
           return res.json({ error: 'Invalid Telegram data' });
         }
-      } else {
-        // Parse Telegram data
-        const decodedInitData = new URLSearchParams(initData);
-        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      }
-
-      if (!telegramUser?.id) {
-        console.error('No Telegram user ID found');
-        res.status(400);
-        return res.json({ error: 'Invalid Telegram data' });
+        // In development, fallback to test user
+        console.log('Using development fallback for Telegram data');
+        const devUser = {
+          id: '1211030693',
+          username: 'test_user',
+          first_name: 'Test',
+          last_name: 'User'
+        };
+        return res.json({ user: devUser });
       }
 
       // Get user and related data
@@ -1563,35 +1484,24 @@ export async function registerRoutes(app: Express) {
   });
   
   // Endpoint to fetch user's applications
-  app.get("/api/my-applications", async (req, res) => {
+  app.get("/api/my-applications", async (req: TelegramRequest, res) => {
     try {
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      let telegramUser;
-
-      if (!initData) {
-        // In development, use fallback data if Telegram data is missing
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using development fallback for Telegram data');
-          telegramUser = {
-            id: '1211030693',
-            username: 'test_user',
-            first_name: 'Test',
-            last_name: 'User'
-          };
-        } else {
-          console.error('No Telegram init data found');
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
+        if (process.env.NODE_ENV === 'production') {
           return res.status(400).json({ error: 'Invalid Telegram data' });
         }
-      } else {
-        // Parse Telegram data
-        const decodedInitData = new URLSearchParams(initData);
-        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      }
-
-      if (!telegramUser?.id) {
-        console.error('No Telegram user ID found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
+        // In development, fallback to test user
+        console.log('Using development fallback for Telegram data');
+        const devUser = {
+          id: '1211030693',
+          username: 'test_user',
+          first_name: 'Test',
+          last_name: 'User'
+        };
+        return devUser;
       }
 
       // Get user from telegram_id
@@ -1949,54 +1859,48 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/collaborations/my", async (req, res) => {
+  app.get("/api/collaborations/my", async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: My Collaborations Endpoint ============');
     console.log('Headers:', req.headers);
 
     try {
-      let userId = '8319c02a-f1bd-4f93-abc3-e223c9100bea'; // Default to the provided user ID
-      
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      
-      if (initData) {
-        // Parse Telegram data if available
-        const decodedInitData = new URLSearchParams(initData);
-        const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-        
-        if (telegramUser?.id) {
-          // Get user from telegram_id
-          const user = await storage.getUserByTelegramId(telegramUser.id.toString());
-          if (user) {
-            userId = user.id;
-          } else {
-            console.log('User not found by Telegram ID, using default user ID');
-          }
-        }
-      } else {
-        console.log('No Telegram init data, using default user ID for development');
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      console.log('Using user ID:', userId);
-      
-      // Directly fetch collaborations from the database for the user
-      const userCollabs = await db.select()
+      // Get user from database
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get collaborations for this user
+      const myCollaborations = await db
+        .select()
         .from(collaborations)
-        .where(eq(collaborations.creator_id, userId));
+        .where(eq(collaborations.creator_id, user.id))
+        .orderBy(desc(collaborations.created_at));
         
-      console.log('Found collaborations:', userCollabs.length);
-      console.log('Collaborations data:', JSON.stringify(userCollabs, null, 2));
+      console.log('Found collaborations:', myCollaborations.length);
+      console.log('Collaborations data:', JSON.stringify(myCollaborations, null, 2));
       
       // Log the full list of collab types for debugging
-      const collabTypes = userCollabs.map(collab => collab.collab_type);
+      const collabTypes = myCollaborations.map(collab => collab.collab_type);
       console.log('Collaboration types:', collabTypes);
       
       // Return found collaborations (empty array if none)
-      return res.json(userCollabs);
+      return res.json(myCollaborations);
 
     } catch (error) {
       console.error('Failed to fetch user collaborations:', error);
-      res.status(500).json({ 
+      return res.status(500).json({ 
         error: 'Failed to fetch collaborations', 
         details: error instanceof Error ? error.message : 'Unknown error' 
       });
@@ -2031,38 +1935,16 @@ export async function registerRoutes(app: Express) {
   });
 
   // Search collaborations
-  app.get("/api/collaborations/search", async (req, res) => {
+  app.get("/api/collaborations/search", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Search Collaborations Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Query:', req.query);
 
     try {
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      let telegramUser;
-
-      if (!initData) {
-        // In development, use fallback data if Telegram data is missing
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using development fallback for Telegram data');
-          telegramUser = {
-            id: '1211030693',
-            username: 'test_user',
-            first_name: 'Test',
-            last_name: 'User'
-          };
-        } else {
-          console.error('No Telegram init data found');
-          return res.status(400).json({ error: 'Invalid Telegram data' });
-        }
-      } else {
-        // Parse Telegram data
-        const decodedInitData = new URLSearchParams(initData);
-        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      }
-
-      if (!telegramUser?.id) {
-        console.error('No Telegram user ID found');
+      // Get Telegram user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user found');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
 
@@ -2327,7 +2209,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/collaborations/:id/apply", async (req, res) => {
+  app.post("/api/collaborations/:id/apply", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Apply to Collaboration Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Params:', req.params);
@@ -2346,19 +2228,10 @@ export async function registerRoutes(app: Express) {
         });
       }
       
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      if (!initData) {
-        console.error('No Telegram init data found in headers');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Parse Telegram data
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      
-      if (!telegramUser.id) {
-        console.error('No Telegram user ID found in parsed data');
+      // Get Telegram user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user found');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
 
@@ -2442,60 +2315,31 @@ export async function registerRoutes(app: Express) {
   });
 
   // User events endpoint
-  app.get("/api/user-events", async (req, res) => {
+  app.get("/api/user-events", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: User Events Endpoint ============');
     console.log('Headers:', req.headers);
     
     try {
-      let userId = '8319c02a-f1bd-4f93-abc3-e223c9100bea'; // Default to the provided user ID
-      
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      let telegramUser;
-      
-      if (!initData) {
-        // In development, use fallback data if Telegram data is missing
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using development fallback for Telegram data');
-          telegramUser = {
-            id: '1211030693',
-            username: 'test_user',
-            first_name: 'Test',
-            last_name: 'User'
-          };
-        } else {
-          console.error('No Telegram init data found');
-          return res.status(400).json({ error: 'Invalid Telegram data' });
-        }
-      } else {
-        // Parse Telegram data
-        const decodedInitData = new URLSearchParams(initData);
-        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      }
-
-      if (!telegramUser?.id) {
-        console.error('No Telegram user ID found');
+      // Get user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user found');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
 
-      // Get user ID from telegram_id
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
+      // Get user from database
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
       if (!user) {
-        console.log('User not found by Telegram ID, using default user ID');
-        userId = '8319c02a-f1bd-4f93-abc3-e223c9100bea';
-      } else {
-        userId = user.id;
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
       }
       
-      console.log('Using user ID:', userId);
+      console.log('Using user:', user);
       
       // Get user's event attendance
       const userEventAttendance = await db.select()
         .from(user_events)
-        .where(eq(user_events.user_id, userId));
+        .where(eq(user_events.user_id, user.id));
 
       return res.json(userEventAttendance);
 
@@ -2506,43 +2350,22 @@ export async function registerRoutes(app: Express) {
   });
 
   // Get user notifications
-  app.get("/api/notifications", async (req, res) => {
+  app.get("/api/notifications", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: User Notifications Endpoint ============');
     console.log('Headers:', req.headers);
 
     try {
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      let telegramUser;
-
-      if (!initData) {
-        // In development, use fallback data if Telegram data is missing
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using development fallback for Telegram data');
-          telegramUser = {
-            id: '1211030693',
-            username: 'test_user',
-            first_name: 'Test',
-            last_name: 'User'
-          };
-        } else {
-          console.error('No Telegram init data found');
-          return res.status(400).json({ error: 'Invalid Telegram data' });
-        }
-      } else {
-        // Parse Telegram data
-        const decodedInitData = new URLSearchParams(initData);
-        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      }
-
-      if (!telegramUser?.id) {
-        console.error('No Telegram user ID found');
+      // Get user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user found');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
 
-      // Get user
+      // Get user from database
       const user = await storage.getUserByTelegramId(telegramUser.id.toString());
       if (!user) {
+        console.error('User not found');
         return res.status(404).json({ error: 'User not found' });
       }
 
@@ -2560,7 +2383,7 @@ export async function registerRoutes(app: Express) {
   });
 
   // Mark notification as read
-  app.patch("/api/notifications/:id/read", async (req, res) => {
+  app.patch("/api/notifications/:id/read", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Mark Notification Read Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Params:', req.params);
@@ -2568,23 +2391,14 @@ export async function registerRoutes(app: Express) {
     try {
       const { id } = req.params;
       
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      if (!initData) {
-        console.error('No Telegram init data found in headers');
+      // Get user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user found');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
 
-      // Parse Telegram data
-      const decodedInitData = new URLSearchParams(initData);
-      const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      
-      if (!telegramUser.id) {
-        console.error('No Telegram user ID found in parsed data');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Get user ID from telegram_id
+      // Get user from database
       const user = await storage.getUserByTelegramId(telegramUser.id.toString());
       if (!user) {
         console.error('User not found');
