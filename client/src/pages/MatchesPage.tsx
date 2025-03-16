@@ -1,17 +1,79 @@
-import * as React from "react"
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MessageCircle } from "lucide-react";
+
+// Dummy data for testing
+const DUMMY_MATCHES = [
+  {
+    id: "1",
+    title: "Podcast Guest",
+    companyName: "Web3 Insights",
+    roleTitle: "VP of Marketing",
+    matchDate: "March 15, 2025",
+    collaborationType: "Marketing",
+  },
+  {
+    id: "2",
+    title: "ETH Lisbon Coffee Chat",
+    companyName: "CryptoTech Solutions",
+    roleTitle: "Community Manager",
+    matchDate: "March 14, 2025",
+    collaborationType: "Conference",
+  },
+  {
+    id: "3",
+    title: "Twitter Space Co-host",
+    companyName: "DeFi Daily",
+    roleTitle: "Content Director",
+    matchDate: "March 13, 2025",
+    collaborationType: "Marketing",
+  },
+];
 
 export default function MatchesPage() {
   return (
-    <div className="container py-6 pb-20">
-      <h1 className="text-2xl font-bold mb-4">My Matches</h1>
-      <div className="space-y-4">
-        {/* Placeholder for matches list */}
-        <div className="p-6 rounded-lg border border-border text-center">
-          <p className="mb-4">No matches yet</p>
-          <Button variant="outline">Start Chat</Button>
+    <div className="container max-w-md mx-auto py-6 px-4">
+      <h1 className="text-2xl font-bold mb-6">My Matches</h1>
+
+      {DUMMY_MATCHES.length > 0 ? (
+        <div className="space-y-4">
+          {DUMMY_MATCHES.map((match) => (
+            <Card key={match.id}>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">{match.title}</CardTitle>
+                    <CardDescription>{match.companyName}</CardDescription>
+                  </div>
+                  <Badge variant="outline">{match.collaborationType}</Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">{match.roleTitle}</p>
+                    <p className="text-xs text-muted-foreground">Matched on {match.matchDate}</p>
+                  </div>
+                  <Button 
+                    size="sm"
+                    onClick={() => window.open('https://t.me/thisispaulm', '_blank')}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Start Chat
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </div>
+      ) : (
+        <Card className="p-6 text-center">
+          <p className="text-muted-foreground mb-4">No matches yet</p>
+          <Button variant="outline">Start Discovering</Button>
+        </Card>
+      )}
     </div>
-  )
+  );
 }
