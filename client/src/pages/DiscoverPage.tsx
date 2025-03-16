@@ -2,41 +2,99 @@ import { useState, useRef } from "react";
 import { motion, useMotionValue, useTransform, useAnimation } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Info, Check } from "lucide-react";
+import { X, Info, Check, Coffee, Calendar, Megaphone } from "lucide-react";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
+import { Badge } from "@/components/ui/badge";
 
+// Updated dummy data structure to support different card types
 const DUMMY_CARDS = [
   {
     id: "1",
+    type: "marketing",
     title: "Looking for Podcast Guest",
     companyName: "Web3 Insights",
     roleTitle: "Head of Content",
     collaborationType: "Podcast Guest Appearance",
     description: "Join our weekly podcast discussing the latest trends in blockchain technology and DeFi innovations.",
+    goals: "Share insights about DeFi innovations and reach new audience segments",
+    expectations: "45-minute podcast session, preparation meeting required",
   },
   {
     id: "2",
-    title: "Twitter Space Co-host Needed",
+    type: "conference",
+    title: "ETH Lisbon 2025 Coffee Chat",
     companyName: "CryptoTech Solutions",
     roleTitle: "Community Manager",
-    collaborationType: "Twitter Spaces Guest",
-    description: "We're hosting a Twitter Space about the future of NFTs and digital collectibles.",
+    eventName: "ETH Lisbon 2025",
+    availability: "April 15-17, 2025",
+    preferredTopics: ["DeFi", "NFT Gaming", "Web3 Social"],
+    description: "Looking to connect with fellow Web3 enthusiasts during ETH Lisbon",
   },
   {
     id: "3",
-    title: "Blog Collaboration Opportunity",
+    type: "request",
+    title: "Twitter Space Collaboration Request",
     companyName: "DeFi Daily",
     roleTitle: "Content Director",
-    collaborationType: "Blog Post Feature",
-    description: "Looking for guest writers to contribute to our blog about decentralized finance.",
+    requestingUser: "Sarah Chen",
+    requestReason: "Your expertise in DeFi would be valuable for our upcoming Twitter Space about emerging DeFi trends",
+    description: "Would love to have you as a speaker in our Twitter Space about DeFi trends",
   },
 ];
+
+// Card type components
+const MarketingCard = ({ data }) => (
+  <div className="space-y-4">
+    <Badge variant="outline" className="bg-primary/10">
+      <Megaphone className="w-4 h-4 mr-1" />
+      {data.collaborationType}
+    </Badge>
+    <h3 className="text-2xl font-semibold">{data.title}</h3>
+    <div className="space-y-1">
+      <p className="text-lg">{data.companyName}</p>
+      <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
+    </div>
+    <p className="text-sm text-muted-foreground">{data.description}</p>
+  </div>
+);
+
+const ConferenceCard = ({ data }) => (
+  <div className="space-y-4">
+    <Badge variant="outline" className="bg-secondary/10">
+      <Coffee className="w-4 h-4 mr-1" />
+      Coffee Chat
+    </Badge>
+    <h3 className="text-2xl font-semibold">{data.eventName}</h3>
+    <div className="space-y-1">
+      <p className="text-lg">{data.companyName}</p>
+      <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
+    </div>
+    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+      <Calendar className="w-4 h-4" />
+      <span>{data.availability}</span>
+    </div>
+  </div>
+);
+
+const RequestCard = ({ data }) => (
+  <div className="space-y-4">
+    <Badge variant="outline" className="bg-destructive/10">
+      Collaboration Request
+    </Badge>
+    <h3 className="text-2xl font-semibold">{data.title}</h3>
+    <div className="space-y-1">
+      <p className="text-lg">From: {data.requestingUser}</p>
+      <p className="text-sm text-muted-foreground">{data.companyName} - {data.roleTitle}</p>
+    </div>
+    <p className="text-sm text-muted-foreground">{data.description}</p>
+  </div>
+);
 
 export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cards, setCards] = useState(DUMMY_CARDS);
   const [showDialog, setShowDialog] = useState(false);
-  const cardElem = useRef(null);
+  const cardElem = useRef<HTMLDivElement>(null);
 
   const x = useMotionValue(0);
   const controls = useAnimation();
@@ -51,7 +109,7 @@ export default function DiscoverPage() {
 
   const handleSwipe = async (direction: 'left' | 'right') => {
     setConstrained(false);
-    const parentWidth = cardElem.current?.parentNode.getBoundingClientRect().width || 1000;
+    const parentWidth = cardElem.current?.parentElement?.getBoundingClientRect().width || 1000;
     const childWidth = cardElem.current?.getBoundingClientRect().width || 500;
     const flyAwayDistance = direction === "left"
       ? -parentWidth / 2 - childWidth / 2
@@ -79,6 +137,19 @@ export default function DiscoverPage() {
 
   const currentCard = cards[currentIndex];
 
+  const renderCard = (card) => {
+    switch (card.type) {
+      case 'marketing':
+        return <MarketingCard data={card} />;
+      case 'conference':
+        return <ConferenceCard data={card} />;
+      case 'request':
+        return <RequestCard data={card} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-[100svh] bg-background">
       <div className="container max-w-md mx-auto py-6">
@@ -89,14 +160,7 @@ export default function DiscoverPage() {
           {currentIndex < cards.length - 1 && (
             <div className="absolute inset-0 transform scale-[0.95] opacity-50">
               <Card className="w-full h-full p-6 select-none">
-                <div className="text-sm font-medium text-muted-foreground mb-2">
-                  {cards[currentIndex + 1].collaborationType}
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">{cards[currentIndex + 1].title}</h3>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-lg">{cards[currentIndex + 1].companyName}</p>
-                  <p className="text-sm text-muted-foreground">{cards[currentIndex + 1].roleTitle}</p>
-                </div>
+                {renderCard(cards[currentIndex + 1])}
               </Card>
             </div>
           )}
@@ -124,15 +188,7 @@ export default function DiscoverPage() {
             whileTap={{ cursor: "grabbing" }}
           >
             <Card className="w-full h-full p-6 select-none cursor-grab active:cursor-grabbing">
-              <div className="text-sm font-medium text-muted-foreground mb-2">
-                {currentCard.collaborationType}
-              </div>
-              <h3 className="text-2xl font-semibold mb-2">{currentCard.title}</h3>
-              <div className="flex flex-col space-y-1">
-                <p className="text-lg">{currentCard.companyName}</p>
-                <p className="text-sm text-muted-foreground">{currentCard.roleTitle}</p>
-              </div>
-              <p className="text-sm text-muted-foreground mt-4">{currentCard.description}</p>
+              {renderCard(currentCard)}
 
               {/* Action Buttons */}
               <div className="absolute bottom-6 left-6 right-6">
