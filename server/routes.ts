@@ -16,12 +16,12 @@ import { storage } from "./storage";
 // Define our session data structure
 interface ImpersonationSession extends Session {
   impersonating?: {
-    originalUser: any,
+    originalUser: any;
     impersonatedUser: {
-      id: string,
-      first_name: string,
-      last_name: string | null | undefined,
-      username: string | null | undefined
+      id: string;
+      first_name: string;
+      last_name?: string;
+      username?: string;
     }
   }
 }
@@ -33,22 +33,22 @@ declare module 'express-serve-static-core' {
   }
 }
 
+// Extend Request type with our custom fields
+interface TelegramRequest extends Request {
+  telegramData?: {
+    id: string;
+    username?: string;
+    first_name: string;
+    last_name?: string;
+  }
+}
+
 // Helper function to extract Telegram user data from request
 // This type allows us to accept either a full Request or just an object with the header we need
-type TelegramReq = { 
-  headers: { 'x-telegram-init-data': string } | any,
-  path?: string,
-  session?: {
-    impersonating?: {
-      originalUser: any,
-      impersonatedUser: {
-        id: string,
-        first_name: string,
-        last_name?: string,
-        username?: string
-      }
-    }
-  }
+type TelegramReq = TelegramRequest | { 
+  headers: { 'x-telegram-init-data': string } | any;
+  path?: string;
+  session?: ImpersonationSession;
 };
 
 function getTelegramUserFromRequest(req: TelegramReq) {
@@ -239,9 +239,10 @@ export async function registerRoutes(app: Express) {
   });
 
   // Admin Impersonation Routes
-  app.post("/api/admin/impersonate", checkAdminMiddleware, async (req, res) => {
+  app.post("/api/admin/impersonate", checkAdminMiddleware, async (req: TelegramRequest, res: Response) => {
     try {
       const { telegram_id } = req.body;
+      console.log('Impersonation request for telegram_id:', telegram_id);
       
       if (!telegram_id) {
         res.status(400);
@@ -258,9 +259,17 @@ export async function registerRoutes(app: Express) {
         return res.json({ error: "User not found" });
       }
 
-      // Get original admin user for later reference
+      console.log('Found user to impersonate:', userToImpersonate);
+
+      // Get original admin user for later reference  
       const adminUser = getTelegramUserFromRequest(req);
       
+      if (!req.session) {
+        console.error('No session object found');
+        res.status(500);
+        return res.json({ error: "Session not initialized" });
+      }
+
       // Store impersonation data in session
       req.session.impersonating = {
         originalUser: adminUser,
@@ -272,11 +281,22 @@ export async function registerRoutes(app: Express) {
         }
       };
 
-      return res.json({
-        success: true,
-        message: "Impersonation started",
-        user: userToImpersonate
+      // Save session explicitly
+      req.session.save((err) => {
+        if (err) {
+          console.error('Error saving session:', err);
+          res.status(500);
+          return res.json({ error: "Failed to save session" });
+        }
+
+        console.log('Impersonation session saved successfully');
+        return res.json({
+          success: true,
+          message: "Impersonation started", 
+          user: userToImpersonate
+        });
       });
+
     } catch (error) {
       console.error("Error starting impersonation:", error);
       res.status(500);
@@ -284,9 +304,9 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/admin/stop-impersonation", checkAdminMiddleware, async (req, res) => {
+  app.post("/api/admin/stop-impersonation", checkAdminMiddleware, async (req: TelegramRequest, res: Response) => {
     try {
-      if (!req.session.impersonating) {
+      if (!req.session?.impersonating) {
         res.status(400);
         return res.json({ error: "Not currently impersonating" });
       }
@@ -294,13 +314,23 @@ export async function registerRoutes(app: Express) {
       // Clear impersonation data
       delete req.session.impersonating;
 
-      return res.json({
-        success: true,
-        message: "Impersonation ended"
+      // Save session explicitly
+      req.session.save((err) => {
+        if (err) {
+          console.error('Error saving session:', err);
+          res.status(500);
+          return res.json({ error: "Failed to save session" });
+        }
+
+        console.log('Impersonation session cleared successfully');
+        return res.json({
+          success: true,
+          message: "Impersonation ended"
+        });
       });
     } catch (error) {
       console.error("Error ending impersonation:", error);
-      res.status(500);
+      res.status(500); 
       return res.json({ error: "Failed to end impersonation" });
     }
   });
