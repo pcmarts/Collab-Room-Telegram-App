@@ -49,21 +49,24 @@ export default function AdminUsers() {
   // Fetch all users
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
-    enabled: isAdmin
+    enabled: isAdmin,
+    retry: false
   });
 
   // Mutation for toggling admin status
   const toggleAdminMutation = useMutation({
     mutationFn: async ({ userId, isAdmin }: { userId: string, isAdmin: boolean }) => {
-      return apiRequest(`/api/admin/users/${userId}/admin-status`, "PATCH", {
-        isAdmin,
+      const response = await apiRequest(`/api/admin/users/${userId}/admin-status`, {
+        method: 'PATCH',
+        body: { isAdmin }
       });
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       toast({
-        title: 'Admin status updated',
-        description: 'User admin status has been updated successfully.',
+        title: 'Success',
+        description: 'User admin status has been updated.',
       });
     },
     onError: (error) => {
@@ -78,9 +81,11 @@ export default function AdminUsers() {
   // Mutation for starting impersonation
   const startImpersonationMutation = useMutation({
     mutationFn: async (telegram_id: string) => {
-      return apiRequest('/api/admin/impersonate', "POST", {
-        telegram_id
+      const response = await apiRequest('/api/admin/impersonate', {
+        method: 'POST',
+        body: { telegram_id }
       });
+      return response;
     },
     onSuccess: () => {
       toast({
