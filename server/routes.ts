@@ -94,6 +94,7 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
     // Get Telegram user from request
     const telegramUser = getTelegramUserFromRequest(req);
     if (!telegramUser) {
+      console.log('Admin check failed: No Telegram user found');
       res.status(401);
       return res.json({ error: "Unauthorized - Not logged in" });
     }
@@ -104,12 +105,14 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
       .where(eq(users.telegram_id, telegramUser.id.toString()));
     
     if (!user) {
+      console.log('Admin check failed: User not found in database');
       res.status(401);
       return res.json({ error: "Unauthorized - User not found" });
     }
     
     // Check if user is admin
     if (!user.is_admin) {
+      console.log('Admin check failed: User is not an admin');
       res.status(403);
       return res.json({ error: "Forbidden - Admin access required" });
     }
@@ -159,7 +162,9 @@ export async function registerRoutes(app: Express) {
   
   app.get("/api/admin/users", checkAdminMiddleware, async (req, res) => {
     try {
+      // Since we passed middleware, we can fetch users
       const allUsers = await db.select().from(users);
+      console.log(`Found ${allUsers.length} users in database`);
       
       // Return array of users directly for frontend compatibility
       return res.json(allUsers);
