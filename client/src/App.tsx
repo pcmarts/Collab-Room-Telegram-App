@@ -28,6 +28,7 @@ import Apply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 
 // Application form routes that should not show bottom navigation
 const APPLICATION_ROUTES = [
@@ -46,6 +47,7 @@ function Router() {
 
   return (
     <div className="min-h-screen bg-background w-full">
+      <ImpersonationBanner />
       <div className={`w-full px-4 py-2 ${showBottomNav ? 'pb-20' : ''}`}>
         <Switch>
           {/* Welcome and Application Flow */}
