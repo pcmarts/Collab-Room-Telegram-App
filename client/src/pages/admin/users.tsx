@@ -55,10 +55,9 @@ export default function AdminUsers() {
 
   // Mutation for toggling admin status
   const toggleAdminMutation = useMutation({
-    mutationFn: async ({ userId, isAdmin }: { userId: string, isAdmin: boolean }) => {
-      const response = await apiRequest(`/api/admin/users/${userId}/admin-status`, {
-        method: 'PATCH',
-        body: { isAdmin }
+    mutationFn: async ({ userId, isAdmin }: { userId: string; isAdmin: boolean }) => {
+      const response = await apiRequest(`/api/admin/users/${userId}/admin-status`, 'PATCH', {
+        isAdmin
       });
       return response;
     },
@@ -81,13 +80,13 @@ export default function AdminUsers() {
   // Mutation for starting impersonation
   const startImpersonationMutation = useMutation({
     mutationFn: async (telegram_id: string) => {
-      const response = await apiRequest('/api/admin/impersonate', {
-        method: 'POST',
-        body: { telegram_id }
+      const response = await apiRequest('/api/admin/impersonate', 'POST', {
+        telegram_id
       });
       return response;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
       toast({
         title: "Impersonation Started",
         description: "You are now viewing the application as the selected user"
@@ -185,9 +184,9 @@ export default function AdminUsers() {
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        <Switch 
+                        <Switch
                           className="data-[state=checked]:bg-primary"
-                          checked={user.is_admin} 
+                          checked={user.is_admin}
                           onCheckedChange={() => handleToggleAdmin(user.id, user.is_admin)}
                           disabled={toggleAdminMutation.isPending}
                         />
