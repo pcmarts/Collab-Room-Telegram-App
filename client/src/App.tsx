@@ -29,6 +29,7 @@ import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
+import AdminApplications from "@/pages/admin/applications";
 
 // Application form routes that should not show bottom navigation
 const APPLICATION_ROUTES = [
@@ -99,6 +100,7 @@ function Router() {
 
           {/* Admin Routes */}
           <Route path="/admin/users" component={AdminUsers} />
+          <Route path="/admin/applications" component={AdminApplications} />
 
           <Route path="/not-found" component={NotFound} />
           <Route path="*" component={NotFound} />
