@@ -29,6 +29,7 @@ import NotFound from "@/pages/not-found";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
+import Settings from "@/pages/settings";
 
 // Application form routes that should not show bottom navigation
 const APPLICATION_ROUTES = [
@@ -70,9 +71,7 @@ function Router() {
           {/* New Tab Routes */}
           <Route path="/discover" component={DiscoverPage} />
           <Route path="/matches" component={MatchesPage} />
-          <Route path="/settings">
-            <Redirect to="/dashboard" />
-          </Route>
+          <Route path="/settings" component={Settings} />
 
           {/* Existing Routes */}
           <Route path="/dashboard" component={Dashboard} />
