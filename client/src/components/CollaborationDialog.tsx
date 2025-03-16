@@ -35,8 +35,8 @@ export function CollaborationDialog({ isOpen, onClose, collaboration }: Collabor
       case 'marketing':
         return (
           <div className="flex gap-2 mb-4">
-            <Badge variant="outline" className="bg-blue-50 flex items-center gap-1">
-              <Presentation className="h-3 w-3" />
+            <Badge variant="outline" className="bg-blue-50 flex items-center gap-2 px-3 py-1">
+              <Presentation className="h-4 w-4 text-blue-500" />
               {collaboration.collaborationType}
             </Badge>
             <Badge variant="outline" className="bg-green-50">{`${collaboration.roleTitle} at ${collaboration.companyName}`}</Badge>
@@ -45,8 +45,8 @@ export function CollaborationDialog({ isOpen, onClose, collaboration }: Collabor
       case 'conference':
         return (
           <div className="flex gap-2 mb-4">
-            <Badge variant="outline" className="bg-purple-50 flex items-center gap-1">
-              <Coffee className="h-3 w-3" />
+            <Badge variant="outline" className="bg-purple-50 flex items-center gap-2 px-3 py-1">
+              <Coffee className="h-4 w-4 text-purple-500" />
               {collaboration.eventName}
             </Badge>
             <Badge variant="outline" className="bg-green-50">{`${collaboration.roleTitle} at ${collaboration.companyName}`}</Badge>
@@ -55,8 +55,8 @@ export function CollaborationDialog({ isOpen, onClose, collaboration }: Collabor
       case 'request':
         return (
           <div className="flex gap-2 mb-4">
-            <Badge variant="outline" className="bg-orange-50 flex items-center gap-1">
-              <Inbox className="h-3 w-3" />
+            <Badge variant="outline" className="bg-orange-50 flex items-center gap-2 px-3 py-1">
+              <Inbox className="h-4 w-4 text-orange-500" />
               Collaboration Request
             </Badge>
             <Badge variant="outline" className="bg-green-50">
