@@ -1,7 +1,11 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import type { Session } from 'express-session';
 import { createServer } from "http";
+import session from 'express-session';
+import MemoryStore from 'memorystore';
 import { db } from "./db";
+
+const MemoryStoreSession = MemoryStore(session);
 import { 
   users, companies, notification_preferences, marketing_preferences, conference_preferences, 
   events, user_events, collaborations, collab_applications, collab_notifications,
@@ -128,6 +132,20 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
 
 export async function registerRoutes(app: Express) {
   const httpServer = createServer(app);
+
+  // Initialize session middleware
+  app.use(session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: true,
+    store: new MemoryStoreSession({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
   
   // Admin API endpoints
   app.get("/api/admin/check", async (req, res) => {
