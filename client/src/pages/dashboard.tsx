@@ -231,8 +231,18 @@ export default function Dashboard() {
             <span className="text-xs">My Company</span>
           </Button>
         </div>
-        
-        {/* Removed Preferences Actions as requested */}
+
+        {/* Admin Panel Button - Only shown to admins */}
+        {profile?.user?.is_admin && (
+          <Button
+            variant="outline"
+            className="w-full h-16 flex items-center justify-start gap-3"
+            onClick={() => setLocation('/admin/users')}
+          >
+            <Settings className="h-5 w-5" />
+            <span>Admin Panel</span>
+          </Button>
+        )}
 
         {/* Notification Settings */}
         <Card>
