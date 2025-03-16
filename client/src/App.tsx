@@ -60,6 +60,11 @@ function Router() {
             {(params) => <Apply id={params.id} />}
           </Route>
 
+          {/* Main App Routes */}
+          <Route path="/">
+            <Redirect to="/discover" />
+          </Route>
+
           {/* New Tab Routes */}
           <Route path="/discover" component={DiscoverPage} />
           <Route path="/matches" component={MatchesPage} />
@@ -67,15 +72,8 @@ function Router() {
             <Redirect to="/dashboard" />
           </Route>
 
-          {/* Root Route */}
-          <Route path="/">
-            <Redirect to="/discover" />
-          </Route>
-
           {/* Existing Routes */}
-          <Route path="/dashboard">
-            <Redirect to="/discover" />
-          </Route>
+          <Route path="/dashboard" component={Dashboard} />
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
           <Route path="/conference-coffees" component={ConferenceCoffees} />
 
