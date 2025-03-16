@@ -18,6 +18,7 @@ import ApplicationForm from "@/pages/application-form";
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
 import ConferenceCoffees from "@/pages/conference-coffees";
 import ProfileOverview from "@/pages/profile-overview";
+import AdminDashboard from "@/pages/admin/dashboard";
 import AdminUsers from "@/pages/admin/users";
 import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
 import CreateCollaborationSteps from "@/pages/create-collaboration-steps";
@@ -80,27 +81,17 @@ function Router() {
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
           <Route path="/conference-coffees" component={ConferenceCoffees} />
 
-          {/* Collaboration Management */}
-          <Route path="/create-collaboration-fixed">
-            {() => <CreateCollaborationFixed />}
+          {/* Admin Routes */}
+          <Route path="/admin">
+            <Redirect to="/admin/dashboard" />
           </Route>
-          <Route path="/create-collaboration-steps">
-            {() => <CreateCollaborationSteps />}
-          </Route>
-          <Route path="/my-collaborations">
-            <Redirect to="/marketing-collabs-new" />
-          </Route>
-          <Route path="/edit-collaboration/:id">
-            {(params) => <EditCollaborationSteps id={params.id} />}
-          </Route>
+          <Route path="/admin/dashboard" component={AdminDashboard} />
+          <Route path="/admin/users" component={AdminUsers} />
+          <Route path="/admin/applications" component={AdminApplications} />
 
           {/* Profile Routes */}
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route path="/company-info" component={CompanyInfo} />
-
-          {/* Admin Routes */}
-          <Route path="/admin/users" component={AdminUsers} />
-          <Route path="/admin/applications" component={AdminApplications} />
 
           <Route path="/not-found" component={NotFound} />
           <Route path="*" component={NotFound} />
