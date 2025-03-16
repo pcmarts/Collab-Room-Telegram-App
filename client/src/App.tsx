@@ -4,6 +4,9 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
+import { MobileCheck } from "@/components/MobileCheck";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import Dashboard from "@/pages/dashboard";
 import DiscoverPage from "@/pages/DiscoverPage";
 import MatchesPage from "@/pages/MatchesPage";
@@ -27,10 +30,8 @@ import CreateCollaboration from "@/pages/create-collaboration";
 import MyCollaborations from "@/pages/my-collaborations";
 import Apply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
-import { MobileCheck } from "@/components/MobileCheck";
-import { LoadingScreen } from "@/components/LoadingScreen";
-import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import AdminApplications from "@/pages/admin/applications";
+
 
 // Application form routes that should not show bottom navigation
 const APPLICATION_ROUTES = [
@@ -50,7 +51,7 @@ function Router() {
   return (
     <div className="min-h-screen bg-background w-full">
       <ImpersonationBanner />
-      <div className={`w-full px-4 py-2 ${showBottomNav ? 'pb-20' : ''}`}>
+      <div className={`w-full ${showBottomNav ? 'pb-20' : ''}`}>
         <Switch>
           {/* Welcome and Application Flow */}
           <Route path="/welcome" component={Welcome} />

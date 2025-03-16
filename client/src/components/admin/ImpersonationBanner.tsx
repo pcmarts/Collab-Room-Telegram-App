@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -22,8 +21,11 @@ export function ImpersonationBanner() {
     // Check if we're impersonating by looking at session
     const checkImpersonation = async () => {
       try {
+        console.log('Checking impersonation status...');
         const response = await fetch('/api/profile');
         const data = await response.json();
+        console.log('Profile data:', data);
+
         setIsImpersonating(!!data.impersonating);
         if (data.impersonating) {
           setImpersonatedUser({
@@ -75,10 +77,15 @@ export function ImpersonationBanner() {
     }
   };
 
-  if (!isImpersonating) return null;
+  if (!isImpersonating) {
+    console.log('Not impersonating, hiding banner');
+    return null;
+  }
+
+  console.log('Rendering impersonation banner with user:', impersonatedUser);
 
   return (
-    <div className="sticky top-0 z-50 bg-yellow-500 text-black py-3 px-4">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-500 text-black py-3 px-4 shadow-md">
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Crown className="h-5 w-5" />
