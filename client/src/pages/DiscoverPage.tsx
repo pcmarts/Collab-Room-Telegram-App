@@ -11,6 +11,54 @@ import { X, Info, Check, Coffee, Calendar, Megaphone, Twitter, Linkedin, Buildin
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { Badge } from "@/components/ui/badge";
 
+// Card type components
+const MarketingCard = ({ data }) => (
+  <div className="space-y-3">
+    <Badge variant="outline" className="bg-primary/10">
+      <Megaphone className="w-3 h-3 mr-1" />
+      {data.collaborationType}
+    </Badge>
+    <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
+    <div className="space-y-0.5">
+      <p className="text-base">{data.companyName}</p>
+      <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
+    </div>
+    <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
+  </div>
+);
+
+const ConferenceCard = ({ data }) => (
+  <div className="space-y-3">
+    <Badge variant="outline" className="bg-secondary/10">
+      <Coffee className="w-3 h-3 mr-1" />
+      Coffee Chat
+    </Badge>
+    <h3 className="text-xl font-semibold leading-snug">{data.eventName}</h3>
+    <div className="space-y-0.5">
+      <p className="text-base">{data.companyName}</p>
+      <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
+    </div>
+    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+      <Calendar className="w-3 h-3" />
+      <span>{data.availability}</span>
+    </div>
+  </div>
+);
+
+const RequestCard = ({ data }) => (
+  <div className="space-y-3">
+    <Badge variant="outline" className="bg-destructive/10">
+      Collaboration Request
+    </Badge>
+    <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
+    <div className="space-y-0.5">
+      <p className="text-base">From: {data.requestingUser}</p>
+      <p className="text-sm text-muted-foreground">{data.companyName} - {data.roleTitle}</p>
+    </div>
+    <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
+  </div>
+);
+
 // Updated dummy data structure to support different card types
 const DUMMY_CARDS = [
   {
@@ -58,54 +106,6 @@ const DUMMY_CARDS = [
     companySector: "DeFi News & Analysis",
   },
 ];
-
-// Card type components
-const MarketingCard = ({ data }) => (
-  <div className="space-y-4">
-    <Badge variant="outline" className="bg-primary/10">
-      <Megaphone className="w-4 h-4 mr-1" />
-      {data.collaborationType}
-    </Badge>
-    <h3 className="text-2xl font-semibold">{data.title}</h3>
-    <div className="space-y-1">
-      <p className="text-lg">{data.companyName}</p>
-      <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
-    </div>
-    <p className="text-sm text-muted-foreground">{data.description}</p>
-  </div>
-);
-
-const ConferenceCard = ({ data }) => (
-  <div className="space-y-4">
-    <Badge variant="outline" className="bg-secondary/10">
-      <Coffee className="w-4 h-4 mr-1" />
-      Coffee Chat
-    </Badge>
-    <h3 className="text-2xl font-semibold">{data.eventName}</h3>
-    <div className="space-y-1">
-      <p className="text-lg">{data.companyName}</p>
-      <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
-    </div>
-    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-      <Calendar className="w-4 h-4" />
-      <span>{data.availability}</span>
-    </div>
-  </div>
-);
-
-const RequestCard = ({ data }) => (
-  <div className="space-y-4">
-    <Badge variant="outline" className="bg-destructive/10">
-      Collaboration Request
-    </Badge>
-    <h3 className="text-2xl font-semibold">{data.title}</h3>
-    <div className="space-y-1">
-      <p className="text-lg">From: {data.requestingUser}</p>
-      <p className="text-sm text-muted-foreground">{data.companyName} - {data.roleTitle}</p>
-    </div>
-    <p className="text-sm text-muted-foreground">{data.description}</p>
-  </div>
-);
 
 export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -175,14 +175,14 @@ export default function DiscoverPage() {
 
   return (
     <div className="min-h-[100svh] bg-background">
-      <div className="container max-w-md mx-auto py-6">
-        <h1 className="text-2xl font-bold mb-6">Discover</h1>
+      <div className="container max-w-md mx-auto py-4">
+        <h1 className="text-2xl font-bold mb-4">Discover</h1>
 
-        <div className="relative w-full aspect-[3/4]">
+        <div className="relative w-full aspect-[4/5]">
           {/* Background Card (Next in Stack) */}
           {currentIndex < cards.length - 1 && (
             <div className="absolute inset-0 transform scale-[0.95] opacity-50">
-              <Card className="w-full h-full p-6 select-none">
+              <Card className="w-full h-full p-4 select-none">
                 {renderCard(cards[currentIndex + 1])}
               </Card>
             </div>
@@ -210,35 +210,35 @@ export default function DiscoverPage() {
             }}
             whileTap={{ cursor: "grabbing" }}
           >
-            <Card className="w-full h-full p-6 select-none cursor-grab active:cursor-grabbing">
+            <Card className="w-full h-full p-4 select-none cursor-grab active:cursor-grabbing">
               {renderCard(currentCard)}
 
               {/* Action Buttons */}
-              <div className="absolute bottom-6 left-6 right-6">
+              <div className="absolute bottom-4 left-4 right-4">
                 <div className="flex justify-between gap-2">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
+                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
                     onClick={() => handleSwipe("left")}
                   >
-                    <X className="h-6 w-6" />
+                    <X className="h-5 w-5" />
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
+                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
                     onClick={() => setShowDialog(true)}
                   >
-                    <Info className="h-6 w-6" />
+                    <Info className="h-5 w-5" />
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
+                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
                     onClick={() => handleSwipe("right")}
                   >
-                    <Check className="h-6 w-6" />
+                    <Check className="h-5 w-5" />
                   </Button>
                 </div>
               </div>
@@ -247,7 +247,7 @@ export default function DiscoverPage() {
         </div>
 
         {/* Instructions */}
-        <div className="mt-6 text-center text-sm text-muted-foreground">
+        <div className="mt-4 text-center text-sm text-muted-foreground">
           <p>Swipe right to request collaboration</p>
           <p>Swipe left to pass</p>
         </div>

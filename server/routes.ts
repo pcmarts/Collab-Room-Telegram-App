@@ -57,20 +57,13 @@ type TelegramReq = TelegramRequest | {
 
 function getTelegramUserFromRequest(req: TelegramReq) {
   try {
-    console.log('============ DEBUG: getTelegramUserFromRequest ============');
-    console.log('Request path:', req.path);
-    console.log('Session impersonating:', req.session?.impersonating);
-    console.log('Headers:', req.headers);
-    
-    // If impersonating and the request is not to an admin endpoint, return impersonated user  
+    // If impersonating and not an admin endpoint, return impersonated user
     if (req.session?.impersonating && !req.path?.startsWith('/api/admin')) {
-      console.log('Using impersonated user:', req.session.impersonating.impersonatedUser);
       return req.session.impersonating.impersonatedUser;
     }
 
     const initData = req.headers['x-telegram-init-data'] as string;
     if (!initData) {
-      console.log('No Telegram init data in headers, using development fallback');
       if (process.env.NODE_ENV !== 'production') {
         return {
           id: process.env.DEV_USER_ID || '8319c02a-f1bd-4f93-abc3-e223c9100bea',
@@ -85,14 +78,8 @@ function getTelegramUserFromRequest(req: TelegramReq) {
     // Parse Telegram data
     const decodedInitData = new URLSearchParams(initData);
     const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-    console.log('Using actual Telegram user:', telegramUser);
     
-    if (!telegramUser.id) {
-      console.error('No Telegram user ID found in parsed data');
-      return null;
-    }
-    
-    return telegramUser;
+    return telegramUser.id ? telegramUser : null;
   } catch (error) {
     console.error('Error in getTelegramUserFromRequest:', error);
     return null;
@@ -450,11 +437,6 @@ export async function registerRoutes(app: Express) {
   });
 
   app.post("/api/onboarding", async (req: TelegramRequest, res) => {
-    console.log('============ DEBUG: Onboarding Endpoint ============');
-    console.log('Headers:', req.headers);
-    console.log('Session:', req.session);
-    console.log('Body:', req.body);
-
     try {
       const { 
         first_name, last_name, linkedin_url, email, twitter_url, twitter_followers,
@@ -468,12 +450,9 @@ export async function registerRoutes(app: Express) {
       // Get user from impersonation session or Telegram data
       const telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
-        console.error('No Telegram user ID found');
         res.status(400);
         return res.json({ error: 'Invalid Telegram data' });
       }
-
-      console.log('Telegram user for onboarding:', telegramUser);
 
       // Check if user exists
       const existingUsers = await db.select()
@@ -482,19 +461,14 @@ export async function registerRoutes(app: Express) {
 
       const isProfileUpdate = existingUsers.length > 0;
       const existingUser = existingUsers[0];
-      console.log('Is profile update?', isProfileUpdate);
-      console.log('Existing user:', existingUser);
 
       if (!first_name) {
-        console.error('Missing required user fields');
         res.status(400);
         return res.json({ error: 'First name is required' });
       }
 
       // Start a transaction
       const result = await db.transaction(async (tx) => {
-        console.log('Starting database transaction...');
-        
         let user;
         
         if (isProfileUpdate) {
@@ -532,8 +506,6 @@ export async function registerRoutes(app: Express) {
             .returning();
         }
 
-        console.log('User after update/create:', user);
-
         if (!user) {
           throw new Error('Failed to update/create user');
         }
@@ -545,7 +517,7 @@ export async function registerRoutes(app: Express) {
           }
 
           // Create company record
-          const [company] = await tx
+          await tx
             .insert(companies)
             .values({
               user_id: user.id,
@@ -560,54 +532,38 @@ export async function registerRoutes(app: Express) {
               token_ticker: has_token ? token_ticker : null,
               blockchain_networks: has_token ? blockchain_networks : [],
               tags: tags || []
-            })
-            .returning();
-
-          console.log('Created company:', company);
+            });
 
           // Create notification preferences
-          const [notificationPrefs] = await tx
+          await tx
             .insert(notification_preferences)
             .values({
               user_id: user.id,
               notifications_enabled: true,
               notification_frequency: notification_frequency || 'Daily'
-            })
-            .returning();
-
-          console.log('Created notification preferences:', notificationPrefs);
+            });
           
           // Create marketing preferences
-          const [marketingPrefs] = await tx
+          await tx
             .insert(marketing_preferences)
             .values({
               user_id: user.id,
               collabs_to_discover: collabs_to_discover || [],
               collabs_to_host: collabs_to_host || [],
               filtered_marketing_topics: filtered_marketing_topics || []
-            })
-            .returning();
-            
-          console.log('Created marketing preferences:', marketingPrefs);
+            });
           
           // Create conference preferences
-          const [conferencePrefs] = await tx
+          await tx
             .insert(conference_preferences)
             .values({
               user_id: user.id,
               coffee_match_enabled: false
-            })
-            .returning();
-            
-          console.log('Created conference preferences:', conferencePrefs);
-
-          return { user, company, notificationPreferences: notificationPrefs };
+            });
         }
 
         return { user };
       });
-
-      console.log('Transaction completed successfully:', result);
 
       return res.json({
         success: true,
@@ -616,13 +572,9 @@ export async function registerRoutes(app: Express) {
       });
 
     } catch (error) {
-      console.error('Detailed error:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        name: error instanceof Error ? error.name : 'Unknown'
-      });
+      console.error('Error in onboarding:', error instanceof Error ? error.message : 'Unknown error');
       res.status(500);
-      return res.json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
+      return res.json({ error: 'Server error' });
     }
   });
 
