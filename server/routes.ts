@@ -444,35 +444,30 @@ export async function registerRoutes(app: Express) {
         company_name, company_website, twitter_handle, job_title, 
         funding_stage, has_token, token_ticker, blockchain_networks, tags,
         company_linkedin_url, company_twitter_followers,
-        collabs_to_discover, collabs_to_host, notification_frequency, filtered_marketing_topics
+        collabs_to_host, notification_frequency, filtered_marketing_topics
       } = req.body;
 
-      // Get user from impersonation session or Telegram data
       const telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
         res.status(400);
         return res.json({ error: 'Invalid Telegram data' });
       }
 
-      // Check if user exists
       const existingUsers = await db.select()
         .from(users)
         .where(eq(users.telegram_id, telegramUser.id.toString()));
 
       const isProfileUpdate = existingUsers.length > 0;
-      const existingUser = existingUsers[0];
 
       if (!first_name) {
         res.status(400);
         return res.json({ error: 'First name is required' });
       }
 
-      // Start a transaction
       const result = await db.transaction(async (tx) => {
         let user;
         
         if (isProfileUpdate) {
-          // Update existing user - preserving telegram_id and handle
           [user] = await tx
             .update(users)
             .set({
@@ -483,12 +478,10 @@ export async function registerRoutes(app: Express) {
               twitter_url,
               twitter_followers,
               referral_code,
-              // Do not update telegram_id or handle
             })
             .where(eq(users.telegram_id, telegramUser.id.toString()))
             .returning();
         } else {
-          // Create new user
           [user] = await tx
             .insert(users)
             .values({
@@ -510,13 +503,11 @@ export async function registerRoutes(app: Express) {
           throw new Error('Failed to update/create user');
         }
 
-        // Only handle company and preferences for new users
         if (!isProfileUpdate) {
           if (!company_name || !job_title || !company_website || !funding_stage) {
             throw new Error('Missing required company fields for new user');
           }
 
-          // Create company record
           await tx
             .insert(companies)
             .values({
@@ -534,7 +525,6 @@ export async function registerRoutes(app: Express) {
               tags: tags || []
             });
 
-          // Create notification preferences
           await tx
             .insert(notification_preferences)
             .values({
@@ -542,18 +532,43 @@ export async function registerRoutes(app: Express) {
               notifications_enabled: true,
               notification_frequency: notification_frequency || 'Daily'
             });
-          
-          // Create marketing preferences
+        
           await tx
             .insert(marketing_preferences)
             .values({
               user_id: user.id,
-              collabs_to_discover: collabs_to_discover || [],
+              // Enable all collaboration types by default
+              collabs_to_discover: [
+                'Co-Marketing on Twitter',
+                'Podcast Guest Appearance', 
+                'Twitter Spaces Guest',
+                'Live Stream Guest Appearance',
+                'Report & Research Feature',
+                'Newsletter Feature',
+                'Blog Post Feature',
+                'Thread Collab',
+                'Joint Campaign',
+                'Giveaway',
+                'Retweet & Boost',
+                'Sponsored Tweet', 
+                'Poll/Q&A',
+                'Shoutout',
+                'Tweet Swap',
+                'Meme/Viral Collab',
+                'Twitter List Collab',
+                'Exclusive Announcement'
+              ],
               collabs_to_host: collabs_to_host || [],
-              filtered_marketing_topics: filtered_marketing_topics || []
+              filtered_marketing_topics: filtered_marketing_topics || [],
+              // Enable all filters by default
+              matchingEnabled: true,
+              filter_company_sectors_enabled: true,
+              filter_company_followers_enabled: true,
+              filter_user_followers_enabled: true,
+              filter_funding_stages_enabled: true,
+              filter_token_status_enabled: true
             });
-          
-          // Create conference preferences
+        
           await tx
             .insert(conference_preferences)
             .values({
@@ -892,28 +907,20 @@ export async function registerRoutes(app: Express) {
 
   // My Collaborations endpoint
   app.get("/api/collaborations/my", async (req: TelegramRequest, res) => {
-    console.log('============ DEBUG: My Collaborations Endpoint ============');
-    console.log('Headers:', req.headers);
-
     try {
-      // Get user from impersonation session or Telegram data
       const telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
-        console.error('No Telegram user ID found');
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      // Get user ID from telegram_id
       const [user] = await db.select()
         .from(users)
         .where(eq(users.telegram_id, telegramUser.id.toString()));
 
       if (!user) {
-        console.error('User not found');
         return res.status(404).json({ error: 'User not found' });
       }
 
-      // Get collaborations for this user
       const myCollaborations = await db
         .select()
         .from(collaborations)
@@ -923,8 +930,71 @@ export async function registerRoutes(app: Express) {
       return res.json(myCollaborations);
 
     } catch (error) {
-      console.error('Error fetching collaborations:', error);
       return res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Search Collaborations endpoint
+  app.get("/api/collaborations/search", async (req: TelegramRequest, res: Response) => {
+    try {
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const collaborations = await db.select()
+        .from(collaborations)
+        .where(not(eq(collaborations.creator_id, user.id)))
+        .orderBy(desc(collaborations.created_at));
+      
+      return res.json(collaborations);
+
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to fetch collaborations' });
+    }
+  });
+
+  // Apply to Collaboration endpoint
+  app.post("/api/collaborations/:id/apply", async (req: TelegramRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { message } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ error: 'Collaboration ID is required' });
+      }
+
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const application = await storage.createCollabApplication(id, user.id, message);
+      if (!application) {
+        return res.status(404).json({ error: 'Failed to create application' });
+      }
+
+      return res.json({
+        success: true,
+        application,
+        message: 'Application submitted successfully'
+      });
+
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to submit application' });
     }
   });
 
