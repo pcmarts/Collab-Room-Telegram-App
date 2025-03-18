@@ -1543,14 +1543,14 @@ export default function CreateCollaborationSteps({
   };
 
   return (
-    <div className="container max-w-3xl pb-16">
+    <div className="container max-w-3xl pb-28">
       <PageHeader
         title="Create Collaboration"
         subtitle="Create a new collaboration opportunity"
         backUrl="/marketing-collabs-new"
       />
 
-      <div className="space-y-8">
+      <div className="space-y-8 mb-20 overflow-y-auto">
         {/* Progress indicator */}
         <div className="flex justify-between mb-8">
           {steps.map((step, index) => (
@@ -1619,8 +1619,8 @@ export default function CreateCollaborationSteps({
           </CardContent>
         </Card>
 
-        {/* Navigation buttons */}
-        <div className="fixed bottom-0 left-0 w-full bg-background border-t border-border p-4 flex justify-between">
+        {/* Desktop Navigation buttons (hidden on mobile) */}
+        <div className="hidden md:flex justify-between">
           <Button
             type="button"
             variant="outline"
@@ -1643,19 +1643,35 @@ export default function CreateCollaborationSteps({
             )}
           </Button>
         </div>
-        {/* Floating Save Button */}
-        <div className="fixed bottom-16 left-0 right-0 p-4 bg-background border-t border-border shadow-lg z-50">
+      </div>
+      
+      {/* Mobile Navigation Button - Fixed position at bottom with higher z-index */}
+      <div className="fixed bottom-20 left-0 right-0 py-4 px-4 bg-background border-t border-border shadow-lg z-[100]">
+        <div className="container max-w-3xl mx-auto flex gap-4">
+          {currentStep > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-1/3"
+              onClick={prevStep}
+              disabled={isSubmitting}
+            >
+              Back
+            </Button>
+          )}
           <Button
             type="button"
-            className="w-full"
+            className={currentStep > 0 ? "w-2/3" : "w-full"}
             disabled={isSubmitting}
             onClick={nextStep}
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {currentStep === steps.length - 1 ? "Creating..." : "Continue"}
               </>
+            ) : currentStep === steps.length - 1 ? (
+              "Create Collaboration"
             ) : (
               "Continue"
             )}
