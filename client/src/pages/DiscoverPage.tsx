@@ -76,21 +76,21 @@ const PodcastCard = ({ data }) => (
 
 // Twitter Spaces Guest Card
 const TwitterSpacesCard = ({ data }) => (
-  <div className="space-y-3">
+  <div className="space-y-2">
     <Badge variant="outline" className="bg-blue-500/10">
       <Twitter className="w-3 h-3 mr-1" />
-      Twitter Spaces Guest
+      Twitter Spaces
     </Badge>
-    <h3 className="text-xl font-semibold leading-snug">{data.topic}</h3>
+    <h3 className="text-lg font-semibold leading-snug">{data.topic}</h3>
     <div className="space-y-0.5">
       <div className="flex items-center space-x-1 text-primary">
         <Twitter className="w-3 h-3" />
         <span>@{data.hostHandle}</span>
       </div>
-      <p className="text-sm text-muted-foreground">{data.hostFollowerCount} followers</p>
+      <p className="text-xs text-muted-foreground">{data.hostFollowerCount} followers</p>
     </div>
     {data.topics && data.topics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-2">
+      <div className="flex flex-wrap gap-1 mb-1">
         {data.topics.map((topic, i) => (
           <Badge key={i} variant="secondary" className="text-xs">
             {topic}
@@ -98,7 +98,7 @@ const TwitterSpacesCard = ({ data }) => (
         ))}
       </div>
     )}
-    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
       <Calendar className="w-3 h-3" />
       <span>{data.date}</span>
     </div>
@@ -107,32 +107,32 @@ const TwitterSpacesCard = ({ data }) => (
 
 // Live Stream Guest Appearance Card
 const LiveStreamCard = ({ data }) => (
-  <div className="space-y-3">
+  <div className="space-y-2">
     <Badge variant="outline" className="bg-red-500/10">
       <Video className="w-3 h-3 mr-1" />
-      Live Stream Guest
+      Live Stream
     </Badge>
-    <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
+    <h3 className="text-lg font-semibold leading-snug">{data.title}</h3>
     <div className="space-y-0.5">
-      <p className="text-base">{data.companyName}</p>
-      <p className="text-sm text-muted-foreground">Expected Audience: {data.expectedAudience}</p>
+      <p className="text-sm">{data.companyName}</p>
+      <p className="text-xs text-muted-foreground">{data.expectedAudience}</p>
     </div>
-    <div className="flex flex-wrap gap-1 mb-2">
+    <div className="flex flex-wrap gap-1 mb-1">
       {data.topics && data.topics.map((topic, i) => (
         <Badge key={i} variant="secondary" className="text-xs">
           {topic}
         </Badge>
       ))}
     </div>
-    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
       <Calendar className="w-3 h-3" />
       <span>{data.date}</span>
     </div>
     {data.previousWebinarLink && (
-      <div className="flex items-center space-x-2 text-sm text-primary">
+      <div className="flex items-center space-x-2 text-xs text-primary">
         <FiExternalLink className="w-3 h-3" />
         <a href={data.previousWebinarLink} target="_blank" rel="noopener noreferrer" className="hover:underline">
-          Previous webinar
+          Previous
         </a>
       </div>
     )}
@@ -141,18 +141,18 @@ const LiveStreamCard = ({ data }) => (
 
 // Report and Research Features Card
 const ResearchReportCard = ({ data }) => (
-  <div className="space-y-3">
+  <div className="space-y-2">
     <Badge variant="outline" className="bg-violet-500/10">
       <FileText className="w-3 h-3 mr-1" />
-      Research Report Feature
+      Research Report
     </Badge>
-    <h3 className="text-xl font-semibold leading-snug">{data.reportName}</h3>
+    <h3 className="text-lg font-semibold leading-snug">{data.reportName}</h3>
     <div className="space-y-0.5">
-      <p className="text-base">{data.companyName}</p>
-      <p className="text-sm text-muted-foreground">Research topic: {data.researchTopic}</p>
+      <p className="text-sm">{data.companyName}</p>
+      <p className="text-xs text-muted-foreground">{data.researchTopic}</p>
     </div>
     {data.topics && data.topics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-2">
+      <div className="flex flex-wrap gap-1 mb-1">
         {data.topics.map((topic, i) => (
           <Badge key={i} variant="secondary" className="text-xs">
             {topic}
@@ -160,14 +160,14 @@ const ResearchReportCard = ({ data }) => (
         ))}
       </div>
     )}
-    <div className="flex flex-col space-y-1 text-sm text-muted-foreground">
+    <div className="flex flex-col space-y-1 text-xs text-muted-foreground">
       <div className="flex items-center space-x-2">
         <Calendar className="w-3 h-3" />
-        <span>Target Release: {data.reportTargetReleaseDate}</span>
+        <span>{data.reportTargetReleaseDate}</span>
       </div>
       <div className="flex items-center space-x-2">
         <Megaphone className="w-3 h-3" />
-        <span>Report Reach: {data.reportReach}</span>
+        <span>{data.reportReach}</span>
       </div>
     </div>
   </div>
@@ -175,32 +175,32 @@ const ResearchReportCard = ({ data }) => (
 
 // Newsletter Features or Guest Posts Card
 const NewsletterCard = ({ data }) => (
-  <div className="space-y-3">
+  <div className="space-y-2">
     <Badge variant="outline" className="bg-emerald-500/10">
       <BookOpen className="w-3 h-3 mr-1" />
-      Newsletter Feature
+      Newsletter
     </Badge>
-    <h3 className="text-xl font-semibold leading-snug">{data.newsletterName}</h3>
+    <h3 className="text-lg font-semibold leading-snug">{data.newsletterName}</h3>
     <div className="space-y-0.5">
-      <p className="text-base">{data.companyName}</p>
+      <p className="text-sm">{data.companyName}</p>
     </div>
-    <div className="flex flex-wrap gap-1 mb-2">
+    <div className="flex flex-wrap gap-1 mb-1">
       {data.topics && data.topics.map((topic, i) => (
         <Badge key={i} variant="secondary" className="text-xs">
           {topic}
         </Badge>
       ))}
     </div>
-    <div className="flex flex-col space-y-1 text-sm">
+    <div className="flex flex-col space-y-1 text-xs">
       <div className="flex items-center space-x-2 text-muted-foreground">
         <Megaphone className="w-3 h-3" />
-        <span>Subscribers: {data.totalSubscribers}</span>
+        <span>{data.totalSubscribers}</span>
       </div>
       {data.newsletterUrl && (
         <div className="flex items-center space-x-2 text-primary">
           <FiExternalLink className="w-3 h-3" />
           <a href={data.newsletterUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
-            View newsletter
+            View
           </a>
         </div>
       )}
