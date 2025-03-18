@@ -480,56 +480,62 @@ export default function CreateCollaborationSteps({
       title: "Date Preference",
       description: "Do you have a specific date in mind?",
       render: () => (
-        <FormField
-          control={form.control}
-          name="date_type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date Preference</FormLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a date preference" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="specific_date">
-                    Specific Date
-                  </SelectItem>
-                  <SelectItem value="any_future_date">
-                    Any Future Date
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                When would you like this collaboration to happen?
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="date_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Date Preference</FormLabel>
+                <Select 
+                  value={field.value} 
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    // Clear specific date if selecting "any_future_date"
+                    if (value === "any_future_date") {
+                      form.setValue("specific_date", "");
+                    }
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a date preference" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="specific_date">
+                      Specific Date
+                    </SelectItem>
+                    <SelectItem value="any_future_date">
+                      Any Future Date
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  When would you like this collaboration to happen?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {form.watch("date_type") === "specific_date" && (
+            <FormField
+              control={form.control}
+              name="specific_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Select Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} value={field.value || ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           )}
-        />
+        </div>
       )
-    },
-    {
-      id: "specific_date",
-      title: "Specific Date",
-      description: "Select the date for your collaboration",
-      render: () => (
-        <FormField
-          control={form.control}
-          name="specific_date"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Select Date</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      ),
-      shouldShow: () => form.getValues("date_type") === "specific_date"
     },
     {
       id: "podcast_name",
@@ -543,7 +549,14 @@ export default function CreateCollaborationSteps({
             <FormItem>
               <FormLabel>What's your podcast name?</FormLabel>
               <FormControl>
-                <Input placeholder="Enter podcast name" {...field} />
+                <Input 
+                  placeholder="Enter podcast name" 
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  name={field.name}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -566,7 +579,11 @@ export default function CreateCollaborationSteps({
               <FormControl>
                 <Input
                   placeholder="https://your-podcast-url.com"
-                  {...field}
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  name={field.name}
                 />
               </FormControl>
               <FormMessage />
@@ -590,7 +607,7 @@ export default function CreateCollaborationSteps({
               <FormControl>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value || ""}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -626,9 +643,12 @@ export default function CreateCollaborationSteps({
               <FormLabel>What's your Twitter/X handle?</FormLabel>
               <FormControl>
                 <Input
-                  defaultValue="https://x.com/"
                   placeholder="https://x.com/username"
-                  {...field}
+                  value={field.value || "https://x.com/"}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  name={field.name}
                 />
               </FormControl>
               <FormDescription>
@@ -653,7 +673,7 @@ export default function CreateCollaborationSteps({
             <FormItem>
               <FormLabel>How many followers do you have?</FormLabel>
               <Select
-                value={field.value}
+                value={field.value || ""}
                 onValueChange={field.onChange}
               >
                 <FormControl>
