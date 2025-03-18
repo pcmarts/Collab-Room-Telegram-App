@@ -1543,137 +1543,85 @@ export default function CreateCollaborationSteps({
   };
 
   return (
-    <div className="container max-w-3xl pb-28 h-[calc(100vh-5rem)] flex flex-col">
-      <PageHeader
-        title="Create Collaboration"
-        subtitle="Create a new collaboration opportunity"
-        backUrl="/marketing-collabs-new"
-      />
-
-      <div className="space-y-8 mb-20 form-scrollable-container flex-1">
-        {/* Progress indicator */}
-        <div className="flex justify-between mb-8">
-          {steps.map((step, index) => (
-            <div
-              key={index}
-              className={`flex-1 ${
-                index < steps.length - 1 ? "border-t-2 border-border" : ""
-              } ${
-                index === currentStep
-                  ? "text-primary"
-                  : index < currentStep
-                    ? "text-primary"
-                    : "text-muted-foreground"
-              } relative`}
-            >
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  index === currentStep
-                    ? "bg-primary text-white"
-                    : index < currentStep
-                      ? "bg-primary text-white"
-                      : "bg-muted text-muted-foreground"
-                } absolute -top-4 ${index === 0 ? "left-0" : index === steps.length - 1 ? "right-0" : "left-1/2 -translate-x-1/2"}`}
-              >
-                {index + 1}
-              </div>
-              {!isMobile && (
-                <div
-                  className={`mt-6 ${
-                    index === 0
-                      ? "text-left"
-                      : index === steps.length - 1
-                        ? "text-right"
-                        : "text-center"
-                  }`}
-                >
-                  <p
-                    className={`text-sm font-medium ${
-                      index === currentStep
-                        ? "text-foreground"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {step.title}
-                  </p>
-                </div>
-              )}
-            </div>
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Mobile-optimized header with steps indicator */}
+      <div className="px-4 py-3 border-b bg-background sticky top-0 z-10">
+        <div className="flex items-center mb-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setLocation("/marketing-collabs-new")}
+            className="mr-2 -ml-2"
+          >
+            <ChevronDown className="rotate-90 w-5 h-5" />
+          </Button>
+          <h1 className="text-lg font-medium">Create Collaboration</h1>
+        </div>
+        
+        {/* Simplified progress indicator */}
+        <div className="flex items-center w-full gap-1 mt-1">
+          {steps.map((_, i) => (
+            <div 
+              key={i}
+              className={`h-1 rounded-full flex-1 ${
+                i <= currentStep ? 'bg-primary' : 'bg-muted'
+              }`}
+            />
           ))}
         </div>
-
-        {/* Step title and description */}
-        <div className="mb-6">
-          <h2 className="text-xl font-bold">{steps[currentStep].title}</h2>
-          <p className="text-muted-foreground">
-            {steps[currentStep].description}
-          </p>
-        </div>
-
-        {/* Form content */}
-        <Card>
-          <CardContent className="pt-6">
-            <Form {...form}>
-              <form className="space-y-6">{renderStepContent()}</form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        {/* Desktop Navigation buttons (hidden on mobile) */}
-        <div className="hidden md:flex justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={prevStep}
-            disabled={currentStep === 0 || isSubmitting}
-          >
-            Previous
-          </Button>
-
-          <Button type="button" onClick={nextStep} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {currentStep === steps.length - 1 ? "Creating..." : "Next"}
-              </>
-            ) : currentStep === steps.length - 1 ? (
-              "Create Collaboration"
-            ) : (
-              "Next"
-            )}
-          </Button>
+        
+        <div className="flex justify-between items-center text-sm text-muted-foreground mt-2">
+          <span>Step {currentStep + 1} of {steps.length}</span>
+          <span>{steps[currentStep].title}</span>
         </div>
       </div>
+
+      {/* Content area - scrollable */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 pb-32">
+        {/* Step description */}
+        <p className="text-muted-foreground mb-6">
+          {steps[currentStep].description}
+        </p>
+
+        {/* Form content */}
+        <Form {...form}>
+          <form className="space-y-6">
+            {renderStepContent()}
+          </form>
+        </Form>
+      </div>
       
-      {/* Mobile Navigation Button - Fixed position at bottom with higher z-index */}
-      <div className="fixed bottom-24 left-0 right-0 py-4 px-4 bg-background border-t border-border shadow-lg z-[100]">
-        <div className="container max-w-3xl mx-auto flex gap-4">
+      {/* Fixed footer with navigation buttons */}
+      <div className="fixed bottom-20 left-0 right-0 p-4 bg-background border-t z-50 shadow-lg">
+        <div className="flex gap-3 max-w-md mx-auto">
           {currentStep > 0 && (
             <Button
               type="button"
               variant="outline"
-              className="w-1/3"
+              size="lg"
               onClick={prevStep}
               disabled={isSubmitting}
+              className="flex-1"
             >
               Back
             </Button>
           )}
           <Button
             type="button"
-            className={currentStep > 0 ? "w-2/3" : "w-full"}
+            size="lg"
+            className="flex-1"
             disabled={isSubmitting}
             onClick={nextStep}
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {currentStep === steps.length - 1 ? "Creating..." : "Continue"}
+                {currentStep === steps.length - 1 ? "Creating..." : "Next"}
               </>
             ) : currentStep === steps.length - 1 ? (
-              "Create Collaboration"
+              "Create"
             ) : (
-              "Continue"
+              "Next"
             )}
           </Button>
         </div>
