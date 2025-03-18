@@ -19,17 +19,17 @@ import { FiExternalLink } from "react-icons/fi";
 
 // Conference Coffee Card
 const ConferenceCoffeeCard = ({ data }) => (
-  <div className="space-y-3">
+  <div className="space-y-2">
     <Badge variant="outline" className="bg-secondary/10">
       <Coffee className="w-3 h-3 mr-1" />
       Coffee Chat
     </Badge>
-    <h3 className="text-xl font-semibold leading-snug">{data.conferenceName}</h3>
+    <h3 className="text-lg font-semibold leading-snug">{data.conferenceName}</h3>
     <div className="space-y-0.5">
-      <p className="text-base">{data.companyName}</p>
-      <p className="text-sm text-muted-foreground">{data.role}</p>
+      <p className="text-sm">{data.companyName}</p>
+      <p className="text-xs text-muted-foreground">{data.role}</p>
     </div>
-    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
       <Calendar className="w-3 h-3" />
       <span>{data.conferenceDate}</span>
     </div>
@@ -38,18 +38,18 @@ const ConferenceCoffeeCard = ({ data }) => (
 
 // Podcast Guest Appearances Card
 const PodcastCard = ({ data }) => (
-  <div className="space-y-3">
+  <div className="space-y-2">
     <Badge variant="outline" className="bg-primary/10">
       <Mic className="w-3 h-3 mr-1" />
-      Podcast Guest Appearance
+      Podcast Guest
     </Badge>
-    <h3 className="text-xl font-semibold leading-snug">{data.podcastName}</h3>
+    <h3 className="text-lg font-semibold leading-snug">{data.podcastName}</h3>
     <div className="space-y-0.5">
-      <p className="text-base">{data.companyName}</p>
+      <p className="text-sm">{data.companyName}</p>
     </div>
-    <p className="text-sm text-muted-foreground line-clamp-2">{data.shortDescription}</p>
+    <p className="text-xs text-muted-foreground line-clamp-2">{data.shortDescription}</p>
     {data.topics && data.topics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-2">
+      <div className="flex flex-wrap gap-1 mb-1">
         {data.topics.map((topic, i) => (
           <Badge key={i} variant="secondary" className="text-xs">
             {topic}
@@ -57,10 +57,10 @@ const PodcastCard = ({ data }) => (
         ))}
       </div>
     )}
-    <div className="flex flex-col space-y-1 text-sm">
+    <div className="flex flex-col space-y-1 text-xs">
       <div className="flex items-center space-x-2">
         <Megaphone className="w-3 h-3" />
-        <span>Estimated Reach: {data.estimatedReach}</span>
+        <span>{data.estimatedReach}</span>
       </div>
       {data.streamingLink && (
         <div className="flex items-center space-x-2 text-primary">
@@ -514,7 +514,7 @@ export default function DiscoverPage() {
         <h1 className="text-2xl font-bold mb-2">Discover</h1>
         <NetworkStatus className="mb-4" />
 
-        <div className="relative w-[90%] mx-auto aspect-[3/5]">
+        <div className="relative w-[90%] mx-auto aspect-[3/4.25]">
           {/* Background Card (Next in Stack) */}
           {currentIndex < cards.length - 1 && (
             <div className="absolute inset-0 transform scale-[0.95] opacity-50">
