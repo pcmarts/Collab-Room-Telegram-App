@@ -437,14 +437,57 @@ export default function DiscoverPage() {
   const cardElem = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Telegram WebApp
+  // Initialize Telegram WebApp and handle viewport
   useEffect(() => {
+    // Prevent scrolling and bouncing
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+    
     // Ensure the WebApp expands to fullscreen and is properly initialized
     if (window.Telegram?.WebApp) {
+      // Initialize Telegram WebApp
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
       
-      // Set viewport height for mobile devices
+      // Adaptive viewport height calculation
+      const updateTelegramViewportHeight = () => {
+        // Use Telegram's stable viewport height if available
+        if (window.Telegram.WebApp.viewportStableHeight) {
+          const vh = window.Telegram.WebApp.viewportStableHeight * 0.01;
+          document.documentElement.style.setProperty('--vh', `${vh}px`);
+        } else {
+          // Fallback to window height
+          const vh = window.innerHeight * 0.01;
+          document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+      };
+      
+      // Set initial height
+      updateTelegramViewportHeight();
+      
+      // Update on viewport changes
+      const handleViewportChange = () => {
+        updateTelegramViewportHeight();
+      };
+      
+      // Handle Telegram viewport and resize events
+      if (typeof window.Telegram.WebApp.onEvent === 'function') {
+        window.Telegram.WebApp.onEvent('viewportChanged', handleViewportChange);
+      }
+      
+      // Also listen to regular resize events as backup
+      window.addEventListener('resize', updateTelegramViewportHeight);
+      
+      return () => {
+        if (typeof window.Telegram.WebApp.offEvent === 'function') {
+          window.Telegram.WebApp.offEvent('viewportChanged', handleViewportChange);
+        }
+        window.removeEventListener('resize', updateTelegramViewportHeight);
+      };
+    } else {
+      // Not in Telegram WebApp, use regular viewport handling
       const setViewportHeight = () => {
         const vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
