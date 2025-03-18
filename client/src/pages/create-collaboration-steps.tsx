@@ -175,47 +175,74 @@ export default function CreateCollaborationSteps({
       return;
     }
 
-    // If validation passes, proceed to next step or submit
-    if (currentStep < 2) {
-      setCurrentStep(currentStep + 1);
-    } else {
+    const activeSteps = getActiveSteps();
+    
+    // If we're on the last step, submit the form
+    if (currentStep >= activeSteps.length - 1) {
       // Submit the form if on the last step
       handleSubmit();
+    } else {
+      // Otherwise move to the next step
+      setCurrentStep(currentStep + 1);
     }
   };
 
   // Validation for the current step
   const validateCurrentStep = () => {
-    // For now, we'll use very simple validation
-    if (currentStep === 0) {
-      const type = form.getValues("collab_type");
-      if (!type) {
-        toast({
-          title: "Please select a collaboration type",
-          variant: "destructive",
-        });
-        return false;
-      }
-    } 
-    else if (currentStep === 1) {
-      const title = form.getValues("title");
-      const description = form.getValues("description");
+    const activeSteps = getActiveSteps();
+    if (currentStep < 0 || currentStep >= activeSteps.length) {
+      return false;
+    }
+    
+    const currentStepId = activeSteps[currentStep].id;
+    
+    // Validate based on the field ID
+    switch (currentStepId) {
+      case "collab_type":
+        const type = form.getValues("collab_type");
+        if (!type) {
+          toast({
+            title: "Please select a collaboration type",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      case "title":
+        const title = form.getValues("title");
+        if (!title || title.trim() === "") {
+          toast({
+            title: "Please enter a title",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      case "description":
+        const description = form.getValues("description");
+        if (!description || description.trim() === "") {
+          toast({
+            title: "Please enter a description",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      case "topics":
+        const topics = form.getValues("topics");
+        if (!topics || !Array.isArray(topics) || topics.length === 0) {
+          toast({
+            title: "Please select at least one topic",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
       
-      if (!title || title.trim() === "") {
-        toast({
-          title: "Please enter a title",
-          variant: "destructive",
-        });
-        return false;
-      }
-      
-      if (!description || description.trim() === "") {
-        toast({
-          title: "Please enter a description",
-          variant: "destructive",
-        });
-        return false;
-      }
+      // Add more validation as needed for other fields
     }
 
     return true;
@@ -299,313 +326,419 @@ export default function CreateCollaborationSteps({
     }
   };
 
-  // Render step content based on current step
-  const renderStepContent = () => {
-    // Just show the fields we need for each step
-    switch (currentStep) {
-      case 0:
-        // Step 1: Collaboration Type
-        return (
-          <div className="space-y-6">
-            <FormField
-              control={form.control}
-              name="collab_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>What type of collaboration are you looking for?</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      handleCollabTypeChange(value);
-                    }}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {COLLAB_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Choose the type that best describes what you want to create
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        );
-        
-      case 1:
-        // Step 2: Basic Details
-        return (
-          <div className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter a title for your collaboration" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    A brief title that explains what you're looking for
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe the collaboration opportunity" 
-                      className="min-h-[100px]" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Provide more details about what you're looking for
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="topics"
-              render={() => (
-                <FormItem>
-                  <div className="mb-2">
-                    <FormLabel>Select Topics (pick at least one)</FormLabel>
-                    <FormDescription>
-                      What topics will this collaboration cover?
-                    </FormDescription>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto">
-                    {COLLAB_TOPICS.map((topic) => (
-                      <FormField
-                        key={topic}
-                        control={form.control}
-                        name="topics"
-                        render={({ field }) => {
-                          return (
-                            <FormItem
-                              key={topic}
-                              className="flex flex-row items-center space-x-3 space-y-0"
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(topic)}
-                                  onCheckedChange={(checked) => {
-                                    const updatedTopics = checked
-                                      ? [...(field.value || []), topic]
-                                      : (field.value || [])?.filter((t) => t !== topic);
-                                    field.onChange(updatedTopics);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="text-sm font-normal cursor-pointer flex-grow">
-                                {topic}
-                              </FormLabel>
-                            </FormItem>
-                          );
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        );
-        
-      case 2:
-        // Step 3: Type-Specific Details
-        return (
-          <div className="space-y-6">
-            {selectedCollabType === "Podcast Guest Appearance" && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="details.podcast_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>What's your podcast name?</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter podcast name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+  // Define all the possible steps with their associated fields
+  const allSteps = [
+    {
+      id: "collab_type",
+      title: "Collaboration Type",
+      description: "What type of collaboration are you looking for?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="collab_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>What type of collaboration are you looking for?</FormLabel>
+              <Select
+                value={field.value}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  handleCollabTypeChange(value);
+                }}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {COLLAB_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Choose the type that best describes what you want to create
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )
+    },
+    {
+      id: "title",
+      title: "Collaboration Title",
+      description: "Give your collaboration a title",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Enter a title for your collaboration" 
+                  {...field} 
                 />
-                <FormField
-                  control={form.control}
-                  name="details.podcast_link"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Link to your podcast</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="https://your-podcast-url.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+              </FormControl>
+              <FormDescription>
+                A brief title that explains what you're looking for
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )
+    },
+    {
+      id: "description",
+      title: "Description",
+      description: "Briefly describe what you're looking for",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Describe the collaboration opportunity" 
+                  className="min-h-[100px]" 
+                  {...field} 
                 />
-                <FormField
-                  control={form.control}
-                  name="details.estimated_reach"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>How many listeners do you have?</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
+              </FormControl>
+              <FormDescription>
+                Provide more details about what you're looking for
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )
+    },
+    {
+      id: "topics",
+      title: "Topics",
+      description: "What topics will this collaboration cover?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="topics"
+          render={() => (
+            <FormItem>
+              <div className="mb-2">
+                <FormLabel>Select Topics (pick at least one)</FormLabel>
+                <FormDescription>
+                  What topics will this collaboration cover?
+                </FormDescription>
+              </div>
+              <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto">
+                {COLLAB_TOPICS.map((topic) => (
+                  <FormField
+                    key={topic}
+                    control={form.control}
+                    name="topics"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={topic}
+                          className="flex flex-row items-center space-x-3 space-y-0"
                         >
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select podcast reach" />
-                            </SelectTrigger>
+                            <Checkbox
+                              checked={field.value?.includes(topic)}
+                              onCheckedChange={(checked) => {
+                                const updatedTopics = checked
+                                  ? [...(field.value || []), topic]
+                                  : (field.value || [])?.filter((t) => t !== topic);
+                                field.onChange(updatedTopics);
+                              }}
+                            />
                           </FormControl>
-                          <SelectContent>
-                            {AUDIENCE_SIZE_RANGES.map((size) => (
-                              <SelectItem key={size} value={size}>
-                                {size}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                          <FormLabel className="text-sm font-normal cursor-pointer flex-grow">
+                            {topic}
+                          </FormLabel>
+                        </FormItem>
+                      );
+                    }}
+                  />
+                ))}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )
+    },
+    {
+      id: "date_type",
+      title: "Date Preference",
+      description: "Do you have a specific date in mind?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="date_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Date Preference</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a date preference" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="specific_date">
+                    Specific Date
+                  </SelectItem>
+                  <SelectItem value="any_future_date">
+                    Any Future Date
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                When would you like this collaboration to happen?
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )
+    },
+    {
+      id: "specific_date",
+      title: "Specific Date",
+      description: "Select the date for your collaboration",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="specific_date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Select Date</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => form.getValues("date_type") === "specific_date"
+    },
+    {
+      id: "podcast_name",
+      title: "Podcast Name",
+      description: "What's your podcast called?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.podcast_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>What's your podcast name?</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter podcast name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
+    },
+    {
+      id: "podcast_link",
+      title: "Podcast Link",
+      description: "Link to your podcast",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.podcast_link"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Link to your podcast</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://your-podcast-url.com"
+                  {...field}
                 />
-              </>
-            )}
-
-            {selectedCollabType === "Twitter Spaces Guest" && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="details.twitter_handle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>What's your Twitter/X handle?</FormLabel>
-                      <FormControl>
-                        <Input
-                          defaultValue="https://x.com/"
-                          placeholder="https://x.com/username"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Include the full URL (https://x.com/...)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="details.host_follower_count"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>How many followers do you have?</FormLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select follower count" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                            <SelectItem key={count} value={count}>
-                              {count}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            )}
-
-            {/* Add other collaboration type fields as needed */}
-            
-            <FormField
-              control={form.control}
-              name="is_free_collab"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-3 space-y-0 bg-gray-50 p-4 rounded-md">
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
+    },
+    {
+      id: "podcast_reach",
+      title: "Podcast Audience",
+      description: "How many listeners do you have?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.estimated_reach"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>How many listeners do you have?</FormLabel>
+              <FormControl>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={(checked) => {
-                        field.onChange(true);
-                        if (!checked) {
-                          toast({
-                            title: "Free collaborations only",
-                            description: "Only free collaborations are allowed on our platform.",
-                            variant: "destructive",
-                          });
-                        }
-                      }}
-                      disabled={true}
-                    />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select podcast reach" />
+                    </SelectTrigger>
                   </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Free Collaboration (Required)</FormLabel>
-                    <FormDescription>
-                      All collaborations on our platform must be free
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
-          </div>
-        );
-        
-      default:
-        return null;
+                  <SelectContent>
+                    {AUDIENCE_SIZE_RANGES.map((size) => (
+                      <SelectItem key={size} value={size}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
+    },
+    {
+      id: "twitter_handle",
+      title: "Twitter Handle",
+      description: "What's your Twitter/X handle?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.twitter_handle"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>What's your Twitter/X handle?</FormLabel>
+              <FormControl>
+                <Input
+                  defaultValue="https://x.com/"
+                  placeholder="https://x.com/username"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                Include the full URL (https://x.com/...)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
+    },
+    {
+      id: "twitter_followers",
+      title: "Twitter Followers",
+      description: "How many followers do you have?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.host_follower_count"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>How many followers do you have?</FormLabel>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select follower count" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                    <SelectItem key={count} value={count}>
+                      {count}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
+    },
+    {
+      id: "free_collab",
+      title: "Free Collaboration",
+      description: "Verify that this is a free collaboration",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="is_free_collab"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center space-x-3 space-y-0 bg-gray-50 p-4 rounded-md">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={(checked) => {
+                    field.onChange(true);
+                    if (!checked) {
+                      toast({
+                        title: "Free collaborations only",
+                        description: "Only free collaborations are allowed on our platform.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  disabled={true}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Free Collaboration (Required)</FormLabel>
+                <FormDescription>
+                  All collaborations on our platform must be free
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+      )
     }
+  ];
+
+  // Get the active steps based on current form values
+  const getActiveSteps = () => {
+    return allSteps.filter(step => {
+      if (step.shouldShow) {
+        return step.shouldShow();
+      }
+      return true;
+    });
   };
 
-  // Get the total number of steps
-  const totalSteps = 3;
-  
-  // Step titles
-  const stepTitles = [
-    "Select Type",
-    "Basic Details",
-    "Specific Details",
-  ];
+  // Render step content based on current step
+  const renderStepContent = () => {
+    const activeSteps = getActiveSteps();
+    if (currentStep < 0 || currentStep >= activeSteps.length) {
+      return null;
+    }
+    
+    const step = activeSteps[currentStep];
+    return (
+      <div className="space-y-6">
+        {step.render()}
+      </div>
+    );
+  };
 
   return (
     <div className="container max-w-md mx-auto px-4 py-6">
@@ -617,20 +750,30 @@ export default function CreateCollaborationSteps({
       
       {/* Progress indicator */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">
-            Step {currentStep + 1} of {totalSteps}
-          </span>
-          <span className="text-sm font-medium">
-            {stepTitles[currentStep]}
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-primary rounded-full h-2 transition-all duration-300" 
-            style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
-          ></div>
-        </div>
+        {(() => {
+          const activeSteps = getActiveSteps();
+          const totalSteps = activeSteps.length;
+          const currentTitle = activeSteps[currentStep]?.title || "";
+          
+          return (
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">
+                  Step {currentStep + 1} of {totalSteps}
+                </span>
+                <span className="text-sm font-medium">
+                  {currentTitle}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-primary rounded-full h-2 transition-all duration-300" 
+                  style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+                ></div>
+              </div>
+            </>
+          );
+        })()}
       </div>
       
       <Form {...form}>
@@ -667,14 +810,21 @@ export default function CreateCollaborationSteps({
               onClick={nextStep}
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {currentStep === totalSteps - 1 ? 'Creating...' : 'Next...'}
-                </>
-              ) : (
-                currentStep === totalSteps - 1 ? 'Create Collaboration' : 'Next'
-              )}
+              {(() => {
+                const activeSteps = getActiveSteps();
+                const isLastStep = currentStep === activeSteps.length - 1;
+                
+                if (isSubmitting) {
+                  return (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {isLastStep ? 'Creating...' : 'Next...'}
+                    </>
+                  );
+                } else {
+                  return isLastStep ? 'Create Collaboration' : 'Next';
+                }
+              })()}
             </Button>
           </div>
         </form>
