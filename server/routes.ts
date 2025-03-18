@@ -135,7 +135,7 @@ export async function registerRoutes(app: Express) {
 
       // Count all active collaborations
       const collabsResult = await db.select({ count: sql`count(*)` }).from(collaborations)
-        .where(eq(collaborations.status, "Active"));
+        .where(eq(collaborations.status, "active"));
 
       res.json({
         users: Number(usersResult[0]?.count || 0),
