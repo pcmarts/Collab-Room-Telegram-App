@@ -46,6 +46,15 @@ const PodcastCard = ({ data }) => (
       <p className="text-base">{data.companyName}</p>
     </div>
     <p className="text-sm text-muted-foreground line-clamp-2">{data.shortDescription}</p>
+    {data.topics && data.topics.length > 0 && (
+      <div className="flex flex-wrap gap-1 mb-2">
+        {data.topics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+      </div>
+    )}
     <div className="flex flex-col space-y-1 text-sm">
       <div className="flex items-center space-x-2">
         <Megaphone className="w-3 h-3" />
@@ -78,6 +87,15 @@ const TwitterSpacesCard = ({ data }) => (
       </div>
       <p className="text-sm text-muted-foreground">{data.hostFollowerCount} followers</p>
     </div>
+    {data.topics && data.topics.length > 0 && (
+      <div className="flex flex-wrap gap-1 mb-2">
+        {data.topics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+      </div>
+    )}
     <div className="flex items-center space-x-2 text-sm text-muted-foreground">
       <Calendar className="w-3 h-3" />
       <span>{data.date}</span>
@@ -131,6 +149,15 @@ const ResearchReportCard = ({ data }) => (
       <p className="text-base">{data.companyName}</p>
       <p className="text-sm text-muted-foreground">Research topic: {data.researchTopic}</p>
     </div>
+    {data.topics && data.topics.length > 0 && (
+      <div className="flex flex-wrap gap-1 mb-2">
+        {data.topics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+      </div>
+    )}
     <div className="flex flex-col space-y-1 text-sm text-muted-foreground">
       <div className="flex items-center space-x-2">
         <Calendar className="w-3 h-3" />
@@ -196,6 +223,25 @@ const MarketingCard = ({ data }) => (
       <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
     </div>
     <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
+    {data.topics && data.topics.length > 0 && (
+      <div className="flex flex-wrap gap-1 mb-2">
+        {data.topics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+      </div>
+    )}
+    {/* For legacy preferredTopics support */}
+    {!data.topics && data.preferredTopics && data.preferredTopics.length > 0 && (
+      <div className="flex flex-wrap gap-1 mb-2">
+        {data.preferredTopics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+      </div>
+    )}
   </div>
 );
 
@@ -210,6 +256,15 @@ const ConferenceCard = ({ data }) => (
       <p className="text-base">{data.companyName}</p>
       <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
     </div>
+    {data.preferredTopics && data.preferredTopics.length > 0 && (
+      <div className="flex flex-wrap gap-1 mb-2">
+        {data.preferredTopics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+      </div>
+    )}
     <div className="flex items-center space-x-2 text-sm text-muted-foreground">
       <Calendar className="w-3 h-3" />
       <span>{data.availability}</span>
@@ -278,6 +333,7 @@ const DUMMY_CARDS = [
     companyTwitter: "cryptoinsights",
     companyName: "Crypto Insights",
     companySector: "DeFi News & Analysis",
+    topics: ["DeFi", "Tokenization", "Market Trends"],
   },
   
   // Live Stream Guest Appearance example
@@ -307,6 +363,7 @@ const DUMMY_CARDS = [
     description: "Looking for expert insights to include in our DeFi market report",
     companyTwitter: "cryptoresearch",
     twitterFollowers: "32.1K",
+    topics: ["DeFi", "Market Analysis", "Future Trends"],
   },
   
   // Newsletter Feature example
