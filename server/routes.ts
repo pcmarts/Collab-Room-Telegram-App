@@ -14,6 +14,7 @@ import {
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "../shared/schema";
 import { eq, and, not, desc } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved } from "./telegram";
 import { storage } from "./storage";
 
@@ -125,6 +126,26 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
 }
 
 export async function registerRoutes(app: Express) {
+  // Network statistics endpoint
+  app.get("/api/network-stats", async (_req: Request, res: Response) => {
+    try {
+      // Count all approved users
+      const usersResult = await db.select({ count: sql`count(*)` }).from(users)
+        .where(eq(users.is_approved, true));
+
+      // Count all active collaborations
+      const collabsResult = await db.select({ count: sql`count(*)` }).from(collaborations)
+        .where(eq(collaborations.status, "Active"));
+
+      res.json({
+        users: Number(usersResult[0]?.count || 0),
+        collaborations: Number(collabsResult[0]?.count || 0)
+      });
+    } catch (error) {
+      console.error("Error fetching network stats:", error);
+      res.status(500).json({ error: "Failed to fetch network statistics" });
+    }
+  });
   const httpServer = createServer(app);
 
   // Initialize session middleware

@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
 import { UserIcon, Users, Building, Star, Bell, Coffee, Calendar, Rocket, Plus, Settings } from 'lucide-react';
+import { NetworkStatus } from "@/components/NetworkStatus";
 import type { 
   User as UserType, 
   Company, 
@@ -191,6 +192,7 @@ export default function Dashboard() {
       <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
         <h1 className="text-xl font-semibold">Welcome, {user.first_name}!</h1>
         <p className="text-sm text-muted-foreground">Manage your collaborations and profile</p>
+        <NetworkStatus className="mt-2" />
       </div>
 
       <div className="p-4 space-y-4 pb-safe">
