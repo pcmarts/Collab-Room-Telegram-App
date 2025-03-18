@@ -657,7 +657,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       <div className="min-h-[100svh] bg-background">
         <PageHeader
           title="My Collaborations"
-          backUrl="/dashboard"
+          backUrl="/discover"
         />
         
         <div className="container mx-auto py-4 px-4">
