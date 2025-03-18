@@ -1,21 +1,16 @@
 import { useState, useRef, useEffect } from "react";
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  useAnimation,
-} from "framer-motion";
+import { Stack } from "@/components/Stack";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   X, Info, Check, Coffee, Calendar, Megaphone, Twitter, 
-  Linkedin, Building, Mic, Radio, Video, FileText, BookOpen
+  Linkedin, Building, Mic, Radio, Video, FileText, BookOpen, MessageCircle
 } from "lucide-react";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
-
 import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
+import { useLocation } from "wouter";
 
 // Conference Coffee Card
 const ConferenceCoffeeCard = ({ data }) => (
@@ -288,9 +283,8 @@ const RequestCard = ({ data }) => (
   </div>
 );
 
-// Updated dummy data structure with all card types
+// Collaboration type cards as an array
 const DUMMY_CARDS = [
-  // Conference Coffee example
   {
     id: "1",
     type: "conference-coffee",
@@ -305,8 +299,6 @@ const DUMMY_CARDS = [
     companyLinkedIn: "cryptotech-solutions",
     companySector: "Blockchain Infrastructure",
   },
-  
-  // Podcast Guest Appearance example
   {
     id: "2",
     type: "podcast",
@@ -322,8 +314,6 @@ const DUMMY_CARDS = [
     companyLinkedIn: "web3insights",
     companySector: "Web3 Media & Content",
   },
-  
-  // Twitter Spaces Guest example
   {
     id: "3",
     type: "twitter-spaces",
@@ -337,8 +327,6 @@ const DUMMY_CARDS = [
     companySector: "DeFi News & Analysis",
     topics: ["DeFi", "Tokenization", "Market Trends"],
   },
-  
-  // Live Stream Guest Appearance example
   {
     id: "4",
     type: "livestream",
@@ -351,120 +339,37 @@ const DUMMY_CARDS = [
     description: "Join our livestream to discuss the future of blockchain gaming",
     companyTwitter: "gamefialliance",
     twitterFollowers: "18.3K",
-  },
-  
-  // Research Report Feature example
-  {
-    id: "5",
-    type: "research-report",
-    reportName: "DeFi Market Trends 2025",
-    companyName: "Crypto Research Partners",
-    researchTopic: "DeFi Market Trends and Predictions",
-    reportTargetReleaseDate: "Q2 2025",
-    reportReach: "10,000+ industry professionals",
-    description: "Looking for expert insights to include in our DeFi market report",
-    companyTwitter: "cryptoresearch",
-    twitterFollowers: "32.1K",
-    topics: ["DeFi", "Market Analysis", "Future Trends"],
-  },
-  
-  // Newsletter Feature example
-  {
-    id: "6",
-    type: "newsletter",
-    newsletterName: "Web3 Weekly",
-    companyName: "Blockchain Insights",
-    topics: ["Market Analysis", "Tokenomics", "Regulation"],
-    totalSubscribers: "25,000+",
-    newsletterUrl: "https://web3weekly.com",
-    date: "Next issue: March 30, 2025",
-    description: "Looking for guest writers for our weekly newsletter",
-    companyTwitter: "web3weekly",
-    twitterFollowers: "28.7K",
-  },
-  
-  // Legacy examples for backward compatibility
-  {
-    id: "7",
-    type: "marketing",
-    title: "Looking for Podcast Guest",
-    companyName: "Web3 Media Network",
-    roleTitle: "Head of Content",
-    collaborationType: "Podcast Guest Appearance",
-    description: "Join our weekly podcast discussing the latest trends in blockchain technology and DeFi innovations.",
-    goals: "Share insights about DeFi innovations and reach new audience segments",
-    expectations: "45-minute podcast session, preparation meeting required",
-    companyTwitter: "web3medianetwork",
-    twitterFollowers: "22.3K",
-    companyLinkedIn: "web3medianetwork",
-    companySector: "Web3 Media & Content",
-  },
-  {
-    id: "8",
-    type: "conference",
-    title: "Paris Blockchain Week Coffee Chat",
-    companyName: "DeFi Solutions",
-    roleTitle: "Product Manager",
-    eventName: "Paris Blockchain Week",
-    availability: "May 10-12, 2025",
-    preferredTopics: ["DeFi", "DAOs", "Tokenization"],
-    description: "Looking to connect with fellow Web3 enthusiasts during Paris Blockchain Week",
-    companyTwitter: "defisolutions",
-    twitterFollowers: "8.5K",
-    companyLinkedIn: "defi-solutions",
-    companySector: "DeFi Protocol",
-  },
-  {
-    id: "9",
-    type: "request",
-    title: "Co-Marketing Opportunity",
-    companyName: "Crypto Wallet Co",
-    roleTitle: "Marketing Director",
-    requestingUser: "Alex Zhao",
-    requestReason: "Your platform would be a great fit for our wallet integration campaign",
-    description: "Would love to discuss co-marketing opportunities for our wallet integration",
-    companyTwitter: "cryptowallet",
-    twitterFollowers: "65.4K",
-    companyLinkedIn: "crypto-wallet-co",
-    companySector: "Web3 Infrastructure",
-  },
+  }
 ];
 
 export default function DiscoverPage() {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [cards, setCards] = useState(DUMMY_CARDS);
+  const [currentCard, setCurrentCard] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
-  const cardElem = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
+  const [location, setLocation] = useLocation();
 
   // Initialize Telegram WebApp and handle viewport
   useEffect(() => {
-    // Prevent scrolling and bouncing
+    // Prevent scrolling and bouncing on mobile
     document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    document.body.style.height = '100%';
     
     // Ensure the WebApp expands to fullscreen and is properly initialized
     if (window.Telegram?.WebApp) {
-      // Initialize Telegram WebApp
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
       
       // Adaptive viewport height calculation
       const updateTelegramViewportHeight = () => {
-        // Use Telegram's stable viewport height if available
-        if (window.Telegram.WebApp.viewportStableHeight) {
+        if (window.Telegram?.WebApp?.viewportStableHeight) {
           const vh = window.Telegram.WebApp.viewportStableHeight * 0.01;
           document.documentElement.style.setProperty('--vh', `${vh}px`);
         } else {
-          // Fallback to window height
           const vh = window.innerHeight * 0.01;
           document.documentElement.style.setProperty('--vh', `${vh}px`);
         }
       };
       
-      // Set initial height
       updateTelegramViewportHeight();
       
       // Update on viewport changes
@@ -472,89 +377,43 @@ export default function DiscoverPage() {
         updateTelegramViewportHeight();
       };
       
-      // Handle Telegram viewport and resize events
-      if (typeof window.Telegram.WebApp.onEvent === 'function') {
+      if (typeof window.Telegram?.WebApp?.onEvent === 'function') {
         window.Telegram.WebApp.onEvent('viewportChanged', handleViewportChange);
       }
       
-      // Also listen to regular resize events as backup
       window.addEventListener('resize', updateTelegramViewportHeight);
       
       return () => {
-        if (typeof window.Telegram.WebApp.offEvent === 'function') {
+        if (typeof window.Telegram?.WebApp?.offEvent === 'function') {
           window.Telegram.WebApp.offEvent('viewportChanged', handleViewportChange);
         }
         window.removeEventListener('resize', updateTelegramViewportHeight);
       };
-    } else {
-      // Not in Telegram WebApp, use regular viewport handling
-      const setViewportHeight = () => {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-      };
-      
-      setViewportHeight();
-      window.addEventListener('resize', setViewportHeight);
-      
-      return () => window.removeEventListener('resize', setViewportHeight);
     }
   }, []);
 
-  const x = useMotionValue(0);
-  const controls = useAnimation();
-  const [constrained, setConstrained] = useState(true);
-  const rotate = useTransform(x, [-200, 200], [-30, 30]);
-  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
-  const background = useTransform(
-    x,
-    [-200, 0, 200],
-    [
-      "rgba(239, 68, 68, 0.1)",
-      "rgba(255, 255, 255, 0)",
-      "rgba(34, 197, 94, 0.1)",
-    ],
-  );
-
-  const handleSwipe = async (direction: "left" | "right") => {
-    setConstrained(false);
-    const parentWidth =
-      cardElem.current?.parentElement?.getBoundingClientRect().width || 1000;
-    const childWidth = cardElem.current?.getBoundingClientRect().width || 500;
-    const flyAwayDistance =
-      direction === "left"
-        ? -parentWidth / 2 - childWidth / 2
-        : parentWidth / 2 + childWidth / 2;
-
-    await controls.start({
-      x: flyAwayDistance,
-      transition: { duration: 0.3 },
-    });
-
-    console.log(`Swiped ${direction} on card:`, cards[currentIndex]);
-
-    setCurrentIndex((prev) => {
-      if (prev === cards.length - 1) {
-        setCards([...DUMMY_CARDS].sort(() => Math.random() - 0.5));
-        return 0;
+  // Handle vote (swipe)
+  const handleVote = (item, vote) => {
+    console.log(`Voted ${vote ? "right" : "left"} on`, item);
+    
+    // Get the actual card data
+    const card = cards.find(c => c.id === item.key);
+    
+    if (card) {
+      if (vote) {
+        // Right swipe - like/interest
+        console.log("Interested in:", card.title || card.podcastName || card.topic || card.conferenceName);
+        setCurrentCard(card);
+        setShowDialog(true);
+      } else {
+        // Left swipe - pass
+        console.log("Passed on card");
       }
-      return prev + 1;
-    });
-
-    x.set(0);
-    setConstrained(true);
-    controls.set({ x: 0 });
+    }
   };
 
-  const currentCard = cards[currentIndex];
-
-  const renderCard = (card) => {
+  const renderCardContent = (card) => {
     switch (card.type) {
-      case "marketing":
-        return <MarketingCard data={card} />;
-      case "conference":
-        return <ConferenceCard data={card} />;
-      case "request":
-        return <RequestCard data={card} />;
       case "conference-coffee":
         return <ConferenceCoffeeCard data={card} />;
       case "podcast":
@@ -567,96 +426,78 @@ export default function DiscoverPage() {
         return <ResearchReportCard data={card} />;
       case "newsletter":
         return <NewsletterCard data={card} />;
+      case "marketing":
+        return <MarketingCard data={card} />;
+      case "conference":
+        return <ConferenceCard data={card} />;
+      case "request":
+        return <RequestCard data={card} />;
       default:
-        return null;
+        return <div>Unknown card type</div>;
     }
   };
 
   return (
-    <div className="telegram-app min-h-[100svh] bg-background" ref={pageRef}>
-      <div className="container max-w-md mx-auto py-4">
-        <h1 className="text-2xl font-bold mb-4">Discover</h1>
-
-        <div className="relative w-[90%] mx-auto aspect-[3/4.25]">
-          {/* Background Card (Next in Stack) */}
-          {currentIndex < cards.length - 1 && (
-            <div className="absolute inset-0 transform scale-[0.95] opacity-50">
-              <Card className="w-full h-full p-5 select-none">
-                {renderCard(cards[currentIndex + 1])}
-              </Card>
-            </div>
-          )}
-
-          {/* Current Card */}
-          <motion.div
-            className="absolute inset-0"
-            ref={cardElem}
-            style={{
-              x,
-              rotate,
-              opacity,
-              background,
-            }}
-            animate={controls}
-            drag="x"
-            dragConstraints={constrained && { left: 0, right: 0 }}
-            dragElastic={1}
-            onDragEnd={(_, info) => {
-              const threshold = 100;
-              if (Math.abs(info.offset.x) > threshold) {
-                handleSwipe(info.offset.x > 0 ? "right" : "left");
-              }
-            }}
-            whileTap={{ cursor: "grabbing" }}
-          >
-            <Card className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing">
-              {renderCard(currentCard)}
-
-              {/* Action Buttons */}
-              <div className="absolute bottom-5 left-5 right-5">
-                <div className="flex justify-between gap-1">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
-                    onClick={() => handleSwipe("left")}
+    <div className="min-h-[100svh] bg-background flex flex-col" ref={pageRef}>
+      <div className="flex-none p-4 border-b">
+        <h1 className="text-2xl font-bold">Discover</h1>
+        <NetworkStatus />
+      </div>
+      
+      <div className="flex-grow flex flex-col items-center justify-center p-4 overflow-hidden">
+        <div className="w-full max-w-md h-[70vh] relative">
+          <Stack onVote={handleVote} className="h-full relative">
+            {cards.map(card => (
+              <div key={card.id} className="h-full">
+                {renderCardContent(card)}
+                
+                {/* Card Actions */}
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-6">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="rounded-full h-10 w-10 bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center"
+                    onClick={() => console.log("Skip card")}
                   >
                     <X className="h-5 w-5" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
-                    onClick={() => setShowDialog(true)}
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="rounded-full h-10 w-10 bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center"
+                    onClick={() => {
+                      setCurrentCard(card);
+                      setShowDialog(true);
+                    }}
                   >
                     <Info className="h-5 w-5" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
-                    onClick={() => handleSwipe("right")}
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="rounded-full h-10 w-10 bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center"
+                    onClick={() => console.log("Like card")}
                   >
                     <Check className="h-5 w-5" />
                   </Button>
                 </div>
               </div>
-            </Card>
-          </motion.div>
+            ))}
+          </Stack>
         </div>
-
-        {/* Instructions */}
-        <div className="mt-4 text-center text-sm text-muted-foreground">
-          <p>→ Swipe right to request collaboration</p>
-          <p>← Swipe left to pass</p>
-        </div>
-        {/* Detailed View Dialog */}
-        <CollaborationDialog
-          isOpen={showDialog}
-          onClose={() => setShowDialog(false)}
-          collaboration={currentCard}
-        />
       </div>
+      
+      <div className="flex-none p-4 text-center text-sm text-muted-foreground">
+        <p>Swipe right to express interest</p>
+        <p>Swipe left to skip</p>
+      </div>
+      
+      {/* Details Dialog */}
+      <CollaborationDialog
+        isOpen={showDialog}
+        onClose={() => setShowDialog(false)}
+        collaboration={currentCard || {}}
+      />
     </div>
   );
 }
