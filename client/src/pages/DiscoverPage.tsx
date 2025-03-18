@@ -344,7 +344,7 @@ const DUMMY_CARDS = [
 
 export default function DiscoverPage() {
   const [cards, setCards] = useState(DUMMY_CARDS);
-  const [currentCard, setCurrentCard] = useState(null);
+  const [currentCard, setCurrentCard] = useState<any>({}); // Using any type to avoid TS errors
   const [showDialog, setShowDialog] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const [location, setLocation] = useLocation();
@@ -437,6 +437,28 @@ export default function DiscoverPage() {
     }
   };
 
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
+
+  const handleNextCard = () => {
+    setActiveCardIndex((prev) => (prev === cards.length - 1 ? 0 : prev + 1));
+  };
+
+  const handlePrevCard = () => {
+    setActiveCardIndex((prev) => (prev === 0 ? cards.length - 1 : prev - 1));
+  };
+
+  const handleSkipCard = () => {
+    console.log("Skipped card");
+    handleNextCard();
+  };
+
+  const handleLikeCard = () => {
+    const card = cards[activeCardIndex];
+    console.log("Liked card:", card.title || card.podcastName || card.topic || card.conferenceName);
+    setCurrentCard(card);
+    setShowDialog(true);
+  };
+
   return (
     <div className="min-h-[100svh] bg-background flex flex-col" ref={pageRef}>
       <div className="flex-none p-4 border-b">
@@ -445,51 +467,44 @@ export default function DiscoverPage() {
       </div>
       
       <div className="flex-grow flex flex-col items-center justify-center p-4 overflow-hidden">
-        <div className="w-full max-w-md h-[70vh] relative">
-          <Stack onVote={handleVote} className="h-full relative">
-            {cards.map(card => (
-              <div key={card.id} className="h-full">
-                {renderCardContent(card)}
-                
-                {/* Card Actions */}
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-6">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="rounded-full h-10 w-10 bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center"
-                    onClick={() => console.log("Skip card")}
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="rounded-full h-10 w-10 bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center"
-                    onClick={() => {
-                      setCurrentCard(card);
-                      setShowDialog(true);
-                    }}
-                  >
-                    <Info className="h-5 w-5" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="rounded-full h-10 w-10 bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center"
-                    onClick={() => console.log("Like card")}
-                  >
-                    <Check className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </Stack>
+        <div className="w-full max-w-md aspect-[3/4] relative">
+          <Card className="w-full h-full p-5 overflow-auto">
+            {cards.length > 0 && renderCardContent(cards[activeCardIndex])}
+            
+            {/* Card indicators */}
+            <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full px-2 py-1 text-xs">
+              {activeCardIndex + 1}/{cards.length}
+            </div>
+          </Card>
+          
+          {/* Card Actions */}
+          <div className="mt-4 flex justify-center gap-6">
+            <Button 
+              variant="outline" 
+              className="rounded-full h-14 w-14 bg-background shadow-md flex items-center justify-center"
+              onClick={handleSkipCard}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <Button 
+              variant="outline" 
+              className="rounded-full h-14 w-14 bg-background shadow-md flex items-center justify-center"
+              onClick={() => {
+                setCurrentCard(cards[activeCardIndex]);
+                setShowDialog(true);
+              }}
+            >
+              <Info className="h-6 w-6" />
+            </Button>
+            <Button 
+              variant="outline" 
+              className="rounded-full h-14 w-14 bg-background shadow-md flex items-center justify-center"
+              onClick={handleLikeCard}
+            >
+              <Check className="h-6 w-6" />
+            </Button>
+          </div>
         </div>
-      </div>
-      
-      <div className="flex-none p-4 text-center text-sm text-muted-foreground">
-        <p>Swipe right to express interest</p>
-        <p>Swipe left to skip</p>
       </div>
       
       {/* Details Dialog */}
