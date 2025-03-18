@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { LayoutGrid, FileText, MessageSquare, FolderPlus } from "lucide-react"
+import { LayoutGrid, Settings, MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const BottomNavigation = () => {
@@ -13,9 +13,9 @@ const BottomNavigation = () => {
       href: "/discover",
     },
     {
-      label: "My Collabs",
+      label: "Settings",
       icon: Settings,
-      href: "/my-collaborations",
+      href: "/settings",
     },
     {
       label: "My Matches",

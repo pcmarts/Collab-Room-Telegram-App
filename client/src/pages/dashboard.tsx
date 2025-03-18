@@ -308,7 +308,6 @@ export default function Dashboard() {
               <FaTwitter className="h-4 w-4" />
               <span>Twitter</span>
             </a>
-            
           </div>
         </div>
       </div>
