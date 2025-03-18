@@ -977,9 +977,8 @@ export default function MarketingCollabs() {
       
       <div className="container max-w-5xl px-4 py-6 pb-24">
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-1">
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
-            <TabsTrigger value="collaborations">My Collaborations</TabsTrigger>
           </TabsList>
           
           {/* Preferences Tab */}

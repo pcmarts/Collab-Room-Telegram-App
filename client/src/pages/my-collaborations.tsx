@@ -664,7 +664,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           <div className="flex justify-end mb-4">
             <Button 
               variant="default" 
-              onClick={() => setLocation('/create-collaboration')}
+              onClick={() => setLocation('/create-collaboration-steps')}
             >
               Create New
             </Button>
@@ -683,7 +683,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 Create your first collaboration to connect with others in the blockchain space
               </p>
               <Button 
-                onClick={() => setLocation('/create-collaboration')}
+                onClick={() => setLocation('/create-collaboration-steps')}
               >
                 Create Collaboration
               </Button>
