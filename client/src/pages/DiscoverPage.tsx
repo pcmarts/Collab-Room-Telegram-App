@@ -575,8 +575,7 @@ export default function DiscoverPage() {
   return (
     <div className="telegram-app min-h-[100svh] bg-background" ref={pageRef}>
       <div className="container max-w-md mx-auto py-4">
-        <h1 className="text-2xl font-bold mb-2">Discover</h1>
-        <NetworkStatus className="mb-4" />
+        <h1 className="text-2xl font-bold mb-4">Discover</h1>
 
         <div className="relative w-[90%] mx-auto aspect-[3/4.25]">
           {/* Background Card (Next in Stack) */}
