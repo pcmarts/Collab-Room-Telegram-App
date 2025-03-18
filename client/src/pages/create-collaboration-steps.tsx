@@ -1543,14 +1543,14 @@ export default function CreateCollaborationSteps({
   };
 
   return (
-    <div className="container max-w-3xl pb-28">
+    <div className="container max-w-3xl pb-28 h-[calc(100vh-5rem)] flex flex-col">
       <PageHeader
         title="Create Collaboration"
         subtitle="Create a new collaboration opportunity"
         backUrl="/marketing-collabs-new"
       />
 
-      <div className="space-y-8 mb-20 overflow-y-auto">
+      <div className="space-y-8 mb-20 form-scrollable-container flex-1">
         {/* Progress indicator */}
         <div className="flex justify-between mb-8">
           {steps.map((step, index) => (
@@ -1646,7 +1646,7 @@ export default function CreateCollaborationSteps({
       </div>
       
       {/* Mobile Navigation Button - Fixed position at bottom with higher z-index */}
-      <div className="fixed bottom-20 left-0 right-0 py-4 px-4 bg-background border-t border-border shadow-lg z-[100]">
+      <div className="fixed bottom-24 left-0 right-0 py-4 px-4 bg-background border-t border-border shadow-lg z-[100]">
         <div className="container max-w-3xl mx-auto flex gap-4">
           {currentStep > 0 && (
             <Button
