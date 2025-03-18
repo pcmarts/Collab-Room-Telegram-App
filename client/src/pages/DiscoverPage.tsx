@@ -12,6 +12,7 @@ import {
   Linkedin, Building, Mic, Radio, Video, FileText, BookOpen
 } from "lucide-react";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
+import { NetworkStatus } from "@/components/NetworkStatus";
 
 import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
@@ -510,7 +511,8 @@ export default function DiscoverPage() {
   return (
     <div className="min-h-[100svh] bg-background">
       <div className="container max-w-md mx-auto py-4">
-        <h1 className="text-2xl font-bold mb-4">Discover</h1>
+        <h1 className="text-2xl font-bold mb-2">Discover</h1>
+        <NetworkStatus className="mb-4" />
 
         <div className="relative w-full aspect-[4/5]">
           {/* Background Card (Next in Stack) */}
