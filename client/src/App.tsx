@@ -91,6 +91,10 @@ function Router() {
           <Route path="/admin/users" component={AdminUsers} />
           <Route path="/admin/applications" component={AdminApplications} />
 
+          {/* Collaboration Routes */}
+          <Route path="/create-collaboration-steps" component={CreateCollaborationSteps} />
+          <Route path="/create-collaboration" component={CreateCollaboration} />
+          
           {/* Profile Routes */}
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route path="/company-info" component={CompanyInfo} />
