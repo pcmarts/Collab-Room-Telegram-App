@@ -945,7 +945,7 @@ export async function registerRoutes(app: Express) {
       const myCollaborations = await db
         .select()
         .from(collaborations)
-        .where(eq(collaborations.user_id, user.id))
+        .where(eq(collaborations.creator_id, user.id))
         .orderBy(desc(collaborations.created_at));
 
       return res.json(myCollaborations);
