@@ -514,11 +514,11 @@ export default function DiscoverPage() {
         <h1 className="text-2xl font-bold mb-2">Discover</h1>
         <NetworkStatus className="mb-4" />
 
-        <div className="relative w-[90%] mx-auto aspect-[3/5]">
+        <div className="relative w-[80%] mx-auto aspect-[4/3]">
           {/* Background Card (Next in Stack) */}
           {currentIndex < cards.length - 1 && (
             <div className="absolute inset-0 transform scale-[0.95] opacity-50">
-              <Card className="w-full h-full p-5 select-none">
+              <Card className="w-full h-full p-4 select-none">
                 {renderCard(cards[currentIndex + 1])}
               </Card>
             </div>
@@ -546,35 +546,35 @@ export default function DiscoverPage() {
             }}
             whileTap={{ cursor: "grabbing" }}
           >
-            <Card className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing">
+            <Card className="w-full h-full p-4 select-none cursor-grab active:cursor-grabbing">
               {renderCard(currentCard)}
 
               {/* Action Buttons */}
-              <div className="absolute bottom-5 left-5 right-5">
+              <div className="absolute bottom-4 left-4 right-4">
                 <div className="flex justify-between gap-1">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                    className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
                     onClick={() => handleSwipe("left")}
                   >
-                    <X className="h-5 w-5" />
+                    <X className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                    className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
                     onClick={() => setShowDialog(true)}
                   >
-                    <Info className="h-5 w-5" />
+                    <Info className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                    className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
                     onClick={() => handleSwipe("right")}
                   >
-                    <Check className="h-5 w-5" />
+                    <Check className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
