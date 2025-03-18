@@ -614,20 +614,20 @@ export default function DiscoverPage() {
               {renderCard(currentCard)}
 
               {/* Action Buttons */}
-              <div className="absolute bottom-8 left-5 right-5">
+              <div className="absolute bottom-5 left-5 right-5">
                 <div className="flex justify-between gap-1">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
+                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
                     onClick={() => handleSwipe("left")}
                   >
-                    <X className="h-6 w-6" />
+                    <X className="h-5 w-5" />
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
+                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
                     onClick={() => setShowDialog(true)}
                   >
                     <Info className="h-5 w-5" />
@@ -635,7 +635,7 @@ export default function DiscoverPage() {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-12 w-12 rounded-full bg-background/80 backdrop-blur-sm"
+                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
                     onClick={() => handleSwipe("right")}
                   >
                     <Check className="h-5 w-5" />
