@@ -1589,41 +1589,7 @@ export default function MarketingCollabs() {
           </TabsContent>
           
           {/* Collaborations Tab */}
-          <TabsContent value="collaborations" className="mt-6 pb-24">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">My Collaborations</h2>
-              {!isCollabsLoading && collaborations.length > 0 && (
-                <Button onClick={() => setLocation('/create-collaboration-steps')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create New
-                </Button>
-              )}
-            </div>
-            
-            {isCollabsLoading ? (
-              renderSkeletons()
-            ) : collaborations.length > 0 ? (
-              <div className="space-y-4">
-                {collaborations.map((collab: Collaboration) => renderCollaborationCard(collab))}
-              </div>
-            ) : (
-              <Card className="p-6 text-center">
-                <div className="flex flex-col items-center gap-2">
-                  <Info className="h-8 w-8 text-gray-400" />
-                  <h3 className="text-lg font-medium">No collaborations yet</h3>
-                  <p className="text-gray-500 mb-4">
-                    You haven't created any collaborations yet. Create your first one to start connecting!
-                  </p>
-                  <Button onClick={() => setLocation('/create-collaboration-steps')}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Collaboration
-                  </Button>
-                </div>
-              </Card>
-            )}
-            
-            {/* My Applications section removed as requested */}
-          </TabsContent>
+          {/* My Collaborations tab removed as requested */}
         </Tabs>
       </div>
     </div>
