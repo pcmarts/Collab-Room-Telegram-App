@@ -72,12 +72,7 @@ function Router() {
 
           {/* New Tab Routes */}
           <Route path="/discover" component={DiscoverPage} />
-          <Route path="/my-collaborations">
-            <MyCollaborations />
-          </Route>
-          <Route path="/my-collaborations/:id">
-            {(params) => <MyCollaborations collaborationId={params.id} />}
-          </Route>
+          <Route path="/my-collaborations" component={MyCollaborations} />
           <Route path="/matches" component={MatchesPage} />
           <Route path="/settings">
             <Redirect to="/dashboard" />
