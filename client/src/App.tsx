@@ -51,7 +51,7 @@ function Router() {
   return (
     <div className="min-h-screen bg-background w-full">
       <ImpersonationBanner />
-      <div className={`w-full ${showBottomNav ? 'pb-20' : ''}`}>
+      <div className={`w-full ${showBottomNav ? 'pb-24' : ''}`}>
         <Switch>
           {/* Welcome and Application Flow */}
           <Route path="/welcome" component={Welcome} />

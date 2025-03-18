@@ -30,14 +30,14 @@ const BottomNavigation = () => {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 z-50 w-full h-20 bg-background border-t border-border pb-4">
+    <nav className="fixed bottom-0 left-0 z-50 w-full h-24 bg-background border-t border-border pb-6">
       <div className="grid h-full grid-cols-4 mx-auto">
         {navItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-col items-center justify-center px-1 pt-1 hover:bg-accent",
+              "flex flex-col items-center justify-center px-1 pt-2 hover:bg-accent",
               location === item.href && "text-primary"
             )}
           >
