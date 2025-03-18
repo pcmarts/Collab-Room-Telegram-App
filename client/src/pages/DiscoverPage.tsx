@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   motion,
   useMotionValue,
@@ -435,6 +435,27 @@ export default function DiscoverPage() {
   const [cards, setCards] = useState(DUMMY_CARDS);
   const [showDialog, setShowDialog] = useState(false);
   const cardElem = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  // Initialize Telegram WebApp
+  useEffect(() => {
+    // Ensure the WebApp expands to fullscreen and is properly initialized
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+      
+      // Set viewport height for mobile devices
+      const setViewportHeight = () => {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      };
+      
+      setViewportHeight();
+      window.addEventListener('resize', setViewportHeight);
+      
+      return () => window.removeEventListener('resize', setViewportHeight);
+    }
+  }, []);
 
   const x = useMotionValue(0);
   const controls = useAnimation();
@@ -509,7 +530,7 @@ export default function DiscoverPage() {
   };
 
   return (
-    <div className="min-h-[100svh] bg-background">
+    <div className="telegram-app min-h-[100svh] bg-background" ref={pageRef}>
       <div className="container max-w-md mx-auto py-4">
         <h1 className="text-2xl font-bold mb-2">Discover</h1>
         <NetworkStatus className="mb-4" />
@@ -584,10 +605,9 @@ export default function DiscoverPage() {
 
         {/* Instructions */}
         <div className="mt-4 text-center text-sm text-muted-foreground">
-          <p>Swipe right to request collaboration</p>
-          <p>Swipe left to pass</p>
+          <p>→ Swipe right to request collaboration</p>
+          <p>← Swipe left to pass</p>
         </div>
-
         {/* Detailed View Dialog */}
         <CollaborationDialog
           isOpen={showDialog}
