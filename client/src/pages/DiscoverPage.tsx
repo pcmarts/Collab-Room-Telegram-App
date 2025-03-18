@@ -467,42 +467,68 @@ export default function DiscoverPage() {
       </div>
       
       <div className="flex-grow flex flex-col items-center justify-center p-4 overflow-hidden">
-        <div className="w-full max-w-md aspect-[3/4] relative">
-          <Card className="w-full h-full p-5 overflow-auto">
-            {cards.length > 0 && renderCardContent(cards[activeCardIndex])}
-            
-            {/* Card indicators */}
-            <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full px-2 py-1 text-xs">
-              {activeCardIndex + 1}/{cards.length}
+        <div className="w-full max-w-md relative">
+          <div className="relative rounded-xl overflow-hidden shadow-lg bg-card border border-border">
+            {/* Card with gradient overlay */}
+            <div className="relative aspect-[3/4.5]">
+              {/* Main card content */}
+              <div className="absolute inset-0 p-5 overflow-auto">
+                {cards.length > 0 && renderCardContent(cards[activeCardIndex])}
+              </div>
+              
+              {/* Gradient overlay at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background/90 to-transparent" />
+              
+              {/* Card type badge */}
+              <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-full px-2 py-1 text-xs">
+                {activeCardIndex + 1}/{cards.length}
+              </div>
             </div>
-          </Card>
+            
+            {/* Card actions */}
+            <div className="px-4 py-3 bg-card border-t border-border flex justify-between items-center">
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="rounded-full h-12 w-12 bg-background/50 hover:bg-background/80 backdrop-blur-sm"
+                onClick={handleSkipCard}
+              >
+                <X className="h-5 w-5 text-destructive" />
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="rounded-full h-12 w-12 bg-background/50 hover:bg-background/80 backdrop-blur-sm"
+                onClick={() => {
+                  setCurrentCard(cards[activeCardIndex]);
+                  setShowDialog(true);
+                }}
+              >
+                <Info className="h-5 w-5" />
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="rounded-full h-12 w-12 bg-background/50 hover:bg-background/80 backdrop-blur-sm"
+                onClick={handleLikeCard}
+              >
+                <Check className="h-5 w-5 text-green-500" />
+              </Button>
+            </div>
+          </div>
           
-          {/* Card Actions */}
-          <div className="mt-4 flex justify-center gap-6">
-            <Button 
-              variant="outline" 
-              className="rounded-full h-14 w-14 bg-background shadow-md flex items-center justify-center"
-              onClick={handleSkipCard}
-            >
-              <X className="h-6 w-6" />
-            </Button>
-            <Button 
-              variant="outline" 
-              className="rounded-full h-14 w-14 bg-background shadow-md flex items-center justify-center"
-              onClick={() => {
-                setCurrentCard(cards[activeCardIndex]);
-                setShowDialog(true);
-              }}
-            >
-              <Info className="h-6 w-6" />
-            </Button>
-            <Button 
-              variant="outline" 
-              className="rounded-full h-14 w-14 bg-background shadow-md flex items-center justify-center"
-              onClick={handleLikeCard}
-            >
-              <Check className="h-6 w-6" />
-            </Button>
+          {/* Swipe instructions */}
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            <div className="flex items-center justify-center gap-1">
+              <X className="h-4 w-4 text-destructive" />
+              <span>Skip</span>
+            </div>
+            <div className="flex items-center justify-center gap-1 mt-1">
+              <Check className="h-4 w-4 text-green-500" />
+              <span>Express interest</span>
+            </div>
           </div>
         </div>
       </div>
