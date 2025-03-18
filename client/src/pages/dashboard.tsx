@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
 import { UserIcon, Users, Building, Star, Bell, Coffee, Calendar, Rocket, Plus, Settings } from 'lucide-react';
+import { FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { NetworkStatus } from "@/components/NetworkStatus";
 import type { 
   User as UserType, 
@@ -284,6 +285,31 @@ export default function Dashboard() {
             </CardContent>
           )}
         </Card>
+
+        {/* Footer with credits */}
+        <div className="text-center pt-4 pb-8 text-sm text-muted-foreground">
+          <p className="mb-2">Made with ❤️ by Paul Martin</p>
+          <div className="flex justify-center gap-4">
+            <a 
+              href="https://www.linkedin.com/in/thisispaulmartin/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-primary hover:underline"
+            >
+              <FaLinkedin className="h-4 w-4" />
+              <span>LinkedIn</span>
+            </a>
+            <a 
+              href="https://x.com/pcmarts" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-primary hover:underline"
+            >
+              <FaTwitter className="h-4 w-4" />
+              <span>Twitter</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
