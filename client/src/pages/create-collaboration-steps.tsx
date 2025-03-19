@@ -113,6 +113,8 @@ export default function CreateCollaborationSteps({
         newDetails = {
           twitter_handle: "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0],
+          topic: "",
+          short_description: "",
         };
         break;
       case "Live Stream Guest Appearance":
@@ -157,9 +159,10 @@ export default function CreateCollaborationSteps({
         break;
       case "Co-Marketing on Twitter":
         newDetails = {
-          collaboration_types: [],
+          twittercomarketing_type: ["Tweet"],
           host_twitter_handle: "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0],
+          short_description: "",
         };
         break;
       default:
@@ -282,6 +285,68 @@ export default function CreateCollaborationSteps({
       // Get the form data
       const data = form.getValues();
       console.log("Form data being submitted:", data);
+
+      // Ensure that details has all required fields based on collaboration type
+      // This prevents validation errors when submitting the form
+      if (data.collab_type === "Podcast Guest Appearance" && typeof data.details === 'object') {
+        data.details = {
+          podcast_name: data.details.podcast_name || "",
+          short_description: data.details.short_description || "",
+          podcast_description: data.details.podcast_description || "",
+          podcast_link: data.details.podcast_link || "",
+          estimated_reach: data.details.estimated_reach || AUDIENCE_SIZE_RANGES[0],
+        };
+      } else if (data.collab_type === "Twitter Spaces Guest" && typeof data.details === 'object') {
+        data.details = {
+          twitter_handle: data.details.twitter_handle || "https://x.com/",
+          host_follower_count: data.details.host_follower_count || TWITTER_FOLLOWER_COUNTS[0],
+          topic: data.details.topic || "",
+          short_description: data.details.short_description || "",
+        };
+      } else if (data.collab_type === "Live Stream Guest Appearance" && typeof data.details === 'object') {
+        data.details = {
+          title: data.details.title || "",
+          short_description: data.details.short_description || "",
+          date_selection: data.details.date_selection || "any_future_date",
+          specific_date: data.details.specific_date || "",
+          previous_stream_link: data.details.previous_stream_link || "",
+          expected_audience_size: data.details.expected_audience_size || AUDIENCE_SIZE_RANGES[0],
+          topics: data.details.topics || [],
+        };
+      } else if (data.collab_type === "Report & Research Feature" && typeof data.details === 'object') {
+        data.details = {
+          research_topic: data.details.research_topic || [],
+          target_audience: data.details.target_audience || "",
+          estimated_release_date: data.details.estimated_release_date || "",
+        };
+      } else if (data.collab_type === "Newsletter Feature" && typeof data.details === 'object') {
+        data.details = {
+          newsletter_name: data.details.newsletter_name || "",
+          short_description: data.details.short_description || "",
+          newsletter_description: data.details.newsletter_description || "",
+          newsletter_url: data.details.newsletter_url || "",
+          audience_reach: data.details.audience_reach || AUDIENCE_SIZE_RANGES[0],
+          total_subscribers: data.details.total_subscribers || AUDIENCE_SIZE_RANGES[0],
+          topics: data.details.topics || [],
+        };
+      } else if (data.collab_type === "Blog Post Feature" && typeof data.details === 'object') {
+        data.details = {
+          blog_topic: data.details.blog_topic || "",
+          blog_link: data.details.blog_link || "",
+          blog_name: data.details.blog_name || "",
+          blog_url: data.details.blog_url || "",
+          short_description: data.details.short_description || "",
+          est_readers: data.details.est_readers || AUDIENCE_SIZE_RANGES[0],
+          estimated_release_date: data.details.estimated_release_date || "",
+        };
+      } else if (data.collab_type === "Co-Marketing on Twitter" && typeof data.details === 'object') {
+        data.details = {
+          twittercomarketing_type: data.details.twittercomarketing_type || ["Tweet"],
+          host_twitter_handle: data.details.host_twitter_handle || "https://x.com/",
+          host_follower_count: data.details.host_follower_count || TWITTER_FOLLOWER_COUNTS[0],
+          short_description: data.details.short_description || "",
+        };
+      }
 
       // Format the data
       const formattedData = {
@@ -693,6 +758,217 @@ export default function CreateCollaborationSteps({
         />
       ),
       shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
+    },
+    {
+      id: "twitter_space_topic",
+      title: "Twitter Space Topic",
+      description: "What topic will your Twitter Space cover?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.topic"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>What topic will your Twitter Space cover?</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter Twitter Space topic"
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  name={field.name}
+                />
+              </FormControl>
+              <FormDescription>
+                A clear, specific topic will attract the right audience
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
+    },
+    {
+      id: "twitter_space_description",
+      title: "Twitter Space Description",
+      description: "Describe your Twitter Space",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.short_description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Describe your Twitter Space</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Provide details about your Twitter Space format, goals, and target audience"
+                  className="min-h-[100px]"
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  name={field.name}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
+    },
+    {
+      id: "twitter_comarketing_type",
+      title: "Co-Marketing Type",
+      description: "What type of co-marketing do you want to do?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.twittercomarketing_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Co-Marketing Type(s)</FormLabel>
+              <div className="grid grid-cols-1 gap-2">
+                {TWITTER_COLLAB_TYPES.map((type) => (
+                  <FormField
+                    key={type}
+                    control={form.control}
+                    name="details.twittercomarketing_type"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={type}
+                          className="flex flex-row items-center space-x-3 space-y-0"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(type)}
+                              onCheckedChange={(checked) => {
+                                const updatedTypes = checked
+                                  ? [...(field.value || []), type]
+                                  : (field.value || [])?.filter((t: string) => t !== type);
+                                field.onChange(updatedTypes);
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-normal cursor-pointer flex-grow">
+                            {type}
+                          </FormLabel>
+                        </FormItem>
+                      );
+                    }}
+                  />
+                ))}
+              </div>
+              <FormDescription>
+                Select all the types of content you'd like to collaborate on
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Co-Marketing on Twitter"
+    },
+    {
+      id: "twitter_comarketing_handle",
+      title: "Twitter Handle",
+      description: "What's your Twitter/X handle?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.host_twitter_handle"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>What's your Twitter/X handle?</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://x.com/username"
+                  value={field.value || "https://x.com/"}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  name={field.name}
+                />
+              </FormControl>
+              <FormDescription>
+                Include the full URL (https://x.com/...)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Co-Marketing on Twitter"
+    },
+    {
+      id: "twitter_comarketing_followers",
+      title: "Twitter Followers",
+      description: "How many followers do you have?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.host_follower_count"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>How many followers do you have?</FormLabel>
+              <Select
+                value={field.value || ""}
+                onValueChange={field.onChange}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select follower count" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                    <SelectItem key={count} value={count}>
+                      {count}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Co-Marketing on Twitter"
+    },
+    {
+      id: "twitter_comarketing_description",
+      title: "Co-Marketing Description",
+      description: "Describe your co-marketing idea",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.short_description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Describe your co-marketing idea</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="What kind of content would you like to create together? What are your goals?"
+                  className="min-h-[100px]"
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  name={field.name}
+                />
+              </FormControl>
+              <FormDescription>
+                The more details you provide, the easier it will be to find a great match
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Co-Marketing on Twitter"
     },
     {
       id: "free_collab",
