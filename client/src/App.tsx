@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import Dashboard from "@/pages/dashboard";
 import DiscoverPage from "@/pages/DiscoverPage";
 import MatchesPage from "@/pages/MatchesPage";
@@ -49,6 +50,7 @@ function Router() {
 
   return (
     <div className="min-h-screen bg-background w-full">
+      <ImpersonationBanner />
       <div className={`w-full ${showBottomNav ? 'pb-24' : ''}`}>
         <Switch>
           {/* Welcome and Application Flow */}
