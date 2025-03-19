@@ -972,7 +972,7 @@ export default function MarketingCollabs() {
       
       <PageHeader
         title="Marketing Collaborations"
-        backUrl="/"
+        backUrl="/discover"
       />
       
       <div className="container max-w-5xl px-4 py-6 pb-24">
