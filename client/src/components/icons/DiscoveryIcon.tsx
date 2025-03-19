@@ -19,8 +19,9 @@ const DiscoveryIcon = React.forwardRef<SVGSVGElement, DiscoveryIconProps>(
         ref={ref}
         {...props}
       >
-        <path d="M3 3L10 10L3 17L10 10z" />
-        <path d="M14 3L21 10L14 17L21 10z" />
+        <path d="M4 4L12 4L12 12L4 12z" />
+        <path d="M14 8L20 8L20 14L14 14z" />
+        <path d="M8 14L14 14L14 20L8 20z" />
       </svg>
     );
   }
