@@ -9,7 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   X, Info, Check, Coffee, Calendar, Megaphone, Twitter, 
-  Linkedin, Building, Mic, Radio, Video, FileText, BookOpen
+  Linkedin, Building, Mic, Radio, Video, FileText, BookOpen,
+  RotateCcw
 } from "lucide-react";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
@@ -580,6 +581,8 @@ export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cards, setCards] = useState(DUMMY_CARDS);
   const [showDialog, setShowDialog] = useState(false);
+  // Store history of swiped cards for undo functionality
+  const [swipeHistory, setSwipeHistory] = useState<Array<{card: any, direction: "left" | "right", index: number}>>([]);
   const cardElem = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
 
@@ -678,6 +681,13 @@ export default function DiscoverPage() {
 
     console.log(`Swiped ${direction} on card:`, cards[currentIndex]);
 
+    // Save the current card to history before changing index
+    setSwipeHistory(prev => [...prev, {
+      card: cards[currentIndex],
+      direction: direction,
+      index: currentIndex
+    }]);
+
     setCurrentIndex((prev) => {
       if (prev === cards.length - 1) {
         setCards([...DUMMY_CARDS].sort(() => Math.random() - 0.5));
@@ -689,6 +699,27 @@ export default function DiscoverPage() {
     x.set(0);
     setConstrained(true);
     controls.set({ x: 0 });
+  };
+
+  // Function to handle undo action
+  const handleUndo = async () => {
+    // Check if we have any cards in the history
+    if (swipeHistory.length === 0) return;
+    
+    // Get the last swiped card
+    const lastAction = swipeHistory[swipeHistory.length - 1];
+    
+    // Remove the last action from history
+    setSwipeHistory(prev => prev.slice(0, -1));
+    
+    // If we're at index 0 and the cards were reshuffled, we need to restore the original deck
+    if (currentIndex === 0 && lastAction.index === cards.length - 1) {
+      // This is a simplification - in a real app you'd need to store the original deck
+      setCards(DUMMY_CARDS);
+    }
+    
+    // Set the current index back to the previous card
+    setCurrentIndex(lastAction.index);
   };
 
   const currentCard = cards[currentIndex];
@@ -791,6 +822,21 @@ export default function DiscoverPage() {
           </motion.div>
         </div>
 
+        {/* Undo Button */}
+        {swipeHistory.length > 0 && (
+          <div className="mt-4 flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1"
+              onClick={handleUndo}
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>Undo Last Swipe</span>
+            </Button>
+          </div>
+        )}
+        
         {/* Instructions */}
         <div className="mt-4 text-center text-sm text-muted-foreground">
           <p>→ Swipe right to request collaboration</p>
