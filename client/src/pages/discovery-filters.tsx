@@ -131,15 +131,15 @@ export default function DiscoveryFilters() {
     if (marketingPreferences) {
       console.log("Loading marketing preferences:", marketingPreferences);
       
-      // Map marketingPreferences to form values
+      // Map marketingPreferences to form values using the correct field names from the API
       const formValues: MarketingPreferencesForm = {
         matchingEnabled: true,
         collabTypes: marketingPreferences.collab_types || [],
-        companySectors: marketingPreferences.company_sectors || [],
-        companyFollowers: marketingPreferences.company_followers || undefined,
+        companySectors: marketingPreferences.company_tags || [], // Backend uses company_tags
+        companyFollowers: marketingPreferences.company_twitter_followers || undefined, // Backend uses company_twitter_followers
         fundingStages: marketingPreferences.funding_stages || [],
-        hasToken: marketingPreferences.has_token || false,
-        blockchainNetworks: marketingPreferences.blockchain_networks || [],
+        hasToken: marketingPreferences.company_has_token || false, // Backend uses company_has_token
+        blockchainNetworks: marketingPreferences.company_blockchain_networks || [], // Backend uses company_blockchain_networks
         preferredTopics: marketingPreferences.preferred_topics || [],
       };
       
@@ -175,7 +175,7 @@ export default function DiscoveryFilters() {
       });
       
       // Check for blockchain networks
-      console.log("Loading blockchain networks from preferences:", marketingPreferences.blockchain_networks || []);
+      console.log("Loading blockchain networks from preferences:", marketingPreferences.company_blockchain_networks || []);
     }
   }, [marketingPreferences, form]);
   
@@ -285,14 +285,14 @@ export default function DiscoveryFilters() {
       
       // Prepare data for API
       const data = {
-        // Filter values
+        // Filter values using the exact field names expected by the backend 
         collab_types: formValues.collabTypes,
-        company_sectors: formValues.companySectors,
-        company_followers: formValues.companyFollowers,
-        funding_stages: formValues.fundingStages,
-        has_token: formValues.hasToken,
-        blockchain_networks: formValues.blockchainNetworks,
         preferred_topics: selectedTopics,
+        company_tags: formValues.companySectors, // Backend expects company_tags (not company_sectors)
+        company_twitter_followers: formValues.companyFollowers, // Standardized field name for follower count
+        funding_stages: formValues.fundingStages,
+        company_has_token: formValues.hasToken, // Backend expects company_has_token
+        company_blockchain_networks: formValues.blockchainNetworks, // Backend expects company_blockchain_networks
         
         // Filter enabled states - critical for saving filter preferences
         discovery_filter_enabled: Object.values(filtersEnabled).some(v => v), // Enabled if any filter is on
