@@ -835,7 +835,7 @@ export default function CreateCollaborationSteps({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Co-Marketing Type(s)</FormLabel>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {TWITTER_COLLAB_TYPES.map((type) => {
                   const isSelected = Array.isArray(field.value) && field.value.includes(type);
                   return (
@@ -843,7 +843,7 @@ export default function CreateCollaborationSteps({
                       key={type}
                       type="button"
                       variant={isSelected ? "default" : "outline"}
-                      className={`w-full h-auto py-2 px-3 text-sm justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                      className={`w-full h-auto py-1 px-2 text-xs justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
                       onClick={() => {
                         const currentTypes = Array.isArray(field.value) ? field.value : [];
                         const updatedTypes = isSelected
