@@ -72,6 +72,30 @@ export default function DiscoveryFilters() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // This disables the default fixed positioning and overflow hidden
+  // so that we can have a normal scrolling container with a scrollbar
+  useEffect(() => {
+    // Save the original style
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalWidth = document.body.style.width;
+    const originalHeight = document.body.style.height;
+    
+    // Modify for this page to allow scrolling
+    document.body.style.overflow = 'auto';
+    document.body.style.position = 'static';
+    document.body.style.width = 'auto';
+    document.body.style.height = 'auto';
+    
+    // Restore original style when component unmounts
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.width = originalWidth;
+      document.body.style.height = originalHeight;
+    };
+  }, []);
+  
   // State for tracking expanded accordion sections
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   
