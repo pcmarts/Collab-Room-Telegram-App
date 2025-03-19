@@ -368,8 +368,6 @@ export const collaborations = pgTable('collaborations', {
   id: uuid('id').primaryKey().defaultRandom(),
   creator_id: uuid('creator_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   collab_type: text('collab_type').notNull(),
-  title: text('title').notNull(),
-  description: text('description').notNull(),
   status: text('status').notNull().default('active'),
   // Common filtering criteria
   topics: text('topics').array(), // Standardized topics for the collaboration
@@ -520,6 +518,7 @@ export type CollabApplicationData = z.infer<typeof collabApplicationSchema>;
 export const podcastDetailsSchema = z.object({
   podcast_name: z.string().min(2, "Podcast name is required"),
   short_description: z.string().max(200, "Short description must be less than 200 characters"),
+  podcast_description: z.string().min(10, "Podcast description is required"),
   podcast_link: z.string().url("Please enter a valid podcast link"),
   estimated_reach: z.enum(AUDIENCE_SIZE_RANGES).optional()
 });
@@ -563,7 +562,8 @@ export const newsletterDetailsSchema = z.object({
   topics: z.array(z.enum(COLLAB_TOPICS)).optional(),
   audience_reach: z.enum(AUDIENCE_SIZE_RANGES),
   total_subscribers: z.enum(AUDIENCE_SIZE_RANGES).optional(),
-  short_description: z.string().max(200, "Short description must be less than 200 characters")
+  short_description: z.string().max(200, "Short description must be less than 200 characters"),
+  newsletter_description: z.string().min(10, "Newsletter description is required")
 });
 
 // Blog Post Feature
@@ -573,12 +573,13 @@ export const blogPostDetailsSchema = z.object({
   blog_url: z.string().url("Please enter a valid blog URL").optional(),
   blog_link: z.string().url("Please enter a valid blog link"),
   short_description: z.string().max(200, "Short description must be less than 200 characters").optional(),
+  est_readers: z.enum(AUDIENCE_SIZE_RANGES),
   estimated_release_date: z.string()
 });
 
 // Co-Marketing on Twitter
 export const twitterCoMarketingDetailsSchema = z.object({
-  collaboration_types: z.array(z.enum(TWITTER_COLLAB_TYPES)).min(1, "At least one Twitter collaboration type is required"),
+  twittercomarketing_type: z.array(z.enum(TWITTER_COLLAB_TYPES)).min(1, "At least one Twitter collaboration type is required"),
   host_twitter_handle: z.string().min(1, "Host Twitter handle is required"),
   host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS)
 });
@@ -586,8 +587,6 @@ export const twitterCoMarketingDetailsSchema = z.object({
 // Create a Collaboration schema that combines all the types
 export const createCollaborationSchema = z.object({
   collab_type: z.enum(COLLAB_TYPES),
-  title: z.string().min(2, "Title is required"),
-  description: z.string().min(10, "Description is required"),
   date_type: z.enum(["any_future_date", "specific_date"]),
   specific_date: z.string().optional(),
   
