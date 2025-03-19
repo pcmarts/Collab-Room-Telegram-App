@@ -48,6 +48,16 @@ body {
   padding-bottom: 120px; /* Add padding to prevent content being hidden by fixed buttons */
 }
 
+/* Specific styling for the matches page to enable scrolling */
+.matches-page-container {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  padding-bottom: 100px; /* Add padding to prevent content being hidden by fixed buttons */
+}
+
 @layer base {
   * {
     @apply border-border;

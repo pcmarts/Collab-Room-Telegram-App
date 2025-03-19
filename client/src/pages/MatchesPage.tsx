@@ -63,8 +63,25 @@ const DUMMY_MATCHES = [
 ];
 
 export default function MatchesPage() {
+  // Use effect to modify the body style for this page only
+  React.useEffect(() => {
+    // Save the original style
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    
+    // Modify for this page
+    document.body.style.overflow = 'auto';
+    document.body.style.position = 'static';
+    
+    // Restore original style when component unmounts
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+    };
+  }, []);
+  
   return (
-    <div className="container max-w-md mx-auto py-6 px-4">
+    <div className="container max-w-md mx-auto py-6 px-4 matches-page-container min-h-screen">
       <h1 className="text-2xl font-bold mb-6">My Matches</h1>
 
       {DUMMY_MATCHES.length > 0 ? (
