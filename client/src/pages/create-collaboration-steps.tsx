@@ -613,23 +613,28 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.podcast_description"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">Describe your podcast</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="What is your podcast about? Who is your audience?" 
-                  className="min-h-[60px] text-xs"
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                  name={field.name}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Describe your podcast</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="What is your podcast about? Who is your audience?" 
+                    className="min-h-[60px] text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
@@ -642,23 +647,28 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.podcast_link"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">Link to your podcast</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="https://your-podcast-url.com"
-                  className="h-8 text-xs"
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                  name={field.name}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Link to your podcast</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://your-podcast-url.com"
+                    className="h-8 text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
@@ -708,26 +718,31 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.twitter_handle"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">What's your Twitter/X handle?</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="https://x.com/username"
-                  className="h-8 text-xs"
-                  value={field.value || "https://x.com/"}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                  name={field.name}
-                />
-              </FormControl>
-              <FormDescription className="text-xs">
-                Include the full URL
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "https://x.com/" : (typeof field.value === 'string' ? field.value : "https://x.com/");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">What's your Twitter/X handle?</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://x.com/username"
+                    className="h-8 text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Include the full URL
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
@@ -740,29 +755,34 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.host_follower_count"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">How many followers do you have?</FormLabel>
-              <Select
-                value={field.value || ""}
-                onValueChange={field.onChange}
-              >
-                <FormControl>
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Select follower count" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                    <SelectItem key={count} value={count}>
-                      {count}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Ensure the field only gets string values, not arrays
+            const fieldValue = Array.isArray(field.value) ? "" : field.value || "";
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">How many followers do you have?</FormLabel>
+                <Select
+                  value={fieldValue}
+                  onValueChange={(value) => field.onChange(value)}
+                >
+                  <FormControl>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Select follower count" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                      <SelectItem key={count} value={count}>
+                        {count}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
@@ -775,26 +795,31 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.space_topic"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">What topic will your Twitter Space cover?</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter Twitter Space topic"
-                  className="h-8 text-xs"
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                  name={field.name}
-                />
-              </FormControl>
-              <FormDescription className="text-xs">
-                A specific topic attracts the right audience
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">What topic will your Twitter Space cover?</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter Twitter Space topic"
+                    className="h-8 text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  A specific topic attracts the right audience
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
@@ -807,23 +832,28 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.short_description"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">Describe your Twitter Space</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Format, goals, and target audience"
-                  className="min-h-[80px] text-xs"
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                  name={field.name}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Describe your Twitter Space</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Format, goals, and target audience"
+                    className="min-h-[80px] text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
