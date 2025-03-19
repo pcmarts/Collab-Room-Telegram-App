@@ -113,87 +113,101 @@ export default function CreateCollaborationSteps({
     setSelectedCollabType(value);
     form.setValue("collab_type", value as (typeof COLLAB_TYPES)[number]);
 
-    // Reset details to avoid field bleeding
-    let newDetails = {};
+    // IMPORTANT: COMPLETELY reset the form details field to prevent field bleeding
+    form.setValue("details", {});
+    
+    // Use setTimeout to ensure that the form details reset happens first
+    setTimeout(() => {
+      // Then set type-specific defaults with a clean slate
+      const newDetails: Record<string, any> = {};
+      
+      // Add type-specific fields
+      switch (value) {
+        case "Podcast Guest Appearance":
+          newDetails.podcast_name = "";
+          newDetails.short_description = "";
+          newDetails.podcast_description = "";
+          newDetails.podcast_link = "";
+          newDetails.estimated_reach = AUDIENCE_SIZE_RANGES[0];
+          break;
+          
+        case "Twitter Spaces Guest":
+          newDetails.twitter_handle = "https://x.com/";
+          newDetails.host_follower_count = TWITTER_FOLLOWER_COUNTS[0];
+          newDetails.space_topic = "";
+          newDetails.short_description = "";
+          break;
+          
+        case "Live Stream Guest Appearance":
+          newDetails.title = "";
+          newDetails.short_description = "";
+          newDetails.date_selection = "any_future_date";
+          newDetails.specific_date = "";
+          newDetails.previous_stream_link = "";
+          newDetails.expected_audience_size = AUDIENCE_SIZE_RANGES[0];
+          newDetails.topics = [];
+          break;
+          
+        case "Report & Research Feature":
+          newDetails.research_topic = [];
+          newDetails.target_audience = "";
+          newDetails.estimated_release_date = "";
+          break;
+          
+        case "Newsletter Feature":
+          newDetails.newsletter_name = "";
+          newDetails.topics = [];
+          newDetails.audience_reach = AUDIENCE_SIZE_RANGES[0];
+          newDetails.short_description = "";
+          newDetails.newsletter_description = "";
+          newDetails.newsletter_url = "";
+          newDetails.total_subscribers = AUDIENCE_SIZE_RANGES[0];
+          break;
+          
+        case "Blog Post Feature":
+          newDetails.blog_topic = "";
+          newDetails.blog_link = "";
+          newDetails.blog_name = "";
+          newDetails.blog_url = "";
+          newDetails.est_readers = AUDIENCE_SIZE_RANGES[0];
+          newDetails.short_description = "";
+          newDetails.estimated_release_date = "";
+          break;
+          
+        case "Co-Marketing on Twitter":
+          newDetails.twittercomarketing_type = ["Tweet"];
+          newDetails.host_twitter_handle = "https://x.com/";
+          newDetails.host_follower_count = TWITTER_FOLLOWER_COUNTS[0];
+          newDetails.short_description = "";
+          break;
+      }
 
-    // Set proper initial values based on type
-    switch (value) {
-      case "Podcast Guest Appearance":
-        newDetails = {
-          podcast_name: "",
-          short_description: "",
-          podcast_description: "",
-          podcast_link: "",
-          estimated_reach: AUDIENCE_SIZE_RANGES[0],
-        };
-        break;
-      case "Twitter Spaces Guest":
-        newDetails = {
-          twitter_handle: "https://x.com/",
-          host_follower_count: TWITTER_FOLLOWER_COUNTS[0],
-          topic: "",
-          short_description: "",
-        };
-        break;
-      case "Live Stream Guest Appearance":
-        newDetails = {
-          title: "",
-          short_description: "",
-          date_selection: "any_future_date",
-          specific_date: "",
-          previous_stream_link: "",
-          expected_audience_size: AUDIENCE_SIZE_RANGES[0],
-          topics: [],
-        };
-        break;
-      case "Report & Research Feature":
-        newDetails = {
-          research_topic: [],
-          target_audience: "",
-          estimated_release_date: "",
-        };
-        break;
-      case "Newsletter Feature":
-        newDetails = {
-          newsletter_name: "",
-          topics: [],
-          audience_reach: AUDIENCE_SIZE_RANGES[0],
-          short_description: "",
-          newsletter_description: "",
-          newsletter_url: "",
-          total_subscribers: AUDIENCE_SIZE_RANGES[0],
-        };
-        break;
-      case "Blog Post Feature":
-        newDetails = {
-          blog_topic: "",
-          blog_link: "",
-          blog_name: "",
-          blog_url: "",
-          est_readers: AUDIENCE_SIZE_RANGES[0],
-          short_description: "",
-          estimated_release_date: "",
-        };
-        break;
-      case "Co-Marketing on Twitter":
-        newDetails = {
-          twittercomarketing_type: ["Tweet"],
-          host_twitter_handle: "https://x.com/",
-          host_follower_count: TWITTER_FOLLOWER_COUNTS[0],
-          twitter_description: "", // Changed from short_description to twitter_description
-        };
-        break;
-      default:
-        newDetails = {
-          podcast_name: "",
-          short_description: "",
-          podcast_link: "",
-        };
-    }
-
-    form.setValue("details", newDetails as any);
+      // Apply the new details after reset
+      form.setValue("details", newDetails);
+    }, 10); // Small delay to ensure reset happens first
   };
 
+  // Function to clear any potential data bleeding between form fields
+  const clearFormFieldsExcept = (currentFieldName: string) => {
+    // Save current field value
+    const currentValue = form.getValues(currentFieldName);
+    
+    if (currentFieldName.startsWith('details.')) {
+      // Get current details value
+      const details = form.getValues('details') as Record<string, any>;
+      const fieldKey = currentFieldName.split('.')[1];
+      const fieldValue = details[fieldKey];
+      
+      // Reset details
+      form.setValue('details', {});
+      
+      // Restore only the current field
+      const newDetails: Record<string, any> = {};
+      newDetails[fieldKey] = fieldValue;
+      form.setValue('details', newDetails);
+    }
+  };
+  
   // Move to next step
   const nextStep = () => {
     // Validate current step
@@ -210,7 +224,19 @@ export default function CreateCollaborationSteps({
       // Submit the form if on the last step
       handleSubmit();
     } else {
-      // Otherwise move to the next step
+      // Get the current field name
+      const currentStepId = activeSteps[currentStep].id;
+      
+      // Find the next step
+      const nextStepId = activeSteps[currentStep + 1].id;
+      
+      // Clear any potential field bleeding
+      if (currentStepId.includes('follower') && nextStepId.includes('description')) {
+        // If going from a follower count field to a description field, ensure no bleeding
+        clearFormFieldsExcept(`details.${nextStepId}`);
+      }
+      
+      // Move to the next step
       setCurrentStep(currentStep + 1);
     }
   };
@@ -365,7 +391,7 @@ export default function CreateCollaborationSteps({
           twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Tweet"],
           host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) ? rawDetails.host_follower_count : TWITTER_FOLLOWER_COUNTS[0],
-          twitter_description: typeof rawDetails?.twitter_description === 'string' ? rawDetails.twitter_description : "",
+          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
         };
       }
 
@@ -1029,7 +1055,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.twitter_description"
+          name="details.short_description"
           render={({ field }) => {
             // Ensure field value is a string to prevent array values from bleeding in
             const fieldValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
