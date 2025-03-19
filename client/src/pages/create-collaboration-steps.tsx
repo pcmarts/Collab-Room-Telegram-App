@@ -974,12 +974,18 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.host_twitter_handle"
+          name="details.twitter_marketing_handle"
           render={({ field }) => {
             // Ensure the correct type of value is shown
             const displayValue = Array.isArray(field.value) 
               ? "https://x.com/" 
               : (typeof field.value === 'string' ? field.value : "https://x.com/");
+            
+            // On mount, reset other fields to prevent bleeding
+            React.useEffect(() => {
+              form.setValue("details.twitter_marketing_follower_count", "");
+              form.setValue("details.twitter_marketing_description", "");
+            }, []);
             
             return (
               <FormItem className="space-y-1 pt-0">
@@ -992,6 +998,10 @@ export default function CreateCollaborationSteps({
                     onChange={(e) => {
                       // Make sure we only set string values
                       field.onChange(e.target.value);
+                      
+                      // Reset other fields when this one changes
+                      form.setValue("details.twitter_marketing_follower_count", "");
+                      form.setValue("details.twitter_marketing_description", "");
                     }}
                     onBlur={field.onBlur}
                     ref={field.ref}
@@ -1016,9 +1026,10 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.host_follower_count"
+          name="details.twitter_marketing_follower_count"
           render={({ field }) => {
-            // Ensure the field value is a string
+            // Ensure the field value is a string and do a force reset of description fields
+            form.setValue("details.twitter_marketing_description", "");
             const currentValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
             
             return (
@@ -1033,7 +1044,11 @@ export default function CreateCollaborationSteps({
                         type="button"
                         variant={isSelected ? "default" : "outline"}
                         className={`w-full h-8 py-1 px-2 text-xs justify-center ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                        onClick={() => field.onChange(count)}
+                        onClick={() => {
+                          // Reset any leftover description value
+                          form.setValue("details.twitter_marketing_description", "");
+                          field.onChange(count);
+                        }}
                       >
                         {count}
                       </Button>
@@ -1055,10 +1070,15 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.short_description"
+          name="details.twitter_marketing_description"
           render={({ field }) => {
-            // Ensure field value is a string to prevent array values from bleeding in
-            const fieldValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            // Completely reset the field to ensure no bleeding
+            const fieldValue = "";
+            
+            // On mount, force reset the field to empty
+            React.useEffect(() => {
+              form.setValue("details.twitter_marketing_description", "");
+            }, []);
             
             return (
               <FormItem className="space-y-1 pt-0">
@@ -1067,7 +1087,7 @@ export default function CreateCollaborationSteps({
                   <Textarea
                     placeholder="Content ideas and goals"
                     className="min-h-[80px] text-xs"
-                    value={fieldValue}
+                    value={field.value || ""}
                     onChange={(e) => field.onChange(e.target.value)}
                     onBlur={field.onBlur}
                     ref={field.ref}
