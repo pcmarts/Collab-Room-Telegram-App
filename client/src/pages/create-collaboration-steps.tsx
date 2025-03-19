@@ -104,7 +104,9 @@ export default function CreateCollaborationSteps({
         newDetails = {
           podcast_name: "",
           short_description: "",
+          podcast_description: "",
           podcast_link: "",
+          estimated_reach: AUDIENCE_SIZE_RANGES[0],
         };
         break;
       case "Twitter Spaces Guest":
@@ -137,12 +139,19 @@ export default function CreateCollaborationSteps({
           topics: [],
           audience_reach: AUDIENCE_SIZE_RANGES[0],
           short_description: "",
+          newsletter_description: "",
+          newsletter_url: "",
+          total_subscribers: AUDIENCE_SIZE_RANGES[0],
         };
         break;
       case "Blog Post Feature":
         newDetails = {
           blog_topic: "",
           blog_link: "",
+          blog_name: "",
+          blog_url: "",
+          est_readers: AUDIENCE_SIZE_RANGES[0],
+          short_description: "",
           estimated_release_date: "",
         };
         break;
@@ -207,33 +216,45 @@ export default function CreateCollaborationSteps({
         }
         break;
         
-      case "title":
-        const title = form.getValues("title");
-        if (!title || title.trim() === "") {
-          toast({
-            title: "Please enter a title",
-            variant: "destructive",
-          });
-          return false;
-        }
-        break;
-        
-      case "description":
-        const description = form.getValues("description");
-        if (!description || description.trim() === "") {
-          toast({
-            title: "Please enter a description",
-            variant: "destructive",
-          });
-          return false;
-        }
-        break;
-        
       case "topics":
         const topics = form.getValues("topics");
         if (!topics || !Array.isArray(topics) || topics.length === 0) {
           toast({
             title: "Please select at least one topic",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+      
+      // Type-specific validations
+      case "podcast_name":
+        const podcastName = form.getValues("details.podcast_name");
+        if (!podcastName || podcastName.trim() === "") {
+          toast({
+            title: "Please enter a podcast name",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      case "podcast_description":
+        const podcastDescription = form.getValues("details.podcast_description");
+        if (!podcastDescription || podcastDescription.trim() === "") {
+          toast({
+            title: "Please enter a podcast description",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      case "podcast_link":
+        const podcastLink = form.getValues("details.podcast_link");
+        if (!podcastLink || podcastLink.trim() === "") {
+          toast({
+            title: "Please enter a podcast link",
             variant: "destructive",
           });
           return false;
@@ -359,59 +380,6 @@ export default function CreateCollaborationSteps({
               </Select>
               <FormDescription>
                 Choose the type that best describes what you want to create
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )
-    },
-    {
-      id: "title",
-      title: "Collaboration Title",
-      description: "Give your collaboration a title",
-      render: () => (
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Enter a title for your collaboration" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormDescription>
-                A brief title that explains what you're looking for
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )
-    },
-    {
-      id: "description",
-      title: "Description",
-      description: "Briefly describe what you're looking for",
-      render: () => (
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe the collaboration opportunity" 
-                  className="min-h-[100px]" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormDescription>
-                Provide more details about what you're looking for
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -556,6 +524,38 @@ export default function CreateCollaborationSteps({
                   name={field.name}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
+    },
+    {
+      id: "podcast_description",
+      title: "Podcast Description",
+      description: "Describe your podcast",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.podcast_description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Describe your podcast</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="What is your podcast about? Who is your audience?" 
+                  className="min-h-[100px]"
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  name={field.name}
+                />
+              </FormControl>
+              <FormDescription>
+                Provide details about your podcast format, audience, and typical content
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
