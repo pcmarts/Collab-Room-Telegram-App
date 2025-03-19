@@ -531,6 +531,7 @@ export default function MarketingCollabs() {
         
         // Discovery filter toggle states
         discovery_filter_enabled: currentFormValues.matchingEnabled,
+        discovery_filter_collab_types_enabled: filtersEnabled.collabTypes,
         discovery_filter_topics_enabled: filtersEnabled.topics,
         discovery_filter_company_sectors_enabled: filtersEnabled.companySectors,
         discovery_filter_company_followers_enabled: filtersEnabled.companyFollowers,

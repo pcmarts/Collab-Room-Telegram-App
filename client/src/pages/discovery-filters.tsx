@@ -63,9 +63,6 @@ const marketingPreferencesSchema = z.object({
   fundingStages: z.array(z.string()).default([]),
   hasToken: z.boolean().default(false),
   blockchainNetworks: z.array(z.string()).default([]),
-  twitterCoMarketingEnabled: z.boolean().default(false),
-  twitterCollabTypes: z.array(z.string()).default([]),
-  audienceSize: z.string().optional(),
   preferredTopics: z.array(z.string()).default([]),
 });
 
@@ -103,9 +100,6 @@ export default function DiscoveryFilters() {
       fundingStages: [],
       hasToken: false,
       blockchainNetworks: [],
-      twitterCoMarketingEnabled: false,
-      twitterCollabTypes: [],
-      audienceSize: undefined,
       preferredTopics: [],
     }
   });
@@ -133,9 +127,6 @@ export default function DiscoveryFilters() {
         fundingStages: marketingPreferences.funding_stages || [],
         hasToken: marketingPreferences.has_token || false,
         blockchainNetworks: marketingPreferences.blockchain_networks || [],
-        twitterCoMarketingEnabled: marketingPreferences.twitter_co_marketing_enabled || false,
-        twitterCollabTypes: marketingPreferences.twitter_collab_types || [],
-        audienceSize: marketingPreferences.audience_size || undefined,
         preferredTopics: marketingPreferences.preferred_topics || [],
       };
       
