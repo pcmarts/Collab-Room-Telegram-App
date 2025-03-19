@@ -18,199 +18,345 @@ import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
 
 // Conference Coffee Card
-const ConferenceCoffeeCard = ({ data }) => (
-  <div className="space-y-2">
-    <Badge variant="outline" className="bg-secondary/10">
-      <Coffee className="w-3 h-3 mr-1" />
-      Coffee Chat
-    </Badge>
-    <h3 className="text-lg font-semibold leading-snug">{data.conferenceName}</h3>
-    <div className="space-y-0.5">
-      <p className="text-sm">{data.companyName}</p>
-      <p className="text-xs text-muted-foreground">{data.role}</p>
+const ConferenceCoffeeCard = ({ data }) => {
+  // Handle data.details (JSON field)
+  const details = data.details || {};
+  
+  return (
+    <div className="space-y-2">
+      <Badge variant="outline" className="bg-secondary/10">
+        <Coffee className="w-3 h-3 mr-1" />
+        Coffee Chat
+      </Badge>
+      <h3 className="text-lg font-semibold leading-snug">
+        {details.conference_name || data.conferenceName || "Conference"}
+      </h3>
+      <div className="space-y-0.5">
+        <p className="text-sm">{data.companyName}</p>
+        <p className="text-xs text-muted-foreground">
+          {details.role || data.role || ""}
+        </p>
+      </div>
+      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+        <Calendar className="w-3 h-3" />
+        <span>
+          {details.conference_date || data.conferenceDate || 
+            (details.specific_date ? details.specific_date : "TBD")}
+        </span>
+      </div>
+      {/* Display topics if available */}
+      {data.preferredTopics && data.preferredTopics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {data.preferredTopics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
+      {data.topics && data.topics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {data.topics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
+      {!data.topics && !data.preferredTopics && details.topics && details.topics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {details.topics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
+      {details.short_description && (
+        <p className="text-xs mt-1 text-muted-foreground line-clamp-2">
+          {details.short_description}
+        </p>
+      )}
     </div>
-    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-      <Calendar className="w-3 h-3" />
-      <span>{data.conferenceDate}</span>
-    </div>
-  </div>
-);
+  );
+};
 
 // Podcast Guest Appearances Card
-const PodcastCard = ({ data }) => (
-  <div className="space-y-2">
-    <Badge variant="outline" className="bg-primary/10">
-      <Mic className="w-3 h-3 mr-1" />
-      Podcast Guest
-    </Badge>
-    <h3 className="text-lg font-semibold leading-snug">{data.podcastName}</h3>
-    <div className="space-y-0.5">
-      <p className="text-sm">{data.companyName}</p>
-    </div>
-    <p className="text-xs text-muted-foreground line-clamp-2">{data.shortDescription}</p>
-    {data.topics && data.topics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-1">
-        {data.topics.map((topic, i) => (
-          <Badge key={i} variant="secondary" className="text-xs">
-            {topic}
-          </Badge>
-        ))}
+const PodcastCard = ({ data }) => {
+  // Handle data.details (JSON field)
+  const details = data.details || {};
+  
+  return (
+    <div className="space-y-2">
+      <Badge variant="outline" className="bg-primary/10">
+        <Mic className="w-3 h-3 mr-1" />
+        Podcast Guest
+      </Badge>
+      <h3 className="text-lg font-semibold leading-snug">
+        {details.podcast_name || data.podcastName || "Podcast"}
+      </h3>
+      <div className="space-y-0.5">
+        <p className="text-sm">{data.companyName}</p>
       </div>
-    )}
-    <div className="flex flex-col space-y-1 text-xs">
-      <div className="flex items-center space-x-2">
-        <Megaphone className="w-3 h-3" />
-        <span>{data.estimatedReach}</span>
-      </div>
-      {data.streamingLink && (
-        <div className="flex items-center space-x-2 text-primary">
-          <FiExternalLink className="w-3 h-3" />
-          <a href={data.streamingLink} target="_blank" rel="noopener noreferrer" className="hover:underline">
-            Listen to podcast
-          </a>
+      <p className="text-xs text-muted-foreground line-clamp-2">
+        {details.short_description || details.podcast_description || data.shortDescription || ""}
+      </p>
+      {data.topics && data.topics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {data.topics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
         </div>
       )}
+      <div className="flex flex-col space-y-1 text-xs">
+        <div className="flex items-center space-x-2">
+          <Megaphone className="w-3 h-3" />
+          <span>{details.estimated_reach || data.estimatedReach || "TBD"}</span>
+        </div>
+        {(details.podcast_link || data.streamingLink) && (
+          <div className="flex items-center space-x-2 text-primary">
+            <FiExternalLink className="w-3 h-3" />
+            <a 
+              href={details.podcast_link || data.streamingLink} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:underline"
+            >
+              Listen to podcast
+            </a>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Twitter Spaces Guest Card
-const TwitterSpacesCard = ({ data }) => (
-  <div className="space-y-2">
-    <Badge variant="outline" className="bg-blue-500/10">
-      <Twitter className="w-3 h-3 mr-1" />
-      Twitter Spaces
-    </Badge>
-    <h3 className="text-lg font-semibold leading-snug">{data.topic}</h3>
-    <div className="space-y-0.5">
-      <div className="flex items-center space-x-1 text-primary">
-        <Twitter className="w-3 h-3" />
-        <span>@{data.hostHandle}</span>
+const TwitterSpacesCard = ({ data }) => {
+  // Handle data.details (JSON field)
+  const details = data.details || {};
+  
+  return (
+    <div className="space-y-2">
+      <Badge variant="outline" className="bg-blue-500/10">
+        <Twitter className="w-3 h-3 mr-1" />
+        Twitter Spaces
+      </Badge>
+      {/* Use consistent field names: short_description for the topic */}
+      <h3 className="text-lg font-semibold leading-snug">
+        {details.short_description || data.topic || "Twitter Space"}
+      </h3>
+      <div className="space-y-0.5">
+        <div className="flex items-center space-x-1 text-primary">
+          <Twitter className="w-3 h-3" />
+          <span>@{details.twitter_handle ? details.twitter_handle.replace('https://x.com/', '') : (data.hostHandle || 'username')}</span>
+        </div>
+        <p className="text-xs text-muted-foreground">{details.host_follower_count || data.hostFollowerCount || "0"} followers</p>
       </div>
-      <p className="text-xs text-muted-foreground">{data.hostFollowerCount} followers</p>
-    </div>
-    {data.topics && data.topics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-1">
-        {data.topics.map((topic, i) => (
-          <Badge key={i} variant="secondary" className="text-xs">
-            {topic}
-          </Badge>
-        ))}
+      {data.topics && data.topics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {data.topics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
+      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+        <Calendar className="w-3 h-3" />
+        <span>{data.date || "Coming soon"}</span>
       </div>
-    )}
-    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-      <Calendar className="w-3 h-3" />
-      <span>{data.date}</span>
     </div>
-  </div>
-);
+  );
+};
 
 // Live Stream Guest Appearance Card
-const LiveStreamCard = ({ data }) => (
-  <div className="space-y-2">
-    <Badge variant="outline" className="bg-red-500/10">
-      <Video className="w-3 h-3 mr-1" />
-      Live Stream
-    </Badge>
-    <h3 className="text-lg font-semibold leading-snug">{data.title}</h3>
-    <div className="space-y-0.5">
-      <p className="text-sm">{data.companyName}</p>
-      <p className="text-xs text-muted-foreground">{data.expectedAudience}</p>
-    </div>
-    <div className="flex flex-wrap gap-1 mb-1">
-      {data.topics && data.topics.map((topic, i) => (
-        <Badge key={i} variant="secondary" className="text-xs">
-          {topic}
-        </Badge>
-      ))}
-    </div>
-    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-      <Calendar className="w-3 h-3" />
-      <span>{data.date}</span>
-    </div>
-    {data.previousWebinarLink && (
-      <div className="flex items-center space-x-2 text-xs text-primary">
-        <FiExternalLink className="w-3 h-3" />
-        <a href={data.previousWebinarLink} target="_blank" rel="noopener noreferrer" className="hover:underline">
-          Previous
-        </a>
+const LiveStreamCard = ({ data }) => {
+  // Handle data.details (JSON field)
+  const details = data.details || {};
+  
+  return (
+    <div className="space-y-2">
+      <Badge variant="outline" className="bg-red-500/10">
+        <Video className="w-3 h-3 mr-1" />
+        Live Stream
+      </Badge>
+      <h3 className="text-lg font-semibold leading-snug">
+        {details.title || data.title || "Live Stream"}
+      </h3>
+      <div className="space-y-0.5">
+        <p className="text-sm">{data.companyName}</p>
+        <p className="text-xs text-muted-foreground">
+          {details.expected_audience_size || data.expectedAudience || "TBD"}
+        </p>
       </div>
-    )}
-  </div>
-);
-
-// Report and Research Features Card
-const ResearchReportCard = ({ data }) => (
-  <div className="space-y-2">
-    <Badge variant="outline" className="bg-violet-500/10">
-      <FileText className="w-3 h-3 mr-1" />
-      Research Report
-    </Badge>
-    <h3 className="text-lg font-semibold leading-snug">{data.reportName}</h3>
-    <div className="space-y-0.5">
-      <p className="text-sm">{data.companyName}</p>
-      <p className="text-xs text-muted-foreground">{data.researchTopic}</p>
-    </div>
-    {data.topics && data.topics.length > 0 && (
       <div className="flex flex-wrap gap-1 mb-1">
-        {data.topics.map((topic, i) => (
+        {data.topics && data.topics.length > 0 && data.topics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+        {!data.topics && details.topics && details.topics.length > 0 && details.topics.map((topic, i) => (
           <Badge key={i} variant="secondary" className="text-xs">
             {topic}
           </Badge>
         ))}
       </div>
-    )}
-    <div className="flex flex-col space-y-1 text-xs text-muted-foreground">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
         <Calendar className="w-3 h-3" />
-        <span>{data.reportTargetReleaseDate}</span>
+        <span>
+          {data.date || 
+            (details.specific_date ? details.specific_date : 
+              (details.date_selection === "specific_date" ? "Date TBD" : "Flexible date"))}
+        </span>
       </div>
-      <div className="flex items-center space-x-2">
-        <Megaphone className="w-3 h-3" />
-        <span>{data.reportReach}</span>
-      </div>
-    </div>
-  </div>
-);
-
-// Newsletter Features or Guest Posts Card
-const NewsletterCard = ({ data }) => (
-  <div className="space-y-2">
-    <Badge variant="outline" className="bg-emerald-500/10">
-      <BookOpen className="w-3 h-3 mr-1" />
-      Newsletter
-    </Badge>
-    <h3 className="text-lg font-semibold leading-snug">{data.newsletterName}</h3>
-    <div className="space-y-0.5">
-      <p className="text-sm">{data.companyName}</p>
-    </div>
-    <div className="flex flex-wrap gap-1 mb-1">
-      {data.topics && data.topics.map((topic, i) => (
-        <Badge key={i} variant="secondary" className="text-xs">
-          {topic}
-        </Badge>
-      ))}
-    </div>
-    <div className="flex flex-col space-y-1 text-xs">
-      <div className="flex items-center space-x-2 text-muted-foreground">
-        <Megaphone className="w-3 h-3" />
-        <span>{data.totalSubscribers}</span>
-      </div>
-      {data.newsletterUrl && (
-        <div className="flex items-center space-x-2 text-primary">
+      {(details.previous_stream_link || data.previousWebinarLink) && (
+        <div className="flex items-center space-x-2 text-xs text-primary">
           <FiExternalLink className="w-3 h-3" />
-          <a href={data.newsletterUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
-            View
+          <a 
+            href={details.previous_stream_link || data.previousWebinarLink} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="hover:underline"
+          >
+            Previous
           </a>
         </div>
       )}
-      <div className="flex items-center space-x-2 text-muted-foreground">
-        <Calendar className="w-3 h-3" />
-        <span>{data.date}</span>
+      {details.short_description && (
+        <p className="text-xs text-muted-foreground line-clamp-2">
+          {details.short_description}
+        </p>
+      )}
+    </div>
+  );
+};
+
+// Report and Research Features Card
+const ResearchReportCard = ({ data }) => {
+  // Handle data.details (JSON field)
+  const details = data.details || {};
+  
+  return (
+    <div className="space-y-2">
+      <Badge variant="outline" className="bg-violet-500/10">
+        <FileText className="w-3 h-3 mr-1" />
+        Research Report
+      </Badge>
+      <h3 className="text-lg font-semibold leading-snug">
+        {details.report_name || data.reportName || "Research Report"}
+      </h3>
+      <div className="space-y-0.5">
+        <p className="text-sm">{data.companyName}</p>
+        <p className="text-xs text-muted-foreground">
+          {details.research_topic || data.researchTopic || ""}
+        </p>
+      </div>
+      {data.topics && data.topics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {data.topics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
+      {!data.topics && details.topics && details.topics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {details.topics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
+      <div className="flex flex-col space-y-1 text-xs text-muted-foreground">
+        <div className="flex items-center space-x-2">
+          <Calendar className="w-3 h-3" />
+          <span>
+            {details.target_release_date || data.reportTargetReleaseDate || "TBD"}
+          </span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Megaphone className="w-3 h-3" />
+          <span>{details.estimated_reach || data.reportReach || "TBD"}</span>
+        </div>
+        {details.short_description && (
+          <p className="text-xs mt-1 text-muted-foreground line-clamp-2">
+            {details.short_description}
+          </p>
+        )}
       </div>
     </div>
-  </div>
-);
+  );
+};
+
+// Newsletter Features or Guest Posts Card
+const NewsletterCard = ({ data }) => {
+  // Handle data.details (JSON field)
+  const details = data.details || {};
+  
+  return (
+    <div className="space-y-2">
+      <Badge variant="outline" className="bg-emerald-500/10">
+        <BookOpen className="w-3 h-3 mr-1" />
+        Newsletter
+      </Badge>
+      <h3 className="text-lg font-semibold leading-snug">
+        {details.newsletter_name || data.newsletterName || "Newsletter"}
+      </h3>
+      <div className="space-y-0.5">
+        <p className="text-sm">{data.companyName}</p>
+      </div>
+      <div className="flex flex-wrap gap-1 mb-1">
+        {data.topics && data.topics.length > 0 && data.topics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+        {!data.topics && details.topics && details.topics.length > 0 && details.topics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+      </div>
+      <div className="flex flex-col space-y-1 text-xs">
+        <div className="flex items-center space-x-2 text-muted-foreground">
+          <Megaphone className="w-3 h-3" />
+          <span>{details.subscribers_count || data.totalSubscribers || "TBD"}</span>
+        </div>
+        {(details.newsletter_url || data.newsletterUrl) && (
+          <div className="flex items-center space-x-2 text-primary">
+            <FiExternalLink className="w-3 h-3" />
+            <a 
+              href={details.newsletter_url || data.newsletterUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:underline"
+            >
+              View
+            </a>
+          </div>
+        )}
+        <div className="flex items-center space-x-2 text-muted-foreground">
+          <Calendar className="w-3 h-3" />
+          <span>
+            {data.date || 
+              (details.specific_date ? details.specific_date : 
+                (details.date_selection === "specific_date" ? "Date TBD" : "Flexible date"))}
+          </span>
+        </div>
+        {details.short_description && (
+          <p className="text-xs mt-1 text-muted-foreground line-clamp-2">
+            {details.short_description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // Legacy/Generic Cards (for backward compatibility)
 const MarketingCard = ({ data }) => (
