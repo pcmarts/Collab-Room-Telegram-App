@@ -756,29 +756,28 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.host_follower_count"
           render={({ field }) => {
-            // Ensure the field only gets string values, not arrays
-            const fieldValue = Array.isArray(field.value) ? "" : field.value || "";
+            // Ensure the field value is a string
+            const currentValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
             
             return (
               <FormItem className="space-y-1 pt-0">
                 <FormLabel className="mb-0 text-sm">How many followers do you have?</FormLabel>
-                <Select
-                  value={fieldValue}
-                  onValueChange={(value) => field.onChange(value)}
-                >
-                  <FormControl>
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Select follower count" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                      <SelectItem key={count} value={count}>
+                <div className="grid grid-cols-2 gap-1">
+                  {TWITTER_FOLLOWER_COUNTS.map((count) => {
+                    const isSelected = currentValue === count;
+                    return (
+                      <Button
+                        key={count}
+                        type="button"
+                        variant={isSelected ? "default" : "outline"}
+                        className={`w-full h-8 py-1 px-2 text-xs justify-center ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                        onClick={() => field.onChange(count)}
+                      >
                         {count}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      </Button>
+                    );
+                  })}
+                </div>
                 <FormMessage />
               </FormItem>
             );
@@ -975,29 +974,28 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.host_follower_count"
           render={({ field }) => {
-            // Ensure the field only gets string values, not arrays
-            const fieldValue = Array.isArray(field.value) ? "" : field.value || "";
+            // Ensure the field value is a string
+            const currentValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
             
             return (
               <FormItem className="space-y-1 pt-0">
                 <FormLabel className="mb-0 text-sm">How many followers do you have?</FormLabel>
-                <Select
-                  value={fieldValue}
-                  onValueChange={(value) => field.onChange(value)}
-                >
-                  <FormControl>
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Select follower count" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                      <SelectItem key={count} value={count}>
+                <div className="grid grid-cols-2 gap-1">
+                  {TWITTER_FOLLOWER_COUNTS.map((count) => {
+                    const isSelected = currentValue === count;
+                    return (
+                      <Button
+                        key={count}
+                        type="button"
+                        variant={isSelected ? "default" : "outline"}
+                        className={`w-full h-8 py-1 px-2 text-xs justify-center ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                        onClick={() => field.onChange(count)}
+                      >
                         {count}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      </Button>
+                    );
+                  })}
+                </div>
                 <FormMessage />
               </FormItem>
             );
