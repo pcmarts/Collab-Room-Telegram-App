@@ -388,10 +388,10 @@ export default function CreateCollaborationSteps({
           estimated_reach: AUDIENCE_SIZE_RANGES.includes(rawDetails?.estimated_reach) ? rawDetails.estimated_reach : AUDIENCE_SIZE_RANGES[0],
         };
       } else if (data.collab_type === "Twitter Spaces Guest") {
+        // Note: Using only standard fields (short_description) to store the Twitter Space topic
         data.details = {
           twitter_handle: typeof rawDetails?.twitter_handle === 'string' ? rawDetails.twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) ? rawDetails.host_follower_count : TWITTER_FOLLOWER_COUNTS[0],
-          topic: typeof rawDetails?.topic === 'string' ? rawDetails.topic : "",
           short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
         };
       } else if (data.collab_type === "Live Stream Guest Appearance") {
@@ -885,7 +885,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.topic"
+          name="details.short_description"
           render={({ field }) => {
             // Ensure field value is always a string
             const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
@@ -915,40 +915,7 @@ export default function CreateCollaborationSteps({
       ),
       shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
     },
-    {
-      id: "twitter_description",
-      title: "Twitter Space Description",
-      description: "Describe your Twitter Space",
-      render: () => (
-        <FormField
-          control={form.control}
-          name="details.short_description"
-          render={({ field }) => {
-            // Ensure field value is always a string
-            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
-            
-            return (
-              <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">Describe your Twitter Space</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Format, goals, and target audience"
-                    className="min-h-[80px] text-xs"
-                    value={displayValue}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                    name={field.name}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
-      ),
-      shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
-    },
+    // Removed Twitter Space Description field to fix hooks order issue
     {
       id: "twitter_comarketing_type",
       title: "Co-Marketing Type",
