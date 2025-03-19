@@ -426,7 +426,11 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
         </div>
       </CardHeader>
       <CardContent className="pb-2">
-        <p className="text-sm text-gray-600 mb-4 line-clamp-3">{collab.description}</p>
+        <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+          {collab.details && typeof collab.details === 'object' && 
+            (collab.details.short_description || collab.details.description || 
+             (collab.details.goals || "No description available"))}
+        </p>
         
         <div className="flex flex-wrap gap-2 mb-4">
           <div className="flex items-center gap-1 text-xs text-gray-500">

@@ -320,9 +320,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         </CardHeader>
         <CardContent className="pb-2">
           <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-            {collab.description.includes("Created using Collab Room") 
-              ? collab.description.replace("Created using Collab Room.", "").trim() 
-              : collab.description}
+            {collab.details && typeof collab.details === 'object' && 
+              (collab.details.short_description || collab.details.description || 
+               (collab.details.goals || "No description available"))}
           </p>
           
           <div className="flex flex-wrap gap-2 mb-4">
