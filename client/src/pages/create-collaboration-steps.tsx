@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
@@ -389,9 +389,13 @@ export default function CreateCollaborationSteps({
       } else if (data.collab_type === "Co-Marketing on Twitter") {
         data.details = {
           twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Tweet"],
-          host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
-          host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) ? rawDetails.host_follower_count : TWITTER_FOLLOWER_COUNTS[0],
-          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
+          host_twitter_handle: typeof rawDetails?.twitter_marketing_handle === 'string' ? rawDetails.twitter_marketing_handle : "https://x.com/",
+          host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.twitter_marketing_follower_count) 
+            ? rawDetails.twitter_marketing_follower_count 
+            : TWITTER_FOLLOWER_COUNTS[0],
+          short_description: typeof rawDetails?.twitter_marketing_description === 'string' 
+            ? rawDetails.twitter_marketing_description 
+            : "",
         };
       }
 
