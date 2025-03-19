@@ -129,6 +129,7 @@ export default function MarketingCollabs() {
   const [collabsToHost, setCollabsToHost] = useState<string[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [filtersEnabled, setFiltersEnabled] = useState({
+    collabTypes: false,
     topics: false,
     companySectors: false, 
     companyFollowers: false,
@@ -412,6 +413,7 @@ export default function MarketingCollabs() {
       
       // Load filter toggle states from dedicated fields
       setFiltersEnabled({
+        collabTypes: !!marketingPrefs.discovery_filter_collab_types_enabled,
         topics: !!marketingPrefs.discovery_filter_topics_enabled,
         companySectors: !!marketingPrefs.discovery_filter_company_sectors_enabled,
         companyFollowers: !!marketingPrefs.discovery_filter_company_followers_enabled,
@@ -971,7 +973,7 @@ export default function MarketingCollabs() {
       </Dialog>
       
       <PageHeader
-        title="Marketing Collaborations"
+        title="Discovery Filters"
         backUrl="/discover"
       />
       
@@ -1164,39 +1166,33 @@ export default function MarketingCollabs() {
                   </CardContent>
                 </Card>
                 
-                {/* Matching Filters */}
+                {/* Filters */}
                 <Card>
                   <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>Collaboration Matching Filters</CardTitle>
-                        <CardDescription>
-                          Set up your matching criteria for discovering relevant collaborations
-                        </CardDescription>
-                      </div>
-                      <FormField
-                        control={form.control}
-                        name="matchingEnabled"
-                        render={({ field }) => (
-                          <FormItem className="space-y-0 flex items-center">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <Label className="ml-2">
-                              {field.value ? "Enabled" : "Disabled"}
-                            </Label>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <CardTitle>Filter Options</CardTitle>
+                    <CardDescription>
+                      Set up your criteria for discovering relevant collaborations
+                    </CardDescription>
                   </CardHeader>
                   
                   <CardContent className="space-y-6">
-                    {/* Only show filters when matching is enabled */}
-                    {form.watch("matchingEnabled") ? (
+                    {/* Filter by Collab Types */}
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <div>
+                          <h3 className="text-base font-medium">Filter by Collab Type</h3>
+                          <p className="text-sm text-gray-500">
+                            Choose which types of collaborations you want to see
+                          </p>
+                        </div>
+                        <Switch 
+                          checked={filtersEnabled.collabTypes || false}
+                          onCheckedChange={() => toggleFilter('collabTypes')}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Topic Filter */}
                       <>
                         {/* Topic Filter */}
                         <div>
@@ -1557,9 +1553,9 @@ export default function MarketingCollabs() {
                       )}
                     </div>
                     </>
-                    ) : (
-                      <p className="text-sm text-gray-500 italic">Enable matching to access filtering options</p>
-                    )}
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">Enable matching to access filtering options</p>
+                  )
                   </CardContent>
                 </Card>
                 

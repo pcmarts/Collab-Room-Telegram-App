@@ -760,7 +760,7 @@ export default function DiscoverPage() {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => setLocation('/marketing-collabs-new')}
+            onClick={() => setLocation('/discovery-filters')}
             aria-label="Filter"
           >
             <Filter className="h-5 w-5" />
