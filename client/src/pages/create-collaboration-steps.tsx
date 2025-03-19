@@ -1108,7 +1108,7 @@ export default function CreateCollaborationSteps({
             <FormItem className="flex flex-row items-start space-x-2 space-y-0 pt-0">
               <FormControl>
                 <Checkbox
-                  checked={field.value}
+                  checked={true}
                   onCheckedChange={(checked) => {
                     field.onChange(true);
                     if (!checked) {
@@ -1123,9 +1123,10 @@ export default function CreateCollaborationSteps({
                 />
               </FormControl>
               <div className="leading-none">
-                <FormLabel className="mb-0 text-sm">Free Collaboration (Required)</FormLabel>
+                <FormLabel className="mb-0 text-sm">Free Collaboration Confirmation</FormLabel>
                 <FormDescription className="text-xs">
-                  All collaborations must be free
+                  I confirm this is a 100% free collaboration with no payments or fees involved.
+                  Our platform only supports non-commercial collaborations.
                 </FormDescription>
               </div>
             </FormItem>
