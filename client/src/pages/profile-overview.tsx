@@ -146,16 +146,13 @@ export default function ProfileOverview() {
     <div className="min-h-[100svh] bg-background">
       <PageHeader
         title="My Profile"
-        subtitle="Edit your profile details"
+        subtitle="Personal information and social links"
         backUrl="/dashboard"
       />
 
       <div className="p-4 space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Edit Personal Information</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="first_name">First Name *</Label>
