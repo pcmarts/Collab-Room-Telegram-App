@@ -86,6 +86,17 @@ export default function DiscoveryFilters() {
     blockchainNetworks: false,
   });
   
+  // State for filter sections expansion (separate from enabled state)
+  const [filtersExpanded, setFiltersExpanded] = useState({
+    collabTypes: false,
+    topics: false,
+    companySectors: false,
+    companyFollowers: false,
+    fundingStages: false,
+    hasToken: false,
+    blockchainNetworks: false,
+  });
+  
   // State for topics (managed separately)
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   
@@ -150,6 +161,17 @@ export default function DiscoveryFilters() {
       };
       setFiltersEnabled(newFiltersEnabled);
       
+      // Initially expand all enabled filters
+      setFiltersExpanded({
+        collabTypes: newFiltersEnabled.collabTypes,
+        topics: newFiltersEnabled.topics,
+        companySectors: newFiltersEnabled.companySectors,
+        companyFollowers: newFiltersEnabled.companyFollowers,
+        fundingStages: newFiltersEnabled.fundingStages,
+        hasToken: newFiltersEnabled.hasToken,
+        blockchainNetworks: newFiltersEnabled.blockchainNetworks,
+      });
+      
       // Check for blockchain networks
       console.log("Loading blockchain networks from preferences:", marketingPreferences.blockchain_networks || []);
     }
@@ -187,6 +209,14 @@ export default function DiscoveryFilters() {
       [filterName]: newState
     });
     
+    // Also update expanded state when enabling
+    if (newState) {
+      setFiltersExpanded({
+        ...filtersExpanded,
+        [filterName]: true
+      });
+    }
+    
     // Clear values if disabling a filter
     if (!newState) {
       switch(filterName) {
@@ -217,6 +247,14 @@ export default function DiscoveryFilters() {
     
     // Trigger auto-save
     handleAutoSave();
+  };
+  
+  // Toggle filter section expansion without affecting filter state
+  const toggleFilterExpansion = (filterName: string) => {
+    setFiltersExpanded({
+      ...filtersExpanded,
+      [filterName]: !filtersExpanded[filterName as keyof typeof filtersExpanded]
+    });
   };
   
   // Auto-save handler
@@ -321,13 +359,30 @@ export default function DiscoveryFilters() {
                           Choose which types of collaborations you want to see
                         </p>
                       </div>
-                      <Switch 
-                        checked={filtersEnabled.collabTypes}
-                        onCheckedChange={() => toggleFilter('collabTypes')}
-                      />
+                      <div className="flex items-center gap-2">
+                        {filtersEnabled.collabTypes && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleFilterExpansion('collabTypes')}
+                            className="h-8 w-8"
+                            title={filtersExpanded.collabTypes ? "Collapse" : "Expand"}
+                          >
+                            {filtersExpanded.collabTypes ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                        <Switch 
+                          checked={filtersEnabled.collabTypes}
+                          onCheckedChange={() => toggleFilter('collabTypes')}
+                        />
+                      </div>
                     </div>
                     
-                    {filtersEnabled.collabTypes && (
+                    {filtersEnabled.collabTypes && filtersExpanded.collabTypes && (
                       <div className="border rounded-lg p-4 bg-background">
                         <FormField
                           control={form.control}
@@ -369,13 +424,30 @@ export default function DiscoveryFilters() {
                           Only show collaborations in these topics
                         </p>
                       </div>
-                      <Switch 
-                        checked={filtersEnabled.topics}
-                        onCheckedChange={() => toggleFilter('topics')}
-                      />
+                      <div className="flex items-center gap-2">
+                        {filtersEnabled.topics && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleFilterExpansion('topics')}
+                            className="h-8 w-8"
+                            title={filtersExpanded.topics ? "Collapse" : "Expand"}
+                          >
+                            {filtersExpanded.topics ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                        <Switch 
+                          checked={filtersEnabled.topics}
+                          onCheckedChange={() => toggleFilter('topics')}
+                        />
+                      </div>
                     </div>
                     
-                    {filtersEnabled.topics && (
+                    {filtersEnabled.topics && filtersExpanded.topics && (
                       <div className="border rounded-lg p-4 bg-background">
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                           {COLLAB_TOPICS.map((topic) => (
@@ -411,13 +483,30 @@ export default function DiscoveryFilters() {
                           Only show collaborations from companies in these sectors
                         </p>
                       </div>
-                      <Switch 
-                        checked={filtersEnabled.companySectors}
-                        onCheckedChange={() => toggleFilter('companySectors')}
-                      />
+                      <div className="flex items-center gap-2">
+                        {filtersEnabled.companySectors && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleFilterExpansion('companySectors')}
+                            className="h-8 w-8"
+                            title={filtersExpanded.companySectors ? "Collapse" : "Expand"}
+                          >
+                            {filtersExpanded.companySectors ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                        <Switch 
+                          checked={filtersEnabled.companySectors}
+                          onCheckedChange={() => toggleFilter('companySectors')}
+                        />
+                      </div>
                     </div>
                     
-                    {filtersEnabled.companySectors && (
+                    {filtersEnabled.companySectors && filtersExpanded.companySectors && (
                       <div className="border rounded-lg p-4 bg-background">
                         <FormField
                           control={form.control}
@@ -493,13 +582,30 @@ export default function DiscoveryFilters() {
                           Only show collaborations from companies with at least this many social media followers
                         </p>
                       </div>
-                      <Switch 
-                        checked={filtersEnabled.companyFollowers}
-                        onCheckedChange={() => toggleFilter('companyFollowers')}
-                      />
+                      <div className="flex items-center gap-2">
+                        {filtersEnabled.companyFollowers && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleFilterExpansion('companyFollowers')}
+                            className="h-8 w-8"
+                            title={filtersExpanded.companyFollowers ? "Collapse" : "Expand"}
+                          >
+                            {filtersExpanded.companyFollowers ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                        <Switch 
+                          checked={filtersEnabled.companyFollowers}
+                          onCheckedChange={() => toggleFilter('companyFollowers')}
+                        />
+                      </div>
                     </div>
                     
-                    {filtersEnabled.companyFollowers && (
+                    {filtersEnabled.companyFollowers && filtersExpanded.companyFollowers && (
                       <div className="border rounded-lg p-4 bg-background">
                         <FormField
                           control={form.control}
@@ -540,13 +646,30 @@ export default function DiscoveryFilters() {
                           Only show collaborations from companies in these funding stages
                         </p>
                       </div>
-                      <Switch 
-                        checked={filtersEnabled.fundingStages}
-                        onCheckedChange={() => toggleFilter('fundingStages')}
-                      />
+                      <div className="flex items-center gap-2">
+                        {filtersEnabled.fundingStages && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleFilterExpansion('fundingStages')}
+                            className="h-8 w-8"
+                            title={filtersExpanded.fundingStages ? "Collapse" : "Expand"}
+                          >
+                            {filtersExpanded.fundingStages ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                        <Switch 
+                          checked={filtersEnabled.fundingStages}
+                          onCheckedChange={() => toggleFilter('fundingStages')}
+                        />
+                      </div>
                     </div>
                     
-                    {filtersEnabled.fundingStages && (
+                    {filtersEnabled.fundingStages && filtersExpanded.fundingStages && (
                       <div className="border rounded-lg p-4 bg-background">
                         <FormField
                           control={form.control}
@@ -602,16 +725,33 @@ export default function DiscoveryFilters() {
                           Only show collaborations from companies with a token
                         </p>
                       </div>
-                      <Switch 
-                        checked={filtersEnabled.hasToken}
-                        onCheckedChange={(checked) => {
-                          toggleFilter('hasToken');
-                          form.setValue('hasToken', checked);
-                        }}
-                      />
+                      <div className="flex items-center gap-2">
+                        {filtersEnabled.hasToken && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleFilterExpansion('hasToken')}
+                            className="h-8 w-8"
+                            title={filtersExpanded.hasToken ? "Collapse" : "Expand"}
+                          >
+                            {filtersExpanded.hasToken ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                        <Switch 
+                          checked={filtersEnabled.hasToken}
+                          onCheckedChange={(checked) => {
+                            toggleFilter('hasToken');
+                            form.setValue('hasToken', checked);
+                          }}
+                        />
+                      </div>
                     </div>
                     
-                    {filtersEnabled.hasToken && (
+                    {filtersEnabled.hasToken && filtersExpanded.hasToken && (
                       <div className="border rounded-lg p-4 bg-background">
                         <p className="text-sm text-muted-foreground">
                           When enabled, your feed will only show collaborations from companies 
@@ -630,13 +770,30 @@ export default function DiscoveryFilters() {
                           Only show collaborations from companies building on these networks
                         </p>
                       </div>
-                      <Switch 
-                        checked={filtersEnabled.blockchainNetworks}
-                        onCheckedChange={() => toggleFilter('blockchainNetworks')}
-                      />
+                      <div className="flex items-center gap-2">
+                        {filtersEnabled.blockchainNetworks && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleFilterExpansion('blockchainNetworks')}
+                            className="h-8 w-8"
+                            title={filtersExpanded.blockchainNetworks ? "Collapse" : "Expand"}
+                          >
+                            {filtersExpanded.blockchainNetworks ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                        <Switch 
+                          checked={filtersEnabled.blockchainNetworks}
+                          onCheckedChange={() => toggleFilter('blockchainNetworks')}
+                        />
+                      </div>
                     </div>
                     
-                    {filtersEnabled.blockchainNetworks && (
+                    {filtersEnabled.blockchainNetworks && filtersExpanded.blockchainNetworks && (
                       <div className="border rounded-lg p-4 bg-background mt-2">
                         <FormField
                           control={form.control}
