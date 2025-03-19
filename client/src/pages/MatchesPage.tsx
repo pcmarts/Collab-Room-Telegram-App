@@ -79,20 +79,42 @@ export default function MatchesPage() {
     document.body.style.width = 'auto';
     document.body.style.height = 'auto';
     
+    // Add scrollable-page class to html and body
+    document.documentElement.classList.add('scrollable-page');
+    document.body.classList.add('scrollable-page');
+    
+    // Also fix the root element
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.style.overflow = 'auto';
+      rootElement.style.height = 'auto';
+      rootElement.style.position = 'static';
+      rootElement.style.width = '100%';
+    }
+    
     // Restore original style when component unmounts
     return () => {
       document.body.style.overflow = originalOverflow;
       document.body.style.position = originalPosition;
       document.body.style.width = originalWidth;
       document.body.style.height = originalHeight;
+      document.documentElement.classList.remove('scrollable-page');
+      document.body.classList.remove('scrollable-page');
+      
+      if (rootElement) {
+        rootElement.style.overflow = '';
+        rootElement.style.height = '';
+        rootElement.style.position = '';
+        rootElement.style.width = '';
+      }
     };
   }, []);
   
   return (
-    <div className="fixed inset-0 flex flex-col">
+    <div className="page-scrollable pb-20">
       <h1 className="text-2xl font-bold p-6">My Matches</h1>
       
-      <div className="flex-1 subtle-scrollbar px-4 pb-20">
+      <div className="px-4">
         {DUMMY_MATCHES.length > 0 ? (
           <div className="space-y-4">
             {DUMMY_MATCHES.map((match) => (
