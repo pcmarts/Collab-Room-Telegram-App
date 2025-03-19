@@ -845,7 +845,9 @@ export default function CreateCollaborationSteps({
                         const updatedTypes = isSelected
                           ? currentValue.filter((t) => t !== type)
                           : [...currentValue, type];
-                        field.onChange(updatedTypes.length > 0 ? updatedTypes : ["Tweet"]);
+                        // Ensure at least one value is selected and store it properly as an array
+                        const newValue = updatedTypes.length > 0 ? updatedTypes : ["Tweet"];
+                        field.onChange(newValue);
                       }}
                     >
                       {isSelected && (
