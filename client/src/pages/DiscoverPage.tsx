@@ -85,9 +85,9 @@ const TwitterSpacesCard = ({ data }) => (
     <div className="space-y-0.5">
       <div className="flex items-center space-x-1 text-primary">
         <Twitter className="w-3 h-3" />
-        <span>@{data.twitter_handle || data.hostHandle}</span>
+        <span>@{data.hostHandle}</span>
       </div>
-      <p className="text-xs text-muted-foreground">{data.host_follower_count || data.hostFollowerCount} followers</p>
+      <p className="text-xs text-muted-foreground">{data.hostFollowerCount} followers</p>
     </div>
     {data.topics && data.topics.length > 0 && (
       <div className="flex flex-wrap gap-1 mb-1">
@@ -102,9 +102,6 @@ const TwitterSpacesCard = ({ data }) => (
       <Calendar className="w-3 h-3" />
       <span>{data.date}</span>
     </div>
-    <p className="text-xs text-muted-foreground line-clamp-2">
-      {data.short_description || data.description}
-    </p>
   </div>
 );
 
@@ -331,18 +328,14 @@ const DUMMY_CARDS = [
     id: "3",
     type: "twitter-spaces",
     topic: "The Future of DeFi and Tokenization",
-    twitter_handle: "cryptoinsights",
-    host_follower_count: "45.2K",
+    hostHandle: "cryptoinsights",
+    hostFollowerCount: "45.2K",
     date: "March 25, 2025",
-    short_description: "Join our Twitter Space discussing emerging DeFi trends",
+    description: "Join our Twitter Space discussing emerging DeFi trends",
     companyTwitter: "cryptoinsights",
     companyName: "Crypto Insights",
     companySector: "DeFi News & Analysis",
     topics: ["DeFi", "Tokenization", "Market Trends"],
-    // Keeping legacy fields for compatibility
-    hostHandle: "cryptoinsights",
-    hostFollowerCount: "45.2K",
-    description: "Join our Twitter Space discussing emerging DeFi trends",
   },
   
   // Live Stream Guest Appearance example
