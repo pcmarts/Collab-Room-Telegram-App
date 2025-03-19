@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
-import { UserIcon, Users, Building, Star, Bell, Calendar, Rocket, Plus, Settings } from 'lucide-react';
+import { UserIcon, Users, Building, Star, Bell, Calendar, Plus, Settings } from 'lucide-react';
 import { FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { NetworkStatus } from "@/components/NetworkStatus";
 import type { 
@@ -197,17 +197,6 @@ export default function Dashboard() {
       </div>
 
       <div className="p-4 space-y-4 pb-safe">
-        {/* Main Actions */}
-        <div className="mb-6">
-          <Button
-            className="h-24 flex-col bg-primary text-primary-foreground w-full"
-            onClick={() => setLocation('/marketing-collabs-new')}
-          >
-            <Rocket className="h-6 w-6 mb-2" />
-            <span className="text-sm font-medium">Marketing Collabs</span>
-          </Button>
-        </div>
-
         {/* Profile Actions */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Button
