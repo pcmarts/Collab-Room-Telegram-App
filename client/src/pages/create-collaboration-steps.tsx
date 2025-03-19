@@ -830,7 +830,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.short_description"
+          name="details.space_description"
           render={({ field }) => {
             // Ensure field value is always a string
             const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
@@ -1011,7 +1011,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.short_description"
+          name="details.twitter_description"
           render={({ field }) => {
             // Ensure field value is a string to prevent array values from bleeding in
             const fieldValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
