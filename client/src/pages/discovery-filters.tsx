@@ -329,44 +329,41 @@ export default function DiscoveryFilters() {
     });
   };
   
-  // Fix for scroll issues - use a direct modification approach for Telegram WebApp
+  // Apply special class for scrolling to document when component mounts
   useEffect(() => {
-    // Apply styles directly to html and body
-    document.documentElement.style.height = 'auto';
-    document.documentElement.style.position = 'relative';
-    document.body.style.height = 'auto';
-    document.body.style.position = 'relative';
-    document.body.style.overflow = 'auto';
-    document.body.style.overflowX = 'hidden';
+    // Add the scrollable-page class to enable scrolling
+    document.documentElement.classList.add('scrollable-page');
+    document.body.classList.add('scrollable-page');
     
-    // Remove fixed positioning from any parent containers
-    const appElement = document.getElementById('root');
-    if (appElement) {
-      appElement.style.position = 'relative';
-      appElement.style.height = 'auto';
-      appElement.style.overflow = 'visible';
+    // Also fix the root element
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.style.overflow = 'auto';
+      rootElement.style.height = 'auto';
+      rootElement.style.position = 'static';
+      rootElement.style.width = '100%';
     }
     
-    // Clean up on unmount
+    // Force immediate layout calculation
+    document.body.scrollTop = 0;
+    
+    // Clean up when the component unmounts
     return () => {
-      document.documentElement.style.removeProperty('height');
-      document.documentElement.style.removeProperty('position');
-      document.body.style.removeProperty('height');
-      document.body.style.removeProperty('position');
-      document.body.style.removeProperty('overflow');
-      document.body.style.removeProperty('overflowX');
+      document.documentElement.classList.remove('scrollable-page');
+      document.body.classList.remove('scrollable-page');
       
-      if (appElement) {
-        appElement.style.removeProperty('position');
-        appElement.style.removeProperty('height');
-        appElement.style.removeProperty('overflow');
+      if (rootElement) {
+        rootElement.style.removeProperty('overflow');
+        rootElement.style.removeProperty('height');
+        rootElement.style.removeProperty('position');
+        rootElement.style.removeProperty('width');
       }
     };
   }, []);
 
   return (
     <MobileCheck>
-      <div className="container pb-20">
+      <div className="container pb-20 discovery-filters-page">
         <PageHeader 
           title="Discovery Filters" 
           subtitle="Customize what collaboration types appear in your discover cards"
@@ -374,7 +371,7 @@ export default function DiscoveryFilters() {
         />
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 form-scrollable-container subtle-scrollbar">
             <div className="space-y-4">
               
               {/* Filters */}

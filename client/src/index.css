@@ -21,6 +21,16 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Special class for pages that need to scroll */
+html.scrollable-page,
+body.scrollable-page {
+  height: auto !important;
+  overflow: auto !important;
+  position: static !important;
+  width: 100% !important;
+  overflow-x: hidden !important;
+}
+
 #root {
   height: 100vh; /* Fallback */
   height: calc(var(--vh, 1vh) * 100);
@@ -46,6 +56,12 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 120px; /* Add padding to prevent content being hidden by fixed buttons */
+}
+
+/* Special override for discovery filters page */
+.discovery-filters-page .form-scrollable-container {
+  max-height: none;
+  padding-bottom: 160px;
 }
 
 /* Custom subtle scrollbar styling */
@@ -80,6 +96,24 @@ body {
   touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* Special page scroll styles - used for pages that need vertical scrolling */
+.page-scrollable {
+  height: auto !important;
+  overflow-y: auto !important;
+  position: static !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
+}
+
+.discovery-filters-page {
+  height: auto !important;
+  min-height: 100vh;
+  overflow-y: auto !important;
+  position: relative !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
 }
 
 @layer base {
