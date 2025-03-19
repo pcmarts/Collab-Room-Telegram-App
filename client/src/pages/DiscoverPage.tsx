@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useLocation } from "wouter";
 import {
   motion,
   useMotionValue,
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { 
   X, Info, Check, Coffee, Calendar, Megaphone, Twitter, 
   Linkedin, Building, Mic, Radio, Video, FileText, BookOpen,
-  RotateCcw
+  RotateCcw, Filter
 } from "lucide-react";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
@@ -585,6 +586,7 @@ export default function DiscoverPage() {
   const [swipeHistory, setSwipeHistory] = useState<Array<{card: any, direction: "left" | "right", index: number}>>([]);
   const cardElem = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
+  const [location, setLocation] = useLocation();
 
   // Initialize Telegram WebApp and handle viewport
   useEffect(() => {
@@ -753,7 +755,17 @@ export default function DiscoverPage() {
   return (
     <div className="telegram-app min-h-[100svh] bg-background" ref={pageRef}>
       <div className="container max-w-md mx-auto py-4">
-        <h1 className="text-2xl font-bold mb-4 px-4">Discover</h1>
+        <div className="flex justify-between items-center mb-4 px-4">
+          <h1 className="text-2xl font-bold">Discover</h1>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setLocation('/marketing-collabs-new')}
+            aria-label="Filter"
+          >
+            <Filter className="h-5 w-5" />
+          </Button>
+        </div>
 
         <div className="relative w-[90%] mx-auto aspect-[3/4.25]">
           {/* Background Card (Next in Stack) */}
