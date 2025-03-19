@@ -643,9 +643,9 @@ export default function MarketingCollabs() {
           </div>
         </CardHeader>
         <CardContent className="pb-2">
-          {collab.description && collab.description !== "Created using Collab Room" && (
+          {collab.details && typeof collab.details === 'object' && (
             <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-              {collab.description}
+              {collab.details.short_description || collab.details.description || collab.details.goals || "No description available"}
             </p>
           )}
           

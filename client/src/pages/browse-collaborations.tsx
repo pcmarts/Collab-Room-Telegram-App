@@ -568,7 +568,11 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
           <CardContent className="space-y-4">
             <div>
               <h3 className="text-sm font-medium mb-1">Description</h3>
-              <p className="text-sm text-gray-600">{singleCollaboration.description}</p>
+              <p className="text-sm text-gray-600">
+                {singleCollaboration.details && typeof singleCollaboration.details === 'object' && 
+                 (singleCollaboration.details.short_description || singleCollaboration.details.description || 
+                  (singleCollaboration.details.goals || "No description available"))}
+              </p>
             </div>
             
             <div className="flex flex-wrap gap-3">

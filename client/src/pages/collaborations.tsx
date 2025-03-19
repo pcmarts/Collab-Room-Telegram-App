@@ -44,7 +44,11 @@ export default function Collaborations() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">{collab.description}</p>
+              <p className="text-muted-foreground mb-4">
+                {collab.details && typeof collab.details === 'object' && 
+                  (collab.details.short_description || collab.details.description || 
+                   (collab.details.goals || "No description available"))}
+              </p>
               <div className="flex gap-2">
                 {collab.tags?.map(tag => (
                   <span key={tag} className="px-2 py-1 bg-accent rounded-full text-xs">
