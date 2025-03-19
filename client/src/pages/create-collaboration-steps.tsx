@@ -423,27 +423,31 @@ export default function CreateCollaborationSteps({
           render={({ field }) => (
             <FormItem>
               <FormLabel>What type of collaboration are you looking for?</FormLabel>
-              <Select
-                value={field.value}
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  handleCollabTypeChange(value);
-                }}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {COLLAB_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {COLLAB_TYPES.map((type) => {
+                  const isSelected = field.value === type;
+                  return (
+                    <Button
+                      key={type}
+                      type="button"
+                      variant={isSelected ? "default" : "outline"}
+                      className={`w-full h-auto py-3 px-3 text-sm justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                      onClick={() => {
+                        field.onChange(type);
+                        handleCollabTypeChange(type);
+                      }}
+                    >
+                      {isSelected && (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      )}
                       {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
+                    </Button>
+                  );
+                })}
+              </div>
+              <FormDescription className="mt-2">
                 Choose the type that best describes what you want to create
               </FormDescription>
               <FormMessage />
