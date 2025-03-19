@@ -468,7 +468,7 @@ export default function CreateCollaborationSteps({
                   What topics will this collaboration cover?
                 </FormDescription>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {COLLAB_TOPICS.map((topic) => (
                   <FormField
                     key={topic}
@@ -482,7 +482,7 @@ export default function CreateCollaborationSteps({
                             <Button
                               type="button"
                               variant={isSelected ? "default" : "outline"}
-                              className={`w-full h-auto py-2 px-3 text-sm justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                              className={`w-full h-auto py-1 px-2 text-xs justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
                               onClick={() => {
                                 const currentValue = field.value || [];
                                 const updatedTopics = isSelected
@@ -1035,7 +1035,7 @@ export default function CreateCollaborationSteps({
   };
 
   return (
-    <div className="container max-w-md mx-auto px-4 py-4">
+    <div className="container mx-auto px-4 py-4">
       {/* Compact header with back button and progress bar */}
       <div className="flex items-center mb-6">
         <Button 
