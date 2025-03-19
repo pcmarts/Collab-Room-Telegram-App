@@ -72,29 +72,7 @@ export default function DiscoveryFilters() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // This disables the default fixed positioning and overflow hidden
-  // so that we can have a normal scrolling container with a scrollbar
-  useEffect(() => {
-    // Save the original style
-    const originalOverflow = document.body.style.overflow;
-    const originalPosition = document.body.style.position;
-    const originalWidth = document.body.style.width;
-    const originalHeight = document.body.style.height;
-    
-    // Modify for this page to allow scrolling
-    document.body.style.overflow = 'auto';
-    document.body.style.position = 'static';
-    document.body.style.width = 'auto';
-    document.body.style.height = 'auto';
-    
-    // Restore original style when component unmounts
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.position = originalPosition;
-      document.body.style.width = originalWidth;
-      document.body.style.height = originalHeight;
-    };
-  }, []);
+
   
   // State for tracking expanded accordion sections
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
@@ -351,6 +329,41 @@ export default function DiscoveryFilters() {
     });
   };
   
+  // Fix for scroll issues - use a direct modification approach for Telegram WebApp
+  useEffect(() => {
+    // Apply styles directly to html and body
+    document.documentElement.style.height = 'auto';
+    document.documentElement.style.position = 'relative';
+    document.body.style.height = 'auto';
+    document.body.style.position = 'relative';
+    document.body.style.overflow = 'auto';
+    document.body.style.overflowX = 'hidden';
+    
+    // Remove fixed positioning from any parent containers
+    const appElement = document.getElementById('root');
+    if (appElement) {
+      appElement.style.position = 'relative';
+      appElement.style.height = 'auto';
+      appElement.style.overflow = 'visible';
+    }
+    
+    // Clean up on unmount
+    return () => {
+      document.documentElement.style.removeProperty('height');
+      document.documentElement.style.removeProperty('position');
+      document.body.style.removeProperty('height');
+      document.body.style.removeProperty('position');
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('overflowX');
+      
+      if (appElement) {
+        appElement.style.removeProperty('position');
+        appElement.style.removeProperty('height');
+        appElement.style.removeProperty('overflow');
+      }
+    };
+  }, []);
+
   return (
     <MobileCheck>
       <div className="container pb-20">
@@ -366,14 +379,7 @@ export default function DiscoveryFilters() {
               
               {/* Filters */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Filter Options</CardTitle>
-                  <CardDescription>
-                    Set up your criteria for discovering relevant collaborations
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-6 pt-6">
                   {/* Filter by Collab Types */}
                   <div>
                     <div className="flex justify-between items-center mb-4">
