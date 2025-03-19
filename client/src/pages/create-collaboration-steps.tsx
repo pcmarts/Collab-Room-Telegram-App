@@ -859,7 +859,7 @@ export default function CreateCollaborationSteps({
                 })}
               </div>
               <FormDescription className="text-xs">
-                Select collaboration type(s)
+                
               </FormDescription>
               <FormMessage />
             </FormItem>

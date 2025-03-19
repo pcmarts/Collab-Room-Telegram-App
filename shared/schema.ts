@@ -26,7 +26,7 @@ export const COLLAB_TOPICS = [
   "Infrastructure",
   "Memes & Culture",
   "NFT",
-  "Real-World Assets (RWA)",
+  "Real-World Assets",
   "SocialFi",
   "Solana",
   "Stablecoins",
