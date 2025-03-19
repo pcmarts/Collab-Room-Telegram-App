@@ -92,7 +92,7 @@ export default function CreateCollaborationSteps({
       details: {
         // Default values for different collaboration types to prevent field bleeding
         // Twitter spaces defaults
-        space_description: "",
+        short_description: "",
         topic: "",
         host_twitter_handle: "",
         host_follower_count: "",
@@ -104,7 +104,7 @@ export default function CreateCollaborationSteps({
         // Podcast defaults 
         podcast_name: "",
         podcast_description: "",
-        short_description: "", 
+        // Each collaboration type should have its own description
         estimated_reach: "",
         podcast_link: "",
       },
@@ -178,7 +178,7 @@ export default function CreateCollaborationSteps({
         case "Twitter Spaces Guest":
           newDetails.twitter_handle = "https://x.com/";
           newDetails.host_follower_count = TWITTER_FOLLOWER_COUNTS[0];
-          newDetails.space_topic = "";
+          newDetails.topic = "";
           newDetails.short_description = "";
           break;
           
@@ -879,13 +879,13 @@ export default function CreateCollaborationSteps({
       shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
     },
     {
-      id: "twitter_space_topic",
+      id: "twitter_topic",
       title: "Twitter Space Topic",
       description: "What topic will your Twitter Space cover?",
       render: () => (
         <FormField
           control={form.control}
-          name="details.space_topic"
+          name="details.topic"
           render={({ field }) => {
             // Ensure field value is always a string
             const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
@@ -916,13 +916,13 @@ export default function CreateCollaborationSteps({
       shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
     },
     {
-      id: "twitter_space_description",
+      id: "twitter_description",
       title: "Twitter Space Description",
       description: "Describe your Twitter Space",
       render: () => (
         <FormField
           control={form.control}
-          name="details.space_description"
+          name="details.short_description"
           render={({ field }) => {
             // Ensure field value is always a string
             const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
