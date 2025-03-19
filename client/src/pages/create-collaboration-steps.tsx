@@ -828,44 +828,60 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.twittercomarketing_type"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">Co-Marketing Type</FormLabel>
-              <div className="grid grid-cols-2 gap-1">
-                {TWITTER_COLLAB_TYPES.map((type) => {
-                  const isSelected = Array.isArray(field.value) && field.value.includes(type);
-                  return (
-                    <Button
-                      key={type}
-                      type="button"
-                      variant={isSelected ? "default" : "outline"}
-                      className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                      onClick={() => {
-                        const currentValue = Array.isArray(field.value) ? field.value : [];
-                        const updatedTypes = isSelected
-                          ? currentValue.filter((t) => t !== type)
-                          : [...currentValue, type];
-                        // Ensure at least one value is selected and store it properly as an array
-                        const newValue = updatedTypes.length > 0 ? updatedTypes : ["Tweet"];
-                        field.onChange(newValue);
-                      }}
-                    >
-                      {isSelected && (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      )}
-                      {type}
-                    </Button>
-                  );
-                })}
-              </div>
-              <FormDescription className="text-xs">
-                
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Normalize field value to ensure it's always an array
+            let currentValue: string[] = [];
+            
+            // Handle different possible value types
+            if (Array.isArray(field.value)) {
+              // Already an array, use it
+              currentValue = field.value;
+            } else if (typeof field.value === 'string') {
+              // Single string value, convert to array
+              currentValue = [field.value];
+            } else if (field.value) {
+              // Some other type of value, reset to defaults
+              currentValue = ["Tweet"];
+            }
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Co-Marketing Type</FormLabel>
+                <div className="grid grid-cols-2 gap-1">
+                  {TWITTER_COLLAB_TYPES.map((type) => {
+                    const isSelected = currentValue.includes(type);
+                    return (
+                      <Button
+                        key={type}
+                        type="button"
+                        variant={isSelected ? "default" : "outline"}
+                        className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                        onClick={() => {
+                          const updatedTypes = isSelected
+                            ? currentValue.filter((t) => t !== type)
+                            : [...currentValue, type];
+                          // Ensure at least one value is selected
+                          const newValue = updatedTypes.length > 0 ? updatedTypes : ["Tweet"];
+                          field.onChange(newValue);
+                        }}
+                      >
+                        {isSelected && (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                        {type}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <FormDescription className="text-xs">
+                  Select at least one type of Twitter content
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Co-Marketing on Twitter"
@@ -878,26 +894,36 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.host_twitter_handle"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">What's your Twitter/X handle?</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="https://x.com/username"
-                  className="h-8 text-xs"
-                  value={field.value || "https://x.com/"}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                  name={field.name}
-                />
-              </FormControl>
-              <FormDescription className="text-xs">
-                Include the full URL
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Ensure the correct type of value is shown
+            const displayValue = Array.isArray(field.value) 
+              ? "https://x.com/" 
+              : (typeof field.value === 'string' ? field.value : "https://x.com/");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">What's your Twitter/X handle?</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://x.com/username"
+                    className="h-8 text-xs"
+                    value={displayValue}
+                    onChange={(e) => {
+                      // Make sure we only set string values
+                      field.onChange(e.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Include the full URL
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Co-Marketing on Twitter"
@@ -910,29 +936,34 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.host_follower_count"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">How many followers do you have?</FormLabel>
-              <Select
-                value={field.value || ""}
-                onValueChange={field.onChange}
-              >
-                <FormControl>
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Select follower count" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                    <SelectItem key={count} value={count}>
-                      {count}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Ensure the field only gets string values, not arrays
+            const fieldValue = Array.isArray(field.value) ? "" : field.value || "";
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">How many followers do you have?</FormLabel>
+                <Select
+                  value={fieldValue}
+                  onValueChange={(value) => field.onChange(value)}
+                >
+                  <FormControl>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Select follower count" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                      <SelectItem key={count} value={count}>
+                        {count}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Co-Marketing on Twitter"
@@ -945,26 +976,31 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.short_description"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">Describe your co-marketing idea</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Content ideas and goals"
-                  className="min-h-[80px] text-xs"
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                  name={field.name}
-                />
-              </FormControl>
-              <FormDescription className="text-xs">
-                More details help find better matches
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Ensure field value is a string to prevent array values from bleeding in
+            const fieldValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Describe your co-marketing idea</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Content ideas and goals"
+                    className="min-h-[80px] text-xs"
+                    value={fieldValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  More details help find better matches
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Co-Marketing on Twitter"
