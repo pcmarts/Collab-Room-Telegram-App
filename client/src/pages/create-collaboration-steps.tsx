@@ -69,8 +69,6 @@ export default function CreateCollaborationSteps({
   const form = useForm<CreateCollaboration>({
     resolver: zodResolver(createCollaborationSchema),
     defaultValues: {
-      title: "Collaboration",
-      description: "",
       collab_type: COLLAB_TYPES[0],
       date_type: "specific_date",
       specific_date: new Date().toISOString().split("T")[0],
