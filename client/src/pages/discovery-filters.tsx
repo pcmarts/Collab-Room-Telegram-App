@@ -389,13 +389,13 @@ export default function DiscoveryFilters() {
                           name="collabTypes"
                           render={({ field }) => (
                             <FormItem>
-                              <div className="grid grid-cols-2 gap-2">
+                              <div className="flex flex-col gap-2">
                                 {COLLAB_TYPES.map((type) => (
                                   <Button
                                     key={type}
                                     type="button"
                                     variant={field.value.includes(type) ? "default" : "outline"}
-                                    className="h-auto py-2 px-3 justify-start text-left font-normal"
+                                    className="h-auto py-2 px-3 justify-start text-left font-normal w-full"
                                     onClick={() => {
                                       const newChecked = !field.value.includes(type);
                                       const newValue = newChecked
@@ -449,25 +449,17 @@ export default function DiscoveryFilters() {
                     
                     {filtersEnabled.topics && filtersExpanded.topics && (
                       <div className="border rounded-lg p-4 bg-background">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div className="flex flex-col gap-2">
                           {COLLAB_TOPICS.map((topic) => (
-                            <div key={topic} className="flex items-center p-2 border rounded-md hover:bg-accent/10 mb-2">
-                              <Checkbox
-                                id={`topic-${topic}`}
-                                checked={selectedTopics.includes(topic)}
-                                onCheckedChange={(checked) => handleTopicChange(topic, !!checked)}
-                                data-topic-checkbox 
-                                data-topic-value={topic}
-                                className="h-5 w-5 mr-3"
-                              />
-                              <label
-                                htmlFor={`topic-${topic}`}
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 w-full cursor-pointer"
-                                onClick={() => handleTopicChange(topic, !selectedTopics.includes(topic))}
-                              >
-                                {topic}
-                              </label>
-                            </div>
+                            <Button
+                              key={topic}
+                              type="button"
+                              variant={selectedTopics.includes(topic) ? "default" : "outline"}
+                              className="h-auto py-2 px-3 justify-start text-left font-normal w-full"
+                              onClick={() => handleTopicChange(topic, !selectedTopics.includes(topic))}
+                            >
+                              {topic}
+                            </Button>
                           ))}
                         </div>
                       </div>
@@ -540,13 +532,13 @@ export default function DiscoveryFilters() {
                                     </div>
                                     
                                     {expandedCategories.includes(category) && (
-                                      <div className="grid grid-cols-2 gap-2 mt-3">
+                                      <div className="flex flex-col gap-2 mt-3">
                                         {tags.map((tag) => (
                                           <Button
                                             key={tag}
                                             type="button"
                                             variant={field.value.includes(tag) ? "default" : "outline"}
-                                            className="h-auto py-2 px-3 justify-start text-left font-normal whitespace-normal"
+                                            className="h-auto py-2 px-3 justify-start text-left font-normal whitespace-normal w-full"
                                             onClick={() => {
                                               const newChecked = !field.value.includes(tag);
                                               return newChecked
@@ -686,13 +678,13 @@ export default function DiscoveryFilters() {
                                   </div>
                                 )}
                                 
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="flex flex-col gap-2">
                                   {FUNDING_STAGES.map((stage) => (
                                     <Button
                                       key={stage}
                                       type="button"
                                       variant={field.value.includes(stage) ? "default" : "outline"}
-                                      className="h-auto py-2 px-3 justify-start text-left font-normal"
+                                      className="h-auto py-2 px-3 justify-start text-left font-normal w-full"
                                       onClick={() => {
                                         const newChecked = !field.value.includes(stage);
                                         return newChecked
