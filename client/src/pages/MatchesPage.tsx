@@ -33,6 +33,33 @@ const DUMMY_MATCHES = [
     collaborationType: "Marketing",
     matchedPerson: "James Wilson",
   },
+  {
+    id: "4",
+    title: "Research Report Collaboration",
+    companyName: "Blockchain Analytics",
+    roleTitle: "Market Researcher",
+    matchDate: "March 17, 2025",
+    collaborationType: "Research",
+    matchedPerson: "Sarah Johnson",
+  },
+  {
+    id: "5",
+    title: "Live Stream Panel",
+    companyName: "Crypto Education Hub",
+    roleTitle: "Industry Expert",
+    matchDate: "March 18, 2025",
+    collaborationType: "Event",
+    matchedPerson: "Michael Chen",
+  },
+  {
+    id: "6",
+    title: "Newsletter Feature",
+    companyName: "Web3 Weekly",
+    roleTitle: "Guest Contributor",
+    matchDate: "March 19, 2025",
+    collaborationType: "Content",
+    matchedPerson: "Emma Rodriguez",
+  },
 ];
 
 export default function MatchesPage() {
