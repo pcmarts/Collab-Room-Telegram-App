@@ -151,15 +151,15 @@ export default function DiscoveryFilters() {
       console.log("Extracted topics from saved preferences:", savedTopics);
       setSelectedTopics(savedTopics);
       
-      // Setup filter toggles
+      // Setup filter toggles based on enabled state fields rather than just values
       const newFiltersEnabled = {
-        collabTypes: marketingPreferences.collab_types?.length > 0,
-        topics: marketingPreferences.preferred_topics?.length > 0,
-        companySectors: marketingPreferences.company_sectors?.length > 0,
-        companyFollowers: !!marketingPreferences.company_followers,
-        fundingStages: marketingPreferences.funding_stages?.length > 0,
-        hasToken: marketingPreferences.has_token || false,
-        blockchainNetworks: marketingPreferences.blockchain_networks?.length > 0,
+        collabTypes: marketingPreferences.discovery_filter_collab_types_enabled || false,
+        topics: marketingPreferences.discovery_filter_topics_enabled || false,
+        companySectors: marketingPreferences.discovery_filter_company_sectors_enabled || false,
+        companyFollowers: marketingPreferences.discovery_filter_company_followers_enabled || false,
+        fundingStages: marketingPreferences.discovery_filter_funding_stages_enabled || false,
+        hasToken: marketingPreferences.discovery_filter_token_status_enabled || false,
+        blockchainNetworks: marketingPreferences.discovery_filter_blockchain_networks_enabled || false,
       };
       setFiltersEnabled(newFiltersEnabled);
       
@@ -206,9 +206,18 @@ export default function DiscoveryFilters() {
   // Toggle filter sections
   const toggleFilter = (filterName: string) => {
     const newState = !filtersEnabled[filterName as keyof typeof filtersEnabled];
-    setFiltersEnabled({
-      ...filtersEnabled,
-      [filterName]: newState
+    setFiltersEnabled((prevState) => {
+      const newFiltersEnabled = {
+        ...prevState,
+        [filterName]: newState
+      };
+      
+      // Save the updated filter state immediately
+      setTimeout(() => {
+        savePreferences();
+      }, 0);
+      
+      return newFiltersEnabled;
     });
     
     // Also update expanded state when enabling
@@ -246,9 +255,6 @@ export default function DiscoveryFilters() {
           break;
       }
     }
-    
-    // Trigger auto-save
-    handleAutoSave();
   };
   
   // Toggle filter section expansion without affecting filter state
@@ -279,6 +285,7 @@ export default function DiscoveryFilters() {
       
       // Prepare data for API
       const data = {
+        // Filter values
         collab_types: formValues.collabTypes,
         company_sectors: formValues.companySectors,
         company_followers: formValues.companyFollowers,
@@ -286,7 +293,19 @@ export default function DiscoveryFilters() {
         has_token: formValues.hasToken,
         blockchain_networks: formValues.blockchainNetworks,
         preferred_topics: selectedTopics,
+        
+        // Filter enabled states - critical for saving filter preferences
+        discovery_filter_enabled: Object.values(filtersEnabled).some(v => v), // Enabled if any filter is on
+        discovery_filter_collab_types_enabled: filtersEnabled.collabTypes,
+        discovery_filter_topics_enabled: filtersEnabled.topics,
+        discovery_filter_company_sectors_enabled: filtersEnabled.companySectors,
+        discovery_filter_company_followers_enabled: filtersEnabled.companyFollowers,
+        discovery_filter_funding_stages_enabled: filtersEnabled.fundingStages,
+        discovery_filter_token_status_enabled: filtersEnabled.hasToken,
+        discovery_filter_blockchain_networks_enabled: filtersEnabled.blockchainNetworks,
       };
+      
+      console.log("Saving discovery filters with data:", data);
       
       // Send to API
       await apiRequest('/api/marketing-preferences', 'POST', data);
