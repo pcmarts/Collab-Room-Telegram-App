@@ -805,6 +805,7 @@ export default function DiscoverPage() {
               {/* Action Buttons */}
               <div className="absolute bottom-5 left-5 right-5">
                 <div className="flex justify-between gap-1">
+                  {/* No (X) Button */}
                   <Button
                     variant="outline"
                     size="icon"
@@ -813,6 +814,19 @@ export default function DiscoverPage() {
                   >
                     <X className="h-5 w-5" />
                   </Button>
+                  
+                  {/* Undo Button */}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className={`h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm ${swipeHistory.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={handleUndo}
+                    disabled={swipeHistory.length === 0}
+                  >
+                    <RotateCcw className="h-5 w-5" />
+                  </Button>
+                  
+                  {/* Info Button */}
                   <Button
                     variant="outline"
                     size="icon"
@@ -821,6 +835,8 @@ export default function DiscoverPage() {
                   >
                     <Info className="h-5 w-5" />
                   </Button>
+                  
+                  {/* Yes (Check) Button */}
                   <Button
                     variant="outline"
                     size="icon"
@@ -835,20 +851,7 @@ export default function DiscoverPage() {
           </motion.div>
         </div>
 
-        {/* Undo Button */}
-        {swipeHistory.length > 0 && (
-          <div className="mt-4 flex justify-center">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1"
-              onClick={handleUndo}
-            >
-              <RotateCcw className="h-3 w-3" />
-              <span>Undo Last Swipe</span>
-            </Button>
-          </div>
-        )}
+        {/* Removed separate undo button */}
         
         {/* Instructions */}
         <div className="mt-4 text-center text-sm text-muted-foreground">
