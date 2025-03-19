@@ -1,8 +1,10 @@
 import * as React from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle } from "lucide-react";
+import { motion, PanInfo, useMotionValue, useTransform } from "framer-motion";
 
 // Dummy data for testing
 const DUMMY_MATCHES = [
@@ -63,65 +65,116 @@ const DUMMY_MATCHES = [
 ];
 
 export default function MatchesPage() {
-  // Use effect to modify the body style for this page only
-  React.useEffect(() => {
-    // Save the original style
-    const originalOverflow = document.body.style.overflow;
-    const originalPosition = document.body.style.position;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const y = useMotionValue(0);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  
+  // Calculate the drag constraints
+  useEffect(() => {
+    // First render we need to measure the element heights
+    if (containerRef.current) {
+      const container = containerRef.current;
+      const content = container.firstElementChild as HTMLElement;
+      
+      if (content) {
+        const contentHeight = content.scrollHeight;
+        const containerHeight = container.clientHeight;
+        
+        setContentHeight(contentHeight);
+        setContainerHeight(containerHeight);
+      }
+    }
+  }, [DUMMY_MATCHES]);
+  
+  // The maximum distance we can drag (content height - container height)
+  const maxDrag = Math.max(0, contentHeight - containerHeight);
+  
+  const handleDragStart = () => {
+    setIsDragging(true);
+    setDragStartY(y.get());
+  };
+  
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    setIsDragging(false);
     
-    // Modify for this page
-    document.body.style.overflow = 'auto';
-    document.body.style.position = 'static';
-    
-    // Restore original style when component unmounts
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.position = originalPosition;
-    };
+    // Ensure we stay within bounds
+    const currentY = y.get();
+    if (currentY > 0) {
+      y.set(0);
+    } else if (currentY < -maxDrag) {
+      y.set(-maxDrag);
+    }
+  };
+  
+  // This removes the page style overrides that might conflict
+  useEffect(() => {
+    // We're using a direct Framer Motion solution, so we don't need 
+    // to modify body styles anymore
+    return () => {};
   }, []);
   
   return (
-    <div className="container max-w-md mx-auto py-6 px-4 matches-page-container min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">My Matches</h1>
-
-      {DUMMY_MATCHES.length > 0 ? (
-        <div className="space-y-4">
-          {DUMMY_MATCHES.map((match) => (
-            <Card key={match.id}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{match.title}</CardTitle>
-                    <CardDescription>{match.companyName}</CardDescription>
-                  </div>
-                  <Badge variant="outline">{match.collaborationType}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{match.matchedPerson}</p>
-                    <p className="text-sm text-muted-foreground">{match.roleTitle}</p>
-                    <p className="text-xs text-muted-foreground">Matched on {match.matchDate}</p>
-                  </div>
-                  <Button 
-                    size="sm"
-                    onClick={() => window.open('https://t.me/thisispaulm', '_blank')}
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Start Chat
-                  </Button>
-                </div>
-              </CardContent>
+    <div className="fixed inset-0 flex flex-col overflow-hidden">
+      <h1 className="text-2xl font-bold p-6">My Matches</h1>
+      
+      <motion.div
+        ref={containerRef}
+        className="flex-1 overflow-hidden touch-none mobile-drag-container"
+        style={{ position: 'relative', userSelect: 'none' }}
+      >
+        <motion.div
+          drag="y"
+          dragElastic={0.05}
+          dragTransition={{ bounceStiffness: 600, bounceDamping: 30 }}
+          dragConstraints={{ top: -maxDrag, bottom: 0 }}
+          style={{ y }}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          className="px-4 mobile-drag-container"
+        >
+          {DUMMY_MATCHES.length > 0 ? (
+            <div className="space-y-4 pb-24">
+              {DUMMY_MATCHES.map((match) => (
+                <Card key={match.id}>
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{match.title}</CardTitle>
+                        <CardDescription>{match.companyName}</CardDescription>
+                      </div>
+                      <Badge variant="outline">{match.collaborationType}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">{match.matchedPerson}</p>
+                        <p className="text-sm text-muted-foreground">{match.roleTitle}</p>
+                        <p className="text-xs text-muted-foreground">Matched on {match.matchDate}</p>
+                      </div>
+                      <Button 
+                        size="sm"
+                        onClick={() => window.open('https://t.me/thisispaulm', '_blank')}
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Start Chat
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="p-6 text-center">
+              <p className="text-muted-foreground mb-4">No matches yet</p>
+              <Button variant="outline">Start Discovering</Button>
             </Card>
-          ))}
-        </div>
-      ) : (
-        <Card className="p-6 text-center">
-          <p className="text-muted-foreground mb-4">No matches yet</p>
-          <Button variant="outline">Start Discovering</Button>
-        </Card>
-      )}
+          )}
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
