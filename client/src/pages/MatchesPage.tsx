@@ -129,54 +129,58 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
   // Render different details based on collaboration type
   switch (match.collaborationType) {
     case "Podcast Guest":
-      detailsSection = (
-        <div className="space-y-4 mt-4">
-          <h3 className="font-medium">Podcast Details</h3>
-          <div className="grid grid-cols-1 gap-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Name:</span>
-              <span className="text-sm font-medium">{match.podcastDetails.name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Audience:</span>
-              <span className="text-sm font-medium">{match.podcastDetails.audience}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Episodes:</span>
-              <span className="text-sm font-medium">{match.podcastDetails.episodes}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Format:</span>
-              <span className="text-sm font-medium">{match.podcastDetails.format}</span>
+      if (match.podcastDetails) {
+        detailsSection = (
+          <div className="space-y-4 mt-4">
+            <h3 className="font-medium">Podcast Details</h3>
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Name:</span>
+                <span className="text-sm font-medium">{match.podcastDetails.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Audience:</span>
+                <span className="text-sm font-medium">{match.podcastDetails.audience}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Episodes:</span>
+                <span className="text-sm font-medium">{match.podcastDetails.episodes}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Format:</span>
+                <span className="text-sm font-medium">{match.podcastDetails.format}</span>
+              </div>
             </div>
           </div>
-        </div>
-      );
+        );
+      }
       break;
     case "Blog Post":
-      detailsSection = (
-        <div className="space-y-4 mt-4">
-          <h3 className="font-medium">Blog Details</h3>
-          <div className="grid grid-cols-1 gap-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Audience:</span>
-              <span className="text-sm font-medium">{match.blogDetails.audience}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Word Count:</span>
-              <span className="text-sm font-medium">{match.blogDetails.wordCount}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Topics:</span>
-              <span className="text-sm font-medium">{match.blogDetails.topics}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Distribution:</span>
-              <span className="text-sm font-medium">{match.blogDetails.distribution}</span>
+      if (match.blogDetails) {
+        detailsSection = (
+          <div className="space-y-4 mt-4">
+            <h3 className="font-medium">Blog Details</h3>
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Audience:</span>
+                <span className="text-sm font-medium">{match.blogDetails.audience}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Word Count:</span>
+                <span className="text-sm font-medium">{match.blogDetails.wordCount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Topics:</span>
+                <span className="text-sm font-medium">{match.blogDetails.topics}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Distribution:</span>
+                <span className="text-sm font-medium">{match.blogDetails.distribution}</span>
+              </div>
             </div>
           </div>
-        </div>
-      );
+        );
+      }
       break;
     // Add cases for other collaboration types as needed
     default:
@@ -195,7 +199,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
           <h2 className="text-xl font-bold">{match.title}</h2>
           <p className="text-sm text-muted-foreground">{match.companyName}</p>
         </div>
-        <Badge>{match.collaborationType}</Badge>
+        <Badge variant="outline" className="text-muted-foreground bg-transparent">{match.collaborationType}</Badge>
       </div>
       
       <div className="space-y-4">
@@ -300,7 +304,7 @@ export default function MatchesPage() {
                       <CardTitle className="text-lg">{match.title}</CardTitle>
                       <CardDescription>{match.companyName}</CardDescription>
                     </div>
-                    <Badge>{match.collaborationType}</Badge>
+                    <Badge variant="outline" className="text-muted-foreground bg-transparent">{match.collaborationType}</Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="pb-2">
@@ -342,6 +346,14 @@ export default function MatchesPage() {
       {/* Match Detail Dialog */}
       <Dialog open={!!selectedMatch} onOpenChange={(open) => !open && setSelectedMatch(null)}>
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="sr-only">
+              {selectedMatch ? `${selectedMatch.title} - ${selectedMatch.collaborationType} Details` : 'Match Details'}
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Detailed information about this collaboration match
+            </DialogDescription>
+          </DialogHeader>
           {selectedMatch && <MatchDetail match={selectedMatch} onBack={handleCloseMatchDetail} />}
         </DialogContent>
       </Dialog>
