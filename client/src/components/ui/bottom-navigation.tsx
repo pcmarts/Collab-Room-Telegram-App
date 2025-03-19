@@ -1,7 +1,8 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { LayoutGrid, Settings, MessageSquare, FolderPlus } from "lucide-react"
+import { Settings, MessageSquare, FolderPlus } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { DiscoveryIcon } from "@/components/icons/DiscoveryIcon"
 
 const BottomNavigation = () => {
   const [location] = useLocation()
@@ -9,7 +10,7 @@ const BottomNavigation = () => {
   const navItems = [
     {
       label: "Discover",
-      icon: LayoutGrid,
+      icon: DiscoveryIcon,
       href: "/discover",
     },
     {
