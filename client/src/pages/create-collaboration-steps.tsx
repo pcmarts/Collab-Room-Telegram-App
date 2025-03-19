@@ -300,7 +300,7 @@ export default function CreateCollaborationSteps({
         data.details = {
           twitter_handle: data.details.twitter_handle || "https://x.com/",
           host_follower_count: data.details.host_follower_count || TWITTER_FOLLOWER_COUNTS[0],
-          topic: data.details.topic || "",
+          space_topic: data.details.space_topic || "",
           short_description: data.details.short_description || "",
         };
       } else if (data.collab_type === "Live Stream Guest Appearance" && typeof data.details === 'object') {
@@ -766,7 +766,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.topic"
+          name="details.space_topic"
           render={({ field }) => (
             <FormItem>
               <FormLabel>What topic will your Twitter Space cover?</FormLabel>
@@ -832,34 +832,21 @@ export default function CreateCollaborationSteps({
               <FormLabel>Co-Marketing Type(s)</FormLabel>
               <div className="grid grid-cols-1 gap-2">
                 {TWITTER_COLLAB_TYPES.map((type) => (
-                  <FormField
-                    key={type}
-                    control={form.control}
-                    name="details.twittercomarketing_type"
-                    render={({ field }) => {
-                      return (
-                        <FormItem
-                          key={type}
-                          className="flex flex-row items-center space-x-3 space-y-0"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(type)}
-                              onCheckedChange={(checked) => {
-                                const updatedTypes = checked
-                                  ? [...(field.value || []), type]
-                                  : (field.value || [])?.filter((t: string) => t !== type);
-                                field.onChange(updatedTypes);
-                              }}
-                            />
-                          </FormControl>
-                          <FormLabel className="text-sm font-normal cursor-pointer flex-grow">
-                            {type}
-                          </FormLabel>
-                        </FormItem>
-                      );
-                    }}
-                  />
+                  <div key={type} className="flex flex-row items-center space-x-3 space-y-0">
+                    <Checkbox
+                      checked={Array.isArray(field.value) && field.value.includes(type)}
+                      onCheckedChange={(checked) => {
+                        const currentTypes = Array.isArray(field.value) ? field.value : [];
+                        const updatedTypes = checked
+                          ? [...currentTypes, type]
+                          : currentTypes.filter((t) => t !== type);
+                        field.onChange(updatedTypes);
+                      }}
+                    />
+                    <FormLabel className="text-sm font-normal cursor-pointer flex-grow">
+                      {type}
+                    </FormLabel>
+                  </div>
                 ))}
               </div>
               <FormDescription>
