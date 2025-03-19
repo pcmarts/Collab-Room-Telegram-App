@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
@@ -64,6 +64,50 @@ export default function CreateCollaborationSteps({
   const [selectedCollabType, setSelectedCollabType] = useState<string>(
     COLLAB_TYPES[0],
   );
+  
+  // Add reference to track previous step
+  const prevStepRef = useRef(currentStep);
+  
+  // Monitor step changes to handle field resets
+  useEffect(() => {
+    // Don't run on first render
+    if (prevStepRef.current === currentStep) {
+      return;
+    }
+    
+    // Store the current step for next comparison
+    prevStepRef.current = currentStep;
+    
+    // Get all active form steps
+    const activeSteps = getActiveSteps();
+    if (currentStep >= activeSteps.length) {
+      return;
+    }
+    
+    // Get current step ID
+    const currentStepId = activeSteps[currentStep].id;
+    
+    // Handle Twitter co-marketing field resets
+    if (selectedCollabType === "Co-Marketing on Twitter") {
+      if (currentStepId === "twitter_comarketing_type") {
+        // Reset the Twitter marketing type field
+        const twitterDetails = form.getValues("details") as Record<string, any>;
+        form.setValue("details.twittercomarketing_type", twitterDetails.twittercomarketing_type || ["Tweet"]);
+      }
+      else if (currentStepId === "twitter_comarketing_handle") {
+        // Ensure the Twitter handle field has proper value
+        form.setValue("details.host_twitter_handle", "https://x.com/");
+      }
+      else if (currentStepId === "twitter_comarketing_followers") {
+        // Ensure follower count has a default value
+        form.setValue("details.host_follower_count", TWITTER_FOLLOWER_COUNTS[0]);
+      }
+      else if (currentStepId === "twitter_comarketing_description") {
+        // Clear description field to prevent bleeding
+        form.setValue("details.short_description", "");
+      }
+    }
+  }, [currentStep, selectedCollabType, form]);
 
   // Initialize with basic form data
   const form = useForm<CreateCollaboration>({
