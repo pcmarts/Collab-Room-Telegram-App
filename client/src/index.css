@@ -48,6 +48,33 @@ body {
   padding-bottom: 120px; /* Add padding to prevent content being hidden by fixed buttons */
 }
 
+/* Custom subtle scrollbar styling */
+.subtle-scrollbar {
+  overflow-y: auto;
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(155, 155, 155, 0.5) transparent; /* Firefox */
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.subtle-scrollbar::-webkit-scrollbar {
+  width: 4px; /* Width of the scrollbar */
+}
+
+.subtle-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* Track background */
+}
+
+.subtle-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(155, 155, 155, 0.5); /* Scrollbar color */
+  border-radius: 10px; /* Rounded corners */
+  border: none;
+}
+
+/* When hovering over the scrollbar */
+.subtle-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(155, 155, 155, 0.7); /* Slightly darker on hover */
+}
+
 /* Mobile drag container - used for pages with custom drag mechanics */
 .mobile-drag-container {
   touch-action: pan-y;
