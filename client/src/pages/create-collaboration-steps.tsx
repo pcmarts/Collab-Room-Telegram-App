@@ -421,9 +421,9 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="collab_type"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>What type of collaboration are you looking for?</FormLabel>
-              <div className="flex flex-col gap-2 mt-2">
+            <FormItem className="space-y-1 pt-1">
+              <FormLabel className="mb-1 text-sm">What type of collaboration are you looking for?</FormLabel>
+              <div className="flex flex-col gap-1">
                 {COLLAB_TYPES.map((type) => {
                   const isSelected = field.value === type;
                   return (
@@ -431,14 +431,14 @@ export default function CreateCollaborationSteps({
                       key={type}
                       type="button"
                       variant={isSelected ? "default" : "outline"}
-                      className={`w-full h-auto py-3 px-3 text-sm justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                      className={`w-full h-auto py-2 px-2 text-xs justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
                       onClick={() => {
                         field.onChange(type);
                         handleCollabTypeChange(type);
                       }}
                     >
                       {isSelected && (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-3 w-3">
                           <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
                       )}
@@ -447,8 +447,6 @@ export default function CreateCollaborationSteps({
                   );
                 })}
               </div>
-              <FormDescription className="mt-2">
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -464,14 +462,11 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="topics"
           render={() => (
-            <FormItem>
-              <div className="mb-2">
-                <FormLabel>Select Topics (pick at least one)</FormLabel>
-                <FormDescription>
-                  What topics will this collaboration cover?
-                </FormDescription>
+            <FormItem className="space-y-1 pt-0">
+              <div className="mb-1">
+                <FormLabel className="mb-0 text-sm">Select Topics (pick at least one)</FormLabel>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1">
                 {COLLAB_TOPICS.map((topic) => (
                   <FormField
                     key={topic}
@@ -485,7 +480,7 @@ export default function CreateCollaborationSteps({
                             <Button
                               type="button"
                               variant={isSelected ? "default" : "outline"}
-                              className={`w-full h-auto py-1 px-2 text-xs justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                              className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
                               onClick={() => {
                                 const currentValue = field.value || [];
                                 const updatedTopics = isSelected
@@ -495,7 +490,7 @@ export default function CreateCollaborationSteps({
                               }}
                             >
                               {isSelected && (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
                                   <polyline points="20 6 9 17 4 12"></polyline>
                                 </svg>
                               )}
@@ -519,13 +514,13 @@ export default function CreateCollaborationSteps({
       title: "Date Preference",
       description: "Do you have a specific date in mind?",
       render: () => (
-        <div className="space-y-4">
+        <div className="space-y-2">
           <FormField
             control={form.control}
             name="date_type"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Date Preference</FormLabel>
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Date Preference</FormLabel>
                 <Select 
                   value={field.value} 
                   onValueChange={(value) => {
@@ -537,7 +532,7 @@ export default function CreateCollaborationSteps({
                   }}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-xs">
                       <SelectValue placeholder="Select a date preference" />
                     </SelectTrigger>
                   </FormControl>
@@ -550,9 +545,6 @@ export default function CreateCollaborationSteps({
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  When would you like this collaboration to happen?
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -563,10 +555,10 @@ export default function CreateCollaborationSteps({
               control={form.control}
               name="specific_date"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Select Date</FormLabel>
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs">Select Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} value={field.value || ""} />
+                    <Input type="date" className="h-8 text-xs" {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -585,11 +577,12 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.podcast_name"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>What's your podcast name?</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">What's your podcast name?</FormLabel>
               <FormControl>
                 <Input 
                   placeholder="Enter podcast name" 
+                  className="h-8 text-xs"
                   value={field.value || ""}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -613,12 +606,12 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.podcast_description"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Describe your podcast</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">Describe your podcast</FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="What is your podcast about? Who is your audience?" 
-                  className="min-h-[100px]"
+                  className="min-h-[60px] text-xs"
                   value={field.value || ""}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -626,9 +619,6 @@ export default function CreateCollaborationSteps({
                   name={field.name}
                 />
               </FormControl>
-              <FormDescription>
-                Provide details about your podcast format, audience, and typical content
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -645,11 +635,12 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.podcast_link"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Link to your podcast</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">Link to your podcast</FormLabel>
               <FormControl>
                 <Input
                   placeholder="https://your-podcast-url.com"
+                  className="h-8 text-xs"
                   value={field.value || ""}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -673,15 +664,15 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.estimated_reach"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>How many listeners do you have?</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">How many listeners do you have?</FormLabel>
               <FormControl>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value || ""}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-xs">
                       <SelectValue placeholder="Select podcast reach" />
                     </SelectTrigger>
                   </FormControl>
@@ -710,11 +701,12 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.twitter_handle"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>What's your Twitter/X handle?</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">What's your Twitter/X handle?</FormLabel>
               <FormControl>
                 <Input
                   placeholder="https://x.com/username"
+                  className="h-8 text-xs"
                   value={field.value || "https://x.com/"}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -722,8 +714,8 @@ export default function CreateCollaborationSteps({
                   name={field.name}
                 />
               </FormControl>
-              <FormDescription>
-                Include the full URL (https://x.com/...)
+              <FormDescription className="text-xs">
+                Include the full URL
               </FormDescription>
               <FormMessage />
             </FormItem>
