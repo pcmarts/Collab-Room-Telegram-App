@@ -835,24 +835,32 @@ export default function CreateCollaborationSteps({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Co-Marketing Type(s)</FormLabel>
-              <div className="grid grid-cols-1 gap-2">
-                {TWITTER_COLLAB_TYPES.map((type) => (
-                  <div key={type} className="flex flex-row items-center space-x-3 space-y-0">
-                    <Checkbox
-                      checked={Array.isArray(field.value) && field.value.includes(type)}
-                      onCheckedChange={(checked) => {
+              <div className="grid grid-cols-2 gap-2">
+                {TWITTER_COLLAB_TYPES.map((type) => {
+                  const isSelected = Array.isArray(field.value) && field.value.includes(type);
+                  return (
+                    <Button
+                      key={type}
+                      type="button"
+                      variant={isSelected ? "default" : "outline"}
+                      className={`w-full h-auto py-2 px-3 text-sm justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                      onClick={() => {
                         const currentTypes = Array.isArray(field.value) ? field.value : [];
-                        const updatedTypes = checked
-                          ? [...currentTypes, type]
-                          : currentTypes.filter((t) => t !== type);
+                        const updatedTypes = isSelected
+                          ? currentTypes.filter((t) => t !== type)
+                          : [...currentTypes, type];
                         field.onChange(updatedTypes);
                       }}
-                    />
-                    <FormLabel className="text-sm font-normal cursor-pointer flex-grow">
+                    >
+                      {isSelected && (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      )}
                       {type}
-                    </FormLabel>
-                  </div>
-                ))}
+                    </Button>
+                  );
+                })}
               </div>
               <FormDescription>
                 Select all the types of content you'd like to collaborate on
@@ -1027,39 +1035,30 @@ export default function CreateCollaborationSteps({
   };
 
   return (
-    <div className="container max-w-md mx-auto px-4 py-6">
-      <PageHeader 
-        title="Create Collaboration" 
-        subtitle="Find partners for your next project"
-        backUrl="/dashboard" 
-      />
-      
-      {/* Progress indicator */}
-      <div className="mb-8">
-        {(() => {
-          const activeSteps = getActiveSteps();
-          const totalSteps = activeSteps.length;
-          const currentTitle = activeSteps[currentStep]?.title || "";
-          
-          return (
-            <>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">
-                  Step {currentStep + 1} of {totalSteps}
-                </span>
-                <span className="text-sm font-medium">
-                  {currentTitle}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-primary rounded-full h-2 transition-all duration-300" 
-                  style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
-                ></div>
-              </div>
-            </>
-          );
-        })()}
+    <div className="container max-w-md mx-auto px-4 py-4">
+      {/* Compact header with back button and progress bar */}
+      <div className="flex items-center mb-6">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-8 w-8 p-0 mr-2" 
+          onClick={() => setLocation("/dashboard")}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5"></path>
+            <path d="M12 19l-7-7 7-7"></path>
+          </svg>
+          <span className="sr-only">Back</span>
+        </Button>
+        
+        <div className="flex-1">
+          <div className="w-full bg-gray-200 rounded-full h-1">
+            <div 
+              className="bg-primary rounded-full h-1 transition-all duration-300" 
+              style={{ width: `${((currentStep + 1) / getActiveSteps().length) * 100}%` }}
+            ></div>
+          </div>
+        </div>
       </div>
       
       <Form {...form}>
