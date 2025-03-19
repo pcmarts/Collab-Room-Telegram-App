@@ -86,7 +86,25 @@ export default function CreateCollaborationSteps({
       required_blockchain_networks: [],
       min_company_followers: TWITTER_FOLLOWER_COUNTS[0],
       min_user_followers: TWITTER_FOLLOWER_COUNTS[0],
-      details: {},
+      details: {
+        // Default values for different collaboration types to prevent field bleeding
+        // Twitter spaces defaults
+        space_description: "",
+        space_topic: "",
+        host_twitter_handle: "",
+        host_follower_count: "",
+        
+        // Twitter co-marketing defaults
+        twitter_description: "",
+        twittercomarketing_type: [],
+        
+        // Podcast defaults 
+        podcast_name: "",
+        podcast_description: "",
+        short_description: "", 
+        estimated_reach: "",
+        podcast_link: "",
+      },
     },
   });
 
@@ -162,7 +180,7 @@ export default function CreateCollaborationSteps({
           twittercomarketing_type: ["Tweet"],
           host_twitter_handle: "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0],
-          short_description: "",
+          twitter_description: "", // Changed from short_description to twitter_description
         };
         break;
       default:
@@ -347,7 +365,7 @@ export default function CreateCollaborationSteps({
           twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Tweet"],
           host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) ? rawDetails.host_follower_count : TWITTER_FOLLOWER_COUNTS[0],
-          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
+          twitter_description: typeof rawDetails?.twitter_description === 'string' ? rawDetails.twitter_description : "",
         };
       }
 
