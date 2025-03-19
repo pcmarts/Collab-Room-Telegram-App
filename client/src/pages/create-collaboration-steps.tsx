@@ -466,7 +466,7 @@ export default function CreateCollaborationSteps({
               <div className="mb-1">
                 <FormLabel className="mb-0 text-sm">Select Topics (pick at least one)</FormLabel>
               </div>
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-2 gap-1">
                 {COLLAB_TOPICS.map((topic) => (
                   <FormField
                     key={topic}
@@ -831,25 +831,35 @@ export default function CreateCollaborationSteps({
           render={({ field }) => (
             <FormItem className="space-y-1 pt-0">
               <FormLabel className="mb-0 text-sm">Co-Marketing Type</FormLabel>
-              <Select
-                value={field.value || ""}
-                onValueChange={field.onChange}
-              >
-                <FormControl>
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {TWITTER_COLLAB_TYPES.map((type) => (
-                    <SelectItem key={type} value={type} className="text-xs">
+              <div className="grid grid-cols-2 gap-1">
+                {TWITTER_COLLAB_TYPES.map((type) => {
+                  const isSelected = Array.isArray(field.value) && field.value.includes(type);
+                  return (
+                    <Button
+                      key={type}
+                      type="button"
+                      variant={isSelected ? "default" : "outline"}
+                      className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                      onClick={() => {
+                        const currentValue = Array.isArray(field.value) ? field.value : [];
+                        const updatedTypes = isSelected
+                          ? currentValue.filter((t) => t !== type)
+                          : [...currentValue, type];
+                        field.onChange(updatedTypes.length > 0 ? updatedTypes : ["Tweet"]);
+                      }}
+                    >
+                      {isSelected && (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      )}
                       {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </Button>
+                  );
+                })}
+              </div>
               <FormDescription className="text-xs">
-                Choose primary collaboration type
+                Select collaboration type(s)
               </FormDescription>
               <FormMessage />
             </FormItem>
