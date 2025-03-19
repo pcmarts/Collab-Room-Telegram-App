@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
-import { UserIcon, Users, Building, Star, Bell, Coffee, Calendar, Rocket, Plus, Settings } from 'lucide-react';
+import { UserIcon, Users, Building, Star, Bell, Calendar, Rocket, Plus, Settings } from 'lucide-react';
 import { FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { NetworkStatus } from "@/components/NetworkStatus";
 import type { 

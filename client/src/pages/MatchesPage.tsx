@@ -17,11 +17,11 @@ const DUMMY_MATCHES = [
   },
   {
     id: "2",
-    title: "ETH Lisbon Coffee Chat",
+    title: "Web3 Gaming Blog Post",
     companyName: "CryptoTech Solutions",
-    roleTitle: "Community Manager",
+    roleTitle: "Technical Content Writer",
     matchDate: "March 14, 2025",
-    collaborationType: "Conference",
+    collaborationType: "Content",
     matchedPerson: "Maria Garcia",
   },
   {

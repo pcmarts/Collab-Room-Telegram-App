@@ -19,7 +19,7 @@ import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
 import ApplicationForm from "@/pages/application-form";
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
-import ConferenceCoffees from "@/pages/conference-coffees";
+// Conference coffee feature removed
 import ProfileOverview from "@/pages/profile-overview";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminUsers from "@/pages/admin/users";
@@ -81,7 +81,9 @@ function Router() {
           {/* Existing Routes */}
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
-          <Route path="/conference-coffees" component={ConferenceCoffees} />
+          {/* Conference coffee route removed 
+          <Route path="/conference-coffees" component={null} /> 
+          */}
 
           {/* Admin Routes */}
           <Route path="/admin">

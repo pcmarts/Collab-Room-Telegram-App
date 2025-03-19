@@ -733,6 +733,7 @@ export default function DiscoverPage() {
       case "request":
         return <RequestCard data={card} />;
       case "conference-coffee":
+        // Keeping this case for backward compatibility, but displaying as blog post
         return <BlogPostCollabCard data={card} />;
       case "podcast":
         return <PodcastCard data={card} />;
