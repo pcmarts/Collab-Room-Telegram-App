@@ -93,7 +93,7 @@ export default function CreateCollaborationSteps({
         // Default values for different collaboration types to prevent field bleeding
         // Twitter spaces defaults
         space_description: "",
-        space_topic: "",
+        topic: "",
         host_twitter_handle: "",
         host_follower_count: "",
         
@@ -391,7 +391,7 @@ export default function CreateCollaborationSteps({
         data.details = {
           twitter_handle: typeof rawDetails?.twitter_handle === 'string' ? rawDetails.twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) ? rawDetails.host_follower_count : TWITTER_FOLLOWER_COUNTS[0],
-          space_topic: typeof rawDetails?.space_topic === 'string' ? rawDetails.space_topic : "",
+          topic: typeof rawDetails?.topic === 'string' ? rawDetails.topic : "",
           short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
         };
       } else if (data.collab_type === "Live Stream Guest Appearance") {
@@ -1022,7 +1022,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.twitter_marketing_handle"
+          name="details.twitter_handle"
           render={({ field }) => {
             // Ensure the correct type of value is shown
             const displayValue = Array.isArray(field.value) 
@@ -1033,8 +1033,8 @@ export default function CreateCollaborationSteps({
             React.useEffect(() => {
               if (currentStep === 0) {
                 setTimeout(() => {
-                  form.setValue("details.twitter_marketing_follower_count", "");
-                  form.setValue("details.twitter_marketing_description", "");
+                  form.setValue("details.host_follower_count", "");
+                  form.setValue("details.short_description", "");
                 }, 0);
               }
             // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1075,7 +1075,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.twitter_marketing_follower_count"
+          name="details.host_follower_count"
           render={({ field }) => {
             // Ensure the field value is a string
             const currentValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
@@ -1116,7 +1116,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.twitter_marketing_description"
+          name="details.short_description"
           render={({ field }) => {
             // Just use the existing field value or empty string
             return (
