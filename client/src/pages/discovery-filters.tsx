@@ -819,13 +819,13 @@ export default function DiscoveryFilters() {
                                     </div>
                                     
                                     {expandedCategories.includes(category) && (
-                                      <div className="grid grid-cols-2 gap-2 mt-3">
+                                      <div className="flex flex-col gap-2 mt-3">
                                         {networks.map((network) => (
                                           <Button
                                             key={network}
                                             type="button"
                                             variant={field.value.includes(network) ? "default" : "outline"}
-                                            className="h-auto py-2 px-3 justify-start text-left font-normal whitespace-normal"
+                                            className="h-auto py-2 px-3 justify-start text-left font-normal whitespace-normal w-full"
                                             onClick={() => {
                                               const newChecked = !field.value.includes(network);
                                               return newChecked
