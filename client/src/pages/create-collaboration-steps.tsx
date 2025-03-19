@@ -733,14 +733,14 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.host_follower_count"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>How many followers do you have?</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">How many followers do you have?</FormLabel>
               <Select
                 value={field.value || ""}
                 onValueChange={field.onChange}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8 text-xs">
                     <SelectValue placeholder="Select follower count" />
                   </SelectTrigger>
                 </FormControl>
@@ -768,11 +768,12 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.space_topic"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>What topic will your Twitter Space cover?</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">What topic will your Twitter Space cover?</FormLabel>
               <FormControl>
                 <Input
                   placeholder="Enter Twitter Space topic"
+                  className="h-8 text-xs"
                   value={field.value || ""}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -780,8 +781,8 @@ export default function CreateCollaborationSteps({
                   name={field.name}
                 />
               </FormControl>
-              <FormDescription>
-                A clear, specific topic will attract the right audience
+              <FormDescription className="text-xs">
+                A specific topic attracts the right audience
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -799,12 +800,12 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.short_description"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Describe your Twitter Space</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">Describe your Twitter Space</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Provide details about your Twitter Space format, goals, and target audience"
-                  className="min-h-[100px]"
+                  placeholder="Format, goals, and target audience"
+                  className="min-h-[80px] text-xs"
                   value={field.value || ""}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -828,37 +829,27 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.twittercomarketing_type"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Co-Marketing Type(s)</FormLabel>
-              <div className="grid grid-cols-3 gap-2">
-                {TWITTER_COLLAB_TYPES.map((type) => {
-                  const isSelected = Array.isArray(field.value) && field.value.includes(type);
-                  return (
-                    <Button
-                      key={type}
-                      type="button"
-                      variant={isSelected ? "default" : "outline"}
-                      className={`w-full h-auto py-1 px-2 text-xs justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                      onClick={() => {
-                        const currentTypes = Array.isArray(field.value) ? field.value : [];
-                        const updatedTypes = isSelected
-                          ? currentTypes.filter((t) => t !== type)
-                          : [...currentTypes, type];
-                        field.onChange(updatedTypes);
-                      }}
-                    >
-                      {isSelected && (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      )}
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">Co-Marketing Type</FormLabel>
+              <Select
+                value={field.value || ""}
+                onValueChange={field.onChange}
+              >
+                <FormControl>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {TWITTER_COLLAB_TYPES.map((type) => (
+                    <SelectItem key={type} value={type} className="text-xs">
                       {type}
-                    </Button>
-                  );
-                })}
-              </div>
-              <FormDescription>
-                Select all the types of content you'd like to collaborate on
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription className="text-xs">
+                Choose primary collaboration type
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -876,11 +867,12 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.host_twitter_handle"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>What's your Twitter/X handle?</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">What's your Twitter/X handle?</FormLabel>
               <FormControl>
                 <Input
                   placeholder="https://x.com/username"
+                  className="h-8 text-xs"
                   value={field.value || "https://x.com/"}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -888,8 +880,8 @@ export default function CreateCollaborationSteps({
                   name={field.name}
                 />
               </FormControl>
-              <FormDescription>
-                Include the full URL (https://x.com/...)
+              <FormDescription className="text-xs">
+                Include the full URL
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -907,14 +899,14 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.host_follower_count"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>How many followers do you have?</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">How many followers do you have?</FormLabel>
               <Select
                 value={field.value || ""}
                 onValueChange={field.onChange}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8 text-xs">
                     <SelectValue placeholder="Select follower count" />
                   </SelectTrigger>
                 </FormControl>
@@ -942,12 +934,12 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.short_description"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Describe your co-marketing idea</FormLabel>
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">Describe your co-marketing idea</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="What kind of content would you like to create together? What are your goals?"
-                  className="min-h-[100px]"
+                  placeholder="Content ideas and goals"
+                  className="min-h-[80px] text-xs"
                   value={field.value || ""}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -955,8 +947,8 @@ export default function CreateCollaborationSteps({
                   name={field.name}
                 />
               </FormControl>
-              <FormDescription>
-                The more details you provide, the easier it will be to find a great match
+              <FormDescription className="text-xs">
+                More details help find better matches
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -974,7 +966,7 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="is_free_collab"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center space-x-3 space-y-0 bg-gray-50 p-4 rounded-md">
+            <FormItem className="flex flex-row items-start space-x-2 space-y-0 pt-0">
               <FormControl>
                 <Checkbox
                   checked={field.value}
@@ -983,7 +975,7 @@ export default function CreateCollaborationSteps({
                     if (!checked) {
                       toast({
                         title: "Free collaborations only",
-                        description: "Only free collaborations are allowed on our platform.",
+                        description: "Only free collaborations are allowed.",
                         variant: "destructive",
                       });
                     }
@@ -991,10 +983,10 @@ export default function CreateCollaborationSteps({
                   disabled={true}
                 />
               </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>Free Collaboration (Required)</FormLabel>
-                <FormDescription>
-                  All collaborations on our platform must be free
+              <div className="leading-none">
+                <FormLabel className="mb-0 text-sm">Free Collaboration (Required)</FormLabel>
+                <FormDescription className="text-xs">
+                  All collaborations must be free
                 </FormDescription>
               </div>
             </FormItem>
