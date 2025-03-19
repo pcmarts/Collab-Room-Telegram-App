@@ -176,10 +176,10 @@ export default function CreateCollaborationSteps({
           break;
           
         case "Twitter Spaces Guest":
+          // Use consistent field names for Twitter Spaces
           newDetails.twitter_handle = "https://x.com/";
           newDetails.host_follower_count = TWITTER_FOLLOWER_COUNTS[0];
-          newDetails.topic = "";
-          newDetails.short_description = "";
+          newDetails.short_description = ""; // Single field for topic description
           break;
           
         case "Live Stream Guest Appearance":
@@ -879,29 +879,24 @@ export default function CreateCollaborationSteps({
       shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
     },
     {
-      id: "twitter_topic",
-      title: "Twitter Space Topic",
-      description: "What topic will your Twitter Space cover?",
+      id: "twitter_space_info",
+      title: "Twitter Space Information",
+      description: "Tell us about your Twitter Space",
       render: () => (
-        <FormField
-          control={form.control}
-          name="details.short_description"
-          render={({ field }) => {
-            // Ensure field value is always a string
-            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
-            
-            return (
+        <div className="space-y-4">
+          {/* Twitter Space Topic Field */}
+          <FormField
+            control={form.control}
+            name="details.short_description"
+            render={({ field }) => (
               <FormItem className="space-y-1 pt-0">
                 <FormLabel className="mb-0 text-sm">What topic will your Twitter Space cover?</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Enter Twitter Space topic"
                     className="h-8 text-xs"
-                    value={displayValue}
+                    value={field.value || ""}
                     onChange={(e) => field.onChange(e.target.value)}
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                    name={field.name}
                   />
                 </FormControl>
                 <FormDescription className="text-xs">
@@ -909,13 +904,12 @@ export default function CreateCollaborationSteps({
                 </FormDescription>
                 <FormMessage />
               </FormItem>
-            );
-          }}
-        />
+            )}
+          />
+        </div>
       ),
       shouldShow: () => selectedCollabType === "Twitter Spaces Guest"
     },
-    // Removed Twitter Space Description field to fix hooks order issue
     {
       id: "twitter_comarketing_type",
       title: "Co-Marketing Type",
@@ -996,16 +990,7 @@ export default function CreateCollaborationSteps({
               ? "https://x.com/" 
               : (typeof field.value === 'string' ? field.value : "https://x.com/");
             
-            // When this step is shown, do a one-time reset
-            React.useEffect(() => {
-              if (currentStep === 0) {
-                setTimeout(() => {
-                  form.setValue("details.host_follower_count", "");
-                  form.setValue("details.short_description", "");
-                }, 0);
-              }
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            }, [currentStep]);
+            // Removed useEffect to prevent hook ordering issues
             
             return (
               <FormItem className="space-y-1 pt-0">
