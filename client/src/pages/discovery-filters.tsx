@@ -386,7 +386,7 @@ export default function DiscoveryFilters() {
         <PageHeader 
           title="Discovery Filters" 
           subtitle="Customize what collaboration types appear in your discover cards"
-          backUrl="/discovery"
+          backUrl="/discover"
         />
         
         <Form {...form}>
