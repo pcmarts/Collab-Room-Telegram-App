@@ -288,63 +288,66 @@ export default function CreateCollaborationSteps({
 
       // Ensure that details has all required fields based on collaboration type
       // This prevents validation errors when submitting the form
-      if (data.collab_type === "Podcast Guest Appearance" && typeof data.details === 'object') {
+      // Using a type assertion to ensure the details field is properly typed for each collab type
+      const rawDetails = data.details as Record<string, any>;
+      
+      if (data.collab_type === "Podcast Guest Appearance") {
         data.details = {
-          podcast_name: data.details.podcast_name || "",
-          short_description: data.details.short_description || "",
-          podcast_description: data.details.podcast_description || "",
-          podcast_link: data.details.podcast_link || "",
-          estimated_reach: data.details.estimated_reach || AUDIENCE_SIZE_RANGES[0],
+          podcast_name: typeof rawDetails?.podcast_name === 'string' ? rawDetails.podcast_name : "",
+          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
+          podcast_description: typeof rawDetails?.podcast_description === 'string' ? rawDetails.podcast_description : "",
+          podcast_link: typeof rawDetails?.podcast_link === 'string' ? rawDetails.podcast_link : "",
+          estimated_reach: AUDIENCE_SIZE_RANGES.includes(rawDetails?.estimated_reach) ? rawDetails.estimated_reach : AUDIENCE_SIZE_RANGES[0],
         };
-      } else if (data.collab_type === "Twitter Spaces Guest" && typeof data.details === 'object') {
+      } else if (data.collab_type === "Twitter Spaces Guest") {
         data.details = {
-          twitter_handle: data.details.twitter_handle || "https://x.com/",
-          host_follower_count: data.details.host_follower_count || TWITTER_FOLLOWER_COUNTS[0],
-          space_topic: data.details.space_topic || "",
-          short_description: data.details.short_description || "",
+          twitter_handle: typeof rawDetails?.twitter_handle === 'string' ? rawDetails.twitter_handle : "https://x.com/",
+          host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) ? rawDetails.host_follower_count : TWITTER_FOLLOWER_COUNTS[0],
+          space_topic: typeof rawDetails?.space_topic === 'string' ? rawDetails.space_topic : "",
+          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
         };
-      } else if (data.collab_type === "Live Stream Guest Appearance" && typeof data.details === 'object') {
+      } else if (data.collab_type === "Live Stream Guest Appearance") {
         data.details = {
-          title: data.details.title || "",
-          short_description: data.details.short_description || "",
-          date_selection: data.details.date_selection || "any_future_date",
-          specific_date: data.details.specific_date || "",
-          previous_stream_link: data.details.previous_stream_link || "",
-          expected_audience_size: data.details.expected_audience_size || AUDIENCE_SIZE_RANGES[0],
-          topics: data.details.topics || [],
+          title: typeof rawDetails?.title === 'string' ? rawDetails.title : "",
+          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
+          date_selection: typeof rawDetails?.date_selection === 'string' ? rawDetails.date_selection : "any_future_date",
+          specific_date: typeof rawDetails?.specific_date === 'string' ? rawDetails.specific_date : "",
+          previous_stream_link: typeof rawDetails?.previous_stream_link === 'string' ? rawDetails.previous_stream_link : "",
+          expected_audience_size: AUDIENCE_SIZE_RANGES.includes(rawDetails?.expected_audience_size) ? rawDetails.expected_audience_size : AUDIENCE_SIZE_RANGES[0],
+          topics: Array.isArray(rawDetails?.topics) ? rawDetails.topics : [],
         };
-      } else if (data.collab_type === "Report & Research Feature" && typeof data.details === 'object') {
+      } else if (data.collab_type === "Report & Research Feature") {
         data.details = {
-          research_topic: data.details.research_topic || [],
-          target_audience: data.details.target_audience || "",
-          estimated_release_date: data.details.estimated_release_date || "",
+          research_topic: Array.isArray(rawDetails?.research_topic) ? rawDetails.research_topic : [],
+          target_audience: typeof rawDetails?.target_audience === 'string' ? rawDetails.target_audience : "",
+          estimated_release_date: typeof rawDetails?.estimated_release_date === 'string' ? rawDetails.estimated_release_date : "",
         };
-      } else if (data.collab_type === "Newsletter Feature" && typeof data.details === 'object') {
+      } else if (data.collab_type === "Newsletter Feature") {
         data.details = {
-          newsletter_name: data.details.newsletter_name || "",
-          short_description: data.details.short_description || "",
-          newsletter_description: data.details.newsletter_description || "",
-          newsletter_url: data.details.newsletter_url || "",
-          audience_reach: data.details.audience_reach || AUDIENCE_SIZE_RANGES[0],
-          total_subscribers: data.details.total_subscribers || AUDIENCE_SIZE_RANGES[0],
-          topics: data.details.topics || [],
+          newsletter_name: typeof rawDetails?.newsletter_name === 'string' ? rawDetails.newsletter_name : "",
+          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
+          newsletter_description: typeof rawDetails?.newsletter_description === 'string' ? rawDetails.newsletter_description : "",
+          newsletter_url: typeof rawDetails?.newsletter_url === 'string' ? rawDetails.newsletter_url : "",
+          audience_reach: AUDIENCE_SIZE_RANGES.includes(rawDetails?.audience_reach) ? rawDetails.audience_reach : AUDIENCE_SIZE_RANGES[0],
+          total_subscribers: AUDIENCE_SIZE_RANGES.includes(rawDetails?.total_subscribers) ? rawDetails.total_subscribers : AUDIENCE_SIZE_RANGES[0],
+          topics: Array.isArray(rawDetails?.topics) ? rawDetails.topics : [],
         };
-      } else if (data.collab_type === "Blog Post Feature" && typeof data.details === 'object') {
+      } else if (data.collab_type === "Blog Post Feature") {
         data.details = {
-          blog_topic: data.details.blog_topic || "",
-          blog_link: data.details.blog_link || "",
-          blog_name: data.details.blog_name || "",
-          blog_url: data.details.blog_url || "",
-          short_description: data.details.short_description || "",
-          est_readers: data.details.est_readers || AUDIENCE_SIZE_RANGES[0],
-          estimated_release_date: data.details.estimated_release_date || "",
+          blog_topic: typeof rawDetails?.blog_topic === 'string' ? rawDetails.blog_topic : "",
+          blog_link: typeof rawDetails?.blog_link === 'string' ? rawDetails.blog_link : "",
+          blog_name: typeof rawDetails?.blog_name === 'string' ? rawDetails.blog_name : "",
+          blog_url: typeof rawDetails?.blog_url === 'string' ? rawDetails.blog_url : "",
+          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
+          est_readers: AUDIENCE_SIZE_RANGES.includes(rawDetails?.est_readers) ? rawDetails.est_readers : AUDIENCE_SIZE_RANGES[0],
+          estimated_release_date: typeof rawDetails?.estimated_release_date === 'string' ? rawDetails.estimated_release_date : "",
         };
-      } else if (data.collab_type === "Co-Marketing on Twitter" && typeof data.details === 'object') {
+      } else if (data.collab_type === "Co-Marketing on Twitter") {
         data.details = {
-          twittercomarketing_type: data.details.twittercomarketing_type || ["Tweet"],
-          host_twitter_handle: data.details.host_twitter_handle || "https://x.com/",
-          host_follower_count: data.details.host_follower_count || TWITTER_FOLLOWER_COUNTS[0],
-          short_description: data.details.short_description || "",
+          twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Tweet"],
+          host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
+          host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) ? rawDetails.host_follower_count : TWITTER_FOLLOWER_COUNTS[0],
+          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
         };
       }
 
@@ -576,23 +579,28 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="details.podcast_name"
-          render={({ field }) => (
-            <FormItem className="space-y-1 pt-0">
-              <FormLabel className="mb-0 text-sm">What's your podcast name?</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Enter podcast name" 
-                  className="h-8 text-xs"
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                  name={field.name}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">What's your podcast name?</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter podcast name" 
+                    className="h-8 text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       ),
       shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
