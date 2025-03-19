@@ -985,11 +985,16 @@ export default function CreateCollaborationSteps({
               ? "https://x.com/" 
               : (typeof field.value === 'string' ? field.value : "https://x.com/");
             
-            // On mount, reset other fields to prevent bleeding
+            // When this step is shown, do a one-time reset
             React.useEffect(() => {
-              form.setValue("details.twitter_marketing_follower_count", "");
-              form.setValue("details.twitter_marketing_description", "");
-            }, []);
+              if (currentStep === 0) {
+                setTimeout(() => {
+                  form.setValue("details.twitter_marketing_follower_count", "");
+                  form.setValue("details.twitter_marketing_description", "");
+                }, 0);
+              }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+            }, [currentStep]);
             
             return (
               <FormItem className="space-y-1 pt-0">
@@ -1002,10 +1007,6 @@ export default function CreateCollaborationSteps({
                     onChange={(e) => {
                       // Make sure we only set string values
                       field.onChange(e.target.value);
-                      
-                      // Reset other fields when this one changes
-                      form.setValue("details.twitter_marketing_follower_count", "");
-                      form.setValue("details.twitter_marketing_description", "");
                     }}
                     onBlur={field.onBlur}
                     ref={field.ref}
@@ -1032,8 +1033,7 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.twitter_marketing_follower_count"
           render={({ field }) => {
-            // Ensure the field value is a string and do a force reset of description fields
-            form.setValue("details.twitter_marketing_description", "");
+            // Ensure the field value is a string
             const currentValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
             
             return (
@@ -1049,8 +1049,6 @@ export default function CreateCollaborationSteps({
                         variant={isSelected ? "default" : "outline"}
                         className={`w-full h-8 py-1 px-2 text-xs justify-center ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
                         onClick={() => {
-                          // Reset any leftover description value
-                          form.setValue("details.twitter_marketing_description", "");
                           field.onChange(count);
                         }}
                       >
@@ -1076,14 +1074,7 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.twitter_marketing_description"
           render={({ field }) => {
-            // Completely reset the field to ensure no bleeding
-            const fieldValue = "";
-            
-            // On mount, force reset the field to empty
-            React.useEffect(() => {
-              form.setValue("details.twitter_marketing_description", "");
-            }, []);
-            
+            // Just use the existing field value or empty string
             return (
               <FormItem className="space-y-1 pt-0">
                 <FormLabel className="mb-0 text-sm">Describe your co-marketing idea</FormLabel>
