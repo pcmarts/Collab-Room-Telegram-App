@@ -468,32 +468,37 @@ export default function CreateCollaborationSteps({
                   What topics will this collaboration cover?
                 </FormDescription>
               </div>
-              <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
                 {COLLAB_TOPICS.map((topic) => (
                   <FormField
                     key={topic}
                     control={form.control}
                     name="topics"
                     render={({ field }) => {
+                      const isSelected = field.value?.includes(topic);
                       return (
-                        <FormItem
-                          key={topic}
-                          className="flex flex-row items-center space-x-3 space-y-0"
-                        >
+                        <FormItem key={topic} className="flex-1">
                           <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(topic)}
-                              onCheckedChange={(checked) => {
-                                const updatedTopics = checked
-                                  ? [...(field.value || []), topic]
-                                  : (field.value || [])?.filter((t) => t !== topic);
+                            <Button
+                              type="button"
+                              variant={isSelected ? "default" : "outline"}
+                              className={`w-full h-auto py-2 px-3 text-sm justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                              onClick={() => {
+                                const currentValue = field.value || [];
+                                const updatedTopics = isSelected
+                                  ? currentValue.filter((t) => t !== topic)
+                                  : [...currentValue, topic];
                                 field.onChange(updatedTopics);
                               }}
-                            />
+                            >
+                              {isSelected && (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                              )}
+                              {topic}
+                            </Button>
                           </FormControl>
-                          <FormLabel className="text-sm font-normal cursor-pointer flex-grow">
-                            {topic}
-                          </FormLabel>
                         </FormItem>
                       );
                     }}
