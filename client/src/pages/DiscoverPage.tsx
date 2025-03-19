@@ -18,19 +18,19 @@ import { NetworkStatus } from "@/components/NetworkStatus";
 import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
 
-// Conference Coffee Card
-const ConferenceCoffeeCard = ({ data }) => {
+// Blog Post Collaboration Card (Replacing Conference Coffee Card)
+const BlogPostCollabCard = ({ data }) => {
   // Handle data.details (JSON field)
   const details = data.details || {};
   
   return (
     <div className="space-y-2">
       <Badge variant="outline" className="bg-secondary/10">
-        <Coffee className="w-3 h-3 mr-1" />
-        Coffee Chat
+        <FileText className="w-3 h-3 mr-1" />
+        Blog Post
       </Badge>
       <h3 className="text-lg font-semibold leading-snug">
-        {details.conference_name || data.conferenceName || "Conference"}
+        {details.blog_title || data.blogTitle || "Guest Blog Opportunity"}
       </h3>
       <div className="space-y-0.5">
         <p className="text-sm">{data.companyName}</p>
@@ -41,7 +41,7 @@ const ConferenceCoffeeCard = ({ data }) => {
       <div className="flex items-center space-x-2 text-xs text-muted-foreground">
         <Calendar className="w-3 h-3" />
         <span>
-          {details.conference_date || data.conferenceDate || 
+          {details.publication_date || data.publicationDate || 
             (details.specific_date ? details.specific_date : "TBD")}
         </span>
       </div>
@@ -437,16 +437,16 @@ const RequestCard = ({ data }) => (
 
 // Updated dummy data structure with all card types
 const DUMMY_CARDS = [
-  // Conference Coffee example
+  // Blog Post Collaboration example
   {
     id: "1",
-    type: "conference-coffee",
-    conferenceName: "ETH Lisbon 2025",
+    type: "conference-coffee", // Keeping type for compatibility with existing code
+    blogTitle: "Web3 Gaming Innovations in 2025",
     companyName: "CryptoTech Solutions",
-    role: "Community Manager",
-    conferenceDate: "April 15-17, 2025",
+    role: "Technical Content Writer",
+    publicationDate: "April 15, 2025",
     preferredTopics: ["DeFi", "NFT Gaming", "Web3 Social"],
-    description: "Looking to connect with fellow Web3 enthusiasts during ETH Lisbon",
+    description: "Looking for guest content writer for our technical blog on blockchain gaming",
     companyTwitter: "cryptotechsol",
     twitterFollowers: "12.8K",
     companyLinkedIn: "cryptotech-solutions",
@@ -733,7 +733,7 @@ export default function DiscoverPage() {
       case "request":
         return <RequestCard data={card} />;
       case "conference-coffee":
-        return <ConferenceCoffeeCard data={card} />;
+        return <BlogPostCollabCard data={card} />;
       case "podcast":
         return <PodcastCard data={card} />;
       case "twitter-spaces":
