@@ -488,9 +488,9 @@ export default function DiscoveryFilters() {
                   <div>
                     <div className="flex justify-between items-center mb-4">
                       <div>
-                        <h3 className="text-base font-medium">Filter by Company Twitter Followers</h3>
+                        <h3 className="text-base font-medium">Filter by Company Followers</h3>
                         <p className="text-sm text-gray-500">
-                          Only show collaborations from companies with at least this many followers
+                          Only show collaborations from companies with at least this many social media followers
                         </p>
                       </div>
                       <Switch 
