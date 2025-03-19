@@ -67,47 +67,6 @@ export default function CreateCollaborationSteps({
   
   // Add reference to track previous step
   const prevStepRef = useRef(currentStep);
-  
-  // Monitor step changes to handle field resets
-  useEffect(() => {
-    // Don't run on first render
-    if (prevStepRef.current === currentStep) {
-      return;
-    }
-    
-    // Store the current step for next comparison
-    prevStepRef.current = currentStep;
-    
-    // Get all active form steps
-    const activeSteps = getActiveSteps();
-    if (currentStep >= activeSteps.length) {
-      return;
-    }
-    
-    // Get current step ID
-    const currentStepId = activeSteps[currentStep].id;
-    
-    // Handle Twitter co-marketing field resets
-    if (selectedCollabType === "Co-Marketing on Twitter") {
-      if (currentStepId === "twitter_comarketing_type") {
-        // Reset the Twitter marketing type field
-        const twitterDetails = form.getValues("details") as Record<string, any>;
-        form.setValue("details.twittercomarketing_type", twitterDetails.twittercomarketing_type || ["Tweet"]);
-      }
-      else if (currentStepId === "twitter_comarketing_handle") {
-        // Ensure the Twitter handle field has proper value
-        form.setValue("details.host_twitter_handle", "https://x.com/");
-      }
-      else if (currentStepId === "twitter_comarketing_followers") {
-        // Ensure follower count has a default value
-        form.setValue("details.host_follower_count", TWITTER_FOLLOWER_COUNTS[0]);
-      }
-      else if (currentStepId === "twitter_comarketing_description") {
-        // Clear description field to prevent bleeding
-        form.setValue("details.short_description", "");
-      }
-    }
-  }, [currentStep, selectedCollabType, form]);
 
   // Initialize with basic form data
   const form = useForm<CreateCollaboration>({
@@ -151,6 +110,47 @@ export default function CreateCollaborationSteps({
       },
     },
   });
+
+  // Monitor step changes to handle field resets
+  useEffect(() => {
+    // Don't run on first render
+    if (prevStepRef.current === currentStep) {
+      return;
+    }
+    
+    // Store the current step for next comparison
+    prevStepRef.current = currentStep;
+    
+    // Get all active form steps
+    const activeSteps = getActiveSteps();
+    if (currentStep >= activeSteps.length) {
+      return;
+    }
+    
+    // Get current step ID
+    const currentStepId = activeSteps[currentStep].id;
+    
+    // Handle Twitter co-marketing field resets
+    if (selectedCollabType === "Co-Marketing on Twitter") {
+      if (currentStepId === "twitter_comarketing_type") {
+        // Reset the Twitter marketing type field
+        const twitterDetails = form.getValues("details") as Record<string, any>;
+        form.setValue("details.twittercomarketing_type", twitterDetails.twittercomarketing_type || ["Tweet"]);
+      }
+      else if (currentStepId === "twitter_comarketing_handle") {
+        // Ensure the Twitter handle field has proper value
+        form.setValue("details.twitter_handle", "https://x.com/");
+      }
+      else if (currentStepId === "twitter_comarketing_followers") {
+        // Ensure follower count has a default value
+        form.setValue("details.host_follower_count", TWITTER_FOLLOWER_COUNTS[0]);
+      }
+      else if (currentStepId === "twitter_comarketing_description") {
+        // Clear description field to prevent bleeding
+        form.setValue("details.short_description", "");
+      }
+    }
+  }, [currentStep, selectedCollabType, form]);
 
   // When collaboration type changes
   const handleCollabTypeChange = (value: string) => {
@@ -220,7 +220,7 @@ export default function CreateCollaborationSteps({
           
         case "Co-Marketing on Twitter":
           newDetails.twittercomarketing_type = ["Tweet"];
-          newDetails.host_twitter_handle = "https://x.com/";
+          newDetails.twitter_handle = "https://x.com/";
           newDetails.host_follower_count = TWITTER_FOLLOWER_COUNTS[0];
           newDetails.short_description = "";
           break;
@@ -433,12 +433,12 @@ export default function CreateCollaborationSteps({
       } else if (data.collab_type === "Co-Marketing on Twitter") {
         data.details = {
           twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Tweet"],
-          host_twitter_handle: typeof rawDetails?.twitter_marketing_handle === 'string' ? rawDetails.twitter_marketing_handle : "https://x.com/",
-          host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.twitter_marketing_follower_count) 
-            ? rawDetails.twitter_marketing_follower_count 
+          twitter_handle: typeof rawDetails?.twitter_handle === 'string' ? rawDetails.twitter_handle : "https://x.com/",
+          host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) 
+            ? rawDetails.host_follower_count 
             : TWITTER_FOLLOWER_COUNTS[0],
-          short_description: typeof rawDetails?.twitter_marketing_description === 'string' 
-            ? rawDetails.twitter_marketing_description 
+          short_description: typeof rawDetails?.short_description === 'string' 
+            ? rawDetails.short_description 
             : "",
         };
       }
