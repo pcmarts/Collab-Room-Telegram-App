@@ -423,7 +423,7 @@ export default function CreateCollaborationSteps({
           render={({ field }) => (
             <FormItem>
               <FormLabel>What type of collaboration are you looking for?</FormLabel>
-              <div className="grid grid-cols-2 gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-2">
                 {COLLAB_TYPES.map((type) => {
                   const isSelected = field.value === type;
                   return (
@@ -448,7 +448,6 @@ export default function CreateCollaborationSteps({
                 })}
               </div>
               <FormDescription className="mt-2">
-                Choose the type that best describes what you want to create
               </FormDescription>
               <FormMessage />
             </FormItem>
