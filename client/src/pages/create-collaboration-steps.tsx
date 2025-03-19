@@ -468,7 +468,7 @@ export default function CreateCollaborationSteps({
                   What topics will this collaboration cover?
                 </FormDescription>
               </div>
-              <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-2">
                 {COLLAB_TOPICS.map((topic) => (
                   <FormField
                     key={topic}
