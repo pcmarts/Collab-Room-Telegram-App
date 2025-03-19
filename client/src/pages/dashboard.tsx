@@ -198,20 +198,13 @@ export default function Dashboard() {
 
       <div className="p-4 space-y-4 pb-safe">
         {/* Main Actions */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="mb-6">
           <Button
-            className="h-24 flex-col bg-primary text-primary-foreground"
+            className="h-24 flex-col bg-primary text-primary-foreground w-full"
             onClick={() => setLocation('/marketing-collabs-new')}
           >
             <Rocket className="h-6 w-6 mb-2" />
             <span className="text-sm font-medium">Marketing Collabs</span>
-          </Button>
-          <Button
-            className="h-24 flex-col bg-primary text-primary-foreground"
-            onClick={() => setLocation('/conference-coffees')}
-          >
-            <Coffee className="h-6 w-6 mb-2" />
-            <span className="text-sm font-medium">Conferences</span>
           </Button>
         </div>
 
