@@ -194,6 +194,7 @@ export default function CreateCollaborationSteps({
           
         case "Report & Research Feature":
           newDetails.research_topic = [];
+          newDetails.short_description = "";
           newDetails.target_audience = "";
           newDetails.estimated_release_date = "";
           break;
@@ -203,7 +204,7 @@ export default function CreateCollaborationSteps({
           newDetails.topics = [];
           newDetails.audience_reach = AUDIENCE_SIZE_RANGES[0];
           newDetails.short_description = "";
-          newDetails.newsletter_description = "";
+          // Removed newsletter_description field in favor of short_description
           newDetails.newsletter_url = "";
           newDetails.total_subscribers = AUDIENCE_SIZE_RANGES[0];
           break;
@@ -396,7 +397,7 @@ export default function CreateCollaborationSteps({
         data.details = {
           podcast_name: typeof rawDetails?.podcast_name === 'string' ? rawDetails.podcast_name : "",
           short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
-          podcast_description: typeof rawDetails?.podcast_description === 'string' ? rawDetails.podcast_description : "",
+          // Removed podcast_description field in favor of short_description
           podcast_link: typeof rawDetails?.podcast_link === 'string' ? rawDetails.podcast_link : "",
           estimated_reach: AUDIENCE_SIZE_RANGES.includes(rawDetails?.estimated_reach) ? rawDetails.estimated_reach : AUDIENCE_SIZE_RANGES[0],
         };
@@ -434,13 +435,14 @@ export default function CreateCollaborationSteps({
         data.details = {
           research_topic: Array.isArray(rawDetails?.research_topic) ? rawDetails.research_topic : [],
           target_audience: typeof rawDetails?.target_audience === 'string' ? rawDetails.target_audience : "",
+          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
           estimated_release_date: typeof rawDetails?.estimated_release_date === 'string' ? rawDetails.estimated_release_date : "",
         };
       } else if (data.collab_type === "Newsletter Feature") {
         data.details = {
           newsletter_name: typeof rawDetails?.newsletter_name === 'string' ? rawDetails.newsletter_name : "",
           short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
-          newsletter_description: typeof rawDetails?.newsletter_description === 'string' ? rawDetails.newsletter_description : "",
+          // Removed newsletter_description field in favor of short_description
           newsletter_url: typeof rawDetails?.newsletter_url === 'string' ? rawDetails.newsletter_url : "",
           audience_reach: AUDIENCE_SIZE_RANGES.includes(rawDetails?.audience_reach) ? rawDetails.audience_reach : AUDIENCE_SIZE_RANGES[0],
           total_subscribers: AUDIENCE_SIZE_RANGES.includes(rawDetails?.total_subscribers) ? rawDetails.total_subscribers : AUDIENCE_SIZE_RANGES[0],
