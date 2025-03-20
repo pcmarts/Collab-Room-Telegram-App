@@ -338,86 +338,97 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           
           {/* Collaboration-specific details based on type */}
           {collab.details && typeof collab.details === 'object' && (
-            <div className="mb-4 p-3 bg-gray-50 rounded-md">
-              {/* Podcast details */}
-              {collab.collab_type === 'Podcast' && 'podcast_name' in collab.details && (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Podcast: {collab.details.podcast_name}</p>
-                  {'estimated_reach' in collab.details && collab.details.estimated_reach && (
-                    <p className="text-xs text-gray-600">Audience: {collab.details.estimated_reach}</p>
+            <>
+              {/* Only show the box if there is actual content to display */}
+              {((collab.collab_type === 'Podcast' && 'podcast_name' in collab.details) ||
+                (collab.collab_type === 'Twitter Space') ||
+                (collab.collab_type === 'Twitter Co-Marketing') ||
+                (collab.collab_type === 'Co-Marketing on Twitter') ||
+                (collab.collab_type === 'Newsletter' && 'newsletter_name' in collab.details) ||
+                ('expectations' in collab.details && collab.details.expectations) ||
+                (collab.topics && collab.topics.length > 0)) && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-md">
+                  {/* Podcast details */}
+                  {collab.collab_type === 'Podcast' && 'podcast_name' in collab.details && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Podcast: {collab.details.podcast_name}</p>
+                      {'estimated_reach' in collab.details && collab.details.estimated_reach && (
+                        <p className="text-xs text-gray-600">Audience: {collab.details.estimated_reach}</p>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-              
-              {/* Twitter Spaces details */}
-              {collab.collab_type === 'Twitter Space' && (
-                <div className="space-y-2">
-                  {'host_handle' in collab.details && collab.details.host_handle && (
-                    <p className="text-sm font-medium">Host: {collab.details.host_handle}</p>
+                  
+                  {/* Twitter Spaces details */}
+                  {collab.collab_type === 'Twitter Space' && (
+                    <div className="space-y-2">
+                      {'host_handle' in collab.details && collab.details.host_handle && (
+                        <p className="text-sm font-medium">Host: {collab.details.host_handle}</p>
+                      )}
+                      {'topic' in collab.details && collab.details.topic && (
+                        <p className="text-xs text-gray-600">Topic: {collab.details.topic}</p>
+                      )}
+                      {'host_followers' in collab.details && collab.details.host_followers && (
+                        <p className="text-xs text-gray-600">Host Followers: {collab.details.host_followers}</p>
+                      )}
+                      {collab.topics && collab.topics.length > 0 && (
+                        <div className="mt-1">
+                          <p className="text-xs font-medium">Topics:</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {collab.topics.map((topic, idx) => (
+                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-xs rounded-full">
+                                {topic}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
-                  {'topic' in collab.details && collab.details.topic && (
-                    <p className="text-xs text-gray-600">Topic: {collab.details.topic}</p>
+                  
+                  {/* Twitter Co-Marketing details */}
+                  {(collab.collab_type === 'Twitter Co-Marketing' || collab.collab_type === 'Co-Marketing on Twitter') && (
+                    <div className="space-y-2">
+                      {'account_handle' in collab.details && collab.details.account_handle && (
+                        <p className="text-sm font-medium">Account: {collab.details.account_handle}</p>
+                      )}
+                      {'followers_count' in collab.details && collab.details.followers_count && (
+                        <p className="text-xs text-gray-600">Follower Count: {collab.details.followers_count}</p>
+                      )}
+                      {collab.topics && collab.topics.length > 0 && (
+                        <div className="mt-1">
+                          <p className="text-xs font-medium">Topics:</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {collab.topics.map((topic, idx) => (
+                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-xs rounded-full">
+                                {topic}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
-                  {'host_followers' in collab.details && collab.details.host_followers && (
-                    <p className="text-xs text-gray-600">Host Followers: {collab.details.host_followers}</p>
+                  
+                  {/* Newsletter details */}
+                  {collab.collab_type === 'Newsletter' && 'newsletter_name' in collab.details && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Newsletter: {collab.details.newsletter_name}</p>
+                      {'total_subscribers' in collab.details && collab.details.total_subscribers && (
+                        <p className="text-xs text-gray-600">Subscribers: {collab.details.total_subscribers}</p>
+                      )}
+                    </div>
                   )}
-                  {collab.topics && collab.topics.length > 0 && (
-                    <div className="mt-1">
-                      <p className="text-xs font-medium">Topics:</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {collab.topics.map((topic, idx) => (
-                          <span key={idx} className="px-2 py-0.5 bg-gray-100 text-xs rounded-full">
-                            {topic}
-                          </span>
-                        ))}
-                      </div>
+                  
+                  {/* Show any expectations if available */}
+                  {'expectations' in collab.details && collab.details.expectations && (
+                    <div className="mt-2">
+                      <p className="text-xs font-medium">Expectations:</p>
+                      <p className="text-xs text-gray-600">{collab.details.expectations}</p>
                     </div>
                   )}
                 </div>
               )}
-              
-              {/* Twitter Co-Marketing details */}
-              {collab.collab_type === 'Twitter Co-Marketing' && (
-                <div className="space-y-2">
-                  {'account_handle' in collab.details && collab.details.account_handle && (
-                    <p className="text-sm font-medium">Account: {collab.details.account_handle}</p>
-                  )}
-                  {'followers_count' in collab.details && collab.details.followers_count && (
-                    <p className="text-xs text-gray-600">Follower Count: {collab.details.followers_count}</p>
-                  )}
-                  {collab.topics && collab.topics.length > 0 && (
-                    <div className="mt-1">
-                      <p className="text-xs font-medium">Topics:</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {collab.topics.map((topic, idx) => (
-                          <span key={idx} className="px-2 py-0.5 bg-gray-100 text-xs rounded-full">
-                            {topic}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              {/* Newsletter details */}
-              {collab.collab_type === 'Newsletter' && 'newsletter_name' in collab.details && (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Newsletter: {collab.details.newsletter_name}</p>
-                  {'total_subscribers' in collab.details && collab.details.total_subscribers && (
-                    <p className="text-xs text-gray-600">Subscribers: {collab.details.total_subscribers}</p>
-                  )}
-                </div>
-              )}
-              
-              {/* Show any expectations if available */}
-              {'expectations' in collab.details && collab.details.expectations && (
-                <div className="mt-2">
-                  <p className="text-xs font-medium">Expectations:</p>
-                  <p className="text-xs text-gray-600">{collab.details.expectations}</p>
-                </div>
-              )}
-            </div>
+            </>
           )}
           
           <div className="flex flex-wrap gap-2 mb-4">
