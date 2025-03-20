@@ -460,6 +460,9 @@ export default function CreateCollaborationSteps({
           estimated_release_date: typeof rawDetails?.estimated_release_date === 'string' ? rawDetails.estimated_release_date : "",
         };
       } else if (data.collab_type === "Co-Marketing on Twitter") {
+        console.log("Co-Marketing on Twitter BEFORE formatting:", rawDetails);
+        console.log("  - Raw short_description value:", rawDetails?.short_description);
+
         data.details = {
           twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Thread Collab"],
           host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
@@ -470,6 +473,18 @@ export default function CreateCollaborationSteps({
             ? rawDetails.short_description 
             : "",
         };
+        
+        // If short_description is empty but we have a value in the form field, use that directly
+        if (!data.details.short_description || data.details.short_description === "") {
+          const shortDesc = form.getValues("details.short_description");
+          if (shortDesc) {
+            data.details.short_description = shortDesc;
+            console.log("Retrieved short_description from form field for Twitter co-marketing:", shortDesc);
+          }
+        }
+        
+        console.log("Co-Marketing on Twitter AFTER formatting:", data.details);
+        console.log("  - Formatted short_description value:", data.details.short_description);
       }
 
       // Format the data
