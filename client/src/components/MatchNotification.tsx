@@ -8,7 +8,7 @@ import { createPortal } from 'react-dom';
 // Confetti particle component
 const Confetti = ({ colors }: { colors: string[] }) => {
   const confettiParticles = useMemo(() => {
-    return Array.from({ length: 200 }).map((_, i) => {
+    return Array.from({ length: 300 }).map((_, i) => {
       // Random position across the top of the screen
       const x = Math.random() * 100; // Random horizontal position (0-100%)
       
@@ -48,7 +48,7 @@ const Confetti = ({ colors }: { colors: string[] }) => {
   }, [colors]);
 
   return (
-    <div className="fixed inset-0 z-60 overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 9999 }}>
       {confettiParticles.map((particle) => (
         <motion.div
           key={particle.id}
@@ -204,8 +204,11 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
             </motion.div>
           </motion.div>
           
-          {/* Positioned at the end of the React tree for highest z-index */}
-          <Confetti colors={confettiColors} />
+          {/* Use portal to render confetti at the root level of the DOM */}
+          {portalRoot && createPortal(
+            <Confetti colors={confettiColors} />,
+            portalRoot
+          )}
         </>
       )}
     </AnimatePresence>
