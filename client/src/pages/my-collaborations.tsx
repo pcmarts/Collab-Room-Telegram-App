@@ -388,11 +388,10 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             <div className="mb-4">
               {/* Podcast guest appearance should show podcast name */}
               {collab.collab_type === 'Podcast Guest Appearance' && 'podcast_name' in collab.details && (
-                <div className="mb-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-md">
-                  <h4 className="text-sm font-semibold text-blue-800">Podcast</h4>
-                  <p className="text-md font-medium text-blue-600">{collab.details.podcast_name}</p>
+                <div className="mb-2">
+                  <p className="text-sm font-medium">Podcast: {collab.details.podcast_name}</p>
                   {'estimated_reach' in collab.details && collab.details.estimated_reach && (
-                    <p className="text-xs text-blue-500 mt-1">Audience size: {collab.details.estimated_reach}</p>
+                    <p className="text-xs text-gray-600 mb-1">Audience: {collab.details.estimated_reach}</p>
                   )}
                 </div>
               )}
@@ -400,12 +399,12 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               {/* Show topics if available */}
               {collab.topics && collab.topics.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-xs font-medium text-gray-600 mb-1">Topics:</p>
-                  <div className="flex flex-wrap gap-1.5">
+                  <p className="text-xs text-gray-500 mb-1">Topics:</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
                     {collab.topics.map((topic, idx) => (
                       <span 
                         key={idx} 
-                        className="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full border border-indigo-100 shadow-sm"
+                        className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded-full"
                       >
                         {topic}
                       </span>
