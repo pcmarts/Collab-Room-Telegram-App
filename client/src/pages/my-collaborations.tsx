@@ -337,7 +337,14 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           </div>
         </CardHeader>
         <CardContent className="pb-2">
-          {/* We've removed the description as requested */}
+          {/* Display short description if available */}
+          {collab.details && typeof collab.details === 'object' && 'short_description' in collab.details && (
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 line-clamp-3">
+                {collab.details.short_description}
+              </p>
+            </div>
+          )}
           
           {/* Collaboration-specific details based on type */}
           {collab.details && typeof collab.details === 'object' && (
