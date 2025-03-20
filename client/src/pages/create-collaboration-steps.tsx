@@ -412,6 +412,15 @@ export default function CreateCollaborationSteps({
           short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
         };
         
+        // If short_description is empty but we have a value in the form field, use that
+        if (!data.details.short_description || data.details.short_description === "") {
+          const shortDesc = form.getValues("details.short_description");
+          if (shortDesc) {
+            data.details.short_description = shortDesc;
+            console.log("Retrieved short_description from form field:", shortDesc);
+          }
+        }
+        
         console.log("Twitter Spaces Guest AFTER formatting:", data.details);
         console.log("  - Formatted short_description value:", data.details.short_description);
       } else if (data.collab_type === "Live Stream Guest Appearance") {
