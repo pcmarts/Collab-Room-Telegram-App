@@ -486,8 +486,8 @@ export default function CreateCollaborationSteps({
           title: "Success!",
           description: "Your collaboration has been created successfully.",
         });
-        // Redirect to the "My Collaborations" tab on marketing-collabs-new
-        setLocation("/marketing-collabs-new?tab=my");
+        // Redirect to My Collaborations page
+        setLocation("/my-collaborations");
       } else {
         const errorText = await response.text();
         throw new Error(`Failed to create: ${errorText}`);
