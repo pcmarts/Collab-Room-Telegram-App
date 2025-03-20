@@ -52,7 +52,11 @@ export default function ReferralCodeForm() {
         // User information
         first_name: userFormData.first_name,
         last_name: userFormData.last_name,
-        handle: window.Telegram?.WebApp?.initDataUnsafe?.user?.username || '',
+        // Create a user handle - either use Telegram username or generate one from ID
+        handle: window.Telegram?.WebApp?.initDataUnsafe?.user?.username || 
+                (window.Telegram?.WebApp?.initDataUnsafe?.user?.id ? 
+                 `user_${window.Telegram?.WebApp?.initDataUnsafe?.user?.id.toString().substring(0, 8)}` : 
+                 undefined),
         linkedin_url: userFormData.linkedin_url,
         email: userFormData.email,
         twitter_url: userFormData.twitter_url,

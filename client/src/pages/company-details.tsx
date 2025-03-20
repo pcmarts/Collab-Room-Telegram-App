@@ -62,11 +62,11 @@ export default function CompanyDetails() {
 
       // Get Telegram username from the initData
       const telegramData = window.Telegram?.WebApp?.initDataUnsafe?.user;
-      const handle = telegramData?.username;
+      // Create a user handle - either use Telegram username or generate one from ID
+      const handle = telegramData?.username || (telegramData?.id ? `user_${telegramData.id.toString().substring(0, 8)}` : undefined);
 
-      if (!handle) {
-        throw new Error('Telegram username is required');
-      }
+      // We no longer require handle - removed validation check here
+      // Fallback is provided above to generate a handle if not available
 
       if (!basicData.company_name || !basicData.website || !basicData.job_title ||
           !basicData.twitter_url || !basicData.funding_stage) {
