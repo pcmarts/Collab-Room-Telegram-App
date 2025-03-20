@@ -48,7 +48,7 @@ const Confetti = ({ colors }: { colors: string[] }) => {
   }, [colors]);
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 9999 }}>
+    <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 99999, position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
       {confettiParticles.map((particle) => (
         <motion.div
           key={particle.id}
@@ -61,11 +61,12 @@ const Confetti = ({ colors }: { colors: string[] }) => {
             left: `${particle.x}%`,
             top: '-20px', // Start above the viewport
             boxShadow: `0 0 2px rgba(255,255,255,0.3)`,
-            zIndex: 999, // Very high z-index to ensure it's above everything
+            zIndex: 99999, // Very high z-index to ensure it's above everything
+            pointerEvents: 'none', // Make sure particles don't block interaction
           }}
           initial={{ opacity: 0, y: -20, rotate: particle.rotationStart }}
           animate={{ 
-            opacity: [0, 0.8, 0.8, 0.8, 0],
+            opacity: [0, 0.9, 0.9, 0.9, 0],
             y: ['0vh', '120vh'], 
             x: particle.flutter,
             rotate: particle.rotationEnd
@@ -105,6 +106,18 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
     if (!root) {
       root = document.createElement('div');
       root.id = 'confetti-root';
+      
+      // Apply essential styles directly to the DOM element 
+      // to ensure it has the highest possible visual priority
+      root.style.position = 'fixed';
+      root.style.top = '0';
+      root.style.left = '0';
+      root.style.width = '100%';
+      root.style.height = '100%';
+      root.style.pointerEvents = 'none';
+      root.style.zIndex = '2147483647'; // Maximum possible z-index value
+      root.style.overflow = 'hidden';
+      
       document.body.appendChild(root);
     }
     setPortalRoot(root);
@@ -147,6 +160,7 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            style={{ pointerEvents: "auto" }} // Ensure modal is clickable
           >
             <motion.div 
               className="relative w-full max-w-md bg-background rounded-lg shadow-xl p-6"
