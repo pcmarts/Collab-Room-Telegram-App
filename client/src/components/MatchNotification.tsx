@@ -1,88 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, PartyPopper, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-// Confetti particle component
-const Confetti = ({ colors }: { colors: string[] }) => {
-  const confettiParticles = useMemo(() => {
-    return Array.from({ length: 300 }).map((_, i) => {
-      // Random position across the top of the screen
-      const x = Math.random() * 100; // Random horizontal position (0-100%)
-      
-      // Randomize properties for each particle
-      const size = Math.random() * 8 + 3;
-      const shape = ['circle', 'square', 'rectangle'][Math.floor(Math.random() * 3)];
-      const rotationStart = Math.random() * 360;
-      const rotationEnd = rotationStart + Math.random() * 720;
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      const delay = Math.random() * 5; // Staggered start for continuous rain effect
-      const duration = 6 + Math.random() * 6; // Longer, more varied falling speed for sustained effect
-      
-      // Flutter pattern - how much the particle moves side to side while falling
-      const flutterIntensity = 15 + Math.random() * 20;
-      const flutter = [(Math.random() - 0.5) * flutterIntensity, (Math.random() - 0.5) * flutterIntensity];
-      
-      // Special styling for rectangle shape
-      const isRectangle = shape === 'rectangle';
-      const width = isRectangle ? size * 0.6 : size;
-      const height = isRectangle ? size * 2 : size;
-      
-      return {
-        id: i,
-        x,
-        size,
-        width,
-        height,
-        shape,
-        rotationStart,
-        rotationEnd,
-        color,
-        delay,
-        duration,
-        flutter
-      };
-    });
-  }, [colors]);
-
-  return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 9999999, position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
-      {confettiParticles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          className="absolute"
-          style={{
-            width: particle.width,
-            height: particle.height,
-            backgroundColor: particle.color,
-            borderRadius: particle.shape === 'circle' ? '50%' : '0',
-            left: `${particle.x}%`,
-            top: '-20px', // Start above the viewport
-            boxShadow: `0 0 2px rgba(255,255,255,0.3)`,
-            zIndex: 9999999, // Very high z-index to ensure it's above everything
-            pointerEvents: 'none', // Make sure particles don't block interaction
-          }}
-          initial={{ opacity: 0, y: -20, rotate: particle.rotationStart }}
-          animate={{ 
-            opacity: [0, 0.9, 0.9, 0.9, 0],
-            y: ['0vh', '120vh'], 
-            x: particle.flutter,
-            rotate: particle.rotationEnd
-          }}
-          transition={{
-            duration: particle.duration,
-            delay: particle.delay,
-            ease: "linear",
-            opacity: {
-              times: [0, 0.1, 0.7, 0.9, 1]
-            }
-          }}
-        />
-      ))}
-    </div>
-  );
-};
 
 interface MatchNotificationProps {
   isOpen: boolean;
@@ -120,22 +40,66 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
     onClose();
   };
 
+  // Create an array of confetti particles
+  const confettiParticles = Array.from({ length: 150 }).map((_, i) => {
+    // Randomize properties for each particle
+    const size = Math.random() * 10 + 4;
+    const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+    // Position particles across the whole screen
+    const x = Math.random() * 100; // percent
+    const y = Math.random() * 100; // percent
+    const rotation = Math.random() * 360;
+    const opacity = 0.5 + Math.random() * 0.5;
+    const delay = Math.random() * 2;
+
+    return { id: i, size, color, x, y, rotation, opacity, delay };
+  });
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Show confetti directly, no portal needed */}
-          <Confetti colors={confettiColors} />
+        <div className="fixed inset-0 z-50" style={{ perspective: "500px" }}>
+          {/* Confetti particles */}
+          {confettiParticles.map((particle) => (
+            <motion.div
+              key={particle.id}
+              className="absolute rounded-full"
+              style={{
+                width: particle.size,
+                height: particle.size,
+                backgroundColor: particle.color,
+                left: `${particle.x}%`,
+                top: `-${particle.size}px`,
+                zIndex: 100,
+                opacity: particle.opacity,
+              }}
+              initial={{ y: "-10%", rotate: 0, scale: 0 }}
+              animate={{ 
+                y: "120%", 
+                rotate: particle.rotation * 5,
+                scale: [0, 1, 1, 0.5, 0],
+                x: [(Math.random() - 0.5) * 200, (Math.random() - 0.5) * 200]
+              }}
+              transition={{ 
+                duration: 5 + Math.random() * 5,
+                ease: "easeOut",
+                delay: particle.delay,
+                repeat: 3,
+                repeatType: "loop"
+              }}
+            />
+          ))}
           
+          {/* Dark overlay */}
           <motion.div
-            className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ pointerEvents: "auto" }} // Ensure modal is clickable
           >
+            {/* Match card */}
             <motion.div 
-              className="relative w-full max-w-md bg-background rounded-lg shadow-xl p-6"
+              className="relative w-full max-w-md bg-background rounded-lg shadow-xl p-6 z-10"
               initial={{ scale: 0.8, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, y: 20 }}
@@ -144,7 +108,7 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="absolute right-2 top-2 z-10" 
+                className="absolute right-2 top-2" 
                 onClick={onClose}
               >
                 <X className="h-4 w-4" />
@@ -189,7 +153,7 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
               </div>
             </motion.div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
