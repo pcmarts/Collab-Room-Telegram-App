@@ -5,7 +5,6 @@ import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 
 import {
   Form,
@@ -19,8 +18,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -30,10 +27,11 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 
 import {
   AUDIENCE_SIZE_RANGES,
@@ -94,9 +92,10 @@ export default function CreateCollaborationSteps({
       details: {
         // Default values for different collaboration types to prevent field bleeding
         // Twitter spaces defaults
-        short_description: "", // Use this for Twitter topic
-        twitter_handle: "",
-        host_follower_count: TWITTER_FOLLOWER_COUNTS[0],
+        short_description: "",
+        topic: "",
+        host_twitter_handle: "",
+        host_follower_count: "",
         
         // Twitter co-marketing defaults
         twitter_description: "",
@@ -106,13 +105,11 @@ export default function CreateCollaborationSteps({
         podcast_name: "",
         podcast_description: "",
         // Each collaboration type should have its own description
-        estimated_reach: "Under 100",
+        estimated_reach: "",
         podcast_link: "",
-      } as any,
+      },
     },
   });
-
-
 
   // Monitor step changes to handle field resets
   useEffect(() => {
@@ -161,7 +158,7 @@ export default function CreateCollaborationSteps({
     form.setValue("collab_type", value as (typeof COLLAB_TYPES)[number]);
 
     // IMPORTANT: COMPLETELY reset the form details field to prevent field bleeding
-    form.setValue("details", {} as any);
+    form.setValue("details", {});
     
     // Use setTimeout to ensure that the form details reset happens first
     setTimeout(() => {
@@ -230,14 +227,14 @@ export default function CreateCollaborationSteps({
       }
 
       // Apply the new details after reset
-      form.setValue("details", newDetails as any);
+      form.setValue("details", newDetails);
     }, 10); // Small delay to ensure reset happens first
   };
 
   // Function to clear any potential data bleeding between form fields
   const clearFormFieldsExcept = (currentFieldName: string) => {
     // Save current field value
-    const currentValue = form.getValues(currentFieldName as any);
+    const currentValue = form.getValues(currentFieldName);
     
     if (currentFieldName.startsWith('details.')) {
       // Get current details value
@@ -246,12 +243,12 @@ export default function CreateCollaborationSteps({
       const fieldValue = details[fieldKey];
       
       // Reset details
-      form.setValue('details', {} as any);
+      form.setValue('details', {});
       
       // Restore only the current field
       const newDetails: Record<string, any> = {};
       newDetails[fieldKey] = fieldValue;
-      form.setValue('details', newDetails as any);
+      form.setValue('details', newDetails);
     }
   };
   
@@ -401,7 +398,7 @@ export default function CreateCollaborationSteps({
         data.details = {
           title: typeof rawDetails?.title === 'string' ? rawDetails.title : "",
           short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
-          date_selection: (typeof rawDetails?.date_selection === 'string' && (rawDetails.date_selection === "any_future_date" || rawDetails.date_selection === "specific_date")) ? rawDetails.date_selection : "any_future_date",
+          date_selection: typeof rawDetails?.date_selection === 'string' ? rawDetails.date_selection : "any_future_date",
           specific_date: typeof rawDetails?.specific_date === 'string' ? rawDetails.specific_date : "",
           previous_stream_link: typeof rawDetails?.previous_stream_link === 'string' ? rawDetails.previous_stream_link : "",
           expected_audience_size: AUDIENCE_SIZE_RANGES.includes(rawDetails?.expected_audience_size) ? rawDetails.expected_audience_size : AUDIENCE_SIZE_RANGES[0],
@@ -506,48 +503,6 @@ export default function CreateCollaborationSteps({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // State for filter toggles
-  const [filtersEnabled, setFiltersEnabled] = useState({
-    companySectors: false,
-    companyFollowers: false,
-    userFollowers: false,
-    fundingStages: false,
-    hasToken: false,
-    blockchainNetworks: false,
-  });
-  
-  // State for filter sections expansion (separate from enabled state)
-  const [filtersExpanded, setFiltersExpanded] = useState({
-    companySectors: true,
-    companyFollowers: true,
-    userFollowers: true,
-    fundingStages: true,
-    hasToken: true,
-    blockchainNetworks: true
-  });
-
-  // Toggle filter sections
-  const toggleFilter = (filterKey: keyof typeof filtersEnabled) => {
-    const newValue = !filtersEnabled[filterKey];
-    
-    setFiltersEnabled(prev => ({
-      ...prev,
-      [filterKey]: newValue
-    }));
-    
-    // Update the form field that tracks filter enabled state
-    const fieldName = `filter_${filterKey}_enabled` as any;
-    form.setValue(fieldName, newValue);
-  };
-  
-  // Toggle filter expansion
-  const toggleFilterExpansion = (filterKey: keyof typeof filtersExpanded) => {
-    setFiltersExpanded(prev => ({
-      ...prev,
-      [filterKey]: !prev[filterKey]
-    }));
   };
 
   // Define all the possible steps with their associated fields
@@ -1177,791 +1132,6 @@ export default function CreateCollaborationSteps({
             </FormItem>
           )}
         />
-      )
-    },
-    {
-      id: "filters",
-      title: "Filtering Options",
-      description: "Choose who can see your collaboration opportunity",
-      render: () => (
-        <div className="space-y-4">
-          <div className="text-sm">
-            <h3 className="font-medium mb-1">Who can see this collaboration?</h3>
-            <p className="text-muted-foreground text-xs mb-4">
-              Add filters to control who can view and apply to your collaboration. 
-              This helps ensure you connect with the right partners.
-            </p>
-          </div>
-          
-          {/* Company Sector Filter */}
-          <div className="space-y-2 border rounded-md p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Switch 
-                  checked={filtersEnabled.companySectors}
-                  onCheckedChange={() => toggleFilter('companySectors')}
-                />
-                <Label className="text-sm font-medium">
-                  Company Sector Requirements
-                </Label>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('companySectors')}
-                className="h-7 w-7 p-0"
-              >
-                {filtersExpanded.companySectors ? 
-                  <ChevronUp className="h-4 w-4" /> : 
-                  <ChevronDown className="h-4 w-4" />
-                }
-              </Button>
-            </div>
-            
-            {filtersEnabled.companySectors && filtersExpanded.companySectors && (
-              <FormField
-                control={form.control}
-                name="required_company_sectors"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="grid grid-cols-2 gap-1">
-                        {COMPANY_CATEGORIES.map((category) => {
-                          const isSelected = field.value?.includes(category);
-                          return (
-                            <Button
-                              key={category}
-                              type="button"
-                              variant={isSelected ? "default" : "outline"}
-                              className={`w-full h-auto py-1 px-2 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                              onClick={() => {
-                                const currentValue = field.value || [];
-                                const updatedValue = isSelected
-                                  ? currentValue.filter((t) => t !== category)
-                                  : [...currentValue, category];
-                                field.onChange(updatedValue);
-                              }}
-                            >
-                              {isSelected && (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
-                                  <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                              )}
-                              {category}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Only companies in these sectors will see your collaboration
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-            )}
-          </div>
-          
-          {/* Company Twitter Followers Filter */}
-          <div className="space-y-2 border rounded-md p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Switch 
-                  checked={filtersEnabled.companyFollowers}
-                  onCheckedChange={() => toggleFilter('companyFollowers')}
-                />
-                <Label className="text-sm font-medium">
-                  Minimum Company Twitter Followers
-                </Label>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('companyFollowers')}
-                className="h-7 w-7 p-0"
-              >
-                {filtersExpanded.companyFollowers ? 
-                  <ChevronUp className="h-4 w-4" /> : 
-                  <ChevronDown className="h-4 w-4" />
-                }
-              </Button>
-            </div>
-            
-            {filtersEnabled.companyFollowers && filtersExpanded.companyFollowers && (
-              <FormField
-                control={form.control}
-                name="min_company_followers"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="grid grid-cols-2 gap-1">
-                        {TWITTER_FOLLOWER_COUNTS.map((count) => {
-                          const isSelected = field.value === count;
-                          return (
-                            <Button
-                              key={count}
-                              type="button"
-                              variant={isSelected ? "default" : "outline"}
-                              className={`w-full h-8 py-1 px-2 text-xs justify-center ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                              onClick={() => field.onChange(count)}
-                            >
-                              {count}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Only companies with this minimum follower count will see your collaboration
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-            )}
-          </div>
-          
-          {/* Funding Stage Filter */}
-          <div className="space-y-2 border rounded-md p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Switch 
-                  checked={filtersEnabled.fundingStages}
-                  onCheckedChange={() => toggleFilter('fundingStages')}
-                />
-                <Label className="text-sm font-medium">
-                  Funding Stage Requirements
-                </Label>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('fundingStages')}
-                className="h-7 w-7 p-0"
-              >
-                {filtersExpanded.fundingStages ? 
-                  <ChevronUp className="h-4 w-4" /> : 
-                  <ChevronDown className="h-4 w-4" />
-                }
-              </Button>
-            </div>
-            
-            {filtersEnabled.fundingStages && filtersExpanded.fundingStages && (
-              <FormField
-                control={form.control}
-                name="required_funding_stages"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="grid grid-cols-2 gap-1">
-                        {FUNDING_STAGES.map((stage) => {
-                          const isSelected = field.value?.includes(stage);
-                          return (
-                            <Button
-                              key={stage}
-                              type="button"
-                              variant={isSelected ? "default" : "outline"}
-                              className={`w-full h-auto py-1 px-2 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                              onClick={() => {
-                                const currentValue = field.value || [];
-                                const updatedValue = isSelected
-                                  ? currentValue.filter((t) => t !== stage)
-                                  : [...currentValue, stage];
-                                field.onChange(updatedValue);
-                              }}
-                            >
-                              {isSelected && (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
-                                  <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                              )}
-                              {stage}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Only companies at these funding stages will see your collaboration
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-            )}
-          </div>
-          
-          {/* User Twitter Followers Filter */}
-          <div className="space-y-2 border rounded-md p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Switch 
-                  checked={filtersEnabled.userFollowers}
-                  onCheckedChange={() => toggleFilter('userFollowers')}
-                />
-                <Label className="text-sm font-medium">
-                  Minimum User Twitter Followers
-                </Label>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('userFollowers')}
-                className="h-7 w-7 p-0"
-              >
-                {filtersExpanded.userFollowers ? 
-                  <ChevronUp className="h-4 w-4" /> : 
-                  <ChevronDown className="h-4 w-4" />
-                }
-              </Button>
-            </div>
-            
-            {filtersEnabled.userFollowers && filtersExpanded.userFollowers && (
-              <FormField
-                control={form.control}
-                name="min_user_followers"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="grid grid-cols-2 gap-1">
-                        {TWITTER_FOLLOWER_COUNTS.map((count) => {
-                          const isSelected = field.value === count;
-                          return (
-                            <Button
-                              key={count}
-                              type="button"
-                              variant={isSelected ? "default" : "outline"}
-                              className={`w-full h-8 py-1 px-2 text-xs justify-center ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                              onClick={() => field.onChange(count)}
-                            >
-                              {count}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Only users with this minimum follower count will see your collaboration
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-            )}
-          </div>
-          
-          {/* Token Status Filter */}
-          <div className="space-y-2 border rounded-md p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Switch 
-                  checked={filtersEnabled.hasToken}
-                  onCheckedChange={() => toggleFilter('hasToken')}
-                />
-                <Label className="text-sm font-medium">
-                  Token Status Requirement
-                </Label>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('hasToken')}
-                className="h-7 w-7 p-0"
-              >
-                {filtersExpanded.hasToken ? 
-                  <ChevronUp className="h-4 w-4" /> : 
-                  <ChevronDown className="h-4 w-4" />
-                }
-              </Button>
-            </div>
-            
-            {filtersEnabled.hasToken && filtersExpanded.hasToken && (
-              <FormField
-                control={form.control}
-                name="required_token_status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="flex flex-row gap-1">
-                        <Button
-                          type="button"
-                          variant={field.value === true ? "default" : "outline"}
-                          className={`flex-1 py-1 px-2 text-xs ${field.value === true ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                          onClick={() => field.onChange(true)}
-                        >
-                          Must have token
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={field.value === false ? "default" : "outline"}
-                          className={`flex-1 py-1 px-2 text-xs ${field.value === false ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                          onClick={() => field.onChange(false)}
-                        >
-                          No token required
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Specify if you require companies to have a token
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-            )}
-          </div>
-          
-          {/* Blockchain Networks Filter */}
-          <div className="space-y-2 border rounded-md p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Switch 
-                  checked={filtersEnabled.blockchainNetworks}
-                  onCheckedChange={() => toggleFilter('blockchainNetworks')}
-                />
-                <Label className="text-sm font-medium">
-                  Blockchain Network Requirements
-                </Label>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('blockchainNetworks')}
-                className="h-7 w-7 p-0"
-              >
-                {filtersExpanded.blockchainNetworks ? 
-                  <ChevronUp className="h-4 w-4" /> : 
-                  <ChevronDown className="h-4 w-4" />
-                }
-              </Button>
-            </div>
-            
-            {filtersEnabled.blockchainNetworks && filtersExpanded.blockchainNetworks && (
-              <FormField
-                control={form.control}
-                name="required_blockchain_networks"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="grid grid-cols-2 gap-1">
-                        {BLOCKCHAIN_NETWORKS.map((network) => {
-                          const isSelected = field.value?.includes(network);
-                          return (
-                            <Button
-                              key={network}
-                              type="button"
-                              variant={isSelected ? "default" : "outline"}
-                              className={`w-full h-auto py-1 px-2 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                              onClick={() => {
-                                const currentValue = field.value || [];
-                                const updatedValue = isSelected
-                                  ? currentValue.filter((t) => t !== network)
-                                  : [...currentValue, network];
-                                field.onChange(updatedValue);
-                              }}
-                            >
-                              {isSelected && (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
-                                  <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                              )}
-                              {network}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Only companies on these blockchain networks will see your collaboration
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-            )}
-          </div>
-        </div>
-      )
-    },
-    {
-      id: "visibility_filters",
-      title: "Visibility Filters",
-      description: "Control who can discover your collaboration",
-      render: () => (
-        <div className="space-y-6">
-          <h3 className="text-lg font-medium">Visibility Filters</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Control who can discover this collaboration opportunity by setting specific requirements.
-          </p>
-          
-          {/* Company Sector Requirements */}
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  checked={filtersEnabled.companySectors} 
-                  onCheckedChange={() => toggleFilter('companySectors')}
-                />
-                <h4 className="font-medium text-sm">Company Sector Requirements</h4>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('companySectors')}
-                className="p-0 h-7 w-7"
-              >
-                {filtersExpanded.companySectors ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            
-            {filtersExpanded.companySectors && (
-              <div className="pl-8 space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Select which company sectors can see this collaboration
-                </p>
-                <FormField
-                  control={form.control}
-                  name="required_company_sectors"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-                          <div key={category} className="w-full">
-                            <h5 className="text-xs font-medium mb-1">{category}</h5>
-                            <div className="flex flex-wrap gap-1">
-                              {tags.map((tag) => {
-                                const isSelected = field.value?.includes(tag);
-                                return (
-                                  <Badge
-                                    key={tag}
-                                    variant={isSelected ? "default" : "outline"}
-                                    className={`cursor-pointer text-xs ${
-                                      isSelected ? "bg-primary" : "hover:bg-accent/50"
-                                    }`}
-                                    onClick={() => {
-                                      const currentValue = field.value || [];
-                                      const updatedValue = isSelected
-                                        ? currentValue.filter(t => t !== tag)
-                                        : [...currentValue, tag];
-                                      field.onChange(updatedValue);
-                                    }}
-                                  >
-                                    {tag}
-                                  </Badge>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Minimum Company Twitter Followers */}
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  checked={filtersEnabled.companyFollowers} 
-                  onCheckedChange={() => toggleFilter('companyFollowers')}
-                />
-                <h4 className="font-medium text-sm">Minimum Company Twitter Followers</h4>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('companyFollowers')}
-                className="p-0 h-7 w-7"
-              >
-                {filtersExpanded.companyFollowers ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            
-            {filtersExpanded.companyFollowers && (
-              <div className="pl-8 space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Set minimum company Twitter followers requirement
-                </p>
-                <FormField
-                  control={form.control}
-                  name="min_company_followers"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={!filtersEnabled.companyFollowers}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select minimum followers" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                            <SelectItem key={count} value={count}>
-                              {count}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Funding Stage Requirements */}
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  checked={filtersEnabled.fundingStages} 
-                  onCheckedChange={() => toggleFilter('fundingStages')}
-                />
-                <h4 className="font-medium text-sm">Funding Stage Requirements</h4>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('fundingStages')}
-                className="p-0 h-7 w-7"
-              >
-                {filtersExpanded.fundingStages ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            
-            {filtersExpanded.fundingStages && (
-              <div className="pl-8 space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Select acceptable funding stages
-                </p>
-                <FormField
-                  control={form.control}
-                  name="required_funding_stages"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {FUNDING_STAGES.map((stage) => {
-                          const isSelected = field.value?.includes(stage);
-                          return (
-                            <Badge
-                              key={stage}
-                              variant={isSelected ? "default" : "outline"}
-                              className={`cursor-pointer text-xs ${
-                                isSelected ? "bg-primary" : "hover:bg-accent/50"
-                              }`}
-                              onClick={() => {
-                                const currentValue = field.value || [];
-                                const updatedValue = isSelected
-                                  ? currentValue.filter(s => s !== stage)
-                                  : [...currentValue, stage];
-                                field.onChange(updatedValue);
-                              }}
-                            >
-                              {stage}
-                            </Badge>
-                          );
-                        })}
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Minimum User Twitter Followers */}
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  checked={filtersEnabled.userFollowers} 
-                  onCheckedChange={() => toggleFilter('userFollowers')}
-                />
-                <h4 className="font-medium text-sm">Minimum User Twitter Followers</h4>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('userFollowers')}
-                className="p-0 h-7 w-7"
-              >
-                {filtersExpanded.userFollowers ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            
-            {filtersExpanded.userFollowers && (
-              <div className="pl-8 space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Set minimum personal Twitter followers requirement
-                </p>
-                <FormField
-                  control={form.control}
-                  name="min_user_followers"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={!filtersEnabled.userFollowers}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select minimum followers" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                            <SelectItem key={count} value={count}>
-                              {count}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Token Status Requirement */}
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  checked={filtersEnabled.hasToken} 
-                  onCheckedChange={() => toggleFilter('hasToken')}
-                />
-                <h4 className="font-medium text-sm">Token Status Requirement</h4>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('hasToken')}
-                className="p-0 h-7 w-7"
-              >
-                {filtersExpanded.hasToken ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            
-            {filtersExpanded.hasToken && (
-              <div className="pl-8 space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Require companies to have a token
-                </p>
-                <FormField
-                  control={form.control}
-                  name="required_token_status"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormControl>
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            disabled={!filtersEnabled.hasToken}
-                          />
-                          <span className="text-sm">
-                            Only companies with tokens
-                          </span>
-                        </div>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Blockchain Network Requirements */}
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  checked={filtersEnabled.blockchainNetworks} 
-                  onCheckedChange={() => toggleFilter('blockchainNetworks')}
-                />
-                <h4 className="font-medium text-sm">Blockchain Network Requirements</h4>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleFilterExpansion('blockchainNetworks')}
-                className="p-0 h-7 w-7"
-              >
-                {filtersExpanded.blockchainNetworks ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            
-            {filtersExpanded.blockchainNetworks && (
-              <div className="pl-8 space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Select which blockchain networks are required
-                </p>
-                <FormField
-                  control={form.control}
-                  name="required_blockchain_networks"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <div className="space-y-3">
-                        {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
-                          <div key={category} className="w-full">
-                            <h5 className="text-xs font-medium mb-1">{category}</h5>
-                            <div className="flex flex-wrap gap-1">
-                              {networks.map((network) => {
-                                const isSelected = field.value?.includes(network);
-                                return (
-                                  <Badge
-                                    key={network}
-                                    variant={isSelected ? "default" : "outline"}
-                                    className={`cursor-pointer text-xs ${
-                                      isSelected ? "bg-primary" : "hover:bg-accent/50"
-                                    }`}
-                                    onClick={() => {
-                                      const currentValue = field.value || [];
-                                      const updatedValue = isSelected
-                                        ? currentValue.filter(n => n !== network)
-                                        : [...currentValue, network];
-                                      field.onChange(updatedValue);
-                                    }}
-                                  >
-                                    {network}
-                                  </Badge>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-          </div>
-        </div>
       )
     }
   ];
