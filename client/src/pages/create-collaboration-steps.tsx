@@ -335,11 +335,11 @@ export default function CreateCollaborationSteps({
         }
         break;
         
-      case "podcast_description":
-        const podcastDescription = form.getValues("details.podcast_description");
+      case "podcast_short_description":
+        const podcastDescription = form.getValues("details.short_description");
         if (!podcastDescription || podcastDescription.trim() === "") {
           toast({
-            title: "Please enter a podcast description",
+            title: "Please enter a short description for your podcast",
             variant: "destructive",
           });
           return false;
