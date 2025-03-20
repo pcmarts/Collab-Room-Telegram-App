@@ -363,43 +363,53 @@ const NewsletterCard = ({ data }) => {
 
 // My Collaboration Card - Shows when another user is requesting to collaborate on the active user's own collaboration
 const MyCollabCard = ({ data }) => (
-  <div className="space-y-3 p-1.5 -m-1.5 rounded-md relative bg-gradient-to-br from-blue-300/40 via-blue-200/30 to-blue-300/30 border border-blue-300/50">
-    {/* Top right corner decoration */}
-    <div className="absolute top-0 right-0 w-20 h-20 overflow-hidden pointer-events-none">
-      <div className="absolute top-0 right-0 w-6 h-6 transform translate-x-1/2 -translate-y-1/2 rotate-45 bg-blue-500/70"></div>
-    </div>
+  <div className="space-y-4 relative text-gray-100">
+    {/* Dark purple to black gradient background that covers the entire card */}
+    <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-purple-900/90 via-slate-800/95 to-slate-900/95"></div>
     
-    <Badge variant="outline" className="bg-blue-400/40 border-blue-400 relative z-10 shadow-sm">
+    {/* Badge */}
+    <Badge className="relative z-10 bg-blue-700/80 text-white border-0 py-1 px-3 rounded-full">
       <Building className="w-3 h-3 mr-1" />
       <span className="font-medium">My Collab</span>
     </Badge>
-    <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
-    <div className="space-y-1.5">
-      <p className="text-base bg-blue-100/40 px-3 py-1.5 rounded-md inline-flex items-center gap-1 shadow-sm">
+    
+    {/* Title */}
+    <h3 className="text-xl font-semibold leading-snug relative z-10 text-white">{data.title}</h3>
+    
+    {/* Company info */}
+    <div className="space-y-3 relative z-10">
+      <p className="text-base bg-slate-700/50 px-3 py-1.5 rounded-md inline-flex items-center gap-1">
         <Building className="w-3 h-3" />
         {data.companyName}
       </p>
-      <div className="bg-white/70 p-2 rounded-md shadow-sm">
-        <p className="text-sm font-medium">Requester Details:</p>
-        <p className="text-sm text-muted-foreground">Role: {data.requesterRole}</p>
-        <p className="text-sm text-muted-foreground">Company: {data.requesterCompany}</p>
+      
+      {/* Requester info */}
+      <div className="bg-slate-600/40 p-3 rounded-md">
+        <p className="text-sm font-medium text-white mb-1">Requester Details:</p>
+        <p className="text-sm text-gray-200">Role: {data.requesterRole}</p>
+        <p className="text-sm text-gray-200">Company: {data.requesterCompany}</p>
       </div>
     </div>
-    <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
+    
+    {/* Description */}
+    <p className="text-sm text-gray-300 line-clamp-2 relative z-10">{data.description}</p>
+    
+    {/* Topics */}
     {data.topics && data.topics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-2">
+      <div className="flex flex-wrap gap-1 mb-2 relative z-10">
         {data.topics.map((topic, i) => (
-          <Badge key={i} variant="secondary" className="text-xs">
+          <Badge key={i} variant="outline" className="text-xs bg-slate-800/70 text-gray-200 border border-slate-600">
             {topic}
           </Badge>
         ))}
       </div>
     )}
+    
     {/* For legacy preferredTopics support */}
     {!data.topics && data.preferredTopics && data.preferredTopics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-2">
+      <div className="flex flex-wrap gap-1 mb-2 relative z-10">
         {data.preferredTopics.map((topic, i) => (
-          <Badge key={i} variant="secondary" className="text-xs">
+          <Badge key={i} variant="outline" className="text-xs bg-slate-800/70 text-gray-200 border border-slate-600">
             {topic}
           </Badge>
         ))}
