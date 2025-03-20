@@ -383,6 +383,9 @@ export default function CreateCollaborationSteps({
       // Using a type assertion to ensure the details field is properly typed for each collab type
       const rawDetails = data.details as Record<string, any>;
       
+      // Log full raw details for debugging
+      console.log("Raw form details:", rawDetails);
+      
       if (data.collab_type === "Podcast Guest Appearance") {
         data.details = {
           podcast_name: typeof rawDetails?.podcast_name === 'string' ? rawDetails.podcast_name : "",
@@ -933,9 +936,9 @@ export default function CreateCollaborationSteps({
             } else if (typeof field.value === 'string') {
               // Single string value, convert to array
               currentValue = [field.value];
-            } else if (field.value) {
-              // Some other type of value, reset to defaults
-              currentValue = ["Thread Collab"];
+            } else {
+              // Default to empty array - will select Thread Collab if needed via newValue on line 958
+              currentValue = [];
             }
             
             return (
@@ -989,10 +992,10 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.host_twitter_handle"
           render={({ field }) => {
-            // Ensure the correct type of value is shown
+            // Ensure the correct type of value is shown and preserve user-entered value
             const displayValue = Array.isArray(field.value) 
               ? "https://x.com/" 
-              : (typeof field.value === 'string' ? field.value : "https://x.com/");
+              : (typeof field.value === 'string' && field.value.trim() ? field.value : "https://x.com/");
             
             // Removed useEffect to prevent hook ordering issues
             
