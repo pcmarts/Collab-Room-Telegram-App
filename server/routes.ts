@@ -478,8 +478,23 @@ export async function registerRoutes(app: Express) {
         collabs_to_host, notification_frequency, filtered_marketing_topics
       } = req.body;
 
-      const telegramUser = getTelegramUserFromRequest(req);
+      // Get Telegram user data from request
+      let telegramUser = getTelegramUserFromRequest(req);
+      
+      // Only for development: If no telegram data is found, create a test user in development
+      if (!telegramUser && process.env.NODE_ENV !== 'production') {
+        console.log('Development mode: Creating test user data for onboarding');
+        telegramUser = {
+          id: '12345678901', // Unique test ID
+          first_name: req.body.first_name || 'Test',
+          last_name: req.body.last_name || 'User',
+          username: req.body.handle || 'test_user',
+        };
+      }
+      
+      // Production environments still require valid Telegram data
       if (!telegramUser) {
+        console.error('No Telegram user data found and not in development mode');
         res.status(400);
         return res.json({ error: 'Invalid Telegram data' });
       }
