@@ -750,31 +750,47 @@ export default function CreateCollaborationSteps({
       shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
     },
     {
-      id: "podcast_description",
-      title: "Podcast Description",
-      description: "Describe your podcast",
+      id: "podcast_short_description",
+      title: "Short Description",
+      description: "Briefly describe your podcast",
       render: () => (
         <FormField
           control={form.control}
-          name="details.podcast_description"
+          name="details.short_description"
           render={({ field }) => {
             // Ensure field value is always a string
             const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
             
+            // Add an effect to make sure the field gets properly updated
+            useEffect(() => {
+              // This ensures the field gets properly registered with the form
+              form.register("details.short_description");
+              
+              // Debug the field value
+              console.log("Podcast short_description field:", field.value);
+            }, [field.value, form]);
+            
             return (
               <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">Describe your podcast</FormLabel>
+                <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
                 <FormControl>
                   <Textarea 
-                    placeholder="What is your podcast about? Who is your audience?" 
+                    placeholder="What is your podcast about? Briefly describe it." 
                     className="min-h-[60px] text-xs"
+                    maxLength={200}
                     value={displayValue}
-                    onChange={(e) => field.onChange(e.target.value)}
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      console.log("Short description updated:", e.target.value);
+                    }}
                     onBlur={field.onBlur}
                     ref={field.ref}
                     name={field.name}
                   />
                 </FormControl>
+                <FormDescription className="text-xs">
+                  {displayValue?.length || 0}/200 characters
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             );

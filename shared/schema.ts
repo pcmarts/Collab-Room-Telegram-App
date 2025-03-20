@@ -518,7 +518,7 @@ export type CollabApplicationData = z.infer<typeof collabApplicationSchema>;
 export const podcastDetailsSchema = z.object({
   podcast_name: z.string().min(2, "Podcast name is required"),
   short_description: z.string().max(200, "Short description must be less than 200 characters"),
-  podcast_description: z.string().min(10, "Podcast description is required"),
+  // Removed podcast_description field in favor of the short_description field
   podcast_link: z.string().url("Please enter a valid podcast link"),
   estimated_reach: z.enum(AUDIENCE_SIZE_RANGES).optional()
 });
@@ -551,7 +551,7 @@ export const researchReportDetailsSchema = z.object({
   // Removed research_topic validation as topics are captured at the top level
   research_topic: z.array(z.string()).optional(),
   target_audience: z.string().min(2, "Target audience is required"),
-  short_description: z.string().max(200, "Short description must be less than 200 characters").optional(),
+  short_description: z.string().max(200, "Short description must be less than 200 characters"),
   audience_reach: z.enum(AUDIENCE_SIZE_RANGES).optional(),
   estimated_release_date: z.string()
 });
@@ -564,8 +564,8 @@ export const newsletterDetailsSchema = z.object({
   topics: z.array(z.enum(COLLAB_TOPICS)).optional(),
   audience_reach: z.enum(AUDIENCE_SIZE_RANGES),
   total_subscribers: z.enum(AUDIENCE_SIZE_RANGES).optional(),
-  short_description: z.string().max(200, "Short description must be less than 200 characters"),
-  newsletter_description: z.string().min(10, "Newsletter description is required")
+  short_description: z.string().max(200, "Short description must be less than 200 characters")
+  // Removed newsletter_description field in favor of the short_description field
 });
 
 // Blog Post Feature
@@ -574,7 +574,7 @@ export const blogPostDetailsSchema = z.object({
   blog_topic: z.string().optional(), // Make blog topic optional since we capture topics at the top level
   blog_url: z.string().url("Please enter a valid blog URL").optional(),
   blog_link: z.string().url("Please enter a valid blog link"),
-  short_description: z.string().max(200, "Short description must be less than 200 characters").optional(),
+  short_description: z.string().max(200, "Short description must be less than 200 characters"),
   est_readers: z.enum(AUDIENCE_SIZE_RANGES),
   estimated_release_date: z.string()
 });
