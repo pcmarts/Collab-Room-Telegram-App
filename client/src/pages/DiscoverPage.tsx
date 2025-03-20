@@ -363,28 +363,25 @@ const NewsletterCard = ({ data }) => {
 
 // My Collaboration Card - Shows when another user is requesting to collaborate on the active user's own collaboration
 const MyCollabCard = ({ data }) => (
-  <div className="space-y-4 relative text-gray-100">
-    {/* Dark purple to black gradient background that covers the entire card */}
-    <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-purple-900/90 via-slate-800/95 to-slate-900/95"></div>
-    
+  <div className="space-y-4 relative text-gray-100 p-0 my-collab-card">
     {/* Badge */}
-    <Badge className="relative z-10 bg-blue-700/80 text-white border-0 py-1 px-3 rounded-full">
+    <Badge className="bg-blue-700 text-white border-0 py-1 px-3 rounded-full">
       <Building className="w-3 h-3 mr-1" />
       <span className="font-medium">My Collab</span>
     </Badge>
     
     {/* Title */}
-    <h3 className="text-xl font-semibold leading-snug relative z-10 text-white">{data.title}</h3>
+    <h3 className="text-xl font-semibold leading-snug text-white">{data.title}</h3>
     
     {/* Company info */}
-    <div className="space-y-3 relative z-10">
-      <p className="text-base bg-slate-700/50 px-3 py-1.5 rounded-md inline-flex items-center gap-1">
+    <div className="space-y-3">
+      <p className="text-base px-3 py-1.5 rounded-md inline-flex items-center gap-1 bg-opacity-20 bg-slate-600">
         <Building className="w-3 h-3" />
         {data.companyName}
       </p>
       
       {/* Requester info */}
-      <div className="bg-slate-600/40 p-3 rounded-md">
+      <div className="bg-opacity-20 bg-slate-500 p-3 rounded-md">
         <p className="text-sm font-medium text-white mb-1">Requester Details:</p>
         <p className="text-sm text-gray-200">Role: {data.requesterRole}</p>
         <p className="text-sm text-gray-200">Company: {data.requesterCompany}</p>
@@ -392,13 +389,13 @@ const MyCollabCard = ({ data }) => (
     </div>
     
     {/* Description */}
-    <p className="text-sm text-gray-300 line-clamp-2 relative z-10">{data.description}</p>
+    <p className="text-sm text-gray-300 line-clamp-2">{data.description}</p>
     
     {/* Topics */}
     {data.topics && data.topics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-2 relative z-10">
+      <div className="flex flex-wrap gap-1 mb-2">
         {data.topics.map((topic, i) => (
-          <Badge key={i} variant="outline" className="text-xs bg-slate-800/70 text-gray-200 border border-slate-600">
+          <Badge key={i} variant="outline" className="text-xs text-gray-200 border-slate-600 bg-transparent">
             {topic}
           </Badge>
         ))}
@@ -407,9 +404,9 @@ const MyCollabCard = ({ data }) => (
     
     {/* For legacy preferredTopics support */}
     {!data.topics && data.preferredTopics && data.preferredTopics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-2 relative z-10">
+      <div className="flex flex-wrap gap-1 mb-2">
         {data.preferredTopics.map((topic, i) => (
-          <Badge key={i} variant="outline" className="text-xs bg-slate-800/70 text-gray-200 border border-slate-600">
+          <Badge key={i} variant="outline" className="text-xs text-gray-200 border-slate-600 bg-transparent">
             {topic}
           </Badge>
         ))}
@@ -684,6 +681,33 @@ const getCollaborationTypeFromCard = (card: any): string => {
   }
 };
 
+// Add global CSS for MyCollab styling
+const MyCollabStyles = () => {
+  // This component injects the necessary CSS for my-collab styling
+  useEffect(() => {
+    // Create a style element
+    const styleEl = document.createElement('style');
+    
+    // Add CSS rules that target the cards with data-mycollab="true"
+    styleEl.textContent = `
+      [data-mycollab="true"] .card {
+        background: linear-gradient(to bottom right, rgba(91, 33, 182, 0.9), rgba(0, 0, 0, 1)) !important;
+        padding: 20px !important;
+      }
+    `;
+    
+    // Add the style element to the document head
+    document.head.appendChild(styleEl);
+    
+    // Cleanup function to remove the style element when component unmounts
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, []);
+  
+  return null;
+};
+
 export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cards, setCards] = useState(DUMMY_CARDS);
@@ -886,35 +910,71 @@ export default function DiscoverPage() {
 
 
   const renderCard = (card) => {
+    // Check if this is a "mycollab" type card for styling purposes
+    const isMyCollab = card.type === "mycollab";
+    
+    // Handle the case where card might be null (at the end of the deck)
+    if (!card) {
+      return <div className="w-full h-full flex items-center justify-center p-8 text-center text-muted-foreground">No more cards to show</div>;
+    }
+    
+    // Create the appropriate component
+    let cardContent;
     switch (card.type) {
       case "marketing":
-        return <MarketingCard data={card} />;
+        cardContent = <MarketingCard data={card} />;
+        break;
       case "conference":
-        return <ConferenceCard data={card} />;
+        cardContent = <ConferenceCard data={card} />;
+        break;
       case "request":
-        return <RequestCard data={card} />;
+        cardContent = <RequestCard data={card} />;
+        break;
       case "mycollab":
-        return <MyCollabCard data={card} />;
+        cardContent = <MyCollabCard data={card} />;
+        break;
       case "conference-coffee":
         // Keeping this case for backward compatibility, but displaying as blog post
-        return <BlogPostCollabCard data={card} />;
+        cardContent = <BlogPostCollabCard data={card} />;
+        break;
       case "podcast":
-        return <PodcastCard data={card} />;
+        cardContent = <PodcastCard data={card} />;
+        break;
       case "twitter-spaces":
-        return <TwitterSpacesCard data={card} />;
+        cardContent = <TwitterSpacesCard data={card} />;
+        break;
       case "livestream":
-        return <LiveStreamCard data={card} />;
+        cardContent = <LiveStreamCard data={card} />;
+        break;
       case "research-report":
-        return <ResearchReportCard data={card} />;
+        cardContent = <ResearchReportCard data={card} />;
+        break;
       case "newsletter":
-        return <NewsletterCard data={card} />;
+        cardContent = <NewsletterCard data={card} />;
+        break;
       default:
-        return null;
+        cardContent = <MarketingCard data={card} />;
+        break;
     }
+    
+    // For MyCollab cards, we need to wrap them with a data attribute
+    // to target with custom CSS for the gradient background
+    if (isMyCollab) {
+      return (
+        <div data-mycollab="true">
+          {cardContent}
+        </div>
+      );
+    }
+    
+    return cardContent;
   };
 
   return (
     <div className="telegram-app min-h-[100svh] bg-background" ref={pageRef}>
+      {/* Include the CSS styling component */}
+      <MyCollabStyles />
+      
       <div className="container max-w-md mx-auto py-4">
         <div className="flex justify-between items-center mb-4 px-4">
           <h1 className="text-2xl font-bold">Discover</h1>
