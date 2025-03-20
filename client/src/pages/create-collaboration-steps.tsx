@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -525,7 +526,7 @@ export default function CreateCollaborationSteps({
     userFollowers: true,
     fundingStages: true,
     hasToken: true,
-    blockchainNetworks: true,
+    blockchainNetworks: true
   });
 
   // Toggle filter sections
@@ -1573,6 +1574,392 @@ export default function CreateCollaborationSteps({
                   </FormItem>
                 )}
               />
+            )}
+          </div>
+        </div>
+      )
+    }
+    {
+      id: "visibility_filters",
+      title: "Visibility Filters",
+      description: "Control who can discover your collaboration",
+      render: () => (
+        <div className="space-y-6">
+          <h3 className="text-lg font-medium">Visibility Filters</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Control who can discover this collaboration opportunity by setting specific requirements.
+          </p>
+          
+          {/* Company Sector Requirements */}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={filtersEnabled.companySectors} 
+                  onCheckedChange={() => toggleFilter('companySectors')}
+                />
+                <h4 className="font-medium text-sm">Company Sector Requirements</h4>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleFilterExpansion('companySectors')}
+                className="p-0 h-7 w-7"
+              >
+                {filtersExpanded.companySectors ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            
+            {filtersExpanded.companySectors && (
+              <div className="pl-8 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Select which company sectors can see this collaboration
+                </p>
+                <FormField
+                  control={form.control}
+                  name="required_company_sectors"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+                          <div key={category} className="w-full">
+                            <h5 className="text-xs font-medium mb-1">{category}</h5>
+                            <div className="flex flex-wrap gap-1">
+                              {tags.map((tag) => {
+                                const isSelected = field.value?.includes(tag);
+                                return (
+                                  <Badge
+                                    key={tag}
+                                    variant={isSelected ? "default" : "outline"}
+                                    className={`cursor-pointer text-xs ${
+                                      isSelected ? "bg-primary" : "hover:bg-accent/50"
+                                    }`}
+                                    onClick={() => {
+                                      const currentValue = field.value || [];
+                                      const updatedValue = isSelected
+                                        ? currentValue.filter(t => t !== tag)
+                                        : [...currentValue, tag];
+                                      field.onChange(updatedValue);
+                                    }}
+                                  >
+                                    {tag}
+                                  </Badge>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+          </div>
+          
+          {/* Minimum Company Twitter Followers */}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={filtersEnabled.companyFollowers} 
+                  onCheckedChange={() => toggleFilter('companyFollowers')}
+                />
+                <h4 className="font-medium text-sm">Minimum Company Twitter Followers</h4>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleFilterExpansion('companyFollowers')}
+                className="p-0 h-7 w-7"
+              >
+                {filtersExpanded.companyFollowers ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            
+            {filtersExpanded.companyFollowers && (
+              <div className="pl-8 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Set minimum company Twitter followers requirement
+                </p>
+                <FormField
+                  control={form.control}
+                  name="min_company_followers"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={!filtersEnabled.companyFollowers}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select minimum followers" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                            <SelectItem key={count} value={count}>
+                              {count}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+          </div>
+          
+          {/* Funding Stage Requirements */}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={filtersEnabled.fundingStages} 
+                  onCheckedChange={() => toggleFilter('fundingStages')}
+                />
+                <h4 className="font-medium text-sm">Funding Stage Requirements</h4>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleFilterExpansion('fundingStages')}
+                className="p-0 h-7 w-7"
+              >
+                {filtersExpanded.fundingStages ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            
+            {filtersExpanded.fundingStages && (
+              <div className="pl-8 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Select acceptable funding stages
+                </p>
+                <FormField
+                  control={form.control}
+                  name="required_funding_stages"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {FUNDING_STAGES.map((stage) => {
+                          const isSelected = field.value?.includes(stage);
+                          return (
+                            <Badge
+                              key={stage}
+                              variant={isSelected ? "default" : "outline"}
+                              className={`cursor-pointer text-xs ${
+                                isSelected ? "bg-primary" : "hover:bg-accent/50"
+                              }`}
+                              onClick={() => {
+                                const currentValue = field.value || [];
+                                const updatedValue = isSelected
+                                  ? currentValue.filter(s => s !== stage)
+                                  : [...currentValue, stage];
+                                field.onChange(updatedValue);
+                              }}
+                            >
+                              {stage}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+          </div>
+          
+          {/* Minimum User Twitter Followers */}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={filtersEnabled.userFollowers} 
+                  onCheckedChange={() => toggleFilter('userFollowers')}
+                />
+                <h4 className="font-medium text-sm">Minimum User Twitter Followers</h4>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleFilterExpansion('userFollowers')}
+                className="p-0 h-7 w-7"
+              >
+                {filtersExpanded.userFollowers ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            
+            {filtersExpanded.userFollowers && (
+              <div className="pl-8 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Set minimum personal Twitter followers requirement
+                </p>
+                <FormField
+                  control={form.control}
+                  name="min_user_followers"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={!filtersEnabled.userFollowers}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select minimum followers" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                            <SelectItem key={count} value={count}>
+                              {count}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+          </div>
+          
+          {/* Token Status Requirement */}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={filtersEnabled.hasToken} 
+                  onCheckedChange={() => toggleFilter('hasToken')}
+                />
+                <h4 className="font-medium text-sm">Token Status Requirement</h4>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleFilterExpansion('hasToken')}
+                className="p-0 h-7 w-7"
+              >
+                {filtersExpanded.hasToken ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            
+            {filtersExpanded.hasToken && (
+              <div className="pl-8 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Require companies to have a token
+                </p>
+                <FormField
+                  control={form.control}
+                  name="required_token_status"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormControl>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={!filtersEnabled.hasToken}
+                          />
+                          <span className="text-sm">
+                            Only companies with tokens
+                          </span>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+          </div>
+          
+          {/* Blockchain Network Requirements */}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={filtersEnabled.blockchainNetworks} 
+                  onCheckedChange={() => toggleFilter('blockchainNetworks')}
+                />
+                <h4 className="font-medium text-sm">Blockchain Network Requirements</h4>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleFilterExpansion('blockchainNetworks')}
+                className="p-0 h-7 w-7"
+              >
+                {filtersExpanded.blockchainNetworks ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            
+            {filtersExpanded.blockchainNetworks && (
+              <div className="pl-8 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Select which blockchain networks are required
+                </p>
+                <FormField
+                  control={form.control}
+                  name="required_blockchain_networks"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <div className="space-y-3">
+                        {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
+                          <div key={category} className="w-full">
+                            <h5 className="text-xs font-medium mb-1">{category}</h5>
+                            <div className="flex flex-wrap gap-1">
+                              {networks.map((network) => {
+                                const isSelected = field.value?.includes(network);
+                                return (
+                                  <Badge
+                                    key={network}
+                                    variant={isSelected ? "default" : "outline"}
+                                    className={`cursor-pointer text-xs ${
+                                      isSelected ? "bg-primary" : "hover:bg-accent/50"
+                                    }`}
+                                    onClick={() => {
+                                      const currentValue = field.value || [];
+                                      const updatedValue = isSelected
+                                        ? currentValue.filter(n => n !== network)
+                                        : [...currentValue, network];
+                                      field.onChange(updatedValue);
+                                    }}
+                                  >
+                                    {network}
+                                  </Badge>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
             )}
           </div>
         </div>
