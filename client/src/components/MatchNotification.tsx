@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, PartyPopper, Sparkles } from 'lucide-react';
@@ -6,106 +6,79 @@ import { Button } from '@/components/ui/button';
 
 // Confetti particle component
 const Confetti = ({ colors }: { colors: string[] }) => {
-  const [particles, setParticles] = useState<Array<{
-    id: number;
-    x: number;
-    y: number;
-    size: number;
-    color: string;
-    rotation: number;
-    delay: number;
-    duration: number;
-    flutterX: number[];
-    shape: 'circle' | 'square' | 'rectangle';
-  }>>([]);
-
-  useEffect(() => {
-    // Generate a large number of falling confetti particles
-    const newParticles = Array.from({ length: 250 }).map((_, i) => {
-      // Start from the top with a random horizontal position
-      const startX = Math.random() * 100; // Random horizontal position (0-100%)
-      const startY = -10 - Math.random() * 20; // Start above the viewport (negative %)
+  const confettiParticles = useMemo(() => {
+    return Array.from({ length: 200 }).map((_, i) => {
+      // Random position across the top of the screen
+      const x = Math.random() * 100; // Random horizontal position (0-100%)
       
       // Randomize properties for each particle
-      const size = Math.random() * 12 + 5;
+      const size = Math.random() * 8 + 3;
+      const shape = ['circle', 'square', 'rectangle'][Math.floor(Math.random() * 3)];
+      const rotationStart = Math.random() * 360;
+      const rotationEnd = rotationStart + Math.random() * 720;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const delay = Math.random() * 5; // Staggered start for continuous rain effect
+      const duration = 4 + Math.random() * 3; // Varied falling speed
       
-      // Random shape with more varied options
-      const shapes: Array<'circle' | 'square' | 'rectangle'> = ['circle', 'square', 'rectangle'];
-      const shape = shapes[Math.floor(Math.random() * shapes.length)];
-      
-      // Flutter pattern - subtle horizontal movement as the confetti falls
+      // Flutter pattern - how much the particle moves side to side while falling
       const flutterIntensity = 15 + Math.random() * 20;
-      const flutterPoints = 5; // Number of points in the flutter path
-      const flutterX = Array.from({ length: flutterPoints }).map(() => 
-        (Math.random() - 0.5) * flutterIntensity
-      );
+      const flutter = [(Math.random() - 0.5) * flutterIntensity, (Math.random() - 0.5) * flutterIntensity];
+      
+      // Special styling for rectangle shape
+      const isRectangle = shape === 'rectangle';
+      const width = isRectangle ? size * 0.6 : size;
+      const height = isRectangle ? size * 2 : size;
       
       return {
         id: i,
-        x: startX,
-        y: startY,
+        x,
         size,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        rotation: Math.random() * 360,
-        delay: Math.random() * 3, // Staggered start for a continuous rain effect
-        duration: 4 + Math.random() * 5, // Slower, more natural falling
-        flutterX,
-        shape
+        width,
+        height,
+        shape,
+        rotationStart,
+        rotationEnd,
+        color,
+        delay,
+        duration,
+        flutter
       };
     });
-    
-    setParticles(newParticles);
   }, [colors]);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden pointer-events-none">
-      {particles.map((particle) => {
-        // Special styling for rectangle shape
-        const isRectangle = particle.shape === 'rectangle';
-        const width = isRectangle ? particle.size * 0.6 : particle.size;
-        const height = isRectangle ? particle.size * 2 : particle.size;
-        
-        return (
-          <motion.div
-            key={particle.id}
-            className="absolute"
-            style={{
-              width,
-              height,
-              backgroundColor: particle.color,
-              borderRadius: particle.shape === 'circle' ? '50%' : '0',
-              opacity: 0,
-              left: `${particle.x}%`,
-              top: `${particle.y}%`,
-              boxShadow: `0 0 2px rgba(255,255,255,0.5)`,
-            }}
-            animate={{
-              y: ['0%', '110%'], // Fall from initial position to bottom of screen
-              x: particle.flutterX, // Flutter left and right while falling
-              opacity: [0, 0.9, 0.9, 0.9, 0], // Fade in/out
-              rotate: [`${Math.random() * 360}deg`, `${Math.random() * 360 + 720}deg`], // Spin as it falls
-            }}
-            transition={{
-              duration: particle.duration,
-              delay: particle.delay,
-              ease: "linear",
-              times: [0, 1], // Control timing of the animation
-              x: {
-                duration: particle.duration,
-                times: particle.flutterX && particle.flutterX.length > 0 ? 
-                  Array.from({ length: particle.flutterX.length }).map(
-                    (_, i) => i / (particle.flutterX.length - 1)
-                  ) : [0, 1],
-                ease: "easeInOut",
-              },
-              opacity: {
-                duration: particle.duration,
-                times: [0, 0.1, 0.8, 0.9, 1], // Control timing of opacity changes
-              }
-            }}
-          />
-        );
-      })}
+      {confettiParticles.map((particle) => (
+        <motion.div
+          key={particle.id}
+          className="absolute"
+          style={{
+            width: particle.width,
+            height: particle.height,
+            backgroundColor: particle.color,
+            borderRadius: particle.shape === 'circle' ? '50%' : '0',
+            left: `${particle.x}%`,
+            top: '-20px', // Start above the viewport
+            boxShadow: `0 0 2px rgba(255,255,255,0.3)`,
+            zIndex: 100,
+          }}
+          initial={{ opacity: 0, y: -20, rotate: particle.rotationStart }}
+          animate={{ 
+            opacity: [0, 0.8, 0.8, 0.8, 0],
+            y: ['0vh', '120vh'], 
+            x: particle.flutter,
+            rotate: particle.rotationEnd
+          }}
+          transition={{
+            duration: particle.duration,
+            delay: particle.delay,
+            ease: "linear",
+            opacity: {
+              times: [0, 0.1, 0.7, 0.9, 1]
+            }
+          }}
+        />
+      ))}
     </div>
   );
 };
