@@ -135,7 +135,7 @@ export default function CreateCollaborationSteps({
       if (currentStepId === "twitter_comarketing_type") {
         // Reset the Twitter marketing type field
         const twitterDetails = form.getValues("details") as Record<string, any>;
-        form.setValue("details.twittercomarketing_type", twitterDetails.twittercomarketing_type || ["Tweet"]);
+        form.setValue("details.twittercomarketing_type", twitterDetails.twittercomarketing_type || ["Thread Collab"]);
       }
       else if (currentStepId === "twitter_comarketing_handle") {
         // Ensure the Twitter handle field has proper value
@@ -219,7 +219,7 @@ export default function CreateCollaborationSteps({
           break;
           
         case "Co-Marketing on Twitter":
-          newDetails.twittercomarketing_type = ["Tweet"];
+          newDetails.twittercomarketing_type = ["Thread Collab"];
           newDetails.host_twitter_handle = "https://x.com/";
           newDetails.host_follower_count = TWITTER_FOLLOWER_COUNTS[0];
           newDetails.short_description = "";
@@ -432,7 +432,7 @@ export default function CreateCollaborationSteps({
         };
       } else if (data.collab_type === "Co-Marketing on Twitter") {
         data.details = {
-          twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Tweet"],
+          twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Thread Collab"],
           host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) 
             ? rawDetails.host_follower_count 
@@ -931,7 +931,7 @@ export default function CreateCollaborationSteps({
               currentValue = [field.value];
             } else if (field.value) {
               // Some other type of value, reset to defaults
-              currentValue = ["Tweet"];
+              currentValue = ["Thread Collab"];
             }
             
             return (
@@ -951,7 +951,7 @@ export default function CreateCollaborationSteps({
                             ? currentValue.filter((t) => t !== type)
                             : [...currentValue, type];
                           // Ensure at least one value is selected
-                          const newValue = updatedTypes.length > 0 ? updatedTypes : ["Tweet"];
+                          const newValue = updatedTypes.length > 0 ? updatedTypes : ["Thread Collab"];
                           field.onChange(newValue);
                         }}
                       >
