@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, PartyPopper, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { createPortal } from 'react-dom';
 
 // Confetti particle component
 const Confetti = ({ colors }: { colors: string[] }) => {
@@ -18,7 +19,7 @@ const Confetti = ({ colors }: { colors: string[] }) => {
       const rotationEnd = rotationStart + Math.random() * 720;
       const color = colors[Math.floor(Math.random() * colors.length)];
       const delay = Math.random() * 5; // Staggered start for continuous rain effect
-      const duration = 4 + Math.random() * 3; // Varied falling speed
+      const duration = 6 + Math.random() * 6; // Longer, more varied falling speed for sustained effect
       
       // Flutter pattern - how much the particle moves side to side while falling
       const flutterIntensity = 15 + Math.random() * 20;
@@ -47,7 +48,7 @@ const Confetti = ({ colors }: { colors: string[] }) => {
   }, [colors]);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 z-60 overflow-hidden pointer-events-none">
       {confettiParticles.map((particle) => (
         <motion.div
           key={particle.id}
@@ -60,7 +61,7 @@ const Confetti = ({ colors }: { colors: string[] }) => {
             left: `${particle.x}%`,
             top: '-20px', // Start above the viewport
             boxShadow: `0 0 2px rgba(255,255,255,0.3)`,
-            zIndex: 100,
+            zIndex: 999, // Very high z-index to ensure it's above everything
           }}
           initial={{ opacity: 0, y: -20, rotate: particle.rotationStart }}
           animate={{ 
@@ -96,6 +97,26 @@ interface MatchNotificationProps {
 
 export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificationProps) {
   const [location, setLocation] = useLocation();
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
+  
+  useEffect(() => {
+    // Find or create a root element for the portal
+    let root = document.getElementById('confetti-root');
+    if (!root) {
+      root = document.createElement('div');
+      root.id = 'confetti-root';
+      document.body.appendChild(root);
+    }
+    setPortalRoot(root);
+    
+    return () => {
+      // Clean up if needed when component unmounts
+      if (root && !root.childElementCount) {
+        document.body.removeChild(root);
+      }
+    };
+  }, []);
+  
   const [confettiColors] = useState([
     '#FF5733', // Orange
     '#33FFC4', // Turquoise
@@ -121,8 +142,6 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
     <AnimatePresence>
       {isOpen && (
         <>
-          {isOpen && <Confetti colors={confettiColors} />}
-          
           <motion.div
             className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
             initial={{ opacity: 0 }}
@@ -184,6 +203,9 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
               </div>
             </motion.div>
           </motion.div>
+          
+          {/* Positioned at the end of the React tree for highest z-index */}
+          <Confetti colors={confettiColors} />
         </>
       )}
     </AnimatePresence>
