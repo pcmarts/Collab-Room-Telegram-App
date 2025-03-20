@@ -311,19 +311,30 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 {collab.title === "Collaboration" ? collab.collab_type : collab.title}
               </CardTitle>
             </div>
-            {hasApplications && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <Users className="h-3 w-3" /> {pendingApplications.length} application{pendingApplications.length !== 1 ? 's' : ''}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {hasApplications && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Users className="h-3 w-3" /> {pendingApplications.length} application{pendingApplications.length !== 1 ? 's' : ''}
+                </Badge>
+              )}
+              {!hasApplications && (
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50/50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCollabToDelete(collab.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="pb-2">
-          <p className="text-sm text-gray-600 mb-4">
-            {collab.details && typeof collab.details === 'object' && 
-              (collab.details.short_description || collab.details.description || 
-               (collab.details.goals || "No description available"))}
-          </p>
+          {/* We've removed the description as requested */}
           
           {/* Collaboration-specific details based on type */}
           {collab.details && typeof collab.details === 'object' && (
@@ -416,7 +427,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         </CardContent>
         <CardFooter>
           <div className="flex flex-wrap gap-2 w-full">
-            {hasApplications ? (
+            {hasApplications && (
               <Button 
                 variant="default"
                 size="sm"
@@ -425,15 +436,6 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               >
                 <ListChecks className="h-4 w-4 mr-1" /> 
                 View Applications
-              </Button>
-            ) : (
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="flex-1 text-red-500 hover:text-red-600 hover:bg-red-50"
-                onClick={() => setCollabToDelete(collab.id)}
-              >
-                <Trash2 className="h-4 w-4 mr-1" /> Delete
               </Button>
             )}
           </div>
