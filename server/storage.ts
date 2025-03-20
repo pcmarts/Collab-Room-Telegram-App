@@ -147,6 +147,8 @@ export class DatabaseStorage implements IStorage {
           console.log("Twitter Spaces short_description found:", collabData.details.short_description);
         } else {
           console.warn("Missing short_description for Twitter Spaces collaboration");
+          // Initialize with empty string to prevent null errors
+          collabData.details.short_description = "";
         }
       }
     }

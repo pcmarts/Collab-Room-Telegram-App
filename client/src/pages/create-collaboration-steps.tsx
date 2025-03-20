@@ -179,7 +179,7 @@ export default function CreateCollaborationSteps({
           // Use consistent field names for Twitter Spaces
           newDetails.twitter_handle = "https://x.com/";
           newDetails.host_follower_count = TWITTER_FOLLOWER_COUNTS[0];
-          newDetails.short_description = ""; // Single field for topic description
+          newDetails.short_description = ""; // Single field for topic description - ensure this field is present from the start
           break;
           
         case "Live Stream Guest Appearance":
@@ -406,15 +406,16 @@ export default function CreateCollaborationSteps({
         console.log("  - Raw short_description value:", rawDetails?.short_description);
         
         // Get the short description directly from the form field
-        const shortDesc = form.getValues("details.short_description");
+        // This is the key part that was failing - ensure we get the value properly
+        const shortDesc = form.getValues("details.short_description") || "";
         console.log("Direct form field value for short_description:", shortDesc);
         
         // Note: Using only standard fields (short_description) to store the Twitter Space topic
         data.details = {
           twitter_handle: typeof rawDetails?.twitter_handle === 'string' ? rawDetails.twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) ? rawDetails.host_follower_count : TWITTER_FOLLOWER_COUNTS[0],
-          // Prioritize using the short description from the direct form field access
-          short_description: shortDesc || (typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : ""),
+          // Ensure short_description is always a string, even if empty
+          short_description: shortDesc,
         };
         
         console.log("Twitter Spaces Guest AFTER formatting:", data.details);
@@ -943,6 +944,15 @@ export default function CreateCollaborationSteps({
               // Ensure field value is always a string
               const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
               
+              // Add an effect to make sure the field gets properly updated
+              useEffect(() => {
+                // This ensures the field gets properly registered with the form
+                form.register("details.short_description");
+                
+                // Debug the field value
+                console.log("Twitter Spaces short_description field:", field.value);
+              }, [field.value, form]);
+              
               return (
                 <FormItem className="space-y-1 pt-0">
                   <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
@@ -952,7 +962,10 @@ export default function CreateCollaborationSteps({
                       className="resize-none text-xs"
                       maxLength={180}
                       value={displayValue}
-                      onChange={(e) => field.onChange(e.target.value)}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        console.log("Short description updated:", e.target.value);
+                      }}
                       onBlur={field.onBlur}
                       ref={field.ref}
                       name={field.name}
