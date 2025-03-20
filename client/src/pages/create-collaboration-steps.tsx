@@ -517,44 +517,34 @@ export default function CreateCollaborationSteps({
   
   // State for filter sections expansion (separate from enabled state)
   const [filtersExpanded, setFiltersExpanded] = useState({
-    companySectors: false,
-    companyFollowers: false,
-    userFollowers: false,
-    fundingStages: false,
-    hasToken: false,
-    blockchainNetworks: false,
+    companySectors: true,
+    companyFollowers: true,
+    userFollowers: true,
+    fundingStages: true,
+    hasToken: true,
+    blockchainNetworks: true,
   });
 
   // Toggle filter sections
-  const toggleFilter = (filterName: string) => {
-    const newState = !filtersEnabled[filterName as keyof typeof filtersEnabled];
-    setFiltersEnabled((prevState) => {
-      const newFiltersEnabled = {
-        ...prevState,
-        [filterName]: newState
-      };
-      
-      return newFiltersEnabled;
-    });
-
-    // Update form value based on filter state
-    form.setValue(`filter_${filterName}_enabled` as any, newState);
+  const toggleFilter = (filterKey: keyof typeof filtersEnabled) => {
+    const newValue = !filtersEnabled[filterKey];
     
-    // Also update expanded state when enabling
-    if (newState) {
-      setFiltersExpanded({
-        ...filtersExpanded,
-        [filterName]: true
-      });
-    }
+    setFiltersEnabled(prev => ({
+      ...prev,
+      [filterKey]: newValue
+    }));
+    
+    // Update the form field that tracks filter enabled state
+    const fieldName = `filter_${filterKey}_enabled` as any;
+    form.setValue(fieldName, newValue);
   };
   
-  // Toggle filter section expansion without affecting filter state
-  const toggleFilterExpansion = (filterName: string) => {
-    setFiltersExpanded({
-      ...filtersExpanded,
-      [filterName]: !filtersExpanded[filterName as keyof typeof filtersExpanded]
-    });
+  // Toggle filter expansion
+  const toggleFilterExpansion = (filterKey: keyof typeof filtersExpanded) => {
+    setFiltersExpanded(prev => ({
+      ...prev,
+      [filterKey]: !prev[filterKey]
+    }));
   };
 
   // Define all the possible steps with their associated fields
