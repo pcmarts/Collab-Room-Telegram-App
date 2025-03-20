@@ -94,10 +94,9 @@ export default function CreateCollaborationSteps({
       details: {
         // Default values for different collaboration types to prevent field bleeding
         // Twitter spaces defaults
-        short_description: "",
-        topic: "",
-        host_twitter_handle: "",
-        host_follower_count: "",
+        short_description: "", // Use this for Twitter topic
+        twitter_handle: "",
+        host_follower_count: TWITTER_FOLLOWER_COUNTS[0],
         
         // Twitter co-marketing defaults
         twitter_description: "",
@@ -107,9 +106,9 @@ export default function CreateCollaborationSteps({
         podcast_name: "",
         podcast_description: "",
         // Each collaboration type should have its own description
-        estimated_reach: "",
+        estimated_reach: "Under 100",
         podcast_link: "",
-      },
+      } as any,
     },
   });
 
@@ -162,7 +161,7 @@ export default function CreateCollaborationSteps({
     form.setValue("collab_type", value as (typeof COLLAB_TYPES)[number]);
 
     // IMPORTANT: COMPLETELY reset the form details field to prevent field bleeding
-    form.setValue("details", {});
+    form.setValue("details", {} as any);
     
     // Use setTimeout to ensure that the form details reset happens first
     setTimeout(() => {
@@ -231,14 +230,14 @@ export default function CreateCollaborationSteps({
       }
 
       // Apply the new details after reset
-      form.setValue("details", newDetails);
+      form.setValue("details", newDetails as any);
     }, 10); // Small delay to ensure reset happens first
   };
 
   // Function to clear any potential data bleeding between form fields
   const clearFormFieldsExcept = (currentFieldName: string) => {
     // Save current field value
-    const currentValue = form.getValues(currentFieldName);
+    const currentValue = form.getValues(currentFieldName as any);
     
     if (currentFieldName.startsWith('details.')) {
       // Get current details value
@@ -247,12 +246,12 @@ export default function CreateCollaborationSteps({
       const fieldValue = details[fieldKey];
       
       // Reset details
-      form.setValue('details', {});
+      form.setValue('details', {} as any);
       
       // Restore only the current field
       const newDetails: Record<string, any> = {};
       newDetails[fieldKey] = fieldValue;
-      form.setValue('details', newDetails);
+      form.setValue('details', newDetails as any);
     }
   };
   
@@ -402,7 +401,7 @@ export default function CreateCollaborationSteps({
         data.details = {
           title: typeof rawDetails?.title === 'string' ? rawDetails.title : "",
           short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
-          date_selection: typeof rawDetails?.date_selection === 'string' ? rawDetails.date_selection : "any_future_date",
+          date_selection: (typeof rawDetails?.date_selection === 'string' && (rawDetails.date_selection === "any_future_date" || rawDetails.date_selection === "specific_date")) ? rawDetails.date_selection : "any_future_date",
           specific_date: typeof rawDetails?.specific_date === 'string' ? rawDetails.specific_date : "",
           previous_stream_link: typeof rawDetails?.previous_stream_link === 'string' ? rawDetails.previous_stream_link : "",
           expected_audience_size: AUDIENCE_SIZE_RANGES.includes(rawDetails?.expected_audience_size) ? rawDetails.expected_audience_size : AUDIENCE_SIZE_RANGES[0],
@@ -1578,7 +1577,7 @@ export default function CreateCollaborationSteps({
           </div>
         </div>
       )
-    }
+    },
     {
       id: "visibility_filters",
       title: "Visibility Filters",

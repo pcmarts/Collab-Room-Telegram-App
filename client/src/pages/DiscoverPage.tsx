@@ -599,14 +599,14 @@ export default function DiscoverPage() {
     // Ensure the WebApp expands to fullscreen and is properly initialized
     if (window.Telegram?.WebApp) {
       // Initialize Telegram WebApp
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
+      window.Telegram?.WebApp?.ready();
+      window.Telegram?.WebApp?.expand();
       
       // Adaptive viewport height calculation
       const updateTelegramViewportHeight = () => {
         // Use Telegram's stable viewport height if available
-        if (window.Telegram.WebApp.viewportStableHeight) {
-          const vh = window.Telegram.WebApp.viewportStableHeight * 0.01;
+        if (window.Telegram?.WebApp?.viewportStableHeight) {
+          const vh = window.Telegram?.WebApp?.viewportStableHeight * 0.01;
           document.documentElement.style.setProperty('--vh', `${vh}px`);
         } else {
           // Fallback to window height
@@ -624,16 +624,16 @@ export default function DiscoverPage() {
       };
       
       // Handle Telegram viewport and resize events
-      if (typeof window.Telegram.WebApp.onEvent === 'function') {
-        window.Telegram.WebApp.onEvent('viewportChanged', handleViewportChange);
+      if (typeof window.Telegram?.WebApp?.onEvent === 'function') {
+        window.Telegram?.WebApp?.onEvent('viewportChanged', handleViewportChange);
       }
       
       // Also listen to regular resize events as backup
       window.addEventListener('resize', updateTelegramViewportHeight);
       
       return () => {
-        if (typeof window.Telegram.WebApp.offEvent === 'function') {
-          window.Telegram.WebApp.offEvent('viewportChanged', handleViewportChange);
+        if (typeof window.Telegram?.WebApp?.offEvent === 'function') {
+          window.Telegram?.WebApp?.offEvent('viewportChanged', handleViewportChange);
         }
         window.removeEventListener('resize', updateTelegramViewportHeight);
       };
