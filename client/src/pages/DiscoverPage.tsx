@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { 
   X, Info, Check, Coffee, Calendar, Megaphone, Twitter, 
   Linkedin, Building, Mic, Radio, Video, FileText, BookOpen,
-  RotateCcw, Filter
+  RotateCcw, SlidersVertical
 } from "lucide-react";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
@@ -763,7 +763,7 @@ export default function DiscoverPage() {
             onClick={() => setLocation('/discovery-filters')}
             aria-label="Filter"
           >
-            <Filter className="h-5 w-5" />
+            <SlidersVertical className="h-5 w-5" />
           </Button>
         </div>
 
