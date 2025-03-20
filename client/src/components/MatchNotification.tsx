@@ -14,47 +14,73 @@ const Confetti = ({ colors }: { colors: string[] }) => {
     color: string;
     rotation: number;
     delay: number;
+    duration: number;
+    shape: 'circle' | 'square' | 'triangle';
   }>>([]);
 
   useEffect(() => {
-    // Generate random confetti particles
-    const newParticles = Array.from({ length: 80 }).map((_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * -60 - 20, // Start above the screen
-      size: Math.random() * 8 + 4,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      rotation: Math.random() * 360,
-      delay: Math.random() * 0.5,
-    }));
+    // Generate random confetti particles for a big explosion effect
+    const newParticles = Array.from({ length: 200 }).map((_, i) => {
+      // Random starting point near the center of the screen
+      const startX = 50;
+      const startY = 50;
+      
+      // Random end points (exploding outward)
+      const angle = Math.random() * Math.PI * 2; // Full 360° explosion
+      const distance = 30 + Math.random() * 100; // How far particles travel
+      
+      // Calculate end position using angle and distance
+      const endX = Math.cos(angle) * distance;
+      const endY = Math.sin(angle) * distance;
+      
+      // Random shape for variety
+      const shapes: Array<'circle' | 'square' | 'triangle'> = ['circle', 'square', 'triangle'];
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      
+      return {
+        id: i,
+        x: endX,
+        y: endY,
+        size: Math.random() * 12 + 4, // Slightly larger particles
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        delay: Math.random() * 0.3, // Shorter delay for more instant explosion
+        duration: 0.8 + Math.random() * 1.2, // Faster animation
+        shape
+      };
+    });
     
     setParticles(newParticles);
   }, [colors]);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 z-50 overflow-hidden pointer-events-none">
       {particles.map((particle) => (
         <motion.div
           key={particle.id}
           className="absolute"
           style={{
             width: particle.size,
-            height: particle.size,
-            backgroundColor: particle.color,
-            borderRadius: Math.random() > 0.5 ? '50%' : '0',
-            top: `-${particle.size}px`,
-            left: `${particle.x}%`,
-            rotate: `${particle.rotation}deg`,
+            height: particle.shape !== 'triangle' ? particle.size : 0,
+            borderWidth: particle.shape === 'triangle' ? `${particle.size}px ${particle.size}px 0` : 0,
+            borderStyle: particle.shape === 'triangle' ? 'solid' : 'none',
+            borderColor: particle.shape === 'triangle' ? `${particle.color} transparent transparent` : 'transparent',
+            backgroundColor: particle.shape !== 'triangle' ? particle.color : 'transparent',
+            borderRadius: particle.shape === 'circle' ? '50%' : '0',
+            left: '50%',
+            top: '50%',
+            marginLeft: -particle.size / 2,
+            marginTop: -particle.size / 2,
           }}
-          initial={{ y: particle.y, opacity: 0 }}
           animate={{
-            y: ['0%', '110%'],
-            x: [0, (Math.random() - 0.5) * 50],
-            opacity: [0, 1, 0.8, 0],
-            rotate: [`${particle.rotation}deg`, `${particle.rotation + 180}deg`],
+            x: particle.x,
+            y: particle.y,
+            opacity: [0, 1, 1, 0],
+            rotate: [0, particle.rotation],
+            scale: [0.3, 1, 1, 0.5],
           }}
           transition={{
-            duration: 4 + Math.random() * 2,
+            duration: particle.duration,
             delay: particle.delay,
             ease: "easeOut",
           }}
@@ -86,13 +112,6 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
     '#33FF57', // Green
   ]);
   
-  // Create animated sparkles effect
-  useEffect(() => {
-    if (!isOpen) return;
-    
-    // This is a purely visual effect so no cleanup needed
-  }, [isOpen]);
-
   // Navigate to matches page and close the notification
   const goToMatches = () => {
     setLocation('/matches');
@@ -102,70 +121,71 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <motion.div 
-            className="relative w-full max-w-md bg-background rounded-lg shadow-xl p-6 overflow-hidden"
-            initial={{ scale: 0.8, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.8, y: 20 }}
-            transition={{ type: "spring", damping: 15 }}
+        <>
+          {isOpen && <Confetti colors={confettiColors} />}
+          
+          <motion.div
+            className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            {/* Confetti animation overlay */}
-            <Confetti colors={confettiColors} />
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="absolute right-2 top-2 z-10" 
-              onClick={onClose}
+            <motion.div 
+              className="relative w-full max-w-md bg-background rounded-lg shadow-xl p-6"
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              transition={{ type: "spring", damping: 15 }}
             >
-              <X className="h-4 w-4" />
-            </Button>
-            
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="flex flex-col items-center space-y-1">
-                <div className="flex items-center gap-2">
-                  <motion.div
-                    animate={{ rotate: [0, 15, -15, 0] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                  >
-                    <Sparkles className="h-6 w-6 text-primary" />
-                  </motion.div>
-                  <h2 className="text-xl font-bold text-primary">It's a Match!</h2>
-                  <motion.div
-                    animate={{ rotate: [0, -15, 15, 0] }}
-                    transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
-                  >
-                    <PartyPopper className="h-6 w-6 text-primary" />
-                  </motion.div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute right-2 top-2 z-10" 
+                onClick={onClose}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              
+              <div className="flex flex-col items-center space-y-4 text-center">
+                <div className="flex flex-col items-center space-y-1">
+                  <div className="flex items-center gap-2">
+                    <motion.div
+                      animate={{ rotate: [0, 15, -15, 0] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                    >
+                      <Sparkles className="h-6 w-6 text-primary" />
+                    </motion.div>
+                    <h2 className="text-xl font-bold text-primary">It's a Match!</h2>
+                    <motion.div
+                      animate={{ rotate: [0, -15, 15, 0] }}
+                      transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
+                    >
+                      <PartyPopper className="h-6 w-6 text-primary" />
+                    </motion.div>
+                  </div>
+                  <p className="text-muted-foreground">You both showed interest in collaborating!</p>
                 </div>
-                <p className="text-muted-foreground">You both showed interest in collaborating!</p>
+                
+                <div className="w-full p-4 rounded-lg bg-muted/30">
+                  <h3 className="font-semibold text-lg">{matchData.title || 'New Collaboration'}</h3>
+                  <p className="text-sm">{matchData.companyName}</p>
+                  <span className="inline-block px-2 py-1 mt-2 text-xs bg-primary/10 text-primary rounded-full">
+                    {matchData.collaborationType}
+                  </span>
+                </div>
+                
+                <div className="flex gap-3 w-full mt-4">
+                  <Button variant="outline" className="flex-1" onClick={onClose}>
+                    Keep Browsing
+                  </Button>
+                  <Button className="flex-1" onClick={goToMatches}>
+                    View Matches
+                  </Button>
+                </div>
               </div>
-              
-              <div className="w-full p-4 rounded-lg bg-muted/30">
-                <h3 className="font-semibold text-lg">{matchData.title || 'New Collaboration'}</h3>
-                <p className="text-sm">{matchData.companyName}</p>
-                <span className="inline-block px-2 py-1 mt-2 text-xs bg-primary/10 text-primary rounded-full">
-                  {matchData.collaborationType}
-                </span>
-              </div>
-              
-              <div className="flex gap-3 w-full mt-4">
-                <Button variant="outline" className="flex-1" onClick={onClose}>
-                  Keep Browsing
-                </Button>
-                <Button className="flex-1" onClick={goToMatches}>
-                  View Matches
-                </Button>
-              </div>
-            </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
