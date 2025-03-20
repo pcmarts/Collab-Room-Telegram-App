@@ -196,8 +196,8 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">{match.matchedPerson}</h2>
-          <p className="text-sm text-muted-foreground">{match.roleTitle}, {match.companyName}</p>
+          <h2 className="text-xl font-bold">{match.companyName}</h2>
+          <p className="text-sm text-muted-foreground">{match.matchedPerson}, {match.roleTitle}</p>
           <p className="text-xs text-muted-foreground mt-1">Matched on {match.matchDate}</p>
         </div>
         <Badge variant="outline" className="text-muted-foreground bg-transparent">{match.collaborationType}</Badge>
@@ -302,8 +302,8 @@ export default function MatchesPage() {
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg">{match.matchedPerson}</CardTitle>
-                      <CardDescription>{match.roleTitle}, {match.companyName}</CardDescription>
+                      <CardTitle className="text-lg">{match.companyName}</CardTitle>
+                      <CardDescription>{match.matchedPerson}, {match.roleTitle}</CardDescription>
                       <p className="text-xs text-muted-foreground mt-1">Matched on {match.matchDate}</p>
                     </div>
                     <Badge variant="outline" className="text-muted-foreground bg-transparent">{match.collaborationType}</Badge>
