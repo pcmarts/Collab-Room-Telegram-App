@@ -505,6 +505,58 @@ export default function CreateCollaborationSteps({
     }
   };
 
+  // State for filter toggles
+  const [filtersEnabled, setFiltersEnabled] = useState({
+    companySectors: false,
+    companyFollowers: false,
+    userFollowers: false,
+    fundingStages: false,
+    hasToken: false,
+    blockchainNetworks: false,
+  });
+  
+  // State for filter sections expansion (separate from enabled state)
+  const [filtersExpanded, setFiltersExpanded] = useState({
+    companySectors: false,
+    companyFollowers: false,
+    userFollowers: false,
+    fundingStages: false,
+    hasToken: false,
+    blockchainNetworks: false,
+  });
+
+  // Toggle filter sections
+  const toggleFilter = (filterName: string) => {
+    const newState = !filtersEnabled[filterName as keyof typeof filtersEnabled];
+    setFiltersEnabled((prevState) => {
+      const newFiltersEnabled = {
+        ...prevState,
+        [filterName]: newState
+      };
+      
+      return newFiltersEnabled;
+    });
+
+    // Update form value based on filter state
+    form.setValue(`filter_${filterName}_enabled` as any, newState);
+    
+    // Also update expanded state when enabling
+    if (newState) {
+      setFiltersExpanded({
+        ...filtersExpanded,
+        [filterName]: true
+      });
+    }
+  };
+  
+  // Toggle filter section expansion without affecting filter state
+  const toggleFilterExpansion = (filterName: string) => {
+    setFiltersExpanded({
+      ...filtersExpanded,
+      [filterName]: !filtersExpanded[filterName as keyof typeof filtersExpanded]
+    });
+  };
+
   // Define all the possible steps with their associated fields
   const allSteps = [
     {
