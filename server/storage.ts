@@ -117,6 +117,17 @@ export class DatabaseStorage implements IStorage {
       // specific_date is already a string from our schema change
     }
     
+    // Process the details object - ensure all details are preserved
+    if (collabData.details) {
+      console.log("Processing details object:", collabData.details);
+      
+      // If Twitter co-marketing, ensure short_description is preserved
+      if (collabData.collab_type === 'Co-Marketing on Twitter' && 
+          collabData.details.short_description) {
+        console.log("Preserving Twitter co-marketing short_description:", collabData.details.short_description);
+      }
+    }
+    
     // Ensure array fields are properly formatted
     const preparedData = {
       ...collabData,

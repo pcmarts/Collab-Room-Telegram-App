@@ -581,7 +581,8 @@ export const blogPostDetailsSchema = z.object({
 export const twitterCoMarketingDetailsSchema = z.object({
   twittercomarketing_type: z.array(z.enum(TWITTER_COLLAB_TYPES)).min(1, "At least one Twitter collaboration type is required"),
   host_twitter_handle: z.string().min(1, "Host Twitter handle is required"),
-  host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS)
+  host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS),
+  short_description: z.string().min(1, "Please describe your co-marketing idea").optional()
 });
 
 // Create a Collaboration schema that combines all the types
