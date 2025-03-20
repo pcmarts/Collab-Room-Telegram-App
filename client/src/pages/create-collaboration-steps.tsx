@@ -433,7 +433,7 @@ export default function CreateCollaborationSteps({
       } else if (data.collab_type === "Co-Marketing on Twitter") {
         data.details = {
           twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Tweet"],
-          twitter_handle: typeof rawDetails?.twitter_handle === 'string' ? rawDetails.twitter_handle : "https://x.com/",
+          host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) 
             ? rawDetails.host_follower_count 
             : TWITTER_FOLLOWER_COUNTS[0],
@@ -983,7 +983,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.twitter_handle"
+          name="details.host_twitter_handle"
           render={({ field }) => {
             // Ensure the correct type of value is shown
             const displayValue = Array.isArray(field.value) 
