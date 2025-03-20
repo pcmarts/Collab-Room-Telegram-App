@@ -65,7 +65,16 @@ function getTelegramUserFromRequest(req: TelegramReq) {
 
     const initData = req.headers['x-telegram-init-data'] as string;
     if (!initData) {
+      console.log('No Telegram init data found in request headers');
+      // Log full headers for debugging (but sanitize any sensitive info)
+      const safeHeaders = { ...req.headers };
+      delete safeHeaders.cookie; // Remove cookies for security
+      delete safeHeaders.authorization; // Remove auth tokens
+      console.log('Available headers:', JSON.stringify(safeHeaders, null, 2));
+      
+      // In production, never use fallback IDs
       if (process.env.NODE_ENV !== 'production') {
+        console.warn('⚠️ Using development fallback Telegram user - this should NEVER happen in production!');
         return {
           id: process.env.DEV_USER_ID || '8319c02a-f1bd-4f93-abc3-e223c9100bea',
           username: 'dev_user',
@@ -78,11 +87,19 @@ function getTelegramUserFromRequest(req: TelegramReq) {
     
     // Parse Telegram data
     const decodedInitData = new URLSearchParams(initData);
-    const telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
+    const userJson = decodedInitData.get('user') || '{}';
+    console.log('Parsed Telegram user data:', userJson);
+    const telegramUser = JSON.parse(userJson);
     
-    return telegramUser.id ? telegramUser : null;
+    if (!telegramUser.id) {
+      console.error('Telegram user ID missing from parsed data');
+      return null;
+    }
+    
+    return telegramUser;
   } catch (error) {
     console.error('Error in getTelegramUserFromRequest:', error);
+    console.error(error instanceof Error ? error.stack : String(error));
     return null;
   }
 }
