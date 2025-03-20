@@ -384,11 +384,42 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         </CardHeader>
         <CardContent className="pb-2">
           {/* Display short description if available */}
-          {collab.details && typeof collab.details === 'object' && 'short_description' in collab.details && (
+          {collab.details && typeof collab.details === 'object' && (
             <div className="mb-4">
-              <p className="text-sm text-gray-600 line-clamp-3">
-                {collab.details.short_description}
-              </p>
+              {/* Podcast guest appearance should show podcast name */}
+              {collab.collab_type === 'Podcast Guest Appearance' && 'podcast_name' in collab.details && (
+                <div className="mb-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-md">
+                  <h4 className="text-sm font-semibold text-blue-800">Podcast</h4>
+                  <p className="text-md font-medium text-blue-600">{collab.details.podcast_name}</p>
+                  {'estimated_reach' in collab.details && collab.details.estimated_reach && (
+                    <p className="text-xs text-blue-500 mt-1">Audience size: {collab.details.estimated_reach}</p>
+                  )}
+                </div>
+              )}
+              
+              {/* Show topics if available */}
+              {collab.topics && collab.topics.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs font-medium text-gray-600 mb-1">Topics:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {collab.topics.map((topic, idx) => (
+                      <span 
+                        key={idx} 
+                        className="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full border border-indigo-100 shadow-sm"
+                      >
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Display short description if available */}
+              {'short_description' in collab.details && collab.details.short_description && (
+                <p className="text-sm text-gray-600 line-clamp-3">
+                  {collab.details.short_description}
+                </p>
+              )}
             </div>
           )}
           
