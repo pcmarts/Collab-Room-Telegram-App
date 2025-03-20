@@ -386,6 +386,12 @@ export default function CreateCollaborationSteps({
       // Log full raw details for debugging
       console.log("Raw form details:", rawDetails);
       
+      // Special debugging for Twitter co-marketing
+      if (data.collab_type === "Co-Marketing on Twitter") {
+        console.log("Twitter co-marketing description:", rawDetails?.short_description);
+        console.log("Twitter co-marketing field in form:", form.getValues("details.short_description"));
+      }
+      
       if (data.collab_type === "Podcast Guest Appearance") {
         data.details = {
           podcast_name: typeof rawDetails?.podcast_name === 'string' ? rawDetails.podcast_name : "",
