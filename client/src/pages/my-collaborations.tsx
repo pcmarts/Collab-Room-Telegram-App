@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -64,6 +64,52 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // This disables the default fixed positioning and overflow hidden
+  // so that we can have a normal scrolling container with a scrollbar
+  useEffect(() => {
+    // Save the original style
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalWidth = document.body.style.width;
+    const originalHeight = document.body.style.height;
+    
+    // Modify for this page to allow scrolling
+    document.body.style.overflow = 'auto';
+    document.body.style.position = 'static';
+    document.body.style.width = 'auto';
+    document.body.style.height = 'auto';
+    
+    // Add scrollable-page class to html and body
+    document.documentElement.classList.add('scrollable-page');
+    document.body.classList.add('scrollable-page');
+    
+    // Also fix the root element
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.style.overflow = 'auto';
+      rootElement.style.height = 'auto';
+      rootElement.style.position = 'static';
+      rootElement.style.width = '100%';
+    }
+    
+    // Restore original style when component unmounts
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.width = originalWidth;
+      document.body.style.height = originalHeight;
+      document.documentElement.classList.remove('scrollable-page');
+      document.body.classList.remove('scrollable-page');
+      
+      if (rootElement) {
+        rootElement.style.overflow = '';
+        rootElement.style.height = '';
+        rootElement.style.position = '';
+        rootElement.style.width = '';
+      }
+    };
+  }, []);
   
   // Delete collaboration dialog state
   const [collabToDelete, setCollabToDelete] = useState<string | null>(null);
