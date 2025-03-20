@@ -201,9 +201,9 @@ export default function ProfileOverview() {
             <div className="flex items-start gap-4">
               <Shield className="h-5 w-5 text-primary mt-0.5" />
               <div>
-                <h3 className="font-medium mb-1">Privacy Protected</h3>
+                <h3 className="font-medium mb-1">🔒 Privacy Protected</h3>
                 <p className="text-sm text-muted-foreground">
-                  When matching, only your company details are visible to others. Your personal information is hidden, and is only shared after a successful mutual match.
+                  Your personal information is <b><u>hidden</u></b> to others when matching, and is only shared after a successful mutual match. Only your company details are visible to others.
                 </p>
               </div>
             </div>
