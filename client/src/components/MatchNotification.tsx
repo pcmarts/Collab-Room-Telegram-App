@@ -1,8 +1,68 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, PartyPopper, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Confetti particle component
+const Confetti = ({ colors }: { colors: string[] }) => {
+  const [particles, setParticles] = useState<Array<{
+    id: number;
+    x: number;
+    y: number;
+    size: number;
+    color: string;
+    rotation: number;
+    delay: number;
+  }>>([]);
+
+  useEffect(() => {
+    // Generate random confetti particles
+    const newParticles = Array.from({ length: 80 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * -60 - 20, // Start above the screen
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 360,
+      delay: Math.random() * 0.5,
+    }));
+    
+    setParticles(newParticles);
+  }, [colors]);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((particle) => (
+        <motion.div
+          key={particle.id}
+          className="absolute"
+          style={{
+            width: particle.size,
+            height: particle.size,
+            backgroundColor: particle.color,
+            borderRadius: Math.random() > 0.5 ? '50%' : '0',
+            top: `-${particle.size}px`,
+            left: `${particle.x}%`,
+            rotate: `${particle.rotation}deg`,
+          }}
+          initial={{ y: particle.y, opacity: 0 }}
+          animate={{
+            y: ['0%', '110%'],
+            x: [0, (Math.random() - 0.5) * 50],
+            opacity: [0, 1, 0.8, 0],
+            rotate: [`${particle.rotation}deg`, `${particle.rotation + 180}deg`],
+          }}
+          transition={{
+            duration: 4 + Math.random() * 2,
+            delay: particle.delay,
+            ease: "easeOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
 interface MatchNotificationProps {
   isOpen: boolean;
@@ -17,6 +77,14 @@ interface MatchNotificationProps {
 
 export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificationProps) {
   const [location, setLocation] = useLocation();
+  const [confettiColors] = useState([
+    '#FF5733', // Orange
+    '#33FFC4', // Turquoise
+    '#337DFF', // Blue
+    '#F433FF', // Pink
+    '#FFF633', // Yellow
+    '#33FF57', // Green
+  ]);
   
   // Create animated sparkles effect
   useEffect(() => {
@@ -41,16 +109,19 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
           exit={{ opacity: 0 }}
         >
           <motion.div 
-            className="relative w-full max-w-md bg-background rounded-lg shadow-xl p-6"
+            className="relative w-full max-w-md bg-background rounded-lg shadow-xl p-6 overflow-hidden"
             initial={{ scale: 0.8, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.8, y: 20 }}
             transition={{ type: "spring", damping: 15 }}
           >
+            {/* Confetti animation overlay */}
+            <Confetti colors={confettiColors} />
+            
             <Button 
               variant="ghost" 
               size="icon" 
-              className="absolute right-2 top-2" 
+              className="absolute right-2 top-2 z-10" 
               onClick={onClose}
             >
               <X className="h-4 w-4" />
