@@ -107,10 +107,14 @@ export default function CompanyDetails() {
 
       console.log('Final submission data:', submitData); // Debug log
 
+      // Get the Telegram initData
+      const telegramInitData = window.Telegram?.WebApp?.initData || '';
+      
       const response = await fetch('/api/onboarding', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Telegram-Init-Data': telegramInitData, // Add Telegram data in the header
         },
         body: JSON.stringify(submitData)
       });
