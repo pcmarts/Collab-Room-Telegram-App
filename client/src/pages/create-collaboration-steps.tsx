@@ -231,24 +231,28 @@ export default function CreateCollaborationSteps({
     }, 10); // Small delay to ensure reset happens first
   };
 
-  // Function to clear any potential data bleeding between form fields
+  // Function to preserve form data between steps instead of clearing it
+  // This ensures Twitter Co-Marketing type selections and other multi-step fields work correctly
   const clearFormFieldsExcept = (currentFieldName: string) => {
-    // Save current field value
-    const currentValue = form.getValues(currentFieldName);
+    // We no longer clear fields as it causes data loss between steps
+    // The form bleeding issues have been fixed in other ways
     
+    // If we need to initialize a blank field, we can do it here
     if (currentFieldName.startsWith('details.')) {
-      // Get current details value
       const details = form.getValues('details') as Record<string, any>;
       const fieldKey = currentFieldName.split('.')[1];
-      const fieldValue = details[fieldKey];
       
-      // Reset details
-      form.setValue('details', {});
-      
-      // Restore only the current field
-      const newDetails: Record<string, any> = {};
-      newDetails[fieldKey] = fieldValue;
-      form.setValue('details', newDetails);
+      // Only initialize the field if it doesn't exist
+      if (details && details[fieldKey] === undefined) {
+        const updatedDetails = { ...details };
+        
+        // Initialize empty fields based on type
+        if (fieldKey === 'short_description') {
+          updatedDetails[fieldKey] = "";
+        }
+        
+        form.setValue('details', updatedDetails);
+      }
     }
   };
   
