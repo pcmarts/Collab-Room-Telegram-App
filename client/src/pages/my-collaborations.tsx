@@ -136,6 +136,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         toast({
           title: "Application Approved",
           description: "The applicant has been notified of your decision.",
+          duration: 2000, // Auto-dismiss after 2 seconds
         });
         
         // Close dialog and reset state
@@ -270,6 +271,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         toast({
           title: "Collaboration Deleted",
           description: "Your collaboration has been deleted successfully",
+          duration: 2000, // Auto-dismiss after 2 seconds
         });
         
         // Refresh the collaborations data

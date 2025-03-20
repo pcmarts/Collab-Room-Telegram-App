@@ -498,6 +498,7 @@ export default function CreateCollaborationSteps({
         toast({
           title: "Success!",
           description: "Your collaboration has been created successfully.",
+          duration: 2000, // Auto-dismiss after 2 seconds
         });
         // Redirect to My Collaborations page
         setLocation("/my-collaborations");
@@ -1076,8 +1077,8 @@ export default function CreateCollaborationSteps({
     },
     {
       id: "twitter_comarketing_description",
-      title: "Co-Marketing Description",
-      description: "Describe your co-marketing idea",
+      title: "Short Description",
+      description: "Add a short description (max 180 characters)",
       render: () => (
         <FormField
           control={form.control}
@@ -1086,7 +1087,7 @@ export default function CreateCollaborationSteps({
             // Just use the existing field value or empty string
             return (
               <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">Describe your co-marketing idea</FormLabel>
+                <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Content ideas and goals"
@@ -1096,10 +1097,11 @@ export default function CreateCollaborationSteps({
                     onBlur={field.onBlur}
                     ref={field.ref}
                     name={field.name}
+                    maxLength={180}
                   />
                 </FormControl>
                 <FormDescription className="text-xs">
-                  More details help find better matches
+                  Max 180 characters ({field.value ? 180 - field.value.length : 180} remaining)
                 </FormDescription>
                 <FormMessage />
               </FormItem>
