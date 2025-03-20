@@ -121,10 +121,24 @@ export class DatabaseStorage implements IStorage {
     if (collabData.details) {
       console.log("Processing details object:", collabData.details);
       
-      // If Twitter co-marketing, ensure short_description is preserved
-      if (collabData.collab_type === 'Co-Marketing on Twitter' && 
-          collabData.details.short_description) {
-        console.log("Preserving Twitter co-marketing short_description:", collabData.details.short_description);
+      // If Twitter co-marketing, ensure all fields are preserved and properly formatted
+      if (collabData.collab_type === 'Co-Marketing on Twitter') {
+        console.log("Processing Twitter co-marketing details:", collabData.details);
+        
+        // Ensure short_description is present and preserved
+        if (collabData.details.short_description) {
+          console.log("Twitter co-marketing description found:", collabData.details.short_description);
+        } else {
+          console.warn("Missing short_description for Twitter co-marketing collaboration");
+        }
+        
+        // Ensure twittercomarketing_type is properly formatted as an array
+        if (collabData.details.twittercomarketing_type) {
+          if (!Array.isArray(collabData.details.twittercomarketing_type)) {
+            collabData.details.twittercomarketing_type = [collabData.details.twittercomarketing_type];
+            console.log("Converted twittercomarketing_type to array:", collabData.details.twittercomarketing_type);
+          }
+        }
       }
     }
     
@@ -141,6 +155,17 @@ export class DatabaseStorage implements IStorage {
       required_funding_stages: Array.isArray(collabData.required_funding_stages) 
         ? collabData.required_funding_stages.map((stage: any) => String(stage))
         : (collabData.required_funding_stages ? [String(collabData.required_funding_stages)] : []),
+      
+      // Special handling for Twitter co-marketing - ensure all necessary fields are preserved
+      details: collabData.collab_type === 'Co-Marketing on Twitter' ? {
+        twittercomarketing_type: Array.isArray(collabData.details?.twittercomarketing_type)
+          ? collabData.details.twittercomarketing_type
+          : (collabData.details?.twittercomarketing_type ? [collabData.details.twittercomarketing_type] : ["Thread Collab"]),
+        host_twitter_handle: collabData.details?.host_twitter_handle || "https://x.com/",
+        host_follower_count: collabData.details?.host_follower_count || "0-1K",
+        short_description: collabData.details?.short_description || "" // Ensure this field is present
+      } : collabData.details,
+      
       created_at: new Date(),
       updated_at: new Date()
     };
