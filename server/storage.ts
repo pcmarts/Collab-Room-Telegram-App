@@ -121,7 +121,7 @@ export class DatabaseStorage implements IStorage {
     if (collabData.details) {
       console.log("Processing details object:", collabData.details);
       
-      // If Twitter co-marketing, ensure all fields are preserved and properly formatted
+      // For collaborations that use short_description, ensure it's properly handled
       if (collabData.collab_type === 'Co-Marketing on Twitter') {
         console.log("Processing Twitter co-marketing details:", collabData.details);
         
@@ -138,6 +138,15 @@ export class DatabaseStorage implements IStorage {
             collabData.details.twittercomarketing_type = [collabData.details.twittercomarketing_type];
             console.log("Converted twittercomarketing_type to array:", collabData.details.twittercomarketing_type);
           }
+        }
+      } else if (collabData.collab_type === 'Twitter Spaces Guest') {
+        console.log("Processing Twitter Spaces Guest details:", collabData.details);
+        
+        // Ensure short_description is present and preserved
+        if (collabData.details.short_description) {
+          console.log("Twitter Spaces short_description found:", collabData.details.short_description);
+        } else {
+          console.warn("Missing short_description for Twitter Spaces collaboration");
         }
       }
     }
@@ -156,15 +165,30 @@ export class DatabaseStorage implements IStorage {
         ? collabData.required_funding_stages.map((stage: any) => String(stage))
         : (collabData.required_funding_stages ? [String(collabData.required_funding_stages)] : []),
       
-      // Special handling for Twitter co-marketing - ensure all necessary fields are preserved
-      details: collabData.collab_type === 'Co-Marketing on Twitter' ? {
-        twittercomarketing_type: Array.isArray(collabData.details?.twittercomarketing_type)
-          ? collabData.details.twittercomarketing_type
-          : (collabData.details?.twittercomarketing_type ? [collabData.details.twittercomarketing_type] : ["Thread Collab"]),
-        host_twitter_handle: collabData.details?.host_twitter_handle || "https://x.com/",
-        host_follower_count: collabData.details?.host_follower_count || "0-1K",
-        short_description: collabData.details?.short_description || "" // Ensure this field is present
-      } : collabData.details,
+      // Special handling based on collaboration type
+      details: (() => {
+        // Twitter co-marketing special handling
+        if (collabData.collab_type === 'Co-Marketing on Twitter') {
+          return {
+            twittercomarketing_type: Array.isArray(collabData.details?.twittercomarketing_type)
+              ? collabData.details.twittercomarketing_type
+              : (collabData.details?.twittercomarketing_type ? [collabData.details.twittercomarketing_type] : ["Thread Collab"]),
+            host_twitter_handle: collabData.details?.host_twitter_handle || "https://x.com/",
+            host_follower_count: collabData.details?.host_follower_count || "0-1K",
+            short_description: collabData.details?.short_description || "" // Ensure this field is present
+          };
+        }
+        // Twitter Spaces Guest special handling
+        else if (collabData.collab_type === 'Twitter Spaces Guest') {
+          return {
+            twitter_handle: collabData.details?.twitter_handle || "https://x.com/",
+            host_follower_count: collabData.details?.host_follower_count || "0-1K",
+            short_description: collabData.details?.short_description || "" // Ensure short_description is preserved
+          };
+        }
+        // Default to original details
+        return collabData.details;
+      })(),
       
       created_at: new Date(),
       updated_at: new Date()
