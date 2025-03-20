@@ -1808,6 +1808,10 @@ export async function registerRoutes(app: Express) {
       
       // Create plain JavaScript object with all data
       // This bypasses TypeScript's typing to avoid errors with array fields
+      
+      // Log details object to check if short_description is present
+      console.log("Details from form data:", validatedData.details);
+      
       const collabData = {
         creator_id: user.id,
         collab_type: validatedData.collab_type,
