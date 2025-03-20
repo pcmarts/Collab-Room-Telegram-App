@@ -319,16 +319,65 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           </div>
         </CardHeader>
         <CardContent className="pb-2">
-          <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+          <p className="text-sm text-gray-600 mb-4">
             {collab.details && typeof collab.details === 'object' && 
               (collab.details.short_description || collab.details.description || 
                (collab.details.goals || "No description available"))}
           </p>
           
+          {/* Collaboration-specific details based on type */}
+          {collab.details && typeof collab.details === 'object' && (
+            <div className="mb-4 p-3 bg-gray-50 rounded-md">
+              {/* Podcast details */}
+              {collab.collab_type === 'Podcast' && 'podcast_name' in collab.details && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Podcast: {collab.details.podcast_name}</p>
+                  {'estimated_reach' in collab.details && collab.details.estimated_reach && (
+                    <p className="text-xs text-gray-600">Audience: {collab.details.estimated_reach}</p>
+                  )}
+                </div>
+              )}
+              
+              {/* Twitter Spaces details */}
+              {collab.collab_type === 'Twitter Space' && 'host_handle' in collab.details && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Host: {collab.details.host_handle}</p>
+                  {'topic' in collab.details && collab.details.topic && (
+                    <p className="text-xs text-gray-600">Topic: {collab.details.topic}</p>
+                  )}
+                  {'host_followers' in collab.details && collab.details.host_followers && (
+                    <p className="text-xs text-gray-600">Host Followers: {collab.details.host_followers}</p>
+                  )}
+                </div>
+              )}
+              
+              {/* Newsletter details */}
+              {collab.collab_type === 'Newsletter' && 'newsletter_name' in collab.details && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Newsletter: {collab.details.newsletter_name}</p>
+                  {'total_subscribers' in collab.details && collab.details.total_subscribers && (
+                    <p className="text-xs text-gray-600">Subscribers: {collab.details.total_subscribers}</p>
+                  )}
+                </div>
+              )}
+              
+              {/* Show any expectations if available */}
+              {'expectations' in collab.details && collab.details.expectations && (
+                <div className="mt-2">
+                  <p className="text-xs font-medium">Expectations:</p>
+                  <p className="text-xs text-gray-600">{collab.details.expectations}</p>
+                </div>
+              )}
+            </div>
+          )}
+          
           <div className="flex flex-wrap gap-2 mb-4">
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <CalendarDays className="h-3 w-3" />
               <span>{collab.date_type === 'flexible' ? 'Flexible timing' : 'Specific date'}</span>
+              {collab.date_type === 'specific' && collab.specific_date && (
+                <span className="ml-1">{new Date(collab.specific_date).toLocaleDateString()}</span>
+              )}
             </div>
             
             {collab.has_compensation && (
@@ -367,15 +416,6 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         </CardContent>
         <CardFooter>
           <div className="flex flex-wrap gap-2 w-full">
-            <Button 
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => setLocation(`/collaboration/edit/${collab.id}`)}
-            >
-              Edit
-            </Button>
-            
             {hasApplications ? (
               <Button 
                 variant="default"
