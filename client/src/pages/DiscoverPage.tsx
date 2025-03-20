@@ -363,19 +363,27 @@ const NewsletterCard = ({ data }) => {
 
 // My Collaboration Card - Shows when another user is requesting to collaborate on the active user's own collaboration
 const MyCollabCard = ({ data }) => (
-  <div className="space-y-3">
-    <Badge variant="outline" className="bg-blue-300/40 border-blue-300">
+  <div className="space-y-3 p-1.5 -m-1.5 rounded-md relative bg-gradient-to-br from-blue-300/40 via-blue-200/30 to-blue-300/30 border border-blue-300/50">
+    {/* Top right corner decoration */}
+    <div className="absolute top-0 right-0 w-20 h-20 overflow-hidden pointer-events-none">
+      <div className="absolute top-0 right-0 w-6 h-6 transform translate-x-1/2 -translate-y-1/2 rotate-45 bg-blue-500/70"></div>
+    </div>
+    
+    <Badge variant="outline" className="bg-blue-400/40 border-blue-400 relative z-10 shadow-sm">
       <Building className="w-3 h-3 mr-1" />
       <span className="font-medium">My Collab</span>
     </Badge>
     <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
-    <div className="space-y-0.5">
-      <p className="text-base bg-blue-100/20 px-2 py-1 rounded-md inline-flex items-center gap-1">
+    <div className="space-y-1.5">
+      <p className="text-base bg-blue-100/40 px-3 py-1.5 rounded-md inline-flex items-center gap-1 shadow-sm">
         <Building className="w-3 h-3" />
         {data.companyName}
       </p>
-      <p className="text-sm text-muted-foreground">Requester: {data.requesterRole}</p>
-      <p className="text-sm text-muted-foreground">From: {data.requesterCompany}</p>
+      <div className="bg-white/70 p-2 rounded-md shadow-sm">
+        <p className="text-sm font-medium">Requester Details:</p>
+        <p className="text-sm text-muted-foreground">Role: {data.requesterRole}</p>
+        <p className="text-sm text-muted-foreground">Company: {data.requesterCompany}</p>
+      </div>
     </div>
     <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
     {data.topics && data.topics.length > 0 && (
