@@ -42,7 +42,9 @@ const APPLICATION_ROUTES = [
   '/company-sector',
   '/company-details',
   '/application-status',
-  '/application-form'
+  '/application-form',
+  '/company-info',
+  '/profile-overview'
 ];
 
 function Router() {
