@@ -904,17 +904,18 @@ export default function CreateCollaborationSteps({
             name="details.short_description"
             render={({ field }) => (
               <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">What topic will your Twitter Space cover?</FormLabel>
+                <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Enter Twitter Space topic"
-                    className="h-8 text-xs"
+                  <Textarea
+                    placeholder="Describe your Twitter Space in a short summary"
+                    className="resize-none text-xs"
+                    maxLength={180}
                     value={field.value || ""}
                     onChange={(e) => field.onChange(e.target.value)}
                   />
                 </FormControl>
                 <FormDescription className="text-xs">
-                  A specific topic attracts the right audience
+                  {field.value?.length || 0}/180 characters - Briefly describe your Twitter Space to attract the right audience
                 </FormDescription>
                 <FormMessage />
               </FormItem>
