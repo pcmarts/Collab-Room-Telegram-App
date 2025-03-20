@@ -115,7 +115,7 @@ export default function CollabPreferencesForm() {
           // User information
           first_name: userFormData.first_name,
           last_name: userFormData.last_name,
-          handle: window.Telegram?.WebApp?.initDataUnsafe?.user?.username || "",
+          handle: window.Telegram?.WebApp?.initDataUnsafe?.user?.username,
           linkedin_url: userFormData.linkedin_url,
           email: userFormData.email,
 

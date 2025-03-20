@@ -520,11 +520,17 @@ export async function registerRoutes(app: Express) {
             .where(eq(users.telegram_id, telegramUser.id.toString()))
             .returning();
         } else {
+          // Create a display handle if the user doesn't have a Telegram username
+          const handle = telegramUser.username || `user_${telegramUser.id.toString().substring(0, 8)}`;
+          
+          // Log what we're using to help with debugging
+          console.log(`Creating user with Telegram ID: ${telegramUser.id} and handle: ${handle}`);
+          
           [user] = await tx
             .insert(users)
             .values({
               telegram_id: telegramUser.id.toString(),
-              handle: telegramUser.username,
+              handle: handle,
               first_name,
               last_name,
               linkedin_url,

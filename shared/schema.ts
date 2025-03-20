@@ -473,7 +473,7 @@ export const applicationSchema = z.object({
   // User Information
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().optional(),
-  handle: z.string().min(1, "Telegram handle is required"),
+  handle: z.string().optional(), // Made optional since not all Telegram users have usernames
   linkedin_url: z.string().url("Please enter a valid LinkedIn URL").optional().nullable(),
   email: z.string().email("Please enter a valid email").optional().nullable(),
   referral_code: z.string().optional().nullable(), // Updated to match the database schema
