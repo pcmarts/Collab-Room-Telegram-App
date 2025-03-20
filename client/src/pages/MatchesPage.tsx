@@ -311,19 +311,19 @@ export default function MatchesPage() {
                 </CardHeader>
                 <CardFooter className="flex justify-between pt-2">
                   <Button
-                    size="sm"
-                    onClick={() => window.open('https://t.me/thisispaulm', '_blank')}
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Chat
-                  </Button>
-                  <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setSelectedMatch(match)}
                   >
                     <Info className="w-4 h-4 mr-1" />
                     Details
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => window.open('https://t.me/thisispaulm', '_blank')}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Chat
                   </Button>
                 </CardFooter>
               </Card>
