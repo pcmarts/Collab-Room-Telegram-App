@@ -347,13 +347,13 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 (collab.collab_type === 'Newsletter' && 'newsletter_name' in collab.details) ||
                 ('expectations' in collab.details && collab.details.expectations) ||
                 (collab.topics && collab.topics.length > 0)) && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-md">
+                <div className="mb-4 p-3 rounded-md text-white">
                   {/* Podcast details */}
                   {collab.collab_type === 'Podcast' && 'podcast_name' in collab.details && (
                     <div className="space-y-2">
                       <p className="text-sm font-medium">Podcast: {collab.details.podcast_name}</p>
                       {'estimated_reach' in collab.details && collab.details.estimated_reach && (
-                        <p className="text-xs text-gray-600">Audience: {collab.details.estimated_reach}</p>
+                        <p className="text-xs text-white opacity-80">Audience: {collab.details.estimated_reach}</p>
                       )}
                     </div>
                   )}
@@ -365,10 +365,10 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                         <p className="text-sm font-medium">Host: {collab.details.host_handle}</p>
                       )}
                       {'topic' in collab.details && collab.details.topic && (
-                        <p className="text-xs text-gray-600">Topic: {collab.details.topic}</p>
+                        <p className="text-xs text-white opacity-80">Topic: {collab.details.topic}</p>
                       )}
                       {'host_followers' in collab.details && collab.details.host_followers && (
-                        <p className="text-xs text-gray-600">Host Followers: {collab.details.host_followers}</p>
+                        <p className="text-xs text-white opacity-80">Host Followers: {collab.details.host_followers}</p>
                       )}
                       {collab.topics && collab.topics.length > 0 && (
                         <div className="mt-1">
@@ -392,7 +392,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                         <p className="text-sm font-medium">Account: {collab.details.account_handle}</p>
                       )}
                       {'followers_count' in collab.details && collab.details.followers_count && (
-                        <p className="text-xs text-gray-600">Follower Count: {collab.details.followers_count}</p>
+                        <p className="text-xs text-white opacity-80">Follower Count: {collab.details.followers_count}</p>
                       )}
                       {collab.topics && collab.topics.length > 0 && (
                         <div className="mt-1">
