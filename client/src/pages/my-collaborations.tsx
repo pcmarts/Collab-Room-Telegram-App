@@ -414,7 +414,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                     <div className="space-y-2">
                       <p className="text-sm font-medium">Newsletter: {collab.details.newsletter_name}</p>
                       {'total_subscribers' in collab.details && collab.details.total_subscribers && (
-                        <p className="text-xs text-gray-600">Subscribers: {collab.details.total_subscribers}</p>
+                        <p className="text-xs text-white opacity-80">Subscribers: {collab.details.total_subscribers}</p>
                       )}
                     </div>
                   )}
@@ -423,7 +423,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   {'expectations' in collab.details && collab.details.expectations && (
                     <div className="mt-2">
                       <p className="text-xs font-medium">Expectations:</p>
-                      <p className="text-xs text-gray-600">{collab.details.expectations}</p>
+                      <p className="text-xs text-white opacity-80">{collab.details.expectations}</p>
                     </div>
                   )}
                 </div>
