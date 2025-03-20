@@ -579,12 +579,49 @@ const DUMMY_CARDS = [
   },
 ];
 
+// Helper function to get collaboration type name from card type
+const getCollaborationTypeFromCard = (card: any): string => {
+  switch (card.type) {
+    case "marketing":
+      return "Marketing Collaboration";
+    case "conference":
+      return "Conference Coffee";
+    case "conference-coffee":
+      return "Blog Post";
+    case "podcast":
+      return "Podcast Guest";
+    case "twitter-spaces":
+      return "Twitter Spaces";
+    case "livestream":
+      return "Live Stream";
+    case "research-report":
+      return "Research Report";
+    case "newsletter":
+      return "Newsletter Feature";
+    case "request":
+      return "Collaboration Request";
+    default:
+      return "Collaboration";
+  }
+};
+
 export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cards, setCards] = useState(DUMMY_CARDS);
   const [showDialog, setShowDialog] = useState(false);
   // Store history of swiped cards for undo functionality
   const [swipeHistory, setSwipeHistory] = useState<Array<{card: any, direction: "left" | "right", index: number}>>([]);
+  // Match moment states
+  const [showMatch, setShowMatch] = useState(false);
+  const [matchData, setMatchData] = useState<{
+    title: string;
+    companyName: string;
+    collaborationType: string;
+  }>({
+    title: '',
+    companyName: '',
+    collaborationType: ''
+  });
   const cardElem = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const [location, setLocation] = useLocation();
@@ -691,6 +728,29 @@ export default function DiscoverPage() {
       index: currentIndex
     }]);
 
+    // Check if it's a right swipe and simulate a match with 30% probability
+    if (direction === "right") {
+      // In a real app, this would be a server call to check for mutual matches
+      const isMatch = Math.random() < 0.3; // 30% chance of match for demo purposes
+      
+      if (isMatch) {
+        // Get the current card data
+        const card = cards[currentIndex];
+        
+        // Set the match data
+        setMatchData({
+          title: card.title || card.blogTitle || card.podcastName || "New Collaboration",
+          companyName: card.companyName,
+          collaborationType: card.collaborationType || getCollaborationTypeFromCard(card)
+        });
+        
+        // Show the match notification (after a slight delay to let the card animation finish)
+        setTimeout(() => {
+          setShowMatch(true);
+        }, 400);
+      }
+    }
+
     setCurrentIndex((prev) => {
       if (prev === cards.length - 1) {
         setCards([...DUMMY_CARDS].sort(() => Math.random() - 0.5));
@@ -726,6 +786,8 @@ export default function DiscoverPage() {
   };
 
   const currentCard = cards[currentIndex];
+
+
 
   const renderCard = (card) => {
     switch (card.type) {
@@ -864,6 +926,13 @@ export default function DiscoverPage() {
           isOpen={showDialog}
           onClose={() => setShowDialog(false)}
           collaboration={currentCard}
+        />
+        
+        {/* Match Notification */}
+        <MatchNotification
+          isOpen={showMatch}
+          onClose={() => setShowMatch(false)}
+          matchData={matchData}
         />
       </div>
     </div>
