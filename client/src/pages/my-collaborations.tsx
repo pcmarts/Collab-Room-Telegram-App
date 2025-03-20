@@ -178,6 +178,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         toast({
           title: "Application Rejected",
           description: "The applicant has been notified of your decision.",
+          duration: 2000, // Auto-dismiss after 2 seconds
         });
         
         // Close dialog and reset state
