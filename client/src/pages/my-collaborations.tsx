@@ -375,7 +375,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                           <p className="text-xs font-medium">Topics:</p>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {collab.topics.map((topic, idx) => (
-                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-xs rounded-full">
+                              <span key={idx} className="px-2 py-0.5 bg-gray-700 text-white text-xs rounded-full">
                                 {topic}
                               </span>
                             ))}
@@ -399,7 +399,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                           <p className="text-xs font-medium">Topics:</p>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {collab.topics.map((topic, idx) => (
-                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-xs rounded-full">
+                              <span key={idx} className="px-2 py-0.5 bg-gray-700 text-white text-xs rounded-full">
                                 {topic}
                               </span>
                             ))}
