@@ -581,6 +581,9 @@ const DUMMY_CARDS = [
 
 // Helper function to get collaboration type name from card type
 const getCollaborationTypeFromCard = (card: any): string => {
+  // Log the card.type for debugging
+  console.log("Getting collaboration type for card type:", card.type);
+  
   switch (card.type) {
     case "marketing":
       return "Marketing Collaboration";
@@ -728,26 +731,43 @@ export default function DiscoverPage() {
       index: currentIndex
     }]);
 
-    // Check if it's a right swipe and simulate a match with 30% probability
+    // Check if it's a right swipe and simulate a match with high probability for testing
     if (direction === "right") {
       // In a real app, this would be a server call to check for mutual matches
-      const isMatch = Math.random() < 0.3; // 30% chance of match for demo purposes
+      const isMatch = Math.random() < 0.7; // 70% chance of match for easier testing
       
       if (isMatch) {
         // Get the current card data
         const card = cards[currentIndex];
         
-        // Set the match data
+        // Set the match data with fallbacks to ensure we always have data
+        const cardDetails = card.details || {};
+        
         setMatchData({
-          title: card.title || card.blogTitle || card.podcastName || "New Collaboration",
-          companyName: card.companyName,
+          title: card.title || 
+                 card.blogTitle || 
+                 cardDetails.blog_title || 
+                 card.podcastName || 
+                 cardDetails.podcast_name || 
+                 card.topic || 
+                 cardDetails.short_description || 
+                 card.reportName || 
+                 cardDetails.report_name || 
+                 card.newsletterName || 
+                 cardDetails.newsletter_name || 
+                 "New Collaboration",
+          companyName: card.companyName || "Company",
           collaborationType: card.collaborationType || getCollaborationTypeFromCard(card)
         });
+        
+        console.log("MATCH FOUND! Showing match notification with data:", card);
         
         // Show the match notification (after a slight delay to let the card animation finish)
         setTimeout(() => {
           setShowMatch(true);
         }, 400);
+      } else {
+        console.log("No match this time (random chance)");
       }
     }
 
