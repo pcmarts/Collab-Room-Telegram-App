@@ -498,6 +498,20 @@ export default function CreateCollaborationSteps({
       // Get Telegram init data
       const telegramInitData = window.Telegram?.WebApp?.initData || "";
 
+      // Complete detailed debugging of all form data right before submission
+      console.log("FINAL FORM DATA BEING SUBMITTED:", {
+        rawFormData: form.getValues(),
+        processedData: formattedData,
+        twitterSpacesData: data.collab_type === "Twitter Spaces Guest" ? {
+          directFormField: form.getValues("details.short_description"),
+          processedValue: formattedData.details?.short_description
+        } : null,
+        twitterComarketingData: data.collab_type === "Co-Marketing on Twitter" ? {
+          directFormField: form.getValues("details.short_description"),
+          processedValue: formattedData.details?.short_description
+        } : null
+      });
+      
       const response = await fetch("/api/collaborations", {
         method: "POST",
         headers: {
