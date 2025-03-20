@@ -526,6 +526,8 @@ export const podcastDetailsSchema = z.object({
 // Twitter Spaces Guest
 export const twitterSpacesDetailsSchema = z.object({
   twitter_handle: z.string().min(1, "Twitter handle is required"),
+  // Added short_description field needed for Twitter Spaces
+  short_description: z.string().max(180, "Short description must be less than 180 characters"),
   // Removed space_topic validation as topics are captured at the top level
   host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS)
 });
