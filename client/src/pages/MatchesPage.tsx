@@ -196,8 +196,9 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">{match.title}</h2>
-          <p className="text-sm text-muted-foreground">{match.companyName}</p>
+          <h2 className="text-xl font-bold">{match.matchedPerson}</h2>
+          <p className="text-sm text-muted-foreground">{match.roleTitle}, {match.companyName}</p>
+          <p className="text-xs text-muted-foreground mt-1">Matched on {match.matchDate}</p>
         </div>
         <Badge variant="outline" className="text-muted-foreground bg-transparent">{match.collaborationType}</Badge>
       </div>
@@ -228,7 +229,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
         </Button>
         <Button onClick={() => window.open('https://t.me/thisispaulm', '_blank')}>
           <MessageCircle className="w-4 h-4 mr-2" />
-          Start Chat
+          Chat
         </Button>
       </div>
     </div>
@@ -301,35 +302,28 @@ export default function MatchesPage() {
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg">{match.title}</CardTitle>
-                      <CardDescription>{match.companyName}</CardDescription>
+                      <CardTitle className="text-lg">{match.matchedPerson}</CardTitle>
+                      <CardDescription>{match.roleTitle}, {match.companyName}</CardDescription>
+                      <p className="text-xs text-muted-foreground mt-1">Matched on {match.matchDate}</p>
                     </div>
                     <Badge variant="outline" className="text-muted-foreground bg-transparent">{match.collaborationType}</Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="pb-2">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{match.matchedPerson}</p>
-                    <p className="text-sm text-muted-foreground">{match.roleTitle}</p>
-                    <p className="text-xs text-muted-foreground">Matched on {match.matchDate}</p>
-                  </div>
-                </CardContent>
                 <CardFooter className="flex justify-between pt-2">
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground"
-                    onClick={() => setSelectedMatch(match)}
-                  >
-                    <Info className="w-4 h-4 mr-1" />
-                    Details
-                  </Button>
-                  <Button 
                     size="sm"
                     onClick={() => window.open('https://t.me/thisispaulm', '_blank')}
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
-                    Start Chat
+                    Chat
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedMatch(match)}
+                  >
+                    <Info className="w-4 h-4 mr-1" />
+                    Details
                   </Button>
                 </CardFooter>
               </Card>
