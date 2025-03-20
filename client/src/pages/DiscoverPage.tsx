@@ -363,15 +363,7 @@ const NewsletterCard = ({ data }) => {
 
 // My Collaboration Card - Shows when another user is requesting to collaborate on the active user's own collaboration
 const MyCollabCard = ({ data }) => (
-  <div className="space-y-4 relative text-gray-100 p-0">
-    {/* This style tag is to force immediate parent to have the gradient */}
-    <style dangerouslySetInnerHTML={{ __html: `
-      .my-collab-parent {
-        background: linear-gradient(to bottom right, rgba(76, 29, 149, 1), rgba(0, 0, 0, 1)) !important;
-        padding: 20px !important;
-      }
-    `}} />
-    
+  <div className="space-y-4 relative text-gray-100 p-0">    
     {/* Badge */}
     <Badge className="bg-blue-700 text-white border-0 py-1 px-3 rounded-full">
       <Building className="w-3 h-3 mr-1" />
@@ -504,8 +496,8 @@ const DUMMY_CARDS = [
   // Blog Post Collaboration example
   {
     id: "1",
-    type: "conference-coffee", // Keeping type for compatibility with existing code
-    blogTitle: "Web3 Gaming Innovations in 2025",
+    type: "log-post", // Keeping type for compatibility with existing code
+    blogTitle: "Reasons for Web3 in Gaming",
     companyName: "CryptoTech Solutions",
     role: "Technical Content Writer",
     publicationDate: "April 15, 2025",
@@ -668,7 +660,7 @@ const getCollaborationTypeFromCard = (card: any): string => {
       return "Marketing Collaboration";
     case "conference":
       return "Conference Coffee";
-    case "conference-coffee":
+    case "blog-post":
       return "Blog Post";
     case "podcast":
       return "Podcast Guest";
