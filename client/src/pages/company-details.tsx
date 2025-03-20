@@ -62,12 +62,10 @@ export default function CompanyDetails() {
 
       // Get Telegram username from the initData
       const telegramData = window.Telegram?.WebApp?.initDataUnsafe?.user;
-      // Some users don't have a username/handle in Telegram - that's okay
       const handle = telegramData?.username;
-      
-      // We need the Telegram initData for user identification
-      if (!window.Telegram?.WebApp?.initData) {
-        throw new Error('Telegram data missing - please try reopening the app');
+
+      if (!handle) {
+        throw new Error('Telegram username is required');
       }
 
       if (!basicData.company_name || !basicData.website || !basicData.job_title ||
