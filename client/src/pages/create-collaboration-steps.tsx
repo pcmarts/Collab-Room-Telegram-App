@@ -405,21 +405,17 @@ export default function CreateCollaborationSteps({
         console.log("Twitter Spaces Guest BEFORE formatting:", rawDetails);
         console.log("  - Raw short_description value:", rawDetails?.short_description);
         
+        // Get the short description directly from the form field
+        const shortDesc = form.getValues("details.short_description");
+        console.log("Direct form field value for short_description:", shortDesc);
+        
         // Note: Using only standard fields (short_description) to store the Twitter Space topic
         data.details = {
           twitter_handle: typeof rawDetails?.twitter_handle === 'string' ? rawDetails.twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) ? rawDetails.host_follower_count : TWITTER_FOLLOWER_COUNTS[0],
-          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
+          // Prioritize using the short description from the direct form field access
+          short_description: shortDesc || (typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : ""),
         };
-        
-        // If short_description is empty but we have a value in the form field, use that
-        if (!data.details.short_description || data.details.short_description === "") {
-          const shortDesc = form.getValues("details.short_description");
-          if (shortDesc) {
-            data.details.short_description = shortDesc;
-            console.log("Retrieved short_description from form field:", shortDesc);
-          }
-        }
         
         console.log("Twitter Spaces Guest AFTER formatting:", data.details);
         console.log("  - Formatted short_description value:", data.details.short_description);
@@ -462,6 +458,10 @@ export default function CreateCollaborationSteps({
       } else if (data.collab_type === "Co-Marketing on Twitter") {
         console.log("Co-Marketing on Twitter BEFORE formatting:", rawDetails);
         console.log("  - Raw short_description value:", rawDetails?.short_description);
+        
+        // Get the short description directly from the form field
+        const shortDesc = form.getValues("details.short_description");
+        console.log("Direct form field value for short_description (Twitter co-marketing):", shortDesc);
 
         data.details = {
           twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Thread Collab"],
@@ -469,19 +469,11 @@ export default function CreateCollaborationSteps({
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) 
             ? rawDetails.host_follower_count 
             : TWITTER_FOLLOWER_COUNTS[0],
-          short_description: typeof rawDetails?.short_description === 'string' 
+          // Prioritize using the short description from the direct form field access
+          short_description: shortDesc || (typeof rawDetails?.short_description === 'string' 
             ? rawDetails.short_description 
-            : "",
+            : ""),
         };
-        
-        // If short_description is empty but we have a value in the form field, use that directly
-        if (!data.details.short_description || data.details.short_description === "") {
-          const shortDesc = form.getValues("details.short_description");
-          if (shortDesc) {
-            data.details.short_description = shortDesc;
-            console.log("Retrieved short_description from form field for Twitter co-marketing:", shortDesc);
-          }
-        }
         
         console.log("Co-Marketing on Twitter AFTER formatting:", data.details);
         console.log("  - Formatted short_description value:", data.details.short_description);
@@ -947,24 +939,32 @@ export default function CreateCollaborationSteps({
           <FormField
             control={form.control}
             name="details.short_description"
-            render={({ field }) => (
-              <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Describe your Twitter Space in a short summary"
-                    className="resize-none text-xs"
-                    maxLength={180}
-                    value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                  />
-                </FormControl>
-                <FormDescription className="text-xs">
-                  {field.value?.length || 0}/180 characters - Briefly describe your Twitter Space to attract the right audience
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              // Ensure field value is always a string
+              const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+              
+              return (
+                <FormItem className="space-y-1 pt-0">
+                  <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe your Twitter Space in a short summary"
+                      className="resize-none text-xs"
+                      maxLength={180}
+                      value={displayValue}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                      name={field.name}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    {displayValue?.length || 0}/180 characters - Briefly describe your Twitter Space to attract the right audience
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
         </div>
       ),
@@ -1130,7 +1130,9 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.short_description"
           render={({ field }) => {
-            // Just use the existing field value or empty string
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
             return (
               <FormItem className="space-y-1 pt-0">
                 <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
@@ -1138,7 +1140,7 @@ export default function CreateCollaborationSteps({
                   <Textarea
                     placeholder="Content ideas and goals"
                     className="min-h-[80px] text-xs"
-                    value={field.value || ""}
+                    value={displayValue}
                     onChange={(e) => field.onChange(e.target.value)}
                     onBlur={field.onBlur}
                     ref={field.ref}
@@ -1147,7 +1149,7 @@ export default function CreateCollaborationSteps({
                   />
                 </FormControl>
                 <FormDescription className="text-xs">
-                  Max 180 characters ({field.value ? 180 - field.value.length : 180} remaining)
+                  Max 180 characters ({displayValue ? 180 - displayValue.length : 180} remaining)
                 </FormDescription>
                 <FormMessage />
               </FormItem>
