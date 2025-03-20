@@ -6,8 +6,10 @@
  */
 
 import { db } from '../server/db';
-import { users, companies, ALL_COMPANY_TAGS, BLOCKCHAIN_NETWORKS, FUNDING_STAGES } from '../shared/schema';
+import * as schema from '../shared/schema';
 import { randomUUID } from 'crypto';
+
+const { users, companies, ALL_COMPANY_TAGS, BLOCKCHAIN_NETWORKS, FUNDING_STAGES } = schema;
 
 // Helper function to get random item(s) from array
 const getRandomItem = (array) => array[Math.floor(Math.random() * array.length)];
@@ -47,7 +49,7 @@ const generateCompanyDescription = (companyName, tags, networks) => {
 };
 
 // Predefined company data
-const companyData = [
+const companiesData = [
   {
     name: "Crypto.com",
     jobTitles: ["Product Manager", "Marketing Director", "Business Development Lead", "Community Manager", "Head of Partnerships"],
@@ -118,7 +120,7 @@ const generateUsers = async () => {
   
   for (let i = 0; i < 10; i++) {
     // Select company from predefined list
-    const company = companyData[i];
+    const company = companiesData[i];
     const userId = randomUUID();
     const telegramId = (1000000000 + i).toString();
     
@@ -165,7 +167,7 @@ const generateUsers = async () => {
     };
     
     // Company data
-    const companyData = {
+    const companyRecord = {
       id: randomUUID(),
       user_id: userId,
       name: company.name,
@@ -186,7 +188,7 @@ const generateUsers = async () => {
     
     dummyUsers.push({
       user: userData,
-      company: companyData
+      company: companyRecord
     });
   }
   
