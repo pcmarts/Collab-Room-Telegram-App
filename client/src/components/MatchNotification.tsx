@@ -15,37 +15,41 @@ const Confetti = ({ colors }: { colors: string[] }) => {
     rotation: number;
     delay: number;
     duration: number;
-    shape: 'circle' | 'square' | 'triangle';
+    flutterX: number[];
+    shape: 'circle' | 'square' | 'rectangle';
   }>>([]);
 
   useEffect(() => {
-    // Generate random confetti particles for a big explosion effect
-    const newParticles = Array.from({ length: 200 }).map((_, i) => {
-      // Random starting point near the center of the screen
-      const startX = 50;
-      const startY = 50;
+    // Generate a large number of falling confetti particles
+    const newParticles = Array.from({ length: 250 }).map((_, i) => {
+      // Start from the top with a random horizontal position
+      const startX = Math.random() * 100; // Random horizontal position (0-100%)
+      const startY = -10 - Math.random() * 20; // Start above the viewport (negative %)
       
-      // Random end points (exploding outward)
-      const angle = Math.random() * Math.PI * 2; // Full 360° explosion
-      const distance = 30 + Math.random() * 100; // How far particles travel
+      // Randomize properties for each particle
+      const size = Math.random() * 12 + 5;
       
-      // Calculate end position using angle and distance
-      const endX = Math.cos(angle) * distance;
-      const endY = Math.sin(angle) * distance;
-      
-      // Random shape for variety
-      const shapes: Array<'circle' | 'square' | 'triangle'> = ['circle', 'square', 'triangle'];
+      // Random shape with more varied options
+      const shapes: Array<'circle' | 'square' | 'rectangle'> = ['circle', 'square', 'rectangle'];
       const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      
+      // Flutter pattern - subtle horizontal movement as the confetti falls
+      const flutterIntensity = 15 + Math.random() * 20;
+      const flutterPoints = 5; // Number of points in the flutter path
+      const flutterX = Array.from({ length: flutterPoints }).map(() => 
+        (Math.random() - 0.5) * flutterIntensity
+      );
       
       return {
         id: i,
-        x: endX,
-        y: endY,
-        size: Math.random() * 12 + 4, // Slightly larger particles
+        x: startX,
+        y: startY,
+        size,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * 360,
-        delay: Math.random() * 0.3, // Shorter delay for more instant explosion
-        duration: 0.8 + Math.random() * 1.2, // Faster animation
+        delay: Math.random() * 3, // Staggered start for a continuous rain effect
+        duration: 4 + Math.random() * 5, // Slower, more natural falling
+        flutterX,
         shape
       };
     });
@@ -55,37 +59,53 @@ const Confetti = ({ colors }: { colors: string[] }) => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden pointer-events-none">
-      {particles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          className="absolute"
-          style={{
-            width: particle.size,
-            height: particle.shape !== 'triangle' ? particle.size : 0,
-            borderWidth: particle.shape === 'triangle' ? `${particle.size}px ${particle.size}px 0` : 0,
-            borderStyle: particle.shape === 'triangle' ? 'solid' : 'none',
-            borderColor: particle.shape === 'triangle' ? `${particle.color} transparent transparent` : 'transparent',
-            backgroundColor: particle.shape !== 'triangle' ? particle.color : 'transparent',
-            borderRadius: particle.shape === 'circle' ? '50%' : '0',
-            left: '50%',
-            top: '50%',
-            marginLeft: -particle.size / 2,
-            marginTop: -particle.size / 2,
-          }}
-          animate={{
-            x: particle.x,
-            y: particle.y,
-            opacity: [0, 1, 1, 0],
-            rotate: [0, particle.rotation],
-            scale: [0.3, 1, 1, 0.5],
-          }}
-          transition={{
-            duration: particle.duration,
-            delay: particle.delay,
-            ease: "easeOut",
-          }}
-        />
-      ))}
+      {particles.map((particle) => {
+        // Special styling for rectangle shape
+        const isRectangle = particle.shape === 'rectangle';
+        const width = isRectangle ? particle.size * 0.6 : particle.size;
+        const height = isRectangle ? particle.size * 2 : particle.size;
+        
+        return (
+          <motion.div
+            key={particle.id}
+            className="absolute"
+            style={{
+              width,
+              height,
+              backgroundColor: particle.color,
+              borderRadius: particle.shape === 'circle' ? '50%' : '0',
+              opacity: 0,
+              left: `${particle.x}%`,
+              top: `${particle.y}%`,
+              boxShadow: `0 0 2px rgba(255,255,255,0.5)`,
+            }}
+            animate={{
+              y: ['0%', '110%'], // Fall from initial position to bottom of screen
+              x: particle.flutterX, // Flutter left and right while falling
+              opacity: [0, 0.9, 0.9, 0.9, 0], // Fade in/out
+              rotate: [`${Math.random() * 360}deg`, `${Math.random() * 360 + 720}deg`], // Spin as it falls
+            }}
+            transition={{
+              duration: particle.duration,
+              delay: particle.delay,
+              ease: "linear",
+              times: [0, 1], // Control timing of the animation
+              x: {
+                duration: particle.duration,
+                times: particle.flutterX && particle.flutterX.length > 0 ? 
+                  Array.from({ length: particle.flutterX.length }).map(
+                    (_, i) => i / (particle.flutterX.length - 1)
+                  ) : [0, 1],
+                ease: "easeInOut",
+              },
+              opacity: {
+                duration: particle.duration,
+                times: [0, 0.1, 0.8, 0.9, 1], // Control timing of opacity changes
+              }
+            }}
+          />
+        );
+      })}
     </div>
   );
 };
@@ -110,6 +130,12 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
     '#F433FF', // Pink
     '#FFF633', // Yellow
     '#33FF57', // Green
+    '#FFD700', // Gold
+    '#FF00FF', // Magenta
+    '#00FFFF', // Cyan
+    '#FF1493', // Deep Pink
+    '#7B68EE', // Medium Slate Blue
+    '#FF8C00', // Dark Orange
   ]);
   
   // Navigate to matches page and close the notification
