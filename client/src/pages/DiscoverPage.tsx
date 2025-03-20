@@ -361,6 +361,45 @@ const NewsletterCard = ({ data }) => {
   );
 };
 
+// My Collaboration Card - Shows when another user is requesting to collaborate on the active user's own collaboration
+const MyCollabCard = ({ data }) => (
+  <div className="space-y-3">
+    <Badge variant="outline" className="bg-blue-300/40 border-blue-300">
+      <Building className="w-3 h-3 mr-1" />
+      <span className="font-medium">My Collab</span>
+    </Badge>
+    <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
+    <div className="space-y-0.5">
+      <p className="text-base bg-blue-100/20 px-2 py-1 rounded-md inline-flex items-center gap-1">
+        <Building className="w-3 h-3" />
+        {data.companyName}
+      </p>
+      <p className="text-sm text-muted-foreground">Requester: {data.requesterRole}</p>
+      <p className="text-sm text-muted-foreground">From: {data.requesterCompany}</p>
+    </div>
+    <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
+    {data.topics && data.topics.length > 0 && (
+      <div className="flex flex-wrap gap-1 mb-2">
+        {data.topics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+      </div>
+    )}
+    {/* For legacy preferredTopics support */}
+    {!data.topics && data.preferredTopics && data.preferredTopics.length > 0 && (
+      <div className="flex flex-wrap gap-1 mb-2">
+        {data.preferredTopics.map((topic, i) => (
+          <Badge key={i} variant="secondary" className="text-xs">
+            {topic}
+          </Badge>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
 // Legacy/Generic Cards (for backward compatibility)
 const MarketingCard = ({ data }) => (
   <div className="space-y-3">
@@ -532,6 +571,23 @@ const DUMMY_CARDS = [
     twitterFollowers: "28.7K",
   },
   
+  // My Collaboration Card (when another user requests to collaborate with the active user's collaboration)
+  {
+    id: "7a",
+    type: "mycollab",
+    title: "Web3 Insights Podcast Guest Opportunity",
+    companyName: "My Blockchain Media",
+    requesterRole: "Tech Lead",
+    requesterCompany: "DeFi Innovations Inc",
+    description: "You created this collaboration opportunity. Someone is requesting to join as a guest on your podcast to discuss DeFi innovation.",
+    topics: ["DeFi", "Blockchain", "Web3"],
+    collaborationType: "Podcast Guest",
+    companyTwitter: "myblockchainmedia",
+    twitterFollowers: "18.5K",
+    companyLinkedIn: "my-blockchain-media",
+    companySector: "Media & Content",
+  },
+  
   // Legacy examples for backward compatibility
   {
     id: "7",
@@ -603,6 +659,8 @@ const getCollaborationTypeFromCard = (card: any): string => {
       return "Newsletter Feature";
     case "request":
       return "Collaboration Request";
+    case "mycollab":
+      return "My Collaboration";
     default:
       return "Collaboration";
   }
@@ -817,6 +875,8 @@ export default function DiscoverPage() {
         return <ConferenceCard data={card} />;
       case "request":
         return <RequestCard data={card} />;
+      case "mycollab":
+        return <MyCollabCard data={card} />;
       case "conference-coffee":
         // Keeping this case for backward compatibility, but displaying as blog post
         return <BlogPostCollabCard data={card} />;
