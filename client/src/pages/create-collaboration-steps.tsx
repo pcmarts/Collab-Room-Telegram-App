@@ -139,7 +139,7 @@ export default function CreateCollaborationSteps({
       }
       else if (currentStepId === "twitter_comarketing_handle") {
         // Ensure the Twitter handle field has proper value
-        form.setValue("details.twitter_handle", "https://x.com/");
+        form.setValue("details.host_twitter_handle", "https://x.com/");
       }
       else if (currentStepId === "twitter_comarketing_followers") {
         // Ensure follower count has a default value
@@ -220,7 +220,7 @@ export default function CreateCollaborationSteps({
           
         case "Co-Marketing on Twitter":
           newDetails.twittercomarketing_type = ["Tweet"];
-          newDetails.twitter_handle = "https://x.com/";
+          newDetails.host_twitter_handle = "https://x.com/";
           newDetails.host_follower_count = TWITTER_FOLLOWER_COUNTS[0];
           newDetails.short_description = "";
           break;
