@@ -363,7 +363,15 @@ const NewsletterCard = ({ data }) => {
 
 // My Collaboration Card - Shows when another user is requesting to collaborate on the active user's own collaboration
 const MyCollabCard = ({ data }) => (
-  <div className="space-y-4 relative text-gray-100 p-0 my-collab-card">
+  <div className="space-y-4 relative text-gray-100 p-0">
+    {/* This style tag is to force immediate parent to have the gradient */}
+    <style dangerouslySetInnerHTML={{ __html: `
+      .my-collab-parent {
+        background: linear-gradient(to bottom right, rgba(76, 29, 149, 1), rgba(0, 0, 0, 1)) !important;
+        padding: 20px !important;
+      }
+    `}} />
+    
     {/* Badge */}
     <Badge className="bg-blue-700 text-white border-0 py-1 px-3 rounded-full">
       <Building className="w-3 h-3 mr-1" />
@@ -690,9 +698,19 @@ const MyCollabStyles = () => {
     
     // Add CSS rules that target the cards with data-mycollab="true"
     styleEl.textContent = `
-      [data-mycollab="true"] .card {
-        background: linear-gradient(to bottom right, rgba(91, 33, 182, 0.9), rgba(0, 0, 0, 1)) !important;
-        padding: 20px !important;
+      /* Apply gradient to MyCollab cards */
+      [data-mycollab="true"] + * .card {
+        background: linear-gradient(to bottom right, rgba(76, 29, 149, 1), rgba(0, 0, 0, 1)) !important;
+        background-color: black !important;
+        color: white !important;
+      }
+      
+      /* Style the root card container for MyCollab cards */
+      .card:has([data-mycollab="true"]),
+      [data-mycollab="true"] ~ .card {
+        background: linear-gradient(to bottom right, rgba(76, 29, 149, 1), rgba(0, 0, 0, 1)) !important;
+        background-color: black !important;
+        color: white !important;
       }
     `;
     
@@ -1020,7 +1038,13 @@ export default function DiscoverPage() {
             }}
             whileTap={{ cursor: "grabbing" }}
           >
-            <Card className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing">
+            <Card 
+              className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing"
+              style={currentCard?.type === "mycollab" ? 
+                {background: "linear-gradient(to bottom right, rgba(76, 29, 149, 1), rgba(0, 0, 0, 1))"} : 
+                undefined
+              }
+            >
               {renderCard(currentCard)}
 
               {/* Action Buttons */}
