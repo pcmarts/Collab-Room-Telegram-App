@@ -909,24 +909,35 @@ export default function CreateCollaborationSteps({
           <FormField
             control={form.control}
             name="details.short_description"
-            render={({ field }) => (
-              <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Describe your Twitter Space in a short summary"
-                    className="resize-none text-xs"
-                    maxLength={180}
-                    value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                  />
-                </FormControl>
-                <FormDescription className="text-xs">
-                  {field.value?.length || 0}/180 characters - Briefly describe your Twitter Space to attract the right audience
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              console.log("Twitter Space Form Field Details:", {
+                fieldName: field.name,
+                fieldValue: field.value,
+                formValue: form.getValues("details.short_description")
+              });
+              
+              return (
+                <FormItem className="space-y-1 pt-0">
+                  <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe your Twitter Space in a short summary"
+                      className="resize-none text-xs"
+                      maxLength={180}
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        console.log("Twitter Space field change:", e.target.value);
+                        field.onChange(e.target.value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    {field.value?.length || 0}/180 characters - Briefly describe your Twitter Space to attract the right audience
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
         </div>
       ),
