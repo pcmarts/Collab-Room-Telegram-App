@@ -121,33 +121,53 @@ export default function DiscoveryFilters() {
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
   
   // Load saved preferences
-  const { data: marketingPreferences, isLoading } = useQuery({
+  // Enhanced loading of marketing preferences with cache invalidation and refetching
+  const { data: marketingPreferences, isLoading, refetch } = useQuery({
     queryKey: ['/api/marketing-preferences'],
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0, // Don't use stale data - always fetch fresh data
+    refetchOnWindowFocus: true, // Refresh when window gains focus
+    refetchOnMount: true, // Refresh when component mounts
   });
+  
+  // Force refresh when component mounts
+  useEffect(() => {
+    console.log("Discovery filters page mounted - forcing refresh of preferences");
+    refetch();
+  }, [refetch]);
   
   // Initialize form with saved preferences
   useEffect(() => {
     if (marketingPreferences) {
-      console.log("Loading marketing preferences:", marketingPreferences);
+      console.log("Loading marketing preferences:", JSON.stringify(marketingPreferences, null, 2));
+      
+      // Log specific values to debug
+      console.log("DEBUG - collab_types:", marketingPreferences.collabs_to_discover);
+      console.log("DEBUG - discovery_filter_collab_types_enabled:", marketingPreferences.discovery_filter_collab_types_enabled);
+      console.log("DEBUG - filtered_marketing_topics:", marketingPreferences.filtered_marketing_topics);
+      console.log("DEBUG - discovery_filter_topics_enabled:", marketingPreferences.discovery_filter_topics_enabled);
       
       // Map marketingPreferences to form values using the correct field names from the API
       const formValues: MarketingPreferencesForm = {
         matchingEnabled: true,
-        collabTypes: marketingPreferences.collabs_to_discover || [],
-        companySectors: marketingPreferences.company_tags || [], // Backend uses company_tags
-        companyFollowers: marketingPreferences.company_twitter_followers || undefined, // Backend uses company_twitter_followers
-        fundingStages: marketingPreferences.funding_stages || [],
-        hasToken: marketingPreferences.company_has_token || false, // Backend uses company_has_token
-        blockchainNetworks: marketingPreferences.company_blockchain_networks || [], // Backend uses company_blockchain_networks
-        preferredTopics: marketingPreferences.filtered_marketing_topics || [],
+        // Use explicit null/undefined checks
+        collabTypes: Array.isArray(marketingPreferences.collabs_to_discover) ? [...marketingPreferences.collabs_to_discover] : [],
+        companySectors: Array.isArray(marketingPreferences.company_tags) ? [...marketingPreferences.company_tags] : [], 
+        companyFollowers: marketingPreferences.company_twitter_followers || undefined,
+        fundingStages: Array.isArray(marketingPreferences.funding_stages) ? [...marketingPreferences.funding_stages] : [],
+        hasToken: marketingPreferences.company_has_token === true, 
+        blockchainNetworks: Array.isArray(marketingPreferences.company_blockchain_networks) ? [...marketingPreferences.company_blockchain_networks] : [],
+        preferredTopics: Array.isArray(marketingPreferences.filtered_marketing_topics) ? [...marketingPreferences.filtered_marketing_topics] : [],
       };
+      
+      console.log("DEBUG - Form will be reset with:", JSON.stringify(formValues, null, 2));
       
       // Reset form with saved values
       form.reset(formValues);
       
       // Set selected topics separately
-      const savedTopics = marketingPreferences.filtered_marketing_topics || [];
+      const savedTopics = Array.isArray(marketingPreferences.filtered_marketing_topics) 
+        ? [...marketingPreferences.filtered_marketing_topics] 
+        : [];
       console.log("Extracted topics from saved preferences:", savedTopics);
       setSelectedTopics(savedTopics);
       
@@ -303,13 +323,22 @@ export default function DiscoveryFilters() {
         discovery_filter_blockchain_networks_enabled: filtersEnabled.blockchainNetworks,
       };
       
-      console.log("Saving discovery filters with data:", data);
+      console.log("Saving discovery filters with data:", JSON.stringify(data, null, 2));
       
       // Send to API
-      await apiRequest('/api/marketing-preferences', 'POST', data);
+      const response = await apiRequest('/api/marketing-preferences', 'POST', data);
+      console.log("API response after saving preferences:", JSON.stringify(response, null, 2));
       
-      // Update cache
-      queryClient.invalidateQueries({ queryKey: ['/api/marketing-preferences'] });
+      // First remove existing cache entries to ensure stale data is gone
+      queryClient.removeQueries({ queryKey: ['/api/marketing-preferences'] });
+      
+      // Then force a refetch to update cache with fresh data
+      await queryClient.fetchQuery({ 
+        queryKey: ['/api/marketing-preferences'],
+        staleTime: 0
+      });
+      
+      console.log("Cache updated after save");
       
       // No toast notification for auto-save
     } catch (error) {
