@@ -584,8 +584,7 @@ export default function CreateCollaborationSteps({
           blog_topic: typeof rawDetails?.blog_topic === 'string' ? rawDetails.blog_topic : "",
           blog_link: typeof rawDetails?.blog_link === 'string' ? rawDetails.blog_link : "",
           blog_name: typeof rawDetails?.blog_name === 'string' ? rawDetails.blog_name : "",
-          blog_url: typeof rawDetails?.blog_link === 'string' ? rawDetails.blog_link : "", // Use blog_link as the URL
-          // No longer include short_description in details object
+          // No longer include short_description or blog_url in details object
           est_readers: AUDIENCE_SIZE_RANGES.includes(rawDetails?.est_readers) ? rawDetails.est_readers : AUDIENCE_SIZE_RANGES[0],
           estimated_release_date: typeof rawDetails?.estimated_release_date === 'string' ? rawDetails.estimated_release_date : "",
         };
