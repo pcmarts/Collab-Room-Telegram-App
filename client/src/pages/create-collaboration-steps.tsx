@@ -388,19 +388,27 @@ export default function CreateCollaborationSteps({
       // Log full raw details for debugging
       console.log("Raw form details:", rawDetails);
       
-      // Extract the description from the appropriate field based on collaboration type
-      // and set it in the common description field at the root level
+      // IMPORTANT: Keep descriptions in the details.short_description field
+      // No need to extract to the common description field
       if (data.collab_type === "Co-Marketing on Twitter") {
         console.log("Twitter co-marketing description:", rawDetails?.short_description);
-        // Set the description field at the root level from the short_description in details
-        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+        // Ensure short_description is properly set in details
+        if (rawDetails && typeof rawDetails.short_description === 'string') {
+          console.log("Using existing short_description from details");
+        } else {
+          console.warn("Missing short_description for Twitter co-marketing");
+        }
       } else {
-        // For all other types, also use the short_description from details
-        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+        // For all other types, also ensure short_description is in details
+        if (rawDetails && typeof rawDetails.short_description === 'string') {
+          console.log("Using existing short_description from details:", rawDetails.short_description);
+        } else {
+          console.warn("Missing short_description in details");
+        }
       }
       
-      // Log the extracted common description
-      console.log("Common description field:", data.description);
+      // Clear the common description field as we only use details.short_description
+      data.description = "";
       
       if (data.collab_type === "Podcast Guest Appearance") {
         data.details = {
