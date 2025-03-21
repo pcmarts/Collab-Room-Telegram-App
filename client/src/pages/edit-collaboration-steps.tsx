@@ -972,7 +972,7 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                 />
                 <FormField
                   control={form.control}
-                  name="details.short_description"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Short Description</FormLabel>
@@ -980,9 +980,13 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                         <Textarea 
                           placeholder="Brief description of your newsletter" 
                           className="min-h-[80px]"
+                          maxLength={200}
                           {...field} 
                         />
                       </FormControl>
+                      <FormDescription>
+                        A brief description of your newsletter (max 200 characters)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1036,7 +1040,7 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                 />
                 <FormField
                   control={form.control}
-                  name="details.short_description"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Short Description of Report</FormLabel>
@@ -1044,9 +1048,13 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                         <Textarea 
                           placeholder="Brief description of your report or research" 
                           className="min-h-[80px]"
+                          maxLength={200}
                           {...field} 
                         />
                       </FormControl>
+                      <FormDescription>
+                        A brief description of your report (max 200 characters)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
