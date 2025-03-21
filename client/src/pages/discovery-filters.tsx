@@ -212,10 +212,8 @@ export default function DiscoveryFilters() {
         [filterName]: newState
       };
       
-      // Save the updated filter state immediately
-      setTimeout(() => {
-        savePreferences();
-      }, 0);
+      // No longer auto-save when toggling filters
+      // User must press the save button instead
       
       return newFiltersEnabled;
     });
@@ -319,16 +317,16 @@ export default function DiscoveryFilters() {
     }
   };
   
-  // Watch for form changes to trigger auto-save
-  useEffect(() => {
-    const subscription = form.watch((_value, { name, type }) => {
-      if (type === 'change') {
-        handleAutoSave();
-      }
-    });
-    
-    return () => subscription.unsubscribe();
-  }, [form.watch]);
+  // No longer auto-save on form field changes
+  // useEffect(() => {
+  //   const subscription = form.watch((_value, { name, type }) => {
+  //     if (type === 'change') {
+  //       handleAutoSave();
+  //     }
+  //   });
+  //   
+  //   return () => subscription.unsubscribe();
+  // }, [form.watch]);
   
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -903,14 +901,15 @@ export default function DiscoveryFilters() {
                 </CardContent>
               </Card>
               
-              {/* Manual Save Button (floating) */}
-              <div className="fixed bottom-6 right-6 z-10">
+              {/* Manual Save Button (sticky at bottom) */}
+              <div className="fixed bottom-0 left-0 right-0 z-10 p-4 bg-background border-t border-border flex justify-center">
                 <Button 
                   type="submit" 
                   size="lg"
-                  className="shadow-lg rounded-full h-12 w-12 p-0"
+                  className="shadow-md w-full max-w-md"
                 >
-                  <Save className="h-5 w-5" />
+                  <Save className="h-5 w-5 mr-2" />
+                  Save Filters
                 </Button>
               </div>
             </div>
