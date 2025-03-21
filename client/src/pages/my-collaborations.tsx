@@ -391,7 +391,10 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
-              <Badge className="mb-2">{collab.collab_type}</Badge>
+              <Badge className="mb-2 flex items-center gap-1">
+                {getCollabTypeIcon(collab.collab_type)}
+                {collab.collab_type}
+              </Badge>
               <CardTitle className="text-xl">
                 {collab.title === "Collaboration" ? collab.collab_type : collab.title}
               </CardTitle>
