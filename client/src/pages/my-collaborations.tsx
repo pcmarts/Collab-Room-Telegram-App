@@ -57,8 +57,44 @@ import {
   UserCheck,
   UserX,
   ListChecks,
-  Trash2
+  Trash2,
+  Podcast,
+  Radio,
+  Twitter,
+  BookOpen,
+  FileText,
+  FileSpreadsheet,
+  Mic,
+  Video,
+  Coffee
 } from "lucide-react";
+
+// Helper function to get appropriate icon based on collaboration type
+const getCollabTypeIcon = (collabType: string) => {
+  switch(collabType) {
+    case 'Podcast Guest Appearance':
+    case 'Podcast':
+      return <Podcast className="h-3 w-3" />;
+    case 'Twitter Space':
+      return <Mic className="h-3 w-3" />;
+    case 'Twitter Co-Marketing':
+    case 'Co-Marketing on Twitter':
+      return <Twitter className="h-3 w-3" />;
+    case 'Live Stream':
+    case 'Webinar':
+      return <Video className="h-3 w-3" />;
+    case 'Research Report':
+      return <FileText className="h-3 w-3" />;
+    case 'Newsletter':
+      return <FileText className="h-3 w-3" />;
+    case 'Blog Post':
+      return <BookOpen className="h-3 w-3" />;
+    case 'Conference Coffee':
+      return <Coffee className="h-3 w-3" />;
+    default:
+      return <MessageSquare className="h-3 w-3" />;
+  }
+};
 
 export default function MyCollaborations({ collaborationId }: MyCollaborationsProps = {}) {
   const [, setLocation] = useLocation();
