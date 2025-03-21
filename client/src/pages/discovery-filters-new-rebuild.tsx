@@ -191,9 +191,9 @@ export default function DiscoveryFilters() {
         companyFollowers: marketingPrefs.company_twitter_followers || undefined,
         userFollowers: marketingPrefs.twitter_followers || undefined,
         
-        fundingStages: Array.isArray(marketingPrefs.funding_stage) ? 
-          marketingPrefs.funding_stage : 
-          (marketingPrefs.funding_stage ? [marketingPrefs.funding_stage] : []),
+        // Handle funding_stage as a comma-separated string
+        fundingStages: marketingPrefs.funding_stage ? 
+          marketingPrefs.funding_stage.split(',') : [],
         
         hasToken: marketingPrefs.company_has_token === true,
         
@@ -309,8 +309,9 @@ export default function DiscoveryFilters() {
         // Scalar fields
         company_twitter_followers: filtersEnabled.companyFollowers ? values.companyFollowers : null,
         twitter_followers: filtersEnabled.userFollowers ? values.userFollowers : null,
+        // Convert array of funding stages to a comma-separated string to match the backend schema
         funding_stage: filtersEnabled.fundingStages && values.fundingStages.length > 0 ? 
-          values.fundingStages[0] : null,
+          values.fundingStages.join(',') : null,
         company_has_token: filtersEnabled.hasToken ? values.hasToken : null,
         
         // Filter enabled states
