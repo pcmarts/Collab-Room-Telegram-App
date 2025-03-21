@@ -71,12 +71,14 @@ export const SwipeableCard = ({ children, style, onVote, id, glowColor, ...props
         const childNode = cardElem.current;
         const parentNode = cardElem.current.parentElement;
         const result = getVote(childNode, parentNode);
-        result !== undefined && onVote(result);
+        if (result !== undefined) {
+          onVote(result);
+        }
       }
     });
 
     return () => unsubscribeX();
-  }, []);
+  }, [onVote, x]);
 
   return (
     <motion.div
