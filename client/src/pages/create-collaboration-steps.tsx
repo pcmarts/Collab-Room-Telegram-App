@@ -478,16 +478,13 @@ export default function CreateCollaborationSteps({
         };
       } else if (data.collab_type === "Co-Marketing on Twitter") {
         console.log("Co-Marketing on Twitter BEFORE formatting:", rawDetails);
-        console.log("  - Raw short_description value:", rawDetails?.short_description);
         
-        // Get the short description directly from the form field
-        const shortDesc = form.getValues("details.short_description");
-        console.log("Direct form field value for short_description (Twitter co-marketing):", shortDesc);
-
-        // Set the common description field from the short_description in details
-        data.description = shortDesc || (typeof rawDetails?.short_description === 'string' 
-            ? rawDetails.short_description 
-            : "");
+        // Using the root-level description field, ensure it's a string
+        if (typeof data.description !== 'string') {
+          data.description = "";
+        }
+        
+        console.log("Using root-level description for Twitter co-marketing:", data.description);
 
         data.details = {
           twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Thread Collab"],

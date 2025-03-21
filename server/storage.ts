@@ -137,13 +137,6 @@ export class DatabaseStorage implements IStorage {
       if (collabData.collab_type === 'Co-Marketing on Twitter') {
         console.log("Processing Twitter co-marketing details:", collabData.details);
         
-        // Ensure short_description is present and preserved
-        if (collabData.details.short_description) {
-          console.log("Twitter co-marketing description found:", collabData.details.short_description);
-        } else {
-          console.warn("Missing short_description for Twitter co-marketing collaboration");
-        }
-        
         // Ensure twittercomarketing_type is properly formatted as an array
         if (collabData.details.twittercomarketing_type) {
           if (!Array.isArray(collabData.details.twittercomarketing_type)) {
@@ -153,15 +146,6 @@ export class DatabaseStorage implements IStorage {
         }
       } else if (collabData.collab_type === 'Twitter Spaces Guest') {
         console.log("Processing Twitter Spaces Guest details:", collabData.details);
-        
-        // Ensure short_description is present and preserved
-        if (collabData.details.short_description) {
-          console.log("Twitter Spaces short_description found:", collabData.details.short_description);
-        } else {
-          console.warn("Missing short_description for Twitter Spaces collaboration");
-          // Initialize with empty string to prevent null errors
-          collabData.details.short_description = "";
-        }
       }
     }
     
@@ -188,16 +172,16 @@ export class DatabaseStorage implements IStorage {
               ? collabData.details.twittercomarketing_type
               : (collabData.details?.twittercomarketing_type ? [collabData.details.twittercomarketing_type] : ["Thread Collab"]),
             host_twitter_handle: collabData.details?.host_twitter_handle || "https://x.com/",
-            host_follower_count: collabData.details?.host_follower_count || "0-1K",
-            short_description: collabData.details?.short_description || "" // Ensure this field is present
+            host_follower_count: collabData.details?.host_follower_count || "0-1K"
+            // No longer add short_description to details as we're using root-level description
           };
         }
         // Twitter Spaces Guest special handling
         else if (collabData.collab_type === 'Twitter Spaces Guest') {
           return {
             twitter_handle: collabData.details?.twitter_handle || "https://x.com/",
-            host_follower_count: collabData.details?.host_follower_count || "0-1K",
-            short_description: collabData.details?.short_description || "" // Ensure short_description is preserved
+            host_follower_count: collabData.details?.host_follower_count || "0-1K"
+            // No longer add short_description to details as we're using root-level description
           };
         }
         // Default to original details
