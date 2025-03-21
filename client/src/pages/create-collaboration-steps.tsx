@@ -379,16 +379,8 @@ export default function CreateCollaborationSteps({
         }
         break;
         
-      case "research_topic":
-        const researchTopics = form.getValues("details.research_topic");
-        if (!researchTopics || !Array.isArray(researchTopics) || researchTopics.length === 0) {
-          toast({
-            title: "Please select at least one research topic",
-            variant: "destructive",
-          });
-          return false;
-        }
-        break;
+      // research_topic validation is no longer needed as we're using the common topics field
+      // for Report & Research Feature type
         
       case "target_audience":
         const targetAudience = form.getValues("details.target_audience");
@@ -1453,44 +1445,7 @@ export default function CreateCollaborationSteps({
       ),
       shouldShow: () => selectedCollabType === "Live Stream Guest Appearance"
     },
-    {
-      id: "free_collab",
-      title: "Free Collaboration",
-      description: "Verify that this is a free collaboration",
-      render: () => (
-        <FormField
-          control={form.control}
-          name="is_free_collab"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-2 space-y-0 pt-0">
-              <FormControl>
-                <Checkbox
-                  checked={true}
-                  onCheckedChange={(checked) => {
-                    field.onChange(true);
-                    if (!checked) {
-                      toast({
-                        title: "Free collaborations only",
-                        description: "Only free collaborations are allowed.",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  disabled={true}
-                />
-              </FormControl>
-              <div className="leading-none">
-                <FormLabel className="mb-0 text-sm">Free Collaboration Confirmation</FormLabel>
-                <FormDescription className="text-xs">
-                  I confirm this is a 100% free collaboration with no payments or fees involved.
-                  Our platform only supports non-commercial collaborations.
-                </FormDescription>
-              </div>
-            </FormItem>
-          )}
-        />
-      )
-    },
+
     // Report & Research Feature steps
     {
       id: "research_report_description",
@@ -1532,82 +1487,7 @@ export default function CreateCollaborationSteps({
       ),
       shouldShow: () => selectedCollabType === "Report & Research Feature"
     },
-    {
-      id: "research_topic",
-      title: "Research Topic",
-      description: "What is the topic of your research?",
-      render: () => (
-        <FormField
-          control={form.control}
-          name="details.research_topic"
-          render={({ field }) => {
-            // Ensure field value is always an array
-            const topicsValue = Array.isArray(field.value) ? field.value : [];
-            
-            const handleTopicToggle = (topic: string) => {
-              const newValue = [...topicsValue];
-              const index = newValue.indexOf(topic);
-              
-              if (index > -1) {
-                newValue.splice(index, 1);
-              } else {
-                newValue.push(topic);
-              }
-              
-              field.onChange(newValue);
-            };
-            
-            return (
-              <FormItem className="space-y-1">
-                <FormLabel className="mb-0 text-sm">Research Topic</FormLabel>
-                <FormControl>
-                  <div className="space-y-2">
-                    {/* Topic selection buttons */}
-                    <div className="grid grid-cols-2 gap-2">
-                      {COLLAB_TOPICS.map(topic => (
-                        <Button
-                          key={topic}
-                          type="button"
-                          size="sm"
-                          variant={topicsValue.includes(topic) ? "default" : "outline"}
-                          className="justify-start h-auto py-2 px-3 text-xs"
-                          onClick={() => handleTopicToggle(topic)}
-                        >
-                          <span className="text-left">{topic}</span>
-                        </Button>
-                      ))}
-                    </div>
-                    
-                    {/* Show selected count as text instead of Badge */}
-                    {topicsValue.length > 0 && (
-                      <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
-                        <span>
-                          {topicsValue.length} {topicsValue.length === 1 ? 'topic' : 'topics'} selected
-                        </span>
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => field.onChange([])}
-                          className="h-6 text-xs"
-                        >
-                          Clear all
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </FormControl>
-                <FormDescription className="text-[10px]">
-                  Select one or more topics for your research report
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
-      ),
-      shouldShow: () => selectedCollabType === "Report & Research Feature"
-    },
+
     {
       id: "target_audience",
       title: "Target Audience",
@@ -1665,6 +1545,46 @@ export default function CreateCollaborationSteps({
         />
       ),
       shouldShow: () => selectedCollabType === "Report & Research Feature"
+    },
+    
+    // Free collaboration confirmation - moved to be the last step for all collaboration types
+    {
+      id: "free_collab",
+      title: "Free Collaboration",
+      description: "Verify that this is a free collaboration",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="is_free_collab"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-2 space-y-0 pt-0">
+              <FormControl>
+                <Checkbox
+                  checked={true}
+                  onCheckedChange={(checked) => {
+                    field.onChange(true);
+                    if (!checked) {
+                      toast({
+                        title: "Free collaborations only",
+                        description: "Only free collaborations are allowed.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  disabled={true}
+                />
+              </FormControl>
+              <div className="leading-none">
+                <FormLabel className="mb-0 text-sm">Free Collaboration Confirmation</FormLabel>
+                <FormDescription className="text-xs">
+                  I confirm this is a 100% free collaboration with no payments or fees involved.
+                  Our platform only supports non-commercial collaborations.
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+      )
     }
   ];
 
