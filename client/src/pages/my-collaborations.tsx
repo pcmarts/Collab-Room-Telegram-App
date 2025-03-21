@@ -63,7 +63,9 @@ import {
   FileText,
   Mic,
   Video,
-  Coffee
+  Coffee,
+  Mail,
+  PenTool
 } from "lucide-react";
 
 // Helper function to get appropriate icon based on collaboration type
@@ -72,20 +74,25 @@ const getCollabTypeIcon = (collabType: string) => {
     case 'Podcast Guest Appearance':
     case 'Podcast':
       return <Mic className="h-3 w-3" />;
+    case 'Twitter Spaces Guest':
     case 'Twitter Space':
       return <Twitter className="h-3 w-3" />;
     case 'Twitter Co-Marketing':
     case 'Co-Marketing on Twitter':
       return <Twitter className="h-3 w-3" />;
+    case 'Live Stream Guest Appearance':
     case 'Live Stream':
     case 'Webinar':
       return <Video className="h-3 w-3" />;
+    case 'Report & Research Feature':
     case 'Research Report':
-      return <FileText className="h-3 w-3" />;
+      return <ListChecks className="h-3 w-3" />;
+    case 'Newsletter Feature':
     case 'Newsletter':
-      return <BookOpen className="h-3 w-3" />;
+      return <Mail className="h-3 w-3" />;
+    case 'Blog Post Feature':
     case 'Blog Post':
-      return <FileText className="h-3 w-3" />;
+      return <PenTool className="h-3 w-3" />;
     case 'Conference Coffee':
       return <Coffee className="h-3 w-3" />;
     default:
