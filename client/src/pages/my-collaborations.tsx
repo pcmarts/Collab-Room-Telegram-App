@@ -884,10 +884,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   return (
     <MobileCheck>
       <div className="min-h-[100svh] bg-background">
-        <PageHeader
-          title="My Collaborations"
-          backUrl="/dashboard"
-        />
+        <h1 className="text-2xl font-bold p-6">My Collaborations</h1>
         
         <div className="container mx-auto py-4 px-4">
           <div className="flex justify-end mb-4">
