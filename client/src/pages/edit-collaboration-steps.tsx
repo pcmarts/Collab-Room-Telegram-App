@@ -302,6 +302,24 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
           errorMessage = "Twitter handle must start with https://x.com/";
         }
       }
+      else if (collabType === "Newsletter Feature") {
+        const newsletterDetails = details as { 
+          newsletter_name: string;
+          short_description: string;
+          newsletter_url: string;
+        };
+        
+        if (!newsletterDetails.newsletter_name?.trim()) {
+          canProceed = false;
+          errorMessage = "Newsletter name is required";
+        } else if (!newsletterDetails.short_description?.trim()) {
+          canProceed = false;
+          errorMessage = "Short description is required";
+        } else if (!newsletterDetails.newsletter_url?.trim()) {
+          canProceed = false;
+          errorMessage = "Newsletter URL is required";
+        }
+      }
     }
     else if (currentStep === 2) {
       // Validate enabled filters have selections
@@ -913,6 +931,23 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                       <FormLabel>Newsletter URL</FormLabel>
                       <FormControl>
                         <Input placeholder="https://newsletter-signup.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="details.short_description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Short Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Brief description of your newsletter" 
+                          className="min-h-[80px]"
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
