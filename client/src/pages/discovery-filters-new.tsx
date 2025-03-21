@@ -103,8 +103,33 @@ export default function DiscoveryFiltersNew() {
     blockchainNetworks: false,
   });
   
-  // Fetch user's current marketing preferences
-  const { data: marketingPrefs, isLoading: isLoadingPrefs, refetch } = useQuery({
+  // Define a type for the marketing preferences response
+  type MarketingPreferencesResponse = {
+    collabs_to_discover: string[];
+    filtered_marketing_topics: string[];
+    company_tags: string[] | null;
+    company_blockchain_networks: string[] | null;
+    company_twitter_followers: string | null;
+    twitter_followers: string | null;
+    company_has_token: boolean | null;
+    funding_stages: string[] | null;
+    discovery_filter_enabled: boolean;
+    discovery_filter_collab_types_enabled: boolean;
+    discovery_filter_topics_enabled: boolean;
+    discovery_filter_company_sectors_enabled: boolean;
+    discovery_filter_company_followers_enabled: boolean;
+    discovery_filter_user_followers_enabled: boolean;
+    discovery_filter_funding_stages_enabled: boolean;
+    discovery_filter_token_status_enabled: boolean;
+    discovery_filter_blockchain_networks_enabled: boolean;
+  };
+
+  // Fetch user's current marketing preferences with proper typing
+  const { 
+    data: marketingPrefs = {} as MarketingPreferencesResponse, 
+    isLoading: isLoadingPrefs, 
+    refetch 
+  } = useQuery<MarketingPreferencesResponse>({
     queryKey: ['/api/marketing-preferences'],
     staleTime: 0, // Always fetch fresh data
     refetchOnWindowFocus: true, 
@@ -263,8 +288,12 @@ export default function DiscoveryFiltersNew() {
       const response = await apiRequest('/api/marketing-preferences', 'POST', values);
       console.log("API response:", JSON.stringify(response, null, 2));
       
-      // Clear cache and force refresh
-      await queryClient.invalidateQueries({ queryKey: ['/api/marketing-preferences'] });
+      // Improved cache handling: completely remove and fetch new data
+      await queryClient.removeQueries({ queryKey: ['/api/marketing-preferences'] });
+      await queryClient.fetchQuery({ 
+        queryKey: ['/api/marketing-preferences'],
+        staleTime: 0
+      });
       
       toast({
         title: "Preferences saved",
@@ -287,15 +316,31 @@ export default function DiscoveryFiltersNew() {
     }
   };
   
-  // Handle form submission
+  // Handle form submission with improved error handling
   const onSubmit = async (values: FilterFormValues) => {
-    const success = await savePreferences(values);
-    
-    if (success) {
-      // Add a small delay before redirecting to ensure UI feedback
-      setTimeout(() => {
-        navigate('/discover');
-      }, 300);
+    try {
+      console.log("Form submitted with values:", JSON.stringify(values, null, 2));
+      const success = await savePreferences(values);
+      
+      if (success) {
+        toast({
+          title: "Success!",
+          description: "Your discovery filter preferences have been saved and will be applied to your feed."
+        });
+        
+        // Add a slightly longer delay to ensure UI feedback and data refresh
+        setTimeout(() => {
+          console.log("Redirecting to /discover page");
+          navigate('/discover');
+        }, 500);
+      }
+    } catch (error) {
+      console.error("Error in form submission:", error);
+      toast({
+        title: "Error saving preferences",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
     }
   };
   
