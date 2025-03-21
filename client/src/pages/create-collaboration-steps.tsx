@@ -388,44 +388,44 @@ export default function CreateCollaborationSteps({
       // Log full raw details for debugging
       console.log("Raw form details:", rawDetails);
       
-      // Special debugging for Twitter co-marketing
+      // Extract the description from the appropriate field based on collaboration type
+      // and set it in the common description field at the root level
       if (data.collab_type === "Co-Marketing on Twitter") {
         console.log("Twitter co-marketing description:", rawDetails?.short_description);
-        console.log("Twitter co-marketing field in form:", form.getValues("details.short_description"));
+        // Set the description field at the root level from the short_description in details
+        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+      } else {
+        // For all other types, also use the short_description from details
+        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
       }
+      
+      // Log the extracted common description
+      console.log("Common description field:", data.description);
       
       if (data.collab_type === "Podcast Guest Appearance") {
         data.details = {
           podcast_name: typeof rawDetails?.podcast_name === 'string' ? rawDetails.podcast_name : "",
-          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
-          // Removed podcast_description field in favor of short_description
+          // No longer need to include short_description in details as it's moved to the common field
           podcast_link: typeof rawDetails?.podcast_link === 'string' ? rawDetails.podcast_link : "",
           estimated_reach: AUDIENCE_SIZE_RANGES.includes(rawDetails?.estimated_reach) ? rawDetails.estimated_reach : AUDIENCE_SIZE_RANGES[0],
         };
       } else if (data.collab_type === "Twitter Spaces Guest") {
         // Enhanced debugging for Twitter Spaces Guest
         console.log("Twitter Spaces Guest BEFORE formatting:", rawDetails);
-        console.log("  - Raw short_description value:", rawDetails?.short_description);
         
-        // Get the short description directly from the form field
-        // This is the key part that was failing - ensure we get the value properly
-        const shortDesc = form.getValues("details.short_description") || "";
-        console.log("Direct form field value for short_description:", shortDesc);
-        
-        // Note: Using only standard fields (short_description) to store the Twitter Space topic
+        // Note: Using only standard fields for Twitter spaces, description is now at root level
         data.details = {
           twitter_handle: typeof rawDetails?.twitter_handle === 'string' ? rawDetails.twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) ? rawDetails.host_follower_count : TWITTER_FOLLOWER_COUNTS[0],
-          // Ensure short_description is always a string, even if empty
-          short_description: shortDesc,
+          // Remove short_description from details as it's moved to the common field
         };
         
         console.log("Twitter Spaces Guest AFTER formatting:", data.details);
-        console.log("  - Formatted short_description value:", data.details.short_description);
+        console.log("  - Extracted description moved to common field:", data.description);
       } else if (data.collab_type === "Live Stream Guest Appearance") {
         data.details = {
           title: typeof rawDetails?.title === 'string' ? rawDetails.title : "",
-          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
+          // No longer include short_description in details object
           date_selection: typeof rawDetails?.date_selection === 'string' ? rawDetails.date_selection : "any_future_date",
           specific_date: typeof rawDetails?.specific_date === 'string' ? rawDetails.specific_date : "",
           previous_stream_link: typeof rawDetails?.previous_stream_link === 'string' ? rawDetails.previous_stream_link : "",
@@ -436,14 +436,13 @@ export default function CreateCollaborationSteps({
         data.details = {
           research_topic: Array.isArray(rawDetails?.research_topic) ? rawDetails.research_topic : [],
           target_audience: typeof rawDetails?.target_audience === 'string' ? rawDetails.target_audience : "",
-          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
+          // No longer include short_description in details object
           estimated_release_date: typeof rawDetails?.estimated_release_date === 'string' ? rawDetails.estimated_release_date : "",
         };
       } else if (data.collab_type === "Newsletter Feature") {
         data.details = {
           newsletter_name: typeof rawDetails?.newsletter_name === 'string' ? rawDetails.newsletter_name : "",
-          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
-          // Removed newsletter_description field in favor of short_description
+          // No longer include short_description in details object
           newsletter_url: typeof rawDetails?.newsletter_url === 'string' ? rawDetails.newsletter_url : "",
           audience_reach: AUDIENCE_SIZE_RANGES.includes(rawDetails?.audience_reach) ? rawDetails.audience_reach : AUDIENCE_SIZE_RANGES[0],
           total_subscribers: AUDIENCE_SIZE_RANGES.includes(rawDetails?.total_subscribers) ? rawDetails.total_subscribers : AUDIENCE_SIZE_RANGES[0],
@@ -455,7 +454,7 @@ export default function CreateCollaborationSteps({
           blog_link: typeof rawDetails?.blog_link === 'string' ? rawDetails.blog_link : "",
           blog_name: typeof rawDetails?.blog_name === 'string' ? rawDetails.blog_name : "",
           blog_url: typeof rawDetails?.blog_url === 'string' ? rawDetails.blog_url : "",
-          short_description: typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "",
+          // No longer include short_description in details object
           est_readers: AUDIENCE_SIZE_RANGES.includes(rawDetails?.est_readers) ? rawDetails.est_readers : AUDIENCE_SIZE_RANGES[0],
           estimated_release_date: typeof rawDetails?.estimated_release_date === 'string' ? rawDetails.estimated_release_date : "",
         };
@@ -467,20 +466,22 @@ export default function CreateCollaborationSteps({
         const shortDesc = form.getValues("details.short_description");
         console.log("Direct form field value for short_description (Twitter co-marketing):", shortDesc);
 
+        // Set the common description field from the short_description in details
+        data.description = shortDesc || (typeof rawDetails?.short_description === 'string' 
+            ? rawDetails.short_description 
+            : "");
+
         data.details = {
           twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Thread Collab"],
           host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) 
             ? rawDetails.host_follower_count 
             : TWITTER_FOLLOWER_COUNTS[0],
-          // Prioritize using the short description from the direct form field access
-          short_description: shortDesc || (typeof rawDetails?.short_description === 'string' 
-            ? rawDetails.short_description 
-            : ""),
+          // No longer include short_description in details as it's moved to the common field
         };
         
         console.log("Co-Marketing on Twitter AFTER formatting:", data.details);
-        console.log("  - Formatted short_description value:", data.details.short_description);
+        console.log("  - Extracted description moved to common field:", data.description);
       }
 
       // Format the data
@@ -513,13 +514,14 @@ export default function CreateCollaborationSteps({
       console.log("FINAL FORM DATA BEING SUBMITTED:", {
         rawFormData: form.getValues(),
         processedData: formattedData,
+        commonDescription: formattedData.description,
         twitterSpacesData: data.collab_type === "Twitter Spaces Guest" ? {
           directFormField: form.getValues("details.short_description"),
-          processedValue: formattedData.details?.short_description
+          extractedToCommonField: true
         } : null,
         twitterComarketingData: data.collab_type === "Co-Marketing on Twitter" ? {
           directFormField: form.getValues("details.short_description"),
-          processedValue: formattedData.details?.short_description
+          extractedToCommonField: true
         } : null
       });
       
