@@ -364,7 +364,7 @@ export default function DiscoveryFiltersNew() {
         />
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-36">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-52">
             {/* Main filters card */}
             <Card>
               <CardContent className="p-4 pt-6 space-y-6">
@@ -1055,7 +1055,7 @@ export default function DiscoveryFiltersNew() {
         </Form>
         
         {/* Fixed position action buttons that stay at the bottom even when scrolling */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t shadow-md flex flex-col sm:flex-row gap-4 justify-end z-50">
+        <div className="fixed bottom-0 left-0 right-0 p-8 bg-background border-t shadow-xl flex flex-col sm:flex-row gap-4 justify-end z-50">
           <Button
             variant="outline"
             type="button"
