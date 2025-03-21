@@ -1106,7 +1106,7 @@ export async function registerRoutes(app: Express) {
       } = req.body;
 
       // Get user from impersonation session or Telegram data
-      const telegramUser = getTelegramUserFromRequest(req);
+      let telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
         console.error('No Telegram user ID found');
         if (process.env.NODE_ENV === 'production') {
@@ -1329,7 +1329,7 @@ export async function registerRoutes(app: Express) {
       } = req.body;
 
       // Get user from impersonation session or Telegram data
-      const telegramUser = getTelegramUserFromRequest(req);
+      let telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
         console.error('No Telegram user ID found');
         if (process.env.NODE_ENV === 'production') {
