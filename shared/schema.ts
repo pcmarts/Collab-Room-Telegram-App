@@ -317,6 +317,7 @@ export const marketing_preferences = pgTable('marketing_preferences', {
   
   // Discovery feed filter toggle states
   discovery_filter_enabled: boolean('discovery_filter_enabled').default(false),
+  discovery_filter_collab_types_enabled: boolean('discovery_filter_collab_types_enabled').default(false),
   discovery_filter_topics_enabled: boolean('discovery_filter_topics_enabled').default(false),
   discovery_filter_company_followers_enabled: boolean('discovery_filter_company_followers_enabled').default(false),
   discovery_filter_user_followers_enabled: boolean('discovery_filter_user_followers_enabled').default(false),
