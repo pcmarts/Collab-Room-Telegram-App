@@ -963,7 +963,7 @@ export default function DiscoveryFilters() {
                 </Card>
                 
                 {/* Submit Button */}
-                <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-6 flex justify-center">
+                <div className="fixed bottom-4 left-0 right-0 bg-background border-t rounded-lg shadow-md mx-4 p-6 flex justify-center">
                   <Button 
                     type="submit" 
                     className="w-full max-w-md py-6"
