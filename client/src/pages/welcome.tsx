@@ -30,7 +30,7 @@ export default function Welcome() {
           {/* Logo */}
           <div className="flex justify-center mb-3">
             <img 
-              src="/images/collab-room-logo.jpg" 
+              src="/src/assets/collab-room-logo.jpg" 
               alt="The Collab Room" 
               className="h-24 w-auto rounded-lg shadow-md"
             />
