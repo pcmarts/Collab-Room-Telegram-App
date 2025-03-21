@@ -382,7 +382,7 @@ export default function DiscoveryFilters() {
 
   return (
     <MobileCheck>
-      <div className="container pb-20 discovery-filters-page">
+      <div className="container discovery-filters-page">
         <PageHeader 
           title="Discovery Filters" 
           subtitle="Customize what collaboration types appear in your discover cards"

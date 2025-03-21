@@ -44,7 +44,8 @@ const APPLICATION_ROUTES = [
   '/application-status',
   '/application-form',
   '/company-info',
-  '/profile-overview'
+  '/profile-overview',
+  '/discovery-filters'
 ];
 
 function Router() {
