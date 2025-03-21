@@ -376,7 +376,7 @@ export default function DiscoveryFiltersNew() {
         />
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mb-24">
             {/* Main filters card */}
             <Card>
               <CardContent className="p-4 pt-6 space-y-6">
@@ -1074,36 +1074,39 @@ export default function DiscoveryFiltersNew() {
                 </div>
               </CardContent>
               
-              <CardFooter className="flex flex-col sm:flex-row gap-4 justify-end sticky bottom-0 bg-background border-t p-4">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => navigate('/discover')}
-                  disabled={loading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full sm:w-auto"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Filter className="mr-2 h-4 w-4" />
-                      Save Filters
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
             </Card>
           </form>
         </Form>
+        
+        {/* Fixed position action buttons that stay at the bottom even when scrolling */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t flex flex-col sm:flex-row gap-4 justify-end z-50">
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => navigate('/discover')}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full sm:w-auto"
+            onClick={() => form.handleSubmit(onSubmit)()}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Filter className="mr-2 h-4 w-4" />
+                Save Filters
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </MobileCheck>
   );
