@@ -500,7 +500,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                         <p className="text-xs text-muted-foreground">Topic: {collab.details.topic}</p>
                       )}
                       {'host_followers' in collab.details && collab.details.host_followers && (
-                        <p className="text-xs text-white opacity-80">Host Followers: {collab.details.host_followers}</p>
+                        <p className="text-xs text-muted-foreground">Host Followers: {collab.details.host_followers}</p>
                       )}
                       {/* Topics not shown here since they are already at the top */}
                     </div>
@@ -552,7 +552,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                     <div className="space-y-2">
                       <p className="text-sm font-medium">Newsletter: {collab.details.newsletter_name}</p>
                       {'total_subscribers' in collab.details && collab.details.total_subscribers && (
-                        <p className="text-xs text-white opacity-80">Subscribers: {collab.details.total_subscribers}</p>
+                        <p className="text-xs text-muted-foreground">Subscribers: {collab.details.total_subscribers}</p>
                       )}
                     </div>
                   )}
@@ -561,7 +561,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   {'expectations' in collab.details && collab.details.expectations && (
                     <div className="mt-2">
                       <p className="text-xs font-medium">Expectations:</p>
-                      <p className="text-xs text-white opacity-80">{collab.details.expectations}</p>
+                      <p className="text-xs text-muted-foreground">{collab.details.expectations}</p>
                     </div>
                   )}
                 </div>
