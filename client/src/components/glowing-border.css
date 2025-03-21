@@ -1,0 +1,89 @@
+.glow-card-container {
+  position: relative;
+  border-radius: var(--radius);
+  padding: 1px; /* Small padding to make room for the gradient */
+  overflow: hidden;
+  --glow-color: var(--primary); /* Default to primary color, can be overridden */
+}
+
+.glow-card-container::before {
+  content: "";
+  position: absolute;
+  top: -2px; /* slightly outside */
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  z-index: -1;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    var(--glow-color) 0%,
+    rgba(255, 255, 255, 0.5) 25%,
+    var(--glow-color) 50%,
+    rgba(255, 255, 255, 0.5) 75%,
+    var(--glow-color) 100%
+  );
+  border-radius: calc(var(--radius) + 2px);
+  animation: rotate 3s linear infinite;
+  filter: blur(10px);
+  opacity: 0.7;
+}
+
+.glow-card {
+  position: relative;
+  border-radius: var(--radius);
+  z-index: 1;
+  background: var(--background);
+  overflow: hidden;
+}
+
+/* Animation to rotate the gradient */
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Add a twinkling effect for additional subtlety */
+.glow-card-container::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  z-index: -2;
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    rgba(255, 255, 255, 0.8) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  filter: blur(15px);
+  animation: twinkle 6s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 0;
+    --x: 20%;
+    --y: 20%;
+  }
+  30% {
+    opacity: 0.3;
+    --x: 80%;
+    --y: 60%;
+  }
+  60% {
+    opacity: 0.1;
+    --x: 40%;
+    --y: 80%;
+  }
+  100% {
+    opacity: 0.2;
+    --x: 60%;
+    --y: 30%;
+  }
+}
