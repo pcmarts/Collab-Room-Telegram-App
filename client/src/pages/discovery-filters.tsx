@@ -134,20 +134,20 @@ export default function DiscoveryFilters() {
       // Map marketingPreferences to form values using the correct field names from the API
       const formValues: MarketingPreferencesForm = {
         matchingEnabled: true,
-        collabTypes: marketingPreferences.collab_types || [],
+        collabTypes: marketingPreferences.collabs_to_discover || [],
         companySectors: marketingPreferences.company_tags || [], // Backend uses company_tags
         companyFollowers: marketingPreferences.company_twitter_followers || undefined, // Backend uses company_twitter_followers
         fundingStages: marketingPreferences.funding_stages || [],
         hasToken: marketingPreferences.company_has_token || false, // Backend uses company_has_token
         blockchainNetworks: marketingPreferences.company_blockchain_networks || [], // Backend uses company_blockchain_networks
-        preferredTopics: marketingPreferences.preferred_topics || [],
+        preferredTopics: marketingPreferences.filtered_marketing_topics || [],
       };
       
       // Reset form with saved values
       form.reset(formValues);
       
       // Set selected topics separately
-      const savedTopics = marketingPreferences.preferred_topics || [];
+      const savedTopics = marketingPreferences.filtered_marketing_topics || [];
       console.log("Extracted topics from saved preferences:", savedTopics);
       setSelectedTopics(savedTopics);
       
