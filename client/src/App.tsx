@@ -33,6 +33,16 @@ import MyCollaborations from "@/pages/my-collaborations";
 import Apply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
 import AdminApplications from "@/pages/admin/applications";
+// Import filter sub-pages
+import FiltersDashboard from "@/pages/filters/dashboard";
+import CollabTypesFilter from "@/pages/filters/collab-types";
+import TopicsFilter from "@/pages/filters/topics";
+import CompanySectorsFilter from "@/pages/filters/company-sectors";
+import CompanyFollowersFilter from "@/pages/filters/company-followers";
+import UserFollowersFilter from "@/pages/filters/user-followers";
+import FundingStagesFilter from "@/pages/filters/funding-stages";
+import TokenStatusFilter from "@/pages/filters/token-status";
+import BlockchainNetworksFilter from "@/pages/filters/blockchain-networks";
 
 
 // Application form routes that should not show bottom navigation
@@ -46,7 +56,16 @@ const APPLICATION_ROUTES = [
   '/application-form',
   '/company-info',
   '/profile-overview',
-  '/discovery-filters'
+  '/discovery-filters',
+  '/filters',
+  '/filters/collab-types',
+  '/filters/topics',
+  '/filters/company-sectors',
+  '/filters/company-followers',
+  '/filters/user-followers',
+  '/filters/funding-stages',
+  '/filters/token-status',
+  '/filters/blockchain-networks'
 ];
 
 function Router() {
@@ -88,6 +107,18 @@ function Router() {
           <Route path="/discovery-filters" component={DiscoveryFiltersNew} />
           <Route path="/discovery-filters-old" component={DiscoveryFilters} />
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
+          
+          {/* Filter Routes (New) */}
+          <Route path="/filters" component={FiltersDashboard} />
+          <Route path="/filters/collab-types" component={CollabTypesFilter} />
+          <Route path="/filters/topics" component={TopicsFilter} />
+          <Route path="/filters/company-sectors" component={CompanySectorsFilter} />
+          <Route path="/filters/company-followers" component={CompanyFollowersFilter} />
+          <Route path="/filters/user-followers" component={UserFollowersFilter} />
+          <Route path="/filters/funding-stages" component={FundingStagesFilter} />
+          <Route path="/filters/token-status" component={TokenStatusFilter} />
+          <Route path="/filters/blockchain-networks" component={BlockchainNetworksFilter} />
+          
           {/* Conference coffee route removed 
           <Route path="/conference-coffees" component={null} /> 
           */}
