@@ -195,7 +195,7 @@ export default function CreateCollaborationSteps({
           newDetails.short_description = "";
           newDetails.date_selection = "any_future_date";
           newDetails.specific_date = "";
-          newDetails.previous_stream_link = "";
+          newDetails.previous_stream_link = "https://www.";
           newDetails.expected_audience_size = AUDIENCE_SIZE_RANGES[0];
           newDetails.topics = [];
           break;
@@ -1228,6 +1228,116 @@ export default function CreateCollaborationSteps({
         />
       ),
       shouldShow: () => selectedCollabType === "Co-Marketing on Twitter"
+    },
+    // Live Stream Guest Appearance form fields
+    {
+      id: "livestream_short_description",
+      title: "Short Description",
+      description: "Briefly describe your livestream",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Enter a brief description of your livestream" 
+                    className="h-24 text-xs resize-none"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Live Stream Guest Appearance"
+    },
+    {
+      id: "livestream_previous_link",
+      title: "Previous Livestream Link",
+      description: "Link to a previous livestream",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.previous_stream_link"
+          render={({ field }) => {
+            // Ensure field value is always a string and has correct prefill
+            let displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            if (!displayValue) displayValue = "https://www.";
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Previous Livestream Link</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://www.youtube.com/watch?v="
+                    className="h-8 text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Share a link to a previous livestream you've hosted
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Live Stream Guest Appearance"
+    },
+    {
+      id: "livestream_audience_size",
+      title: "Expected Audience Size",
+      description: "How many viewers do you expect?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.expected_audience_size"
+          render={({ field }) => (
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">Expected Audience Size</FormLabel>
+              <FormControl>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Select expected audience size" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {AUDIENCE_SIZE_RANGES.map((size) => (
+                      <SelectItem key={size} value={size}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Live Stream Guest Appearance"
     },
     {
       id: "free_collab",
