@@ -109,6 +109,15 @@ export default function DiscoveryFiltersNew() {
     staleTime: 0, // Always fetch fresh data
     refetchOnWindowFocus: true, 
     refetchOnMount: true,
+    retry: 3, // Try up to 3 times if the request fails
+    onError: (error) => {
+      console.error("Error fetching marketing preferences:", error);
+      toast({
+        title: "Error loading preferences",
+        description: "Could not load your saved preferences. Using defaults.",
+        variant: "destructive"
+      });
+    }
   });
   
   // Toggle blockchain network category expansion

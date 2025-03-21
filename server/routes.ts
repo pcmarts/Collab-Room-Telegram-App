@@ -1130,6 +1130,54 @@ export async function registerRoutes(app: Express) {
   });
 
   // Marketing Preferences API endpoint
+  app.get("/api/marketing-preferences", async (req: TelegramRequest, res) => {
+    const telegramUser = getTelegramUserFromRequest(req);
+    if (!telegramUser) {
+      console.log('No Telegram user found');
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+      // Find the user by Telegram ID
+      const user = await storage.getUserByTelegramId(telegramUser.id);
+      if (!user) {
+        console.log(`User not found for Telegram ID: ${telegramUser.id}`);
+        return res.status(401).json({ error: 'User not found' });
+      }
+
+      // Get marketing preferences
+      const prefs = await storage.getUserMarketingPreferences(user.id);
+      
+      if (!prefs) {
+        console.log(`No marketing preferences found for user: ${user.id}`);
+        return res.status(200).json({
+          collabs_to_discover: [],
+          filtered_marketing_topics: [],
+          company_tags: [],
+          company_blockchain_networks: [],
+          company_twitter_followers: null,
+          twitter_followers: null,
+          company_has_token: false,
+          discovery_filter_enabled: false,
+          discovery_filter_collab_types_enabled: false,
+          discovery_filter_topics_enabled: false,
+          discovery_filter_company_sectors_enabled: false,
+          discovery_filter_company_followers_enabled: false,
+          discovery_filter_user_followers_enabled: false,
+          discovery_filter_funding_stages_enabled: false,
+          discovery_filter_token_status_enabled: false,
+          discovery_filter_blockchain_networks_enabled: false
+        });
+      }
+      
+      // Return the preference data
+      return res.status(200).json(prefs);
+    } catch (error) {
+      console.error('Error getting marketing preferences:', error);
+      return res.status(500).json({ error: 'Server error' });
+    }
+  });
+
   app.post("/api/marketing-preferences", async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Marketing Preferences Endpoint ============');
     console.log('Headers:', req.headers);
