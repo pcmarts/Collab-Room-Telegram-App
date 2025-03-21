@@ -58,6 +58,7 @@ const APPLICATION_ROUTES = [
   '/company-info',
   '/profile-overview',
   '/discovery-filters',
+  '/discovery-filters-new-rebuild',
   '/filters',
   '/filters/collab-types',
   '/filters/topics',
@@ -106,6 +107,7 @@ function Router() {
           {/* Existing Routes */}
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/discovery-filters" component={DiscoveryFiltersRebuild} />
+          <Route path="/discovery-filters-new-rebuild" component={DiscoveryFiltersRebuild} />
           <Route path="/discovery-filters-old" component={DiscoveryFilters} />
           <Route path="/discovery-filters-v1" component={DiscoveryFiltersNew} />
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
