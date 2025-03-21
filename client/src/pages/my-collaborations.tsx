@@ -459,18 +459,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       {'host_followers' in collab.details && collab.details.host_followers && (
                         <p className="text-xs text-white opacity-80">Host Followers: {collab.details.host_followers}</p>
                       )}
-                      {collab.topics && collab.topics.length > 0 && (
-                        <div className="mt-1">
-                          <p className="text-xs font-medium">Topics:</p>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {collab.topics.map((topic, idx) => (
-                              <span key={idx} className="px-2 py-0.5 bg-[#6B7280] text-white text-xs rounded-full">
-                                {topic}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      {/* Topics not shown here since they are already at the top */}
                     </div>
                   )}
                   
@@ -483,18 +472,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       {'followers_count' in collab.details && collab.details.followers_count && (
                         <p className="text-xs text-white opacity-80">Follower Count: {collab.details.followers_count}</p>
                       )}
-                      {collab.topics && collab.topics.length > 0 && (
-                        <div className="mt-1">
-                          <p className="text-xs font-medium">Topics:</p>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {collab.topics.map((topic, idx) => (
-                              <span key={idx} className="px-2 py-0.5 bg-[#6B7280] text-white text-xs rounded-full">
-                                {topic}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      {/* Topics not shown here since they are already at the top */}
                     </div>
                   )}
                   
