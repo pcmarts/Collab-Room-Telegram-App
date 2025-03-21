@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useLocation } from "wouter";
 
 // UI Components
 import { MobileCheck } from "@/components/MobileCheck";
@@ -88,6 +89,8 @@ type FilterFormValues = z.infer<typeof filterFormSchema>;
 export default function DiscoveryFilters() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
+  const [isSaving, setIsSaving] = useState(false);
 
   // Filter toggle states
   const [filtersEnabled, setFiltersEnabled] = useState({
@@ -347,24 +350,35 @@ export default function DiscoveryFilters() {
 
   // Handle form submission
   const onSubmit = async (values: FilterFormValues) => {
-    const success = await savePreferences(values);
+    setIsSaving(true);
     
-    if (success) {
-      toast({
-        title: "Filters saved",
-        description: "Your discovery filters have been updated",
-      });
+    try {
+      const success = await savePreferences(values);
       
-      // Redirect to discover page after saving
-      setTimeout(() => {
-        window.location.href = '/discover';
-      }, 500);
-    } else {
+      if (success) {
+        toast({
+          title: "Filters saved",
+          description: "Your discovery filters have been updated",
+        });
+        
+        // Navigate to discover page immediately (smooth transition)
+        navigate('/discover');
+      } else {
+        toast({
+          title: "Error saving filters",
+          description: "There was a problem saving your filters. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error in form submission:', error);
       toast({
         title: "Error saving filters",
         description: "There was a problem saving your filters. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -953,9 +967,9 @@ export default function DiscoveryFilters() {
                   <Button 
                     type="submit" 
                     className="w-full max-w-md"
-                    disabled={form.formState.isSubmitting}
+                    disabled={isSaving || form.formState.isSubmitting}
                   >
-                    {form.formState.isSubmitting ? (
+                    {isSaving || form.formState.isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Saving...
