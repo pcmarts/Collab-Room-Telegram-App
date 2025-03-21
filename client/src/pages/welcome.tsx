@@ -27,13 +27,9 @@ export default function Welcome() {
     <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4 flex flex-col items-center justify-center">
       <div className="max-w-md mx-auto space-y-8 w-full">
         <div className="text-center space-y-6">
-          {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <img 
-              src="/collab-logo.jpg" 
-              alt="The Collab Room" 
-              className="h-32 w-auto rounded-lg shadow-md"
-            />
+          {/* Title */}
+          <div className="flex justify-center mb-8">
+            <h1 className="text-5xl font-bold text-primary tracking-tight">Collab Room</h1>
           </div>
           
           <div className="space-y-4">
