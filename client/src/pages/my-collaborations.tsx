@@ -512,8 +512,36 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       {'account_handle' in collab.details && collab.details.account_handle && (
                         <p className="text-sm font-medium">Account: {collab.details.account_handle}</p>
                       )}
+                      {'twitter_url' in collab.details && collab.details.twitter_url && (
+                        <p className="text-sm font-medium">
+                          <a 
+                            href={collab.details.twitter_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:underline flex items-center"
+                          >
+                            <Twitter className="h-3 w-3 mr-1" />
+                            @{collab.details.twitter_url.split('/').pop()}
+                          </a>
+                        </p>
+                      )}
                       {'followers_count' in collab.details && collab.details.followers_count && (
                         <p className="text-xs text-white opacity-80">Follower Count: {collab.details.followers_count}</p>
+                      )}
+                      {'collaboration_types' in collab.details && Array.isArray(collab.details.collaboration_types) && collab.details.collaboration_types.length > 0 && (
+                        <div>
+                          <p className="text-xs text-white opacity-80">Collaboration Types:</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {collab.details.collaboration_types.map((type: string, idx: number) => (
+                              <span 
+                                key={idx} 
+                                className="px-2 py-0.5 bg-blue-500/20 text-blue-300 text-xs rounded-full"
+                              >
+                                {type}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       )}
                       {/* Topics not shown here since they are already at the top */}
                     </div>
