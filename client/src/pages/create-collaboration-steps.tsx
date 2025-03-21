@@ -797,14 +797,11 @@ export default function CreateCollaborationSteps({
             // Ensure field value is always a string
             const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
             
-            // Add an effect to make sure the field gets properly updated
-            useEffect(() => {
-              // This ensures the field gets properly registered with the form
-              form.register("description");
-              
-              // Debug the field value
-              console.log("Podcast description field:", field.value);
-            }, [field.value, form]);
+            // Removed useEffect to prevent hook ordering issues
+            // form.register("description") is not needed as the field is already registered by react-hook-form
+            
+            // Debug logging
+            console.log("Podcast description field:", field.value);
             
             return (
               <FormItem className="space-y-1 pt-0">
@@ -996,14 +993,11 @@ export default function CreateCollaborationSteps({
               // Ensure field value is always a string
               const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
               
-              // Add an effect to make sure the field gets properly updated
-              useEffect(() => {
-                // This ensures the field gets properly registered with the form
-                form.register("description");
-                
-                // Debug the field value
-                console.log("Twitter Spaces description field:", field.value);
-              }, [field.value, form]);
+              // Removed useEffect to prevent hook ordering issues
+              // form.register("description") is not needed as the field is already registered by react-hook-form
+              
+              // Debug logging
+              console.log("Twitter Spaces description field:", field.value);
               
               return (
                 <FormItem className="space-y-1 pt-0">
