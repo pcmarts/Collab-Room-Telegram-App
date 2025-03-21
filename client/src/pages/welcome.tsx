@@ -26,12 +26,14 @@ export default function Welcome() {
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">Collab Room</h1>
-          <p className="text-muted-foreground">
-            "Tinder" for Web3 Brand Collaborations
+          <p className="text-lg font-medium mb-4">
+            The fastest, simplest way for Web3 brands to discover powerful marketing collaborations.
           </p>
-          <p className="text-muted-foreground">
-            🔒 Privacy first - your contact details are hidden 
-          </p>
+          <div className="space-y-2 text-muted-foreground">
+            <p>Connect with trusted CMOs and founders</p>
+            <p>Find targeted collaboration opportunities</p>
+            <p>Privacy first - no contacts details shared unless you match</p>
+          </div>
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-8">
