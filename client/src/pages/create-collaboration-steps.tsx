@@ -337,7 +337,7 @@ export default function CreateCollaborationSteps({
         break;
         
       case "podcast_short_description":
-        const podcastDescription = form.getValues("details.short_description");
+        const podcastDescription = form.getValues("description");
         if (!podcastDescription || podcastDescription.trim() === "") {
           toast({
             title: "Please enter a short description for your podcast",
@@ -781,7 +781,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.short_description"
+          name="description"
           render={({ field }) => {
             // Ensure field value is always a string
             const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
@@ -789,10 +789,10 @@ export default function CreateCollaborationSteps({
             // Add an effect to make sure the field gets properly updated
             useEffect(() => {
               // This ensures the field gets properly registered with the form
-              form.register("details.short_description");
+              form.register("description");
               
               // Debug the field value
-              console.log("Podcast short_description field:", field.value);
+              console.log("Podcast description field:", field.value);
             }, [field.value, form]);
             
             return (
@@ -806,7 +806,7 @@ export default function CreateCollaborationSteps({
                     value={displayValue}
                     onChange={(e) => {
                       field.onChange(e.target.value);
-                      console.log("Short description updated:", e.target.value);
+                      console.log("Description updated:", e.target.value);
                     }}
                     onBlur={field.onBlur}
                     ref={field.ref}
