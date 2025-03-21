@@ -335,7 +335,15 @@ export default function DiscoveryFiltersNew() {
     }
   };
   
-  // No full-height styles needed anymore, they were causing scroll issues
+  // Apply styles to ensure proper scrolling while having fixed bottom buttons
+  useEffect(() => {
+    // Only set overflow to auto (not the height) to ensure scrolling works
+    document.body.style.overflow = 'auto';
+    
+    return () => {
+      document.body.style.removeProperty('overflow');
+    };
+  }, []);
   
   if (isLoadingPrefs) {
     return (
@@ -348,7 +356,7 @@ export default function DiscoveryFiltersNew() {
   
   return (
     <MobileCheck>
-      <div className="container">
+      <div className="container pb-6 min-h-screen">
         <PageHeader
           title="Discovery Filters"
           subtitle="Customize which collaborations appear in your discover feed"
