@@ -74,7 +74,7 @@ async function handleStart(msg: TelegramBot.Message) {
           [
             {
               text: "Launch Collab Room",
-              web_app: { url: `${WEBAPP_URL}/dashboard` },
+              web_app: { url: `${WEBAPP_URL}/discover` },
             },
           ],
           [
@@ -215,7 +215,7 @@ export async function notifyUserApproved(chatId: number) {
       [
         {
           text: "Launch Collab Room",
-          web_app: { url: `${WEBAPP_URL}/dashboard` },
+          web_app: { url: `${WEBAPP_URL}/discover` },
         },
       ],
       [
@@ -232,7 +232,7 @@ export async function notifyUserApproved(chatId: number) {
       chatId,
       "🎉 Congratulations! Your application has been approved!\n\n" +
         "Welcome to Collab Room! You now have full access to the platform.\n\n" +
-        "Click below to access your dashboard and join our announcement channel for updates.",
+        "Click below to discover new collaborations and join our announcement channel for updates.",
       { reply_markup: keyboard },
     );
     console.log("Approval notification sent successfully");
@@ -302,13 +302,13 @@ async function handleStatus(msg: TelegramBot.Message) {
     let keyboard;
 
     if (user.is_approved) {
-      statusMessage = `✅ Your application has been approved!\n\nYou can now access your dashboard and start collaborating.`;
+      statusMessage = `✅ Your application has been approved!\n\nYou can now access Collab Room and discover new collaborations.`;
       keyboard = {
         inline_keyboard: [
           [
             {
               text: "Launch Collab Room",
-              web_app: { url: `${WEBAPP_URL}/dashboard` },
+              web_app: { url: `${WEBAPP_URL}/discover` },
             },
           ],
           [
