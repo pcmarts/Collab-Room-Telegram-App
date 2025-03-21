@@ -28,18 +28,15 @@ export default function Welcome() {
       <div className="max-w-md mx-auto space-y-8 w-full">
         <div className="text-center space-y-6">
           {/* Logo */}
-          <div className="flex justify-center mb-3">
+          <div className="flex justify-center mb-6">
             <img 
-              src="/src/assets/collab-room-logo.jpg" 
+              src="/images/THE-COLLAB-ROOM-2-small.jpg" 
               alt="The Collab Room" 
-              className="h-24 w-auto rounded-lg shadow-md"
+              className="h-32 w-auto rounded-lg shadow-md"
             />
           </div>
           
           <div className="space-y-4">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
-              Welcome to The Collab Room
-            </h1>
             <p className="text-lg font-medium">
               The fastest, simplest way for Web3 brands to discover powerful marketing collaborations.
             </p>
