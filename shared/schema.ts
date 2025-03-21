@@ -518,7 +518,7 @@ export type CollabApplicationData = z.infer<typeof collabApplicationSchema>;
 // Podcast Guest Appearance
 export const podcastDetailsSchema = z.object({
   podcast_name: z.string().min(2, "Podcast name is required"),
-  short_description: z.string().max(200, "Short description must be less than 200 characters"),
+  short_description: z.string().max(200, "Short description must be less than 200 characters").optional(),
   // Removed podcast_description field in favor of the short_description field
   podcast_link: z.string().url("Please enter a valid podcast link"),
   estimated_reach: z.enum(AUDIENCE_SIZE_RANGES).optional()
@@ -528,7 +528,7 @@ export const podcastDetailsSchema = z.object({
 export const twitterSpacesDetailsSchema = z.object({
   twitter_handle: z.string().min(1, "Twitter handle is required"),
   // Added short_description field needed for Twitter Spaces
-  short_description: z.string().max(180, "Short description must be less than 180 characters"),
+  short_description: z.string().max(180, "Short description must be less than 180 characters").optional(),
   // Removed space_topic validation as topics are captured at the top level
   host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS)
 });
@@ -536,7 +536,7 @@ export const twitterSpacesDetailsSchema = z.object({
 // Live Stream Guest Appearance
 export const liveStreamDetailsSchema = z.object({
   title: z.string().min(2, "Title is required"),
-  short_description: z.string().max(200, "Short description must be less than 200 characters"),
+  short_description: z.string().max(200, "Short description must be less than 200 characters").optional(),
   date_selection: z.enum(["any_future_date", "specific_date"]),
   specific_date: z.string().optional(),
   stream_platform: z.string().min(2, "Streaming platform is required").optional(),
@@ -552,7 +552,7 @@ export const researchReportDetailsSchema = z.object({
   // Removed research_topic validation as topics are captured at the top level
   research_topic: z.array(z.string()).optional(),
   target_audience: z.string().min(2, "Target audience is required"),
-  short_description: z.string().max(200, "Short description must be less than 200 characters"),
+  short_description: z.string().max(200, "Short description must be less than 200 characters").optional(),
   audience_reach: z.enum(AUDIENCE_SIZE_RANGES).optional(),
   estimated_release_date: z.string()
 });
@@ -565,7 +565,7 @@ export const newsletterDetailsSchema = z.object({
   topics: z.array(z.enum(COLLAB_TOPICS)).optional(),
   audience_reach: z.enum(AUDIENCE_SIZE_RANGES),
   total_subscribers: z.enum(AUDIENCE_SIZE_RANGES).optional(),
-  short_description: z.string().max(200, "Short description must be less than 200 characters")
+  short_description: z.string().max(200, "Short description must be less than 200 characters").optional()
   // Removed newsletter_description field in favor of the short_description field
 });
 
