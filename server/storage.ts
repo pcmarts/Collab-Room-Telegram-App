@@ -121,6 +121,18 @@ export class DatabaseStorage implements IStorage {
     if (collabData.details) {
       console.log("Processing details object:", collabData.details);
       
+      // Check if description is already set from client code
+      if (collabData.description) {
+        console.log("Description already set from client:", collabData.description);
+      } else {
+        // Extract short_description from details object for any collaboration type
+        // and set it as the main description field
+        if (collabData.details.short_description) {
+          console.log("Extracting short_description from details:", collabData.details.short_description);
+          collabData.description = collabData.details.short_description;
+        }
+      }
+      
       // For collaborations that use short_description, ensure it's properly handled
       if (collabData.collab_type === 'Co-Marketing on Twitter') {
         console.log("Processing Twitter co-marketing details:", collabData.details);
@@ -191,6 +203,9 @@ export class DatabaseStorage implements IStorage {
         // Default to original details
         return collabData.details;
       })(),
+      
+      // Ensure description is set
+      description: collabData.description || "",
       
       created_at: new Date(),
       updated_at: new Date()
