@@ -368,14 +368,35 @@ export default function DiscoveryFilters() {
   
   // Handle form submission (manual save)
   const onSubmit = async (values: MarketingPreferencesForm) => {
-    await savePreferences();
-    toast({
-      title: "Preferences saved",
-      description: "Your discovery filters have been updated",
-    });
-    
-    // Redirect to discover page after saving
-    window.location.href = '/discover';
+    try {
+      console.log("Save button pressed - saving preferences with values:", JSON.stringify(values, null, 2));
+      
+      // Wait for the save operation to complete
+      await savePreferences();
+      
+      // Show success toast
+      toast({
+        title: "Preferences saved",
+        description: "Your discovery filters have been updated",
+      });
+      
+      console.log("Save completed successfully, redirecting to discover page...");
+      
+      // Add a small delay before redirecting to ensure the save has completed
+      setTimeout(() => {
+        // Redirect to discover page after saving
+        window.location.href = '/discover';
+      }, 500);
+    } catch (error) {
+      console.error("Error during save:", error);
+      
+      // Show error toast
+      toast({
+        title: "Error saving preferences",
+        description: "There was a problem saving your filters. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   // Apply special class for scrolling to document when component mounts
