@@ -423,6 +423,9 @@ export default function CreateCollaborationSteps({
         console.log("Twitter Spaces Guest AFTER formatting:", data.details);
         console.log("  - Extracted description moved to common field:", data.description);
       } else if (data.collab_type === "Live Stream Guest Appearance") {
+        // Extract the description from the details object to the common field
+        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+        
         data.details = {
           title: typeof rawDetails?.title === 'string' ? rawDetails.title : "",
           // No longer include short_description in details object
@@ -433,6 +436,9 @@ export default function CreateCollaborationSteps({
           topics: Array.isArray(rawDetails?.topics) ? rawDetails.topics : [],
         };
       } else if (data.collab_type === "Report & Research Feature") {
+        // Extract the description from the details object to the common field
+        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+        
         data.details = {
           research_topic: Array.isArray(rawDetails?.research_topic) ? rawDetails.research_topic : [],
           target_audience: typeof rawDetails?.target_audience === 'string' ? rawDetails.target_audience : "",
@@ -440,6 +446,9 @@ export default function CreateCollaborationSteps({
           estimated_release_date: typeof rawDetails?.estimated_release_date === 'string' ? rawDetails.estimated_release_date : "",
         };
       } else if (data.collab_type === "Newsletter Feature") {
+        // Extract the description from the details object to the common field
+        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+        
         data.details = {
           newsletter_name: typeof rawDetails?.newsletter_name === 'string' ? rawDetails.newsletter_name : "",
           // No longer include short_description in details object
@@ -449,6 +458,9 @@ export default function CreateCollaborationSteps({
           topics: Array.isArray(rawDetails?.topics) ? rawDetails.topics : [],
         };
       } else if (data.collab_type === "Blog Post Feature") {
+        // Extract the description from the details object to the common field
+        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+        
         data.details = {
           blog_topic: typeof rawDetails?.blog_topic === 'string' ? rawDetails.blog_topic : "",
           blog_link: typeof rawDetails?.blog_link === 'string' ? rawDetails.blog_link : "",
@@ -511,18 +523,26 @@ export default function CreateCollaborationSteps({
       const telegramInitData = window.Telegram?.WebApp?.initData || "";
 
       // Complete detailed debugging of all form data right before submission
+      // Detailed debugging info for the description field extraction
+      console.log("DESCRIPTION MIGRATION DEBUG INFO:", {
+        collaborationType: data.collab_type,
+        rawFormDescription: form.getValues("details.short_description"),
+        extractedDescription: data.description,
+        descriptionLength: typeof data.description === 'string' ? data.description.length : 0,
+        validationMaxLength: data.collab_type === "Twitter Spaces Guest" ? 180 : 200
+      });
+      
+      // Complete detailed debugging of all form data right before submission
       console.log("FINAL FORM DATA BEING SUBMITTED:", {
         rawFormData: form.getValues(),
         processedData: formattedData,
         commonDescription: formattedData.description,
-        twitterSpacesData: data.collab_type === "Twitter Spaces Guest" ? {
-          directFormField: form.getValues("details.short_description"),
-          extractedToCommonField: true
-        } : null,
-        twitterComarketingData: data.collab_type === "Co-Marketing on Twitter" ? {
-          directFormField: form.getValues("details.short_description"),
-          extractedToCommonField: true
-        } : null
+        descriptionSourceInfo: {
+          collaborationType: data.collab_type,
+          shortDescriptionField: form.getValues("details.short_description"),
+          extractedToCommonField: true,
+          commonDescriptionLength: typeof formattedData.description === 'string' ? formattedData.description.length : 0
+        }
       });
       
       const response = await fetch("/api/collaborations", {
