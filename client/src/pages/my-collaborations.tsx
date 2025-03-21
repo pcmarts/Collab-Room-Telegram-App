@@ -74,9 +74,9 @@ const getCollabTypeIcon = (collabType: string) => {
   switch(collabType) {
     case 'Podcast Guest Appearance':
     case 'Podcast':
-      return <Podcast className="h-3 w-3" />;
-    case 'Twitter Space':
       return <Mic className="h-3 w-3" />;
+    case 'Twitter Space':
+      return <Twitter className="h-3 w-3" />;
     case 'Twitter Co-Marketing':
     case 'Co-Marketing on Twitter':
       return <Twitter className="h-3 w-3" />;
@@ -86,13 +86,13 @@ const getCollabTypeIcon = (collabType: string) => {
     case 'Research Report':
       return <FileText className="h-3 w-3" />;
     case 'Newsletter':
-      return <FileText className="h-3 w-3" />;
-    case 'Blog Post':
       return <BookOpen className="h-3 w-3" />;
+    case 'Blog Post':
+      return <FileText className="h-3 w-3" />;
     case 'Conference Coffee':
       return <Coffee className="h-3 w-3" />;
     default:
-      return <MessageSquare className="h-3 w-3" />;
+      return <Megaphone className="h-3 w-3" />;
   }
 };
 
