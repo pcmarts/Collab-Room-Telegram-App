@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -360,6 +361,40 @@ export default function CreateCollaborationSteps({
         if (!podcastLink || podcastLink.trim() === "") {
           toast({
             title: "Please enter a podcast link",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      // Research Report validations
+      case "research_report_description":
+        const researchDescription = form.getValues("description");
+        if (!researchDescription || researchDescription.trim() === "") {
+          toast({
+            title: "Please enter a description for your research report",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      case "research_topic":
+        const researchTopics = form.getValues("details.research_topic");
+        if (!researchTopics || !Array.isArray(researchTopics) || researchTopics.length === 0) {
+          toast({
+            title: "Please select at least one research topic",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      case "target_audience":
+        const targetAudience = form.getValues("details.target_audience");
+        if (!targetAudience || targetAudience.trim() === "") {
+          toast({
+            title: "Please specify the target audience for your research",
             variant: "destructive",
           });
           return false;
@@ -1509,20 +1544,58 @@ export default function CreateCollaborationSteps({
             // Ensure field value is always an array
             const topicsValue = Array.isArray(field.value) ? field.value : [];
             
+            const handleTopicToggle = (topic: string) => {
+              const newValue = [...topicsValue];
+              const index = newValue.indexOf(topic);
+              
+              if (index > -1) {
+                newValue.splice(index, 1);
+              } else {
+                newValue.push(topic);
+              }
+              
+              field.onChange(newValue);
+            };
+            
             return (
               <FormItem className="space-y-1">
                 <FormLabel className="mb-0 text-sm">Research Topic</FormLabel>
                 <FormControl>
-                  <MultiSelect
-                    placeholder="Select research topics"
-                    options={COLLAB_TOPICS.map(topic => ({ label: topic, value: topic }))}
-                    selected={topicsValue.map(topic => ({ label: topic, value: topic }))}
-                    onChange={(selected) => {
-                      const values = selected.map(item => item.value);
-                      field.onChange(values);
-                    }}
-                    className="min-h-[35px] text-xs"
-                  />
+                  <div className="space-y-2">
+                    {/* Topic selection buttons */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {COLLAB_TOPICS.map(topic => (
+                        <Button
+                          key={topic}
+                          type="button"
+                          size="sm"
+                          variant={topicsValue.includes(topic) ? "default" : "outline"}
+                          className="justify-start h-auto py-2 px-3 text-xs"
+                          onClick={() => handleTopicToggle(topic)}
+                        >
+                          <span className="text-left">{topic}</span>
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    {/* Show selected count as text instead of Badge */}
+                    {topicsValue.length > 0 && (
+                      <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
+                        <span>
+                          {topicsValue.length} {topicsValue.length === 1 ? 'topic' : 'topics'} selected
+                        </span>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => field.onChange([])}
+                          className="h-6 text-xs"
+                        >
+                          Clear all
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </FormControl>
                 <FormDescription className="text-[10px]">
                   Select one or more topics for your research report
