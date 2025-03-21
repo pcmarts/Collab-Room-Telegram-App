@@ -192,10 +192,14 @@ export default function Dashboard() {
       {/* Welcome Section */}
       <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
         <h1 className="text-2xl font-bold p-2">Welcome, {user.first_name}!</h1>
-        <NetworkStatus className="mt-2" />
       </div>
 
       <div className="p-4 space-y-4 pb-safe">
+        {/* Network Stats */}
+        <div className="mb-5">
+          <NetworkStatus />
+        </div>
+
         {/* Profile Actions */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Button
@@ -229,42 +233,40 @@ export default function Dashboard() {
         )}
 
         {/* Notification Settings */}
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2 px-4 pt-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Bell className="h-5 w-5" />
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Bell className="h-4 w-4" />
                 Notifications
               </CardTitle>
-              <Switch
-                checked={notificationsEnabled}
-                onCheckedChange={handleNotificationSettingsChange}
-              />
+              <div className="flex items-center gap-2">
+                {notificationsEnabled && (
+                  <Select
+                    value={notificationFrequency}
+                    onValueChange={handleFrequencyChange}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger className="h-7 text-xs px-2 w-24">
+                      <SelectValue placeholder="Frequency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {NOTIFICATION_FREQUENCIES.map((frequency) => (
+                        <SelectItem key={frequency} value={frequency} className="text-xs">
+                          {frequency}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                <Switch
+                  checked={notificationsEnabled}
+                  onCheckedChange={handleNotificationSettingsChange}
+                  className="scale-75"
+                />
+              </div>
             </div>
           </CardHeader>
-          {notificationsEnabled && (
-            <CardContent>
-              <div className="space-y-2">
-                <Label>Frequency</Label>
-                <Select
-                  value={notificationFrequency}
-                  onValueChange={handleFrequencyChange}
-                  disabled={isSubmitting}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {NOTIFICATION_FREQUENCIES.map((frequency) => (
-                      <SelectItem key={frequency} value={frequency}>
-                        {frequency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          )}
         </Card>
 
         {/* Footer with credits */}
