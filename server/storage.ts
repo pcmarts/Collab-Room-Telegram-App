@@ -125,15 +125,12 @@ export class DatabaseStorage implements IStorage {
       if (collabData.description) {
         console.log("Description already set from client:", collabData.description);
       } else {
-        // Extract short_description from details object for any collaboration type
-        // and set it as the main description field
-        if (collabData.details.short_description) {
-          console.log("Extracting short_description from details:", collabData.details.short_description);
-          collabData.description = collabData.details.short_description;
-        }
+        // No longer extract short_description from details as we've migrated to root-level description
+        console.log("No description provided, setting empty string as default");
+        collabData.description = "";
       }
       
-      // For collaborations that use short_description, ensure it's properly handled
+      // Process collaboration type-specific details
       if (collabData.collab_type === 'Co-Marketing on Twitter') {
         console.log("Processing Twitter co-marketing details:", collabData.details);
         
