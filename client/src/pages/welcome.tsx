@@ -25,12 +25,12 @@ export default function Welcome() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold">🚪 The Collab Room</h1>
+          <h1 className="text-2xl font-bold">Collab Room</h1>
           <p className="text-muted-foreground">
-            "Tinder" for Web3 Collabs & Conference Meetups
+            "Tinder" for Web3 Brand Collaborations
           </p>
           <p className="text-muted-foreground">
-            Privacy first - no contacts details shared unless you match
+            🔒 Privacy first - your contact details are hidden 
           </p>
         </div>
 
