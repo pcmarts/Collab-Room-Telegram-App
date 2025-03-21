@@ -1000,7 +1000,7 @@ export default function DiscoverPage() {
         
         {/* This flex-grow + justify-end pushes card down and creates space at the top */}
         <div className="flex-grow flex flex-col justify-end">
-          <div className="relative w-[90%] mx-auto aspect-[3/3.3] mb-6">
+          <div className="relative w-[90%] mx-auto aspect-[3/4] mb-6">
             {/* Background Card (Next in Stack) */}
             {currentIndex < cards.length - 1 && (
               <div className="absolute inset-0 transform scale-[0.95] opacity-50">
