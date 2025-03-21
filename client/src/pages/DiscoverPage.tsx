@@ -990,17 +990,17 @@ export default function DiscoverPage() {
           <h1 className="text-2xl font-bold p-2">Discover</h1>
           <Button 
             variant="secondary" 
-            size="icon" 
             onClick={() => setLocation('/discovery-filters')}
             aria-label="Filter"
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center space-x-2"
           >
             <SlidersVertical className="h-5 w-5" />
+            <span>Filters</span>
           </Button>
         </div>
         
-        {/* This flex-grow + justify-end pushes card down and creates space at the top */}
-        <div className="flex-grow flex flex-col justify-end">
+        {/* Adjust card position to be higher on the page */}
+        <div className="flex-grow flex flex-col justify-center">
           <div className="relative w-[90%] mx-auto aspect-[3/4] mb-6">
             {/* Background Card (Next in Stack) */}
             {currentIndex < cards.length - 1 && (
