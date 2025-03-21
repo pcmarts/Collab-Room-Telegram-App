@@ -981,12 +981,12 @@ export default function DiscoverPage() {
   };
 
   return (
-    <div className="telegram-app min-h-[100svh] bg-background" ref={pageRef}>
+    <div className="telegram-app min-h-[100svh] bg-background flex flex-col" ref={pageRef}>
       {/* Include the CSS styling component */}
       <MyCollabStyles />
       
-      <div className="container max-w-md mx-auto py-4">
-        <div className="flex justify-between items-center mb-4 px-4">
+      <div className="container max-w-md mx-auto py-4 flex-grow flex flex-col">
+        <div className="flex justify-between items-center mb-2 px-4">
           <h1 className="text-2xl font-bold p-2">Discover</h1>
           <Button 
             variant="ghost" 
@@ -997,103 +997,104 @@ export default function DiscoverPage() {
             <SlidersVertical className="h-5 w-5" />
           </Button>
         </div>
-
-        <div className="relative w-[90%] mx-auto aspect-[3/3]">
-          {/* Background Card (Next in Stack) */}
-          {currentIndex < cards.length - 1 && (
-            <div className="absolute inset-0 transform scale-[0.95] opacity-50">
-              <Card className="w-full h-full p-5 select-none">
-                {renderCard(cards[currentIndex + 1])}
-              </Card>
-            </div>
-          )}
-
-          {/* Current Card */}
-          <motion.div
-            className="absolute inset-0"
-            ref={cardElem}
-            style={{
-              x,
-              rotate,
-              opacity,
-              background,
-            }}
-            animate={controls}
-            drag="x"
-            dragConstraints={constrained && { left: 0, right: 0 }}
-            dragElastic={1}
-            onDragEnd={(_, info) => {
-              const threshold = 100;
-              if (Math.abs(info.offset.x) > threshold) {
-                handleSwipe(info.offset.x > 0 ? "right" : "left");
-              }
-            }}
-            whileTap={{ cursor: "grabbing" }}
-          >
-            <Card 
-              className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing"
-              style={currentCard?.type === "mycollab" ? 
-                {background: "linear-gradient(to bottom right, rgba(76, 29, 149, 1), rgba(0, 0, 0, 1))"} : 
-                undefined
-              }
-            >
-              {renderCard(currentCard)}
-
-              {/* Action Buttons */}
-              <div className="absolute bottom-5 left-5 right-5">
-                <div className="flex justify-between gap-1">
-                  {/* No (X) Button */}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
-                    onClick={() => handleSwipe("left")}
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
-                  
-                  {/* Undo Button */}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className={`h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm ${swipeHistory.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={handleUndo}
-                    disabled={swipeHistory.length === 0}
-                  >
-                    <RotateCcw className="h-5 w-5" />
-                  </Button>
-                  
-                  {/* Info Button */}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
-                    onClick={() => setShowDialog(true)}
-                  >
-                    <Info className="h-5 w-5" />
-                  </Button>
-                  
-                  {/* Yes (Check) Button */}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
-                    onClick={() => handleSwipe("right")}
-                  >
-                    <Check className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Removed separate undo button */}
         
-        {/* Instructions */}
-        <div className="mt-4 text-center text-sm text-muted-foreground">
-          <p>→ Swipe right to request collaboration</p>
-          <p>← Swipe left to pass</p>
+        {/* This flex-grow + justify-end pushes card down and creates space at the top */}
+        <div className="flex-grow flex flex-col justify-end">
+          <div className="relative w-[90%] mx-auto aspect-[3/3.3] mb-6">
+            {/* Background Card (Next in Stack) */}
+            {currentIndex < cards.length - 1 && (
+              <div className="absolute inset-0 transform scale-[0.95] opacity-50">
+                <Card className="w-full h-full p-5 select-none">
+                  {renderCard(cards[currentIndex + 1])}
+                </Card>
+              </div>
+            )}
+
+            {/* Current Card */}
+            <motion.div
+              className="absolute inset-0"
+              ref={cardElem}
+              style={{
+                x,
+                rotate,
+                opacity,
+                background,
+              }}
+              animate={controls}
+              drag="x"
+              dragConstraints={constrained && { left: 0, right: 0 }}
+              dragElastic={1}
+              onDragEnd={(_, info) => {
+                const threshold = 100;
+                if (Math.abs(info.offset.x) > threshold) {
+                  handleSwipe(info.offset.x > 0 ? "right" : "left");
+                }
+              }}
+              whileTap={{ cursor: "grabbing" }}
+            >
+              <Card 
+                className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing"
+                style={currentCard?.type === "mycollab" ? 
+                  {background: "linear-gradient(to bottom right, rgba(76, 29, 149, 1), rgba(0, 0, 0, 1))"} : 
+                  undefined
+                }
+              >
+                {renderCard(currentCard)}
+
+                {/* Action Buttons */}
+                <div className="absolute bottom-5 left-5 right-5">
+                  <div className="flex justify-between gap-1">
+                    {/* No (X) Button */}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                      onClick={() => handleSwipe("left")}
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
+                    
+                    {/* Undo Button */}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={`h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm ${swipeHistory.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={handleUndo}
+                      disabled={swipeHistory.length === 0}
+                    >
+                      <RotateCcw className="h-5 w-5" />
+                    </Button>
+                    
+                    {/* Info Button */}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                      onClick={() => setShowDialog(true)}
+                    >
+                      <Info className="h-5 w-5" />
+                    </Button>
+                    
+                    {/* Yes (Check) Button */}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                      onClick={() => handleSwipe("right")}
+                    >
+                      <Check className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          </div>
+        
+          {/* Instructions - moved to bottom of flex container right above menu */}
+          <div className="text-center text-sm text-muted-foreground mb-4">
+            <p>→ Swipe right to request collaboration</p>
+            <p>← Swipe left to pass</p>
+          </div>
         </div>
         {/* Detailed View Dialog */}
         <CollaborationDialog
