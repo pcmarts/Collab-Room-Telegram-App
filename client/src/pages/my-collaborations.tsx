@@ -69,8 +69,8 @@ import {
 } from "lucide-react";
 
 // Helper function to get appropriate icon based on collaboration type
-const getCollabTypeIcon = (type: string) => {
-  switch (type) {
+const getCollabTypeIcon = (collabType: string) => {
+  switch(collabType) {
     case 'Podcast Guest Appearance':
     case 'Podcast':
       return <Mic className="h-3 w-3" />;
@@ -104,7 +104,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
+  
   // This disables the default fixed positioning and overflow hidden
   // so that we can have a normal scrolling container with a scrollbar
   useEffect(() => {
@@ -113,17 +113,17 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     const originalPosition = document.body.style.position;
     const originalWidth = document.body.style.width;
     const originalHeight = document.body.style.height;
-
+    
     // Modify for this page to allow scrolling
     document.body.style.overflow = 'auto';
     document.body.style.position = 'static';
     document.body.style.width = 'auto';
     document.body.style.height = 'auto';
-
+    
     // Add scrollable-page class to html and body
     document.documentElement.classList.add('scrollable-page');
     document.body.classList.add('scrollable-page');
-
+    
     // Also fix the root element
     const rootElement = document.getElementById('root');
     if (rootElement) {
@@ -132,7 +132,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       rootElement.style.position = 'static';
       rootElement.style.width = '100%';
     }
-
+    
     // Restore original style when component unmounts
     return () => {
       document.body.style.overflow = originalOverflow;
@@ -141,7 +141,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       document.body.style.height = originalHeight;
       document.documentElement.classList.remove('scrollable-page');
       document.body.classList.remove('scrollable-page');
-
+      
       if (rootElement) {
         rootElement.style.overflow = '';
         rootElement.style.height = '';
@@ -150,21 +150,21 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       }
     };
   }, []);
-
+  
   // Delete collaboration dialog state
   const [collabToDelete, setCollabToDelete] = useState<string | null>(null);
-
+  
   // Live collaborations toggle state
   const [activeCollabs, setActiveCollabs] = useState<Record<string, boolean>>({});
-
+  
   // Application detail dialog state
   const [selectedApplication, setSelectedApplication] = useState<CollabApplication | null>(null);
   const [applicationDialogOpen, setApplicationDialogOpen] = useState(false);
-
+  
   // Application status update
   const [processingApplicationId, setProcessingApplicationId] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
-
+  
   // Fetch user's collaborations
   const { data: collaborations, isLoading: isLoadingCollabs } = useQuery({
     queryKey: ['/api/collaborations/my'],
@@ -177,18 +177,18 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       }
       const data = await response.json();
       console.log("Collaborations API response data:", data);
-
+      
       // Initialize activeCollabs state based on fetched data
       const statusMap: Record<string, boolean> = {};
       data.forEach((collab: Collaboration) => {
         statusMap[collab.id] = collab.status === 'active';
       });
       setActiveCollabs(statusMap);
-
+      
       return data as Collaboration[];
     }
   });
-
+  
   // Fetch user's applications
   const { data: applications, isLoading: isLoadingApps } = useQuery({
     queryKey: ['/api/my-applications'],
@@ -204,7 +204,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       return data as CollabApplication[];
     }
   });
-
+  
   // Handle approving an application
   const handleApproveApplication = async (applicationId: string) => {
     setProcessingApplicationId(applicationId);
@@ -217,19 +217,19 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           message: feedbackMessage 
         }
       );
-
+      
       if (response.ok) {
         toast({
           title: "Application Approved",
           description: "The applicant has been notified of your decision.",
           duration: 2000, // Auto-dismiss after 2 seconds
         });
-
+        
         // Close dialog and reset state
         setApplicationDialogOpen(false);
         setSelectedApplication(null);
         setFeedbackMessage("");
-
+        
         // Invalidate queries to refresh data
         queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
       } else {
@@ -246,7 +246,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       setProcessingApplicationId(null);
     }
   };
-
+  
   // Handle rejecting an application
   const handleRejectApplication = async (applicationId: string) => {
     setProcessingApplicationId(applicationId);
@@ -259,19 +259,19 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           message: feedbackMessage 
         }
       );
-
+      
       if (response.ok) {
         toast({
           title: "Application Rejected",
           description: "The applicant has been notified of your decision.",
           duration: 2000, // Auto-dismiss after 2 seconds
         });
-
+        
         // Close dialog and reset state
         setApplicationDialogOpen(false);
         setSelectedApplication(null);
         setFeedbackMessage("");
-
+        
         // Invalidate queries to refresh data
         queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
       } else {
@@ -288,13 +288,13 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       setProcessingApplicationId(null);
     }
   };
-
+  
   // View application details
   const viewApplicationDetails = (application: CollabApplication) => {
     setSelectedApplication(application);
     setApplicationDialogOpen(true);
   };
-
+  
   // Handle toggling collaboration active state
   const toggleCollaborationMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string, status: 'active' | 'paused' }) => {
@@ -318,13 +318,13 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       ...prev,
       [collabId]: isActive
     }));
-
+    
     try {
       await toggleCollaborationMutation.mutateAsync({
         id: collabId,
         status: isActive ? 'active' : 'paused'
       });
-
+      
       toast({
         title: isActive ? "Collaboration Activated" : "Collaboration Paused",
         description: isActive 
@@ -338,7 +338,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         ...prev,
         [collabId]: !isActive
       }));
-
+      
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update collaboration status",
@@ -346,21 +346,21 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       });
     }
   };
-
+  
   // Handle deleting a collaboration
   const handleDeleteCollaboration = async () => {
     if (!collabToDelete) return;
-
+    
     try {
       const response = await apiRequest(`/api/collaborations/${collabToDelete}`, 'DELETE');
-
+      
       if (response.ok) {
         toast({
           title: "Collaboration Deleted",
           description: "Your collaboration has been deleted successfully",
           duration: 2000, // Auto-dismiss after 2 seconds
         });
-
+        
         // Refresh the collaborations data
         queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
       } else {
@@ -384,41 +384,20 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     // Check if there are any pending applications
     const pendingApplications = collab.applications?.filter(app => app.status === 'pending') || [];
     const hasApplications = pendingApplications.length > 0;
-
+    
     // Get active state from local state or default to true
     const isActive = activeCollabs[collab.id] !== undefined 
       ? activeCollabs[collab.id] 
       : collab.status === 'active';
-
+    
     return (
       <Card key={collab.id} className="mb-4">
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
               <Badge className="mb-2 flex items-center gap-1">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center space-x-1">
-                    {getCollabTypeIcon(collab.collab_type)}
-                    <span className="text-xs">{collab.collab_type}</span>
-                  </div>
-                  {collab.collab_type === 'Co-Marketing on Twitter' && collab.details && (
-                    <>
-                      <div className="text-xs text-muted-foreground">
-                        Types: {collab.details.collaboration_types?.join(', ')}
-                      </div>
-                      {collab.details.host_twitter_handle && (
-                        <a 
-                          href={`https://twitter.com/${collab.details.host_twitter_handle.replace('@', '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-blue-500 hover:underline"
-                        >
-                          {collab.details.host_twitter_handle}
-                        </a>
-                      )}
-                    </>
-                  )}
-                </div>
+                {getCollabTypeIcon(collab.collab_type)}
+                {collab.collab_type}
               </Badge>
               <CardTitle className="text-xl">
                 {collab.title === "Collaboration" ? collab.collab_type : collab.title}
@@ -459,7 +438,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   )}
                 </div>
               )}
-
+              
               {/* Show topics if available */}
               {collab.topics && collab.topics.length > 0 && (
                 <div className="mb-3">
@@ -476,7 +455,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   </div>
                 </div>
               )}
-
+              
               {/* Display description - making sure it always shows */}
               {(
                 <p className="text-sm text-gray-600 line-clamp-3">
@@ -488,7 +467,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               )}
             </div>
           )}
-
+          
           {/* Collaboration-specific details based on type */}
           {collab.details && typeof collab.details === 'object' && (
             <>
@@ -510,7 +489,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       )}
                     </div>
                   )}
-
+                  
                   {/* Twitter Spaces details */}
                   {collab.collab_type === 'Twitter Space' && (
                     <div className="space-y-2">
@@ -526,7 +505,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       {/* Topics not shown here since they are already at the top */}
                     </div>
                   )}
-
+                  
                   {/* Twitter Co-Marketing details */}
                   {(collab.collab_type === 'Twitter Co-Marketing' || collab.collab_type === 'Co-Marketing on Twitter') && (
                     <div className="space-y-2">
@@ -539,7 +518,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       {/* Topics not shown here since they are already at the top */}
                     </div>
                   )}
-
+                  
                   {/* Newsletter details */}
                   {collab.collab_type === 'Newsletter' && 'newsletter_name' in collab.details && (
                     <div className="space-y-2">
@@ -549,7 +528,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       )}
                     </div>
                   )}
-
+                  
                   {/* Show any expectations if available */}
                   {'expectations' in collab.details && collab.details.expectations && (
                     <div className="mt-2">
@@ -561,7 +540,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               )}
             </>
           )}
-
+          
           <div className="flex flex-wrap gap-2 mb-4">
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <CalendarDays className="h-3 w-3" />
@@ -570,20 +549,20 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 <span className="ml-1">{new Date(collab.specific_date).toLocaleDateString()}</span>
               )}
             </div>
-
+            
             {collab.has_compensation && (
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <Coins className="h-3 w-3" />
                 <span>Paid opportunity</span>
               </div>
             )}
-
+            
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Clock className="h-3 w-3" />
               <span>Created on {new Date(collab.created_at).toLocaleDateString()}</span>
             </div>
           </div>
-
+          
           {/* Active toggle */}
           <div className="flex items-center justify-between border-t pt-3">
             <div className="flex items-center space-x-2">
@@ -623,7 +602,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       </Card>
     );
   };
-
+  
   // Render an application card
   const renderApplicationCard = (application: CollabApplication) => {
     // Parse the application data
@@ -633,7 +612,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     } catch (error) {
       console.error("Error parsing application data:", error);
     }
-
+    
     // Get status badge variant
     const getStatusBadge = () => {
       switch (application.status) {
@@ -657,7 +636,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           );
       }
     };
-
+    
     return (
       <Card key={application.id} className="mb-4">
         <CardHeader className="pb-2">
@@ -680,7 +659,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               <p className="text-sm text-gray-600 line-clamp-3">{applicationData.reason}</p>
             </div>
           )}
-
+          
           {applicationData.experience && (
             <div className="mb-4">
               <p className="text-sm font-medium mb-1">Your experience:</p>
@@ -700,11 +679,11 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       </Card>
     );
   };
-
+  
   // Render application details in dialog
   const renderApplicationDetails = () => {
     if (!selectedApplication) return null;
-
+    
     // Parse the application data
     let applicationData: ApplicationData = {} as ApplicationData;
     try {
@@ -712,7 +691,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     } catch (error) {
       console.error("Error parsing application data:", error);
     }
-
+    
     return (
       <div className="space-y-6">
         <div>
@@ -727,14 +706,14 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             {selectedApplication.status.charAt(0).toUpperCase() + selectedApplication.status.slice(1)}
           </Badge>
         </div>
-
+        
         {selectedApplication.status === 'pending' && (
           <>
             <Separator />
-
+            
             <div>
               <h3 className="font-medium mb-3">Review Application</h3>
-
+              
               <div className="flex flex-col gap-4 mb-4">
                 <Textarea
                   placeholder="Optional feedback to the applicant..."
@@ -742,7 +721,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   onChange={(e) => setFeedbackMessage(e.target.value)}
                   className="min-h-[80px]"
                 />
-
+                
                 <div className="flex gap-2">
                   <Button 
                     variant="outline" 
@@ -764,26 +743,26 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   </Button>
                 </div>
               </div>
-
+              
               <Separator />
             </div>
           </>
         )}
-
+        
         <div>
           <h3 className="font-medium mb-2">Application Details</h3>
-
+          
           <div className="space-y-4">
             <div>
               <p className="text-sm font-medium mb-1">Why they're interested:</p>
               <p className="text-sm text-gray-600">{applicationData.reason}</p>
             </div>
-
+            
             <div>
               <p className="text-sm font-medium mb-1">Their experience:</p>
               <p className="text-sm text-gray-600">{applicationData.experience}</p>
             </div>
-
+            
             {applicationData.portfolioLinks && (
               <div>
                 <p className="text-sm font-medium mb-1">Portfolio Links:</p>
@@ -802,7 +781,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 </div>
               </div>
             )}
-
+            
             <div className="grid grid-cols-2 gap-4">
               {applicationData.twitterHandle && (
                 <div>
@@ -817,7 +796,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   </a>
                 </div>
               )}
-
+              
               {applicationData.githubHandle && (
                 <div>
                   <p className="text-sm font-medium mb-1">GitHub:</p>
@@ -832,7 +811,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 </div>
               )}
             </div>
-
+            
             {applicationData.notes && (
               <div>
                 <p className="text-sm font-medium mb-1">Additional Notes:</p>
@@ -844,7 +823,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       </div>
     );
   };
-
+  
   // Loading skeletons
   const renderSkeletons = () => (
     <div className="space-y-6">
@@ -873,7 +852,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       ))}
     </div>
   );
-
+  
   return (
     <MobileCheck>
       <div className="min-h-[100svh] bg-background">
@@ -881,7 +860,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           title="My Collaborations"
           backUrl="/dashboard"
         />
-
+        
         <div className="container mx-auto py-4 px-4">
           <div className="flex justify-end mb-4">
             <Button 
@@ -891,7 +870,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               Create New
             </Button>
           </div>
-
+          
           {isLoadingCollabs ? (
             renderSkeletons()
           ) : collaborations && collaborations.length > 0 ? (
@@ -911,7 +890,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               </Button>
             </div>
           )}
-
+          
           {/* Application Details Dialog */}
           <Dialog open={applicationDialogOpen} onOpenChange={setApplicationDialogOpen}>
             <DialogContent className="sm:max-w-[600px]">
@@ -921,9 +900,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   Review the application information
                 </DialogDescription>
               </DialogHeader>
-
+              
               {renderApplicationDetails()}
-
+              
               <DialogFooter>
                 <Button 
                   variant="outline" 
@@ -938,7 +917,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
+          
           {/* Delete Confirmation Dialog */}
           <AlertDialog open={!!collabToDelete} onOpenChange={(open) => !open && setCollabToDelete(null)}>
             <AlertDialogContent>
