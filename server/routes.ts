@@ -199,8 +199,78 @@ export async function registerRoutes(app: Express) {
         .where(eq(users.telegram_id, telegramUser.id.toString()));
 
       if (!user) {
-        res.status(404);
-        return res.json({ error: "User not found" });
+        console.log('User not found with telegram ID:', telegramUser.id);
+        
+        // For development environment only - create a test user if it doesn't exist
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Creating test user for development...');
+          
+          try {
+            // Create a test user
+            const [newUser] = await db.insert(users)
+              .values({
+                telegram_id: telegramUser.id.toString(),
+                first_name: telegramUser.first_name,
+                last_name: telegramUser.last_name || null,
+                username: telegramUser.username || null,
+                handle: telegramUser.username || 'dev_user',
+                is_admin: true, // Make this user an admin for testing
+                is_approved: true,
+                applied_at: new Date(),
+                created_at: new Date()
+              })
+              .returning();
+              
+            console.log('Created test user:', newUser);
+            
+            // Create a company for this user
+            const [newCompany] = await db.insert(companies)
+              .values({
+                user_id: newUser.id,
+                name: 'Test Company',
+                job_title: 'Developer',
+                website: 'https://example.com',
+                funding_stage: 'Seed',
+                has_token: false
+              })
+              .returning();
+              
+            console.log('Created test company:', newCompany);
+            
+            // Create empty notification preferences
+            await db.insert(notification_preferences)
+              .values({
+                user_id: newUser.id,
+                frequency: 'Daily'
+              });
+              
+            // Create empty marketing preferences
+            await db.insert(marketing_preferences)
+              .values({
+                user_id: newUser.id
+              });
+              
+            // Create empty conference preferences
+            await db.insert(conference_preferences)
+              .values({
+                user_id: newUser.id
+              });
+              
+            // Return the newly created user and company
+            return res.json({
+              user: newUser,
+              company: newCompany,
+              impersonating: null
+            });
+          } catch (error) {
+            console.error('Error creating test user:', error);
+            res.status(500);
+            return res.json({ error: "Failed to create test user" });
+          }
+        } else {
+          res.status(404);
+          return res.json({ error: "User not found" });
+        }
       }
 
       // Get company information
