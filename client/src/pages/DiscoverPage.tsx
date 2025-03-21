@@ -987,7 +987,7 @@ export default function DiscoverPage() {
       
       <div className="container max-w-md mx-auto py-4">
         <div className="flex justify-between items-center mb-4 px-4">
-          <h1 className="text-2xl font-bold">Discover</h1>
+          <h1 className="text-2xl font-bold p-2">Discover</h1>
           <Button 
             variant="ghost" 
             size="icon" 
