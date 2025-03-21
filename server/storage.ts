@@ -121,16 +121,13 @@ export class DatabaseStorage implements IStorage {
     if (collabData.details) {
       console.log("Processing details object:", collabData.details);
       
-      // Check if description is already set from client code
+      // If description came from client, PUT it in details.short_description
       if (collabData.description) {
-        console.log("Description already set from client:", collabData.description);
-      } else {
-        // Extract short_description from details object for any collaboration type
-        // and set it as the main description field
-        if (collabData.details.short_description) {
-          console.log("Extracting short_description from details:", collabData.details.short_description);
-          collabData.description = collabData.details.short_description;
-        }
+        console.log("Moving description to details.short_description:", collabData.description);
+        // Ensure details object exists
+        collabData.details = collabData.details || {};
+        // Move description to short_description in details
+        collabData.details.short_description = collabData.description;
       }
       
       // For collaborations that use short_description, ensure it's properly handled
@@ -181,31 +178,30 @@ export class DatabaseStorage implements IStorage {
       
       // Special handling based on collaboration type
       details: (() => {
+        const details = { ...collabData.details } || {};
+        
         // Twitter co-marketing special handling
         if (collabData.collab_type === 'Co-Marketing on Twitter') {
-          return {
-            twittercomarketing_type: Array.isArray(collabData.details?.twittercomarketing_type)
-              ? collabData.details.twittercomarketing_type
-              : (collabData.details?.twittercomarketing_type ? [collabData.details.twittercomarketing_type] : ["Thread Collab"]),
-            host_twitter_handle: collabData.details?.host_twitter_handle || "https://x.com/",
-            host_follower_count: collabData.details?.host_follower_count || "0-1K",
-            short_description: collabData.details?.short_description || "" // Ensure this field is present
-          };
+          // Ensure required fields exist with defaults
+          details.twittercomarketing_type = Array.isArray(details.twittercomarketing_type)
+            ? details.twittercomarketing_type
+            : (details.twittercomarketing_type ? [details.twittercomarketing_type] : ["Thread Collab"]);
+          details.host_twitter_handle = details.host_twitter_handle || "https://x.com/";
+          details.host_follower_count = details.host_follower_count || "0-1K";
+          details.short_description = details.short_description || "";
         }
         // Twitter Spaces Guest special handling
         else if (collabData.collab_type === 'Twitter Spaces Guest') {
-          return {
-            twitter_handle: collabData.details?.twitter_handle || "https://x.com/",
-            host_follower_count: collabData.details?.host_follower_count || "0-1K",
-            short_description: collabData.details?.short_description || "" // Ensure short_description is preserved
-          };
+          details.twitter_handle = details.twitter_handle || "https://x.com/";
+          details.host_follower_count = details.host_follower_count || "0-1K";
+          details.short_description = details.short_description || "";
         }
-        // Default to original details
-        return collabData.details;
+        
+        return details;
       })(),
       
-      // Ensure description is set
-      description: collabData.description || "",
+      // Set an empty string for description (we keep descriptions in details.short_description)
+      description: "",
       
       created_at: new Date(),
       updated_at: new Date()
