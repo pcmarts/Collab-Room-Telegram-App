@@ -131,6 +131,13 @@ export default function CreateCollaborationSteps({
     // Get current step ID
     const currentStepId = activeSteps[currentStep].id;
     
+    // Clear the root-level description field when entering a description step
+    // to prevent bleeding from previous fields (especially follower count)
+    if (currentStepId.includes('description')) {
+      // Reset the description field to empty to prevent bleeding from other fields
+      form.setValue("description", "");
+    }
+    
     // Handle Twitter co-marketing field resets
     if (selectedCollabType === "Co-Marketing on Twitter") {
       if (currentStepId === "twitter_comarketing_type") {
@@ -148,7 +155,7 @@ export default function CreateCollaborationSteps({
       }
       else if (currentStepId === "twitter_comarketing_description") {
         // Clear description field to prevent bleeding
-        form.setValue("details.short_description", "");
+        form.setValue("description", "");
       }
     }
   }, [currentStep, selectedCollabType, form]);
@@ -282,8 +289,9 @@ export default function CreateCollaborationSteps({
       
       // Clear any potential field bleeding
       if (currentStepId.includes('follower') && nextStepId.includes('description')) {
-        // If going from a follower count field to a description field, ensure no bleeding
-        clearFormFieldsExcept(`details.${nextStepId}`);
+        // If going from a follower count field to a description field, explicitly clear the description
+        // to prevent follower count from being copied over
+        form.setValue("description", "");
       }
       
       // Move to the next step
@@ -1187,8 +1195,19 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="description"
           render={({ field }) => {
-            // Ensure field value is always a string
-            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            // Ensure field value is always a string, and explicitly initialize it with empty string
+            // if it's not a string or if it appears to be a follower count (numeric values or standard patterns)
+            let displayValue = "";
+            
+            if (typeof field.value === 'string') {
+              // Check if the field value looks like a follower count (matches a pattern like "0-1K", "500K+", etc.)
+              const isFollowerCount = TWITTER_FOLLOWER_COUNTS.includes(field.value as any) || 
+                                      /^\d+(\.\d+)?[KM]?[-+]?$/.test(field.value);
+              
+              if (!isFollowerCount) {
+                displayValue = field.value;
+              }
+            }
             
             return (
               <FormItem className="space-y-1 pt-0">
