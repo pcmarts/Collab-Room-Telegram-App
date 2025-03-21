@@ -344,6 +344,9 @@ export default function DiscoveryFilters() {
       title: "Preferences saved",
       description: "Your discovery filters have been updated",
     });
+    
+    // Redirect to discover page after saving
+    window.location.href = '/discover';
   };
   
   // Apply special class for scrolling to document when component mounts
