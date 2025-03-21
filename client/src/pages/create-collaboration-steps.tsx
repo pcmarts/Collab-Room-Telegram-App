@@ -439,6 +439,40 @@ export default function CreateCollaborationSteps({
         break;
       
       // Add more validation as needed for other fields
+      
+      // Newsletter validations
+      case "newsletter_name":
+        const newsletterName = form.getValues("details.newsletter_name");
+        if (!newsletterName || newsletterName.trim() === "") {
+          toast({
+            title: "Please enter a newsletter name",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      case "newsletter_short_description":
+        const newsletterDescription = form.getValues("description");
+        if (!newsletterDescription || newsletterDescription.trim() === "") {
+          toast({
+            title: "Please enter a short description for your newsletter",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      case "newsletter_subscriber_count":
+        const subscriberCount = form.getValues("details.total_subscribers");
+        if (!subscriberCount) {
+          toast({
+            title: "Please select a subscriber count range",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
     }
 
     return true;
@@ -1545,6 +1579,146 @@ export default function CreateCollaborationSteps({
         />
       ),
       shouldShow: () => selectedCollabType === "Report & Research Feature"
+    },
+    
+    // Newsletter Feature Fields
+    {
+      id: "newsletter_name",
+      title: "Newsletter Name",
+      description: "What's your newsletter called?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.newsletter_name"
+          render={({ field }) => (
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">What's your newsletter called?</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter your newsletter name"
+                  className="h-8 text-xs"
+                  {...field}
+                  value={field.value || ""}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Newsletter Feature"
+    },
+    {
+      id: "newsletter_short_description",
+      title: "Short Description",
+      description: "Briefly describe your newsletter",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Briefly describe your newsletter content and focus"
+                    className="resize-none text-xs"
+                    maxLength={180}
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  {displayValue?.length || 0}/180 characters - Describe what your newsletter covers
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Newsletter Feature"
+    },
+    {
+      id: "newsletter_subscriber_count",
+      title: "Subscriber Count",
+      description: "How many subscribers do you have?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.total_subscribers"
+          render={({ field }) => (
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">How many subscribers do you have?</FormLabel>
+              <FormControl>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Select subscriber count" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {AUDIENCE_SIZE_RANGES.map((size) => (
+                      <SelectItem key={size} value={size}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Newsletter Feature"
+    },
+    {
+      id: "newsletter_url",
+      title: "Newsletter URL",
+      description: "Link to your newsletter signup or archive",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.newsletter_url"
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = typeof field.value === 'string' ? field.value : "";
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Newsletter URL</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://your-newsletter.com"
+                    className="h-8 text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Link to your newsletter signup page or archive
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Newsletter Feature"
     },
     
     // Free collaboration confirmation - moved to be the last step for all collaboration types
