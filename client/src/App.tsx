@@ -46,7 +46,8 @@ const APPLICATION_ROUTES = [
   '/application-form',
   '/company-info',
   '/profile-overview',
-  '/discovery-filters'
+  '/discovery-filters',
+  '/discovery-filters-new'
 ];
 
 function Router() {

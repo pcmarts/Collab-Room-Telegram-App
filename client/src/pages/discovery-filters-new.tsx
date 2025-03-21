@@ -356,7 +356,7 @@ export default function DiscoveryFiltersNew() {
   
   return (
     <MobileCheck>
-      <div className="container pb-6 min-h-screen">
+      <div className="container pb-52 min-h-screen">
         <PageHeader
           title="Discovery Filters"
           subtitle="Customize which collaborations appear in your discover feed"
@@ -364,7 +364,7 @@ export default function DiscoveryFiltersNew() {
         />
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-52">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Main filters card with improved styling */}
             <Card className="border-0 shadow-lg overflow-hidden">
               <CardContent className="p-6 space-y-8">
@@ -940,11 +940,11 @@ export default function DiscoveryFiltersNew() {
                 </div>
                 
                 {/* Blockchain Networks Filter */}
-                <div className="border rounded-lg p-4 bg-background">
+                <div className="rounded-xl p-5 bg-gradient-to-r from-teal-50/50 to-green-50/50 border border-teal-100">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">Blockchain Networks</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="text-lg font-semibold text-teal-700">Blockchain Networks</h3>
+                      <p className="text-sm text-teal-500/80">
                         Filter by supported blockchain networks
                       </p>
                     </div>
