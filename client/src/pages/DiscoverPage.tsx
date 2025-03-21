@@ -989,10 +989,11 @@ export default function DiscoverPage() {
         <div className="flex justify-between items-center mb-2 px-4">
           <h1 className="text-2xl font-bold p-2">Discover</h1>
           <Button 
-            variant="ghost" 
+            variant="secondary" 
             size="icon" 
             onClick={() => setLocation('/discovery-filters')}
             aria-label="Filter"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             <SlidersVertical className="h-5 w-5" />
           </Button>
