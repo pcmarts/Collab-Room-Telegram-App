@@ -72,8 +72,17 @@ function getTelegramUserFromRequest(req: TelegramReq) {
       delete safeHeaders.authorization; // Remove auth tokens
       console.log('Available headers:', JSON.stringify(safeHeaders, null, 2));
       
-      // We no longer use fallback IDs even in development
-      // This was causing issues with users getting stuck on application processing
+      // In development mode, provide a fallback test user
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Using development fallback for Telegram data');
+        return {
+          id: '123456789',
+          first_name: 'Dev',
+          last_name: 'Test',
+          username: 'dev_user'
+        };
+      }
+      
       console.warn('⚠️ No Telegram data found in request');
       return null;
     }
