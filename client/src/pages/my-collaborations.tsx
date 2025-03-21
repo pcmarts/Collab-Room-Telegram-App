@@ -413,10 +413,13 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 </div>
               )}
               
-              {/* Display short description if available */}
-              {'short_description' in collab.details && collab.details.short_description && (
+              {/* Display description - making sure it always shows */}
+              {(
                 <p className="text-sm text-gray-600 line-clamp-3">
-                  {collab.details.short_description}
+                  {'short_description' in collab.details && collab.details.short_description ? 
+                    collab.details.short_description : 
+                    (collab.description || 'No description available')
+                  }
                 </p>
               )}
             </div>
@@ -461,7 +464,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                           <p className="text-xs font-medium">Topics:</p>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {collab.topics.map((topic, idx) => (
-                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded-full">
+                              <span key={idx} className="px-2 py-0.5 bg-[#6B7280] text-white text-xs rounded-full">
                                 {topic}
                               </span>
                             ))}
@@ -485,7 +488,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                           <p className="text-xs font-medium">Topics:</p>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {collab.topics.map((topic, idx) => (
-                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded-full">
+                              <span key={idx} className="px-2 py-0.5 bg-[#6B7280] text-white text-xs rounded-full">
                                 {topic}
                               </span>
                             ))}
