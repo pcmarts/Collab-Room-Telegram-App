@@ -1088,6 +1088,7 @@ export async function registerRoutes(app: Express) {
         filtered_marketing_topics,
         twitter_collabs,
         discovery_filter_enabled,
+        discovery_filter_collab_types_enabled,
         discovery_filter_topics_enabled,
         discovery_filter_company_sectors_enabled,
         discovery_filter_company_followers_enabled,
@@ -1245,6 +1246,7 @@ export async function registerRoutes(app: Express) {
           
           // All filter toggle states
           discovery_filter_enabled: discovery_filter_enabled === undefined ? false : discovery_filter_enabled,
+          discovery_filter_collab_types_enabled: discovery_filter_collab_types_enabled === undefined ? false : discovery_filter_collab_types_enabled,
           discovery_filter_topics_enabled: discovery_filter_topics_enabled === undefined ? false : discovery_filter_topics_enabled,
           discovery_filter_company_sectors_enabled: discovery_filter_company_sectors_enabled === undefined ? false : discovery_filter_company_sectors_enabled,
           discovery_filter_company_followers_enabled: discovery_filter_company_followers_enabled === undefined ? false : discovery_filter_company_followers_enabled,
