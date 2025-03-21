@@ -982,17 +982,18 @@ export default function DiscoverPage() {
   };
 
   return (
-    <div className="telegram-app min-h-[100svh] flex flex-col overflow-hidden" ref={pageRef}>
+    <div className="telegram-app min-h-[100svh] flex flex-col overflow-hidden bg-gradient-to-b from-purple-900/30 to-black/50" ref={pageRef}>
       {/* Include the CSS styling component */}
       <MyCollabStyles />
       
       {/* Add Wavy Background with purple hues */}
       <WavyBackground 
         colors={["#a855f7", "#9333ea", "#7e22ce", "#6b21a8"]} 
-        waveWidth={30}
+        waveWidth={50}
         backgroundFill="rgba(255, 255, 255, 0.0)"
-        blur={20}
-        waveOpacity={0.3}
+        blur={10}
+        waveOpacity={0.7}
+        speed="fast"
         className="absolute inset-0 z-0"
         containerClassName="absolute inset-0"
       />
