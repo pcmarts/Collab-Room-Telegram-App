@@ -10,15 +10,15 @@ import { useLocation } from "wouter";
 // UI Components
 import { MobileCheck } from "@/components/MobileCheck";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Loader2, ChevronUp, ChevronDown, Filter, X, Check } from "lucide-react";
+import { Loader2, ChevronUp, ChevronDown, Filter, X } from "lucide-react";
 
 // Constants and types
 import {
@@ -127,22 +127,13 @@ export default function DiscoveryFiltersNew() {
   // Fetch user's current marketing preferences with proper typing
   const { 
     data: marketingPrefs = {} as MarketingPreferencesResponse, 
-    isLoading: isLoadingPrefs, 
-    refetch 
+    isLoading: isLoadingPrefs 
   } = useQuery<MarketingPreferencesResponse>({
     queryKey: ['/api/marketing-preferences'],
     staleTime: 0, // Always fetch fresh data
     refetchOnWindowFocus: true, 
     refetchOnMount: true,
-    retry: 3, // Try up to 3 times if the request fails
-    onError: (error) => {
-      console.error("Error fetching marketing preferences:", error);
-      toast({
-        title: "Error loading preferences",
-        description: "Could not load your saved preferences. Using defaults.",
-        variant: "destructive"
-      });
-    }
+    retry: 3 // Try up to 3 times if the request fails
   });
   
   // Toggle blockchain network category expansion
@@ -368,7 +359,7 @@ export default function DiscoveryFiltersNew() {
   
   return (
     <MobileCheck>
-      <div className="container pb-16">
+      <div className="container pb-32">
         <PageHeader
           title="Discovery Filters"
           subtitle="Customize which collaborations appear in your discover feed"
@@ -376,7 +367,7 @@ export default function DiscoveryFiltersNew() {
         />
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mb-24">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Main filters card */}
             <Card>
               <CardContent className="p-4 pt-6 space-y-6">
@@ -691,13 +682,13 @@ export default function DiscoveryFiltersNew() {
                   )}
                 </div>
                 
-                {/* Company Followers Filter */}
+                {/* Company Twitter Followers Filter */}
                 <div className="border rounded-lg p-4 bg-background">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">Company Followers</h3>
+                      <h3 className="text-base font-medium">Company Twitter Followers</h3>
                       <p className="text-sm text-muted-foreground">
-                        Filter by company's Twitter follower count
+                        Filter by minimum follower count
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -724,16 +715,15 @@ export default function DiscoveryFiltersNew() {
                       name="company_twitter_followers"
                       render={({ field }) => (
                         <FormItem>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
+                          <Select
                             value={field.value}
+                            onValueChange={field.onChange}
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select minimum followers" />
                             </SelectTrigger>
                             <SelectContent>
-                              {TWITTER_FOLLOWER_COUNTS.map(count => (
+                              {TWITTER_FOLLOWER_COUNTS.map((count) => (
                                 <SelectItem key={count} value={count}>
                                   {count}
                                 </SelectItem>
@@ -746,13 +736,13 @@ export default function DiscoveryFiltersNew() {
                   )}
                 </div>
                 
-                {/* User Followers Filter */}
+                {/* User Twitter Followers Filter */}
                 <div className="border rounded-lg p-4 bg-background">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">User Followers</h3>
+                      <h3 className="text-base font-medium">User Twitter Followers</h3>
                       <p className="text-sm text-muted-foreground">
-                        Filter by user's Twitter follower count
+                        Filter by minimum follower count for the creator
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -779,16 +769,15 @@ export default function DiscoveryFiltersNew() {
                       name="twitter_followers"
                       render={({ field }) => (
                         <FormItem>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
+                          <Select
                             value={field.value}
+                            onValueChange={field.onChange}
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select minimum followers" />
                             </SelectTrigger>
                             <SelectContent>
-                              {TWITTER_FOLLOWER_COUNTS.map(count => (
+                              {TWITTER_FOLLOWER_COUNTS.map((count) => (
                                 <SelectItem key={count} value={count}>
                                   {count}
                                 </SelectItem>
@@ -875,7 +864,7 @@ export default function DiscoveryFiltersNew() {
                               {FUNDING_STAGES.map(stage => (
                                 <div key={stage} className="flex items-center space-x-2">
                                   <Checkbox
-                                    id={`funding-stage-${stage}`}
+                                    id={`stage-${stage}`}
                                     checked={field.value.includes(stage)}
                                     onCheckedChange={(checked) => {
                                       if (checked) {
@@ -886,7 +875,7 @@ export default function DiscoveryFiltersNew() {
                                     }}
                                   />
                                   <label
-                                    htmlFor={`funding-stage-${stage}`}
+                                    htmlFor={`stage-${stage}`}
                                     className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                   >
                                     {stage}
@@ -905,9 +894,9 @@ export default function DiscoveryFiltersNew() {
                 <div className="border rounded-lg p-4 bg-background">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">Token Status</h3>
+                      <h3 className="text-base font-medium">Has Token</h3>
                       <p className="text-sm text-muted-foreground">
-                        Filter by whether company has a token
+                        Filter by company token status
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -933,19 +922,20 @@ export default function DiscoveryFiltersNew() {
                       control={form.control}
                       name="company_has_token"
                       render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                          <div className="space-y-0.5">
-                            <FormLabel>Has Token</FormLabel>
-                            <FormDescription>
-                              Only show companies with tokens
-                            </FormDescription>
-                          </div>
-                          <FormControl>
+                        <FormItem>
+                          <div className="flex items-center space-x-2">
                             <Switch
                               checked={field.value}
                               onCheckedChange={field.onChange}
+                              id="token-switch"
                             />
-                          </FormControl>
+                            <label
+                              htmlFor="token-switch"
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              Only show companies with tokens
+                            </label>
+                          </div>
                         </FormItem>
                       )}
                     />
@@ -958,7 +948,7 @@ export default function DiscoveryFiltersNew() {
                     <div>
                       <h3 className="text-base font-medium">Blockchain Networks</h3>
                       <p className="text-sm text-muted-foreground">
-                        Filter by blockchain networks
+                        Filter by supported blockchain networks
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1022,23 +1012,13 @@ export default function DiscoveryFiltersNew() {
                               </div>
                             )}
                             
-                            <div className="space-y-4">
+                            <Accordion type="multiple" className="w-full">
                               {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
-                                <div key={category} className="border rounded p-3">
-                                  <div 
-                                    className="flex justify-between items-center cursor-pointer mb-2"
-                                    onClick={() => toggleCategory(category)}
-                                  >
-                                    <div className="font-medium text-sm">{category}</div>
-                                    <div>
-                                      {expandedCategories.includes(category) ? 
-                                        <ChevronUp size={16} /> : 
-                                        <ChevronDown size={16} />
-                                      }
-                                    </div>
-                                  </div>
-                                  
-                                  {expandedCategories.includes(category) && (
+                                <AccordionItem key={category} value={category}>
+                                  <AccordionTrigger className="text-sm font-medium py-2">
+                                    {category}
+                                  </AccordionTrigger>
+                                  <AccordionContent>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-2">
                                       {networks.map(network => (
                                         <div key={network} className="flex items-center space-x-2">
@@ -1062,10 +1042,10 @@ export default function DiscoveryFiltersNew() {
                                         </div>
                                       ))}
                                     </div>
-                                  )}
-                                </div>
+                                  </AccordionContent>
+                                </AccordionItem>
                               ))}
-                            </div>
+                            </Accordion>
                           </div>
                         </FormItem>
                       )}
@@ -1073,7 +1053,6 @@ export default function DiscoveryFiltersNew() {
                   )}
                 </div>
               </CardContent>
-              
             </Card>
           </form>
         </Form>
@@ -1089,7 +1068,7 @@ export default function DiscoveryFiltersNew() {
             Cancel
           </Button>
           <Button
-            type="submit"
+            type="button"
             disabled={loading}
             className="w-full sm:w-auto"
             onClick={() => form.handleSubmit(onSubmit)()}
