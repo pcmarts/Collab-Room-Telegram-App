@@ -998,7 +998,7 @@ export default function DiscoverPage() {
           </Button>
         </div>
 
-        <div className="relative w-[90%] mx-auto aspect-[3/4.25]">
+        <div className="relative w-[90%] mx-auto aspect-[3/3]">
           {/* Background Card (Next in Stack) */}
           {currentIndex < cards.length - 1 && (
             <div className="absolute inset-0 transform scale-[0.95] opacity-50">
