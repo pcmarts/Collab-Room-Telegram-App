@@ -9,7 +9,7 @@ import { Form, FormField, FormItem } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { FilterSaveButton } from "./FilterSaveButton";
-import { Coins } from "lucide-react";
+import { CoinsIcon } from "lucide-react";
 
 // Form schema for this specific filter page
 const filterSchema = z.object({
@@ -198,7 +198,7 @@ export default function TokenStatusFilter() {
                   <div className="border rounded-lg p-4 bg-background/50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <Coins className="h-5 w-5 text-primary mr-2" />
+                        <CoinsIcon className="h-5 w-5 text-primary mr-2" />
                         <p className="text-sm">Show only companies with tokens</p>
                       </div>
                       <Switch

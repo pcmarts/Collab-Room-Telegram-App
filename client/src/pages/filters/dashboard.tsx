@@ -11,7 +11,7 @@ import {
   Building, 
   Users, 
   DollarSign,
-  Coin,
+  CoinsIcon,
   Network,
   ChevronRight
 } from "lucide-react";
@@ -100,7 +100,7 @@ export default function FiltersDashboard() {
     },
     {
       name: "Token Status",
-      icon: <Coin className="h-5 w-5 text-primary" />,
+      icon: <CoinsIcon className="h-5 w-5 text-primary" />,
       path: "/filters/token-status",
       count: 0, // Boolean filter
       enabled: isScalarFilterActive("token_status")
