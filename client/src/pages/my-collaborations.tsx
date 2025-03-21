@@ -58,12 +58,9 @@ import {
   UserX,
   ListChecks,
   Trash2,
-  Podcast,
-  Radio,
   Twitter,
   BookOpen,
   FileText,
-  FileSpreadsheet,
   Mic,
   Video,
   Coffee
@@ -92,7 +89,7 @@ const getCollabTypeIcon = (collabType: string) => {
     case 'Conference Coffee':
       return <Coffee className="h-3 w-3" />;
     default:
-      return <Megaphone className="h-3 w-3" />;
+      return <MessageSquare className="h-3 w-3" />;
   }
 };
 
