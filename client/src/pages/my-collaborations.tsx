@@ -479,13 +479,13 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 (collab.collab_type === 'Newsletter' && 'newsletter_name' in collab.details) ||
                 ('expectations' in collab.details && collab.details.expectations) ||
                 (collab.topics && collab.topics.length > 0)) && (
-                <div className="mb-4 p-3 rounded-md text-white">
+                <div className="mb-2 p-3 rounded-md bg-accent/30">
                   {/* Podcast details */}
                   {collab.collab_type === 'Podcast' && 'podcast_name' in collab.details && (
                     <div className="space-y-2">
                       <p className="text-sm font-medium">Podcast: {collab.details.podcast_name}</p>
                       {'estimated_reach' in collab.details && collab.details.estimated_reach && (
-                        <p className="text-xs text-white opacity-80">Audience: {collab.details.estimated_reach}</p>
+                        <p className="text-xs text-muted-foreground">Audience: {collab.details.estimated_reach}</p>
                       )}
                     </div>
                   )}
@@ -526,16 +526,16 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                         </p>
                       )}
                       {'followers_count' in collab.details && collab.details.followers_count && (
-                        <p className="text-xs text-white opacity-80">Follower Count: {collab.details.followers_count}</p>
+                        <p className="text-xs text-muted-foreground">Follower Count: {collab.details.followers_count}</p>
                       )}
                       {'collaboration_types' in collab.details && Array.isArray(collab.details.collaboration_types) && collab.details.collaboration_types.length > 0 && (
                         <div>
-                          <p className="text-xs text-white opacity-80">Collaboration Types:</p>
+                          <p className="text-xs text-muted-foreground">Collaboration Types:</p>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {collab.details.collaboration_types.map((type: string, idx: number) => (
                               <span 
                                 key={idx} 
-                                className="px-2 py-0.5 bg-blue-500/20 text-blue-300 text-xs rounded-full"
+                                className="px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded-full"
                               >
                                 {type}
                               </span>
