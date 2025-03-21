@@ -30,7 +30,7 @@ export default function Welcome() {
           {/* Logo */}
           <div className="flex justify-center mb-6">
             <img 
-              src="/images/THE-COLLAB-ROOM-2-small.jpg" 
+              src="/images/collab-logo.jpg" 
               alt="The Collab Room" 
               className="h-32 w-auto rounded-lg shadow-md"
             />
@@ -60,13 +60,6 @@ export default function Welcome() {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="flex items-center justify-center gap-2 my-4">
-          <div className="w-3 h-3 rounded-full bg-primary"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
         </div>
 
         <Card className="border border-primary/20">
