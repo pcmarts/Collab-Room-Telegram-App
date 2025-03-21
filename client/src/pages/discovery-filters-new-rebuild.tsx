@@ -410,7 +410,7 @@ export default function DiscoveryFilters() {
 
   return (
     <MobileCheck>
-      <div className="container pb-20 pt-4 space-y-6">
+      <div className="container pb-28 pt-4 space-y-6">
         <PageHeader 
           title="Discovery Filters" 
           subtitle="Customize what collaborations you want to discover"
@@ -963,10 +963,10 @@ export default function DiscoveryFilters() {
                 </Card>
                 
                 {/* Submit Button */}
-                <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 flex justify-center">
+                <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-6 flex justify-center">
                   <Button 
                     type="submit" 
-                    className="w-full max-w-md"
+                    className="w-full max-w-md py-6"
                     disabled={isSaving || form.formState.isSubmitting}
                   >
                     {isSaving || form.formState.isSubmitting ? (
