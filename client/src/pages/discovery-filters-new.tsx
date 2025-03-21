@@ -364,16 +364,16 @@ export default function DiscoveryFiltersNew() {
         />
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-52">
-            {/* Main filters card */}
-            <Card>
-              <CardContent className="p-4 pt-6 space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-52">
+            {/* Main filters card with improved styling */}
+            <Card className="border-0 shadow-lg overflow-hidden">
+              <CardContent className="p-6 space-y-8">
                 {/* Collaboration Types Filter */}
-                <div className="border rounded-lg p-4 bg-background">
+                <div className="rounded-xl p-5 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border border-indigo-100">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">Collaboration Types</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="text-lg font-semibold text-indigo-700">Collaboration Types</h3>
+                      <p className="text-sm text-indigo-500/80">
                         Filter by specific collaboration formats
                       </p>
                     </div>
@@ -468,12 +468,12 @@ export default function DiscoveryFiltersNew() {
                   )}
                 </div>
                 
-                {/* Topics Filter */}
-                <div className="border rounded-lg p-4 bg-background">
+                {/* Topics Filter with updated styling */}
+                <div className="rounded-xl p-5 bg-gradient-to-r from-purple-50/50 to-fuchsia-50/50 border border-purple-100">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">Topics</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="text-lg font-semibold text-purple-700">Topics</h3>
+                      <p className="text-sm text-purple-500/80">
                         Filter by collaboration topic areas
                       </p>
                     </div>
@@ -569,11 +569,11 @@ export default function DiscoveryFiltersNew() {
                 </div>
                 
                 {/* Company Sectors Filter */}
-                <div className="border rounded-lg p-4 bg-background">
+                <div className="rounded-xl p-5 bg-gradient-to-r from-cyan-50/50 to-blue-50/50 border border-cyan-100">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">Company Sectors</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="text-lg font-semibold text-cyan-700">Company Sectors</h3>
+                      <p className="text-sm text-cyan-500/80">
                         Filter by company industry or focus
                       </p>
                     </div>
@@ -680,11 +680,11 @@ export default function DiscoveryFiltersNew() {
                 </div>
                 
                 {/* Company Twitter Followers Filter */}
-                <div className="border rounded-lg p-4 bg-background">
+                <div className="rounded-xl p-5 bg-gradient-to-r from-emerald-50/50 to-teal-50/50 border border-emerald-100">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">Company Twitter Followers</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="text-lg font-semibold text-emerald-700">Company Twitter Followers</h3>
+                      <p className="text-sm text-emerald-500/80">
                         Filter by minimum follower count
                       </p>
                     </div>
@@ -734,11 +734,11 @@ export default function DiscoveryFiltersNew() {
                 </div>
                 
                 {/* User Twitter Followers Filter */}
-                <div className="border rounded-lg p-4 bg-background">
+                <div className="rounded-xl p-5 bg-gradient-to-r from-blue-50/50 to-sky-50/50 border border-blue-100">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">User Twitter Followers</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="text-lg font-semibold text-blue-700">User Twitter Followers</h3>
+                      <p className="text-sm text-blue-500/80">
                         Filter by minimum follower count for the creator
                       </p>
                     </div>
@@ -788,11 +788,11 @@ export default function DiscoveryFiltersNew() {
                 </div>
                 
                 {/* Funding Stages Filter */}
-                <div className="border rounded-lg p-4 bg-background">
+                <div className="rounded-xl p-5 bg-gradient-to-r from-amber-50/50 to-orange-50/50 border border-amber-100">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">Funding Stages</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="text-lg font-semibold text-amber-700">Funding Stages</h3>
+                      <p className="text-sm text-amber-500/80">
                         Filter by company funding stage
                       </p>
                     </div>
@@ -888,11 +888,11 @@ export default function DiscoveryFiltersNew() {
                 </div>
                 
                 {/* Token Status Filter */}
-                <div className="border rounded-lg p-4 bg-background">
+                <div className="rounded-xl p-5 bg-gradient-to-r from-purple-50/50 to-violet-50/50 border border-purple-100">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-base font-medium">Has Token</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="text-lg font-semibold text-purple-700">Has Token</h3>
+                      <p className="text-sm text-purple-500/80">
                         Filter by company token status
                       </p>
                     </div>
@@ -1054,33 +1054,34 @@ export default function DiscoveryFiltersNew() {
           </form>
         </Form>
         
-        {/* Fixed position action buttons that stay at the bottom even when scrolling */}
-        <div className="fixed bottom-0 left-0 right-0 p-8 bg-background border-t shadow-xl flex flex-col sm:flex-row gap-4 justify-end z-50">
+        {/* Modern floating action bar with gradient background and pill-shaped buttons */}
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[95%] max-w-md p-4 bg-gradient-to-r from-indigo-500/90 to-purple-600/90 backdrop-blur-md rounded-full shadow-2xl flex justify-between items-center z-50 border border-indigo-300/30">
           <Button
-            variant="outline"
+            variant="ghost"
             type="button"
             onClick={() => navigate('/discover')}
             disabled={loading}
-            size="lg"
-            className="text-lg"
+            className="text-base font-medium text-white hover:text-white/80 hover:bg-white/10"
           >
             Cancel
           </Button>
+          
+          <span className="h-8 w-px bg-white/20"></span>
+          
           <Button
             type="button"
             disabled={loading}
-            size="lg"
-            className="w-full sm:w-auto text-lg"
+            className="bg-white text-indigo-700 hover:bg-white/90 hover:text-indigo-800 transition-all duration-200 px-6 py-2 rounded-full font-medium flex items-center text-base"
             onClick={() => form.handleSubmit(onSubmit)()}
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
               </>
             ) : (
               <>
-                <Filter className="mr-2 h-5 w-5" />
+                <Filter className="mr-2 h-4 w-4" />
                 Save Filters
               </>
             )}
