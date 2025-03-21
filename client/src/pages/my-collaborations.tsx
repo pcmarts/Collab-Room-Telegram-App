@@ -388,8 +388,8 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
-              <Badge className="mb-2 flex items-center gap-1">
-                {getCollabTypeIcon(collab.collab_type)}
+              <Badge className="mb-2 flex items-center gap-1 font-medium" style={{ backgroundColor: 'transparent', border: '1px solid #6B7280', color: '#4b5563' }}>
+                <span className="text-primary">{getCollabTypeIcon(collab.collab_type)}</span>
                 {collab.collab_type}
               </Badge>
               <CardTitle className="text-xl">
@@ -440,7 +440,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                     {collab.topics.map((topic, idx) => (
                       <span 
                         key={idx} 
-                        className="px-2 py-0.5 bg-transparent text-gray-500 border border-[#6B7280] text-xs rounded-full"
+                        className="px-2 py-0.5 bg-transparent text-[#4b5563] border border-[#6B7280] text-xs rounded-full"
                       >
                         {topic}
                       </span>
