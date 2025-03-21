@@ -222,7 +222,6 @@ export default function CreateCollaborationSteps({
           newDetails.blog_topic = "";
           newDetails.blog_link = "";
           newDetails.blog_name = "";
-          newDetails.blog_url = "";
           newDetails.est_readers = AUDIENCE_SIZE_RANGES[0];
           newDetails.short_description = "";
           newDetails.estimated_release_date = "";

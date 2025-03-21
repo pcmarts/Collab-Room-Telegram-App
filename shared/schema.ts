@@ -573,7 +573,6 @@ export const newsletterDetailsSchema = z.object({
 export const blogPostDetailsSchema = z.object({
   blog_name: z.string().min(2, "Blog name is required").optional(),
   blog_topic: z.string().optional(), // Make blog topic optional since we capture topics at the top level
-  blog_url: z.string().url("Please enter a valid blog URL").optional(),
   blog_link: z.string().url("Please enter a valid blog link"),
   short_description: z.string().max(200, "Short description must be less than 200 characters").optional(),
   est_readers: z.enum(AUDIENCE_SIZE_RANGES),
