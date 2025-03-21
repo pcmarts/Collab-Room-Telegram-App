@@ -1721,6 +1721,162 @@ export default function CreateCollaborationSteps({
       shouldShow: () => selectedCollabType === "Newsletter Feature"
     },
     
+    // Blog Post Feature Fields
+    {
+      id: "blog_name",
+      title: "Blog Name",
+      description: "What's your blog called?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.blog_name"
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = typeof field.value === 'string' ? field.value : "";
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Blog Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter your blog name"
+                    className="h-8 text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormDescription className="text-[10px]">
+                  The name of your blog publication
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Blog Post Feature"
+    },
+    {
+      id: "blog_link",
+      title: "Blog Link",
+      description: "Where can people find your blog?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.blog_link"
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = typeof field.value === 'string' ? field.value : "";
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Blog Link</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://your-blog.com"
+                    className="h-8 text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Link to your blog homepage
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Blog Post Feature"
+    },
+    {
+      id: "blog_description",
+      title: "Short Description",
+      description: "Briefly describe your blog",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = typeof field.value === 'string' ? field.value : "";
+            const maxLength = 200;
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Blog Description</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="What is your blog about? Briefly describe it." 
+                    className="min-h-[80px] text-xs"
+                    maxLength={maxLength}
+                    value={displayValue}
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                </FormControl>
+                <FormDescription className="text-[10px]">
+                  A brief description of your blog (max {maxLength} characters)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Blog Post Feature"
+    },
+    {
+      id: "est_readers",
+      title: "Estimated Readership",
+      description: "How many people read your blog?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.est_readers"
+          render={({ field }) => (
+            <FormItem className="space-y-1 pt-0">
+              <FormLabel className="mb-0 text-sm">Estimated Readership</FormLabel>
+              <FormControl>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <FormControl>
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue placeholder="Select readership size" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {AUDIENCE_SIZE_RANGES.map((size) => (
+                      <SelectItem key={size} value={size} className="text-xs">
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormDescription className="text-[10px]">
+                Average number of readers per post
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Blog Post Feature"
+    },
+    
     // Free collaboration confirmation - moved to be the last step for all collaboration types
     {
       id: "free_collab",

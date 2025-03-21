@@ -890,7 +890,7 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                 />
                 <FormField
                   control={form.control}
-                  name="details.short_description"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Short Description</FormLabel>
@@ -898,9 +898,43 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                         <Textarea 
                           placeholder="Brief description of your blog" 
                           className="min-h-[80px]"
+                          maxLength={200}
                           {...field} 
                         />
                       </FormControl>
+                      <FormDescription>
+                        A brief description of your blog (max 200 characters)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="details.est_readers"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Estimated Readership</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select readership size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {AUDIENCE_SIZE_RANGES.map((size) => (
+                              <SelectItem key={size} value={size}>
+                                {size}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormDescription>
+                        Average number of readers per post
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
