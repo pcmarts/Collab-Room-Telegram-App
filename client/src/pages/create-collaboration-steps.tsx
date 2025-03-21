@@ -365,6 +365,40 @@ export default function CreateCollaborationSteps({
           return false;
         }
         break;
+        
+      // Live Stream Guest Appearance validations
+      case "livestream_short_description":
+        const livestreamDescription = form.getValues("description");
+        if (!livestreamDescription || livestreamDescription.trim() === "") {
+          toast({
+            title: "Please enter a short description for your livestream",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+
+      case "livestream_previous_link":
+        const previousStreamLink = form.getValues("details.previous_stream_link");
+        if (!previousStreamLink || previousStreamLink.trim() === "" || previousStreamLink === "https://www.") {
+          toast({
+            title: "Please enter a previous livestream link",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+
+      case "livestream_audience_size":
+        const expectedAudienceSize = form.getValues("details.expected_audience_size");
+        if (!expectedAudienceSize) {
+          toast({
+            title: "Please select an expected audience size",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
       
       // Add more validation as needed for other fields
     }
