@@ -389,6 +389,17 @@ export default function CreateCollaborationSteps({
         }
         break;
 
+      case "livestream_title":
+        const livestreamTitle = form.getValues("details.title");
+        if (!livestreamTitle || livestreamTitle.trim() === "") {
+          toast({
+            title: "Please enter a title for your livestream",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
       case "livestream_audience_size":
         const expectedAudienceSize = form.getValues("details.expected_audience_size");
         if (!expectedAudienceSize) {
@@ -1264,6 +1275,40 @@ export default function CreateCollaborationSteps({
       shouldShow: () => selectedCollabType === "Co-Marketing on Twitter"
     },
     // Live Stream Guest Appearance form fields
+    {
+      id: "livestream_title",
+      title: "Livestream Title",
+      description: "Enter the title of your livestream",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.title"
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Livestream Title</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter a title for your livestream"
+                    className="h-8 text-xs"
+                    value={displayValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    name={field.name}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Live Stream Guest Appearance"
+    },
     {
       id: "livestream_short_description",
       title: "Short Description",
