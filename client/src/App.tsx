@@ -21,6 +21,7 @@ import ApplicationForm from "@/pages/application-form";
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
 import DiscoveryFilters from "@/pages/discovery-filters";
 import DiscoveryFiltersNew from "@/pages/discovery-filters-new";
+import DiscoveryFiltersRebuild from "@/pages/discovery-filters-new-rebuild";
 // Conference coffee feature removed
 import ProfileOverview from "@/pages/profile-overview";
 import AdminDashboard from "@/pages/admin/dashboard";
@@ -104,8 +105,9 @@ function Router() {
 
           {/* Existing Routes */}
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/discovery-filters" component={DiscoveryFiltersNew} />
+          <Route path="/discovery-filters" component={DiscoveryFiltersRebuild} />
           <Route path="/discovery-filters-old" component={DiscoveryFilters} />
+          <Route path="/discovery-filters-v1" component={DiscoveryFiltersNew} />
           <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
           
           {/* Filter Routes (New) */}
