@@ -284,8 +284,8 @@ export default function DiscoveryFilters() {
       // Prepare data for API
       const data = {
         // Filter values using the exact field names expected by the backend 
-        collab_types: formValues.collabTypes,
-        preferred_topics: selectedTopics,
+        collabs_to_discover: formValues.collabTypes, // Server expects collabs_to_discover instead of collab_types
+        filtered_marketing_topics: selectedTopics, // Server expects filtered_marketing_topics instead of preferred_topics
         company_tags: formValues.companySectors, // Backend expects company_tags (not company_sectors)
         company_twitter_followers: formValues.companyFollowers, // Standardized field name for follower count
         funding_stages: formValues.fundingStages,
