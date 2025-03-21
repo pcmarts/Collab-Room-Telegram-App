@@ -388,15 +388,13 @@ export default function CreateCollaborationSteps({
       // Log full raw details for debugging
       console.log("Raw form details:", rawDetails);
       
-      // Extract the description from the appropriate field based on collaboration type
-      // and set it in the common description field at the root level
-      if (data.collab_type === "Co-Marketing on Twitter") {
-        console.log("Twitter co-marketing description:", rawDetails?.short_description);
-        // Set the description field at the root level from the short_description in details
-        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
-      } else {
-        // For all other types, also use the short_description from details
-        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+      // We're now using the root-level description field directly, so we don't need to extract it
+      // from the details.short_description field anymore. This makes short_description optional in details.
+      console.log("Description from form:", data.description);
+      
+      // Ensure description is always a string
+      if (typeof data.description !== 'string') {
+        data.description = "";
       }
       
       // Log the extracted common description
@@ -423,8 +421,10 @@ export default function CreateCollaborationSteps({
         console.log("Twitter Spaces Guest AFTER formatting:", data.details);
         console.log("  - Extracted description moved to common field:", data.description);
       } else if (data.collab_type === "Live Stream Guest Appearance") {
-        // Extract the description from the details object to the common field
-        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+        // Using the root-level description field, ensure it's a string
+        if (typeof data.description !== 'string') {
+          data.description = "";
+        }
         
         data.details = {
           title: typeof rawDetails?.title === 'string' ? rawDetails.title : "",
@@ -436,8 +436,10 @@ export default function CreateCollaborationSteps({
           topics: Array.isArray(rawDetails?.topics) ? rawDetails.topics : [],
         };
       } else if (data.collab_type === "Report & Research Feature") {
-        // Extract the description from the details object to the common field
-        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+        // Using the root-level description field, ensure it's a string
+        if (typeof data.description !== 'string') {
+          data.description = "";
+        }
         
         data.details = {
           research_topic: Array.isArray(rawDetails?.research_topic) ? rawDetails.research_topic : [],
@@ -446,8 +448,10 @@ export default function CreateCollaborationSteps({
           estimated_release_date: typeof rawDetails?.estimated_release_date === 'string' ? rawDetails.estimated_release_date : "",
         };
       } else if (data.collab_type === "Newsletter Feature") {
-        // Extract the description from the details object to the common field
-        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+        // Using the root-level description field, ensure it's a string
+        if (typeof data.description !== 'string') {
+          data.description = "";
+        }
         
         data.details = {
           newsletter_name: typeof rawDetails?.newsletter_name === 'string' ? rawDetails.newsletter_name : "",
@@ -458,8 +462,10 @@ export default function CreateCollaborationSteps({
           topics: Array.isArray(rawDetails?.topics) ? rawDetails.topics : [],
         };
       } else if (data.collab_type === "Blog Post Feature") {
-        // Extract the description from the details object to the common field
-        data.description = typeof rawDetails?.short_description === 'string' ? rawDetails.short_description : "";
+        // Using the root-level description field, ensure it's a string
+        if (typeof data.description !== 'string') {
+          data.description = "";
+        }
         
         data.details = {
           blog_topic: typeof rawDetails?.blog_topic === 'string' ? rawDetails.blog_topic : "",
@@ -980,7 +986,7 @@ export default function CreateCollaborationSteps({
           {/* Twitter Space Topic Field */}
           <FormField
             control={form.control}
-            name="details.short_description"
+            name="description"
             render={({ field }) => {
               // Ensure field value is always a string
               const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
@@ -988,10 +994,10 @@ export default function CreateCollaborationSteps({
               // Add an effect to make sure the field gets properly updated
               useEffect(() => {
                 // This ensures the field gets properly registered with the form
-                form.register("details.short_description");
+                form.register("description");
                 
                 // Debug the field value
-                console.log("Twitter Spaces short_description field:", field.value);
+                console.log("Twitter Spaces description field:", field.value);
               }, [field.value, form]);
               
               return (
@@ -1005,7 +1011,7 @@ export default function CreateCollaborationSteps({
                       value={displayValue}
                       onChange={(e) => {
                         field.onChange(e.target.value);
-                        console.log("Short description updated:", e.target.value);
+                        console.log("Description updated:", e.target.value);
                       }}
                       onBlur={field.onBlur}
                       ref={field.ref}
@@ -1182,7 +1188,7 @@ export default function CreateCollaborationSteps({
       render: () => (
         <FormField
           control={form.control}
-          name="details.short_description"
+          name="description"
           render={({ field }) => {
             // Ensure field value is always a string
             const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
