@@ -1455,6 +1455,143 @@ export default function CreateCollaborationSteps({
           )}
         />
       )
+    },
+    // Report & Research Feature steps
+    {
+      id: "research_report_description",
+      title: "Short Description",
+      description: "Briefly describe your research report",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => {
+            // Ensure field value is always a string
+            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            
+            return (
+              <FormItem className="space-y-1 pt-0">
+                <FormLabel className="mb-0 text-sm">Short Description</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="What is your research report about? Briefly describe it." 
+                    className="min-h-[60px] text-xs"
+                    maxLength={200}
+                    value={displayValue}
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      console.log("Research description updated:", e.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                </FormControl>
+                <FormDescription className="text-[10px]">
+                  A brief description of your research report (max 200 characters)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Report & Research Feature"
+    },
+    {
+      id: "research_topic",
+      title: "Research Topic",
+      description: "What is the topic of your research?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.research_topic"
+          render={({ field }) => {
+            // Ensure field value is always an array
+            const topicsValue = Array.isArray(field.value) ? field.value : [];
+            
+            return (
+              <FormItem className="space-y-1">
+                <FormLabel className="mb-0 text-sm">Research Topic</FormLabel>
+                <FormControl>
+                  <MultiSelect
+                    placeholder="Select research topics"
+                    options={COLLAB_TOPICS.map(topic => ({ label: topic, value: topic }))}
+                    selected={topicsValue.map(topic => ({ label: topic, value: topic }))}
+                    onChange={(selected) => {
+                      const values = selected.map(item => item.value);
+                      field.onChange(values);
+                    }}
+                    className="min-h-[35px] text-xs"
+                  />
+                </FormControl>
+                <FormDescription className="text-[10px]">
+                  Select one or more topics for your research report
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Report & Research Feature"
+    },
+    {
+      id: "target_audience",
+      title: "Target Audience",
+      description: "Who is the target audience for your research?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.target_audience"
+          render={({ field }) => (
+            <FormItem className="space-y-1">
+              <FormLabel className="mb-0 text-sm">Target Audience</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Who is your report aimed at?" 
+                  className="h-8 text-xs"
+                  {...field}
+                  value={field.value || ""}
+                />
+              </FormControl>
+              <FormDescription className="text-[10px]">
+                Describe who will benefit most from your research
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Report & Research Feature"
+    },
+    {
+      id: "estimated_release_date",
+      title: "Estimated Release Date",
+      description: "When do you plan to release this research?",
+      render: () => (
+        <FormField
+          control={form.control}
+          name="details.estimated_release_date"
+          render={({ field }) => (
+            <FormItem className="space-y-1">
+              <FormLabel className="mb-0 text-sm">Estimated Release Date</FormLabel>
+              <FormControl>
+                <Input 
+                  type="date" 
+                  className="h-8 text-xs"
+                  {...field}
+                  value={field.value || ""}
+                />
+              </FormControl>
+              <FormDescription className="text-[10px]">
+                When do you expect to publish your research?
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ),
+      shouldShow: () => selectedCollabType === "Report & Research Feature"
     }
   ];
 
