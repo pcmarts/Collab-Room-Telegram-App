@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 
 export const WavyBackground = ({
@@ -26,38 +26,16 @@ export const WavyBackground = ({
 }) => {
   const [wavePaths, setWavePaths] = useState<string[]>([]);
   const [animationDuration, setAnimationDuration] = useState<number>(0);
-
+  const [isBrowser, setIsBrowser] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(1000); // Default value
+  
+  // Set animation duration based on speed
   useEffect(() => {
     setAnimationDuration(speed === "fast" ? 15 : 25);
   }, [speed]);
-
-  useEffect(() => {
-    // Generate wave paths when component mounts
-    generateWavePaths();
-
-    // Update paths on window resize
-    window.addEventListener("resize", generateWavePaths);
-    return () => {
-      window.removeEventListener("resize", generateWavePaths);
-    };
-  }, [waveWidth]);
-
-  const generateWavePaths = () => {
-    const newPaths: string[] = [];
-    const height = 200; // Fixed height for SVG
-    const width = window.innerWidth;
-
-    // Ensure we have at least as many paths as colors
-    for (let i = 0; i < colors.length; i++) {
-      const randomOffset = Math.random() * 10;
-      const path = createWavePath(width, height, waveWidth, randomOffset);
-      newPaths.push(path);
-    }
-
-    setWavePaths(newPaths);
-  };
-
-  const createWavePath = (
+  
+  // Create the wave path
+  const createWavePath = useCallback((
     width: number,
     height: number,
     waveWidth: number,
@@ -84,53 +62,96 @@ export const WavyBackground = ({
     // Complete the path by connecting to the bottom corners
     path += ` L ${width} ${height} L 0 ${height} Z`;
     return path;
-  };
+  }, []);
 
+  // Generate wave paths
+  const generateWavePaths = useCallback(() => {
+    if (!isBrowser) return;
+    
+    const newPaths: string[] = [];
+    const height = 200; // Fixed height for SVG
+    const width = viewportWidth;
+
+    // Ensure we have at least as many paths as colors
+    for (let i = 0; i < colors.length; i++) {
+      const randomOffset = Math.random() * 10;
+      const path = createWavePath(width, height, waveWidth, randomOffset);
+      newPaths.push(path);
+    }
+
+    setWavePaths(newPaths);
+  }, [isBrowser, viewportWidth, waveWidth, colors, createWavePath]);
+
+  // On mount, set isBrowser to true and get the actual window width
+  useEffect(() => {
+    setIsBrowser(true);
+    setViewportWidth(window.innerWidth);
+    
+    // Update on resize
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
+      generateWavePaths();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [generateWavePaths]);
+  
+  // Generate wave paths when browser is ready
+  useEffect(() => {
+    if (isBrowser) {
+      generateWavePaths();
+    }
+  }, [isBrowser, generateWavePaths]);
+
+  // Only render the full component on the client
   return (
     <div
       className={`relative w-full overflow-hidden ${containerClassName}`}
       {...props}
     >
-      <svg
-        className="absolute inset-0 w-full z-0"
-        preserveAspectRatio="none"
-        viewBox={`0 0 ${window.innerWidth} 200`}
-        xmlns="http://www.w3.org/2000/svg"
-        style={{
-          filter: `blur(${blur}px)`,
-          opacity: waveOpacity,
-          zIndex: -1,
-        }}
-      >
-        <rect
-          x="0"
-          y="0"
-          width="100%"
-          height="200"
-          fill={backgroundFill}
-        />
-        {wavePaths.map((path, index) => (
-          <motion.path
-            key={index}
-            d={path}
-            fill={colors[index % colors.length]}
-            animate={{
-              d: createWavePath(
-                window.innerWidth,
-                200,
-                waveWidth,
-                Math.random() * 10
-              ),
-            }}
-            transition={{
-              duration: animationDuration,
-              repeat: Infinity,
-              repeatType: "mirror",
-              ease: "easeInOut",
-            }}
+      {isBrowser && (
+        <svg
+          className="absolute inset-0 w-full z-0"
+          preserveAspectRatio="none"
+          viewBox={`0 0 ${viewportWidth} 200`}
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            filter: `blur(${blur}px)`,
+            opacity: waveOpacity,
+            zIndex: -1,
+          }}
+        >
+          <rect
+            x="0"
+            y="0"
+            width="100%"
+            height="200"
+            fill={backgroundFill}
           />
-        ))}
-      </svg>
+          {wavePaths.map((path, index) => (
+            <motion.path
+              key={index}
+              d={path}
+              fill={colors[index % colors.length]}
+              animate={{
+                d: createWavePath(
+                  viewportWidth,
+                  200,
+                  waveWidth,
+                  Math.random() * 10
+                ),
+              }}
+              transition={{
+                duration: animationDuration,
+                repeat: Infinity,
+                repeatType: "mirror",
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+        </svg>
+      )}
 
       <div className={`relative z-10 ${className}`}>{children}</div>
     </div>
