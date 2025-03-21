@@ -369,6 +369,7 @@ export const collaborations = pgTable('collaborations', {
   creator_id: uuid('creator_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   collab_type: text('collab_type').notNull(),
   status: text('status').notNull().default('active'),
+  description: text('description'), // Common description field for all collaboration types
   // Common filtering criteria
   topics: text('topics').array(), // Standardized topics for the collaboration
   
@@ -590,6 +591,7 @@ export const twitterCoMarketingDetailsSchema = z.object({
 // Create a Collaboration schema that combines all the types
 export const createCollaborationSchema = z.object({
   collab_type: z.enum(COLLAB_TYPES),
+  description: z.string().max(200, "Description must be less than 200 characters"),
   date_type: z.enum(["any_future_date", "specific_date"]),
   specific_date: z.string().optional(),
   

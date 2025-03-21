@@ -73,6 +73,7 @@ export default function CreateCollaborationSteps({
     resolver: zodResolver(createCollaborationSchema),
     defaultValues: {
       collab_type: COLLAB_TYPES[0],
+      description: "", // Common description field for all collaboration types
       date_type: "specific_date",
       specific_date: new Date().toISOString().split("T")[0],
       topics: [],
@@ -92,7 +93,7 @@ export default function CreateCollaborationSteps({
       details: {
         // Default values for different collaboration types to prevent field bleeding
         // Twitter spaces defaults
-        short_description: "",
+        short_description: "", // Will be removed in favor of common description field
         topic: "",
         host_twitter_handle: "",
         host_follower_count: "",
