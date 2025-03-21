@@ -335,18 +335,7 @@ export default function DiscoveryFiltersNew() {
     }
   };
   
-  // Apply styles for the full-height page
-  useEffect(() => {
-    document.documentElement.style.height = '100%';
-    document.body.style.height = '100%';
-    document.body.style.overflow = 'auto';
-    
-    return () => {
-      document.documentElement.style.removeProperty('height');
-      document.body.style.removeProperty('height');
-      document.body.style.removeProperty('overflow');
-    };
-  }, []);
+  // No full-height styles needed anymore, they were causing scroll issues
   
   if (isLoadingPrefs) {
     return (
@@ -359,7 +348,7 @@ export default function DiscoveryFiltersNew() {
   
   return (
     <MobileCheck>
-      <div className="container pb-32">
+      <div className="container">
         <PageHeader
           title="Discovery Filters"
           subtitle="Customize which collaborations appear in your discover feed"
@@ -367,7 +356,7 @@ export default function DiscoveryFiltersNew() {
         />
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-24">
             {/* Main filters card */}
             <Card>
               <CardContent className="p-4 pt-6 space-y-6">
@@ -1058,7 +1047,7 @@ export default function DiscoveryFiltersNew() {
         </Form>
         
         {/* Fixed position action buttons that stay at the bottom even when scrolling */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t flex flex-col sm:flex-row gap-4 justify-end z-50">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t shadow-md flex flex-col sm:flex-row gap-4 justify-end z-50">
           <Button
             variant="outline"
             type="button"
