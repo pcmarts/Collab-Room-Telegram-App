@@ -1,29 +1,19 @@
 import { useRef, useEffect, useState } from "react";
 import { motion, useMotionValue, useAnimation } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { GlowingBorderCard } from "./GlowingBorderCard";
 
-interface SwipeableCardProps {
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-  onVote: (result: boolean) => void;
-  id?: string;
-  glowColor?: string;
-  [key: string]: any;
-}
-
-export const SwipeableCard = ({ children, style, onVote, id, glowColor, ...props }: SwipeableCardProps) => {
+export const SwipeableCard = ({ children, style, onVote, id, ...props }) => {
   // motion stuff
-  const cardElem = useRef<HTMLDivElement>(null);
+  const cardElem = useRef(null);
 
   const x = useMotionValue(0);
   const controls = useAnimation();
 
-  const [constrained, setConstrained] = useState<boolean>(true);
-  const [direction, setDirection] = useState<"left" | "right" | undefined>(undefined);
-  const [velocity, setVelocity] = useState<number>(0);
+  const [constrained, setConstrained] = useState(true);
+  const [direction, setDirection] = useState();
+  const [velocity, setVelocity] = useState();
 
-  const getVote = (childNode: HTMLElement, parentNode: HTMLElement) => {
+  const getVote = (childNode, parentNode) => {
     const childRect = childNode.getBoundingClientRect();
     const parentRect = parentNode.getBoundingClientRect();
     let result =
@@ -36,7 +26,7 @@ export const SwipeableCard = ({ children, style, onVote, id, glowColor, ...props
   };
 
   // determine direction of swipe based on velocity
-  const getDirection = (): "left" | "right" | undefined => {
+  const getDirection = () => {
     return velocity >= 1 ? "right" : velocity <= -1 ? "left" : undefined;
   };
 
@@ -45,14 +35,12 @@ export const SwipeableCard = ({ children, style, onVote, id, glowColor, ...props
     setDirection(getDirection());
   };
 
-  const flyAway = (min: number) => {
-    const flyAwayDistance = (dir: "left" | "right") => {
-      if (!cardElem.current || !cardElem.current.parentElement) return 0;
-      
-      const parentWidth = cardElem.current.parentElement.getBoundingClientRect().width;
+  const flyAway = (min) => {
+    const flyAwayDistance = (direction) => {
+      const parentWidth = cardElem.current.parentNode.getBoundingClientRect()
+        .width;
       const childWidth = cardElem.current.getBoundingClientRect().width;
-      
-      return dir === "left"
+      return direction === "left"
         ? -parentWidth / 2 - childWidth / 2
         : parentWidth / 2 + childWidth / 2;
     };
@@ -67,18 +55,16 @@ export const SwipeableCard = ({ children, style, onVote, id, glowColor, ...props
 
   useEffect(() => {
     const unsubscribeX = x.onChange(() => {
-      if (cardElem.current && cardElem.current.parentElement) {
+      if (cardElem.current) {
         const childNode = cardElem.current;
-        const parentNode = cardElem.current.parentElement;
+        const parentNode = cardElem.current.parentNode;
         const result = getVote(childNode, parentNode);
-        if (result !== undefined) {
-          onVote(result);
-        }
+        result !== undefined && onVote(result);
       }
     });
 
     return () => unsubscribeX();
-  }, [onVote, x]);
+  });
 
   return (
     <motion.div
@@ -86,18 +72,16 @@ export const SwipeableCard = ({ children, style, onVote, id, glowColor, ...props
       dragConstraints={constrained && { left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={1}
       ref={cardElem}
-      style={{ x, position: "absolute", width: "100%", height: "100%" }}
+      style={{ x, position: "absolute" }}
       drag="x"
       onDrag={getTrajectory}
       onDragEnd={() => flyAway(500)}
       whileTap={{ scale: 1.1 }}
       {...props}
     >
-      <GlowingBorderCard className="w-full h-full" glowColor={glowColor}>
-        <div className="p-6 select-none">
-          {children}
-        </div>
-      </GlowingBorderCard>
+      <Card className="w-full h-full p-6 select-none">
+        {children}
+      </Card>
     </motion.div>
   );
 };
