@@ -512,6 +512,108 @@ export default function DiscoveryFilters() {
                     )}
                   </div>
                   
+                  {/* Blockchain Networks Filter */}
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <h3 className="text-base font-medium">Filter by Blockchain Networks</h3>
+                        <p className="text-sm text-gray-500">
+                          Only show collaborations from companies building on these networks
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {filtersEnabled.blockchainNetworks && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleFilterExpansion('blockchainNetworks')}
+                            className="h-8 w-8"
+                            title={filtersExpanded.blockchainNetworks ? "Collapse" : "Expand"}
+                          >
+                            {filtersExpanded.blockchainNetworks ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                        <Switch 
+                          checked={filtersEnabled.blockchainNetworks}
+                          onCheckedChange={() => toggleFilter('blockchainNetworks')}
+                        />
+                      </div>
+                    </div>
+                    
+                    {filtersEnabled.blockchainNetworks && filtersExpanded.blockchainNetworks && (
+                      <div className="border rounded-lg p-4 bg-background mt-2">
+                        <FormField
+                          control={form.control}
+                          name="blockchainNetworks"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="space-y-4">
+                                {/* Show selection count */}
+                                {field.value.length > 0 && (
+                                  <div className="flex justify-between items-center">
+                                    <Badge variant="secondary" className="text-xs">
+                                      {field.value.length} {field.value.length === 1 ? 'network' : 'networks'} selected
+                                    </Badge>
+                                  </div>
+                                )}
+                                
+                                {/* Categorized network selection */}
+                                {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
+                                  <div key={category} className="border rounded p-3">
+                                    <div 
+                                      className="flex justify-between items-center cursor-pointer mb-2"
+                                      onClick={() => toggleCategory(category)}
+                                    >
+                                      <div className="font-medium">{category}</div>
+                                      <div>
+                                        {expandedCategories.includes(category) ? 
+                                          <ChevronUp className="h-4 w-4" /> : 
+                                          <ChevronDown className="h-4 w-4" />
+                                        }
+                                      </div>
+                                    </div>
+                                    
+                                    {expandedCategories.includes(category) && (
+                                      <div className="space-y-2 ml-2">
+                                        {([...networks] as string[]).map((network) => (
+                                          <div key={network} className="flex items-center space-x-2">
+                                            <Checkbox
+                                              id={`network-${network}`}
+                                              checked={field.value.includes(network)}
+                                              onCheckedChange={(checked) => {
+                                                return checked
+                                                  ? field.onChange([...field.value, network])
+                                                  : field.onChange(
+                                                      field.value?.filter(
+                                                        (value) => value !== network
+                                                      )
+                                                    );
+                                              }}
+                                            />
+                                            <label
+                                              htmlFor={`network-${network}`}
+                                              className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                              {network}
+                                            </label>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
                   {/* Company Sectors Filter */}
                   <div>
                     <div className="flex justify-between items-center mb-4">
