@@ -16,7 +16,6 @@ import {
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
-import WavyBackground from "@/components/WavyBackground";
 
 import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
@@ -982,23 +981,11 @@ export default function DiscoverPage() {
   };
 
   return (
-    <div className="telegram-app min-h-[100svh] flex flex-col overflow-hidden bg-gradient-to-b from-purple-900/30 to-black/50" ref={pageRef}>
+    <div className="telegram-app min-h-[100svh] bg-background flex flex-col" ref={pageRef}>
       {/* Include the CSS styling component */}
       <MyCollabStyles />
       
-      {/* Add Wavy Background with purple hues */}
-      <WavyBackground 
-        colors={["#a855f7", "#9333ea", "#7e22ce", "#6b21a8"]} 
-        waveWidth={50}
-        backgroundFill="rgba(255, 255, 255, 0.0)"
-        blur={10}
-        waveOpacity={0.7}
-        speed="fast"
-        className="absolute inset-0 z-0"
-        containerClassName="absolute inset-0"
-      />
-      
-      <div className="container max-w-md mx-auto py-4 flex-grow flex flex-col relative z-10">
+      <div className="container max-w-md mx-auto py-4 flex-grow flex flex-col">
         <div className="flex justify-between items-center mb-2 px-4">
           <h1 className="text-2xl font-bold p-2">Discover</h1>
           <Button 
