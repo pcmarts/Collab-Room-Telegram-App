@@ -60,7 +60,7 @@ type FilterFormValues = z.infer<typeof filterFormSchema>;
 
 export default function DiscoveryFiltersNew() {
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
   const [loading, setLoading] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   
