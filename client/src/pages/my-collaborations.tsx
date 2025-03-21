@@ -479,7 +479,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 (collab.collab_type === 'Newsletter' && 'newsletter_name' in collab.details) ||
                 ('expectations' in collab.details && collab.details.expectations) ||
                 (collab.topics && collab.topics.length > 0)) && (
-                <div className="mb-2 p-3 rounded-md bg-accent/30">
+                <div className="mb-2 space-y-3">
                   {/* Podcast details */}
                   {collab.collab_type === 'Podcast' && 'podcast_name' in collab.details && (
                     <div className="space-y-2">
@@ -497,7 +497,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                         <p className="text-sm font-medium">Host: {collab.details.host_handle}</p>
                       )}
                       {'topic' in collab.details && collab.details.topic && (
-                        <p className="text-xs text-white opacity-80">Topic: {collab.details.topic}</p>
+                        <p className="text-xs text-muted-foreground">Topic: {collab.details.topic}</p>
                       )}
                       {'host_followers' in collab.details && collab.details.host_followers && (
                         <p className="text-xs text-white opacity-80">Host Followers: {collab.details.host_followers}</p>
