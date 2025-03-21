@@ -1,4 +1,5 @@
-import { Pool } from 'pg';
+// Using CommonJS syntax instead of ESM
+const { Pool } = require('pg');
 
 // Direct SQL execution approach - no ORM dependencies
 const connectionString = process.env.DATABASE_URL;
