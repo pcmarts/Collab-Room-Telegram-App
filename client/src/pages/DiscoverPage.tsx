@@ -752,6 +752,13 @@ export default function DiscoverPage() {
   
   // Safely access cards array
   const cards = Array.isArray(data) ? data : [];
+  
+  // Debug: Add detailed logging for cards
+  useEffect(() => {
+    console.log('Cards data updated:', cards);
+    console.log('Number of cards:', cards.length);
+    console.log('First card if available:', cards[0]);
+  }, [cards]);
   const cardElem = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const [location, setLocation] = useLocation();

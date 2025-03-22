@@ -384,6 +384,20 @@ export class DatabaseStorage implements IStorage {
       !swipedCollaborationIds.includes(collab.id)
     );
     
+    // Debug log
+    console.log(`getDiscoveryCards - Found ${discoveryCards.length} cards for user ${userId}`);
+    if (discoveryCards.length > 0) {
+      console.log('Example card structure:', 
+        JSON.stringify({
+          id: discoveryCards[0].id,
+          creator_id: discoveryCards[0].creator_id,
+          collab_type: discoveryCards[0].collab_type,
+          description: discoveryCards[0].description,
+          // Add more fields as needed for debugging
+        })
+      );
+    }
+    
     return discoveryCards;
   }
   
