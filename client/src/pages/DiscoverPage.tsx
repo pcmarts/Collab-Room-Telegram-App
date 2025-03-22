@@ -744,7 +744,9 @@ export default function DiscoverPage() {
     queryKey: ['/api/discovery/cards'],
     queryFn: async () => {
       const result = await apiRequest('/api/discovery/cards');
-      return result as Collaboration[];
+      console.log('Discovery cards response:', result);
+      // Convert the response to our expected format, safely handling any data issues
+      return Array.isArray(result) ? result : [];
     }
   });
   

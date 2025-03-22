@@ -76,10 +76,10 @@ function getTelegramUserFromRequest(req: TelegramReq) {
       if (process.env.NODE_ENV !== 'production') {
         console.log('Using development fallback for Telegram data');
         return {
-          id: '123456789',
-          first_name: 'Dev',
-          last_name: 'Test',
-          username: 'dev_user'
+          id: '1211030693', // Paul Martin's Telegram ID (has 7 collaborations)
+          first_name: 'Paul',
+          last_name: 'Martin',
+          username: 'paul_tester'
         };
       }
       
