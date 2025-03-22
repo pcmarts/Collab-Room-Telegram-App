@@ -34,17 +34,32 @@ As of the latest update, only the first two rules are enforced to maximize the n
 The Discovery System is supported by the following API endpoints:
 
 - `GET /api/collaborations/search`: Retrieves collaborations based on filter criteria
-- `GET /api/discovery-cards`: Retrieves cards for the discovery feed (filtering out user's own collaborations)
+  - Implemented in `server/routes.ts` with support for various filter parameters
+  - Excludes collaborations created by the current user
+  - Returns properly formatted JSON data for the discovery feed
+
+## API Implementation Notes
+
+The API implementation has the following characteristics:
+
+1. **Error Handling**: Proper error handling with meaningful error messages
+2. **Filtering**: Backend filtering based on user preferences (when enabled)
+3. **Performance**: Optimized database queries to minimize response time
+4. **Debugging**: Enhanced logging to troubleshoot any issues
+
+A recent fix removed a duplicate route that was causing conflicts for the `/api/collaborations/search` endpoint, ensuring proper request handling.
 
 ## Debugging
 
-For debugging purposes, logs are added at various points in the collaboration filtering process:
+For debugging purposes, comprehensive logs are added at various points in the collaboration filtering process:
 
 ```typescript
 // Example debug logging in searchCollaborations method
 console.log(`DEBUG: searchCollaborations: Retrieved ${collabs.length} active collaborations`);
 console.log(`DEBUG: searchCollaborations: After excluding user's own, ${filteredCollabs.length} remain`);
 ```
+
+The client-side implementation in `DiscoverPage.tsx` also includes error logging to help diagnose any issues with the API integration.
 
 ## User Interface
 
@@ -53,6 +68,19 @@ The Discovery interface is implemented in `client/src/pages/DiscoverPage.tsx` an
 - `Stack`: Container component that manages the stack of cards
 - `SwipeableCard`: Individual card component with swipe gestures
 - `CollaborationDialog`: Modal component for displaying collaboration details
+- `MatchNotification`: Component that displays when a match is found
+
+### Client-Side Implementation
+
+The client-side implementation in DiscoverPage.tsx has the following key features:
+
+1. **API Integration**: Uses React Query to fetch collaborations from the `/api/collaborations/search` endpoint
+2. **State Management**: Manages the state of cards, swipe history, and user interactions
+3. **Error Handling**: Displays appropriate error messages when API requests fail
+4. **Loading States**: Shows loading indicators during data fetching
+5. **Responsive Design**: Adapts to different screen sizes and orientations
+
+The implementation was recently improved to use the standard React Query configuration pattern rather than a custom implementation, which provides better error handling and caching capabilities.
 
 ## Customization Options
 

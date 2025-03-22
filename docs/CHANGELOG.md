@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Identified why only certain collaborations (specifically research reports) were showing up in the discovery feed
 - Added detailed debug logging to the `searchCollaborations` and `getDiscoveryCards` methods for better visibility
+- Resolved duplicate route conflict for `/api/collaborations/search` endpoint that was causing API errors
+- Updated client-side API fetch in DiscoverPage to use standard React Query configuration
+- Improved error handling and debug logging in API requests
+- Fixed inconsistent variable naming in server-side collaboration filtering
 
 ## [1.0.0] - 2025-03-22
 
