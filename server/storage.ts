@@ -223,66 +223,66 @@ export class DatabaseStorage implements IStorage {
   }
   
   async searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
-    console.log(`DEBUG: searchCollaborations called for user ${userId} with filters:`, JSON.stringify(filters));
+    // First get the user's marketing preferences to apply any filtering
+    const marketingPrefs = await this.getUserMarketingPreferences(userId);
     
-    // Build the base query - only filter out user's own collaborations and inactive ones
+    // Build the base query
     let query = db
       .select()
       .from(collaborations)
       .where(
         and(
-          not(eq(collaborations.creator_id, userId)), // Only exclude collaborations created by the user
-          eq(collaborations.status, 'active')         // Only include active collaborations
+          not(eq(collaborations.creator_id, userId)),
+          eq(collaborations.status, 'active')
         )
       );
     
-    console.log('DEBUG: Base query filter - excluding only user\'s own collaborations and inactive ones');
-    
-    // Optional filters - these will only be applied if explicitly requested in the API call
-    // and won't be automatically applied based on user preferences
-    
-    // Apply type filters from request if provided
+    // Apply type filters from request
     if (filters.collabTypes && filters.collabTypes.length > 0) {
-      console.log(`DEBUG: Applying collabTypes filter: ${filters.collabTypes.join(', ')}`);
       query = query.where(inArray(collaborations.collab_type, filters.collabTypes));
     }
     
-    // Apply company tags filter if provided
-    if (filters.companyTags && filters.companyTags.length > 0) {
-      console.log(`DEBUG: Applying companyTags filter: ${filters.companyTags.join(', ')}`);
-      query = query.where(sql`${collaborations.company_tags} && ${filters.companyTags}::text[]`);
+    // Apply topic filters if enabled in marketing preferences
+    if (marketingPrefs?.discovery_filter_topics_enabled && 
+        marketingPrefs?.filtered_marketing_topics && 
+        marketingPrefs.filtered_marketing_topics.length > 0) {
+      
+      console.log(`Filtering by excluded topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
+      
+      // This is a more complex filter - we want to exclude collaborations that have ANY of the filtered topics
+      query = query.where(sql`NOT (${collaborations.topics} && ${marketingPrefs.filtered_marketing_topics}::text[])`);
     }
     
-    // Apply explicit filters only if they were provided in the API request
-    if (filters.minCompanyFollowers) {
-      console.log(`DEBUG: Applying minCompanyFollowers filter: ${filters.minCompanyFollowers}`);
+    // Apply company followers filter if enabled
+    if (marketingPrefs?.discovery_filter_company_followers_enabled && filters.minCompanyFollowers) {
       query = query.where(sql`${collaborations.min_company_followers} >= ${filters.minCompanyFollowers}`);
     }
     
-    if (filters.minUserFollowers) {
-      console.log(`DEBUG: Applying minUserFollowers filter: ${filters.minUserFollowers}`);
+    // Apply user followers filter if enabled
+    if (marketingPrefs?.discovery_filter_user_followers_enabled && filters.minUserFollowers) {
       query = query.where(sql`${collaborations.min_user_followers} >= ${filters.minUserFollowers}`);
     }
     
-    if (filters.hasToken !== undefined) {
-      console.log(`DEBUG: Applying hasToken filter: ${filters.hasToken}`);
+    // Apply token status filter if enabled
+    if (marketingPrefs?.discovery_filter_token_status_enabled && filters.hasToken !== undefined) {
       query = query.where(eq(collaborations.required_token_status, filters.hasToken));
     }
     
-    if (filters.fundingStages && filters.fundingStages.length > 0) {
-      console.log(`DEBUG: Applying fundingStages filter: ${filters.fundingStages.join(', ')}`);
+    // Apply funding stages filter if enabled
+    if (marketingPrefs?.discovery_filter_funding_stages_enabled && 
+        filters.fundingStages && 
+        filters.fundingStages.length > 0) {
       query = query.where(sql`${collaborations.required_funding_stages} && ${filters.fundingStages}::text[]`);
     }
     
-    if (filters.blockchainNetworks && filters.blockchainNetworks.length > 0) {
-      console.log(`DEBUG: Applying blockchainNetworks filter: ${filters.blockchainNetworks.join(', ')}`);
+    // Apply blockchain networks filter if enabled
+    if (marketingPrefs?.discovery_filter_blockchain_networks_enabled && 
+        filters.blockchainNetworks && 
+        filters.blockchainNetworks.length > 0) {
       query = query.where(sql`${collaborations.company_blockchain_networks} && ${filters.blockchainNetworks}::text[]`);
     }
     
-    const result = await query.orderBy(desc(collaborations.created_at));
-    console.log(`DEBUG: searchCollaborations returned ${result.length} collaborations`);
-    
-    return result;
+    return query.orderBy(desc(collaborations.created_at));
   }
   
   async updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined> {
