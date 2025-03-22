@@ -1271,19 +1271,6 @@ export default function DiscoverPage() {
               </p>
             </div>
             
-            {/* Moved this section up */}
-            <div className="bg-muted/50 p-3 rounded-lg mb-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-sm font-medium">Swipe right to connect</h4>
-                  <p className="text-xs text-muted-foreground">
-                    A match will be created when both parties swipe right
-                  </p>
-                </div>
-                <Check className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-            
             <div className="mb-4 flex-1">
               <div className="rounded-lg bg-black/10 p-3 mb-4">
                 <p className="text-sm font-medium mb-1">Your Collab:</p>
