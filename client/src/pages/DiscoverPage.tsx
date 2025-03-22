@@ -1253,7 +1253,7 @@ export default function DiscoverPage() {
       const fullName = last_name ? `${first_name} ${last_name}` : first_name;
       
       return (
-        <div className="w-full h-full bg-background p-6 rounded-xl border-2 border-blue-200">
+        <div className="w-full h-full bg-background p-6 rounded-xl">
           <div className="flex flex-col h-full">
             <div className="mb-4">
               <Badge variant="outline" className="bg-primary/10 mb-2">
@@ -1443,7 +1443,7 @@ export default function DiscoverPage() {
               whileTap={{ cursor: "grabbing" }}
             >
               <Card 
-                className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing"
+                className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing border-2 border-blue-200"
               >
                 {renderCard(currentCard)}
 
