@@ -442,48 +442,26 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getDiscoveryCards(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
-    // Get all collaborations that match the filters using the existing search method
-    const allMatchingCollaborations = await this.searchCollaborations(userId, filters);
+    console.log(`getDiscoveryCards - SHOWING ALL ACTIVE COLLABORATIONS NOT BY USER (as requested)`);
     
-    console.log(`getDiscoveryCards - After applying filters, found ${allMatchingCollaborations.length} collaborations`);
-    if (allMatchingCollaborations.length > 0) {
-      // List all matching collaborations before swipe filtering
-      allMatchingCollaborations.forEach(collab => {
-        console.log(`Matched collab: ID ${collab.id}, Type: ${collab.collab_type}, Title: ${collab.title || 'No title'}`);
-      });
-    } else {
-      console.log(`No collaborations matched the filters - this is why nothing shows in discovery feed`);
-    }
-    
-    // Get all the collaborations this user has already swiped on
-    const userSwipes = await this.getUserSwipes(userId);
-    
-    console.log(`getDiscoveryCards - User has ${userSwipes.length} previous swipes`);
-    if (userSwipes.length > 0) {
-      // List all swipes for debugging
-      userSwipes.forEach(swipe => {
-        console.log(`User swiped ${swipe.direction} on collaboration ${swipe.collaboration_id} at ${swipe.created_at}`);
-      });
-    }
-    
-    // Extract the IDs of collaborations the user has already swiped on
-    const swipedCollaborationIds = userSwipes.map(swipe => swipe.collaboration_id);
-    
-    // Filter out any collaborations the user has already swiped on
-    const discoveryCards = allMatchingCollaborations.filter(collab => {
-      const isSwiped = swipedCollaborationIds.includes(collab.id);
-      if (isSwiped) {
-        console.log(`Excluding collaboration ${collab.id} (${collab.collab_type}) - already swiped`);
-      }
-      return !isSwiped;
-    });
+    // Get all active collaborations not created by this user directly, bypassing filters
+    const discoveryCards = await db
+      .select()
+      .from(collaborations)
+      .where(
+        and(
+          not(eq(collaborations.creator_id, userId)),
+          eq(collaborations.status, 'active')
+        )
+      )
+      .orderBy(desc(collaborations.created_at));
     
     // Debug log
-    console.log(`getDiscoveryCards - Final result: ${discoveryCards.length} cards for user ${userId}`);
+    console.log(`getDiscoveryCards - Found ${discoveryCards.length} active cards not created by user ${userId}`);
     if (discoveryCards.length > 0) {
       console.log('Cards to display in feed:');
       discoveryCards.forEach(card => {
-        console.log(`- Card ID: ${card.id}, Type: ${card.collab_type}, Title: ${card.title || 'No title'}`);
+        console.log(`- Card ID: ${card.id}, Type: ${card.collab_type}, Creator: ${card.creator_id}`);
       });
     }
     
