@@ -81,8 +81,8 @@ app.use((req, res, next) => {
       serveStatic(app);
     }
 
-    // ALWAYS serve the app on port 5001 (temporary change due to port conflict)
-    const port = 5001;
+    // Server needs to run on port 5000 for the Replit workflow
+    const port = 5000;
     server.listen({
       port,
       host: "0.0.0.0",

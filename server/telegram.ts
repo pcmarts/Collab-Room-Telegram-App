@@ -20,6 +20,7 @@ if (!process.env.REPLIT_DOMAINS) {
 
 // Get the webapp URL from environment
 const domain = process.env.REPLIT_DOMAINS.split(",")[0];
+// Use port 5001 explicitly as that's what our server is running on
 const WEBAPP_URL = `https://${domain}`;
 
 console.log("=== Telegram Bot Configuration ===");
