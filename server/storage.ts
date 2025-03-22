@@ -1,11 +1,13 @@
 import { 
   users, companies, collaborations, collab_applications, collab_notifications, 
   notification_preferences, marketing_preferences, conference_preferences,
+  swipes,
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication,
   type CollabNotification, type InsertCollabNotification,
-  type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
+  type NotificationPreferences, type MarketingPreferences, type ConferencePreferences,
+  type Swipe, type InsertSwipe
 } from "@shared/schema";
 import { z } from 'zod';
 import { db } from "./db";
@@ -24,6 +26,12 @@ export interface IStorage {
   getUserCollaborations(userId: string): Promise<Collaboration[]>;
   searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]>;
   updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined>;
+  
+  // Swipe methods
+  createSwipe(swipe: InsertSwipe): Promise<Swipe>;
+  getUserSwipes(userId: string): Promise<Swipe[]>;
+  getDiscoveryCards(userId: string, filters: CollaborationFilters): Promise<Collaboration[]>;
+  undoLastSwipe(userId: string): Promise<boolean>;
   
   // Collaboration applications
   applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication>;
@@ -305,6 +313,96 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error updating collaboration status:", error);
       throw error;
+    }
+  }
+  
+  // Swipe methods
+  async createSwipe(swipe: InsertSwipe): Promise<Swipe> {
+    try {
+      // Make sure direction is either 'left' or 'right'
+      if (swipe.direction !== 'left' && swipe.direction !== 'right') {
+        throw new Error('Invalid swipe direction. Direction must be either "left" or "right".');
+      }
+      
+      const [newSwipe] = await db
+        .insert(swipes)
+        .values(swipe)
+        .returning();
+      
+      // If this is a right swipe (request to collaborate), check for a match
+      if (swipe.direction === 'right') {
+        // Get the collaboration that was swiped on
+        const collaboration = await this.getCollaboration(swipe.collaboration_id);
+        
+        if (collaboration) {
+          // Create a notification for the collaboration creator about the interest
+          await this.createNotification({
+            user_id: collaboration.creator_id,
+            collaboration_id: collaboration.id,
+            type: 'new_interest',
+            content: `Someone is interested in your "${collaboration.collab_type}" collaboration.`,
+            is_read: false,
+            is_sent: false
+          });
+        }
+      }
+      
+      return newSwipe;
+    } catch (error) {
+      console.error("Error creating swipe:", error);
+      throw error;
+    }
+  }
+  
+  async getUserSwipes(userId: string): Promise<Swipe[]> {
+    return db
+      .select()
+      .from(swipes)
+      .where(eq(swipes.user_id, userId))
+      .orderBy(desc(swipes.created_at));
+  }
+  
+  async getDiscoveryCards(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
+    // Get all collaborations that match the filters using the existing search method
+    const allMatchingCollaborations = await this.searchCollaborations(userId, filters);
+    
+    // Get all the collaborations this user has already swiped on
+    const userSwipes = await this.getUserSwipes(userId);
+    
+    // Extract the IDs of collaborations the user has already swiped on
+    const swipedCollaborationIds = userSwipes.map(swipe => swipe.collaboration_id);
+    
+    // Filter out any collaborations the user has already swiped on
+    const discoveryCards = allMatchingCollaborations.filter(collab => 
+      !swipedCollaborationIds.includes(collab.id)
+    );
+    
+    return discoveryCards;
+  }
+  
+  async undoLastSwipe(userId: string): Promise<boolean> {
+    try {
+      // Get the user's most recent swipe
+      const [lastSwipe] = await db
+        .select()
+        .from(swipes)
+        .where(eq(swipes.user_id, userId))
+        .orderBy(desc(swipes.created_at))
+        .limit(1);
+      
+      if (!lastSwipe) {
+        return false; // No swipes to undo
+      }
+      
+      // Delete the last swipe
+      const result = await db
+        .delete(swipes)
+        .where(eq(swipes.id, lastSwipe.id));
+      
+      return true;
+    } catch (error) {
+      console.error("Error undoing last swipe:", error);
+      return false;
     }
   }
   

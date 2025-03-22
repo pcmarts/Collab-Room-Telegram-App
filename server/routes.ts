@@ -2185,6 +2185,178 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Get discovery cards for swiping
+  app.get("/api/discovery/cards", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Discovery Cards Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Query:', req.query);
+
+    try {
+      // Get Telegram user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Parse filters from query params
+      const filters = {
+        collabTypes: req.query.collabTypes ? (req.query.collabTypes as string).split(',') : undefined,
+        companyTags: req.query.companyTags ? (req.query.companyTags as string).split(',') : undefined,
+        minCompanyFollowers: req.query.minCompanyFollowers as string | undefined,
+        minUserFollowers: req.query.minUserFollowers as string | undefined,
+        hasToken: req.query.hasToken ? req.query.hasToken === 'true' : undefined,
+        fundingStages: req.query.fundingStages ? (req.query.fundingStages as string).split(',') : undefined,
+        blockchainNetworks: req.query.blockchainNetworks ? (req.query.blockchainNetworks as string).split(',') : undefined
+      };
+
+      // Get discovery cards (excludes already swiped collaborations)
+      const cards = await storage.getDiscoveryCards(user.id, filters);
+      return res.json(cards);
+
+    } catch (error) {
+      console.error('Failed to get discovery cards:', error);
+      res.status(500).json({ 
+        error: 'Failed to get discovery cards', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Record a swipe (left/right)
+  app.post("/api/swipes", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Create Swipe Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+
+    try {
+      // Get Telegram user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Validate request body
+      const { collaborationId, direction } = req.body;
+      if (!collaborationId || !direction) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      if (direction !== 'left' && direction !== 'right') {
+        return res.status(400).json({ error: 'Invalid direction, must be "left" or "right"' });
+      }
+
+      // Create the swipe record
+      const swipe = await storage.createSwipe({
+        user_id: user.id,
+        collaboration_id: collaborationId,
+        direction
+      });
+
+      // Check if this is a match (both parties swiped right on each other's collaborations)
+      let isMatch = false;
+      if (direction === 'right') {
+        // Get the collaboration that was swiped on
+        const collaboration = await storage.getCollaboration(collaborationId);
+        
+        if (collaboration) {
+          // Get the creator's collaborations
+          const creatorCollaborations = await storage.getUserCollaborations(collaboration.creator_id);
+          
+          // Get user's swipes on the creator's collaborations
+          const creatorSwipes = await storage.getUserSwipes(collaboration.creator_id);
+          
+          // Check if the creator has swiped right on any of the user's collaborations
+          const userCollaborations = await storage.getUserCollaborations(user.id);
+          const userCollabIds = userCollaborations.map(collab => collab.id);
+          
+          // Find right swipes from the creator on the user's collaborations
+          const matchingSwipes = creatorSwipes.filter(s => 
+            s.direction === 'right' && userCollabIds.includes(s.collaboration_id)
+          );
+          
+          if (matchingSwipes.length > 0) {
+            isMatch = true;
+            
+            // Create match notifications for both users
+            await storage.createNotification({
+              user_id: user.id,
+              collaboration_id: collaborationId,
+              type: 'match',
+              content: `You matched with ${collaboration.creator_name || 'someone'} on their "${collaboration.collab_type}" collaboration!`,
+              is_read: false,
+              is_sent: false
+            });
+            
+            // Also notify the collaboration creator
+            await storage.createNotification({
+              user_id: collaboration.creator_id,
+              collaboration_id: matchingSwipes[0].collaboration_id, // Use the first matched collab
+              type: 'match',
+              content: `You matched with ${user.first_name} ${user.last_name || ''} on your "${collaboration.collab_type}" collaboration!`,
+              is_read: false,
+              is_sent: false
+            });
+          }
+        }
+      }
+
+      return res.json({ swipe, isMatch });
+
+    } catch (error) {
+      console.error('Failed to create swipe:', error);
+      res.status(500).json({ 
+        error: 'Failed to create swipe', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Undo last swipe
+  app.post("/api/swipes/undo", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Undo Swipe Endpoint ============');
+    console.log('Headers:', req.headers);
+
+    try {
+      // Get Telegram user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+
+      // Get user
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Undo the last swipe
+      const success = await storage.undoLastSwipe(user.id);
+      return res.json({ success });
+
+    } catch (error) {
+      console.error('Failed to undo swipe:', error);
+      res.status(500).json({ 
+        error: 'Failed to undo swipe', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   // Update application status (approve/reject)
   app.patch("/api/collaborations/applications/:id", async (req, res) => {
     console.log('============ DEBUG: Update Application Status Endpoint ============');
