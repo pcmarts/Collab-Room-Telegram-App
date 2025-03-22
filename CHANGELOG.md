@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.1] - 2025-03-22
+
+### Fixed
+- Discovery cards not displaying in the swipe interface due to caching and response handling issues
+- Added debug endpoint for bypassing cache when fetching discovery cards
+- Enhanced API response handling to prevent empty result issues when server returns 304 responses
+- Fixed mutation functions in DiscoverPage to properly handle API communications
+- Improved error and response logging throughout the discovery system
+- Added cache control headers on server to prevent stale data
+
 ## [1.0.0] - 2025-03-22
 
 ### Added
