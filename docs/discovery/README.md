@@ -21,13 +21,20 @@ The collaboration filtering logic is implemented in `server/storage.ts` within t
 
 1. Only show **active** collaborations (status = 'active')
 2. By default, exclude collaborations created by the current user (controlled by the `excludeOwn` parameter)
-3. Apply additional filtering based on user preferences when enabled:
+3. Always exclude collaborations the user has already swiped on (left or right)
+4. Apply additional filtering based on user preferences when enabled:
    - Collaboration types (collab types)
    - Company tags and sectors
    - Twitter followers count (both user and company)
    - Token status and funding stages
    - Blockchain networks
    
+The filtering system uses a unified approach that combines all exclusion criteria:
+1. First, it retrieves the user's own collaborations by ID
+2. Then, it retrieves all collaborations the user has previously swiped on
+3. These lists are combined into a single exclusion list using Set operations to prevent duplicates
+4. This combined list is then used in a single database query to filter out all excluded collaborations efficiently
+
 The `excludeOwn` parameter controls whether a user's own collaborations are included in the search results. For the Discovery page, we exclude own collaborations by default (when `excludeOwn` is `undefined` or `true`), showing only other users' collaborations. For other views like personal profiles, we can include own collaborations by setting `excludeOwn` to `false`.
 
 ## API Endpoints
@@ -58,6 +65,10 @@ Recent fixes include:
 - Fixed the `excludeOwn` parameter logic in the `searchCollaborations` method to properly handle undefined values
 - Added detailed logging for the collaboration filtering process to aid debugging
 - Improved error handling in the swipe recording endpoint with better validation and error messages
+- Implemented a unified filtering approach that combines own collaborations and previously swiped collaborations in a single query
+- Fixed issue where user's own collaborations would reappear after refreshing the discovery feed
+- Fixed issue where previously swiped collaborations would still show up when refreshing
+- Added a "Refresh" button to the empty state UI with proper query cache invalidation
 
 ## Debugging
 
@@ -88,6 +99,15 @@ The Discovery interface is implemented in `client/src/pages/DiscoverPage.tsx` an
 - `SwipeableCard`: Individual card component with swipe gestures
 - `CollaborationDialog`: Modal component for displaying collaboration details
 - `MatchNotification`: Component that displays when a match is found
+- `EmptyState`: Component that displays when there are no more cards to show
+
+The empty state UI appears in two situations:
+1. When there are no collaborations matching the user's filters
+2. When the user has viewed all available collaborations
+
+In both cases, the same UI is shown, providing a consistent experience. The empty state offers two actions:
+- "Refresh" button: Invalidates the query cache and fetches fresh data from the server
+- "Adjust Filters" button: Takes the user to the filters page to modify their discovery preferences
 
 ### Client-Side Implementation
 
@@ -98,6 +118,14 @@ The client-side implementation in DiscoverPage.tsx has the following key feature
 3. **Error Handling**: Displays appropriate error messages when API requests fail
 4. **Loading States**: Shows loading indicators during data fetching
 5. **Responsive Design**: Adapts to different screen sizes and orientations
+6. **Cache Invalidation**: Properly invalidates React Query cache when refreshing collaborations
+7. **Empty State Management**: Displays appropriate UI when no cards are available, with a "Refresh" button and a link to adjust filters
+8. **Dynamic Card Generation**: Efficiently creates and manages the card stack to minimize re-renders
+
+Key functions in the implementation:
+- `refreshCollaborations()`: Resets the current card index, clears local swipe history, and invalidates the query cache
+- `recordSwipe()`: Sends swipe data to the server and updates local state
+- `renderEmptyState()`: Renders a consistent UI for both "no matches" and "viewed all cards" scenarios
 
 The implementation was recently improved to use the standard React Query configuration pattern rather than a custom implementation, which provides better error handling and caching capabilities.
 
