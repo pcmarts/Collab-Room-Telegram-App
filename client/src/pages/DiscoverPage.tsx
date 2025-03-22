@@ -876,10 +876,32 @@ export default function DiscoverPage() {
       direction: direction,
       index: currentIndex
     }]);
+    
+    // Record the swipe in the database
+    try {
+      const currentCard = cards[currentIndex];
+      if (currentCard && currentCard.id) {
+        console.log(`Recording ${direction} swipe for collaboration ID: ${currentCard.id}`);
+        
+        // Call the API to record the swipe
+        const swipeResult = await apiRequest('/api/swipes', {
+          method: 'POST',
+          body: JSON.stringify({
+            collaboration_id: currentCard.id,
+            direction: direction
+          })
+        });
+        
+        console.log('Swipe recorded:', swipeResult);
+      }
+    } catch (error) {
+      console.error('Failed to record swipe:', error);
+    }
 
-    // Check if it's a right swipe and simulate a match with high probability for testing
+    // Check if it's a right swipe and check for a match (will be based on database in the future)
     if (direction === "right") {
       // In a real app, this would be a server call to check for mutual matches
+      // For now, we'll still use random probability until the matching system is implemented
       const isMatch = Math.random() < 0.7; // 70% chance of match for easier testing
       
       if (isMatch) {
