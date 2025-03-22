@@ -9,6 +9,27 @@ interface MyCollaborationsProps {
   collaborationId?: string;
 }
 
+// Potential match interface
+interface PotentialMatch {
+  id: string;
+  swipe_id: string;
+  user_id: string;
+  collaboration_id: string;
+  collaboration_type: string;
+  collaboration_description?: string;
+  collaboration_topics?: string[];
+  swipe_direction: string;
+  swipe_created_at: string;
+  user_first_name: string;
+  user_last_name?: string;
+  user_twitter_followers?: string;
+  company_name: string;
+  company_job_title: string;
+  company_twitter_followers?: string;
+  requester_company: string;
+  requester_role: string;
+}
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -202,6 +223,22 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       const data = await response.json();
       console.log("Applications API response data:", data);
       return data as CollabApplication[];
+    }
+  });
+  
+  // Fetch potential matches (users who swiped right on host's collaborations)
+  const { data: potentialMatches, isLoading: isLoadingMatches } = useQuery({
+    queryKey: ['/api/potential-matches'],
+    queryFn: async () => {
+      console.log("Fetching potential matches...");
+      const response = await apiRequest('/api/potential-matches', 'GET');
+      console.log("Potential matches API response status:", response.status);
+      if (!response.ok) {
+        throw new Error("Failed to fetch potential matches");
+      }
+      const data = await response.json();
+      console.log("Potential matches API response data:", data);
+      return data as PotentialMatch[];
     }
   });
   
