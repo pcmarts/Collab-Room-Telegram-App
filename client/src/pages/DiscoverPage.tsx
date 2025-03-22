@@ -11,11 +11,14 @@ import { Button } from "@/components/ui/button";
 import { 
   X, Info, Check, Coffee, Calendar, Megaphone, Twitter, 
   Linkedin, Building, Mic, Radio, Video, FileText, BookOpen,
-  RotateCcw, SlidersVertical
+  RotateCcw, SlidersVertical, Loader2
 } from "lucide-react";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
+import { apiRequest } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
+import { Collaboration } from "@shared/schema";
 
 import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
@@ -720,7 +723,6 @@ const MyCollabStyles = () => {
 
 export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [cards, setCards] = useState(DUMMY_CARDS);
   const [showDialog, setShowDialog] = useState(false);
   // Store history of swiped cards for undo functionality
   const [swipeHistory, setSwipeHistory] = useState<Array<{card: any, direction: "left" | "right", index: number}>>([]);
@@ -738,6 +740,22 @@ export default function DiscoverPage() {
   const cardElem = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const [location, setLocation] = useLocation();
+  
+  // Fetch collaborations from real API
+  const { data: collaborationsData, isLoading, isError } = useQuery({
+    queryKey: ['/api/collaborations/search'],
+    queryFn: async () => {
+      console.log("Fetching collaborations from API");
+      const response = await apiRequest('GET', '/api/collaborations/search');
+      if (!response.ok) {
+        throw new Error("Failed to fetch collaborations");
+      }
+      return response.json() as Promise<Collaboration[]>;
+    }
+  });
+
+  // Process the collaborations data
+  const cards = collaborationsData || [];
 
   // Initialize Telegram WebApp and handle viewport
   useEffect(() => {
@@ -883,8 +901,8 @@ export default function DiscoverPage() {
 
     setCurrentIndex((prev) => {
       if (prev === cards.length - 1) {
-        setCards([...DUMMY_CARDS].sort(() => Math.random() - 0.5));
-        return 0;
+        // We reached the end of the cards
+        return prev; // Stay on the last card instead of resetting
       }
       return prev + 1;
     });
