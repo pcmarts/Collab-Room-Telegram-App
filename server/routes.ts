@@ -2115,6 +2115,43 @@ export async function registerRoutes(app: Express) {
       return res.status(500).json({ error: "Failed to fetch collaboration" });
     }
   });
+  
+  // New endpoint to get potential matches for a host (people who swiped right on their collabs)
+  app.get("/api/potential-matches", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Potential Matches Endpoint ============');
+    console.log('Headers:', req.headers);
+
+    try {
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Get user from database
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Get potential matches for this host
+      const potentialMatches = await storage.getPotentialMatchesForHost(user.id);
+      console.log(`Found ${potentialMatches.length} potential matches for user ${user.id}`);
+      
+      return res.json(potentialMatches);
+    } catch (error) {
+      console.error('Failed to fetch potential matches:', error);
+      return res.status(500).json({ 
+        error: 'Failed to fetch potential matches', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
 
   // Search collaborations
   app.get("/api/collaborations/search", async (req: TelegramRequest, res: Response) => {
