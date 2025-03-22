@@ -237,11 +237,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(collaborations)
       .where(
-        and(
-          not(eq(collaborations.creator_id, userId)),
-          eq(collaborations.status, 'active')
-        )
+        eq(collaborations.status, 'active')
       );
+    
+    // Only exclude user's own collaborations if specifically requested
+    // This allows for testing with a single user who can see all collaborations
+    if (filters.excludeOwn !== false) {
+      query = query.where(not(eq(collaborations.creator_id, userId)));
+    }
     
     // Apply type filters from request
     if (filters.collabTypes && filters.collabTypes.length > 0) {
