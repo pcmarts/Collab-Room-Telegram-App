@@ -1081,14 +1081,16 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: 'User not found' });
       }
 
-      const collaborations = await db.select()
+      // Fix the variable name collision - use 'collabs' instead of 'collaborations'
+      const collabs = await db.select()
         .from(collaborations)
         .where(not(eq(collaborations.creator_id, user.id)))
         .orderBy(desc(collaborations.created_at));
       
-      return res.json(collaborations);
+      return res.json(collabs);
 
     } catch (error) {
+      console.error("Error in collaborations search:", error);
       return res.status(500).json({ error: 'Failed to fetch collaborations' });
     }
   });
