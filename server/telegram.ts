@@ -32,10 +32,9 @@ console.log(
 console.log("Token prefix:", BOT_TOKEN.substring(0, 10) + "...");
 console.log("WebApp URL:", WEBAPP_URL);
 
-// Initialize bot with polling and minimal logging
+// Initialize bot without polling (we'll use webhook instead)
 export const bot = new TelegramBot(BOT_TOKEN, {
-  polling: true,
-  webHook: false,
+  polling: false,
 });
 
 // Register command handlers first
@@ -357,11 +356,6 @@ async function handleStatus(msg: TelegramBot.Message) {
 bot.onText(/\/status/, handleStatus);
 
 // Basic error handling
-bot.on("polling_error", (error) => {
-  console.error("=== Telegram Bot Polling Error ===");
-  console.error(error);
-});
-
 bot.on("error", (error) => {
   console.error("=== Telegram Bot General Error ===");
   console.error(error);

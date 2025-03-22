@@ -912,7 +912,7 @@ export default function DiscoverPage() {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          collaboration_id: collaborationId,
+          collaborationId,
           direction
         }),
         credentials: 'include'
