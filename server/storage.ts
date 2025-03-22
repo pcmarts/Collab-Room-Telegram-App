@@ -1,10 +1,11 @@
 import { 
-  users, companies, collaborations, collab_applications, collab_notifications, 
+  users, companies, collaborations, collab_applications, collab_notifications, swipes,
   notification_preferences, marketing_preferences, conference_preferences,
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication,
   type CollabNotification, type InsertCollabNotification,
+  type Swipe, type InsertSwipe,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "@shared/schema";
 import { z } from 'zod';
@@ -383,6 +384,46 @@ export class DatabaseStorage implements IStorage {
       .where(eq(collab_notifications.id, id))
       .returning();
     return notification;
+  }
+  
+  // Swipe methods
+  async createSwipe(swipe: InsertSwipe): Promise<Swipe> {
+    try {
+      const [newSwipe] = await db
+        .insert(swipes)
+        .values(swipe)
+        .returning();
+      return newSwipe;
+    } catch (error) {
+      console.error("Error creating swipe:", error);
+      throw error;
+    }
+  }
+  
+  async getUserSwipes(userId: string): Promise<Swipe[]> {
+    try {
+      return db
+        .select()
+        .from(swipes)
+        .where(eq(swipes.user_id, userId))
+        .orderBy(desc(swipes.created_at));
+    } catch (error) {
+      console.error("Error getting user swipes:", error);
+      throw error;
+    }
+  }
+  
+  async getCollaborationSwipes(collaborationId: string): Promise<Swipe[]> {
+    try {
+      return db
+        .select()
+        .from(swipes)
+        .where(eq(swipes.collaboration_id, collaborationId))
+        .orderBy(desc(swipes.created_at));
+    } catch (error) {
+      console.error("Error getting collaboration swipes:", error);
+      throw error;
+    }
   }
   
   // Notification preferences
