@@ -232,6 +232,7 @@ export class DatabaseStorage implements IStorage {
   
   async searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
     console.log(`searchCollaborations - Starting search for user: ${userId}`);
+    console.log(`searchCollaborations - Filters provided:`, JSON.stringify(filters));
     
     // First get the user's marketing preferences to apply any filtering
     const marketingPrefs = await this.getUserMarketingPreferences(userId);
@@ -240,6 +241,22 @@ export class DatabaseStorage implements IStorage {
         ? `Found, discovery_filter_enabled: ${marketingPrefs.discovery_filter_enabled}` 
         : 'Not found'
     );
+    
+    // Show all collaborations available for debugging
+    const allCollabs = await db
+      .select({
+        id: collaborations.id,
+        creator_id: collaborations.creator_id,
+        collab_type: collaborations.collab_type,
+        status: collaborations.status,
+        title: collaborations.title
+      })
+      .from(collaborations);
+      
+    console.log(`Total collaborations in database before filtering: ${allCollabs.length}`);
+    for (const collab of allCollabs) {
+      console.log(`Collab: ${collab.id}, Type: ${collab.collab_type}, Status: ${collab.status}, Title: ${collab.title}`);
+    }
     
     // Build the base query
     let query = db
@@ -251,6 +268,26 @@ export class DatabaseStorage implements IStorage {
           eq(collaborations.status, 'active')
         )
       );
+    
+    // Show active collaborations not created by this user
+    const baseFilteredCollabs = await db
+      .select({
+        id: collaborations.id,
+        collab_type: collaborations.collab_type,
+        title: collaborations.title
+      })
+      .from(collaborations)
+      .where(
+        and(
+          not(eq(collaborations.creator_id, userId)),
+          eq(collaborations.status, 'active')
+        )
+      );
+      
+    console.log(`Active collaborations not created by user before additional filtering: ${baseFilteredCollabs.length}`);
+    for (const collab of baseFilteredCollabs) {
+      console.log(`Active Collab: ${collab.id}, Type: ${collab.collab_type}, Title: ${collab.title}`);
+    }
     
     // Apply type filters from explicit request parameters - these override preferences
     if (filters.collabTypes && filters.collabTypes.length > 0) {
@@ -408,29 +445,46 @@ export class DatabaseStorage implements IStorage {
     // Get all collaborations that match the filters using the existing search method
     const allMatchingCollaborations = await this.searchCollaborations(userId, filters);
     
+    console.log(`getDiscoveryCards - After applying filters, found ${allMatchingCollaborations.length} collaborations`);
+    if (allMatchingCollaborations.length > 0) {
+      // List all matching collaborations before swipe filtering
+      allMatchingCollaborations.forEach(collab => {
+        console.log(`Matched collab: ID ${collab.id}, Type: ${collab.collab_type}, Title: ${collab.title || 'No title'}`);
+      });
+    } else {
+      console.log(`No collaborations matched the filters - this is why nothing shows in discovery feed`);
+    }
+    
     // Get all the collaborations this user has already swiped on
     const userSwipes = await this.getUserSwipes(userId);
+    
+    console.log(`getDiscoveryCards - User has ${userSwipes.length} previous swipes`);
+    if (userSwipes.length > 0) {
+      // List all swipes for debugging
+      userSwipes.forEach(swipe => {
+        console.log(`User swiped ${swipe.direction} on collaboration ${swipe.collaboration_id} at ${swipe.created_at}`);
+      });
+    }
     
     // Extract the IDs of collaborations the user has already swiped on
     const swipedCollaborationIds = userSwipes.map(swipe => swipe.collaboration_id);
     
     // Filter out any collaborations the user has already swiped on
-    const discoveryCards = allMatchingCollaborations.filter(collab => 
-      !swipedCollaborationIds.includes(collab.id)
-    );
+    const discoveryCards = allMatchingCollaborations.filter(collab => {
+      const isSwiped = swipedCollaborationIds.includes(collab.id);
+      if (isSwiped) {
+        console.log(`Excluding collaboration ${collab.id} (${collab.collab_type}) - already swiped`);
+      }
+      return !isSwiped;
+    });
     
     // Debug log
-    console.log(`getDiscoveryCards - Found ${discoveryCards.length} cards for user ${userId}`);
+    console.log(`getDiscoveryCards - Final result: ${discoveryCards.length} cards for user ${userId}`);
     if (discoveryCards.length > 0) {
-      console.log('Example card structure:', 
-        JSON.stringify({
-          id: discoveryCards[0].id,
-          creator_id: discoveryCards[0].creator_id,
-          collab_type: discoveryCards[0].collab_type,
-          description: discoveryCards[0].description,
-          // Add more fields as needed for debugging
-        })
-      );
+      console.log('Cards to display in feed:');
+      discoveryCards.forEach(card => {
+        console.log(`- Card ID: ${card.id}, Type: ${card.collab_type}, Title: ${card.title || 'No title'}`);
+      });
     }
     
     return discoveryCards;
