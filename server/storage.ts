@@ -233,6 +233,12 @@ export class DatabaseStorage implements IStorage {
     // First get the user's marketing preferences to apply any filtering
     const marketingPrefs = await this.getUserMarketingPreferences(userId);
     
+    // Get user's previous swipes to exclude already swiped collaborations
+    const userSwipes = await this.getUserSwipes(userId);
+    const swipedCollaborationIds = userSwipes.map(swipe => swipe.collaboration_id);
+    
+    console.log(`Found ${userSwipes.length} previous swipes by user ${userId}`);
+    
     // Build the base query
     let query = db
       .select()
@@ -248,6 +254,12 @@ export class DatabaseStorage implements IStorage {
       query = query.where(not(eq(collaborations.creator_id, userId)));
     } else {
       console.log('Including user\'s own collaborations in search results');
+    }
+    
+    // Exclude collaborations the user has already swiped on
+    if (swipedCollaborationIds.length > 0) {
+      console.log(`Excluding ${swipedCollaborationIds.length} previously swiped collaborations`);
+      query = query.where(not(inArray(collaborations.id, swipedCollaborationIds)));
     }
     
     // Apply type filters from request
