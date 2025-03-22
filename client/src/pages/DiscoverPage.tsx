@@ -742,11 +742,50 @@ export default function DiscoverPage() {
   const [location, setLocation] = useLocation();
   
   // Fetch collaborations from real API
-  const { data: collaborationsData, isLoading, isError, error } = useQuery({
+  const { data: collaborationsData, isLoading: isLoadingCollabs, isError: isCollabsError, error: collabsError } = useQuery({
     queryKey: ['/api/collaborations/search'],
     refetchOnWindowFocus: false,
     retry: 1, // Retry once in case of network issues
   });
+  
+  // Fetch potential matches (users who swiped right on host's collaborations)
+  const { data: potentialMatchesData, isLoading: isLoadingMatches, isError: isMatchesError, error: matchesError } = useQuery({
+    queryKey: ['/api/potential-matches'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/potential-matches', 'GET');
+      if (!response.ok) {
+        throw new Error('Failed to fetch potential matches');
+      }
+      const data = await response.json();
+      // Convert potential matches to a card format
+      return data.map((match) => ({
+        id: match.swipe_id, // Use the swipe ID as the unique identifier
+        isPotentialMatch: true, // Flag to identify this as a potential match card
+        collab_type: match.collaboration_type,
+        description: match.collaboration_description || 'Interested in your collaboration',
+        topics: match.collaboration_topics || [],
+        // User who swiped right details
+        potentialMatchData: {
+          user_id: match.user_id,
+          first_name: match.user_first_name,
+          last_name: match.user_last_name,
+          company_name: match.company_name, 
+          job_title: match.company_job_title,
+          twitter_followers: match.user_twitter_followers,
+          company_twitter_followers: match.company_twitter_followers,
+          swipe_created_at: match.swipe_created_at,
+          collaboration_id: match.collaboration_id
+        }
+      }));
+    },
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+  
+  // Combine loading and error states
+  const isLoading = isLoadingCollabs || isLoadingMatches;
+  const isError = isCollabsError || isMatchesError;
+  const error = collabsError || matchesError;
   
   // Log any query errors
   useEffect(() => {
@@ -756,7 +795,10 @@ export default function DiscoverPage() {
   }, [isError, error]);
 
   // Process the collaborations data
-  const cards = collaborationsData || [];
+  const regularCards = collaborationsData || [];
+  const potentialMatchCards = potentialMatchesData || [];
+  // Combine cards, showing potential matches first
+  const cards = [...potentialMatchCards, ...regularCards];
 
   // Initialize Telegram WebApp and handle viewport
   useEffect(() => {
@@ -1086,7 +1128,7 @@ export default function DiscoverPage() {
     return renderEmptyState("You've viewed all available collaborations. Check back later or adjust your filters to see more.");
   }
 
-  const renderCard = (card: Collaboration) => {
+  const renderCard = (card: any) => {
     // Handle the case where card might be null (at the end of the deck)
     if (!card) {
       return (
@@ -1111,6 +1153,73 @@ export default function DiscoverPage() {
               <SlidersVertical className="h-3 w-3 mr-1" />
               Adjust Filters
             </Button>
+          </div>
+        </div>
+      );
+    }
+    
+    // Check if it's a potential match card
+    if (card.isPotentialMatch && card.potentialMatchData) {
+      const { first_name, last_name, company_name, job_title } = card.potentialMatchData;
+      const fullName = last_name ? `${first_name} ${last_name}` : first_name;
+      
+      return (
+        <div className="w-full h-full bg-gradient-to-b from-blue-50 to-background p-6 rounded-xl border-2 border-blue-200">
+          <div className="flex flex-col h-full">
+            <div className="mb-4">
+              <Badge variant="outline" className="bg-primary/10 mb-2">
+                <UserCheck className="w-3 h-3 mr-1" />
+                Potential Match
+              </Badge>
+              <h3 className="text-lg font-semibold mb-1">
+                {fullName} is interested in your collaboration
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {job_title} at {company_name}
+              </p>
+            </div>
+            
+            <div className="mb-4 flex-1">
+              <div className="rounded-lg bg-card p-3 mb-4">
+                <p className="text-sm font-medium mb-1">Collaboration Type</p>
+                <div className="flex items-center">
+                  {getCollabTypeIcon(card.collab_type)}
+                  <span className="ml-1 text-sm">{card.collab_type}</span>
+                </div>
+              </div>
+              
+              {card.topics && card.topics.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs text-gray-500 mb-1">Topics of Interest:</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {card.topics.map((topic: string, idx: number) => (
+                      <span 
+                        key={idx} 
+                        className="px-2 py-0.5 bg-transparent text-gray-500 border border-[#6B7280] text-xs rounded-full"
+                      >
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <p className="text-sm">
+                Swipe right to match with {first_name} or left to pass.
+              </p>
+            </div>
+            
+            <div className="bg-muted/50 p-3 rounded-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h4 className="text-sm font-medium">Swipe right to connect</h4>
+                  <p className="text-xs text-muted-foreground">
+                    A match will be created when both parties swipe right
+                  </p>
+                </div>
+                <Check className="h-5 w-5 text-primary" />
+              </div>
+            </div>
           </div>
         </div>
       );
