@@ -2219,6 +2219,12 @@ export async function registerRoutes(app: Express) {
       // Get discovery cards (excludes already swiped collaborations)
       const cards = await storage.getDiscoveryCards(user.id, filters);
       console.log(`Found ${cards.length} discovery cards for user ${user.id}`);
+      
+      // Debug card structure
+      if (cards.length > 0) {
+        console.log('Example card structure:', JSON.stringify(cards[0]));
+      }
+      
       if (cards.length === 0) {
         console.log('No cards found. Checking for any active collaborations not created by user:');
         // For debugging: Get all active collaborations not created by this user
@@ -2244,6 +2250,13 @@ export async function registerRoutes(app: Express) {
           .where(eq(swipes.user_id, user.id));
         console.log(`User has ${userSwipes.length} existing swipes`);
       }
+      
+      // Set cache-control headers to prevent 304 responses
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
+      // Return the cards as JSON
       return res.json(cards);
 
     } catch (error) {

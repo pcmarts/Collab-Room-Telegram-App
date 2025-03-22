@@ -743,11 +743,31 @@ export default function DiscoverPage() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['/api/discovery/cards'],
     queryFn: async () => {
-      const result = await apiRequest('/api/discovery/cards');
-      console.log('Discovery cards response:', result);
-      // Convert the response to our expected format, safely handling any data issues
-      return Array.isArray(result) ? result : [];
-    }
+      try {
+        const result = await apiRequest('/api/discovery/cards');
+        console.log('Discovery cards response status:', result ? 'success' : 'empty');
+        console.log('Discovery cards raw result:', result);
+        
+        // Handle both response formats - some browsers might return the full response, others just the data
+        let cardsData = result;
+        
+        // Make sure we handle array responses correctly
+        if (Array.isArray(cardsData) && cardsData.length > 0) {
+          console.log(`Got ${cardsData.length} cards from API`);
+          return cardsData;
+        } else {
+          console.warn('API returned non-array response for cards:', cardsData);
+          return [];
+        }
+      } catch (err) {
+        console.error('Error fetching discovery cards:', err);
+        throw err;
+      }
+    },
+    // Disable caching temporarily to force fresh data
+    staleTime: 0,
+    // Force component to refetch when mounted
+    refetchOnMount: true
   });
   
   // Safely access cards array
@@ -856,14 +876,32 @@ export default function DiscoverPage() {
   const queryClient = useQueryClient();
   const swipeMutation = useMutation({
     mutationFn: async ({ collaborationId, direction }: { collaborationId: string, direction: "left" | "right" }) => {
-      const response = await apiRequest('/api/swipes', {
+      // Add proper headers and use the correct request format
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add Telegram data if available
+      if (window.Telegram?.WebApp?.initData) {
+        headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
+      }
+      
+      const response = await fetch('/api/swipes', {
         method: 'POST',
+        headers,
         body: JSON.stringify({
           collaboration_id: collaborationId,
           direction
-        })
+        }),
+        credentials: 'include'
       });
-      return response;
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to record swipe: ${response.status} - ${errorText}`);
+      }
+      
+      return await response.json();
     },
     onSuccess: (data: any) => {
       // If the swipe resulted in a match, show the match notification
@@ -884,10 +922,28 @@ export default function DiscoverPage() {
   // Mutation for undo last swipe
   const undoMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/swipes/undo', {
-        method: 'POST'
+      // Add proper headers and use the correct request format
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add Telegram data if available
+      if (window.Telegram?.WebApp?.initData) {
+        headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
+      }
+      
+      const response = await fetch('/api/swipes/undo', {
+        method: 'POST',
+        headers,
+        credentials: 'include'
       });
-      return response;
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to undo swipe: ${response.status} - ${errorText}`);
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       // Refresh card list after undoing a swipe

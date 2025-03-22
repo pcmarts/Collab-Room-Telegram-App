@@ -43,18 +43,46 @@ export const getQueryFn: <T>(options: {
     if (window.Telegram?.WebApp?.initData) {
       headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
     }
+    
+    // For debugging
+    console.log(`Query request: ${queryKey[0]}`);
 
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
       headers
     });
+    
+    console.log(`Query response status: ${res.status} - ${res.statusText}`);
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
     }
 
     await throwIfResNotOk(res);
-    return await res.json();
+    
+    try {
+      // Force clone response to ensure we can read it
+      const clonedRes = res.clone();
+      const text = await clonedRes.text();
+      
+      console.log(`Response length: ${text.length} bytes`);
+      
+      try {
+        const data = JSON.parse(text);
+        console.log(`Parsed data type: ${Array.isArray(data) ? 'array' : typeof data}`);
+        if (Array.isArray(data)) {
+          console.log(`Array length: ${data.length}`);
+        }
+        return data;
+      } catch (parseError) {
+        console.error('Error parsing JSON:', parseError);
+        throw new Error(`Failed to parse JSON response: ${parseError}`);
+      }
+    } catch (error) {
+      console.error('Error reading response:', error);
+      // Fall back to original method
+      return await res.json();
+    }
   };
 
 export const queryClient = new QueryClient({
