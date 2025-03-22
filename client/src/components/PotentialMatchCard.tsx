@@ -1,6 +1,6 @@
 import { UserCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getCollabTypeIcon } from "@/pages/DiscoverPage";
+import { getCollabTypeIcon } from "@/lib/collab-utils";
 
 export interface PotentialMatchData {
   first_name: string;
