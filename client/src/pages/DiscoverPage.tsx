@@ -1168,6 +1168,15 @@ export default function DiscoverPage() {
     return cardContent;
   };
 
+  // Debug render state
+  console.log('DiscoverPage rendering with state:', {
+    cardsLength: cards.length,
+    isLoading,
+    hasError: !!error,
+    currentIndex,
+    hasCurrentCard: !!currentCard
+  });
+  
   return (
     <div className="telegram-app min-h-[100svh] bg-background flex flex-col" ref={pageRef}>
       {/* Include the CSS styling component */}
