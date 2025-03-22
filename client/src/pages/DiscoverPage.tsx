@@ -1044,14 +1044,14 @@ export default function DiscoverPage() {
     );
   }
 
-  // No collaborations available
-  if (cards.length === 0) {
+  // Function to render the empty state
+  const renderEmptyState = (message: string = "No collaborations available right now. Check back later or adjust your filter settings.") => {
     return (
       <div className="min-h-[100svh] flex items-center justify-center">
         <div className="text-center p-6 max-w-md">
           <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-xl font-semibold mb-2">No Collaborations Available</h3>
-          <p className="mb-4">There are no collaborations available right now. Check back later or adjust your filter settings.</p>
+          <p className="mb-4">{message}</p>
           <Button onClick={() => setLocation('/discovery-filters')}>
             <SlidersVertical className="w-4 h-4 mr-2" />
             Adjust Filters
@@ -1059,12 +1059,37 @@ export default function DiscoverPage() {
         </div>
       </div>
     );
+  };
+
+  // No collaborations available
+  if (cards.length === 0) {
+    return renderEmptyState();
+  }
+  
+  // If user has viewed all cards (reached the end)
+  if (currentIndex === cards.length - 1 && swipeHistory.length > 0 && swipeHistory.length >= cards.length) {
+    return renderEmptyState("You've viewed all available collaborations. Check back later or adjust your filters to see more.");
   }
 
   const renderCard = (card: Collaboration) => {
     // Handle the case where card might be null (at the end of the deck)
     if (!card) {
-      return <div className="w-full h-full flex items-center justify-center p-8 text-center text-muted-foreground">No more cards to show</div>;
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center">
+          <FileText className="w-10 h-10 mb-3 text-muted-foreground" />
+          <h3 className="text-base font-medium mb-1">No More Cards</h3>
+          <p className="text-sm text-muted-foreground mb-3">You've reached the end of available collaborations.</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setLocation('/discovery-filters')}
+            className="text-xs"
+          >
+            <SlidersVertical className="h-3 w-3 mr-1" />
+            Adjust Filters
+          </Button>
+        </div>
+      );
     }
     
     // Parse details if it's a string
