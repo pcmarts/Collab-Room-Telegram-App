@@ -259,8 +259,13 @@ export class DatabaseStorage implements IStorage {
       
       console.log(`Filtering by excluded topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
       
+      // For array parameters, we need to ensure proper PostgreSQL array format
+      // Convert JavaScript array to PostgreSQL array format string: {item1,item2,item3}
+      const pgArrayStr = '{' + marketingPrefs.filtered_marketing_topics.join(',') + '}';
+      console.log(`Converting to PostgreSQL array format: ${pgArrayStr}`);
+      
       // This is a more complex filter - we want to exclude collaborations that have ANY of the filtered topics
-      query = query.where(sql`NOT (${collaborations.topics} && ${marketingPrefs.filtered_marketing_topics}::text[])`);
+      query = query.where(sql`NOT (${collaborations.topics} && ${pgArrayStr}::text[])`);
     }
     
     // Apply company followers filter if enabled
@@ -282,14 +287,22 @@ export class DatabaseStorage implements IStorage {
     if (marketingPrefs?.discovery_filter_funding_stages_enabled && 
         filters.fundingStages && 
         filters.fundingStages.length > 0) {
-      query = query.where(sql`${collaborations.required_funding_stages} && ${filters.fundingStages}::text[]`);
+      // Convert to PostgreSQL array format
+      const fundingStagesPgArray = '{' + filters.fundingStages.join(',') + '}';
+      console.log(`Converting funding stages to PostgreSQL array format: ${fundingStagesPgArray}`);
+      
+      query = query.where(sql`${collaborations.required_funding_stages} && ${fundingStagesPgArray}::text[]`);
     }
     
     // Apply blockchain networks filter if enabled
     if (marketingPrefs?.discovery_filter_blockchain_networks_enabled && 
         filters.blockchainNetworks && 
         filters.blockchainNetworks.length > 0) {
-      query = query.where(sql`${collaborations.company_blockchain_networks} && ${filters.blockchainNetworks}::text[]`);
+      // Convert to PostgreSQL array format
+      const networksPgArray = '{' + filters.blockchainNetworks.join(',') + '}';
+      console.log(`Converting blockchain networks to PostgreSQL array format: ${networksPgArray}`);
+      
+      query = query.where(sql`${collaborations.company_blockchain_networks} && ${networksPgArray}::text[]`);
     }
     
     return query.orderBy(desc(collaborations.created_at));
