@@ -239,6 +239,12 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`Found ${userSwipes.length} previous swipes by user ${userId}`);
     
+    // Get user's own collaborations to ensure they're properly excluded
+    const userCollaborations = await this.getUserCollaborations(userId);
+    const userCollaborationIds = userCollaborations.map(collab => collab.id);
+    
+    console.log(`Found ${userCollaborations.length} collaborations created by user ${userId}`);
+    
     // Build the base query
     let query = db
       .select()
@@ -250,8 +256,14 @@ export class DatabaseStorage implements IStorage {
     // Exclude user's own collaborations by default, unless explicitly requested not to
     // In most cases, we want to see collaborations from other users in the discovery page
     if (filters.excludeOwn === undefined || filters.excludeOwn === true) {
-      console.log('Excluding user\'s own collaborations from search results');
-      query = query.where(not(eq(collaborations.creator_id, userId)));
+      if (userCollaborationIds.length > 0) {
+        console.log(`Explicitly excluding ${userCollaborationIds.length} user's own collaborations from search results`);
+        query = query.where(not(inArray(collaborations.id, userCollaborationIds)));
+      } else {
+        console.log('No user collaborations found to exclude');
+        // Still apply the creator_id filter as a fallback
+        query = query.where(not(eq(collaborations.creator_id, userId)));
+      }
     } else {
       console.log('Including user\'s own collaborations in search results');
     }
