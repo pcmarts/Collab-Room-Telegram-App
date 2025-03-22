@@ -882,20 +882,32 @@ export default function DiscoverPage() {
       const currentCard = cards[currentIndex];
       if (currentCard && currentCard.id) {
         console.log(`Recording ${direction} swipe for collaboration ID: ${currentCard.id}`);
+        console.log('Current card details:', JSON.stringify(currentCard));
         
         // Call the API to record the swipe
-        const swipeResult = await apiRequest('/api/swipes', {
-          method: 'POST',
-          body: JSON.stringify({
-            collaboration_id: currentCard.id,
-            direction: direction
-          })
-        });
+        const requestBody = {
+          collaboration_id: currentCard.id,
+          direction: direction
+        };
+        console.log('Sending swipe request:', JSON.stringify(requestBody));
         
-        console.log('Swipe recorded:', swipeResult);
+        // Call the API to record the swipe using the apiRequest function properly
+        const swipeResult = await apiRequest(
+          '/api/swipes', 
+          'POST',
+          requestBody
+        );
+        
+        console.log('Swipe recorded successfully:', swipeResult);
+      } else {
+        console.error('Cannot record swipe: Invalid card or missing ID', currentCard);
       }
     } catch (error) {
       console.error('Failed to record swipe:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+        console.error('Error stack:', error.stack);
+      }
     }
 
     // Check if it's a right swipe and check for a match (will be based on database in the future)
