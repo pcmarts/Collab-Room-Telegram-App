@@ -231,8 +231,15 @@ export class DatabaseStorage implements IStorage {
   }
   
   async searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
+    console.log(`searchCollaborations - Starting search for user: ${userId}`);
+    
     // First get the user's marketing preferences to apply any filtering
     const marketingPrefs = await this.getUserMarketingPreferences(userId);
+    console.log(`searchCollaborations - User marketing preferences:`, 
+      marketingPrefs 
+        ? `Found, discovery_filter_enabled: ${marketingPrefs.discovery_filter_enabled}` 
+        : 'Not found'
+    );
     
     // Build the base query
     let query = db
@@ -247,6 +254,7 @@ export class DatabaseStorage implements IStorage {
     
     // Apply type filters from explicit request parameters - these override preferences
     if (filters.collabTypes && filters.collabTypes.length > 0) {
+      console.log(`searchCollaborations - Filtering by collab types: ${filters.collabTypes.join(', ')}`);
       query = query.where(inArray(collaborations.collab_type, filters.collabTypes));
     }
     
@@ -267,16 +275,19 @@ export class DatabaseStorage implements IStorage {
       
       // Apply company followers filter if enabled
       if (marketingPrefs.discovery_filter_company_followers_enabled && filters.minCompanyFollowers) {
+        console.log(`Filtering by min company followers: ${filters.minCompanyFollowers}`);
         query = query.where(sql`${collaborations.min_company_followers} >= ${filters.minCompanyFollowers}`);
       }
       
       // Apply user followers filter if enabled
       if (marketingPrefs.discovery_filter_user_followers_enabled && filters.minUserFollowers) {
+        console.log(`Filtering by min user followers: ${filters.minUserFollowers}`);
         query = query.where(sql`${collaborations.min_user_followers} >= ${filters.minUserFollowers}`);
       }
       
       // Apply token status filter if enabled
       if (marketingPrefs.discovery_filter_token_status_enabled && filters.hasToken !== undefined) {
+        console.log(`Filtering by token status: ${filters.hasToken}`);
         query = query.where(eq(collaborations.required_token_status, filters.hasToken));
       }
       
@@ -284,6 +295,7 @@ export class DatabaseStorage implements IStorage {
       if (marketingPrefs.discovery_filter_funding_stages_enabled && 
           filters.fundingStages && 
           filters.fundingStages.length > 0) {
+        console.log(`Filtering by funding stages: ${filters.fundingStages.join(', ')}`);
         query = query.where(sql`${collaborations.required_funding_stages} && ${filters.fundingStages}::text[]`);
       }
       
@@ -291,13 +303,36 @@ export class DatabaseStorage implements IStorage {
       if (marketingPrefs.discovery_filter_blockchain_networks_enabled && 
           filters.blockchainNetworks && 
           filters.blockchainNetworks.length > 0) {
+        console.log(`Filtering by blockchain networks: ${filters.blockchainNetworks.join(', ')}`);
         query = query.where(sql`${collaborations.company_blockchain_networks} && ${filters.blockchainNetworks}::text[]`);
       }
     } else {
       console.log('User has discovery filters disabled, showing all collaborations');
     }
     
-    return query.orderBy(desc(collaborations.created_at));
+    // First check how many collaborations exist in total for debugging
+    const totalCollabs = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(collaborations);
+    console.log(`Total collaborations in database: ${totalCollabs[0]?.count || 0}`);
+    
+    // Check how many active collaborations not created by this user exist
+    const activeCollabsNotByUser = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(collaborations)
+      .where(
+        and(
+          not(eq(collaborations.creator_id, userId)),
+          eq(collaborations.status, 'active')
+        )
+      );
+    console.log(`Active collaborations not created by user: ${activeCollabsNotByUser[0]?.count || 0}`);
+    
+    // Execute the query
+    const results = await query.orderBy(desc(collaborations.created_at));
+    console.log(`searchCollaborations - Found ${results.length} matching collaborations`);
+    
+    return results;
   }
   
   async updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined> {
