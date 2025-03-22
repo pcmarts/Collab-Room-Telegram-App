@@ -2218,6 +2218,32 @@ export async function registerRoutes(app: Express) {
 
       // Get discovery cards (excludes already swiped collaborations)
       const cards = await storage.getDiscoveryCards(user.id, filters);
+      console.log(`Found ${cards.length} discovery cards for user ${user.id}`);
+      if (cards.length === 0) {
+        console.log('No cards found. Checking for any active collaborations not created by user:');
+        // For debugging: Get all active collaborations not created by this user
+        const allActiveCollabs = await db
+          .select()
+          .from(collaborations)
+          .where(
+            and(
+              not(eq(collaborations.creator_id, user.id)),
+              eq(collaborations.status, 'active')
+            )
+          );
+        console.log(`Found ${allActiveCollabs.length} active collaborations not created by user`);
+        
+        if (allActiveCollabs.length > 0) {
+          console.log('Sample collaboration:', allActiveCollabs[0]);
+        }
+        
+        // Get user swipes for debugging
+        const userSwipes = await db
+          .select()
+          .from(swipes)
+          .where(eq(swipes.user_id, user.id));
+        console.log(`User has ${userSwipes.length} existing swipes`);
+      }
       return res.json(cards);
 
     } catch (error) {
