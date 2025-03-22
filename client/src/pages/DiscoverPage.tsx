@@ -16,7 +16,7 @@ import {
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
 import { Collaboration } from "@shared/schema";
 
@@ -1044,18 +1044,33 @@ export default function DiscoverPage() {
     );
   }
 
+  // Function to refresh collaborations
+  const refreshCollaborations = () => {
+    // Reset current index
+    setCurrentIndex(0);
+    // Clear swipe history
+    setSwipeHistory([]);
+    // Refetch the data
+    queryClient.invalidateQueries({ queryKey: ['/api/collaborations/search'] });
+  };
+
   // Function to render the empty state
   const renderEmptyState = (message: string = "No collaborations available right now. Check back later or adjust your filter settings.") => {
     return (
       <div className="min-h-[100svh] flex items-center justify-center">
         <div className="text-center p-6 max-w-md">
-          <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-xl font-semibold mb-2">No Collaborations Available</h3>
-          <p className="mb-4">{message}</p>
-          <Button onClick={() => setLocation('/discovery-filters')}>
-            <SlidersVertical className="w-4 h-4 mr-2" />
-            Adjust Filters
-          </Button>
+          <p className="mb-6">{message}</p>
+          <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3 justify-center">
+            <Button onClick={refreshCollaborations}>
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+            <Button onClick={() => setLocation('/discovery-filters')} variant="outline">
+              <SlidersVertical className="w-4 h-4 mr-2" />
+              Adjust Filters
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -1076,18 +1091,27 @@ export default function DiscoverPage() {
     if (!card) {
       return (
         <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center">
-          <FileText className="w-10 h-10 mb-3 text-muted-foreground" />
           <h3 className="text-base font-medium mb-1">No More Cards</h3>
           <p className="text-sm text-muted-foreground mb-3">You've reached the end of available collaborations.</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setLocation('/discovery-filters')}
-            className="text-xs"
-          >
-            <SlidersVertical className="h-3 w-3 mr-1" />
-            Adjust Filters
-          </Button>
+          <div className="flex flex-col space-y-2">
+            <Button 
+              size="sm" 
+              onClick={refreshCollaborations}
+              className="text-xs"
+            >
+              <RotateCcw className="h-3 w-3 mr-1" />
+              Refresh
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setLocation('/discovery-filters')}
+              className="text-xs"
+            >
+              <SlidersVertical className="h-3 w-3 mr-1" />
+              Adjust Filters
+            </Button>
+          </div>
         </div>
       );
     }
