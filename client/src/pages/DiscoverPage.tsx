@@ -1292,10 +1292,6 @@ export default function DiscoverPage() {
                   </div>
                 </div>
               )}
-              
-              <p className="text-sm">
-                Swipe right to match with {first_name} or left to pass.
-              </p>
             </div>
             
             <div className="bg-muted/50 p-3 rounded-lg">
