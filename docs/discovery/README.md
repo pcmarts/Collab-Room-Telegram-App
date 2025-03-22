@@ -20,14 +20,15 @@ The Discovery System consists of the following key components:
 The collaboration filtering logic is implemented in `server/storage.ts` within the `searchCollaborations` method. The current implementation follows these rules:
 
 1. Only show **active** collaborations (status = 'active')
-2. Exclude collaborations created by the current user
-3. Previously, additional filtering was applied based on:
-   - User preferences (collab types, company tags, followers count, etc.)
-   - User's swipe history (already swiped collaborations)
+2. By default, exclude collaborations created by the current user (controlled by the `excludeOwn` parameter)
+3. Apply additional filtering based on user preferences when enabled:
+   - Collaboration types (collab types)
+   - Company tags and sectors
+   - Twitter followers count (both user and company)
    - Token status and funding stages
    - Blockchain networks
    
-As of the latest update, only the first two rules are enforced to maximize the number of collaborations shown to users.
+The `excludeOwn` parameter controls whether a user's own collaborations are included in the search results. For the Discovery page, we exclude own collaborations by default (when `excludeOwn` is `undefined` or `true`), showing only other users' collaborations. For other views like personal profiles, we can include own collaborations by setting `excludeOwn` to `false`.
 
 ## API Endpoints
 
@@ -35,8 +36,13 @@ The Discovery System is supported by the following API endpoints:
 
 - `GET /api/collaborations/search`: Retrieves collaborations based on filter criteria
   - Implemented in `server/routes.ts` with support for various filter parameters
-  - Excludes collaborations created by the current user
+  - By default, excludes collaborations created by the current user (configurable via the `excludeOwn` parameter)
   - Returns properly formatted JSON data for the discovery feed
+  
+- `POST /api/swipes`: Records user swipe actions (left/right) on collaborations
+  - Accepts collaboration_id and direction (left/right) parameters
+  - Validates both user and collaboration existence
+  - Permanently stores swipe data for future matching and analytics
 
 ## API Implementation Notes
 
@@ -46,17 +52,30 @@ The API implementation has the following characteristics:
 2. **Filtering**: Backend filtering based on user preferences (when enabled)
 3. **Performance**: Optimized database queries to minimize response time
 4. **Debugging**: Enhanced logging to troubleshoot any issues
+5. **Visibility Control**: Fine-grained control over which collaborations are visible to which users
 
-A recent fix removed a duplicate route that was causing conflicts for the `/api/collaborations/search` endpoint, ensuring proper request handling.
+Recent fixes include:
+- Fixed the `excludeOwn` parameter logic in the `searchCollaborations` method to properly handle undefined values
+- Added detailed logging for the collaboration filtering process to aid debugging
+- Improved error handling in the swipe recording endpoint with better validation and error messages
 
 ## Debugging
 
 For debugging purposes, comprehensive logs are added at various points in the collaboration filtering process:
 
 ```typescript
-// Example debug logging in searchCollaborations method
-console.log(`DEBUG: searchCollaborations: Retrieved ${collabs.length} active collaborations`);
-console.log(`DEBUG: searchCollaborations: After excluding user's own, ${filteredCollabs.length} remain`);
+// Examples of debug logging in searchCollaborations method
+console.log('Excluding user\'s own collaborations from search results');
+console.log(`Filtering by excluded topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
+console.log(`Converting to PostgreSQL array format: ${pgArrayStr}`);
+```
+
+The swipe recording endpoint also includes detailed logging:
+
+```typescript
+console.log(`Creating swipe record with parameters: ${JSON.stringify(swipeData)}`);
+console.log(`Success: Created swipe record with ID: ${newSwipe.id}`);
+console.log(`Details: ${direction} swipe for collaboration ${collaboration_id} by user ${userId}`);
 ```
 
 The client-side implementation in `DiscoverPage.tsx` also includes error logging to help diagnose any issues with the API integration.

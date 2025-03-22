@@ -123,6 +123,7 @@ Searches for collaborations based on filter criteria.
 - `hasToken`: Filter by token status
 - `fundingStages`: Filter by funding stages
 - `blockchainNetworks`: Filter by blockchain networks
+- `excludeOwn`: Boolean flag to control whether to exclude the user's own collaborations (defaults to true)
 
 **Response:**
 ```json
@@ -168,6 +169,29 @@ Applies to a collaboration.
     "availability": "Available times",
     // Other application details
   }
+}
+```
+
+#### `POST /api/swipes`
+
+Records a user's swipe action on a collaboration.
+
+**Request Body:**
+```json
+{
+  "collaboration_id": "collab-id",
+  "direction": "left" | "right"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "swipe-id",
+  "user_id": "user-id",
+  "collaboration_id": "collab-id",
+  "direction": "left" | "right",
+  "created_at": "2025-03-22T12:00:00Z"
 }
 ```
 
