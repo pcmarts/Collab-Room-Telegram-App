@@ -1,0 +1,16 @@
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+searchCollaborations - Starting search for user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+searchCollaborations - User marketing preferences: Found, discovery_filter_enabled: false
+User has discovery filters disabled, showing all collaborations
+Total collaborations in database: 15
+Active collaborations not created by user: 8
+searchCollaborations - Found 8 matching collaborations
+getDiscoveryCards - Found 8 cards for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Example card structure: {"id":"ba74a6db-7473-406a-8c95-c256b60a926d","creator_id":"37e44941-e7b4-4cf7-8109-7747f721565a","collab_type":"Report & Research Feature","description":"Description for Metaverse Research Report"}
+Found 8 discovery cards for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Example card structure: {"id":"ba74a6db-7473-406a-8c95-c256b60a926d","creator_id":"37e44941-e7b4-4cf7-8109-7747f721565a","collab_type":"Report & Research Feature","status":"active","description":"Description for Metaverse Research Report","topics":["metaverse","enterprise","virtual-reality"],"twitter_followers":null,"company_twitter_followers":null,"funding_stage":null,"company_has_token":false,"company_token_ticker":null,"company_blockchain_networks":["Ethereum","Solana"],"company_tags":null,"filter_company_sectors_enabled":false,"filter_company_followers_enabled":false,"filter_user_followers_enabled":false,"filter_funding_stages_enabled":false,"filter_token_status_enabled":false,"filter_blockchain_networks_enabled":false,"required_company_sectors":null,"required_funding_stages":["Seed","Series A"],"required_token_status":false,"required_blockchain_networks":[],"min_company_followers":"12000","min_user_followers":"4000","is_free_collab":true,"details":{"reportName":"Metaverse Adoption in Enterprise","researchTopic":"Metaverse integration in business operations","reportTargetReleaseDate":"2025-04-15","reportReach":"30000 professionals"},"date_type":"any_future_date","specific_date":null,"created_at":"2025-03-22T13:51:03.000Z","updated_at":"2025-03-22T13:51:03.000Z"}
+2:29:03 PM [express] GET /api/discovery/cards 304 in 94ms :: [{"id":"ba74a6db-7473-406a-8c95-c256b60…
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+2:29:05 PM [express] GET /api/my-applications 304 in 31ms :: []
+2:29:05 PM [express] GET /api/collaborations/my 304 in 35ms :: [{"id":"46d9b320-ab16-45b8-9932-e2edf…

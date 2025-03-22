@@ -739,35 +739,57 @@ export default function DiscoverPage() {
     collaborationType: ''
   });
   
-  // Load cards from API
+  // Load cards from API using debug endpoint to bypass caching issues
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['/api/discovery/cards'],
+    queryKey: ['/api/debug/discovery-cards'],
     queryFn: async () => {
       try {
-        const result = await apiRequest('/api/discovery/cards');
-        console.log('Discovery cards response status:', result ? 'success' : 'empty');
-        console.log('Discovery cards raw result:', result);
+        // Use the fetch API directly to ensure we control all aspects of the request
+        const response = await fetch('/api/debug/discovery-cards', {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          },
+          // Include credentials for session cookies
+          credentials: 'include'
+        });
         
-        // Handle both response formats - some browsers might return the full response, others just the data
-        let cardsData = result;
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
         
-        // Make sure we handle array responses correctly
-        if (Array.isArray(cardsData) && cardsData.length > 0) {
-          console.log(`Got ${cardsData.length} cards from API`);
-          return cardsData;
-        } else {
-          console.warn('API returned non-array response for cards:', cardsData);
-          return [];
+        // Read response text and parse JSON manually
+        const text = await response.text();
+        console.log('Debug API response length:', text.length, 'bytes');
+        
+        try {
+          // Parse the JSON response
+          const jsonData = JSON.parse(text);
+          console.log('Debug API response:', jsonData);
+          
+          // Extract cards array from debug response
+          if (jsonData && jsonData.cards && Array.isArray(jsonData.cards)) {
+            console.log(`Got ${jsonData.cards.length} cards from debug API`);
+            return jsonData.cards;
+          } else {
+            console.warn('Debug API returned no cards array:', jsonData);
+            return [];
+          }
+        } catch (parseError) {
+          console.error('Failed to parse JSON response:', parseError);
+          throw new Error(`Failed to parse response: ${parseError.message}`);
         }
       } catch (err) {
         console.error('Error fetching discovery cards:', err);
         throw err;
       }
     },
-    // Disable caching temporarily to force fresh data
+    // Disable caching completely 
     staleTime: 0,
-    // Force component to refetch when mounted
-    refetchOnMount: true
+    cacheTime: 0,
+    // Always refetch on component mount
+    refetchOnMount: 'always'
   });
   
   // Safely access cards array

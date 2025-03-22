@@ -10,6 +10,52 @@ import {
 import { eq, not, and, sql } from 'drizzle-orm';
 
 export function registerDebugRoutes(app: Express) {
+  // Debug endpoint to test discovery cards directly without caching
+  app.get('/api/debug/discovery-cards', async (req: Request, res: Response) => {
+    try {
+      const telegramId = req.query.telegramId?.toString() || '1211030693';  // Default to Paul's ID
+      console.log(`Debug endpoint: Getting discovery cards for telegram ID: ${telegramId}`);
+      
+      // Disable caching completely for debug endpoints
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
+      // Get user
+      const [dbUser] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramId));
+      
+      if (!dbUser) {
+        return res.status(404).json({ error: `User not found with telegramID: ${telegramId}` });
+      }
+      
+      // Get discovery cards directly from DB, bypassing storage layer
+      const collabs = await db
+        .select()
+        .from(collaborations)
+        .where(
+          and(
+            not(eq(collaborations.creator_id, dbUser.id)),
+            eq(collaborations.status, 'active')
+          )
+        );
+      
+      // Return exact format and structure for debugging
+      return res.status(200).json({
+        user: dbUser,
+        cardsCount: collabs.length,
+        cards: collabs
+      });
+    } catch (error) {
+      console.error('Error in debug discovery-cards endpoint:', error);
+      res.status(500).json({ 
+        error: 'Failed to get debug discovery cards',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Only in development environment - route to check database state
   app.get('/api/debug/database-stats', async (_req: Request, res: Response) => {
     try {
