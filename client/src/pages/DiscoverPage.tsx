@@ -1253,28 +1253,47 @@ export default function DiscoverPage() {
       const fullName = last_name ? `${first_name} ${last_name}` : first_name;
       
       return (
-        <div className="w-full h-full p-6 rounded-xl" style={{ background: 'linear-gradient(to bottom right, rgba(76, 29, 149, 1), #0A0A0B)' }}>
-          <div className="flex flex-col h-full">
+        <div 
+          className="w-full h-full rounded-xl" 
+          style={{ background: 'linear-gradient(to bottom right, rgba(76, 29, 149, 1), #0A0A0B)' }}
+        >
+          <div className="flex flex-col h-full p-6">
             <div className="mb-4">
               <Badge variant="outline" className="bg-primary/10 mb-2">
                 <UserCheck className="w-3 h-3 mr-1" />
                 Potential Match
               </Badge>
               <h3 className="text-lg font-semibold mb-1">
-                {fullName} is interested in your collaboration
+                {first_name} from {company_name} is interested in your collab
               </h3>
               <p className="text-sm text-muted-foreground">
-                {job_title} at {company_name}
+                {job_title}
               </p>
             </div>
             
+            {/* Moved this section up */}
+            <div className="bg-muted/50 p-3 rounded-lg mb-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h4 className="text-sm font-medium">Swipe right to connect</h4>
+                  <p className="text-xs text-muted-foreground">
+                    A match will be created when both parties swipe right
+                  </p>
+                </div>
+                <Check className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+            
             <div className="mb-4 flex-1">
-              <div className="rounded-lg bg-card p-3 mb-4">
-                <p className="text-sm font-medium mb-1">Collaboration Type</p>
+              <div className="rounded-lg bg-black/10 p-3 mb-4">
+                <p className="text-sm font-medium mb-1">Your Collab:</p>
                 <div className="flex items-center">
                   {getCollabTypeIcon(card.collab_type)}
                   <span className="ml-1 text-sm">{card.collab_type}</span>
                 </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {card.description || "No additional details available"}
+                </p>
               </div>
               
               {card.topics && card.topics.length > 0 && (
@@ -1292,18 +1311,6 @@ export default function DiscoverPage() {
                   </div>
                 </div>
               )}
-            </div>
-            
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-sm font-medium">Swipe right to connect</h4>
-                  <p className="text-xs text-muted-foreground">
-                    A match will be created when both parties swipe right
-                  </p>
-                </div>
-                <Check className="h-5 w-5 text-primary" />
-              </div>
             </div>
           </div>
         </div>
