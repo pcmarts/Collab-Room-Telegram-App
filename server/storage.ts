@@ -245,7 +245,11 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`Found ${userCollaborations.length} collaborations created by user ${userId}`);
     
-    // Build the base query
+    // Create a combined array of IDs to exclude (both user's own and previously swiped)
+    const excludeIds = [...new Set([...userCollaborationIds, ...swipedCollaborationIds])];
+    console.log(`Total IDs to exclude: ${excludeIds.length} (${userCollaborationIds.length} own + ${swipedCollaborationIds.length} swiped)`);
+    
+    // Build the base query - we'll handle all exclusions together 
     let query = db
       .select()
       .from(collaborations)
@@ -253,25 +257,16 @@ export class DatabaseStorage implements IStorage {
         eq(collaborations.status, 'active')
       );
     
-    // Exclude user's own collaborations by default, unless explicitly requested not to
-    // In most cases, we want to see collaborations from other users in the discovery page
-    if (filters.excludeOwn === undefined || filters.excludeOwn === true) {
-      if (userCollaborationIds.length > 0) {
-        console.log(`Explicitly excluding ${userCollaborationIds.length} user's own collaborations from search results`);
-        query = query.where(not(inArray(collaborations.id, userCollaborationIds)));
-      } else {
-        console.log('No user collaborations found to exclude');
-        // Still apply the creator_id filter as a fallback
+    // Exclude both user's own collaborations and previously swiped ones
+    if (excludeIds.length > 0) {
+      console.log(`Excluding ${excludeIds.length} total collaborations from results`);
+      query = query.where(not(inArray(collaborations.id, excludeIds)));
+    } else {
+      // Fallback if no IDs to exclude but we still want to exclude own collaborations
+      if (filters.excludeOwn === undefined || filters.excludeOwn === true) {
+        console.log('No specific IDs to exclude, using fallback creator_id filtering');
         query = query.where(not(eq(collaborations.creator_id, userId)));
       }
-    } else {
-      console.log('Including user\'s own collaborations in search results');
-    }
-    
-    // Exclude collaborations the user has already swiped on
-    if (swipedCollaborationIds.length > 0) {
-      console.log(`Excluding ${swipedCollaborationIds.length} previously swiped collaborations`);
-      query = query.where(not(inArray(collaborations.id, swipedCollaborationIds)));
     }
     
     // Apply type filters from request
