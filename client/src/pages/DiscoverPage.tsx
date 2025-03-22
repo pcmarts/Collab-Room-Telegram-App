@@ -757,8 +757,19 @@ export default function DiscoverPage() {
   useEffect(() => {
     console.log('Cards data updated:', cards);
     console.log('Number of cards:', cards.length);
+    console.log('Current index:', currentIndex);
     console.log('First card if available:', cards[0]);
-  }, [cards]);
+    console.log('Current card:', cards[currentIndex]);
+    
+    // Log any potential issues with the cards
+    if (cards.length > 0 && currentIndex >= cards.length) {
+      console.warn('⚠️ Current index is out of bounds:', { currentIndex, cardsLength: cards.length });
+    }
+    
+    if (cards.length > 0 && !cards[currentIndex]) {
+      console.warn('⚠️ Current card is undefined at valid index:', currentIndex);
+    }
+  }, [cards, currentIndex]);
   const cardElem = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const [location, setLocation] = useLocation();
