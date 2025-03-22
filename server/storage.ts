@@ -245,49 +245,56 @@ export class DatabaseStorage implements IStorage {
         )
       );
     
-    // Apply type filters from request
+    // Apply type filters from explicit request parameters - these override preferences
     if (filters.collabTypes && filters.collabTypes.length > 0) {
       query = query.where(inArray(collaborations.collab_type, filters.collabTypes));
     }
     
-    // Apply topic filters if enabled in marketing preferences
-    if (marketingPrefs?.discovery_filter_topics_enabled && 
-        marketingPrefs?.filtered_marketing_topics && 
-        marketingPrefs.filtered_marketing_topics.length > 0) {
+    // Only apply marketing preference filters if discovery filtering is enabled
+    if (marketingPrefs?.discovery_filter_enabled) {
+      console.log('User has discovery filters enabled, applying filters');
       
-      console.log(`Filtering by excluded topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
+      // Apply topic filters if enabled in marketing preferences
+      if (marketingPrefs.discovery_filter_topics_enabled && 
+          marketingPrefs.filtered_marketing_topics && 
+          marketingPrefs.filtered_marketing_topics.length > 0) {
+        
+        console.log(`Filtering by excluded topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
+        
+        // This is a more complex filter - we want to exclude collaborations that have ANY of the filtered topics
+        query = query.where(sql`NOT (${collaborations.topics} && ${marketingPrefs.filtered_marketing_topics}::text[])`);
+      }
       
-      // This is a more complex filter - we want to exclude collaborations that have ANY of the filtered topics
-      query = query.where(sql`NOT (${collaborations.topics} && ${marketingPrefs.filtered_marketing_topics}::text[])`);
-    }
-    
-    // Apply company followers filter if enabled
-    if (marketingPrefs?.discovery_filter_company_followers_enabled && filters.minCompanyFollowers) {
-      query = query.where(sql`${collaborations.min_company_followers} >= ${filters.minCompanyFollowers}`);
-    }
-    
-    // Apply user followers filter if enabled
-    if (marketingPrefs?.discovery_filter_user_followers_enabled && filters.minUserFollowers) {
-      query = query.where(sql`${collaborations.min_user_followers} >= ${filters.minUserFollowers}`);
-    }
-    
-    // Apply token status filter if enabled
-    if (marketingPrefs?.discovery_filter_token_status_enabled && filters.hasToken !== undefined) {
-      query = query.where(eq(collaborations.required_token_status, filters.hasToken));
-    }
-    
-    // Apply funding stages filter if enabled
-    if (marketingPrefs?.discovery_filter_funding_stages_enabled && 
-        filters.fundingStages && 
-        filters.fundingStages.length > 0) {
-      query = query.where(sql`${collaborations.required_funding_stages} && ${filters.fundingStages}::text[]`);
-    }
-    
-    // Apply blockchain networks filter if enabled
-    if (marketingPrefs?.discovery_filter_blockchain_networks_enabled && 
-        filters.blockchainNetworks && 
-        filters.blockchainNetworks.length > 0) {
-      query = query.where(sql`${collaborations.company_blockchain_networks} && ${filters.blockchainNetworks}::text[]`);
+      // Apply company followers filter if enabled
+      if (marketingPrefs.discovery_filter_company_followers_enabled && filters.minCompanyFollowers) {
+        query = query.where(sql`${collaborations.min_company_followers} >= ${filters.minCompanyFollowers}`);
+      }
+      
+      // Apply user followers filter if enabled
+      if (marketingPrefs.discovery_filter_user_followers_enabled && filters.minUserFollowers) {
+        query = query.where(sql`${collaborations.min_user_followers} >= ${filters.minUserFollowers}`);
+      }
+      
+      // Apply token status filter if enabled
+      if (marketingPrefs.discovery_filter_token_status_enabled && filters.hasToken !== undefined) {
+        query = query.where(eq(collaborations.required_token_status, filters.hasToken));
+      }
+      
+      // Apply funding stages filter if enabled
+      if (marketingPrefs.discovery_filter_funding_stages_enabled && 
+          filters.fundingStages && 
+          filters.fundingStages.length > 0) {
+        query = query.where(sql`${collaborations.required_funding_stages} && ${filters.fundingStages}::text[]`);
+      }
+      
+      // Apply blockchain networks filter if enabled
+      if (marketingPrefs.discovery_filter_blockchain_networks_enabled && 
+          filters.blockchainNetworks && 
+          filters.blockchainNetworks.length > 0) {
+        query = query.where(sql`${collaborations.company_blockchain_networks} && ${filters.blockchainNetworks}::text[]`);
+      }
+    } else {
+      console.log('User has discovery filters disabled, showing all collaborations');
     }
     
     return query.orderBy(desc(collaborations.created_at));
