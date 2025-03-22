@@ -48,6 +48,14 @@ interface TelegramRequest extends Request {
   }
 }
 
+// Development fallback Telegram user - this ID corresponds to a record we've created in the database
+const DEV_FALLBACK_USER = {
+  id: '7892486659',
+  first_name: 'Jim',
+  last_name: 'Testing',
+  username: 'jim_testing'
+};
+
 // Helper function to extract Telegram user data from request
 // This type allows us to accept either a full Request or just an object with the header we need
 type TelegramReq = TelegramRequest | { 
@@ -75,12 +83,7 @@ function getTelegramUserFromRequest(req: TelegramReq) {
       // In development mode, provide a fallback test user
       if (process.env.NODE_ENV !== 'production') {
         console.log('Using development fallback for Telegram data');
-        return {
-          id: '7892486659', // Using an actual user ID from the log
-          first_name: 'Jim',
-          last_name: 'Testing',
-          username: 'dev_user'
-        };
+        return DEV_FALLBACK_USER;
       }
       
       console.warn('⚠️ No Telegram data found in request');
@@ -562,9 +565,13 @@ export async function registerRoutes(app: Express) {
       
       // Only for development: If no telegram data is found, create a test user in development
       if (!telegramUser && process.env.NODE_ENV !== 'production') {
-        console.log('Development mode: Creating test user data for onboarding');
-        telegramUser = {
-          id: '12345678901', // Unique test ID
+        console.log('Development mode: Using test user data for onboarding');
+        telegramUser = DEV_FALLBACK_USER;
+      }
+      
+      if (!telegramUser) {
+        return res.status(401).json({ error: 'No Telegram user data found' });
+      }2345678901', // Unique test ID
           first_name: req.body.first_name || 'Test',
           last_name: req.body.last_name || 'User',
           username: req.body.handle || 'test_user',
