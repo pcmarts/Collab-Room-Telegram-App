@@ -42,17 +42,41 @@ export function registerDebugRoutes(app: Express) {
       console.log(`Debug endpoint: User has swiped on ${swipedCollaborationIds.length} collaborations`);
       
       // 2. Get all active collaborations not created by this user
-      const collabs = await db
+      console.log(`Debug endpoint: Filtering out collaborations created by user ID: ${dbUser.id}`);
+      
+      // First check if the user has any collaborations
+      const userCollabs = await db
         .select()
         .from(collaborations)
-        .where(
-          and(
-            not(eq(collaborations.creator_id, dbUser.id)),
-            eq(collaborations.status, 'active')
-          )
-        );
+        .where(eq(collaborations.creator_id, dbUser.id));
       
-      console.log(`Debug endpoint: Found ${collabs.length} active collaborations not created by user`);
+      console.log(`Debug endpoint: User has created ${userCollabs.length} collaborations`);
+      if (userCollabs.length > 0) {
+        console.log(`Debug endpoint: Sample user collab: ${JSON.stringify({
+          id: userCollabs[0].id,
+          creator_id: userCollabs[0].creator_id
+        })}`);
+      }
+      
+      // Get all active collaborations
+      const allActiveCollabs = await db
+        .select()
+        .from(collaborations)
+        .where(eq(collaborations.status, 'active'));
+      
+      console.log(`Debug endpoint: Total active collaborations: ${allActiveCollabs.length}`);
+      
+      // Filter them manually to ensure we're correctly excluding user's collaborations
+      const collabs = allActiveCollabs.filter(collab => {
+        // For debugging purposes - log unexpected collabs
+        if (collab.creator_id === dbUser.id) {
+          console.log(`Debug endpoint: FOUND USER'S OWN COLLABORATION: ID ${collab.id} by creator ${collab.creator_id}`);
+          return false; // Exclude this collab
+        }
+        return true; // Include collabs not created by user
+      });
+      
+      console.log(`Debug endpoint: Found ${collabs.length} active collaborations not created by user ${dbUser.id}`);
       
       // 3. Filter out collaborations the user has already swiped on
       const filteredCollabs = collabs.filter(collab => 
