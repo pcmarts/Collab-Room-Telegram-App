@@ -36,6 +36,7 @@ export interface IStorage {
   createSwipe(swipe: InsertSwipe): Promise<Swipe>;
   getUserSwipes(userId: string): Promise<Swipe[]>;
   getCollaborationSwipes(collaborationId: string): Promise<Swipe[]>;
+  getPotentialMatchesForHost(userId: string): Promise<any[]>; // Get users who swiped right on host's collaborations
   
   // Notification methods
   createNotification(notification: InsertCollabNotification): Promise<CollabNotification>;
@@ -463,6 +464,83 @@ export class DatabaseStorage implements IStorage {
         .orderBy(desc(swipes.created_at));
     } catch (error) {
       console.error("Error getting collaboration swipes:", error);
+      throw error;
+    }
+  }
+  
+  async getPotentialMatchesForHost(userId: string): Promise<any[]> {
+    try {
+      // 1. Get all collaborations created by this user
+      const userCollabs = await this.getUserCollaborations(userId);
+      if (!userCollabs.length) {
+        return [];
+      }
+      
+      const collabIds = userCollabs.map(collab => collab.id);
+      
+      // 2. Find all right swipes by other users on these collaborations
+      const rightSwipes = await db
+        .select({
+          swipe: swipes,
+          user: users,
+          company: companies,
+          collaboration: collaborations
+        })
+        .from(swipes)
+        .where(and(
+          inArray(swipes.collaboration_id, collabIds),
+          eq(swipes.direction, 'right') // Only get right swipes (interest)
+        ))
+        .innerJoin(users, eq(swipes.user_id, users.id))
+        .innerJoin(companies, eq(users.id, companies.user_id))
+        .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
+        .orderBy(desc(swipes.created_at));
+      
+      // 3. Filter out users that the host has already swiped on
+      // Get all swipes made by the host
+      const hostSwipes = await this.getUserSwipes(userId);
+      const hostSwipeMap = new Map();
+      
+      // Create a map of user_id -> collaboration_id -> direction
+      // This lets us quickly check if the host has already swiped on a particular user for a particular collab
+      hostSwipes.forEach(swipe => {
+        if (!hostSwipeMap.has(swipe.user_id)) {
+          hostSwipeMap.set(swipe.user_id, new Map());
+        }
+        hostSwipeMap.get(swipe.user_id).set(swipe.collaboration_id, swipe.direction);
+      });
+      
+      // Filter out already-swiped users
+      const potentialMatches = rightSwipes.filter(match => {
+        const userMap = hostSwipeMap.get(match.user.id);
+        if (!userMap) return true; // Host hasn't swiped on this user at all
+        
+        // Check if host has swiped on this user for this collaboration
+        return !userMap.has(match.collaboration.id);
+      });
+      
+      // 4. Format the data for the frontend
+      return potentialMatches.map(match => ({
+        id: match.swipe.id,
+        swipe_id: match.swipe.id,
+        user_id: match.user.id,
+        collaboration_id: match.collaboration.id,
+        collaboration_type: match.collaboration.collab_type,
+        collaboration_description: match.collaboration.description,
+        collaboration_topics: match.collaboration.topics,
+        swipe_direction: match.swipe.direction,
+        swipe_created_at: match.swipe.created_at,
+        user_first_name: match.user.first_name,
+        user_last_name: match.user.last_name,
+        user_twitter_followers: match.user.twitter_followers,
+        company_name: match.company.name,
+        company_job_title: match.company.job_title,
+        company_twitter_followers: match.company.twitter_followers,
+        requester_company: match.company.name,
+        requester_role: match.company.job_title
+      }));
+    } catch (error) {
+      console.error("Error getting potential matches for host:", error);
       throw error;
     }
   }
