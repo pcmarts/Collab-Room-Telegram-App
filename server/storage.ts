@@ -64,6 +64,7 @@ export interface CollaborationFilters {
   hasToken?: boolean;
   fundingStages?: string[];
   blockchainNetworks?: string[];
+  excludeOwn?: boolean; // Controls whether to exclude collaborations created by the current user
 }
 
 export class DatabaseStorage implements IStorage {

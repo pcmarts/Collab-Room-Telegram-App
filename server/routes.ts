@@ -2144,7 +2144,10 @@ export async function registerRoutes(app: Express) {
         minUserFollowers: req.query.minUserFollowers as string | undefined,
         hasToken: req.query.hasToken ? req.query.hasToken === 'true' : undefined,
         fundingStages: req.query.fundingStages ? (req.query.fundingStages as string).split(',') : undefined,
-        blockchainNetworks: req.query.blockchainNetworks ? (req.query.blockchainNetworks as string).split(',') : undefined
+        blockchainNetworks: req.query.blockchainNetworks ? (req.query.blockchainNetworks as string).split(',') : undefined,
+        // For testing purposes, we can include a flag to show the user's own collaborations
+        // Default to undefined, which will use the default behavior of excluding own collaborations
+        excludeOwn: req.query.excludeOwn !== undefined ? req.query.excludeOwn === 'true' : undefined
       };
 
       // Get filtered collaborations
