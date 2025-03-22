@@ -2273,10 +2273,11 @@ export async function registerRoutes(app: Express) {
         const collaboration = await storage.getCollaboration(collaborationId);
         
         if (collaboration) {
-          // Get the creator's collaborations
-          const creatorCollaborations = await storage.getUserCollaborations(collaboration.creator_id);
+          // Get the creator's user info 
+          const creatorUser = await storage.getUser(collaboration.creator_id);
+          const creatorName = creatorUser ? `${creatorUser.first_name} ${creatorUser.last_name || ''}`.trim() : 'someone';
           
-          // Get user's swipes on the creator's collaborations
+          // Get the user's swipes on the creator's collaborations
           const creatorSwipes = await storage.getUserSwipes(collaboration.creator_id);
           
           // Check if the creator has swiped right on any of the user's collaborations
@@ -2290,13 +2291,14 @@ export async function registerRoutes(app: Express) {
           
           if (matchingSwipes.length > 0) {
             isMatch = true;
+            console.log(`MATCH FOUND! User ${user.id} matched with ${creatorUser?.id} on collaboration ${collaborationId}`);
             
             // Create match notifications for both users
             await storage.createNotification({
               user_id: user.id,
               collaboration_id: collaborationId,
               type: 'match',
-              content: `You matched with ${collaboration.creator_name || 'someone'} on their "${collaboration.collab_type}" collaboration!`,
+              content: `You matched with ${creatorName} on their "${collaboration.collab_type}" collaboration!`,
               is_read: false,
               is_sent: false
             });
