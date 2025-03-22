@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { 
   X, Info, Check, Coffee, Calendar, Megaphone, Twitter, 
   Linkedin, Building, Mic, Radio, Video, FileText, BookOpen,
-  RotateCcw, SlidersVertical, Loader2
+  RotateCcw, SlidersVertical, Loader2, UserCheck
 } from "lucide-react";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
@@ -362,6 +362,30 @@ const NewsletterCard = ({ data }) => {
       </div>
     </div>
   );
+};
+
+// Helper function to get the appropriate icon for a collaboration type
+const getCollabTypeIcon = (collabType: string) => {
+  switch (collabType?.toLowerCase()) {
+    case "podcast":
+      return <Mic className="w-3 h-3" />;
+    case "twitter-spaces":
+    case "twitter spaces":
+      return <Twitter className="w-3 h-3" />;
+    case "livestream":
+    case "live stream":
+      return <Video className="w-3 h-3" />;
+    case "research-report":
+    case "research report":
+      return <FileText className="w-3 h-3" />;
+    case "newsletter":
+      return <BookOpen className="w-3 h-3" />;
+    case "blog-post":
+    case "blog post":
+      return <FileText className="w-3 h-3" />;
+    default:
+      return <Megaphone className="w-3 h-3" />;
+  }
 };
 
 // My Collaboration Card - Shows when another user is requesting to collaborate on the active user's own collaboration
@@ -942,24 +966,66 @@ export default function DiscoverPage() {
     try {
       const currentCard = cards[currentIndex];
       if (currentCard && currentCard.id) {
-        console.log(`Recording ${direction} swipe for collaboration ID: ${currentCard.id}`);
-        console.log("API Request payload:", {
-          collaboration_id: currentCard.id,
-          direction: direction
-        });
-        
-        // Call the API to record the swipe
-        console.log("Sending API request to /api/swipes...");
-        const swipeResult = await apiRequest(
-          '/api/swipes', 
-          'POST',
-          {
+        // Check if this is a potential match card
+        if (currentCard.isPotentialMatch) {
+          console.log(`Recording ${direction} swipe for potential match with ID: ${currentCard.id}`);
+          console.log("API Request payload for potential match:", {
+            swipe_id: currentCard.id,
+            direction: direction
+          });
+          
+          // For potential matches, we need different handling
+          if (direction === "right") {
+            // Call the API to record the "accept match" action
+            // This would create a match between the two users
+            console.log("Sending API request to create a match...");
+            const matchResult = await apiRequest(
+              '/api/swipes', 
+              'POST',
+              {
+                swipe_id: currentCard.id, // The original swipe ID
+                direction: direction,
+                is_potential_match: true
+              }
+            );
+            
+            console.log('Match decision recorded successfully:', matchResult);
+          } else {
+            // If swiped left on a potential match, we just record the rejection
+            console.log("Rejecting potential match");
+            const rejectResult = await apiRequest(
+              '/api/swipes', 
+              'POST',
+              {
+                swipe_id: currentCard.id,
+                direction: direction,
+                is_potential_match: true
+              }
+            );
+            
+            console.log('Match rejection recorded successfully:', rejectResult);
+          }
+        } else {
+          // This is a regular collaboration card
+          console.log(`Recording ${direction} swipe for collaboration ID: ${currentCard.id}`);
+          console.log("API Request payload:", {
             collaboration_id: currentCard.id,
             direction: direction
-          }
-        );
-        
-        console.log('Swipe recorded successfully:', swipeResult);
+          });
+          
+          // Call the API to record the swipe
+          console.log("Sending API request to /api/swipes...");
+          const swipeResult = await apiRequest(
+            '/api/swipes', 
+            'POST',
+            {
+              collaboration_id: currentCard.id,
+              direction: direction
+            }
+          );
+          
+          console.log('Swipe recorded successfully:', swipeResult);
+        }
       } else {
         console.error("Cannot record swipe - missing card ID:", currentCard);
       }
@@ -968,40 +1034,63 @@ export default function DiscoverPage() {
       console.error('Error details:', JSON.stringify(error));
     }
 
-    // Check if it's a right swipe and check for a match (will be based on database in the future)
+    // Check if it's a right swipe and handle match display
     if (direction === "right") {
-      // In a real app, this would be a server call to check for mutual matches
-      // For now, we'll still use random probability until the matching system is implemented
-      const isMatch = Math.random() < 0.7; // 70% chance of match for easier testing
+      // Get the current card data
+      const card = cards[currentIndex];
       
-      if (isMatch) {
-        // Get the current card data
-        const card = cards[currentIndex];
+      // Different handling based on whether this is a potential match or regular collaboration
+      if (card.isPotentialMatch) {
+        // For potential matches, a right swipe immediately creates a match
+        // since the other person already swiped right on your collaboration
+        const { first_name, last_name, company_name } = card.potentialMatchData;
+        const fullName = last_name ? `${first_name} ${last_name}` : first_name;
         
-        // Parse details if it's a string
-        const details = typeof card.details === 'string' 
-          ? JSON.parse(card.details) 
-          : (card.details || {});
-        
-        // Set the match data with fallbacks to ensure we always have data
+        // Set the match data
         setMatchData({
-          title: card.title || 
-                 details.title || 
-                 details.podcast_name || 
-                 details.short_description || 
-                 "New Collaboration",
-          companyName: getCompanyName(card),
-          collaborationType: getCollaborationTypeFromCard(card)
+          title: `Match with ${fullName}`,
+          companyName: company_name,
+          collaborationType: card.collab_type || "Collaboration"
         });
         
-        console.log("MATCH FOUND! Showing match notification with data:", card);
+        console.log("MATCH CREATED with potential match! Showing match notification with data:", card);
         
         // Show the match notification (after a slight delay to let the card animation finish)
         setTimeout(() => {
           setShowMatch(true);
         }, 400);
       } else {
-        console.log("No match this time (random chance)");
+        // For regular collaborations, we need to check if there's a match
+        // Normally this would be returned from the API when swiping
+        // For now, we'll still use random probability until the matching system is fully implemented
+        const isMatch = Math.random() < 0.7; // 70% chance of match for easier testing
+        
+        if (isMatch) {
+          // Parse details if it's a string
+          const details = typeof card.details === 'string' 
+            ? JSON.parse(card.details) 
+            : (card.details || {});
+          
+          // Set the match data with fallbacks to ensure we always have data
+          setMatchData({
+            title: card.title || 
+                   details.title || 
+                   details.podcast_name || 
+                   details.short_description || 
+                   "New Collaboration",
+            companyName: getCompanyName(card),
+            collaborationType: getCollaborationTypeFromCard(card)
+          });
+          
+          console.log("MATCH FOUND! Showing match notification with data:", card);
+          
+          // Show the match notification (after a slight delay to let the card animation finish)
+          setTimeout(() => {
+            setShowMatch(true);
+          }, 400);
+        } else {
+          console.log("No match this time (random chance)");
+        }
       }
     }
 
