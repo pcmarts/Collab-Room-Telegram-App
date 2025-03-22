@@ -30,7 +30,18 @@ export function registerDebugRoutes(app: Express) {
         return res.status(404).json({ error: `User not found with telegramID: ${telegramId}` });
       }
       
-      // Get discovery cards directly from DB, bypassing storage layer
+      // 1. Get the user's swipes to exclude already swiped collaborations
+      const userSwipes = await db
+        .select()
+        .from(swipes)
+        .where(eq(swipes.user_id, dbUser.id));
+      
+      // Extract the IDs of collaborations the user has already swiped on
+      const swipedCollaborationIds = userSwipes.map(swipe => swipe.collaboration_id);
+      
+      console.log(`Debug endpoint: User has swiped on ${swipedCollaborationIds.length} collaborations`);
+      
+      // 2. Get all active collaborations not created by this user
       const collabs = await db
         .select()
         .from(collaborations)
@@ -41,11 +52,20 @@ export function registerDebugRoutes(app: Express) {
           )
         );
       
+      console.log(`Debug endpoint: Found ${collabs.length} active collaborations not created by user`);
+      
+      // 3. Filter out collaborations the user has already swiped on
+      const filteredCollabs = collabs.filter(collab => 
+        !swipedCollaborationIds.includes(collab.id)
+      );
+      
+      console.log(`Debug endpoint: After filtering out swiped collabs, ${filteredCollabs.length} remain`);
+      
       // Return exact format and structure for debugging
       return res.status(200).json({
         user: dbUser,
-        cardsCount: collabs.length,
-        cards: collabs
+        cardsCount: filteredCollabs.length,
+        cards: filteredCollabs
       });
     } catch (error) {
       console.error('Error in debug discovery-cards endpoint:', error);
