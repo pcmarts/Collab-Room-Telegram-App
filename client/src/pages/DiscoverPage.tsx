@@ -1253,7 +1253,7 @@ export default function DiscoverPage() {
       const fullName = last_name ? `${first_name} ${last_name}` : first_name;
       
       return (
-        <div className="w-full h-full bg-gradient-to-b from-blue-50 to-background p-6 rounded-xl border-2 border-blue-200">
+        <div className="w-full h-full bg-background p-6 rounded-xl border-2 border-blue-200">
           <div className="flex flex-col h-full">
             <div className="mb-4">
               <Badge variant="outline" className="bg-primary/10 mb-2">
