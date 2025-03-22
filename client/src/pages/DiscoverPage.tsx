@@ -1285,8 +1285,7 @@ export default function DiscoverPage() {
               
               {card.topics && card.topics.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-xs text-gray-500 mb-1">Topics of Interest:</p>
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <div className="flex flex-wrap gap-1">
                     {card.topics.map((topic: string, idx: number) => (
                       <span 
                         key={idx} 
