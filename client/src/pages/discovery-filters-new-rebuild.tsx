@@ -231,7 +231,7 @@ export default function DiscoveryFilters() {
         blockchainNetworks: marketingPrefs.discovery_filter_blockchain_networks_enabled || false
       });
     }
-  }, [marketingPrefs]); // Removed form from dependencies to prevent infinite loop
+  }, [marketingPrefs, form]);
 
   // Toggle filter enabled state
   const toggleFilter = (filterName: keyof typeof filtersEnabled) => {
