@@ -48,14 +48,6 @@ interface TelegramRequest extends Request {
   }
 }
 
-// Development fallback Telegram user - this ID corresponds to a record we've created in the database
-const DEV_FALLBACK_USER = {
-  id: '7892486659',
-  first_name: 'Jim',
-  last_name: 'Testing',
-  username: 'jim_testing'
-};
-
 // Helper function to extract Telegram user data from request
 // This type allows us to accept either a full Request or just an object with the header we need
 type TelegramReq = TelegramRequest | { 
@@ -83,7 +75,12 @@ function getTelegramUserFromRequest(req: TelegramReq) {
       // In development mode, provide a fallback test user
       if (process.env.NODE_ENV !== 'production') {
         console.log('Using development fallback for Telegram data');
-        return DEV_FALLBACK_USER;
+        return {
+          id: '123456789',
+          first_name: 'Dev',
+          last_name: 'Test',
+          username: 'dev_user'
+        };
       }
       
       console.warn('⚠️ No Telegram data found in request');
@@ -565,13 +562,9 @@ export async function registerRoutes(app: Express) {
       
       // Only for development: If no telegram data is found, create a test user in development
       if (!telegramUser && process.env.NODE_ENV !== 'production') {
-        console.log('Development mode: Using test user data for onboarding');
-        telegramUser = DEV_FALLBACK_USER;
-      }
-      
-      if (!telegramUser) {
-        return res.status(401).json({ error: 'No Telegram user data found' });
-      }2345678901', // Unique test ID
+        console.log('Development mode: Creating test user data for onboarding');
+        telegramUser = {
+          id: '12345678901', // Unique test ID
           first_name: req.body.first_name || 'Test',
           last_name: req.body.last_name || 'User',
           username: req.body.handle || 'test_user',
@@ -2790,33 +2783,26 @@ export async function registerRoutes(app: Express) {
   // Swipe API endpoint
   app.post("/api/swipes", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Create Swipe Endpoint ============');
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
     
     try {
       const { collaboration_id, direction } = req.body;
       
-      console.log(`Extracted values: collaboration_id=${collaboration_id}, direction=${direction}`);
-      
       if (!collaboration_id || !direction) {
-        console.log('Missing required fields:', { collaboration_id, direction });
         return res.status(400).json({ error: 'Collaboration ID and direction are required' });
       }
       
       // Validate direction is either "left" or "right"
       if (direction !== 'left' && direction !== 'right') {
-        console.log('Invalid direction:', direction);
         return res.status(400).json({ error: 'Direction must be either "left" or "right"' });
       }
       
       // Get user from telegram data
       const telegramData = getTelegramUserFromRequest(req);
       
-      console.log('Telegram data from request:', telegramData);
-      
       if (!telegramData) {
         console.log('No telegram data found in the request');
-        console.log('Available headers:', JSON.stringify(req.headers));
         return res.status(401).json({ error: 'Unauthorized' });
       }
       
@@ -2826,18 +2812,10 @@ export async function registerRoutes(app: Express) {
       // Get the actual user from database using telegram_id
       const user = await storage.getUserByTelegramId(telegramId);
       
-      console.log('User from database:', JSON.stringify(user));
-      
       if (!user) {
         console.log('User not found with telegramId:', telegramId);
         return res.status(404).json({ error: 'User not found' });
       }
-      
-      console.log('Preparing to create swipe with:', {
-        user_id: user.id,
-        collaboration_id,
-        direction
-      });
       
       // Create the swipe record
       const swipe = await storage.createSwipe({
@@ -2847,15 +2825,10 @@ export async function registerRoutes(app: Express) {
       });
       
       console.log(`Successfully created swipe: ${direction} for collaboration ${collaboration_id} by user ${user.id}`);
-      console.log('Swipe record:', JSON.stringify(swipe));
       return res.status(201).json(swipe);
       
     } catch (error) {
       console.error('Error creating swipe:', error);
-      if (error instanceof Error) {
-        console.error('Error details:', error.message);
-        console.error('Error stack:', error.stack);
-      }
       return res.status(500).json({ error: 'Failed to create swipe' });
     }
   });
