@@ -20,8 +20,9 @@ The Discovery System consists of the following key components:
 The collaboration filtering logic is implemented in `server/storage.ts` within the `searchCollaborations` method. The current implementation follows these rules:
 
 1. Only show **active** collaborations (status = 'active')
-2. By default, exclude collaborations created by the current user (controlled by the `excludeOwn` parameter)
-3. Apply additional filtering based on user preferences when enabled:
+2. Exclude collaborations that have already been swiped on by the user (tracked in the swipes table)
+3. By default, exclude collaborations created by the current user (controlled by the `excludeOwn` parameter)
+4. Apply additional filtering based on user preferences when enabled:
    - Collaboration types (collab types)
    - Company tags and sectors
    - Twitter followers count (both user and company)
@@ -29,6 +30,12 @@ The collaboration filtering logic is implemented in `server/storage.ts` within t
    - Blockchain networks
    
 The `excludeOwn` parameter controls whether a user's own collaborations are included in the search results. For the Discovery page, we exclude own collaborations by default (when `excludeOwn` is `undefined` or `true`), showing only other users' collaborations. For other views like personal profiles, we can include own collaborations by setting `excludeOwn` to `false`.
+
+To ensure users don't see repeated content, the system maintains a combined exclusion list containing both:
+1. The user's own collaborations (retrieved from the collaborations table)
+2. Collaborations the user has already swiped on (retrieved from the swipes table)
+
+This ensures that after refreshing the Discovery page, users will only see new collaboration opportunities that they haven't interacted with previously.
 
 ## API Endpoints
 
@@ -55,22 +62,41 @@ The API implementation has the following characteristics:
 5. **Visibility Control**: Fine-grained control over which collaborations are visible to which users
 
 Recent fixes include:
-- Fixed the `excludeOwn` parameter logic in the `searchCollaborations` method to properly handle undefined values
-- Added detailed logging for the collaboration filtering process to aid debugging
-- Improved error handling in the swipe recording endpoint with better validation and error messages
+- Fixed critical issue where previously swiped collaborations would reappear when refreshing the Discovery page
+- Implemented a combined filtering approach that excludes both the user's own collaborations and previously swiped ones
+- Added unified empty state UI that appears consistently when either no collaborations match or user has viewed all available cards
+- Enhanced empty state UI with "Refresh" and "Adjust Filters" buttons to provide clear actions to users
+- Improved logging throughout the filtering process for better debugging capabilities
 
 ## Debugging
 
 For debugging purposes, comprehensive logs are added at various points in the collaboration filtering process:
 
 ```typescript
-// Examples of debug logging in searchCollaborations method
-console.log('Excluding user\'s own collaborations from search results');
-console.log(`Filtering by excluded topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
-console.log(`Converting to PostgreSQL array format: ${pgArrayStr}`);
+// Examples of enhanced debug logging in searchCollaborations method
+console.log(`Found ${userSwipes.length} swipes by user ${userId}`);
+console.log(`Found ${userCollaborations.length} collaborations created by user ${userId}`);
+console.log(`Total IDs to exclude: ${excludeIds.length} (${userCollaborationIds.length} own + ${swipedCollaborationIds.length} swiped)`);
+console.log(`Excluding ${excludeIds.length} total collaborations from results`);
 ```
 
-The swipe recording endpoint also includes detailed logging:
+The updated filtering logic includes detailed logging about exclusions:
+
+```typescript
+// If we have IDs to exclude, use the combined filter
+if (excludeIds.length > 0) {
+  console.log(`Excluding ${excludeIds.length} total collaborations from results`);
+  query = query.where(not(inArray(collaborations.id, excludeIds)));
+} else {
+  // Fallback if no IDs to exclude but we still want to exclude own collaborations
+  if (filters.excludeOwn === undefined || filters.excludeOwn === true) {
+    console.log('No specific IDs to exclude, using fallback creator_id filtering');
+    query = query.where(not(eq(collaborations.creator_id, userId)));
+  }
+}
+```
+
+The swipe recording endpoint also includes detailed logging for tracking user interactions:
 
 ```typescript
 console.log(`Creating swipe record with parameters: ${JSON.stringify(swipeData)}`);
@@ -88,6 +114,15 @@ The Discovery interface is implemented in `client/src/pages/DiscoverPage.tsx` an
 - `SwipeableCard`: Individual card component with swipe gestures
 - `CollaborationDialog`: Modal component for displaying collaboration details
 - `MatchNotification`: Component that displays when a match is found
+- `EmptyState`: Component displayed when no cards are available, with action buttons
+
+The EmptyState component appears in two scenarios:
+1. When no collaborations match the user's filter criteria
+2. When the user has viewed all available collaborations (swiped on everything)
+
+In both cases, the same consistent empty state UI is shown with two action buttons:
+- "Refresh" - Attempts to reload collaborations from the server
+- "Adjust Filters" - Takes the user to the filters page to modify their search criteria
 
 ### Client-Side Implementation
 
