@@ -1,13 +1,11 @@
 import { 
   users, companies, collaborations, collab_applications, collab_notifications, 
   notification_preferences, marketing_preferences, conference_preferences,
-  swipes,
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication,
   type CollabNotification, type InsertCollabNotification,
-  type NotificationPreferences, type MarketingPreferences, type ConferencePreferences,
-  type Swipe, type InsertSwipe
+  type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "@shared/schema";
 import { z } from 'zod';
 import { db } from "./db";
@@ -26,12 +24,6 @@ export interface IStorage {
   getUserCollaborations(userId: string): Promise<Collaboration[]>;
   searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]>;
   updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined>;
-  
-  // Swipe methods
-  createSwipe(swipe: InsertSwipe): Promise<Swipe>;
-  getUserSwipes(userId: string): Promise<Swipe[]>;
-  getDiscoveryCards(userId: string, filters: CollaborationFilters): Promise<Collaboration[]>;
-  undoLastSwipe(userId: string): Promise<boolean>;
   
   // Collaboration applications
   applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication>;
@@ -231,32 +223,8 @@ export class DatabaseStorage implements IStorage {
   }
   
   async searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
-    console.log(`searchCollaborations - Starting search for user: ${userId}`);
-    console.log(`searchCollaborations - Filters provided:`, JSON.stringify(filters));
-    
     // First get the user's marketing preferences to apply any filtering
     const marketingPrefs = await this.getUserMarketingPreferences(userId);
-    console.log(`searchCollaborations - User marketing preferences:`, 
-      marketingPrefs 
-        ? `Found, discovery_filter_enabled: ${marketingPrefs.discovery_filter_enabled}` 
-        : 'Not found'
-    );
-    
-    // Show all collaborations available for debugging
-    const allCollabs = await db
-      .select({
-        id: collaborations.id,
-        creator_id: collaborations.creator_id,
-        collab_type: collaborations.collab_type,
-        status: collaborations.status,
-        title: collaborations.title
-      })
-      .from(collaborations);
-      
-    console.log(`Total collaborations in database before filtering: ${allCollabs.length}`);
-    for (const collab of allCollabs) {
-      console.log(`Collab: ${collab.id}, Type: ${collab.collab_type}, Status: ${collab.status}, Title: ${collab.title}`);
-    }
     
     // Build the base query
     let query = db
@@ -269,107 +237,52 @@ export class DatabaseStorage implements IStorage {
         )
       );
     
-    // Show active collaborations not created by this user
-    const baseFilteredCollabs = await db
-      .select({
-        id: collaborations.id,
-        collab_type: collaborations.collab_type,
-        title: collaborations.title
-      })
-      .from(collaborations)
-      .where(
-        and(
-          not(eq(collaborations.creator_id, userId)),
-          eq(collaborations.status, 'active')
-        )
-      );
-      
-    console.log(`Active collaborations not created by user before additional filtering: ${baseFilteredCollabs.length}`);
-    for (const collab of baseFilteredCollabs) {
-      console.log(`Active Collab: ${collab.id}, Type: ${collab.collab_type}, Title: ${collab.title}`);
-    }
-    
-    // Apply type filters from explicit request parameters - these override preferences
+    // Apply type filters from request
     if (filters.collabTypes && filters.collabTypes.length > 0) {
-      console.log(`searchCollaborations - Filtering by collab types: ${filters.collabTypes.join(', ')}`);
       query = query.where(inArray(collaborations.collab_type, filters.collabTypes));
     }
     
-    // Only apply marketing preference filters if discovery filtering is enabled
-    if (marketingPrefs?.discovery_filter_enabled) {
-      console.log('User has discovery filters enabled, applying filters');
+    // Apply topic filters if enabled in marketing preferences
+    if (marketingPrefs?.discovery_filter_topics_enabled && 
+        marketingPrefs?.filtered_marketing_topics && 
+        marketingPrefs.filtered_marketing_topics.length > 0) {
       
-      // Apply topic filters if enabled in marketing preferences
-      if (marketingPrefs.discovery_filter_topics_enabled && 
-          marketingPrefs.filtered_marketing_topics && 
-          marketingPrefs.filtered_marketing_topics.length > 0) {
-        
-        console.log(`Filtering by excluded topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
-        
-        // This is a more complex filter - we want to exclude collaborations that have ANY of the filtered topics
-        query = query.where(sql`NOT (${collaborations.topics} && ${marketingPrefs.filtered_marketing_topics}::text[])`);
-      }
+      console.log(`Filtering by excluded topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
       
-      // Apply company followers filter if enabled
-      if (marketingPrefs.discovery_filter_company_followers_enabled && filters.minCompanyFollowers) {
-        console.log(`Filtering by min company followers: ${filters.minCompanyFollowers}`);
-        query = query.where(sql`${collaborations.min_company_followers} >= ${filters.minCompanyFollowers}`);
-      }
-      
-      // Apply user followers filter if enabled
-      if (marketingPrefs.discovery_filter_user_followers_enabled && filters.minUserFollowers) {
-        console.log(`Filtering by min user followers: ${filters.minUserFollowers}`);
-        query = query.where(sql`${collaborations.min_user_followers} >= ${filters.minUserFollowers}`);
-      }
-      
-      // Apply token status filter if enabled
-      if (marketingPrefs.discovery_filter_token_status_enabled && filters.hasToken !== undefined) {
-        console.log(`Filtering by token status: ${filters.hasToken}`);
-        query = query.where(eq(collaborations.required_token_status, filters.hasToken));
-      }
-      
-      // Apply funding stages filter if enabled
-      if (marketingPrefs.discovery_filter_funding_stages_enabled && 
-          filters.fundingStages && 
-          filters.fundingStages.length > 0) {
-        console.log(`Filtering by funding stages: ${filters.fundingStages.join(', ')}`);
-        query = query.where(sql`${collaborations.required_funding_stages} && ${filters.fundingStages}::text[]`);
-      }
-      
-      // Apply blockchain networks filter if enabled
-      if (marketingPrefs.discovery_filter_blockchain_networks_enabled && 
-          filters.blockchainNetworks && 
-          filters.blockchainNetworks.length > 0) {
-        console.log(`Filtering by blockchain networks: ${filters.blockchainNetworks.join(', ')}`);
-        query = query.where(sql`${collaborations.company_blockchain_networks} && ${filters.blockchainNetworks}::text[]`);
-      }
-    } else {
-      console.log('User has discovery filters disabled, showing all collaborations');
+      // This is a more complex filter - we want to exclude collaborations that have ANY of the filtered topics
+      query = query.where(sql`NOT (${collaborations.topics} && ${marketingPrefs.filtered_marketing_topics}::text[])`);
     }
     
-    // First check how many collaborations exist in total for debugging
-    const totalCollabs = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(collaborations);
-    console.log(`Total collaborations in database: ${totalCollabs[0]?.count || 0}`);
+    // Apply company followers filter if enabled
+    if (marketingPrefs?.discovery_filter_company_followers_enabled && filters.minCompanyFollowers) {
+      query = query.where(sql`${collaborations.min_company_followers} >= ${filters.minCompanyFollowers}`);
+    }
     
-    // Check how many active collaborations not created by this user exist
-    const activeCollabsNotByUser = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(collaborations)
-      .where(
-        and(
-          not(eq(collaborations.creator_id, userId)),
-          eq(collaborations.status, 'active')
-        )
-      );
-    console.log(`Active collaborations not created by user: ${activeCollabsNotByUser[0]?.count || 0}`);
+    // Apply user followers filter if enabled
+    if (marketingPrefs?.discovery_filter_user_followers_enabled && filters.minUserFollowers) {
+      query = query.where(sql`${collaborations.min_user_followers} >= ${filters.minUserFollowers}`);
+    }
     
-    // Execute the query
-    const results = await query.orderBy(desc(collaborations.created_at));
-    console.log(`searchCollaborations - Found ${results.length} matching collaborations`);
+    // Apply token status filter if enabled
+    if (marketingPrefs?.discovery_filter_token_status_enabled && filters.hasToken !== undefined) {
+      query = query.where(eq(collaborations.required_token_status, filters.hasToken));
+    }
     
-    return results;
+    // Apply funding stages filter if enabled
+    if (marketingPrefs?.discovery_filter_funding_stages_enabled && 
+        filters.fundingStages && 
+        filters.fundingStages.length > 0) {
+      query = query.where(sql`${collaborations.required_funding_stages} && ${filters.fundingStages}::text[]`);
+    }
+    
+    // Apply blockchain networks filter if enabled
+    if (marketingPrefs?.discovery_filter_blockchain_networks_enabled && 
+        filters.blockchainNetworks && 
+        filters.blockchainNetworks.length > 0) {
+      query = query.where(sql`${collaborations.company_blockchain_networks} && ${filters.blockchainNetworks}::text[]`);
+    }
+    
+    return query.orderBy(desc(collaborations.created_at));
   }
   
   async updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined> {
@@ -392,105 +305,6 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error updating collaboration status:", error);
       throw error;
-    }
-  }
-  
-  // Swipe methods
-  async createSwipe(swipe: InsertSwipe): Promise<Swipe> {
-    try {
-      // Make sure direction is either 'left' or 'right'
-      if (swipe.direction !== 'left' && swipe.direction !== 'right') {
-        throw new Error('Invalid swipe direction. Direction must be either "left" or "right".');
-      }
-      
-      const [newSwipe] = await db
-        .insert(swipes)
-        .values(swipe)
-        .returning();
-      
-      // If this is a right swipe (request to collaborate), check for a match
-      if (swipe.direction === 'right') {
-        // Get the collaboration that was swiped on
-        const collaboration = await this.getCollaboration(swipe.collaboration_id);
-        
-        if (collaboration) {
-          // Create a notification for the collaboration creator about the interest
-          await this.createNotification({
-            user_id: collaboration.creator_id,
-            collaboration_id: collaboration.id,
-            type: 'new_interest',
-            content: `Someone is interested in your "${collaboration.collab_type}" collaboration.`,
-            is_read: false,
-            is_sent: false
-          });
-        }
-      }
-      
-      return newSwipe;
-    } catch (error) {
-      console.error("Error creating swipe:", error);
-      throw error;
-    }
-  }
-  
-  async getUserSwipes(userId: string): Promise<Swipe[]> {
-    return db
-      .select()
-      .from(swipes)
-      .where(eq(swipes.user_id, userId))
-      .orderBy(desc(swipes.created_at));
-  }
-  
-  async getDiscoveryCards(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
-    console.log(`getDiscoveryCards - SHOWING ALL ACTIVE COLLABORATIONS NOT BY USER (as requested)`);
-    
-    // Get all active collaborations not created by this user directly, bypassing filters
-    const discoveryCards = await db
-      .select()
-      .from(collaborations)
-      .where(
-        and(
-          not(eq(collaborations.creator_id, userId)),
-          eq(collaborations.status, 'active')
-        )
-      )
-      .orderBy(desc(collaborations.created_at));
-    
-    // Debug log
-    console.log(`getDiscoveryCards - Found ${discoveryCards.length} active cards not created by user ${userId}`);
-    if (discoveryCards.length > 0) {
-      console.log('Cards to display in feed:');
-      discoveryCards.forEach(card => {
-        console.log(`- Card ID: ${card.id}, Type: ${card.collab_type}, Creator: ${card.creator_id}`);
-      });
-    }
-    
-    return discoveryCards;
-  }
-  
-  async undoLastSwipe(userId: string): Promise<boolean> {
-    try {
-      // Get the user's most recent swipe
-      const [lastSwipe] = await db
-        .select()
-        .from(swipes)
-        .where(eq(swipes.user_id, userId))
-        .orderBy(desc(swipes.created_at))
-        .limit(1);
-      
-      if (!lastSwipe) {
-        return false; // No swipes to undo
-      }
-      
-      // Delete the last swipe
-      const result = await db
-        .delete(swipes)
-        .where(eq(swipes.id, lastSwipe.id));
-      
-      return true;
-    } catch (error) {
-      console.error("Error undoing last swipe:", error);
-      return false;
     }
   }
   

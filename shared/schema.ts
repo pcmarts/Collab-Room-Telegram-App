@@ -434,15 +434,6 @@ export const collab_notifications = pgTable('collab_notifications', {
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
-// User swipes on collaborations
-export const swipes = pgTable('swipes', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  collaboration_id: uuid('collaboration_id').notNull().references(() => collaborations.id, { onDelete: 'cascade' }),
-  direction: text('direction').notNull(), // "left" or "right" (pass or request)
-  created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
-});
-
 // Schema validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
@@ -454,7 +445,6 @@ export const insertUserEventSchema = createInsertSchema(user_events);
 export const insertCollaborationSchema = createInsertSchema(collaborations);
 export const insertCollabApplicationSchema = createInsertSchema(collab_applications);
 export const insertCollabNotificationSchema = createInsertSchema(collab_notifications);
-export const insertSwipeSchema = createInsertSchema(swipes);
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -467,7 +457,6 @@ export type UserEvent = typeof user_events.$inferSelect;
 export type Collaboration = typeof collaborations.$inferSelect;
 export type CollabApplication = typeof collab_applications.$inferSelect;
 export type CollabNotification = typeof collab_notifications.$inferSelect;
-export type Swipe = typeof swipes.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
@@ -479,7 +468,6 @@ export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
 export type InsertCollaboration = z.infer<typeof insertCollaborationSchema>;
 export type InsertCollabApplication = z.infer<typeof insertCollabApplicationSchema>;
 export type InsertCollabNotification = z.infer<typeof insertCollabNotificationSchema>;
-export type InsertSwipe = z.infer<typeof insertSwipeSchema>;
 
 // Onboarding schema with validation
 // Rename to applicationSchema for clarity

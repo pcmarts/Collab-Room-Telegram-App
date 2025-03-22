@@ -16,10 +16,6 @@ import {
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Collaboration } from "@shared/schema";
-import { LoadingScreen } from "@/components/LoadingScreen";
 
 import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
@@ -724,9 +720,10 @@ const MyCollabStyles = () => {
 
 export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [cards, setCards] = useState(DUMMY_CARDS);
   const [showDialog, setShowDialog] = useState(false);
   // Store history of swiped cards for undo functionality
-  const [swipeHistory, setSwipeHistory] = useState<Array<{card: Collaboration, direction: "left" | "right", index: number}>>([]);
+  const [swipeHistory, setSwipeHistory] = useState<Array<{card: any, direction: "left" | "right", index: number}>>([]);
   // Match moment states
   const [showMatch, setShowMatch] = useState(false);
   const [matchData, setMatchData] = useState<{
@@ -738,80 +735,6 @@ export default function DiscoverPage() {
     companyName: '',
     collaborationType: ''
   });
-  
-  // Load cards from API using debug endpoint to bypass caching issues
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['/api/debug/discovery-cards'],
-    queryFn: async () => {
-      try {
-        // Use the fetch API directly to ensure we control all aspects of the request
-        const response = await fetch('/api/debug/discovery-cards', {
-          method: 'GET',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
-          },
-          // Include credentials for session cookies
-          credentials: 'include'
-        });
-        
-        if (!response.ok) {
-          throw new Error(`API responded with status: ${response.status}`);
-        }
-        
-        // Read response text and parse JSON manually
-        const text = await response.text();
-        console.log('Debug API response length:', text.length, 'bytes');
-        
-        try {
-          // Parse the JSON response
-          const jsonData = JSON.parse(text);
-          console.log('Debug API response:', jsonData);
-          
-          // Extract cards array from debug response
-          if (jsonData && jsonData.cards && Array.isArray(jsonData.cards)) {
-            console.log(`Got ${jsonData.cards.length} cards from debug API`);
-            return jsonData.cards;
-          } else {
-            console.warn('Debug API returned no cards array:', jsonData);
-            return [];
-          }
-        } catch (parseError) {
-          console.error('Failed to parse JSON response:', parseError);
-          throw new Error(`Failed to parse response: ${parseError.message}`);
-        }
-      } catch (err) {
-        console.error('Error fetching discovery cards:', err);
-        throw err;
-      }
-    },
-    // Disable caching completely 
-    staleTime: 0,
-    cacheTime: 0,
-    // Always refetch on component mount
-    refetchOnMount: 'always'
-  });
-  
-  // Safely access cards array
-  const cards = Array.isArray(data) ? data : [];
-  
-  // Debug: Add detailed logging for cards
-  useEffect(() => {
-    console.log('Cards data updated:', cards);
-    console.log('Number of cards:', cards.length);
-    console.log('Current index:', currentIndex);
-    console.log('First card if available:', cards[0]);
-    console.log('Current card:', cards[currentIndex]);
-    
-    // Log any potential issues with the cards
-    if (cards.length > 0 && currentIndex >= cards.length) {
-      console.warn('⚠️ Current index is out of bounds:', { currentIndex, cardsLength: cards.length });
-    }
-    
-    if (cards.length > 0 && !cards[currentIndex]) {
-      console.warn('⚠️ Current card is undefined at valid index:', currentIndex);
-    }
-  }, [cards, currentIndex]);
   const cardElem = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const [location, setLocation] = useLocation();
@@ -894,90 +817,7 @@ export default function DiscoverPage() {
     ],
   );
 
-  // Mutation for swipe action
-  const queryClient = useQueryClient();
-  const swipeMutation = useMutation({
-    mutationFn: async ({ collaborationId, direction }: { collaborationId: string, direction: "left" | "right" }) => {
-      // Add proper headers and use the correct request format
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-      
-      // Add Telegram data if available
-      if (window.Telegram?.WebApp?.initData) {
-        headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
-      }
-      
-      const response = await fetch('/api/swipes', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          collaborationId,
-          direction
-        }),
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to record swipe: ${response.status} - ${errorText}`);
-      }
-      
-      return await response.json();
-    },
-    onSuccess: (data: any) => {
-      // If the swipe resulted in a match, show the match notification
-      if (data && data.isMatch) {
-        console.log("MATCH FOUND! API confirmed match with data:", data);
-        
-        // Show the match notification
-        setTimeout(() => {
-          setShowMatch(true);
-        }, 400);
-      }
-      
-      // Invalidate the cards query to refresh the list if needed
-      queryClient.invalidateQueries({ queryKey: ['/api/discovery/cards'] });
-    }
-  });
-  
-  // Mutation for undo last swipe
-  const undoMutation = useMutation({
-    mutationFn: async () => {
-      // Add proper headers and use the correct request format
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-      
-      // Add Telegram data if available
-      if (window.Telegram?.WebApp?.initData) {
-        headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
-      }
-      
-      const response = await fetch('/api/swipes/undo', {
-        method: 'POST',
-        headers,
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to undo swipe: ${response.status} - ${errorText}`);
-      }
-      
-      return await response.json();
-    },
-    onSuccess: () => {
-      // Refresh card list after undoing a swipe
-      queryClient.invalidateQueries({ queryKey: ['/api/discovery/cards'] });
-    }
-  });
-
   const handleSwipe = async (direction: "left" | "right") => {
-    if (!cards.length || isLoading) return;
-    
-    const currentCard = cards[currentIndex];
-    
     setConstrained(false);
     const parentWidth =
       cardElem.current?.parentElement?.getBoundingClientRect().width || 1000;
@@ -992,59 +832,59 @@ export default function DiscoverPage() {
       transition: { duration: 0.3 },
     });
 
-    console.log(`Swiped ${direction} on card:`, currentCard);
+    console.log(`Swiped ${direction} on card:`, cards[currentIndex]);
 
     // Save the current card to history before changing index
     setSwipeHistory(prev => [...prev, {
-      card: currentCard,
+      card: cards[currentIndex],
       direction: direction,
       index: currentIndex
     }]);
 
-    // Call the API to record the swipe and check for matches
-    if (currentCard && currentCard.id) {
-      try {
-        await swipeMutation.mutateAsync({
-          collaborationId: currentCard.id,
-          direction
+    // Check if it's a right swipe and simulate a match with high probability for testing
+    if (direction === "right") {
+      // In a real app, this would be a server call to check for mutual matches
+      const isMatch = Math.random() < 0.7; // 70% chance of match for easier testing
+      
+      if (isMatch) {
+        // Get the current card data
+        const card = cards[currentIndex];
+        
+        // Set the match data with fallbacks to ensure we always have data
+        const cardDetails = card.details || {};
+        
+        setMatchData({
+          title: card.title || 
+                 card.blogTitle || 
+                 cardDetails.blog_title || 
+                 card.podcastName || 
+                 cardDetails.podcast_name || 
+                 card.topic || 
+                 cardDetails.short_description || 
+                 card.reportName || 
+                 cardDetails.report_name || 
+                 card.newsletterName || 
+                 cardDetails.newsletter_name || 
+                 "New Collaboration",
+          companyName: card.companyName || "Company",
+          collaborationType: card.collaborationType || getCollaborationTypeFromCard(card)
         });
         
-        // If this is a right swipe, prepare match data to display if a match is found
-        if (direction === "right") {
-          // Parse the details safely
-          let details = {};
-          if (currentCard.details) {
-            try {
-              if (typeof currentCard.details === 'string') {
-                details = JSON.parse(currentCard.details);
-              } else {
-                details = currentCard.details;
-              }
-            } catch (e) {
-              console.error("Failed to parse card details:", e);
-            }
-          }
-          
-          // Get collaboration type from collab_type field or details
-          const collabType = currentCard.collab_type || 
-            (details && details.collaboration_type);
-          
-          // Prepare the match notification data
-          setMatchData({
-            title: getCardTitle(currentCard, details),
-            companyName: getCompanyName(currentCard),
-            collaborationType: collabType || "Collaboration"
-          });
-        }
-      } catch (error) {
-        console.error("Error recording swipe:", error);
+        console.log("MATCH FOUND! Showing match notification with data:", card);
+        
+        // Show the match notification (after a slight delay to let the card animation finish)
+        setTimeout(() => {
+          setShowMatch(true);
+        }, 400);
+      } else {
+        console.log("No match this time (random chance)");
       }
     }
 
-    // Move to next card
     setCurrentIndex((prev) => {
-      if (prev >= cards.length - 1) {
-        return prev; // Stay on last card if we're out of cards
+      if (prev === cards.length - 1) {
+        setCards([...DUMMY_CARDS].sort(() => Math.random() - 0.5));
+        return 0;
       }
       return prev + 1;
     });
@@ -1054,182 +894,76 @@ export default function DiscoverPage() {
     controls.set({ x: 0 });
   };
 
-  // Helper functions for card data
-  const getCardTitle = (card: any, details: any = {}) => {
-    // Try to extract title from various possible locations depending on collab type
-    if (card.collab_type === "Blog Post Feature") {
-      return details.blog_title || "Blog Post";
-    } else if (card.collab_type === "Podcast Guest Appearance") {
-      return details.podcast_name || "Podcast";
-    } else if (card.collab_type === "Twitter Spaces Guest") {
-      return details.short_description || "Twitter Space";
-    } else if (card.collab_type === "Live Stream Guest Appearance") {
-      return details.title || "Live Stream";
-    } else if (card.collab_type === "Report & Research Feature") {
-      return details.report_name || "Research Report";
-    } else if (card.collab_type === "Newsletter Feature") {
-      return details.newsletter_name || "Newsletter";
-    } else if (card.collab_type === "Co-Marketing on Twitter") {
-      return "Twitter Co-Marketing";
-    }
-    
-    // Fallbacks
-    return details.title || card.description?.substring(0, 30) || "Collaboration";
-  };
-  
-  const getCompanyName = (card: any) => {
-    // In the real data, company name might come from a company table join
-    // For now use placeholder until we figure out the exact data structure
-    return card.company_name || "Company";
-  };
-  
-  // Function to determine the collaboration type from a card
-  const getCollaborationTypeFromCard = (card: any) => {
-    if (!card) return "Collaboration";
-    
-    // Try to get the type directly from the collab_type field
-    if (card.collab_type) return card.collab_type;
-    
-    // Otherwise determine based on card type if that exists
-    switch (card.type) {
-      case "podcast":
-        return "Podcast Guest Appearance";
-      case "twitter-spaces":
-        return "Twitter Spaces Guest";
-      case "livestream":
-        return "Live Stream Guest Appearance";
-      case "research-report":
-        return "Report & Research Feature";
-      case "newsletter":
-        return "Newsletter Feature";
-      case "blog-post":
-      case "conference-coffee":
-        return "Blog Post Feature";
-      case "marketing":
-        return "Co-Marketing on Twitter";
-      default:
-        return "Collaboration";
-    }
-  };
-
   // Function to handle undo action
   const handleUndo = async () => {
     // Check if we have any cards in the history
     if (swipeHistory.length === 0) return;
     
-    try {
-      // Call the API to undo the last swipe
-      await undoMutation.mutateAsync();
-      
-      // Get the last swiped card
-      const lastAction = swipeHistory[swipeHistory.length - 1];
-      
-      // Remove the last action from history
-      setSwipeHistory(prev => prev.slice(0, -1));
-      
-      // Set the current index back to the previous card
-      setCurrentIndex(lastAction.index);
-      
-      console.log("Successfully undid last swipe");
-    } catch (error) {
-      console.error("Error undoing swipe:", error);
+    // Get the last swiped card
+    const lastAction = swipeHistory[swipeHistory.length - 1];
+    
+    // Remove the last action from history
+    setSwipeHistory(prev => prev.slice(0, -1));
+    
+    // If we're at index 0 and the cards were reshuffled, we need to restore the original deck
+    if (currentIndex === 0 && lastAction.index === cards.length - 1) {
+      // This is a simplification - in a real app you'd need to store the original deck
+      setCards(DUMMY_CARDS);
     }
+    
+    // Set the current index back to the previous card
+    setCurrentIndex(lastAction.index);
   };
 
   const currentCard = cards[currentIndex];
 
 
 
-  const renderCard = (card: any) => {
+  const renderCard = (card) => {
+    // Check if this is a "mycollab" type card for styling purposes
+    const isMyCollab = card.type === "mycollab";
+    
     // Handle the case where card might be null (at the end of the deck)
     if (!card) {
       return <div className="w-full h-full flex items-center justify-center p-8 text-center text-muted-foreground">No more cards to show</div>;
     }
     
-    // Check if this is a "My Collaboration" type card for styling purposes
-    const isMyCollab = card.collab_type === "My Collaboration";
-    
-    // Parse the details object if it's a string
-    let details = {};
-    if (card.details) {
-      try {
-        if (typeof card.details === 'string') {
-          details = JSON.parse(card.details);
-        } else {
-          details = card.details;
-        }
-      } catch (e) {
-        console.error("Failed to parse card details:", e);
-      }
-    }
-    
-    // Map the real collaboration data to the card components
-    // Create adapter object with needed properties
-    const cardData = {
-      ...card,
-      companyName: card.company_name || "Company",
-      topics: card.topics || [],
-      preferredTopics: details.topics || [],
-      description: card.description || "",
-      role: details.role || "",
-      shortDescription: details.short_description || "",
-      publicationDate: details.publication_date || details.specific_date || "",
-      
-      // Additional properties for specific card types
-      podcastName: details.podcast_name || "",
-      estimatedReach: details.estimated_reach || "",
-      streamingLink: details.podcast_link || "",
-      
-      topic: details.short_description || "",
-      hostHandle: details.twitter_handle || "",
-      hostFollowerCount: details.host_follower_count || "",
-      date: details.specific_date || "",
-      
-      expectedAudience: details.expected_audience_size || "",
-      previousWebinarLink: details.previous_stream_link || "",
-      
-      reportName: details.report_name || "",
-      researchTopic: details.research_topic || "",
-      reportReach: details.estimated_reach || "",
-      reportTargetReleaseDate: details.target_release_date || "",
-      
-      newsletterName: details.newsletter_name || "",
-      totalSubscribers: details.subscribers_count || "",
-      newsletterUrl: details.newsletter_url || "",
-      
-      blogTitle: details.blog_title || ""
-    };
-    
-    // Create the appropriate component based on collaboration type
+    // Create the appropriate component
     let cardContent;
-    switch (card.collab_type) {
-      case "Co-Marketing on Twitter":
-        cardContent = <MarketingCard data={cardData} />;
+    switch (card.type) {
+      case "marketing":
+        cardContent = <MarketingCard data={card} />;
         break;
-      case "Blog Post Feature":
-        cardContent = <BlogPostCollabCard data={cardData} />;
+      case "conference":
+        cardContent = <ConferenceCard data={card} />;
         break;
-      case "Podcast Guest Appearance":
-        cardContent = <PodcastCard data={cardData} />;
+      case "request":
+        cardContent = <RequestCard data={card} />;
         break;
-      case "Twitter Spaces Guest":
-        cardContent = <TwitterSpacesCard data={cardData} />;
+      case "mycollab":
+        cardContent = <MyCollabCard data={card} />;
         break;
-      case "Live Stream Guest Appearance":
-        cardContent = <LiveStreamCard data={cardData} />;
+      case "conference-coffee":
+        // Keeping this case for backward compatibility, but displaying as blog post
+        cardContent = <BlogPostCollabCard data={card} />;
         break;
-      case "Report & Research Feature":
-        cardContent = <ResearchReportCard data={cardData} />;
+      case "podcast":
+        cardContent = <PodcastCard data={card} />;
         break;
-      case "Newsletter Feature":
-        cardContent = <NewsletterCard data={cardData} />;
+      case "twitter-spaces":
+        cardContent = <TwitterSpacesCard data={card} />;
         break;
-      case "My Collaboration":
-        cardContent = <MyCollabCard data={cardData} />;
+      case "livestream":
+        cardContent = <LiveStreamCard data={card} />;
+        break;
+      case "research-report":
+        cardContent = <ResearchReportCard data={card} />;
+        break;
+      case "newsletter":
+        cardContent = <NewsletterCard data={card} />;
         break;
       default:
-        // Fallback to a default marketing card
-        cardContent = <MarketingCard data={cardData} />;
+        cardContent = <MarketingCard data={card} />;
         break;
     }
     
@@ -1246,15 +980,6 @@ export default function DiscoverPage() {
     return cardContent;
   };
 
-  // Debug render state
-  console.log('DiscoverPage rendering with state:', {
-    cardsLength: cards.length,
-    isLoading,
-    hasError: !!error,
-    currentIndex,
-    hasCurrentCard: !!currentCard
-  });
-  
   return (
     <div className="telegram-app min-h-[100svh] bg-background flex flex-col" ref={pageRef}>
       {/* Include the CSS styling component */}
@@ -1274,146 +999,109 @@ export default function DiscoverPage() {
           </Button>
         </div>
         
-        {/* Loading State */}
-        {isLoading ? (
-          <div className="flex-grow flex flex-col justify-center items-center">
-            <LoadingScreen />
-            <p className="text-center mt-4 text-muted-foreground">Loading collaborations...</p>
-          </div>
-        ) : error ? (
-          <div className="flex-grow flex flex-col justify-center items-center p-6 text-center">
-            <div className="bg-red-100 p-4 rounded-lg text-red-800 mb-4">
-              <p>Error loading cards</p>
-              <p className="text-sm mt-2">{error.toString()}</p>
-            </div>
-            <Button onClick={() => refetch()} className="mt-2">
-              Retry
-            </Button>
-          </div>
-        ) : cards.length === 0 ? (
-          <div className="flex-grow flex flex-col justify-center items-center p-6 text-center">
-            <div className="p-6 rounded-lg text-muted-foreground">
-              <p className="mb-2 text-lg">No more cards to discover</p>
-              <p className="text-sm">Check back later for new collaborations or update your filters</p>
-              <Button 
-                onClick={() => setLocation('/discovery-filters')} 
-                className="mt-4 flex items-center gap-2"
+        {/* Adjust card position to be higher on the page */}
+        <div className="flex-grow flex flex-col justify-center">
+          <div className="relative w-[90%] mx-auto aspect-[3/4] mb-6">
+            {/* Background Card (Next in Stack) */}
+            {currentIndex < cards.length - 1 && (
+              <div className="absolute inset-0 transform scale-[0.95] opacity-50">
+                <Card className="w-full h-full p-5 select-none">
+                  {renderCard(cards[currentIndex + 1])}
+                </Card>
+              </div>
+            )}
+
+            {/* Current Card */}
+            <motion.div
+              className="absolute inset-0"
+              ref={cardElem}
+              style={{
+                x,
+                rotate,
+                opacity,
+                background,
+              }}
+              animate={controls}
+              drag="x"
+              dragConstraints={constrained && { left: 0, right: 0 }}
+              dragElastic={1}
+              onDragEnd={(_, info) => {
+                const threshold = 100;
+                if (Math.abs(info.offset.x) > threshold) {
+                  handleSwipe(info.offset.x > 0 ? "right" : "left");
+                }
+              }}
+              whileTap={{ cursor: "grabbing" }}
+            >
+              <Card 
+                className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing"
+                style={currentCard?.type === "mycollab" ? 
+                  {background: "linear-gradient(to bottom right, rgba(76, 29, 149, 1), rgba(0, 0, 0, 1))"} : 
+                  undefined
+                }
               >
-                <SlidersVertical className="h-4 w-4" />
-                <span>Adjust Filters</span>
-              </Button>
-            </div>
-          </div>
-        ) : (
-          /* Card Stack - only show when we have cards and aren't loading */
-          <div className="flex-grow flex flex-col justify-center">
-            <div className="relative w-[90%] mx-auto aspect-[3/4] mb-6">
-              {/* Background Card (Next in Stack) */}
-              {currentIndex < cards.length - 1 && (
-                <div className="absolute inset-0 transform scale-[0.95] opacity-50">
-                  <Card className="w-full h-full p-5 select-none">
-                    {renderCard(cards[currentIndex + 1])}
-                  </Card>
+                {renderCard(currentCard)}
+
+                {/* Action Buttons */}
+                <div className="absolute bottom-5 left-5 right-5">
+                  <div className="flex justify-between gap-1">
+                    {/* No (X) Button */}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                      onClick={() => handleSwipe("left")}
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
+                    
+                    {/* Undo Button */}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={`h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm ${swipeHistory.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={handleUndo}
+                      disabled={swipeHistory.length === 0}
+                    >
+                      <RotateCcw className="h-5 w-5" />
+                    </Button>
+                    
+                    {/* Info Button */}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                      onClick={() => setShowDialog(true)}
+                    >
+                      <Info className="h-5 w-5" />
+                    </Button>
+                    
+                    {/* Yes (Check) Button */}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                      onClick={() => handleSwipe("right")}
+                    >
+                      <Check className="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
-              )}
-
-              {/* Current Card */}
-              {currentCard && (
-                <motion.div
-                  className="absolute inset-0"
-                  ref={cardElem}
-                  style={{
-                    x,
-                    rotate,
-                    opacity,
-                    background,
-                  }}
-                  animate={controls}
-                  drag="x"
-                  dragConstraints={constrained && { left: 0, right: 0 }}
-                  dragElastic={1}
-                  onDragEnd={(_, info) => {
-                    const threshold = 100;
-                    if (Math.abs(info.offset.x) > threshold) {
-                      handleSwipe(info.offset.x > 0 ? "right" : "left");
-                    }
-                  }}
-                  whileTap={{ cursor: "grabbing" }}
-                >
-                  <Card 
-                    className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing"
-                    style={currentCard.collab_type === "My Collaboration" ? 
-                      {background: "linear-gradient(to bottom right, rgba(76, 29, 149, 1), rgba(0, 0, 0, 1))"} : 
-                      undefined
-                    }
-                  >
-                    {renderCard(currentCard)}
-
-                    {/* Action Buttons */}
-                    <div className="absolute bottom-5 left-5 right-5">
-                      <div className="flex justify-between gap-1">
-                        {/* No (X) Button */}
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
-                          onClick={() => handleSwipe("left")}
-                          disabled={swipeMutation.isPending}
-                        >
-                          <X className="h-5 w-5" />
-                        </Button>
-                        
-                        {/* Undo Button */}
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className={`h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm ${swipeHistory.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          onClick={handleUndo}
-                          disabled={swipeHistory.length === 0 || undoMutation.isPending}
-                        >
-                          <RotateCcw className="h-5 w-5" />
-                        </Button>
-                        
-                        {/* Info Button */}
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
-                          onClick={() => setShowDialog(true)}
-                        >
-                          <Info className="h-5 w-5" />
-                        </Button>
-                        
-                        {/* Yes (Check) Button */}
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
-                          onClick={() => handleSwipe("right")}
-                          disabled={swipeMutation.isPending}
-                        >
-                          <Check className="h-5 w-5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              )}
-            </div>
-          
-            {/* Instructions - moved to bottom of flex container right above menu */}
-            <div className="text-center text-sm text-muted-foreground mb-4">
-              <p>→ Swipe right to request collaboration</p>
-              <p>← Swipe left to pass</p>
-            </div>
+              </Card>
+            </motion.div>
           </div>
-        )}
-
+        
+          {/* Instructions - moved to bottom of flex container right above menu */}
+          <div className="text-center text-sm text-muted-foreground mb-4">
+            <p>→ Swipe right to request collaboration</p>
+            <p>← Swipe left to pass</p>
+          </div>
+        </div>
         {/* Detailed View Dialog */}
         <CollaborationDialog
           isOpen={showDialog}
           onClose={() => setShowDialog(false)}
-          collaboration={currentCard || {}}
+          collaboration={currentCard}
         />
         
         {/* Match Notification */}
