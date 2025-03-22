@@ -241,10 +241,13 @@ export class DatabaseStorage implements IStorage {
         eq(collaborations.status, 'active')
       );
     
-    // Only exclude user's own collaborations if specifically requested
-    // This allows for testing with a single user who can see all collaborations
-    if (filters.excludeOwn !== false) {
+    // Exclude user's own collaborations by default, unless explicitly requested not to
+    // In most cases, we want to see collaborations from other users in the discovery page
+    if (filters.excludeOwn === undefined || filters.excludeOwn === true) {
+      console.log('Excluding user\'s own collaborations from search results');
       query = query.where(not(eq(collaborations.creator_id, userId)));
+    } else {
+      console.log('Including user\'s own collaborations in search results');
     }
     
     // Apply type filters from request
