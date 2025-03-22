@@ -246,8 +246,7 @@ export class DatabaseStorage implements IStorage {
     console.log(`Found ${userCollaborations.length} collaborations created by user ${userId}`);
     
     // Create a combined array of IDs to exclude (both user's own and previously swiped)
-    // Using Array.from() to avoid TypeScript downlevelIteration flag issues with Set spreading
-    const excludeIds = Array.from(new Set([...userCollaborationIds, ...swipedCollaborationIds]));
+    const excludeIds = [...new Set([...userCollaborationIds, ...swipedCollaborationIds])];
     console.log(`Total IDs to exclude: ${excludeIds.length} (${userCollaborationIds.length} own + ${swipedCollaborationIds.length} swiped)`);
     
     // Build the base query - we'll handle all exclusions together 
