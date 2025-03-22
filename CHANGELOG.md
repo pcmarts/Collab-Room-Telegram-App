@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2] - 2025-03-22
+
+### Fixed
+- Fixed API parameter mismatch in swipe functionality (client was sending 'collaboration_id' but server expected 'collaborationId')
+- Resolved server port conflict by disabling Telegram bot polling mode
+- Switched Telegram bot to use webhook instead of polling to prevent conflicts
+
 ## [1.0.1] - 2025-03-22
 
 ### Fixed
