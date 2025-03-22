@@ -2783,52 +2783,86 @@ export async function registerRoutes(app: Express) {
   // Swipe API endpoint
   app.post("/api/swipes", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Create Swipe Endpoint ============');
-    console.log('Headers:', req.headers);
-    console.log('Body:', req.body);
+    console.log('Request timestamp:', new Date().toISOString());
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
     
     try {
       const { collaboration_id, direction } = req.body;
       
+      console.log('Parsed request parameters:', { collaboration_id, direction });
+      
       if (!collaboration_id || !direction) {
+        console.log('Validation error: Missing required parameters');
         return res.status(400).json({ error: 'Collaboration ID and direction are required' });
       }
       
       // Validate direction is either "left" or "right"
       if (direction !== 'left' && direction !== 'right') {
+        console.log('Validation error: Invalid direction value:', direction);
         return res.status(400).json({ error: 'Direction must be either "left" or "right"' });
       }
       
       // Get user from telegram data
+      console.log('Attempting to extract telegram user data from request...');
       const telegramData = getTelegramUserFromRequest(req);
       
       if (!telegramData) {
-        console.log('No telegram data found in the request');
+        console.log('Authentication error: No telegram data found in the request');
         return res.status(401).json({ error: 'Unauthorized' });
       }
       
       const telegramId = telegramData.id.toString();
-      console.log(`Telegram ID: ${telegramId} creating swipe for collaboration: ${collaboration_id}`);
+      console.log(`Authentication success: Found Telegram ID: ${telegramId}`);
+      console.log(`User details: first_name=${telegramData.first_name}, last_name=${telegramData.last_name || 'N/A'}, username=${telegramData.username || 'N/A'}`);
+      console.log(`Creating swipe for collaboration: ${collaboration_id}`);
       
       // Get the actual user from database using telegram_id
+      console.log(`Looking up user by Telegram ID: ${telegramId}...`);
       const user = await storage.getUserByTelegramId(telegramId);
       
       if (!user) {
-        console.log('User not found with telegramId:', telegramId);
+        console.log('Database error: User not found with telegramId:', telegramId);
         return res.status(404).json({ error: 'User not found' });
       }
       
+      console.log(`Database success: Found user ${user.id} (${user.first_name} ${user.last_name || ''})`);
+      
+      // Verify that the collaboration exists
+      console.log(`Verifying collaboration ID: ${collaboration_id}...`);
+      try {
+        const collaboration = await storage.getCollaboration(collaboration_id);
+        if (!collaboration) {
+          console.log(`Database error: Collaboration ${collaboration_id} not found`);
+          return res.status(404).json({ error: 'Collaboration not found' });
+        }
+        console.log(`Collaboration verification success: Found type: ${collaboration.collab_type}, status: ${collaboration.status}`);
+      } catch (collabError) {
+        console.error('Error verifying collaboration:', collabError);
+      }
+      
       // Create the swipe record
+      console.log('Creating swipe record with parameters:', {
+        user_id: user.id,
+        collaboration_id,
+        direction
+      });
+      
       const swipe = await storage.createSwipe({
         user_id: user.id,
         collaboration_id,
         direction
       });
       
-      console.log(`Successfully created swipe: ${direction} for collaboration ${collaboration_id} by user ${user.id}`);
+      console.log(`Success: Created swipe record with ID: ${swipe.id}`);
+      console.log(`Details: ${direction} swipe for collaboration ${collaboration_id} by user ${user.id}`);
+      console.log(`Timestamp: ${swipe.created_at}`);
+      
       return res.status(201).json(swipe);
       
     } catch (error) {
       console.error('Error creating swipe:', error);
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
       return res.status(500).json({ error: 'Failed to create swipe' });
     }
   });

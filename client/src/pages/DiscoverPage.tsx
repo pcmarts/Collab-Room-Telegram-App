@@ -849,10 +849,21 @@ export default function DiscoverPage() {
   );
 
   const handleSwipe = async (direction: "left" | "right") => {
+    console.log("=== SWIPE ACTION START ===");
+    console.log(`Swipe direction: ${direction}`);
+    
     // Check if we have a card to swipe
     if (!currentCard) {
+      console.log("No current card available, swipe aborted");
       return;
     }
+    
+    console.log("Current card:", {
+      id: currentCard.id,
+      type: currentCard.collab_type,
+      creator_id: currentCard.creator_id,
+      status: currentCard.status
+    });
     
     setConstrained(false);
     const parentWidth =
@@ -863,12 +874,19 @@ export default function DiscoverPage() {
         ? -parentWidth / 2 - childWidth / 2
         : parentWidth / 2 + childWidth / 2;
 
+    console.log("Animation details:", {
+      parentWidth,
+      childWidth,
+      flyAwayDistance
+    });
+
     await controls.start({
       x: flyAwayDistance,
       transition: { duration: 0.3 },
     });
+    console.log("Card animation completed");
 
-    console.log(`Swiped ${direction} on card:`, cards[currentIndex]);
+    console.log(`Swiped ${direction} on card index:`, currentIndex);
 
     // Save the current card to history before changing index
     setSwipeHistory(prev => [...prev, {
@@ -876,26 +894,36 @@ export default function DiscoverPage() {
       direction: direction,
       index: currentIndex
     }]);
+    console.log("Updated swipe history, new length:", swipeHistory.length + 1);
     
     // Record the swipe in the database
     try {
       const currentCard = cards[currentIndex];
       if (currentCard && currentCard.id) {
         console.log(`Recording ${direction} swipe for collaboration ID: ${currentCard.id}`);
-        
-        // Call the API to record the swipe
-        const swipeResult = await apiRequest('/api/swipes', {
-          method: 'POST',
-          body: JSON.stringify({
-            collaboration_id: currentCard.id,
-            direction: direction
-          })
+        console.log("API Request payload:", {
+          collaboration_id: currentCard.id,
+          direction: direction
         });
         
-        console.log('Swipe recorded:', swipeResult);
+        // Call the API to record the swipe
+        console.log("Sending API request to /api/swipes...");
+        const swipeResult = await apiRequest(
+          '/api/swipes', 
+          'POST',
+          {
+            collaboration_id: currentCard.id,
+            direction: direction
+          }
+        );
+        
+        console.log('Swipe recorded successfully:', swipeResult);
+      } else {
+        console.error("Cannot record swipe - missing card ID:", currentCard);
       }
     } catch (error) {
       console.error('Failed to record swipe:', error);
+      console.error('Error details:', JSON.stringify(error));
     }
 
     // Check if it's a right swipe and check for a match (will be based on database in the future)
