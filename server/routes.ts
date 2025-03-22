@@ -2780,5 +2780,58 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Swipe API endpoint
+  app.post("/api/swipes", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Create Swipe Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+    
+    try {
+      const { collaboration_id, direction } = req.body;
+      
+      if (!collaboration_id || !direction) {
+        return res.status(400).json({ error: 'Collaboration ID and direction are required' });
+      }
+      
+      // Validate direction is either "left" or "right"
+      if (direction !== 'left' && direction !== 'right') {
+        return res.status(400).json({ error: 'Direction must be either "left" or "right"' });
+      }
+      
+      // Get user from telegram data
+      const telegramData = getTelegramUserFromRequest(req);
+      
+      if (!telegramData) {
+        console.log('No telegram data found in the request');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      const telegramId = telegramData.id.toString();
+      console.log(`Telegram ID: ${telegramId} creating swipe for collaboration: ${collaboration_id}`);
+      
+      // Get the actual user from database using telegram_id
+      const user = await storage.getUserByTelegramId(telegramId);
+      
+      if (!user) {
+        console.log('User not found with telegramId:', telegramId);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Create the swipe record
+      const swipe = await storage.createSwipe({
+        user_id: user.id,
+        collaboration_id,
+        direction
+      });
+      
+      console.log(`Successfully created swipe: ${direction} for collaboration ${collaboration_id} by user ${user.id}`);
+      return res.status(201).json(swipe);
+      
+    } catch (error) {
+      console.error('Error creating swipe:', error);
+      return res.status(500).json({ error: 'Failed to create swipe' });
+    }
+  });
+
   return httpServer;
 }
