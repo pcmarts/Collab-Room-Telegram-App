@@ -1066,34 +1066,7 @@ export async function registerRoutes(app: Express) {
   });
 
   // Search Collaborations endpoint
-  app.get("/api/collaborations/search", async (req: TelegramRequest, res: Response) => {
-    try {
-      const telegramUser = getTelegramUserFromRequest(req);
-      if (!telegramUser) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      // Fix the variable name collision - use 'collabs' instead of 'collaborations'
-      const collabs = await db.select()
-        .from(collaborations)
-        .where(not(eq(collaborations.creator_id, user.id)))
-        .orderBy(desc(collaborations.created_at));
-      
-      return res.json(collabs);
-
-    } catch (error) {
-      console.error("Error in collaborations search:", error);
-      return res.status(500).json({ error: 'Failed to fetch collaborations' });
-    }
-  });
+  // Search collaborations endpoint - Removed duplicate
 
   // Apply to Collaboration endpoint
   app.post("/api/collaborations/:id/apply", async (req: TelegramRequest, res: Response) => {

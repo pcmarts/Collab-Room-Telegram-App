@@ -742,17 +742,18 @@ export default function DiscoverPage() {
   const [location, setLocation] = useLocation();
   
   // Fetch collaborations from real API
-  const { data: collaborationsData, isLoading, isError } = useQuery({
+  const { data: collaborationsData, isLoading, isError, error } = useQuery({
     queryKey: ['/api/collaborations/search'],
-    queryFn: async () => {
-      console.log("Fetching collaborations from API");
-      const response = await apiRequest('GET', '/api/collaborations/search');
-      if (!response.ok) {
-        throw new Error("Failed to fetch collaborations");
-      }
-      return response.json() as Promise<Collaboration[]>;
-    }
+    refetchOnWindowFocus: false,
+    retry: 1, // Retry once in case of network issues
   });
+  
+  // Log any query errors
+  useEffect(() => {
+    if (isError) {
+      console.error("Query error:", error);
+    }
+  }, [isError, error]);
 
   // Process the collaborations data
   const cards = collaborationsData || [];
