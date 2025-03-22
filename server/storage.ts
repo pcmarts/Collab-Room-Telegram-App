@@ -31,6 +31,11 @@ export interface IStorage {
   getUserApplications(userId: string): Promise<CollabApplication[]>;
   updateApplicationStatus(id: string, status: string): Promise<CollabApplication | undefined>;
   
+  // Swipe methods
+  createSwipe(swipe: InsertSwipe): Promise<Swipe>;
+  getUserSwipes(userId: string): Promise<Swipe[]>;
+  getCollaborationSwipes(collaborationId: string): Promise<Swipe[]>;
+  
   // Notification methods
   createNotification(notification: InsertCollabNotification): Promise<CollabNotification>;
   getUserNotifications(userId: string): Promise<CollabNotification[]>;
