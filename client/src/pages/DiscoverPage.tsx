@@ -766,46 +766,58 @@ export default function DiscoverPage() {
     document.body.style.height = '100%';
     
     // Ensure the WebApp expands to fullscreen and is properly initialized
-    if (window.Telegram?.WebApp) {
-      // Initialize Telegram WebApp
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
-      
-      // Adaptive viewport height calculation
-      const updateTelegramViewportHeight = () => {
-        // Use Telegram's stable viewport height if available
-        if (window.Telegram.WebApp.viewportStableHeight) {
-          const vh = window.Telegram.WebApp.viewportStableHeight * 0.01;
-          document.documentElement.style.setProperty('--vh', `${vh}px`);
-        } else {
-          // Fallback to window height
-          const vh = window.innerHeight * 0.01;
-          document.documentElement.style.setProperty('--vh', `${vh}px`);
-        }
-      };
-      
-      // Set initial height
-      updateTelegramViewportHeight();
-      
-      // Update on viewport changes
-      const handleViewportChange = () => {
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      try {
+        // Initialize Telegram WebApp
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        
+        // Adaptive viewport height calculation
+        const updateTelegramViewportHeight = () => {
+          try {
+            // Use Telegram's stable viewport height if available
+            if (window.Telegram?.WebApp?.viewportStableHeight) {
+              const vh = window.Telegram.WebApp.viewportStableHeight * 0.01;
+              document.documentElement.style.setProperty('--vh', `${vh}px`);
+            } else {
+              // Fallback to window height
+              const vh = window.innerHeight * 0.01;
+              document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }
+          } catch (e) {
+            console.error("Error updating Telegram viewport height:", e);
+          }
+        };
+        
+        // Set initial height
         updateTelegramViewportHeight();
-      };
-      
-      // Handle Telegram viewport and resize events
-      if (typeof window.Telegram.WebApp.onEvent === 'function') {
-        window.Telegram.WebApp.onEvent('viewportChanged', handleViewportChange);
-      }
-      
-      // Also listen to regular resize events as backup
-      window.addEventListener('resize', updateTelegramViewportHeight);
-      
-      return () => {
-        if (typeof window.Telegram.WebApp.offEvent === 'function') {
-          window.Telegram.WebApp.offEvent('viewportChanged', handleViewportChange);
+        
+        // Update on viewport changes
+        const handleViewportChange = () => {
+          updateTelegramViewportHeight();
+        };
+        
+        // Handle Telegram viewport and resize events
+        if (window.Telegram?.WebApp?.onEvent && typeof window.Telegram.WebApp.onEvent === 'function') {
+          window.Telegram.WebApp.onEvent('viewportChanged', handleViewportChange);
         }
-        window.removeEventListener('resize', updateTelegramViewportHeight);
-      };
+        
+        // Also listen to regular resize events as backup
+        window.addEventListener('resize', updateTelegramViewportHeight);
+        
+        return () => {
+          try {
+            if (window.Telegram?.WebApp?.offEvent && typeof window.Telegram.WebApp.offEvent === 'function') {
+              window.Telegram.WebApp.offEvent('viewportChanged', handleViewportChange);
+            }
+            window.removeEventListener('resize', updateTelegramViewportHeight);
+          } catch (e) {
+            console.error("Error cleaning up Telegram viewport handlers:", e);
+          }
+        };
+      } catch (e) {
+        console.error("Error initializing Telegram WebApp:", e);
+      }
     } else {
       // Not in Telegram WebApp, use regular viewport handling
       const setViewportHeight = () => {
@@ -836,6 +848,11 @@ export default function DiscoverPage() {
   );
 
   const handleSwipe = async (direction: "left" | "right") => {
+    // Check if we have a card to swipe
+    if (!currentCard) {
+      return;
+    }
+    
     setConstrained(false);
     const parentWidth =
       cardElem.current?.parentElement?.getBoundingClientRect().width || 1000;
@@ -868,24 +885,20 @@ export default function DiscoverPage() {
         // Get the current card data
         const card = cards[currentIndex];
         
-        // Set the match data with fallbacks to ensure we always have data
-        const cardDetails = card.details || {};
+        // Parse details if it's a string
+        const details = typeof card.details === 'string' 
+          ? JSON.parse(card.details) 
+          : (card.details || {});
         
+        // Set the match data with fallbacks to ensure we always have data
         setMatchData({
           title: card.title || 
-                 card.blogTitle || 
-                 cardDetails.blog_title || 
-                 card.podcastName || 
-                 cardDetails.podcast_name || 
-                 card.topic || 
-                 cardDetails.short_description || 
-                 card.reportName || 
-                 cardDetails.report_name || 
-                 card.newsletterName || 
-                 cardDetails.newsletter_name || 
+                 details.title || 
+                 details.podcast_name || 
+                 details.short_description || 
                  "New Collaboration",
-          companyName: card.companyName || "Company",
-          collaborationType: card.collaborationType || getCollaborationTypeFromCard(card)
+          companyName: getCompanyName(card),
+          collaborationType: getCollaborationTypeFromCard(card)
         });
         
         console.log("MATCH FOUND! Showing match notification with data:", card);
@@ -923,65 +936,145 @@ export default function DiscoverPage() {
     // Remove the last action from history
     setSwipeHistory(prev => prev.slice(0, -1));
     
-    // If we're at index 0 and the cards were reshuffled, we need to restore the original deck
-    if (currentIndex === 0 && lastAction.index === cards.length - 1) {
-      // This is a simplification - in a real app you'd need to store the original deck
-      setCards(DUMMY_CARDS);
-    }
-    
     // Set the current index back to the previous card
     setCurrentIndex(lastAction.index);
   };
 
+  // Helper function to get company name from details
+  const getCompanyName = (card: Collaboration): string => {
+    if (!card) return "";
+    
+    // Try to extract company name from details
+    try {
+      if (card.details && typeof card.details === 'object') {
+        return card.details.company_name || 
+               card.details.companyName || 
+               "Company";
+      }
+    } catch (e) {
+      console.error("Error parsing company name from details:", e);
+    }
+    
+    return "Company";
+  };
+  
+  // Helper function to get collaboration type from card for display
+  const getCollaborationTypeFromCard = (card: Collaboration): string => {
+    if (!card) return "Collaboration";
+    
+    // Use the collab_type property if available
+    return card.collab_type || "Collaboration";
+  };
+
   const currentCard = cards[currentIndex];
 
+  // Loading and error states
+  if (isLoading) {
+    return (
+      <div className="min-h-[100svh] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-lg">Loading collaborations...</p>
+        </div>
+      </div>
+    );
+  }
 
+  if (isError) {
+    return (
+      <div className="min-h-[100svh] flex items-center justify-center">
+        <div className="text-center p-6">
+          <X className="w-12 h-12 mx-auto mb-4 text-destructive" />
+          <h3 className="text-xl font-semibold mb-2">Error Loading Collaborations</h3>
+          <p className="mb-4">We couldn't load the collaborations. Please try again later.</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
-  const renderCard = (card) => {
-    // Check if this is a "mycollab" type card for styling purposes
-    const isMyCollab = card.type === "mycollab";
-    
+  // No collaborations available
+  if (cards.length === 0) {
+    return (
+      <div className="min-h-[100svh] flex items-center justify-center">
+        <div className="text-center p-6 max-w-md">
+          <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-xl font-semibold mb-2">No Collaborations Available</h3>
+          <p className="mb-4">There are no collaborations available right now. Check back later or adjust your filter settings.</p>
+          <Button onClick={() => setLocation('/discovery-filters')}>
+            <SlidersVertical className="w-4 h-4 mr-2" />
+            Adjust Filters
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const renderCard = (card: Collaboration) => {
     // Handle the case where card might be null (at the end of the deck)
     if (!card) {
       return <div className="w-full h-full flex items-center justify-center p-8 text-center text-muted-foreground">No more cards to show</div>;
     }
     
-    // Create the appropriate component
+    // Parse details if it's a string
+    let details = {};
+    try {
+      if (typeof card.details === 'string') {
+        details = JSON.parse(card.details);
+      } else if (card.details) {
+        details = card.details;
+      }
+    } catch (e) {
+      console.error("Error parsing card details:", e);
+    }
+    
+    // Check if this is a "mycollab" card (a collaboration created by the current user)
+    const isMyCollab = false; // We don't have mycollab cards in the search results since they are filtered out by the API
+    
+    // Create a standardized card data object with fallbacks
+    const cardData = {
+      ...card,
+      details,
+      companyName: getCompanyName(card),
+      title: card.title || 
+             (details as any)?.title || 
+             (details as any)?.podcast_name || 
+             "Collaboration",
+      description: card.description || 
+                  (details as any)?.short_description || 
+                  (details as any)?.description || 
+                  "",
+      type: card.collab_type, // Use the collaboration type from the database
+      collaborationType: card.collab_type || "Collaboration", // For compatibility with the card components
+    };
+    
+    // Create the appropriate component based on collab_type
     let cardContent;
-    switch (card.type) {
-      case "marketing":
-        cardContent = <MarketingCard data={card} />;
-        break;
-      case "conference":
-        cardContent = <ConferenceCard data={card} />;
-        break;
-      case "request":
-        cardContent = <RequestCard data={card} />;
-        break;
-      case "mycollab":
-        cardContent = <MyCollabCard data={card} />;
-        break;
-      case "conference-coffee":
-        // Keeping this case for backward compatibility, but displaying as blog post
-        cardContent = <BlogPostCollabCard data={card} />;
-        break;
+    switch (card.collab_type?.toLowerCase()) {
       case "podcast":
-        cardContent = <PodcastCard data={card} />;
+        cardContent = <PodcastCard data={cardData} />;
         break;
       case "twitter-spaces":
-        cardContent = <TwitterSpacesCard data={card} />;
+      case "twitter spaces":
+        cardContent = <TwitterSpacesCard data={cardData} />;
         break;
       case "livestream":
-        cardContent = <LiveStreamCard data={card} />;
+      case "live stream":
+        cardContent = <LiveStreamCard data={cardData} />;
         break;
       case "research-report":
-        cardContent = <ResearchReportCard data={card} />;
+      case "research report":
+        cardContent = <ResearchReportCard data={cardData} />;
         break;
       case "newsletter":
-        cardContent = <NewsletterCard data={card} />;
+        cardContent = <NewsletterCard data={cardData} />;
+        break;
+      case "blog-post":
+      case "blog post":
+        cardContent = <BlogPostCollabCard data={cardData} />;
         break;
       default:
-        cardContent = <MarketingCard data={card} />;
+        cardContent = <MarketingCard data={cardData} />;
         break;
     }
     
@@ -1053,10 +1146,6 @@ export default function DiscoverPage() {
             >
               <Card 
                 className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing"
-                style={currentCard?.type === "mycollab" ? 
-                  {background: "linear-gradient(to bottom right, rgba(76, 29, 149, 1), rgba(0, 0, 0, 1))"} : 
-                  undefined
-                }
               >
                 {renderCard(currentCard)}
 
@@ -1116,11 +1205,29 @@ export default function DiscoverPage() {
           </div>
         </div>
         {/* Detailed View Dialog */}
-        <CollaborationDialog
-          isOpen={showDialog}
-          onClose={() => setShowDialog(false)}
-          collaboration={currentCard}
-        />
+        {currentCard && (
+          <CollaborationDialog
+            isOpen={showDialog}
+            onClose={() => setShowDialog(false)}
+            collaboration={{
+              // Required props 
+              companyName: getCompanyName(currentCard),
+              // Optional props with actual data
+              title: currentCard.title || "Collaboration Opportunity",
+              collaborationType: currentCard.collab_type || "Collaboration",
+              description: currentCard.description || "",
+              // Ensure collaborationType is always a string
+              type: currentCard.collab_type || undefined,
+              // Remove potentially problematic properties
+              details: undefined, // We've already extracted what we need
+              // Keep the rest of the properties
+              id: currentCard.id,
+              creator_id: currentCard.creator_id,
+              status: currentCard.status || "active",
+              topics: currentCard.topics || []
+            }}
+          />
+        )}
         
         {/* Match Notification */}
         <MatchNotification
