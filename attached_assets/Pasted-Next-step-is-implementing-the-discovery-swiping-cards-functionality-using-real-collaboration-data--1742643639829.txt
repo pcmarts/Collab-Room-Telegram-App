@@ -1,0 +1,89 @@
+Next step is implementing the discovery swiping cards functionality using real collaboration data.
+
+## Data Transition
+
+1. Move the DUMMY_CARDS data structure from DiscoverPage.tsx to a separate file (like client/src/data/dummy-cards.ts) for potential future reference.
+2. Replace dummy data with real collaboration data from the database.
+
+## Discovery Page Implementation
+
+1. Create an API endpoint `/api/discovery/cards` that:
+    - Uses the existing searchCollaborations function from storage.ts
+    - Applies user preferences and filters from the /discovery-filters page
+    - Excludes collaborations the user has already interacted with
+2. Create a new database table called `swipes` with:
+    - id: UUID primary key
+    - user_id: Foreign key to users table
+    - collaboration_id: Foreign key to collaborations table
+    - direction: "left" | "right" (pass or request)
+    - created_at: Timestamp
+3. Update the handleSwipe function to:
+    - Record swipes in the database
+    - When swiping right (request):
+        - Create a collab_application entry with status="pending"
+        - Show in host's discovery feed as "My Collab" card type
+    - **Use Asynchronous Processing for card swiping**:
+- Make database writes non-blocking by using asynchronous calls
+- Continue the card animation and show the next card without waiting for database confirmation
+- Only perform immediate writes for "right swipes" (requests/matches)
+- Batch process "left swipes" to reduce database load
+- This creates the appearance of instant responsiveness
+
+1.  Empty State & Refresh Handling
+
+Add an "end of cards" empty state that shows when:
+
+- User has viewed all available collaborations
+- No collaborations match current filters
+1. Implement refresh functionality:
+    - Add a prominent "Refresh" button on the empty state screen
+    - Allow pull-to-refresh gesture for mobile users
+    - Include text explaining that refreshing may show new collaborations or suggest adjusting filters
+2. Automatic refresh triggers:
+    - When user changes filter preferences in discovery-filters page
+    - When returning to the Discovery page after being away (e.g., from another tab)
+    - Periodically (optional) to check for new collaborations without user action
+
+5.  Add subtle vibration on swipe decisions for mobile
+
+1. Implement card prefetching:
+- Load next batch of cards while user is swiping current set
+- Use pagination (limit/offset) in the API to avoid loading too many at once
+
+## Context Preservation
+
+1. Resume state:
+    - Save discovery session state between app visits
+    - Allow users to continue from where they left off
+
+## Notification System
+
+1. Implement match notifications:
+    - When a host swipes right on an applicant, create a match
+    - Create a collab_notification for the requester
+    - Send telegram notification via the bot.js integration
+        1. Match UI Enhancement:
+            - Update the matches tab to show new matches with an indicator
+            - Add a counter on the match menu icon showing unread matches
+            - Implement the "Chat" action to open Telegram conversation
+        - In the telegram bot notification, include the name of the collab, the company name, the user handle. Give 2 inline keyboard options “Chat”, “more info” and “Launch Collab Room”.
+        - Chat will just be telegram native way of DM’ing the user. It will have a  Prepare template messages - something like “hey we matched on collab room for the X idea. I’m [Name] (hyperlinked to the users X account) from [Company] | Twitter | Linkedin | Website. Looking forward to learning more about the collab”
+        - More info will give a summary of the whole collab, and include all information about the collab, user and company.
+2. Ensure the "undo" functionality works:
+    - Store swipe history locally as already implemented
+    - On undo, remove the last swipe record from database
+    - Return the card to the stack
+
+## Database Queries
+
+- Ensure discovery query excludes:
+    1. User's own collaborations
+    2. Collaborations they've already swiped on
+    3. Applies all active filters set in marketing_preferences
+
+## Testing Plan
+
+1. Test with 7 active collaborations in database
+2. Verify filtering works correctly
+3. Test match creation and notifications
+4. Verify undo functionality
