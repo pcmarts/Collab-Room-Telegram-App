@@ -10,9 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Documentation structure with comprehensive sections for architecture, frontend, backend, database, API, Telegram integration, user flows, and discovery system
 - Changelog to track all modifications to the application
+- Implemented bidirectional matching system showing potential matches directly in discovery feed
+- Added dedicated card UI for potential matches with UserCheck icon and distinctive styling
+- Enhanced swipe handling to process both regular collaborations and potential matches
 
 ### Changed
 - Modified collaboration filtering logic in the discovery feed to only exclude collaborations created by the user themselves, removing all other filtering criteria
+- Updated match notification system to show appropriate information for different match types
 
 ### Fixed
 - Identified why only certain collaborations (specifically research reports) were showing up in the discovery feed

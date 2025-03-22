@@ -4,16 +4,17 @@ The Discovery System is a core feature of The Collab Room that enables users to 
 
 ## Overview
 
-The Discovery System presents users with a feed of collaboration cards that they can swipe through, similar to popular dating apps. Each card represents a collaboration opportunity created by another user.
+The Discovery System presents users with a feed of collaboration cards that they can swipe through, similar to popular dating apps. Each card represents either a collaboration opportunity created by another user or a potential match (a user who has already swiped right on one of your collaborations).
 
 ## Components
 
 The Discovery System consists of the following key components:
 
-1. **Discovery Feed**: Frontend component that displays collaboration cards to users
+1. **Discovery Feed**: Frontend component that displays collaboration cards and potential matches to users
 2. **Collaboration Filtering**: Backend logic that determines which collaborations to show
 3. **User Preferences**: Settings that allow users to customize their discovery experience
-4. **Swiping Mechanism**: Interface for users to accept or reject collaboration opportunities
+4. **Swiping Mechanism**: Interface for users to accept or reject collaboration opportunities or potential matches
+5. **Bidirectional Matching**: System that connects users who show mutual interest in collaborating
 
 ## Filtering Logic
 
@@ -45,9 +46,15 @@ The Discovery System is supported by the following API endpoints:
   - Implemented in `server/routes.ts` with support for various filter parameters
   - By default, excludes collaborations created by the current user (configurable via the `excludeOwn` parameter)
   - Returns properly formatted JSON data for the discovery feed
+
+- `GET /api/potential-matches`: Retrieves users who have swiped right on the current user's collaborations
+  - Returns potential matches with user and collaboration data
+  - Provides information about the original collaboration that was swiped on
+  - These potential matches are displayed in the discovery feed alongside regular collaborations
   
-- `POST /api/swipes`: Records user swipe actions (left/right) on collaborations
-  - Accepts collaboration_id and direction (left/right) parameters
+- `POST /api/swipes`: Records user swipe actions (left/right) on collaborations or potential matches
+  - For regular collaborations: Accepts collaboration_id and direction (left/right) parameters
+  - For potential matches: Accepts swipe_id, direction, and is_potential_match flag
   - Validates both user and collaboration existence
   - Permanently stores swipe data for future matching and analytics
 
@@ -116,6 +123,23 @@ The Discovery interface is implemented in `client/src/pages/DiscoverPage.tsx` an
 - `MatchNotification`: Component that displays when a match is found
 - `EmptyState`: Component displayed when no cards are available, with action buttons
 
+### Card Types
+
+The Discovery feed displays two types of cards:
+
+1. **Regular Collaboration Cards**: Standard cards that represent collaboration opportunities created by other users.
+   - Displayed with styling based on the collaboration type (podcast, twitter spaces, etc.)
+   - Includes collaboration details, company information, and goals
+   
+2. **Potential Match Cards**: Special cards that represent users who have already swiped right on your collaborations.
+   - Displayed with a distinctive blue gradient background and border
+   - Features a "Potential Match" badge with a UserCheck icon
+   - Shows the user's name, company, and job title
+   - Indicates the collaboration type they're interested in
+   - Includes clear instructions for the user to swipe right to connect or left to pass
+
+### Empty States
+
 The EmptyState component appears in two scenarios:
 1. When no collaborations match the user's filter criteria
 2. When the user has viewed all available collaborations (swiped on everything)
@@ -128,13 +152,28 @@ In both cases, the same consistent empty state UI is shown with two action butto
 
 The client-side implementation in DiscoverPage.tsx has the following key features:
 
-1. **API Integration**: Uses React Query to fetch collaborations from the `/api/collaborations/search` endpoint
-2. **State Management**: Manages the state of cards, swipe history, and user interactions
-3. **Error Handling**: Displays appropriate error messages when API requests fail
-4. **Loading States**: Shows loading indicators during data fetching
-5. **Responsive Design**: Adapts to different screen sizes and orientations
+1. **Dual API Integration**: 
+   - Uses React Query to fetch collaborations from the `/api/collaborations/search` endpoint
+   - Makes parallel API call to fetch potential matches from the `/api/potential-matches` endpoint
+   - Combines both data sources into a single card stack for unified display
 
-The implementation was recently improved to use the standard React Query configuration pattern rather than a custom implementation, which provides better error handling and caching capabilities.
+2. **State Management**: 
+   - Manages the state of cards, swipe history, and user interactions
+   - Tracks card type (regular collaboration vs. potential match) for appropriate rendering and actions
+
+3. **Error Handling**: 
+   - Displays appropriate error messages when API requests fail
+   - Handles partial data failures gracefully (e.g., if only one API endpoint succeeds)
+
+4. **Match Notification**: 
+   - Shows match notification when a user swipes right on a potential match
+   - Handles regular collaboration matches through random probability (until database integration)
+
+5. **Responsive Design**: 
+   - Adapts to different screen sizes and orientations
+   - Maintains consistent card interface for both card types
+
+The implementation uses the standard React Query configuration pattern which provides better error handling and caching capabilities.
 
 ## Customization Options
 
@@ -144,11 +183,22 @@ Users can customize their discovery experience through:
 2. **Collaboration Preferences**: Set during onboarding and adjustable later
 3. **Per-session Filters**: Applied during the current discovery session only
 
+## Bidirectional Matching System
+
+The Collab Room implements a bidirectional matching system similar to dating apps, where a match is only created when both parties express interest. The key components of this system are:
+
+1. **User-Initiated Swipes**: Users swipe right on collaborations they're interested in
+2. **Potential Match Exposure**: These swipes appear as "potential matches" in the collaboration creator's discovery feed
+3. **Completion of Match**: When the collaboration creator swipes right on a potential match, a mutual connection is established
+4. **Match Notification**: Both parties are notified of the successful match
+
+This implementation ensures that matches are created only with mutual consent, increasing the quality of connections.
+
 ## Future Enhancements
 
 Planned enhancements to the Discovery System include:
 
-1. Machine learning based recommendations
-2. Enhanced matching algorithms based on user behavior
-3. Improved filtering options with more granular controls
-4. Personalized discovery feeds based on user activity
+1. **Machine learning based recommendations**: Using AI to suggest potentially beneficial collaborations based on user history and preferences
+2. **Enhanced matching algorithms**: Refining the matching system to consider factors like previous successful collaborations and user feedback
+3. **Improved filtering options**: Adding more granular controls for discovering specific types of collaboration opportunities
+4. **Personalized discovery feeds**: Creating custom feeds based on user activity, preferences, and network connections
