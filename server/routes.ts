@@ -2947,10 +2947,12 @@ export async function registerRoutes(app: Express) {
             });
             
             const match = await storage.createMatch({
-              collaboration_id: actualCollaborationId,
+              opportunity_id: actualCollaborationId,
               host_id: hostId,
-              requester_id: requesterId,
-              status: 'active'
+              discoverer_id: requesterId,
+              status: 'active',
+              host_accepted: true,
+              discoverer_accepted: true
             });
             
             console.log(`Success: Created match record with ID: ${match.id}`);
@@ -3164,10 +3166,12 @@ export async function registerRoutes(app: Express) {
               });
               
               const match = await storage.createMatch({
-                collaboration_id: matchedCollaboration.collaboration_id,
+                opportunity_id: matchedCollaboration.collaboration_id,
                 host_id: user.id,
-                requester_id: hostId,
-                status: 'active'
+                discoverer_id: hostId,
+                status: 'active',
+                host_accepted: true,
+                discoverer_accepted: true
               });
               
               console.log(`Success: Created match record with ID: ${match.id}`);

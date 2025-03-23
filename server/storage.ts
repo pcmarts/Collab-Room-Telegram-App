@@ -569,17 +569,17 @@ export class DatabaseStorage implements IStorage {
 
   async getUserMatches(userId: string): Promise<Match[]> {
     try {
-      // Get matches where the user is either host or requester
+      // Get matches where the user is either host or discoverer
       const userMatches = await db
         .select()
         .from(matches)
         .where(
           or(
             eq(matches.host_id, userId),
-            eq(matches.requester_id, userId)
+            eq(matches.discoverer_id, userId)
           )
         )
-        .orderBy(desc(matches.created_at));
+        .orderBy(desc(matches.matched_at));
       return userMatches;
     } catch (error) {
       console.error("Error getting user matches:", error);
@@ -592,8 +592,8 @@ export class DatabaseStorage implements IStorage {
       const collabMatches = await db
         .select()
         .from(matches)
-        .where(eq(matches.collaboration_id, collaborationId))
-        .orderBy(desc(matches.created_at));
+        .where(eq(matches.opportunity_id, collaborationId))
+        .orderBy(desc(matches.matched_at));
       return collabMatches;
     } catch (error) {
       console.error("Error getting collaboration matches:", error);
@@ -625,7 +625,7 @@ export class DatabaseStorage implements IStorage {
         .update(matches)
         .set({ 
           status,
-          updated_at: new Date()
+          last_interaction: new Date()
         })
         .where(eq(matches.id, id))
         .returning();
