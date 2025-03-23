@@ -14,7 +14,8 @@ This documentation is organized into the following sections:
 6. [Telegram Integration](./telegram/README.md) - Integration with Telegram WebApp
 7. [User Flows](./user-flows/README.md) - End-to-end user journeys
 8. [Discovery System](./discovery/README.md) - How the collaboration discovery system works
-9. [Changelog](./CHANGELOG.md) - History of changes to the application
+9. [Matches System](./matches/README.md) - Details on the match display and interaction system
+10. [Changelog](./CHANGELOG.md) - History of changes to the application
 
 ## Quick Start
 
@@ -29,9 +30,10 @@ For developers getting started with the project:
 
 - **Discovery Feed**: Swipeable cards showing collaboration opportunities
 - **Matching System**: Intelligent matching based on user preferences
+- **Matches Page**: View and interact with successful matches
 - **Collaboration Creation**: Create various types of collaboration opportunities
 - **Blockchain Integration**: Support for multiple blockchain networks
-- **Telegram Integration**: Seamless login and notifications via Telegram
+- **Telegram Integration**: Seamless login, chat, and notifications via Telegram
 
 ## Contact
 
