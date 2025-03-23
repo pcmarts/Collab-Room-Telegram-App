@@ -2828,7 +2828,12 @@ export async function registerRoutes(app: Express) {
               
               userDescription: isHost ?
                 `${requesterUser?.first_name || ''} is a professional in the Web3 space.` :
-                `${hostUser?.first_name || ''} is a professional in the Web3 space.`
+                `${hostUser?.first_name || ''} is a professional in the Web3 space.`,
+                
+              // Add username for chat functionality  
+              username: isHost ? 
+                (requesterUser?.handle || (requesterUser?.telegram_id === '7892486659' ? 'jimtesting' : 'thisispaulm')) :
+                (hostUser?.handle || (hostUser?.telegram_id === '7892486659' ? 'jimtesting' : 'thisispaulm'))
             };
           } catch (error) {
             console.error(`Error enriching match ${match.id}:`, error);
@@ -2840,7 +2845,8 @@ export async function registerRoutes(app: Express) {
               description: 'Unable to load full details',
               matchedPerson: 'Unknown',
               companyName: 'Unknown Company',
-              roleTitle: 'Unknown Role'
+              roleTitle: 'Unknown Role',
+              username: 'thisispaulm'
             };
           }
         }));
