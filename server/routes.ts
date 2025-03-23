@@ -1629,7 +1629,10 @@ export async function registerRoutes(app: Express) {
       
       // Get Telegram user ID from request
       const telegramData = getTelegramUserFromRequest(req);
-      const telegramId = telegramData?.id?.toString() || process.env.DEV_USER_ID || '';
+      if (!telegramData) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      const telegramId = telegramData.id.toString();
       console.log(`Telegram ID: ${telegramId} attempting to update collaboration: ${id}`);
       
       // First, get the actual user from the database using telegram_id
@@ -2233,7 +2236,10 @@ export async function registerRoutes(app: Express) {
       
       // Get Telegram user ID from request
       const telegramData = getTelegramUserFromRequest(req);
-      const telegramId = telegramData?.id?.toString() || process.env.DEV_USER_ID || '';
+      if (!telegramData) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      const telegramId = telegramData.id.toString();
       console.log(`Telegram ID: ${telegramId} attempting to update collaboration: ${id}`);
       
       // First, get the actual user from the database using telegram_id
@@ -2297,7 +2303,10 @@ export async function registerRoutes(app: Express) {
       
       // Get Telegram user ID from request
       const telegramData = getTelegramUserFromRequest(req);
-      const telegramId = telegramData?.id?.toString() || process.env.DEV_USER_ID || '';
+      if (!telegramData) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      const telegramId = telegramData.id.toString();
       console.log(`Telegram ID: ${telegramId} attempting to delete collaboration: ${id}`);
       
       // First, get the actual user from the database using telegram_id
