@@ -2846,7 +2846,17 @@ export async function registerRoutes(app: Express) {
         }));
       }
       
-      return res.json(enrichedMatches);
+      // Force a fresh response (prevent 304 Not Modified)
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
+      
+      // Set the ETag and Last-Modified to current timestamp to force browser to treat as new
+      res.setHeader('ETag', `W/"${Date.now().toString()}"`);
+      res.setHeader('Last-Modified', new Date().toUTCString());
+      
+      return res.status(200).json(enrichedMatches);
     } catch (error) {
       console.error('Failed to fetch matches:', error);
       return res.status(500).json({ error: 'Failed to fetch matches' });

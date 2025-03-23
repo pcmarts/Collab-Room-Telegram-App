@@ -177,12 +177,16 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
 export default function MatchesPage() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   
-  // Fetch matches from API
+  // Fetch matches from API with cache busting
   const { data: matches, isLoading, error } = useQuery({
-    queryKey: ['/api/matches'],
+    queryKey: ['/api/matches', new Date().getTime()], // Add timestamp to prevent caching
     queryFn: async () => {
-      return await apiRequest('/api/matches');
-    }
+      // Add cache-busting query parameter instead of headers
+      const timestamp = new Date().getTime();
+      return await apiRequest(`/api/matches?_=${timestamp}`);
+    },
+    staleTime: 0, // Force refetch every time
+    refetchOnMount: true // Ensure fresh data on mount
   });
   
   // This disables the default fixed positioning and overflow hidden
