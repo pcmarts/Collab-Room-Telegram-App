@@ -6,7 +6,7 @@ The Collab Room exposes a RESTful API for frontend-backend communication. This d
 
 All API endpoints use Telegram WebApp authentication. The Telegram user data is sent in the `x-telegram-init-data` header, which is verified by the backend.
 
-In development mode, a fallback user is provided for testing purposes.
+> **Note:** As of version 1.0.1, development fallback users have been removed to enforce strict authentication. All API requests must include valid Telegram authentication headers.
 
 ## API Endpoints
 

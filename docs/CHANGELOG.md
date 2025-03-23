@@ -5,6 +5,18 @@ All notable changes to The Collab Room will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-03-23
+
+### Changed
+- Standardized all API requests to use the apiRequest function for consistent Telegram authentication headers
+- Removed all development fallbacks and test user generation to enforce strict authentication
+
+### Fixed
+- Fixed "Error Loading Collaborations" issue in the /discover page by ensuring proper Telegram authentication
+- Resolved authentication issues in /my-collaborations page by standardizing API request handling
+- Removed DUMMY_CARDS array in DiscoverPage.tsx that was interfering with real API responses
+- Fixed syntax errors in server/routes.ts by removing unexpected character sequences
+
 ## [Unreleased]
 
 ### Added

@@ -74,6 +74,9 @@ Recent fixes include:
 - Added unified empty state UI that appears consistently when either no collaborations match or user has viewed all available cards
 - Enhanced empty state UI with "Refresh" and "Adjust Filters" buttons to provide clear actions to users
 - Improved logging throughout the filtering process for better debugging capabilities
+- Removed DUMMY_CARDS array that was causing inconsistent behavior with real API data
+- Standardized all API requests to use the apiRequest function for consistent Telegram authentication
+- Fixed "Error Loading Collaborations" issue by ensuring proper Telegram header authentication
 
 ## Debugging
 
