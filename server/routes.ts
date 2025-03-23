@@ -2596,26 +2596,10 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
       
-      // Special development mode handling for testing without Telegram data
-      const isDevelopmentFallback = process.env.NODE_ENV !== 'production' && telegramUser.id === '123456789';
-      
-      // Get user from database
-      let user;
-      if (!isDevelopmentFallback) {
-        user = await storage.getUserByTelegramId(telegramUser.id.toString());
-        if (!user) {
-          console.log('User not found for Telegram ID:', telegramUser.id);
-          return res.status(404).json({ error: 'User not found' });
-        }
-      } else {
-        // For development mode with no Telegram auth, get any user
-        const [anyUser] = await db.select().from(users).limit(1);
-        user = anyUser;
-        console.log('Using development fallback user ID:', user?.id);
-      }
-      
+      // Get user from database - no development fallbacks
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
       if (!user) {
-        console.log('No user found even for development fallback');
+        console.log('User not found for Telegram ID:', telegramUser.id);
         return res.status(404).json({ error: 'User not found' });
       }
       
@@ -2623,72 +2607,8 @@ export async function registerRoutes(app: Express) {
       const userMatches = await storage.getUserMatches(user.id);
       console.log(`Found ${userMatches.length} matches for user ${user.id}`);
       
-      // In development mode with the fallback user, if no matches are found, create demo data
-      let enrichedMatches = [];
-      
-      if (userMatches.length === 0 && isDevelopmentFallback) {
-        console.log('Creating demo match data for development environment');
-        
-        // Create demo matches for development testing
-        enrichedMatches = [
-          {
-            id: "demo-match-1",
-            matchDate: "March 15, 2025",
-            status: "active",
-            collaborationType: "Podcast Guest Appearance",
-            description: "Join our weekly podcast discussing the latest in Web3 technology and decentralized finance.",
-            details: {
-              podcast_name: "The Web3 Revolution",
-              audience_size: "15,000+ weekly listeners",
-              episode_format: "Interview-style discussion, 45-60 minutes",
-              topic_areas: "Blockchain, DeFi, Web3 infrastructure"
-            },
-            matchedPerson: "Alex Thompson",
-            companyName: "Web3 Insights",
-            roleTitle: "VP of Marketing",
-            companyDescription: "Web3 Insights is a leading media company focusing on blockchain technology and crypto innovations.",
-            userDescription: "Alex is a seasoned tech executive who has been in the Web3 space for over 5 years."
-          },
-          {
-            id: "demo-match-2",
-            matchDate: "March 17, 2025",
-            status: "active",
-            collaborationType: "Twitter Spaces Guest",
-            description: "Co-host a Twitter Space discussing DeFi trends and market analysis.",
-            details: {
-              audience_size: "8,000+ average listeners",
-              duration: "60-90 minutes",
-              topics: "DeFi protocols, yield farming, market trends",
-              format: "Panel discussion with audience Q&A"
-            },
-            matchedPerson: "James Wilson",
-            companyName: "DeFi Daily",
-            roleTitle: "Content Director",
-            companyDescription: "DeFi Daily delivers the latest news and insights in decentralized finance.",
-            userDescription: "James leads content strategy and community engagement for DeFi publications."
-          },
-          {
-            id: "demo-match-3",
-            matchDate: "March 19, 2025",
-            status: "active",
-            collaborationType: "Research Report Feature",
-            description: "Collaborate on an industry research report about institutional blockchain adoption.",
-            details: {
-              audience: "Enterprise clients and institutional investors",
-              length: "25-30 pages with data visualization",
-              timeline: "4 weeks to completion",
-              distribution: "Published on company website and distributed to 5,000+ subscribers"
-            },
-            matchedPerson: "Sarah Johnson",
-            companyName: "Blockchain Analytics",
-            roleTitle: "Market Researcher",
-            companyDescription: "Blockchain Analytics provides data-driven research and insights for the crypto industry.",
-            userDescription: "Sarah specializes in market research and data analysis for blockchain technologies."
-          }
-        ];
-      } else {
-        // Process real database matches
-        enrichedMatches = await Promise.all(userMatches.map(async (match) => {
+      // Process matches from database - no development fallbacks
+      const enrichedMatches = await Promise.all(userMatches.map(async (match) => {
           try {
             // Get collaboration data
             const [collaboration] = await db.select()
@@ -2769,7 +2689,6 @@ export async function registerRoutes(app: Express) {
             };
           }
         }));
-      }
       
       // Allow caching for a short period (30 seconds)
       res.setHeader('Cache-Control', 'private, max-age=30');
