@@ -98,6 +98,42 @@ export async function notifyUserApproved(chatId: number) {
     "Your application to join The Collab Room has been approved! You can now access all features."
   );
 }
+
+export async function notifyMatchCreated(hostUserId: string, requesterUserId: string, collaborationId: string) {
+  try {
+    // Get user and collaboration details from database
+    const [hostUser] = await db.select().from(users).where(eq(users.id, hostUserId));
+    const [requesterUser] = await db.select().from(users).where(eq(users.id, requesterUserId)); 
+    const [collaboration] = await db.select().from(collaborations).where(eq(collaborations.id, collaborationId));
+    
+    // Get company details
+    const [hostCompany] = await db.select().from(companies).where(eq(companies.user_id, hostUserId));
+    const [requesterCompany] = await db.select().from(companies).where(eq(companies.user_id, requesterUserId));
+    
+    // Convert telegram_id to integers for chat ID
+    const hostChatId = parseInt(hostUser.telegram_id);
+    const requesterChatId = parseInt(requesterUser.telegram_id);
+    
+    // Format HTML messages with rich formatting
+    const hostMessage = `🎉 <b>New Match!</b>\n\n${requesterUser.first_name} ${requesterUser.last_name || ''} from ${requesterCompany?.name || 'a company'} is a match for your <b>${collaboration.collab_type}</b> collaboration!`;
+    const requesterMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ''} from ${hostCompany?.name || 'a company'} just approved your collab request for <b>${collaboration.collab_type}</b>!`;
+    
+    // Create interactive keyboards for both users
+    const hostKeyboard = {
+      inline_keyboard: [
+        [{ text: "💬 Chat with Collaborator", url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}` }],
+        [{ text: "🚀 Discover More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }],
+        [{ text: "👥 View Matches", web_app: { url: `${WEBAPP_URL}/matches` } }]
+      ]
+    };
+    
+    // Send notifications with fallback options if HTML formatting fails
+    await sendDirectFormattedMessage(hostChatId, hostMessage, hostKeyboard);
+    await sendDirectFormattedMessage(requesterChatId, requesterMessage, requesterKeyboard);
+  } catch (error) {
+    console.error('[Telegram Bot] Error preparing match notifications:', error);
+  }
+}
 ```
 
 ### Admin Notifications
@@ -259,6 +295,120 @@ Administrators can use additional bot commands:
 1. **`/users`**: Lists all users on the platform
 2. **`/approve <user_id>`**: Approves a user's application
 3. **`/reject <user_id>`**: Rejects a user's application
+
+## Enhanced Notification System
+
+The application includes an enhanced notification system for matches between users:
+
+### HTML Formatting
+
+Messages sent via Telegram can include HTML formatting for better readability:
+
+```typescript
+// Example of HTML-formatted message
+const formattedMessage = `🎉 <b>New Match!</b>\n\n${userName} from <a href="${companyWebsite}">${companyName}</a> is a match!`;
+```
+
+The system supports:
+- Bold text using `<b>` tags
+- Links using `<a href="...">` tags
+- Line breaks with `\n`
+
+### Interactive Buttons
+
+Notifications include interactive buttons that allow users to:
+
+1. Chat directly with their match
+2. View more collaborations in the app
+3. View their current matches
+
+```typescript
+// Example of interactive keyboard with buttons
+const keyboard = {
+  inline_keyboard: [
+    [{ text: "💬 Chat with Collaborator", url: `https://t.me/${username}` }],
+    [{ text: "🚀 Discover More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }],
+    [{ text: "👥 View Matches", web_app: { url: `${WEBAPP_URL}/matches` } }]
+  ]
+};
+```
+
+### Error Handling & Fallbacks
+
+The notification system includes robust error handling and fallbacks:
+
+1. If HTML formatting fails, the system falls back to plain text
+2. If inline buttons fail, the system provides simplified alternatives
+3. Detailed error logging helps diagnose and fix issues
+
+```typescript
+try {
+  // First try enhanced HTML-formatted message
+  await sendDirectFormattedMessage(chatId, htmlMessage, keyboard);
+} catch (error) {
+  // Fall back to plain text message
+  const plainMessage = `New Match! ${userName} from ${companyName} matched with you!`;
+  await bot.sendMessage(chatId, plainMessage);
+}
+```
+
+### Enhanced Message Sending
+
+The application uses a special utility function for sending formatted messages with enhanced debugging and error handling:
+
+```typescript
+async function sendDirectFormattedMessage(chatId: number, message: string, keyboard: any) {
+  try {
+    // Validate inputs
+    if (!chatId || isNaN(chatId)) {
+      throw new Error(`Invalid chat ID: ${chatId}`);
+    }
+    
+    // Detect HTML tags to ensure proper formatting
+    const hasHtmlTags = message.includes('<b>') || message.includes('<i>') || message.includes('<a href');
+    
+    // Prepare message options
+    const messageOptions = {
+      parse_mode: hasHtmlTags ? 'HTML' : undefined, // Only set HTML mode when tags are present
+      reply_markup: keyboard,
+      disable_web_page_preview: false
+    };
+    
+    // Send and return the message
+    return await bot.sendMessage(chatId, message, messageOptions);
+  } catch (error) {
+    // Detailed error analysis and logging
+    if (error instanceof Error) {
+      if (error.message.includes('chat not found')) {
+        console.error(`Chat ID ${chatId} not found. Verify the Telegram ID is correct.`);
+      } else if (error.message.includes('bot was blocked')) {
+        console.error(`User has blocked the bot.`);
+      } else if (error.message.includes('can\'t parse entities')) {
+        console.error(`HTML parsing error. Check your HTML formatting.`);
+      }
+    }
+    throw error;
+  }
+}
+```
+
+Key features of this utility:
+1. Automatic HTML tag detection to only use HTML mode when needed
+2. Detailed error diagnosis for common Telegram API errors
+3. Comprehensive input validation to prevent invalid API calls
+
+### Telegram API Limitations
+
+When working with Telegram notifications, note these important limitations:
+
+1. **Callback Data Size**: The `callback_data` parameter for inline buttons has a 64-byte limit
+   - Solution: Keep callback data short or use web_app buttons instead
+   
+2. **HTML Parsing**: Not all HTML tags are supported
+   - Supported tags: `<b>`, `<i>`, `<u>`, `<s>`, `<a>`, `<code>`, `<pre>`
+   
+3. **Message Length**: Messages have a 4096 character limit
+   - Solution: Keep notifications concise and focused
 
 ## Security Considerations
 

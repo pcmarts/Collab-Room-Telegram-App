@@ -2,6 +2,26 @@
 
 All notable changes to the Collab Room project will be documented in this file.
 
+## [Version 1.3.1] - 2025-03-23
+
+### Fixed
+- Fixed Telegram notification HTML formatting to properly display bold text and links.
+- Resolved BUTTON_DATA_INVALID error by restructuring the keyboard buttons.
+- Improved fallback notification system with better error handling and simplified buttons.
+
+### Changed
+- Enhanced direct message sending with better validation for chat IDs and HTML tag detection.
+- Restructured notification keyboards to avoid Telegram's 64-byte callback data limit.
+- Added fallback keyboard options when HTML formatting fails to ensure users always have functional buttons.
+
+### Technical Details
+- The primary issue was with Telegram's callback_data size limitation (64 bytes max):
+  1. The previous implementation included full UUIDs in callback data, exceeding the limit
+  2. This caused the BUTTON_DATA_INVALID error, preventing the message from being delivered
+- Fixed by:
+  1. Removing the problematic callback buttons and replacing with web_app buttons
+  2. Adding a View Matches button linking directly to the matches page
+  3. Implementing fallback keyboards with simplified options when HTML formatting fails
 
 
 ## [Version 1.3.0] - 2025-03-23
