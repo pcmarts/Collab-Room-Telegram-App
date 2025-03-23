@@ -166,7 +166,13 @@ export function PotentialMatchCard({
 }
 ```
 
-The PotentialMatchCard has a distinctive background gradient and layout to differentiate it from regular collaboration cards.
+The PotentialMatchCard has been redesigned with the following features:
+- Dynamic glowing effect using the GlowEffect component, providing a modern and engaging appearance
+- Full-width and full-height layout that maximizes the available space
+- Dark background with high contrast text (using #FAFAFA)
+- Clear visual hierarchy with prominent user and company information
+- Optimized layout that fills the entire parent container
+- Custom styling for topics and collaboration details
 
 ### Form Components
 

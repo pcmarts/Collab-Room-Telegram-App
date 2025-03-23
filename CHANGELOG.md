@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.3.5] - 2025-03-23
+
+### Changed
+- Improved UI design of PotentialMatchCard with a modern glowing effect
+- Removed white border from card containers in DiscoverPage
+- Enhanced card components to utilize full container space
+
+### Technical Details
+- Updated PotentialMatchCard component with a more prominent glowing effect replacing the previous colored border
+- Set GlowEffect component to fill the entire card with `className="absolute inset-0 w-full h-full"`
+- Removed `border-2 border-blue-200` styling from the parent Card element in DiscoverPage
+- Restructured flex layouts in card components to use full height and width
+- Adjusted padding strategy from outer containers to inner content elements
+- Applied consistent #FAFAFA text color for better readability against dark backgrounds
+
 ## [Version 1.3.4] - 2025-03-23
 
 ### Changed

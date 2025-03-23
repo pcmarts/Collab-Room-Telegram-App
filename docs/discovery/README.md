@@ -169,10 +169,12 @@ The Discovery feed displays two types of cards:
    - Includes collaboration details, company information, and goals
    
 2. **Potential Match Cards**: Special cards that represent users who have already swiped right on your collaborations.
-   - Displayed with a distinctive blue gradient background and border
+   - Redesigned with a dynamic glowing effect that fills the entire card
    - Features a "Potential Match" badge with a UserCheck icon
+   - Uses high-contrast text (color: #FAFAFA) for better readability
    - Shows the user's name, company, and job title
    - Indicates the collaboration type they're interested in
+   - Optimized to use the full space of the parent container
    - Includes clear instructions for the user to swipe right to connect or left to pass
 
 ### Empty States
