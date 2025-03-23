@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, PartyPopper, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Confetti } from '@/components/ui/confetti';
 
 interface MatchNotificationProps {
   isOpen: boolean;
@@ -17,9 +18,9 @@ interface MatchNotificationProps {
 
 export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificationProps) {
   const [location, setLocation] = useLocation();
-  // Portal root no longer needed since we render directly
   
-  const [confettiColors] = useState([
+  // Define bright, festive confetti colors
+  const confettiColors = [
     '#FF5733', // Orange
     '#33FFC4', // Turquoise
     '#337DFF', // Blue
@@ -32,7 +33,7 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
     '#FF1493', // Deep Pink
     '#7B68EE', // Medium Slate Blue
     '#FF8C00', // Dark Orange
-  ]);
+  ];
   
   // Navigate to matches page and close the notification
   const goToMatches = () => {
@@ -40,55 +41,17 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
     onClose();
   };
 
-  // Create an array of confetti particles
-  const confettiParticles = Array.from({ length: 150 }).map((_, i) => {
-    // Randomize properties for each particle
-    const size = Math.random() * 10 + 4;
-    const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-    // Position particles across the whole screen
-    const x = Math.random() * 100; // percent
-    const y = Math.random() * 100; // percent
-    const rotation = Math.random() * 360;
-    const opacity = 0.5 + Math.random() * 0.5;
-    const delay = Math.random() * 2;
-
-    return { id: i, size, color, x, y, rotation, opacity, delay };
-  });
-
   return (
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50" style={{ perspective: "500px" }}>
-          {/* Confetti particles */}
-          {confettiParticles.map((particle) => (
-            <motion.div
-              key={particle.id}
-              className="absolute rounded-full"
-              style={{
-                width: particle.size,
-                height: particle.size,
-                backgroundColor: particle.color,
-                left: `${particle.x}%`,
-                top: `-${particle.size}px`,
-                zIndex: 100,
-                opacity: particle.opacity,
-              }}
-              initial={{ y: "-10%", rotate: 0, scale: 0 }}
-              animate={{ 
-                y: "120%", 
-                rotate: particle.rotation * 5,
-                scale: [0, 1, 1, 0.5, 0],
-                x: [(Math.random() - 0.5) * 200, (Math.random() - 0.5) * 200]
-              }}
-              transition={{ 
-                duration: 5 + Math.random() * 5,
-                ease: "easeOut",
-                delay: particle.delay,
-                repeat: 3,
-                repeatType: "loop"
-              }}
-            />
-          ))}
+          {/* Confetti effect */}
+          <Confetti 
+            active={isOpen} 
+            colors={confettiColors} 
+            particleCount={200}
+            duration={6000}
+          />
           
           {/* Dark overlay */}
           <motion.div
