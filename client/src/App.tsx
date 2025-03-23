@@ -165,17 +165,8 @@ function App() {
         // Prefetch profile data
         await queryClient.prefetchQuery({
           queryKey: ['/api/profile'],
-          queryFn: async () => {
-            const response = await fetch('/api/profile');
-            if (!response.ok) {
-              // If profile not found, don't throw error - user might be new
-              if (response.status === 404) {
-                return null;
-              }
-              throw new Error('Failed to load profile');
-            }
-            return response.json();
-          }
+          // Let the default queryFn from the query client handle this
+          // which will automatically include the Telegram headers
         });
 
         // Allow minimum time for loading screen visibility
