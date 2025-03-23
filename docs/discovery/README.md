@@ -126,6 +126,23 @@ The Discovery interface is implemented in `client/src/pages/DiscoverPage.tsx` an
 - `MatchNotification`: Component that displays when a match is found
 - `EmptyState`: Component displayed when no cards are available, with action buttons
 
+### Discovery Filters
+
+The discovery filters interface is implemented in `client/src/pages/discovery-filters.tsx`. This page provides users with options to customize their discovery experience by applying various filters.
+
+The discovery filters page has been consolidated into a single implementation in version 1.3.2. Previously, there were multiple versions of the discovery filters page with similar functionality, causing maintenance challenges. The current implementation provides:
+
+- Filters for collaboration types
+- Filters for content topics
+- Company sector/tag filters
+- Filters based on follower counts (both user and company)
+- Funding stage filters
+- Token status filters
+- Blockchain network filters
+- Master toggle for enabling/disabling all filters
+
+Each filter can be independently enabled or disabled, giving users fine-grained control over their discovery experience. The filter settings are stored in the user's marketing preferences in the database.
+
 ### Card Types
 
 The Discovery feed displays two types of cards:
@@ -229,3 +246,29 @@ Planned enhancements to the Discovery System include:
 2. **Enhanced matching algorithms**: Refining the matching system to consider factors like previous successful collaborations and user feedback
 3. **Improved filtering options**: Adding more granular controls for discovering specific types of collaboration opportunities
 4. **Personalized discovery feeds**: Creating custom feeds based on user activity, preferences, and network connections
+
+## Contributing to the Discovery System
+
+When making changes to the Discovery System, follow these guidelines:
+
+1. **Code Organization**:
+   - All discovery filter logic is centralized in `client/src/pages/discovery-filters.tsx`
+   - Individual filter pages are in `client/src/pages/filters/` directory
+   - Main discovery page is in `client/src/pages/DiscoverPage.tsx`
+
+2. **Avoid Duplication**:
+   - Do not create multiple implementations of the same feature
+   - If improvements are needed, modify the existing implementation rather than creating a new file
+   - Document any significant changes in this README and in the CHANGELOG.md
+
+3. **Testing Changes**:
+   - Test all filter combinations to ensure they work correctly
+   - Verify that changes don't break existing functionality
+   - Check both mobile and desktop views for proper responsiveness
+
+4. **Documentation**:
+   - Update this document when changing discovery functionality
+   - Add code comments for complex logic
+   - Use version numbers in CHANGELOG.md when releasing significant changes
+
+These guidelines will help maintain a clean, consistent, and maintainable codebase for the Discovery System.

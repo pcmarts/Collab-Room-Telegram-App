@@ -5,6 +5,23 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.3.2] - 2025-03-23
+
+### Changed
+- Consolidated multiple discovery filters implementations into a single, cleaner version.
+- Simplified the discovery filters file structure by keeping only the main implementation.
+- Updated routing in App.tsx to use the standardized discovery filters page.
+
+### Removed
+- Removed redundant discovery filter pages (`discovery-filters-new.tsx`, `discovery-filters-new.tsx.fixed`).
+- Removed unnecessary filter page redirects and routes.
+
+### Technical Details
+- Previously, the application had 4 different discovery filter implementations, causing confusion and maintenance issues.
+- The `discovery-filters-new-rebuild.tsx` file was identified as the main implementation and kept as `discovery-filters.tsx`.
+- All references to old filter pages were updated in App.tsx to maintain consistent navigation.
+- No functional changes were made to the filters themselves, maintaining the existing user experience.
+
 ## [Version 1.3.1] - 2025-03-23
 
 ### Removed
