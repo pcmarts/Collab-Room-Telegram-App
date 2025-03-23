@@ -166,7 +166,15 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
         <Button variant="outline" onClick={onBack}>
           Back to Matches
         </Button>
-        <Button onClick={() => window.open(`https://t.me/${match.username || 'jimtesting'}`, '_blank')}>
+        <Button 
+          onClick={() => {
+            if (match.username) {
+              window.open(`https://t.me/${match.username}`, '_blank');
+            } else {
+              alert('No Telegram username found for this contact');
+            }
+          }}
+        >
           <MessageCircle className="w-4 h-4 mr-2" />
           Chat
         </Button>
@@ -361,7 +369,13 @@ export default function MatchesPage() {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => window.open(`https://t.me/${match.username || 'jimtesting'}`, '_blank')}
+                    onClick={() => {
+                      if (match.username) {
+                        window.open(`https://t.me/${match.username}`, '_blank');
+                      } else {
+                        alert('No Telegram username found for this contact');
+                      }
+                    }}
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Chat

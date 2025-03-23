@@ -2831,9 +2831,7 @@ export async function registerRoutes(app: Express) {
                 `${hostUser?.first_name || ''} is a professional in the Web3 space.`,
                 
               // Add username for chat functionality  
-              username: isHost ? 
-                (requesterUser?.handle || (requesterUser?.telegram_id === '7892486659' ? 'jimtesting' : 'thisispaulm')) :
-                (hostUser?.handle || (hostUser?.telegram_id === '7892486659' ? 'jimtesting' : 'thisispaulm'))
+              username: isHost ? requesterUser?.handle : hostUser?.handle
             };
           } catch (error) {
             console.error(`Error enriching match ${match.id}:`, error);
@@ -2846,7 +2844,7 @@ export async function registerRoutes(app: Express) {
               matchedPerson: 'Unknown',
               companyName: 'Unknown Company',
               roleTitle: 'Unknown Role',
-              username: 'thisispaulm'
+              username: null
             };
           }
         }));
