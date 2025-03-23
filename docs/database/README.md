@@ -184,6 +184,10 @@ The project includes several migration scripts for evolving the database schema:
 - `db-migrate-add-details-to-swipes.js`: Adds the 'details' JSON column to the swipes table
 - `db-migrate-fix-matches-table.js`: Drops and recreates the matches table with correct foreign key references
 
+### Recent Database Cleanup
+
+In version 1.3.1, the redundant `match_requests` table was removed from the database as it was not being used by the application. The table contained no data and had no code references. All matching functionality is properly handled by the `matches` table, which tracks relationships between hosts and requesters.
+
 When updating the database schema:
 
 1. Update models in `shared/schema.ts`

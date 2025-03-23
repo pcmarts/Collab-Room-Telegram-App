@@ -2,6 +2,16 @@
 
 All notable changes to the Collab Room project will be documented in this file.
 
+## [Version 1.3.1] - 2025-03-23
+
+### Removed
+- Removed redundant `match_requests` table from the database that was not being used by the application.
+
+### Technical Details
+- The `match_requests` table was identified as redundant as it contained no data and had no code references.
+- The table was safely dropped without affecting application functionality.
+- All matching functionality is properly handled by the `matches` table, which tracks relationships between hosts and requesters.
+
 
 
 ## [Version 1.3.0] - 2025-03-23
