@@ -289,6 +289,8 @@ export class DatabaseStorage implements IStorage {
         marketingPrefs.collabs_to_discover.length > 0) {
       
       console.log(`Filtering by collaboration types: ${marketingPrefs.collabs_to_discover.join(', ')}`);
+      // Using inArray for single value field (not an array)
+      // This implements OR logic between selected collaboration types
       query = query.where(inArray(collaborations.collab_type, marketingPrefs.collabs_to_discover));
     }
     
@@ -352,6 +354,8 @@ export class DatabaseStorage implements IStorage {
       console.log(`Converting funding stages to PostgreSQL array format: ${fundingStagesPgArray}`);
       
       // Filter for collaborations where funding stage matches any selected funding stage
+      // Using = ANY() operator since this is a single value field (not an array)
+      // This implements OR logic between selected funding stages
       query = query.where(sql`${collaborations.company_funding_stage} = ANY(${fundingStagesPgArray}::text[])`);
     }
     
