@@ -11,7 +11,7 @@ export async function apiRequest(
   url: string,
   method: string = "GET",
   data?: unknown | undefined,
-): Promise<Response> {
+): Promise<any> {
   // Add Telegram initData to headers if available
   const headers: Record<string, string> = {};
   if (window.Telegram?.WebApp?.initData) {
@@ -29,7 +29,7 @@ export async function apiRequest(
   });
 
   await throwIfResNotOk(res);
-  return res;
+  return await res.json(); // Parse JSON response
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

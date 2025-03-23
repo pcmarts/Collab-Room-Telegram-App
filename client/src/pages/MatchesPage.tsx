@@ -195,6 +195,8 @@ export default function MatchesPage() {
         // Add cache-busting query parameter instead of headers
         const timestamp = new Date().getTime();
         console.log('Fetching matches with timestamp:', timestamp);
+        
+        // Direct use of queryClient's default queryFn which properly handles JSON parsing
         const response = await apiRequest(`/api/matches?_=${timestamp}`);
         console.log('Matches API response:', response);
         
