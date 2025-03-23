@@ -187,12 +187,12 @@ export default function MatchesPage() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
   
-  // Fetch matches from API with cache busting
+  // Fetch matches from API
   const { data: matches, isLoading, error } = useQuery({
-    queryKey: ['/api/matches', new Date().getTime()], // Add timestamp to prevent caching
+    queryKey: ['/api/matches'], 
     queryFn: async () => {
       try {
-        // Add cache-busting query parameter instead of headers
+        // Add cache-busting query parameter only once per request
         const timestamp = new Date().getTime();
         console.log('Fetching matches with timestamp:', timestamp);
         
@@ -214,8 +214,8 @@ export default function MatchesPage() {
         throw err;
       }
     },
-    staleTime: 0, // Force refetch every time
-    refetchOnMount: true, // Ensure fresh data on mount
+    staleTime: 30000, // Keep data fresh for 30 seconds
+    refetchOnWindowFocus: false, // Don't refetch on window focus
     retry: 1 // Only retry once to prevent infinite loops
   });
   

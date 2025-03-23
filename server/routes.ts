@@ -2850,14 +2850,13 @@ export async function registerRoutes(app: Express) {
         }));
       }
       
-      // Force a fresh response (prevent 304 Not Modified)
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      res.setHeader('Surrogate-Control', 'no-store');
+      // Allow caching for a short period (30 seconds)
+      res.setHeader('Cache-Control', 'private, max-age=30');
       
-      // Set the ETag and Last-Modified to current timestamp to force browser to treat as new
-      res.setHeader('ETag', `W/"${Date.now().toString()}"`);
+      // Set a stable ETag based on the content
+      const responseBody = JSON.stringify(enrichedMatches);
+      const etag = require('crypto').createHash('md5').update(responseBody).digest('hex');
+      res.setHeader('ETag', `W/"${etag}"`);
       res.setHeader('Last-Modified', new Date().toUTCString());
       
       return res.status(200).json(enrichedMatches);
