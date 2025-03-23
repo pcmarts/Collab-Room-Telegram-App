@@ -146,39 +146,52 @@ export default function ProfileOverview() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      setIsSubmitting(true);
-
       if (!formData.first_name) {
         throw new Error("First name is required");
       }
 
       const submitData = {
         ...formData,
+        telegram_id: profile.user.telegram_id,
         handle: profile.user.handle,
-        // Remove initData from request body as it's added to headers by apiRequest
       };
 
-      const response = await apiRequest("/api/onboarding", "POST", submitData);
-
-      if (!response.ok) {
-        throw new Error("Failed to update profile");
-      }
-
-      // Don't use invalidation which would trigger a new request 
-      // Instead, get the updated profile data from the response and update the cache directly
-      const updatedProfile = await response.json();
+      // The apiRequest function already returns the parsed JSON response
+      const responseData = await apiRequest("/api/onboarding", "POST", submitData);
       
-      // Update the cache with new data
-      queryClient.setQueryData(["/api/profile"], updatedProfile);
-
-      toast({
-        title: "Success!",
-        description: "Profile updated successfully",
-      });
-
-      setLocation("/dashboard");
+      // Log the response to see what we're getting back
+      console.log("Profile update response:", responseData);
+      
+      if (responseData.success) {
+        // Update the cache with current profile data to avoid refetching
+        // We'll use the existing profile data since the server doesn't return the updated profile
+        const currentProfileData = queryClient.getQueryData<ProfileData>(["/api/profile"]);
+        if (currentProfileData) {
+          // Update the user data with the submitted form data
+          const updatedProfileData = {
+            ...currentProfileData,
+            user: {
+              ...currentProfileData.user,
+              ...formData
+            }
+          };
+          // Update the cache directly
+          queryClient.setQueryData(["/api/profile"], updatedProfileData);
+        }
+        
+        toast({
+          title: "Success!",
+          description: responseData.message || "Profile updated successfully",
+        });
+        
+        setLocation("/dashboard");
+      } else {
+        // Handle case where server returns success: false
+        throw new Error(responseData.error || "Failed to update profile");
+      }
     } catch (error) {
       console.error("Form submission error:", error);
       toast({
@@ -327,8 +340,6 @@ export default function ProfileOverview() {
             )}
           </Button>
         </div>
-
-
       </div>
     </div>
   );
