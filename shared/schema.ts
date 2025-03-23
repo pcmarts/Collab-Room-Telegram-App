@@ -446,12 +446,14 @@ export const swipes = pgTable('swipes', {
 // Matches table for storing successful collaboration matches
 export const matches = pgTable('matches', {
   id: uuid('id').primaryKey().defaultRandom(),
-  collaboration_id: uuid('collaboration_id').notNull().references(() => collaborations.id, { onDelete: 'cascade' }),
+  opportunity_id: uuid('opportunity_id').notNull().references(() => collaborations.id, { onDelete: 'cascade' }),
   host_id: uuid('host_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  requester_id: uuid('requester_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  discoverer_id: uuid('discoverer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   status: text('status').notNull().default('active'), // 'active', 'archived', 'completed', etc.
-  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow()
+  last_interaction: timestamp('last_interaction', { withTimezone: true }).defaultNow(),
+  discoverer_accepted: boolean('discoverer_accepted').default(false),
+  host_accepted: boolean('host_accepted').default(false),
+  matched_at: timestamp('matched_at', { withTimezone: true }).defaultNow()
 });
 
 // Schema validation
