@@ -186,7 +186,6 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
 
 export default function MatchesPage() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string>('');
   
   // Fetch matches from API
   const { data: matches, isLoading, error } = useQuery({
@@ -195,23 +194,12 @@ export default function MatchesPage() {
       try {
         // Add cache-busting query parameter only once per request
         const timestamp = new Date().getTime();
-        console.log('Fetching matches with timestamp:', timestamp);
         
         // Direct use of queryClient's default queryFn which properly handles JSON parsing
         const response = await apiRequest(`/api/matches?_=${timestamp}`);
-        console.log('Matches API response:', response);
-        
-        // Update debug info
-        if (response) {
-          setDebugInfo(`Received ${Array.isArray(response) ? response.length : 0} matches`);
-        } else {
-          setDebugInfo('No response received');
-        }
-        
         return response;
       } catch (err) {
         console.error('Error fetching matches:', err);
-        setDebugInfo(`Error: ${err instanceof Error ? err.message : String(err)}`);
         throw err;
       }
     },
@@ -314,32 +302,9 @@ export default function MatchesPage() {
     );
   }
   
-  // Add a function to directly show the match data structure
-  const showDebugData = () => {
-    try {
-      return JSON.stringify(matches, null, 2);
-    } catch (err) {
-      return 'Error stringifying matches data';
-    }
-  };
-
   return (
     <div className="page-scrollable pb-20">
       <h1 className="text-2xl font-bold p-6">My Matches</h1>
-
-      {/* Debug panel */}
-      <div className="px-4 mb-4">
-        <Card className="p-4 bg-yellow-50 border-yellow-300">
-          <h3 className="font-medium mb-2">Debug Info:</h3>
-          <p className="text-sm mb-2">{debugInfo}</p>
-          <details className="text-xs">
-            <summary className="cursor-pointer font-medium">Raw API Response Data</summary>
-            <pre className="mt-2 p-2 bg-black/10 rounded overflow-auto max-h-64 text-xs">
-              {showDebugData()}
-            </pre>
-          </details>
-        </Card>
-      </div>
       
       <div className="px-4">
         {matches && Array.isArray(matches) && matches.length > 0 ? (
