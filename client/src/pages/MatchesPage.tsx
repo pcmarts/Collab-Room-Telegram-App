@@ -5,182 +5,119 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, ChevronRight, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import { apiRequest } from "@/lib/queryClient";
+import { getCollabTypeIcon } from "@/lib/collab-utils";
 
-// Extended dummy data with more details
-const DUMMY_MATCHES = [
-  {
-    id: "1",
-    title: "Podcast Guest",
-    companyName: "Web3 Insights",
-    roleTitle: "VP of Marketing",
-    matchDate: "March 15, 2025",
-    collaborationType: "Podcast Guest",
-    matchedPerson: "Alex Thompson",
-    description: "Join our weekly podcast discussing the latest in Web3 technology and decentralized finance.",
-    companyDescription: "Web3 Insights is a leading media company focusing on blockchain technology and crypto innovations.",
-    userDescription: "Alex is a seasoned tech executive who has been in the Web3 space for over 5 years.",
-    podcastDetails: {
-      name: "The Web3 Revolution",
-      audience: "15,000+ weekly listeners",
-      episodes: "Currently in Season 3",
-      format: "Interview-style discussion, 45-60 minutes"
-    }
-  },
-  {
-    id: "2",
-    title: "Web3 Gaming Blog Post",
-    companyName: "CryptoTech Solutions",
-    roleTitle: "Technical Content Writer",
-    matchDate: "March 14, 2025",
-    collaborationType: "Blog Post",
-    matchedPerson: "Maria Garcia",
-    description: "Looking for expert writers to create technical content about NFT gaming and Play-to-Earn ecosystems.",
-    companyDescription: "CryptoTech Solutions builds infrastructure for blockchain gaming and NFT marketplaces.",
-    userDescription: "Maria is a content specialist focusing on gaming and blockchain technologies.",
-    blogDetails: {
-      audience: "25,000+ monthly readers",
-      wordCount: "1,500-2,000 words",
-      topics: "GameFi, NFTs, Play-to-Earn models",
-      distribution: "Cross-posted on Medium, CryptoTech blog"
-    }
-  },
-  {
-    id: "3",
-    title: "Twitter Space Co-host",
-    companyName: "DeFi Daily",
-    roleTitle: "Content Director",
-    matchDate: "March 13, 2025",
-    collaborationType: "Twitter Space",
-    matchedPerson: "James Wilson",
-    description: "Co-host a Twitter Space discussing DeFi trends and market analysis.",
-    companyDescription: "DeFi Daily delivers the latest news and insights in decentralized finance.",
-    userDescription: "James leads content strategy and community engagement for DeFi publications.",
-    twitterDetails: {
-      audience: "8,000+ average listeners",
-      duration: "60-90 minutes",
-      topics: "DeFi protocols, yield farming, market trends",
-      format: "Panel discussion with audience Q&A"
-    }
-  },
-  {
-    id: "4",
-    title: "Research Report Collaboration",
-    companyName: "Blockchain Analytics",
-    roleTitle: "Market Researcher",
-    matchDate: "March 17, 2025",
-    collaborationType: "Research Report",
-    matchedPerson: "Sarah Johnson",
-    description: "Seeking partners to collaborate on an industry research report about institutional blockchain adoption.",
-    companyDescription: "Blockchain Analytics provides data-driven research and insights for the crypto industry.",
-    userDescription: "Sarah specializes in market research and data analysis for blockchain technologies.",
-    reportDetails: {
-      audience: "Enterprise clients and institutional investors",
-      length: "25-30 pages with data visualization",
-      timeline: "4 weeks to completion",
-      distribution: "Published on company website and distributed to 5,000+ subscribers"
-    }
-  },
-  {
-    id: "5",
-    title: "Live Stream Panel",
-    companyName: "Crypto Education Hub",
-    roleTitle: "Industry Expert",
-    matchDate: "March 18, 2025",
-    collaborationType: "Live Stream",
-    matchedPerson: "Michael Chen",
-    description: "Participate in a panel discussion about the future of decentralized exchanges and AMMs.",
-    companyDescription: "Crypto Education Hub provides educational content and events for cryptocurrency enthusiasts.",
-    userDescription: "Michael is a recognized expert in decentralized exchange technology and token economics.",
-    eventDetails: {
-      audience: "Live audience of 1,000+ viewers",
-      duration: "2 hours with Q&A session",
-      platform: "YouTube Live and Twitch",
-      panelists: "3-4 industry experts"
-    }
-  },
-  {
-    id: "6",
-    title: "Newsletter Feature",
-    companyName: "Web3 Weekly",
-    roleTitle: "Guest Contributor",
-    matchDate: "March 19, 2025",
-    collaborationType: "Newsletter",
-    matchedPerson: "Emma Rodriguez",
-    description: "Write a feature article for our weekly newsletter about emerging Web3 social platforms.",
-    companyDescription: "Web3 Weekly delivers curated insights about blockchain innovation to 30,000+ subscribers.",
-    userDescription: "Emma is a thought leader in decentralized social media and community building.",
-    newsletterDetails: {
-      subscribers: "30,000+ industry professionals",
-      wordCount: "800-1,200 words",
-      topics: "Social tokens, community DAOs, decentralized identity",
-      distribution: "Email, Telegram channel, and website archive"
-    }
-  },
-];
+// Define Match type for API response
+interface Match {
+  id: string;
+  matchDate: string;
+  status: string;
+  collaborationType: string;
+  description: string;
+  details: any;
+  matchedPerson: string;
+  companyName: string;
+  roleTitle: string;
+  companyDescription: string;
+  userDescription: string;
+}
 
 interface MatchDetailProps {
-  match: typeof DUMMY_MATCHES[0];
+  match: Match;
   onBack: () => void;
 }
 
 function MatchDetail({ match, onBack }: MatchDetailProps) {
   let detailsSection;
   
+  // Helper function to render details from the details object
+  const renderDetailsFields = (details: any) => {
+    if (!details) return null;
+    
+    return (
+      <div className="grid grid-cols-1 gap-2">
+        {Object.entries(details).map(([key, value]) => {
+          // Skip rendering certain keys that are already displayed elsewhere
+          if (['id', 'created_at', 'updated_at'].includes(key)) return null;
+          
+          // Format the key for display
+          const formattedKey = key
+            .replace(/_/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+            
+          return (
+            <div key={key} className="flex justify-between">
+              <span className="text-sm text-muted-foreground">{formattedKey}:</span>
+              <span className="text-sm font-medium">{String(value)}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+  
   // Render different details based on collaboration type
   switch (match.collaborationType) {
-    case "Podcast Guest":
-      if (match.podcastDetails) {
-        detailsSection = (
-          <div className="space-y-4 mt-4">
-            <h3 className="font-medium">Podcast Details</h3>
-            <div className="grid grid-cols-1 gap-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Name:</span>
-                <span className="text-sm font-medium">{match.podcastDetails.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Audience:</span>
-                <span className="text-sm font-medium">{match.podcastDetails.audience}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Episodes:</span>
-                <span className="text-sm font-medium">{match.podcastDetails.episodes}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Format:</span>
-                <span className="text-sm font-medium">{match.podcastDetails.format}</span>
-              </div>
-            </div>
-          </div>
-        );
-      }
+    case "Podcast Guest Appearance":
+      detailsSection = (
+        <div className="space-y-4 mt-4">
+          <h3 className="font-medium">Podcast Details</h3>
+          {renderDetailsFields(match.details)}
+        </div>
+      );
       break;
-    case "Blog Post":
-      if (match.blogDetails) {
-        detailsSection = (
-          <div className="space-y-4 mt-4">
-            <h3 className="font-medium">Blog Details</h3>
-            <div className="grid grid-cols-1 gap-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Audience:</span>
-                <span className="text-sm font-medium">{match.blogDetails.audience}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Word Count:</span>
-                <span className="text-sm font-medium">{match.blogDetails.wordCount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Topics:</span>
-                <span className="text-sm font-medium">{match.blogDetails.topics}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Distribution:</span>
-                <span className="text-sm font-medium">{match.blogDetails.distribution}</span>
-              </div>
-            </div>
-          </div>
-        );
-      }
+    case "Blog Post Feature":
+      detailsSection = (
+        <div className="space-y-4 mt-4">
+          <h3 className="font-medium">Blog Details</h3>
+          {renderDetailsFields(match.details)}
+        </div>
+      );
+      break;
+    case "Twitter Spaces Guest":
+      detailsSection = (
+        <div className="space-y-4 mt-4">
+          <h3 className="font-medium">Twitter Space Details</h3>
+          {renderDetailsFields(match.details)}
+        </div>
+      );
+      break;
+    case "Newsletter Feature":
+      detailsSection = (
+        <div className="space-y-4 mt-4">
+          <h3 className="font-medium">Newsletter Details</h3>
+          {renderDetailsFields(match.details)}
+        </div>
+      );
+      break;
+    case "Live Stream Guest Appearance":
+      detailsSection = (
+        <div className="space-y-4 mt-4">
+          <h3 className="font-medium">Live Stream Details</h3>
+          {renderDetailsFields(match.details)}
+        </div>
+      );
+      break;
+    case "Report & Research Feature":
+      detailsSection = (
+        <div className="space-y-4 mt-4">
+          <h3 className="font-medium">Research Report Details</h3>
+          {renderDetailsFields(match.details)}
+        </div>
+      );
+      break;
+    case "Co-Marketing on Twitter":
+      detailsSection = (
+        <div className="space-y-4 mt-4">
+          <h3 className="font-medium">Twitter Co-Marketing Details</h3>
+          {renderDetailsFields(match.details)}
+        </div>
+      );
       break;
     // Add cases for other collaboration types as needed
     default:
@@ -188,6 +125,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
         <div className="space-y-4 mt-4">
           <h3 className="font-medium">Collaboration Details</h3>
           <p className="text-sm">{match.description}</p>
+          {match.details && renderDetailsFields(match.details)}
         </div>
       );
   }
@@ -237,7 +175,16 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
 }
 
 export default function MatchesPage() {
-  const [selectedMatch, setSelectedMatch] = useState<typeof DUMMY_MATCHES[0] | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  
+  // Fetch matches from API
+  const { data: matches, isLoading, error } = useQuery({
+    queryKey: ['/api/matches'],
+    queryFn: async () => {
+      const response = await apiRequest<Match[]>('/api/matches');
+      return response;
+    }
+  });
   
   // This disables the default fixed positioning and overflow hidden
   // so that we can have a normal scrolling container with a scrollbar
@@ -290,14 +237,57 @@ export default function MatchesPage() {
     setSelectedMatch(null);
   };
   
+  // Render loading state
+  if (isLoading) {
+    return (
+      <div className="page-scrollable pb-20">
+        <h1 className="text-2xl font-bold p-6">My Matches</h1>
+        <div className="px-4 space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-6 w-32" />
+                </div>
+              </CardHeader>
+              <CardFooter className="flex justify-between pt-2">
+                <Skeleton className="h-9 w-24" />
+                <Skeleton className="h-9 w-24" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  
+  // Render error state
+  if (error) {
+    return (
+      <div className="page-scrollable pb-20">
+        <h1 className="text-2xl font-bold p-6">My Matches</h1>
+        <Card className="p-6 m-4 text-center">
+          <p className="text-muted-foreground mb-4">Error loading matches</p>
+          <p className="text-sm text-destructive mb-4">{error instanceof Error ? error.message : 'Unknown error'}</p>
+          <Button variant="outline" onClick={() => window.location.reload()}>Retry</Button>
+        </Card>
+      </div>
+    );
+  }
+  
   return (
     <div className="page-scrollable pb-20">
       <h1 className="text-2xl font-bold p-6">My Matches</h1>
       
       <div className="px-4">
-        {DUMMY_MATCHES.length > 0 ? (
+        {matches && matches.length > 0 ? (
           <div className="space-y-4">
-            {DUMMY_MATCHES.map((match) => (
+            {matches.map((match) => (
               <Card key={match.id}>
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
@@ -306,7 +296,12 @@ export default function MatchesPage() {
                       <CardDescription>{match.matchedPerson}, {match.roleTitle}</CardDescription>
                       <p className="text-xs text-muted-foreground mt-1">Matched on {match.matchDate}</p>
                     </div>
-                    <Badge variant="outline" className="text-muted-foreground bg-transparent">{match.collaborationType}</Badge>
+                    <div className="flex items-center">
+                      <div className="mr-2">
+                        {getCollabTypeIcon(match.collaborationType)}
+                      </div>
+                      <Badge variant="outline" className="text-muted-foreground bg-transparent">{match.collaborationType}</Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardFooter className="flex justify-between pt-2">
@@ -332,7 +327,9 @@ export default function MatchesPage() {
         ) : (
           <Card className="p-6 text-center">
             <p className="text-muted-foreground mb-4">No matches yet</p>
-            <Button variant="outline">Start Discovering</Button>
+            <Button variant="outline" onClick={() => window.location.href = '/discover'}>
+              Start Discovering
+            </Button>
           </Card>
         )}
       </div>
@@ -342,7 +339,7 @@ export default function MatchesPage() {
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="sr-only">
-              {selectedMatch ? `${selectedMatch.title} - ${selectedMatch.collaborationType} Details` : 'Match Details'}
+              {selectedMatch ? `${selectedMatch.collaborationType} Details` : 'Match Details'}
             </DialogTitle>
             <DialogDescription className="sr-only">
               Detailed information about this collaboration match

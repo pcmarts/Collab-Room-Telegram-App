@@ -2662,6 +2662,116 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Get user matches
+  app.get("/api/matches", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: User Matches Endpoint ============');
+    console.log('Headers:', req.headers);
+    
+    try {
+      // Get user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.log('No Telegram user found');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      // Get user from database
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        console.log('User not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Get user matches
+      const userMatches = await storage.getUserMatches(user.id);
+      console.log(`Found ${userMatches.length} matches for user ${user.id}`);
+      
+      // Fetch additional data for each match
+      const enrichedMatches = await Promise.all(userMatches.map(async (match) => {
+        try {
+          // Get collaboration data
+          const [collaboration] = await db.select()
+            .from(collaborations)
+            .where(eq(collaborations.id, match.collaboration_id));
+          
+          // Get host user data
+          const [hostUser] = await db.select()
+            .from(users)
+            .where(eq(users.id, match.host_id));
+          
+          // Get requester user data
+          const [requesterUser] = await db.select()
+            .from(users)
+            .where(eq(users.id, match.requester_id));
+          
+          // Get companies
+          const [hostCompany] = await db.select()
+            .from(companies)
+            .where(eq(companies.user_id, match.host_id));
+          
+          const [requesterCompany] = await db.select()
+            .from(companies)
+            .where(eq(companies.user_id, match.requester_id));
+          
+          // Determine if the current user is the host or requester
+          const isHost = match.host_id === user.id;
+          
+          // Construct match details
+          return {
+            id: match.id,
+            matchDate: new Date(match.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }),
+            status: match.status,
+            collaborationType: collaboration?.collab_type || 'Unknown',
+            description: collaboration?.description || '',
+            details: collaboration?.details || {},
+            
+            // Show the other party's info to the current user
+            matchedPerson: isHost ? 
+              `${requesterUser?.first_name || ''} ${requesterUser?.last_name || ''}` : 
+              `${hostUser?.first_name || ''} ${hostUser?.last_name || ''}`,
+            
+            companyName: isHost ? 
+              requesterCompany?.name || 'Unknown Company' : 
+              hostCompany?.name || 'Unknown Company',
+            
+            roleTitle: isHost ? 
+              requesterCompany?.job_title || 'Unknown Role' : 
+              hostCompany?.job_title || 'Unknown Role',
+            
+            companyDescription: isHost ?
+              requesterCompany?.short_description || 'No company description available.' :
+              hostCompany?.short_description || 'No company description available.',
+            
+            userDescription: isHost ?
+              `${requesterUser?.first_name || ''} is a professional in the Web3 space.` :
+              `${hostUser?.first_name || ''} is a professional in the Web3 space.`
+          };
+        } catch (error) {
+          console.error(`Error enriching match ${match.id}:`, error);
+          return {
+            id: match.id,
+            matchDate: new Date(match.created_at).toLocaleDateString('en-US'),
+            status: match.status,
+            collaborationType: 'Unknown',
+            description: 'Unable to load full details',
+            matchedPerson: 'Unknown',
+            companyName: 'Unknown Company',
+            roleTitle: 'Unknown Role'
+          };
+        }
+      }));
+      
+      return res.json(enrichedMatches);
+    } catch (error) {
+      console.error('Failed to fetch matches:', error);
+      return res.status(500).json({ error: 'Failed to fetch matches' });
+    }
+  });
+
   // Toggle user event attendance
   app.post("/api/user-events", async (req, res) => {
     console.log('============ DEBUG: Toggle User Event Attendance Endpoint ============');
