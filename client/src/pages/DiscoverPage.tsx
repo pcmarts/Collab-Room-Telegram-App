@@ -1060,37 +1060,12 @@ export default function DiscoverPage() {
           setShowMatch(true);
         }, 400);
       } else {
-        // For regular collaborations, we need to check if there's a match
-        // Normally this would be returned from the API when swiping
-        // For now, we'll still use random probability until the matching system is fully implemented
-        const isMatch = Math.random() < 0.7; // 70% chance of match for easier testing
+        // For regular collaborations, a match will be determined by the server
+        // only if the host has already swiped right on one of this user's collaborations
+        console.log("Regular collaboration swipe - waiting for server match notification");
         
-        if (isMatch) {
-          // Parse details if it's a string
-          const details = typeof card.details === 'string' 
-            ? JSON.parse(card.details) 
-            : (card.details || {});
-          
-          // Set the match data with fallbacks to ensure we always have data
-          setMatchData({
-            title: card.title || 
-                   details.title || 
-                   details.podcast_name || 
-                   details.short_description || 
-                   "New Collaboration",
-            companyName: getCompanyName(card),
-            collaborationType: getCollaborationTypeFromCard(card)
-          });
-          
-          console.log("MATCH FOUND! Showing match notification with data:", card);
-          
-          // Show the match notification (after a slight delay to let the card animation finish)
-          setTimeout(() => {
-            setShowMatch(true);
-          }, 400);
-        } else {
-          console.log("No match this time (random chance)");
-        }
+        // We no longer simulate random matches here, as the backend will create
+        // a match if appropriate and notify the user
       }
     }
 
