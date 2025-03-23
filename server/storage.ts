@@ -269,17 +269,16 @@ export class DatabaseStorage implements IStorage {
         eq(collaborations.status, 'active')
       );
     
-    // Exclude both user's own collaborations and previously swiped ones
+    // First, exclude any collaborations that were previously swiped
     if (excludeIds.length > 0) {
       console.log(`Excluding ${excludeIds.length} total collaborations from results`);
       query = query.where(not(inArray(collaborations.id, excludeIds)));
-    } else {
-      // Fallback if no IDs to exclude but we still want to exclude own collaborations
-      if (filters.excludeOwn === undefined || filters.excludeOwn === true) {
-        console.log('No specific IDs to exclude, using fallback creator_id filtering');
-        query = query.where(not(eq(collaborations.creator_id, userId)));
-      }
     }
+    
+    // Always exclude the user's own collaborations for Regular Collaboration Cards
+    // This rule should be non-negotiable and is separate from the excludeIds logic
+    console.log('Excluding user\'s own collaborations (creator_id filtering)');
+    query = query.where(not(eq(collaborations.creator_id, userId)));
     
     // Apply filters based on user preferences
     // These only apply if the corresponding filter is enabled
