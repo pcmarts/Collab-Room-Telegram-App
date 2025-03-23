@@ -2877,26 +2877,13 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: 'Event ID is required' });
       }
 
-      let userId = '8319c02a-f1bd-4f93-abc3-e223c9100bea'; // Default to the provided user ID
-      
       // Get Telegram data from header
       const initData = req.headers['x-telegram-init-data'] as string;
       let telegramUser;
       
       if (!initData) {
-        // In development, use fallback data if Telegram data is missing
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using development fallback for Telegram data');
-          telegramUser = {
-            id: '123456789',
-            username: 'test_user',
-            first_name: 'Test',
-            last_name: 'User'
-          };
-        } else {
-          console.error('No Telegram init data found');
-          return res.status(400).json({ error: 'Invalid Telegram data' });
-        }
+        console.error('No Telegram init data found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
       } else {
         // Parse Telegram data
         const decodedInitData = new URLSearchParams(initData);
@@ -2914,18 +2901,16 @@ export async function registerRoutes(app: Express) {
         .where(eq(users.telegram_id, telegramUser.id.toString()));
 
       if (!user) {
-        console.log('User not found by Telegram ID, using default user ID');
-        userId = '8319c02a-f1bd-4f93-abc3-e223c9100bea';
-      } else {
-        userId = user.id;
+        console.log('User not found by Telegram ID');
+        return res.status(404).json({ error: 'User not found' });
       }
       
-      console.log('Using user ID:', userId);
+      console.log('Using user ID:', user.id);
 
       // Check if user is already attending this event
       const [existingAttendance] = await db.select()
         .from(user_events)
-        .where(eq(user_events.user_id, userId))
+        .where(eq(user_events.user_id, user.id))
         .where(eq(user_events.event_id, event_id));
 
       if (existingAttendance) {
@@ -2936,7 +2921,7 @@ export async function registerRoutes(app: Express) {
         // Add new attendance
         await db.insert(user_events)
           .values({
-            user_id: userId,
+            user_id: user.id,
             event_id
           });
       }
@@ -2967,19 +2952,8 @@ export async function registerRoutes(app: Express) {
       let telegramUser;
       
       if (!initData) {
-        // In development, use fallback data if Telegram data is missing
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using development fallback for Telegram data');
-          telegramUser = {
-            id: '123456789',
-            username: 'test_user',
-            first_name: 'Test',
-            last_name: 'User'
-          };
-        } else {
-          console.error('No Telegram init data found');
-          return res.status(400).json({ error: 'Invalid Telegram data' });
-        }
+        console.error('No Telegram init data found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
       } else {
         // Parse Telegram data
         const decodedInitData = new URLSearchParams(initData);
