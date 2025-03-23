@@ -15,7 +15,7 @@ import {
 } from "../shared/schema";
 import { eq, and, not, desc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, bot } from "./telegram";
+import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, bot } from "./telegram";
 import { storage } from "./storage";
 
 // Define our session data structure
