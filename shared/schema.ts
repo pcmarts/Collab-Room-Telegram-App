@@ -411,15 +411,6 @@ export const collaborations = pgTable('collaborations', {
 });
 
 // Collaboration applications
-export const collab_applications = pgTable('collab_applications', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  collaboration_id: uuid('collaboration_id').notNull().references(() => collaborations.id, { onDelete: 'cascade' }),
-  applicant_id: uuid('applicant_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  status: text('status').notNull().default('pending'), // pending, accepted, rejected
-  message: text('message'),
-  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow()
-});
 
 // Collaboration matching notifications
 export const collab_notifications = pgTable('collab_notifications', {
@@ -464,7 +455,7 @@ export const insertConferencePreferencesSchema = createInsertSchema(conference_p
 export const insertEventSchema = createInsertSchema(events);
 export const insertUserEventSchema = createInsertSchema(user_events);
 export const insertCollaborationSchema = createInsertSchema(collaborations);
-export const insertCollabApplicationSchema = createInsertSchema(collab_applications);
+
 export const insertCollabNotificationSchema = createInsertSchema(collab_notifications);
 export const insertSwipeSchema = createInsertSchema(swipes);
 export const insertMatchSchema = createInsertSchema(matches);
@@ -478,7 +469,7 @@ export type ConferencePreferences = typeof conference_preferences.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type UserEvent = typeof user_events.$inferSelect;
 export type Collaboration = typeof collaborations.$inferSelect;
-export type CollabApplication = typeof collab_applications.$inferSelect;
+
 export type CollabNotification = typeof collab_notifications.$inferSelect;
 export type Swipe = typeof swipes.$inferSelect;
 export type Match = typeof matches.$inferSelect;
@@ -491,7 +482,7 @@ export type InsertConferencePreferences = z.infer<typeof insertConferencePrefere
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
 export type InsertCollaboration = z.infer<typeof insertCollaborationSchema>;
-export type InsertCollabApplication = z.infer<typeof insertCollabApplicationSchema>;
+
 export type InsertCollabNotification = z.infer<typeof insertCollabNotificationSchema>;
 export type InsertSwipe = z.infer<typeof insertSwipeSchema>;
 export type InsertMatch = z.infer<typeof insertMatchSchema>;
@@ -541,6 +532,24 @@ export const collabApplicationSchema = z.object({
 });
 
 export type CollabApplicationData = z.infer<typeof collabApplicationSchema>;
+
+// Legacy type for compatibility - replacing the removed table
+export type CollabApplication = {
+  id: string;
+  collaboration_id: string;
+  applicant_id: string;
+  status: string;
+  details: any;
+  created_at: Date;
+};
+
+// Legacy insert type for compatibility
+export type InsertCollabApplication = {
+  collaboration_id: string;
+  applicant_id: string;
+  status?: string;
+  details: any;
+};
 
 // Collaboration type schemas
 // Podcast Guest Appearance

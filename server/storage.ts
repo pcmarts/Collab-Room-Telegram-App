@@ -1,5 +1,5 @@
 import { 
-  users, companies, collaborations, collab_applications, collab_notifications, swipes, matches,
+  users, companies, collaborations, collab_notifications, swipes, matches,
   notification_preferences, marketing_preferences, conference_preferences,
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 

@@ -8,9 +8,9 @@ import { db } from "./db";
 const MemoryStoreSession = MemoryStore(session);
 import { 
   users, companies, notification_preferences, marketing_preferences, conference_preferences, 
-  events, user_events, collaborations, collab_applications, collab_notifications, swipes,
+  events, user_events, collaborations, collab_notifications, swipes,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
-  InsertCollaboration,
+  InsertCollaboration, CollabApplication, InsertCollabApplication,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "../shared/schema";
 import { eq, and, not, desc, inArray } from 'drizzle-orm';
