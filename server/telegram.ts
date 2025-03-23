@@ -422,32 +422,44 @@ async function handleMatchInfoCallback(callbackQuery: TelegramBot.CallbackQuery)
     // Format user and company info
     const userFullName = `${user.first_name} ${user.last_name || ''}`.trim();
     const userHandle = user.handle ? `@${user.handle}` : '';
+    
+    // Format company website and social links
+    const companyWebsite = company?.website ? (company.website.startsWith('http') ? company.website : `https://${company.website}`) : '';
+    const companyName = companyWebsite 
+      ? `<a href="${companyWebsite}">${company?.name || 'Unknown Company'}</a>` 
+      : (company?.name || 'Unknown Company');
+    
     const twitterHandle = company?.twitter_handle || '';
+    const twitterUrl = twitterHandle ? `https://twitter.com/${twitterHandle.replace('@', '')}` : '';
     const twitterFollowers = company?.twitter_followers || 'Unknown';
     const linkedinUrl = company?.linkedin_url || '';
-    
-    // Build a detailed information message
+
+    // Build a detailed information message with rich formatting
     let infoMessage = `<b>🔍 Match Details</b>\n\n`;
     
-    // User info section
-    infoMessage += `<b>👤 User:</b> ${userFullName} ${userHandle ? `(${userHandle})` : ''}\n`;
+    // User info section with tag linking
+    infoMessage += `<b>👤 User:</b> ${userFullName} ${userHandle ? `(<a href="https://t.me/${userHandle.substring(1)}">${userHandle}</a>)` : ''}\n`;
     if (company) {
-      infoMessage += `<b>🏢 Company:</b> ${company.name}\n`;
+      infoMessage += `<b>🏢 Company:</b> ${companyName}\n`;
       infoMessage += `<b>💼 Role:</b> ${company.job_title}\n`;
+      if (company.funding_stage) {
+        infoMessage += `<b>💰 Funding Stage:</b> ${company.funding_stage}\n`;
+      }
     }
     
-    // Social links section
+    // Social links section with proper hyperlinks
     if (twitterHandle || linkedinUrl) {
       infoMessage += `\n<b>🔗 Social Links:</b>\n`;
       if (twitterHandle) {
-        infoMessage += `- Twitter: ${twitterHandle} (${twitterFollowers} followers)\n`;
+        const formattedTwitterHandle = twitterHandle.startsWith('@') ? twitterHandle : `@${twitterHandle}`;
+        infoMessage += `- <a href="${twitterUrl}">Twitter: ${formattedTwitterHandle}</a> (${twitterFollowers} followers)\n`;
       }
       if (linkedinUrl) {
         infoMessage += `- <a href="${linkedinUrl}">LinkedIn Profile</a>\n`;
       }
     }
     
-    // Collaboration details section
+    // Collaboration details section with enhanced formatting
     infoMessage += `\n<b>🤝 Collaboration:</b>\n`;
     infoMessage += `<b>Type:</b> ${collaboration.collab_type}\n`;
     if (collaboration.description) {
@@ -457,22 +469,38 @@ async function handleMatchInfoCallback(callbackQuery: TelegramBot.CallbackQuery)
       infoMessage += `<b>Topics:</b> ${collaboration.topics.join(', ')}\n`;
     }
     
-    // Create keyboard with action buttons
+    // Add collaboration details from JSON if available
+    if (collaboration.details) {
+      const details = typeof collaboration.details === 'string' 
+        ? JSON.parse(collaboration.details) 
+        : collaboration.details;
+        
+      if (details.short_description) {
+        infoMessage += `<b>Summary:</b> ${details.short_description}\n`;
+      }
+      if (details.expectations) {
+        infoMessage += `<b>Expectations:</b> ${details.expectations}\n`;
+      }
+    }
+    
+    // Create keyboard with enhanced action buttons
     const keyboard = {
       inline_keyboard: [
         [
           {
-            text: "💬 Chat",
+            text: "💬 Chat with User",
             url: `https://t.me/${user.handle || user.telegram_id}`,
-          },
+          }
+        ],
+        [
           {
-            text: "🔎 View Profile",
+            text: "🔎 View Full Profile",
             web_app: { url: `${WEBAPP_URL}/profile/${userId}` },
           }
         ],
         [
           {
-            text: "🚀 Discover More",
+            text: "🚀 Find More Opportunities",
             web_app: { url: `${WEBAPP_URL}/discover` },
           }
         ]
@@ -556,24 +584,39 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
       .from(companies)
       .where(eq(companies.user_id, requesterUserId));
 
+    // Format company website links
+    const requesterCompanyWebsite = requesterCompany?.website ? requesterCompany.website.startsWith('http') ? requesterCompany.website : `https://${requesterCompany.website}` : '';
+    const hostCompanyWebsite = hostCompany?.website ? hostCompany.website.startsWith('http') ? hostCompany.website : `https://${hostCompany.website}` : '';
+
+    // Format company names with hyperlinks if website available
+    const requesterCompanyName = requesterCompanyWebsite 
+      ? `<a href="${requesterCompanyWebsite}">${requesterCompany?.name || 'a company'}</a>` 
+      : (requesterCompany?.name || 'a company');
+    
+    const hostCompanyName = hostCompanyWebsite 
+      ? `<a href="${hostCompanyWebsite}">${hostCompany?.name || 'a company'}</a>` 
+      : (hostCompany?.name || 'a company');
+
     // Create keyboards with improved options
     const hostKeyboard = {
       inline_keyboard: [
         [
           {
-            text: "💬 Chat",
+            text: "💬 Chat with Collaborator",
             url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
-          },
+          }
+        ],
+        [
           {
-            text: "🔍 More Info",
+            text: "🔍 View Full Details",
             callback_data: `match_info_${requesterUserId}_${collaborationId}`,
-          },
+          }
         ],
         [
           {
             text: "🚀 Discover More Collabs",
             web_app: { url: `${WEBAPP_URL}/discover` },
-          },
+          }
         ],
       ],
     };
@@ -582,26 +625,28 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
       inline_keyboard: [
         [
           {
-            text: "💬 Chat",
+            text: "💬 Chat with Host",
             url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
-          },
+          }
+        ],
+        [
           {
-            text: "🔍 More Info",
+            text: "🔍 View Full Details",
             callback_data: `match_info_${hostUserId}_${collaborationId}`,
-          },
+          }
         ],
         [
           {
             text: "🚀 Discover More Collabs",
             web_app: { url: `${WEBAPP_URL}/discover` },
-          },
+          }
         ],
       ],
     };
 
     // Send enhanced notification to host (collaboration creator)
     const hostChatId = parseInt(hostUser.telegram_id);
-    const hostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ''} ${requesterUser.handle ? `(@${requesterUser.handle})` : ''}, the ${requesterCompany?.job_title || 'professional'} from ${requesterCompany?.name || 'a company'} is a match for your ${collaboration.collab_type} collaboration!
+    const hostMessage = `🎉 <b>New Match!</b> ${requesterUser.first_name} ${requesterUser.last_name || ''} ${requesterUser.handle ? `(@${requesterUser.handle})` : ''}, the <b>${requesterCompany?.job_title || 'professional'}</b> from ${requesterCompanyName} is a match for your <b>${collaboration.collab_type}</b> collaboration!
 
 They've shown interest in collaborating with you - you can now chat directly using the buttons below.`;
     
@@ -612,12 +657,13 @@ They've shown interest in collaborating with you - you can now chat directly usi
     
     await bot.sendMessage(hostChatId, hostMessage, { 
       reply_markup: hostKeyboard,
-      parse_mode: 'HTML'
+      parse_mode: 'HTML',
+      disable_web_page_preview: false
     });
 
     // Send enhanced notification to requester (user who swiped right)
     const requesterChatId = parseInt(requesterUser.telegram_id);
-    const requesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ''} from ${hostCompany?.name || 'a company'} just approved your collab request for ${collaboration.collab_type}!
+    const requesterMessage = `🎉 <b>New Match!</b> ${hostUser.first_name} ${hostUser.last_name || ''} ${hostUser.handle ? `(@${hostUser.handle})` : ''} from ${hostCompanyName} just approved your collab request for <b>${collaboration.collab_type}</b>!
 
 You can now chat directly with ${hostUser.first_name} using the buttons below.`;
     
@@ -628,7 +674,8 @@ You can now chat directly with ${hostUser.first_name} using the buttons below.`;
     
     await bot.sendMessage(requesterChatId, requesterMessage, { 
       reply_markup: requesterKeyboard,
-      parse_mode: 'HTML'
+      parse_mode: 'HTML',
+      disable_web_page_preview: false
     });
     
     console.log('[Telegram Bot] Successfully sent match notifications to both users');
