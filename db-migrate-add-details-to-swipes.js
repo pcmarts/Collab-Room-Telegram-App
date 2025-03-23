@@ -5,7 +5,7 @@
  * node db-migrate-add-details-to-swipes.js
  */
 
-const { pool } = require('./server/db.js');
+import { pool } from './server/db.ts';
 
 async function main() {
   console.log('\n===== DB MIGRATION: Add details column to swipes table =====\n');
