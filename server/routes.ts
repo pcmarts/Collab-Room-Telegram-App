@@ -2608,7 +2608,7 @@ export async function registerRoutes(app: Express) {
       console.log(`Found ${userMatches.length} matches for user ${user.id}`);
       
       // Process matches from database - no development fallbacks
-      const enrichedMatches = await Promise.all(userMatches.map(async (match) => {
+      let enrichedMatches = await Promise.all(userMatches.map(async (match) => {
           try {
             // Get collaboration data
             const [collaboration] = await db.select()
