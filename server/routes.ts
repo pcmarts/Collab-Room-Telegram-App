@@ -2855,8 +2855,9 @@ export async function registerRoutes(app: Express) {
       
       // Set a stable ETag based on the content
       const responseBody = JSON.stringify(enrichedMatches);
-      const etag = require('crypto').createHash('md5').update(responseBody).digest('hex');
-      res.setHeader('ETag', `W/"${etag}"`);
+      // Generate a simple hash instead of using require('crypto')
+      const simpleHash = String(enrichedMatches.length) + '-' + Date.now();
+      res.setHeader('ETag', `W/"${simpleHash}"`);
       res.setHeader('Last-Modified', new Date().toUTCString());
       
       return res.status(200).json(enrichedMatches);
