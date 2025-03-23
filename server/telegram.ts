@@ -653,13 +653,24 @@ They've shown interest in collaborating with you - you can now chat directly usi
     console.log('[Telegram Bot] Sending notification to host:', {
       chatId: hostChatId,
       name: `${hostUser.first_name} ${hostUser.last_name || ''}`,
+      message: hostMessage,
+      keyboard: JSON.stringify(hostKeyboard),
+      parseMode: 'HTML'
     });
     
-    await bot.sendMessage(hostChatId, hostMessage, { 
-      reply_markup: hostKeyboard,
-      parse_mode: 'HTML',
-      disable_web_page_preview: false
-    });
+    try {
+      const result = await bot.sendMessage(hostChatId, hostMessage, { 
+        reply_markup: hostKeyboard,
+        parse_mode: 'HTML',
+        disable_web_page_preview: false
+      });
+      console.log('[Telegram Bot] Host notification sent successfully:', {
+        messageId: result.message_id,
+        chatId: result.chat.id
+      });
+    } catch (error) {
+      console.error('[Telegram Bot] Error sending host notification:', error);
+    }
 
     // Send enhanced notification to requester (user who swiped right)
     const requesterChatId = parseInt(requesterUser.telegram_id);
@@ -670,13 +681,24 @@ You can now chat directly with ${hostUser.first_name} using the buttons below.`;
     console.log('[Telegram Bot] Sending notification to requester:', {
       chatId: requesterChatId,
       name: `${requesterUser.first_name} ${requesterUser.last_name || ''}`,
+      message: requesterMessage,
+      keyboard: JSON.stringify(requesterKeyboard),
+      parseMode: 'HTML'
     });
     
-    await bot.sendMessage(requesterChatId, requesterMessage, { 
-      reply_markup: requesterKeyboard,
-      parse_mode: 'HTML',
-      disable_web_page_preview: false
-    });
+    try {
+      const result = await bot.sendMessage(requesterChatId, requesterMessage, { 
+        reply_markup: requesterKeyboard,
+        parse_mode: 'HTML',
+        disable_web_page_preview: false
+      });
+      console.log('[Telegram Bot] Requester notification sent successfully:', {
+        messageId: result.message_id,
+        chatId: result.chat.id
+      });
+    } catch (error) {
+      console.error('[Telegram Bot] Error sending requester notification:', error);
+    }
     
     console.log('[Telegram Bot] Successfully sent match notifications to both users');
     
