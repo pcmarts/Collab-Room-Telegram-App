@@ -79,60 +79,17 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
                 duration={4}
               />
               
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute right-2 top-2 z-10" 
-                onClick={onClose}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-              
-              <div className="flex flex-col items-center space-y-5 text-center relative z-10">
-                {/* Achievement badge */}
-                <div className="relative">
-                  {/* Achievement ribbon */}
-                  <motion.div
-                    className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md"
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                  >
-                    Challenge Complete!
-                  </motion.div>
-
-                  {/* Animated confetti icon */}
-                  <div className="relative w-16 h-16 mb-2 mt-4">
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-                      <motion.div
-                        animate={{ 
-                          scale: [1, 1.2, 1],
-                          rotate: [0, 10, -10, 0]
-                        }}
-                        transition={{ 
-                          repeat: Infinity, 
-                          duration: 3,
-                          ease: "easeInOut" 
-                        }}
-                      >
-                        <PartyPopper className="h-8 w-8 text-primary" />
-                      </motion.div>
-                    </div>
-                  </div>
-                </div>
-                
+              <div className="flex flex-col items-center space-y-5 text-center relative z-10">                
                 <div className="flex flex-col items-center space-y-1">
-                  <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
+                  <h2 className="text-2xl font-bold text-[#FAFAFA]">
                     It's a Match!
                   </h2>
-                  <p className="text-muted-foreground">You both showed interest in collaborating!</p>
                 </div>
                 
                 <div className="w-full p-5 rounded-lg bg-muted/30 border border-primary/10">
-                  <h3 className="font-semibold text-lg">{matchData.title || 'New Collaboration'}</h3>
-                  <p className="text-sm text-muted-foreground">{matchData.companyName}</p>
+                  <h3 className="font-semibold text-lg text-[#FAFAFA]">{matchData.companyName}</h3>
                   <div className="flex justify-center mt-2">
-                    <span className="inline-block px-3 py-1 text-xs bg-primary/10 text-primary rounded-full">
+                    <span className="inline-block px-3 py-1 text-xs bg-primary/10 text-[#FAFAFA] rounded-full">
                       {matchData.collaborationType}
                     </span>
                   </div>
@@ -142,7 +99,7 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
                   <div className="flex-1 relative">
                     <Button 
                       variant="outline" 
-                      className="w-full border-primary/20"
+                      className="w-full border-primary/20 text-[#FAFAFA]"
                       onClick={onClose}
                     >
                       Keep Browsing
@@ -158,7 +115,7 @@ export function MatchNotification({ isOpen, onClose, matchData }: MatchNotificat
                       duration={2}
                     />
                     <Button 
-                      className="w-full relative z-10" 
+                      className="w-full relative z-10 text-[#FAFAFA]" 
                       onClick={goToMatches}
                     >
                       View Matches
