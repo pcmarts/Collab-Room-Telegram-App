@@ -925,19 +925,16 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   return (
     <MobileCheck>
       <div className="min-h-[100svh] bg-background">
-        <h1 className="text-2xl font-bold p-6">My Collaborations</h1>
+        <div className="flex justify-between items-center p-6">
+          <h1 className="text-2xl font-bold">My Collabs</h1>
+          <GlowButton 
+            onClick={() => setLocation('/create-collaboration-steps')}
+          >
+            Create New
+          </GlowButton>
+        </div>
         
         <div className="container mx-auto py-4 px-4">
-          {/* Only show the top right Create New button if there are collaborations */}
-          {collaborations && collaborations.length > 0 && (
-            <div className="flex justify-end mb-4">
-              <GlowButton 
-                onClick={() => setLocation('/create-collaboration-steps')}
-              >
-                Create New
-              </GlowButton>
-            </div>
-          )}
           
           {isLoadingCollabs ? (
             renderSkeletons()
@@ -947,15 +944,16 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             </div>
           ) : (
             <div className="text-center py-12 border rounded-lg">
-              <p className="text-gray-500 mb-4">You haven't created any collaborations yet</p>
+              <p className="text-gray-500 mb-4">You haven't created any collabs yet</p>
               <p className="text-gray-400 text-sm mb-6">
-                Create your first collaboration to connect with others in the blockchain space
+                Create your first collaboration to connect with others
               </p>
-              <GlowButton 
+              <Button 
                 onClick={() => setLocation('/create-collaboration-steps')}
+                variant="secondary"
               >
-                Create Collaboration
-              </GlowButton>
+                Get Started
+              </Button>
             </div>
           )}
           
