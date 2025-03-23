@@ -771,26 +771,8 @@ export default function DiscoverPage() {
     queryFn: async () => {
       try {
         console.log('Fetching collaborations...');
-        const response = await fetch('/api/collaborations/search', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add Telegram init data if it exists in the window object
-            ...(window.Telegram?.WebApp?.initData ? 
-              { 'x-telegram-init-data': window.Telegram.WebApp.initData } : {})
-          },
-          credentials: 'include'
-        });
-        
-        console.log('Collaboration response status:', response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Collaboration API error:', errorText);
-          throw new Error(`Failed to fetch collaborations: ${response.status} ${errorText}`);
-        }
-        
-        const data = await response.json();
+        // Use the standardized apiRequest function to ensure Telegram headers are included
+        const data = await apiRequest('/api/collaborations/search');
         console.log('Collaborations fetched successfully, count:', data.length);
         return data;
       } catch (err) {
@@ -808,26 +790,8 @@ export default function DiscoverPage() {
     queryFn: async () => {
       try {
         console.log('Fetching potential matches...');
-        const response = await fetch('/api/potential-matches', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add Telegram init data if it exists in the window object
-            ...(window.Telegram?.WebApp?.initData ? 
-              { 'x-telegram-init-data': window.Telegram.WebApp.initData } : {})
-          },
-          credentials: 'include'
-        });
-        
-        console.log('Potential matches response status:', response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Potential matches API error:', errorText);
-          throw new Error(`Failed to fetch potential matches: ${response.status} ${errorText}`);
-        }
-        
-        const data = await response.json();
+        // Use the standardized apiRequest function to ensure Telegram headers are included
+        const data = await apiRequest('/api/potential-matches');
         console.log('Potential matches fetched successfully, count:', Array.isArray(data) ? data.length : 'not an array');
         
         // If data is empty array, return it directly
