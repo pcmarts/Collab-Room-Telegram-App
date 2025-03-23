@@ -1,0 +1,4 @@
+# One-line command to clear tables
+# Copy and paste this in your terminal:
+
+psql $DATABASE_URL -c "SET session_replication_role = 'replica'; DELETE FROM collab_notifications; DELETE FROM matches; DELETE FROM swipes; SET session_replication_role = 'origin'; SELECT 'collab_notifications count: ' || COUNT(*) FROM collab_notifications; SELECT 'matches count: ' || COUNT(*) FROM matches; SELECT 'swipes count: ' || COUNT(*) FROM swipes;"
