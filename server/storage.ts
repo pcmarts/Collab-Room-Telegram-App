@@ -1,16 +1,17 @@
 import { 
-  users, companies, collaborations, collab_applications, collab_notifications, swipes,
+  users, companies, collaborations, collab_applications, collab_notifications, swipes, matches,
   notification_preferences, marketing_preferences, conference_preferences,
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication,
   type CollabNotification, type InsertCollabNotification,
   type Swipe, type InsertSwipe,
+  type Match, type InsertMatch,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "@shared/schema";
 import { z } from 'zod';
 import { db } from "./db";
-import { eq, and, inArray, isNull, not, desc, sql, ilike } from "drizzle-orm";
+import { eq, and, or, inArray, isNull, not, desc, sql, ilike } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -37,6 +38,13 @@ export interface IStorage {
   getUserSwipes(userId: string): Promise<Swipe[]>;
   getCollaborationSwipes(collaborationId: string): Promise<Swipe[]>;
   getPotentialMatchesForHost(userId: string): Promise<any[]>; // Get users who swiped right on host's collaborations
+  
+  // Match methods
+  createMatch(match: InsertMatch): Promise<Match>;
+  getUserMatches(userId: string): Promise<Match[]>;
+  getCollaborationMatches(collaborationId: string): Promise<Match[]>;
+  getMatchById(id: string): Promise<Match | undefined>;
+  updateMatchStatus(id: string, status: string): Promise<Match | undefined>;
   
   // Notification methods
   createNotification(notification: InsertCollabNotification): Promise<CollabNotification>;
@@ -541,6 +549,90 @@ export class DatabaseStorage implements IStorage {
       }));
     } catch (error) {
       console.error("Error getting potential matches for host:", error);
+      throw error;
+    }
+  }
+  
+  // Match methods
+  async createMatch(match: InsertMatch): Promise<Match> {
+    try {
+      const [newMatch] = await db
+        .insert(matches)
+        .values(match)
+        .returning();
+      return newMatch;
+    } catch (error) {
+      console.error("Error creating match:", error);
+      throw error;
+    }
+  }
+
+  async getUserMatches(userId: string): Promise<Match[]> {
+    try {
+      // Get matches where the user is either host or requester
+      const userMatches = await db
+        .select()
+        .from(matches)
+        .where(
+          or(
+            eq(matches.host_id, userId),
+            eq(matches.requester_id, userId)
+          )
+        )
+        .orderBy(desc(matches.created_at));
+      return userMatches;
+    } catch (error) {
+      console.error("Error getting user matches:", error);
+      throw error;
+    }
+  }
+
+  async getCollaborationMatches(collaborationId: string): Promise<Match[]> {
+    try {
+      const collabMatches = await db
+        .select()
+        .from(matches)
+        .where(eq(matches.collaboration_id, collaborationId))
+        .orderBy(desc(matches.created_at));
+      return collabMatches;
+    } catch (error) {
+      console.error("Error getting collaboration matches:", error);
+      throw error;
+    }
+  }
+
+  async getMatchById(id: string): Promise<Match | undefined> {
+    try {
+      const [match] = await db
+        .select()
+        .from(matches)
+        .where(eq(matches.id, id));
+      return match;
+    } catch (error) {
+      console.error("Error getting match by ID:", error);
+      throw error;
+    }
+  }
+
+  async updateMatchStatus(id: string, status: string): Promise<Match | undefined> {
+    try {
+      // Make sure status is valid (active, archived, completed)
+      if (!['active', 'archived', 'completed'].includes(status)) {
+        throw new Error('Invalid status value. Status must be one of: active, archived, completed');
+      }
+      
+      const [updatedMatch] = await db
+        .update(matches)
+        .set({ 
+          status,
+          updated_at: new Date()
+        })
+        .where(eq(matches.id, id))
+        .returning();
+        
+      return updatedMatch;
+    } catch (error) {
+      console.error("Error updating match status:", error);
       throw error;
     }
   }
