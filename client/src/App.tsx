@@ -19,7 +19,7 @@ import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
 import ApplicationForm from "@/pages/application-form";
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
-import DiscoveryFilters from "@/pages/discovery-filters-new-rebuild";
+import DiscoveryFilters from "@/pages/discovery-filters";
 // Conference coffee feature removed
 import ProfileOverview from "@/pages/profile-overview";
 import AdminDashboard from "@/pages/admin/dashboard";
