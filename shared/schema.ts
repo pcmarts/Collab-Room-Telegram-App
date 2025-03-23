@@ -426,7 +426,6 @@ export const collab_notifications = pgTable('collab_notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
   user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   collaboration_id: uuid('collaboration_id').notNull().references(() => collaborations.id, { onDelete: 'cascade' }),
-  application_id: uuid('application_id').references(() => collab_applications.id, { onDelete: 'cascade' }),
   type: text('type').notNull(),
   content: text('content').notNull(),
   is_read: boolean('is_read').default(false),
