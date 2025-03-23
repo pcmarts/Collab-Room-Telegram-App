@@ -192,26 +192,8 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     queryFn: async () => {
       try {
         console.log("Fetching collaborations...");
-        const response = await fetch('/api/collaborations/my', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add Telegram init data if it exists in the window object
-            ...(window.Telegram?.WebApp?.initData ? 
-              { 'x-telegram-init-data': window.Telegram.WebApp.initData } : {})
-          },
-          credentials: 'include'
-        });
-        
-        console.log("Collaborations API response status:", response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Collaborations API error:', errorText);
-          throw new Error(`Failed to fetch collaborations: ${response.status} ${errorText}`);
-        }
-        
-        const data = await response.json();
+        // Use the standardized apiRequest function to ensure Telegram headers are included
+        const data = await apiRequest('/api/collaborations/my');
         console.log("Collaborations API response data:", data);
         
         // Initialize activeCollabs state based on fetched data
@@ -235,26 +217,8 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     queryFn: async () => {
       try {
         console.log("Fetching applications...");
-        const response = await fetch('/api/my-applications', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add Telegram init data if it exists in the window object
-            ...(window.Telegram?.WebApp?.initData ? 
-              { 'x-telegram-init-data': window.Telegram.WebApp.initData } : {})
-          },
-          credentials: 'include'
-        });
-        
-        console.log("Applications API response status:", response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Applications API error:', errorText);
-          throw new Error(`Failed to fetch applications: ${response.status} ${errorText}`);
-        }
-        
-        const data = await response.json();
+        // Use the standardized apiRequest function to ensure Telegram headers are included
+        const data = await apiRequest('/api/my-applications');
         console.log("Applications API response data:", data);
         return data as CollabApplication[];
       } catch (error) {
@@ -270,26 +234,8 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     queryFn: async () => {
       try {
         console.log("Fetching potential matches...");
-        const response = await fetch('/api/potential-matches', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add Telegram init data if it exists in the window object
-            ...(window.Telegram?.WebApp?.initData ? 
-              { 'x-telegram-init-data': window.Telegram.WebApp.initData } : {})
-          },
-          credentials: 'include'
-        });
-        
-        console.log("Potential matches API response status:", response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Potential matches API error:', errorText);
-          throw new Error(`Failed to fetch potential matches: ${response.status} ${errorText}`);
-        }
-        
-        const data = await response.json();
+        // Use the standardized apiRequest function to ensure Telegram headers are included
+        const data = await apiRequest('/api/potential-matches');
         console.log("Potential matches API response data:", data);
         return data as PotentialMatch[];
       } catch (error) {
