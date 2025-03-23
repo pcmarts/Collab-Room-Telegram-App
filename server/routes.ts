@@ -1581,18 +1581,7 @@ export async function registerRoutes(app: Express) {
       const telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
         console.error('No Telegram user ID found');
-        if (process.env.NODE_ENV === 'production') {
-          return res.status(400).json({ error: 'Invalid Telegram data' });
-        }
-        // In development, fallback to test user
-        console.log('Using development fallback for Telegram data');
-        const devUser = {
-          id: '123456789',
-          username: 'test_user',
-          first_name: 'Test',
-          last_name: 'User'
-        };
-        return devUser;
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       // Get user from telegram_id
