@@ -1098,8 +1098,17 @@ export async function registerRoutes(app: Express) {
       let telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
         console.error('No Telegram user ID found');
-        res.status(401);
-        return res.json({ error: 'Unauthorized' });
+        if (process.env.NODE_ENV === 'production') {
+          res.status(400);
+          return res.json({ error: 'Invalid Telegram data' });
+        }
+        // In development, fallback to test user
+        console.log('Using development fallback for Telegram data');
+        telegramUser = {
+          id: '123456789',
+          first_name: 'Dev',
+          username: 'dev_user'
+        };
       }
 
       // Get user ID from telegram_id
@@ -1312,9 +1321,17 @@ export async function registerRoutes(app: Express) {
       let telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
         console.error('No Telegram user ID found');
-        res.status(401);
-        return res.json({ error: 'Unauthorized' });
-      }
+        if (process.env.NODE_ENV === 'production') {
+          res.status(400);
+          return res.json({ error: 'Invalid Telegram data' });
+        }
+        // In development, fallback to test user
+        console.log('Using development fallback for Telegram data');
+        telegramUser = {
+          id: '123456789',
+          first_name: 'Dev',
+          username: 'dev_user'
+        };
       }
 
       // Get user ID from telegram_id
