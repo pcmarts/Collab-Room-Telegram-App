@@ -8,12 +8,12 @@ import { db } from "./db";
 const MemoryStoreSession = MemoryStore(session);
 import { 
   users, companies, notification_preferences, marketing_preferences, conference_preferences, 
-  events, user_events, collaborations, collab_applications, collab_notifications,
+  events, user_events, collaborations, collab_applications, collab_notifications, swipes,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
   InsertCollaboration,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "../shared/schema";
-import { eq, and, not, desc } from 'drizzle-orm';
+import { eq, and, not, desc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved } from "./telegram";
 import { storage } from "./storage";
@@ -2828,19 +2828,20 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', JSON.stringify(req.body, null, 2));
     
     try {
-      const { collaboration_id, direction } = req.body;
+      const { collaboration_id, swipe_id, direction, is_potential_match } = req.body;
       
-      console.log('Parsed request parameters:', { collaboration_id, direction });
-      
-      if (!collaboration_id || !direction) {
-        console.log('Validation error: Missing required parameters');
-        return res.status(400).json({ error: 'Collaboration ID and direction are required' });
-      }
+      console.log('Parsed request parameters:', { collaboration_id, swipe_id, direction, is_potential_match });
       
       // Validate direction is either "left" or "right"
       if (direction !== 'left' && direction !== 'right') {
         console.log('Validation error: Invalid direction value:', direction);
         return res.status(400).json({ error: 'Direction must be either "left" or "right"' });
+      }
+      
+      // Check if we have a valid ID (either collaboration_id or swipe_id)
+      if (!collaboration_id && !swipe_id) {
+        console.log('Validation error: Missing required parameters');
+        return res.status(400).json({ error: 'Either collaboration_id or swipe_id is required' });
       }
       
       // Get user from telegram data
@@ -2855,7 +2856,6 @@ export async function registerRoutes(app: Express) {
       const telegramId = telegramData.id.toString();
       console.log(`Authentication success: Found Telegram ID: ${telegramId}`);
       console.log(`User details: first_name=${telegramData.first_name}, last_name=${telegramData.last_name || 'N/A'}, username=${telegramData.username || 'N/A'}`);
-      console.log(`Creating swipe for collaboration: ${collaboration_id}`);
       
       // Get the actual user from database using telegram_id
       console.log(`Looking up user by Telegram ID: ${telegramId}...`);
@@ -2868,37 +2868,169 @@ export async function registerRoutes(app: Express) {
       
       console.log(`Database success: Found user ${user.id} (${user.first_name} ${user.last_name || ''})`);
       
-      // Verify that the collaboration exists
-      console.log(`Verifying collaboration ID: ${collaboration_id}...`);
-      try {
-        const collaboration = await storage.getCollaboration(collaboration_id);
-        if (!collaboration) {
-          console.log(`Database error: Collaboration ${collaboration_id} not found`);
-          return res.status(404).json({ error: 'Collaboration not found' });
+      // Handle potential match case
+      if (is_potential_match && swipe_id) {
+        console.log(`Processing potential match with swipe ID: ${swipe_id}`);
+        
+        try {
+          // Fetch the original swipe to get the collaboration and user info
+          const [originalSwipe] = await db
+            .select({
+              swipe: swipes,
+              user: users,
+              collaboration: collaborations
+            })
+            .from(swipes)
+            .where(eq(swipes.id, swipe_id))
+            .innerJoin(users, eq(swipes.user_id, users.id))
+            .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id));
+          
+          if (!originalSwipe) {
+            console.log(`Database error: Original swipe ${swipe_id} not found`);
+            return res.status(404).json({ error: 'Original swipe not found' });
+          }
+          
+          // Get the collaboration_id from the original swipe
+          const actualCollaborationId = originalSwipe.collaboration.id;
+          const otherUserId = originalSwipe.user.id;
+          const collaborationType = originalSwipe.collaboration.collab_type;
+          
+          console.log(`Found original swipe with collaboration ID: ${actualCollaborationId}`);
+          console.log(`Original swipe was from user ID: ${otherUserId}`);
+          
+          // Create a swipe record for the current user
+          const swipe = await storage.createSwipe({
+            user_id: user.id,
+            collaboration_id: actualCollaborationId,
+            direction
+          });
+          
+          console.log(`Success: Created swipe record with ID: ${swipe.id}`);
+          console.log(`Details: ${direction} swipe for collaboration ${actualCollaborationId} by user ${user.id}`);
+          
+          // If it's a right swipe, we have a match!
+          if (direction === 'right') {
+            console.log('MATCH CREATED! Both users swiped right.');
+            
+            // Create a notification for the collaboration host
+            const hostNotification = await storage.createNotification({
+              user_id: originalSwipe.collaboration.user_id,
+              collaboration_id: actualCollaborationId,
+              type: 'match',
+              content: `${user.first_name} ${user.last_name || ''} matched with your ${collaborationType} collaboration!`,
+              is_read: false
+            });
+            
+            // Create a notification for the requester
+            const requesterNotification = await storage.createNotification({
+              user_id: user.id,
+              collaboration_id: actualCollaborationId,
+              type: 'match',
+              content: `You matched with ${originalSwipe.user.first_name} ${originalSwipe.user.last_name || ''}'s ${collaborationType} collaboration!`,
+              is_read: false
+            });
+            
+            console.log('Created match notifications:', { hostNotification, requesterNotification });
+            
+            // Send Telegram notifications
+            try {
+              // Get the user company
+              const [userCompany] = await db.select()
+                .from(companies)
+                .where(eq(companies.user_id, user.id));
+                
+              // Send message to host
+              const hostChatId = parseInt(originalSwipe.user.telegram_id);
+              const hostMessage = `🎉 New Match! ${user.first_name} ${user.last_name || ''} from ${userCompany?.name || 'a company'} matched with your ${collaborationType} collaboration!`;
+              
+              // Send message to requester
+              const requesterChatId = parseInt(user.telegram_id);
+              const requesterMessage = `🎉 New Match! You matched with ${originalSwipe.user.first_name} ${originalSwipe.user.last_name || ''}'s ${collaborationType} collaboration!`;
+              
+              // Use the bot to send messages
+              const { bot } = require('./telegram');
+              
+              // Create the keyboard with open app button
+              const keyboard = {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "Open Matches",
+                      web_app: { url: `${process.env.WEBAPP_URL || 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev'}/matches` },
+                    },
+                  ],
+                ],
+              };
+              
+              // Send message to both users
+              await bot.sendMessage(hostChatId, hostMessage, { reply_markup: keyboard });
+              await bot.sendMessage(requesterChatId, requesterMessage, { reply_markup: keyboard });
+              
+              console.log('Telegram notifications sent to both users');
+            } catch (telegramError) {
+              console.error('Error sending Telegram notifications:', telegramError);
+              // Continue processing even if Telegram notifications fail
+            }
+            
+            return res.status(201).json({ 
+              swipe,
+              match: true,
+              matchedUser: {
+                id: otherUserId,
+                name: `${originalSwipe.user.first_name} ${originalSwipe.user.last_name || ''}`,
+                collaboration: originalSwipe.collaboration
+              }
+            });
+          }
+          
+          // If it's a left swipe, just record the rejection
+          return res.status(201).json(swipe);
+          
+        } catch (matchError) {
+          console.error('Error processing potential match:', matchError);
+          console.error('Stack trace:', matchError instanceof Error ? matchError.stack : 'No stack trace available');
+          return res.status(500).json({ error: 'Failed to process potential match' });
         }
-        console.log(`Collaboration verification success: Found type: ${collaboration.collab_type}, status: ${collaboration.status}`);
-      } catch (collabError) {
-        console.error('Error verifying collaboration:', collabError);
+      } 
+      // Regular collaboration swipe
+      else if (collaboration_id) {
+        console.log(`Creating swipe for collaboration: ${collaboration_id}`);
+        
+        // Verify that the collaboration exists
+        try {
+          const collaboration = await storage.getCollaboration(collaboration_id);
+          if (!collaboration) {
+            console.log(`Database error: Collaboration ${collaboration_id} not found`);
+            return res.status(404).json({ error: 'Collaboration not found' });
+          }
+          console.log(`Collaboration verification success: Found type: ${collaboration.collab_type}, status: ${collaboration.status}`);
+        } catch (collabError) {
+          console.error('Error verifying collaboration:', collabError);
+          return res.status(500).json({ error: 'Failed to verify collaboration' });
+        }
+        
+        // Create the swipe record
+        console.log('Creating swipe record with parameters:', {
+          user_id: user.id,
+          collaboration_id,
+          direction
+        });
+        
+        const swipe = await storage.createSwipe({
+          user_id: user.id,
+          collaboration_id,
+          direction
+        });
+        
+        console.log(`Success: Created swipe record with ID: ${swipe.id}`);
+        console.log(`Details: ${direction} swipe for collaboration ${collaboration_id} by user ${user.id}`);
+        console.log(`Timestamp: ${swipe.created_at}`);
+        
+        return res.status(201).json(swipe);
+      } else {
+        console.log('Validation error: Invalid request format');
+        return res.status(400).json({ error: 'Invalid request format' });
       }
-      
-      // Create the swipe record
-      console.log('Creating swipe record with parameters:', {
-        user_id: user.id,
-        collaboration_id,
-        direction
-      });
-      
-      const swipe = await storage.createSwipe({
-        user_id: user.id,
-        collaboration_id,
-        direction
-      });
-      
-      console.log(`Success: Created swipe record with ID: ${swipe.id}`);
-      console.log(`Details: ${direction} swipe for collaboration ${collaboration_id} by user ${user.id}`);
-      console.log(`Timestamp: ${swipe.created_at}`);
-      
-      return res.status(201).json(swipe);
       
     } catch (error) {
       console.error('Error creating swipe:', error);
