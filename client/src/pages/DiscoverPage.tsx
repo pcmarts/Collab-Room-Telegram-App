@@ -17,6 +17,7 @@ import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
 import { GlowFilterButton } from "@/components/GlowFilterButton";
+import { PotentialMatchCard } from "@/components/PotentialMatchCard";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Collaboration } from "@shared/schema";
@@ -1127,57 +1128,14 @@ export default function DiscoverPage() {
     
     // Check if it's a potential match card
     if (card.isPotentialMatch && card.potentialMatchData) {
-      const { first_name, last_name, company_name, job_title } = card.potentialMatchData;
-      const fullName = last_name ? `${first_name} ${last_name}` : first_name;
-      
+      // Use our dedicated PotentialMatchCard component
       return (
-        <div 
-          className="w-full h-full rounded-xl" 
-          style={{ background: 'linear-gradient(to bottom right, rgba(76, 29, 149, 1), #0A0A0B)' }}
-        >
-          <div className="flex flex-col h-full p-6">
-            <div className="mb-4">
-              <Badge variant="outline" className="bg-primary/10 mb-2">
-                <UserCheck className="w-3 h-3 mr-1" />
-                Potential Match
-              </Badge>
-              <h3 className="text-lg font-semibold mb-1">
-                {first_name} from {company_name} is interested in your collab
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {job_title}
-              </p>
-            </div>
-            
-            <div className="mb-4 flex-1">
-              <div className="rounded-lg bg-black/10 p-3 mb-4">
-                <p className="text-sm font-medium mb-1">Your Collab:</p>
-                <div className="flex items-center">
-                  {getCollabTypeIcon(card.collab_type)}
-                  <span className="ml-1 text-sm">{card.collab_type}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {card.description || "No additional details available"}
-                </p>
-              </div>
-              
-              {card.topics && card.topics.length > 0 && (
-                <div className="mb-3">
-                  <div className="flex flex-wrap gap-1">
-                    {card.topics.map((topic: string, idx: number) => (
-                      <span 
-                        key={idx} 
-                        className="px-2 py-0.5 bg-transparent text-gray-500 border border-[#6B7280] text-xs rounded-full"
-                      >
-                        {topic}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <PotentialMatchCard
+          collab_type={card.collab_type}
+          description={card.description}
+          topics={card.topics}
+          potentialMatchData={card.potentialMatchData}
+        />
       );
     }
     
