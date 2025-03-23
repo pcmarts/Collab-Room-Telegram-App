@@ -2939,6 +2939,22 @@ export async function registerRoutes(app: Express) {
             const hostId = isUserTheHost ? user.id : collaboration.creator_id;
             const requesterId = isUserTheHost ? originalSwipe.user.id : user.id;
             
+            // Create a match record in the database
+            console.log('Creating match record with parameters:', {
+              collaboration_id: actualCollaborationId,
+              host_id: hostId,
+              requester_id: requesterId
+            });
+            
+            const match = await storage.createMatch({
+              collaboration_id: actualCollaborationId,
+              host_id: hostId,
+              requester_id: requesterId,
+              status: 'active'
+            });
+            
+            console.log(`Success: Created match record with ID: ${match.id}`);
+            
             // Create a notification for the collaboration host
             const hostNotification = await storage.createNotification({
               user_id: hostId,
@@ -3028,6 +3044,7 @@ export async function registerRoutes(app: Express) {
             return res.status(201).json({ 
               swipe,
               match: true,
+              matchData: match,
               matchedUser: {
                 id: otherUserId,
                 name: `${originalSwipe.user.first_name} ${originalSwipe.user.last_name || ''}`,
@@ -3078,6 +3095,176 @@ export async function registerRoutes(app: Express) {
         console.log(`Success: Created swipe record with ID: ${swipe.id}`);
         console.log(`Details: ${direction} swipe for collaboration ${collaboration_id} by user ${user.id}`);
         console.log(`Timestamp: ${swipe.created_at}`);
+        
+        // If this is a "right" swipe, check if the collaboration host has already swiped right on any of this user's collaborations
+        if (direction === 'right') {
+          try {
+            // Get the collaboration details to find the host ID
+            const collaboration = await storage.getCollaboration(collaboration_id);
+            
+            if (!collaboration) {
+              console.log(`Warning: Could not find collaboration ${collaboration_id} when checking for host match`);
+              return res.status(201).json(swipe);
+            }
+            
+            const hostId = collaboration.creator_id;
+            console.log(`Checking if host (${hostId}) has swiped right on any of user's (${user.id}) collaborations`);
+            
+            // Don't try to match if the user is the host
+            if (hostId === user.id) {
+              console.log(`User is the host of this collaboration - no need to check for match`);
+              return res.status(201).json(swipe);
+            }
+            
+            // Get all collaborations owned by this user
+            const userCollaborations = await storage.getUserCollaborations(user.id);
+            
+            if (userCollaborations.length === 0) {
+              console.log(`User has no collaborations - no match possible`);
+              return res.status(201).json(swipe);
+            }
+            
+            console.log(`Found ${userCollaborations.length} collaborations for user ${user.id}`);
+            
+            // Get all the collaboration IDs
+            const userCollabIds = userCollaborations.map(collab => collab.id);
+            
+            // Check if the host has swiped right on any of the user's collaborations
+            const hostRightSwipes = await db
+              .select()
+              .from(swipes)
+              .where(
+                and(
+                  eq(swipes.user_id, hostId),
+                  inArray(swipes.collaboration_id, userCollabIds),
+                  eq(swipes.direction, 'right')
+                )
+              );
+            
+            console.log(`Found ${hostRightSwipes.length} right swipes from host for user's collaborations`);
+            
+            if (hostRightSwipes.length > 0) {
+              // We have a match! The host has swiped right on one of the user's collaborations
+              const matchedCollaboration = hostRightSwipes[0];
+              console.log(`MATCH FOUND! Host has swiped right on user collaboration ${matchedCollaboration.collaboration_id}`);
+              
+              // Get the matched collaboration details
+              const matchedUserCollab = await storage.getCollaboration(matchedCollaboration.collaboration_id);
+              
+              if (!matchedUserCollab) {
+                console.log(`Warning: Could not find user's collaboration ${matchedCollaboration.collaboration_id}`);
+                return res.status(201).json(swipe);
+              }
+              
+              // Create a match record in the database
+              console.log('Creating match record for mutual right swipes with parameters:', {
+                collaboration_id: matchedCollaboration.collaboration_id,
+                host_id: user.id, // In this case, the user is the host of their own collaboration
+                requester_id: hostId // And the host of the other collaboration is the requester for this match
+              });
+              
+              const match = await storage.createMatch({
+                collaboration_id: matchedCollaboration.collaboration_id,
+                host_id: user.id,
+                requester_id: hostId,
+                status: 'active'
+              });
+              
+              console.log(`Success: Created match record with ID: ${match.id}`);
+              
+              // Get collaboration types for notifications
+              const userCollabType = matchedUserCollab.collab_type;
+              const hostCollabType = collaboration.collab_type;
+              
+              // Get company names for notifications
+              const [hostCompanyInfo] = await db.select()
+                .from(companies)
+                .where(eq(companies.user_id, hostId));
+                
+              const [userCompanyInfo] = await db.select()
+                .from(companies)
+                .where(eq(companies.user_id, user.id));
+              
+              // Create notifications
+              const userNotification = await storage.createNotification({
+                user_id: user.id,
+                collaboration_id: matchedCollaboration.collaboration_id,
+                type: 'match',
+                content: `A match was found for your ${userCollabType} collaboration!`,
+                is_read: false
+              });
+              
+              const hostNotification = await storage.createNotification({
+                user_id: hostId,
+                collaboration_id: collaboration_id,
+                type: 'match',
+                content: `A match was found for your ${hostCollabType} collaboration!`,
+                is_read: false
+              });
+              
+              console.log('Created match notifications:', { userNotification, hostNotification });
+              
+              // Send Telegram notifications
+              try {
+                // Get user and host details
+                const [hostDetails] = await db.select()
+                  .from(users)
+                  .where(eq(users.id, hostId));
+                  
+                const [userDetails] = await db.select()
+                  .from(users)
+                  .where(eq(users.id, user.id));
+                
+                // Get company details
+                const [hostCompany] = await db.select()
+                  .from(companies)
+                  .where(eq(companies.user_id, hostId));
+                  
+                const [userCompany] = await db.select()
+                  .from(companies)
+                  .where(eq(companies.user_id, user.id));
+                
+                // Create messages
+                const hostChatId = parseInt(hostDetails.telegram_id);
+                const userChatId = parseInt(userDetails.telegram_id);
+                
+                const hostMessage = `🎉 New Match! ${userDetails.first_name} ${userDetails.last_name || ''} from ${userCompany?.name || 'a company'} matched with your ${hostCollabType} collaboration!`;
+                const userMessage = `🎉 New Match! ${hostDetails.first_name} ${hostDetails.last_name || ''} from ${hostCompany?.name || 'a company'} matched with your ${userCollabType} collaboration!`;
+                
+                // Create keyboard
+                const keyboard = {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: "Open Matches",
+                        web_app: { url: `${process.env.WEBAPP_URL || 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev'}/matches` },
+                      },
+                    ],
+                  ],
+                };
+                
+                // Send messages
+                await bot.sendMessage(hostChatId, hostMessage, { reply_markup: keyboard });
+                await bot.sendMessage(userChatId, userMessage, { reply_markup: keyboard });
+                
+                console.log('Telegram match notifications sent to both users');
+              } catch (telegramError) {
+                console.error('Error sending Telegram match notifications:', telegramError);
+                // Continue processing even if Telegram notifications fail
+              }
+              
+              return res.status(201).json({
+                swipe,
+                match: true,
+                matchData: match
+              });
+            }
+          } catch (matchCheckError) {
+            console.error('Error checking for potential match:', matchCheckError);
+            console.error('Stack trace:', matchCheckError instanceof Error ? matchCheckError.stack : 'No stack trace available');
+            // Continue to return the swipe even if match checking fails
+          }
+        }
         
         return res.status(201).json(swipe);
       } else {
