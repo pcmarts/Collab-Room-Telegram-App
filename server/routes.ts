@@ -3207,50 +3207,14 @@ export async function registerRoutes(app: Express) {
               
               console.log('Created match notifications:', { userNotification, hostNotification });
               
-              // Send Telegram notifications
+              // Send Telegram notifications using the enhanced notification function
               try {
-                // Get user and host details
-                const [hostDetails] = await db.select()
-                  .from(users)
-                  .where(eq(users.id, hostId));
-                  
-                const [userDetails] = await db.select()
-                  .from(users)
-                  .where(eq(users.id, user.id));
-                
-                // Get company details
-                const [hostCompany] = await db.select()
-                  .from(companies)
-                  .where(eq(companies.user_id, hostId));
-                  
-                const [userCompany] = await db.select()
-                  .from(companies)
-                  .where(eq(companies.user_id, user.id));
-                
-                // Create messages
-                const hostChatId = parseInt(hostDetails.telegram_id);
-                const userChatId = parseInt(userDetails.telegram_id);
-                
-                const hostMessage = `🎉 New Match! ${userDetails.first_name} ${userDetails.last_name || ''} from ${userCompany?.name || 'a company'} matched with your ${hostCollabType} collaboration!`;
-                const userMessage = `🎉 New Match! ${hostDetails.first_name} ${hostDetails.last_name || ''} from ${hostCompany?.name || 'a company'} matched with your ${userCollabType} collaboration!`;
-                
-                // Create keyboard
-                const keyboard = {
-                  inline_keyboard: [
-                    [
-                      {
-                        text: "Open Matches",
-                        web_app: { url: `${process.env.WEBAPP_URL || 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev'}/matches` },
-                      },
-                    ],
-                  ],
-                };
-                
-                // Send messages
-                await bot.sendMessage(hostChatId, hostMessage, { reply_markup: keyboard });
-                await bot.sendMessage(userChatId, userMessage, { reply_markup: keyboard });
-                
-                console.log('Telegram match notifications sent to both users');
+                // Use the notifyMatchCreated function from telegram.ts
+                // This provides properly formatted HTML messages with interactive buttons
+                // For potential matches, the user is the host of their collaboration,
+                // and the hostId is the requester for this match
+                await notifyMatchCreated(user.id, hostId, matchedCollaboration.collaboration_id);
+                console.log('Enhanced Telegram match notifications sent to both users');
               } catch (telegramError) {
                 console.error('Error sending Telegram match notifications:', telegramError);
                 // Continue processing even if Telegram notifications fail
