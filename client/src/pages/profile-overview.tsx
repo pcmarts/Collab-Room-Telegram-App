@@ -157,7 +157,7 @@ export default function ProfileOverview() {
       const submitData = {
         ...formData,
         handle: profile.user.handle,
-        initData: window.Telegram?.WebApp?.initData || "",
+        // Remove initData from request body as it's added to headers by apiRequest
       };
 
       const response = await apiRequest("/api/onboarding", "POST", submitData);
