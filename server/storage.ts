@@ -281,63 +281,103 @@ export class DatabaseStorage implements IStorage {
       }
     }
     
-    // Apply type filters from request
-    if (filters.collabTypes && filters.collabTypes.length > 0) {
-      query = query.where(inArray(collaborations.collab_type, filters.collabTypes));
+    // Apply filters based on user preferences
+    // These only apply if the corresponding filter is enabled
+
+    // 1. Collaboration Types Filter
+    if (marketingPrefs?.discovery_filter_collab_types_enabled && 
+        marketingPrefs?.collabs_to_discover && 
+        marketingPrefs.collabs_to_discover.length > 0) {
+      
+      console.log(`Filtering by collaboration types: ${marketingPrefs.collabs_to_discover.join(', ')}`);
+      query = query.where(inArray(collaborations.collab_type, marketingPrefs.collabs_to_discover));
     }
     
-    // Apply topic filters if enabled in marketing preferences
+    // 2. Topics Filter
     if (marketingPrefs?.discovery_filter_topics_enabled && 
         marketingPrefs?.filtered_marketing_topics && 
         marketingPrefs.filtered_marketing_topics.length > 0) {
       
-      console.log(`Filtering by excluded topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
+      console.log(`Filtering by topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
       
-      // For array parameters, we need to ensure proper PostgreSQL array format
-      // Convert JavaScript array to PostgreSQL array format string: {item1,item2,item3}
-      const pgArrayStr = '{' + marketingPrefs.filtered_marketing_topics.join(',') + '}';
-      console.log(`Converting to PostgreSQL array format: ${pgArrayStr}`);
+      // Convert JavaScript array to PostgreSQL array format
+      const topicsPgArray = '{' + marketingPrefs.filtered_marketing_topics.join(',') + '}';
+      console.log(`Converting to PostgreSQL array format: ${topicsPgArray}`);
       
-      // This is a more complex filter - we want to exclude collaborations that have ANY of the filtered topics
-      query = query.where(sql`NOT (${collaborations.topics} && ${pgArrayStr}::text[])`);
+      // Filter for collaborations that match at least one of the selected topics
+      query = query.where(sql`${collaborations.topics} && ${topicsPgArray}::text[]`);
     }
     
-    // Apply company followers filter if enabled
-    if (marketingPrefs?.discovery_filter_company_followers_enabled && filters.minCompanyFollowers) {
-      query = query.where(sql`${collaborations.min_company_followers} >= ${filters.minCompanyFollowers}`);
-    }
-    
-    // Apply user followers filter if enabled
-    if (marketingPrefs?.discovery_filter_user_followers_enabled && filters.minUserFollowers) {
-      query = query.where(sql`${collaborations.min_user_followers} >= ${filters.minUserFollowers}`);
-    }
-    
-    // Apply token status filter if enabled
-    if (marketingPrefs?.discovery_filter_token_status_enabled && filters.hasToken !== undefined) {
-      query = query.where(eq(collaborations.required_token_status, filters.hasToken));
-    }
-    
-    // Apply funding stages filter if enabled
-    if (marketingPrefs?.discovery_filter_funding_stages_enabled && 
-        filters.fundingStages && 
-        filters.fundingStages.length > 0) {
+    // 3. Company Tags/Sectors Filter
+    if (marketingPrefs?.discovery_filter_company_sectors_enabled && 
+        marketingPrefs?.company_tags && 
+        marketingPrefs.company_tags.length > 0) {
+      
+      console.log(`Filtering by company tags/sectors: ${marketingPrefs.company_tags.join(', ')}`);
+      
       // Convert to PostgreSQL array format
-      const fundingStagesPgArray = '{' + filters.fundingStages.join(',') + '}';
+      const tagsPgArray = '{' + marketingPrefs.company_tags.join(',') + '}';
+      console.log(`Converting company tags to PostgreSQL array format: ${tagsPgArray}`);
+      
+      // Filter for collaborations where the host company's tags match at least one selected tag
+      query = query.where(sql`${collaborations.company_tags} && ${tagsPgArray}::text[]`);
+    }
+    
+    // 4. User Twitter Follower Count Filter
+    if (marketingPrefs?.discovery_filter_user_followers_enabled && 
+        marketingPrefs?.twitter_followers) {
+      
+      console.log(`Filtering by min user Twitter followers: ${marketingPrefs.twitter_followers}`);
+      query = query.where(sql`${collaborations.creator_twitter_followers} >= ${marketingPrefs.twitter_followers}`);
+    }
+    
+    // 5. Company Twitter Follower Count Filter
+    if (marketingPrefs?.discovery_filter_company_followers_enabled && 
+        marketingPrefs?.company_twitter_followers) {
+      
+      console.log(`Filtering by min company Twitter followers: ${marketingPrefs.company_twitter_followers}`);
+      query = query.where(sql`${collaborations.company_twitter_followers} >= ${marketingPrefs.company_twitter_followers}`);
+    }
+    
+    // 6. Funding Stages Filter
+    if (marketingPrefs?.discovery_filter_funding_stages_enabled && 
+        marketingPrefs?.funding_stage) {
+      
+      // Convert comma-separated string to array
+      const fundingStages = marketingPrefs.funding_stage.split(',');
+      console.log(`Filtering by funding stages: ${fundingStages.join(', ')}`);
+      
+      // Convert to PostgreSQL array format
+      const fundingStagesPgArray = '{' + fundingStages.join(',') + '}';
       console.log(`Converting funding stages to PostgreSQL array format: ${fundingStagesPgArray}`);
       
-      query = query.where(sql`${collaborations.required_funding_stages} && ${fundingStagesPgArray}::text[]`);
+      // Filter for collaborations where funding stage matches any selected funding stage
+      query = query.where(sql`${collaborations.company_funding_stage} = ANY(${fundingStagesPgArray}::text[])`);
     }
     
-    // Apply blockchain networks filter if enabled
+    // 7. Token Status Filter (only filter if enabled)
+    if (marketingPrefs?.discovery_filter_token_status_enabled) {
+      console.log(`Filtering by token status: ${marketingPrefs.company_has_token}`);
+      query = query.where(eq(collaborations.company_has_token, marketingPrefs.company_has_token));
+    }
+    
+    // 8. Blockchain Networks Filter
     if (marketingPrefs?.discovery_filter_blockchain_networks_enabled && 
-        filters.blockchainNetworks && 
-        filters.blockchainNetworks.length > 0) {
+        marketingPrefs?.company_blockchain_networks && 
+        marketingPrefs.company_blockchain_networks.length > 0) {
+      
+      console.log(`Filtering by blockchain networks: ${marketingPrefs.company_blockchain_networks.join(', ')}`);
+      
       // Convert to PostgreSQL array format
-      const networksPgArray = '{' + filters.blockchainNetworks.join(',') + '}';
+      const networksPgArray = '{' + marketingPrefs.company_blockchain_networks.join(',') + '}';
       console.log(`Converting blockchain networks to PostgreSQL array format: ${networksPgArray}`);
       
+      // Filter for collaborations where blockchain networks match at least one selected network
       query = query.where(sql`${collaborations.company_blockchain_networks} && ${networksPgArray}::text[]`);
     }
+    
+    // Add additional debug logging
+    console.log('Final filter query constructed, executing and returning results');
     
     return query.orderBy(desc(collaborations.created_at));
   }
