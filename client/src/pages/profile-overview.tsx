@@ -166,7 +166,12 @@ export default function ProfileOverview() {
         throw new Error("Failed to update profile");
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+      // Don't use invalidation which would trigger a new request 
+      // Instead, get the updated profile data from the response and update the cache directly
+      const updatedProfile = await response.json();
+      
+      // Update the cache with new data
+      queryClient.setQueryData(["/api/profile"], updatedProfile);
 
       toast({
         title: "Success!",
