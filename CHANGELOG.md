@@ -5,6 +5,23 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.3.4] - 2025-03-23
+
+### Changed
+- Improved filter logic implementation for more consistent and intuitive results
+- Updated all array-type filters to use the PostgreSQL `&&` (overlap) operator for OR logic
+- Added detailed code comments explaining the purpose of each filter operator
+
+### Technical Details
+- For array-type filters (topics, company tags, blockchain networks):
+  - Consistently using the PostgreSQL `&&` (overlap) operator to implement OR logic within each category
+  - This ensures that if an item is related to any of the selected values (e.g., on either Ethereum OR Solana), it will be shown
+- For non-array fields (collaboration types, funding stages):
+  - Using appropriate operators (`inArray()` or `= ANY()`) to implement the same OR logic
+- All filter categories continue to use AND logic between them, ensuring more specific results
+- Added detailed documentation in docs/discovery/filter-logic-update.md explaining the filter logic
+- These changes make discovery results more relevant and consistent with user expectations
+
 ## [Version 1.3.3] - 2025-03-23
 
 ### Changed
@@ -17,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Within a single filter category (e.g., blockchain networks), we use OR logic: if you select Ethereum and Solana, we'll show items on either network
   - Between different filter categories (e.g., blockchain networks AND topics), we use AND logic: if you select Ethereum + AI topic, we only show AI items on Ethereum
 - The implementation uses the && operator for OR logic within a category and combines with AND logic between different categories
-- This was achieved by replacing the PostgreSQL overlap operator (&&) with the contains operator (@>) in the filter queries
+- This was achieved by replacing the PostgreSQL contains operator (@>) with the overlap operator (&&) in the filter queries
 - Created detailed documentation in docs/discovery/filter-logic-update.md explaining the changes
 - These changes make discovery results more specific and relevant for users
 

@@ -38,6 +38,20 @@ To ensure users don't see repeated content, the system maintains a combined excl
 
 This ensures that after refreshing the Discovery page, users will only see new collaboration opportunities that they haven't interacted with previously.
 
+### Filter Logic Implementation
+
+The filter logic follows these principles:
+
+1. **OR Logic Within Categories**: When selecting multiple items within a single filter category (e.g., multiple blockchain networks like Ethereum and Solana), results will include collaborations matching ANY of the selected values in that category. This uses the PostgreSQL `&&` (overlap) operator for array-type fields and `inArray()` or `= ANY()` for non-array fields.
+
+2. **AND Logic Between Categories**: When selecting criteria across different filter categories (e.g., blockchain networks AND specific topics), results will only include collaborations that match BOTH criteria, implementing a more targeted filtering experience.
+
+For example:
+- If a user selects Ethereum and Solana in the blockchain networks filter, they'll see collaborations on either network.
+- If they also select AI as a topic, they'll only see collaborations that are both on either of those networks AND related to AI.
+
+This approach provides intuitive results that match user expectations while maintaining flexibility. Detailed implementation can be found in `docs/discovery/filter-logic-update.md`.
+
 ## API Endpoints
 
 The Discovery System is supported by the following API endpoints:
@@ -69,6 +83,9 @@ The API implementation has the following characteristics:
 5. **Visibility Control**: Fine-grained control over which collaborations are visible to which users
 
 Recent fixes include:
+- Updated filter logic to use OR operation within each filter category and AND operation between different categories for more intuitive results
+- Standardized all array-type filters to use the PostgreSQL `&&` (overlap) operator for consistent OR logic
+- Ensured non-array fields (collaboration types, funding stages) use appropriate operators to implement the same logic
 - Fixed critical issue where previously swiped collaborations would reappear when refreshing the Discovery page
 - Implemented a combined filtering approach that excludes both the user's own collaborations and previously swiped ones
 - Added unified empty state UI that appears consistently when either no collaborations match or user has viewed all available cards
