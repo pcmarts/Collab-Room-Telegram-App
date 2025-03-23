@@ -5,6 +5,22 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.3.7] - 2025-03-23
+
+### Added
+- Enhanced API documentation with detailed authentication best practices
+- Added comprehensive onboarding endpoint documentation explaining dual-purpose behavior (create/update)
+- Included clear examples of success and error responses in API documentation
+
+### Fixed
+- Improved error handling in the profile update process to correctly display success messages
+- Resolved issue where successful profile updates were incorrectly showing error messages
+
+### Technical Details
+- Updated `/docs/api/README.md` with authentication best practices section highlighting proper ways to handle Telegram auth
+- Enhanced the onboarding endpoint documentation to clearly explain how it handles both new users and profile updates
+- Added proper success/error response examples to API documentation for better developer guidance
+
 ## [Version 1.3.6] - 2025-03-23
 
 ### Fixed
