@@ -4,12 +4,32 @@ import { User, MessageSquare, FolderPlus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DiscoveryIcon } from "@/components/icons/DiscoveryIcon"
 import { Badge } from "@/components/ui/badge"
+import { useQuery } from "@tanstack/react-query"
+import { apiRequest } from "@/lib/queryClient"
 
 const BottomNavigation = () => {
   const [location] = useLocation()
   
-  // Dummy data for new matches notification count
-  const newMatchesCount = 3
+  // Fetch actual matches count from API
+  const { data: matches } = useQuery({
+    queryKey: ['/api/matches'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('/api/matches');
+        return response || [];
+      } catch (error) {
+        console.error('Error fetching matches:', error);
+        return [];
+      }
+    },
+    // Don't show loading states or errors in navigation
+    staleTime: 60000, // 1 minute
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+
+  // Calculate actual matches count
+  const matchesCount = matches && matches.length > 0 ? matches.length : 0;
 
   const navItems = [
     {
@@ -31,7 +51,7 @@ const BottomNavigation = () => {
       label: "My Matches",
       icon: MessageSquare,
       href: "/matches",
-      notificationCount: newMatchesCount
+      notificationCount: matchesCount > 0 ? matchesCount : null
     },
   ]
 
