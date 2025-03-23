@@ -303,9 +303,9 @@ export class DatabaseStorage implements IStorage {
       const topicsPgArray = '{' + marketingPrefs.filtered_marketing_topics.join(',') + '}';
       console.log(`Converting to PostgreSQL array format: ${topicsPgArray}`);
       
-      // Filter for collaborations that contain ALL of the selected topics (AND logic)
-      // The @> operator is the "contains" operator which checks if left array contains all elements of right array
-      query = query.where(sql`${collaborations.topics} @> ${topicsPgArray}::text[]`);
+      // Filter for collaborations that match ANY of the selected topics (OR logic)
+      // The && operator is the "overlap" operator which checks if arrays have any elements in common
+      query = query.where(sql`${collaborations.topics} && ${topicsPgArray}::text[]`);
     }
     
     // 3. Company Tags/Sectors Filter
@@ -319,8 +319,8 @@ export class DatabaseStorage implements IStorage {
       const tagsPgArray = '{' + marketingPrefs.company_tags.join(',') + '}';
       console.log(`Converting company tags to PostgreSQL array format: ${tagsPgArray}`);
       
-      // Filter for collaborations where the host company's tags contain ALL selected tags (AND logic)
-      query = query.where(sql`${collaborations.company_tags} @> ${tagsPgArray}::text[]`);
+      // Filter for collaborations where the host company's tags match ANY of selected tags (OR logic)
+      query = query.where(sql`${collaborations.company_tags} && ${tagsPgArray}::text[]`);
     }
     
     // 4. User Twitter Follower Count Filter
@@ -372,8 +372,8 @@ export class DatabaseStorage implements IStorage {
       const networksPgArray = '{' + marketingPrefs.company_blockchain_networks.join(',') + '}';
       console.log(`Converting blockchain networks to PostgreSQL array format: ${networksPgArray}`);
       
-      // Filter for collaborations that have ALL selected blockchain networks (AND logic)
-      query = query.where(sql`${collaborations.company_blockchain_networks} @> ${networksPgArray}::text[]`);
+      // Filter for collaborations that match ANY selected blockchain networks (OR logic)
+      query = query.where(sql`${collaborations.company_blockchain_networks} && ${networksPgArray}::text[]`);
     }
     
     // Add additional debug logging

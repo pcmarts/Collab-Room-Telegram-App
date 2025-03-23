@@ -8,13 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Version 1.3.3] - 2025-03-23
 
 ### Changed
-- Changed filter logic in discovery feed from OR to AND operators for more specific filtering
-- Modified the PostgreSQL queries for topic, company tag, and blockchain network filters to use the contains operator (@>) instead of the overlap operator (&&)
+- Changed filter logic for different filter categories to use AND operators for more specific filtering
+- Modified the PostgreSQL queries to use OR logic within each filter category and AND logic between different filter categories
 - Updated documentation with a detailed explanation of the filter logic change and its implementation
 
 ### Technical Details
-- Previously, when selecting multiple filters (e.g., multiple topics), any collaboration that matched ANY of the selected criteria would appear in results (OR logic)
-- New implementation requires collaborations to match ALL selected criteria within a filter category (AND logic)
+- For array-type filters (topics, company tags, blockchain networks):
+  - Within a single filter category (e.g., blockchain networks), we use OR logic: if you select Ethereum and Solana, we'll show items on either network
+  - Between different filter categories (e.g., blockchain networks AND topics), we use AND logic: if you select Ethereum + AI topic, we only show AI items on Ethereum
+- The implementation uses the && operator for OR logic within a category and combines with AND logic between different categories
 - This was achieved by replacing the PostgreSQL overlap operator (&&) with the contains operator (@>) in the filter queries
 - Created detailed documentation in docs/discovery/filter-logic-update.md explaining the changes
 - These changes make discovery results more specific and relevant for users
