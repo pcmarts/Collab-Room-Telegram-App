@@ -525,14 +525,143 @@ export class DatabaseStorage implements IStorage {
   // Swipe methods
   async createSwipe(swipe: InsertSwipe): Promise<Swipe> {
     try {
+      console.log("Creating swipe with data:", JSON.stringify(swipe, null, 2));
+      
+      // Insert the new swipe
       const [newSwipe] = await db
         .insert(swipes)
-        .values(swipe)
+        .values({
+          ...swipe,
+          details: swipe.details || {} // Ensure details is set (not undefined)
+        })
         .returning();
+      
+      console.log("Swipe created:", JSON.stringify(newSwipe, null, 2));
+
+      // If this is a right swipe, check for a match
+      if (swipe.direction === 'right') {
+        await this.checkForMatch(newSwipe);
+      }
+      
       return newSwipe;
     } catch (error) {
       console.error("Error creating swipe:", error);
       throw error;
+    }
+  }
+  
+  // Helper method to check for a match when a new swipe is created
+  private async checkForMatch(newSwipe: Swipe): Promise<void> {
+    try {
+      console.log("Checking for match with new swipe:", newSwipe.id);
+      
+      // Get the collaboration details
+      const collaboration = await this.getCollaboration(newSwipe.collaboration_id);
+      if (!collaboration) {
+        console.error("Collaboration not found:", newSwipe.collaboration_id);
+        return;
+      }
+      
+      // Determine if the user is swiping on their own collaboration
+      const isUserTheHost = newSwipe.user_id === collaboration.creator_id;
+      if (isUserTheHost) {
+        console.log("User is swiping on their own collaboration - skipping match check");
+        return;
+      }
+      
+      // If requester swiped right on host's collaboration, 
+      // check if host has swiped right on any of requester's collaborations
+      const hostId = collaboration.creator_id;
+      const requesterId = newSwipe.user_id;
+      
+      console.log(`Checking for match: Host ID ${hostId}, Requester ID ${requesterId}`);
+      
+      // Get requester's collaborations
+      const requesterCollabs = await this.getUserCollaborations(requesterId);
+      if (requesterCollabs.length === 0) {
+        console.log("Requester has no collaborations - no match possible");
+        return;
+      }
+      
+      const requesterCollabIds = requesterCollabs.map(collab => collab.id);
+      
+      // Check if host has swiped right on any of requester's collaborations
+      const hostRightSwipes = await db
+        .select()
+        .from(swipes)
+        .where(and(
+          eq(swipes.user_id, hostId),
+          inArray(swipes.collaboration_id, requesterCollabIds),
+          eq(swipes.direction, 'right')
+        ));
+      
+      if (hostRightSwipes.length === 0) {
+        console.log("No matching right swipes found from host");
+        return;
+      }
+      
+      console.log(`Found ${hostRightSwipes.length} potential matches from host`);
+      
+      // We have a match! Create a match record and notifications
+      const matchedSwipe = hostRightSwipes[0]; // Use the first match found
+      const matchedCollab = requesterCollabs.find(c => c.id === matchedSwipe.collaboration_id);
+      
+      if (!matchedCollab) {
+        console.error("Matched collaboration not found:", matchedSwipe.collaboration_id);
+        return;
+      }
+      
+      console.log("Creating match between:", {
+        host_collab: newSwipe.collaboration_id,
+        host_id: hostId,
+        requester_collab: matchedCollab.id,
+        requester_id: requesterId
+      });
+      
+      // Create the match record
+      const match = await this.createMatch({
+        collaboration_id: newSwipe.collaboration_id,
+        host_id: hostId,
+        requester_id: requesterId
+      });
+      
+      console.log("Match created:", match);
+      
+      // Get user details for notifications
+      const host = await this.getUser(hostId);
+      const requester = await this.getUser(requesterId);
+      
+      if (!host || !requester) {
+        console.error("Could not find host or requester for notifications");
+        return;
+      }
+      
+      // Create notifications for both parties
+      await this.createNotification({
+        user_id: hostId,
+        collaboration_id: newSwipe.collaboration_id,
+        type: 'match',
+        content: `${requester.first_name} ${requester.last_name || ''} matched with your ${collaboration.collab_type} collaboration!`,
+        is_read: false,
+        is_sent: false,
+        created_at: new Date()
+      });
+      
+      await this.createNotification({
+        user_id: requesterId,
+        collaboration_id: matchedCollab.id,
+        type: 'match',
+        content: `You matched with ${host.first_name} ${host.last_name || ''}'s ${collaboration.collab_type} collaboration!`,
+        is_read: false,
+        is_sent: false,
+        created_at: new Date()
+      });
+      
+      console.log("Match notifications created successfully");
+      
+      // TODO: Add Telegram notification logic here
+    } catch (error) {
+      console.error("Error checking for match:", error);
     }
   }
   

@@ -2827,7 +2827,7 @@ export async function registerRoutes(app: Express) {
     console.log('Body:', JSON.stringify(req.body, null, 2));
     
     try {
-      const { collaboration_id, swipe_id, direction, is_potential_match } = req.body;
+      const { collaboration_id, swipe_id, direction, is_potential_match, details } = req.body;
       
       console.log('Parsed request parameters:', { collaboration_id, swipe_id, direction, is_potential_match });
       
