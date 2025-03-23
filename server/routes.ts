@@ -2978,67 +2978,13 @@ export async function registerRoutes(app: Express) {
             
             // Send Telegram notifications
             try {
-              // Get the user company
-              const [userCompany] = await db.select()
-                .from(companies)
-                .where(eq(companies.user_id, user.id));
-                
-              // Get Telegram details for both users
-              const [hostUser] = await db.select()
-                .from(users)
-                .where(eq(users.id, hostId));
-                
-              const [requesterUser] = await db.select()
-                .from(users)
-                .where(eq(users.id, requesterId));
-              
-              // Get company details for the requester
-              const [requesterCompany] = await db.select()
-                .from(companies)
-                .where(eq(companies.user_id, requesterId));
-              
-              // Send message to host
-              const hostChatId = parseInt(hostUser.telegram_id);
-              const hostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ''} from ${requesterCompany?.name || 'a company'} matched with your ${collaborationType} collaboration!`;
-              
-              console.log("Sending Telegram notification to host:", {
-                host_id: hostId,
-                host_telegram_id: hostUser.telegram_id,
-                host_chat_id: hostChatId
-              });
-              
-              // Send message to requester
-              const requesterChatId = parseInt(requesterUser.telegram_id);
-              const requesterMessage = `🎉 New Match! You matched with ${hostUser.first_name} ${hostUser.last_name || ''}'s ${collaborationType} collaboration!`;
-              
-              console.log("Sending Telegram notification to requester:", {
-                requester_id: requesterId,
-                requester_telegram_id: requesterUser.telegram_id,
-                requester_chat_id: requesterChatId
-              });
-              
-              // Use the bot to send messages
-              // bot is already imported at the top of the file
-              
-              // Create the keyboard with open app button
-              const keyboard = {
-                inline_keyboard: [
-                  [
-                    {
-                      text: "Open Matches",
-                      web_app: { url: `${process.env.WEBAPP_URL || 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev'}/matches` },
-                    },
-                  ],
-                ],
-              };
-              
-              // Send message to both users
-              await bot.sendMessage(hostChatId, hostMessage, { reply_markup: keyboard });
-              await bot.sendMessage(requesterChatId, requesterMessage, { reply_markup: keyboard });
-              
-              console.log('Telegram notifications sent to both users');
+              // Use the enhanced notification function from telegram.ts
+              console.log('Sending enhanced Telegram notifications via notifyMatchCreated function');
+              await notifyMatchCreated(hostId, requesterId, actualCollaborationId);
+              console.log('Enhanced Telegram notifications sent to both users');
             } catch (telegramError) {
               console.error('Error sending Telegram notifications:', telegramError);
+              console.error('Full error details:', JSON.stringify(telegramError, null, 2));
               // Continue processing even if Telegram notifications fail
             }
             
