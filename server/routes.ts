@@ -949,34 +949,8 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // My Collaborations endpoint
-  app.get("/api/collaborations/my", async (req: TelegramRequest, res) => {
-    try {
-      const telegramUser = getTelegramUserFromRequest(req);
-      if (!telegramUser) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      const myCollaborations = await db
-        .select()
-        .from(collaborations)
-        .where(eq(collaborations.creator_id, user.id))
-        .orderBy(desc(collaborations.created_at));
-
-      return res.json(myCollaborations);
-
-    } catch (error) {
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  });
+  // First implementation of My Collaborations endpoint removed to eliminate duplication.
+  // The more detailed implementation is at line ~1949
 
   // Search Collaborations endpoint
   // Search collaborations endpoint - Removed duplicate
