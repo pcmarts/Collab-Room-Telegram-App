@@ -190,23 +190,42 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   const { data: collaborations, isLoading: isLoadingCollabs } = useQuery({
     queryKey: ['/api/collaborations/my'],
     queryFn: async () => {
-      console.log("Fetching collaborations...");
-      const response = await apiRequest('/api/collaborations/my', 'GET');
-      console.log("Collaborations API response status:", response.status);
-      if (!response.ok) {
-        throw new Error("Failed to fetch collaborations");
+      try {
+        console.log("Fetching collaborations...");
+        const response = await fetch('/api/collaborations/my', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add Telegram init data if it exists in the window object
+            ...(window.Telegram?.WebApp?.initData ? 
+              { 'x-telegram-init-data': window.Telegram.WebApp.initData } : {})
+          },
+          credentials: 'include'
+        });
+        
+        console.log("Collaborations API response status:", response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Collaborations API error:', errorText);
+          throw new Error(`Failed to fetch collaborations: ${response.status} ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log("Collaborations API response data:", data);
+        
+        // Initialize activeCollabs state based on fetched data
+        const statusMap: Record<string, boolean> = {};
+        data.forEach((collab: Collaboration) => {
+          statusMap[collab.id] = collab.status === 'active';
+        });
+        setActiveCollabs(statusMap);
+        
+        return data as Collaboration[];
+      } catch (error) {
+        console.error("Error fetching collaborations:", error);
+        throw error;
       }
-      const data = await response.json();
-      console.log("Collaborations API response data:", data);
-      
-      // Initialize activeCollabs state based on fetched data
-      const statusMap: Record<string, boolean> = {};
-      data.forEach((collab: Collaboration) => {
-        statusMap[collab.id] = collab.status === 'active';
-      });
-      setActiveCollabs(statusMap);
-      
-      return data as Collaboration[];
     }
   });
   
@@ -214,15 +233,34 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   const { data: applications, isLoading: isLoadingApps } = useQuery({
     queryKey: ['/api/my-applications'],
     queryFn: async () => {
-      console.log("Fetching applications...");
-      const response = await apiRequest('/api/my-applications', 'GET');
-      console.log("Applications API response status:", response.status);
-      if (!response.ok) {
-        throw new Error("Failed to fetch applications");
+      try {
+        console.log("Fetching applications...");
+        const response = await fetch('/api/my-applications', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add Telegram init data if it exists in the window object
+            ...(window.Telegram?.WebApp?.initData ? 
+              { 'x-telegram-init-data': window.Telegram.WebApp.initData } : {})
+          },
+          credentials: 'include'
+        });
+        
+        console.log("Applications API response status:", response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Applications API error:', errorText);
+          throw new Error(`Failed to fetch applications: ${response.status} ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log("Applications API response data:", data);
+        return data as CollabApplication[];
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+        throw error;
       }
-      const data = await response.json();
-      console.log("Applications API response data:", data);
-      return data as CollabApplication[];
     }
   });
   
@@ -230,15 +268,34 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   const { data: potentialMatches, isLoading: isLoadingMatches } = useQuery({
     queryKey: ['/api/potential-matches'],
     queryFn: async () => {
-      console.log("Fetching potential matches...");
-      const response = await apiRequest('/api/potential-matches', 'GET');
-      console.log("Potential matches API response status:", response.status);
-      if (!response.ok) {
-        throw new Error("Failed to fetch potential matches");
+      try {
+        console.log("Fetching potential matches...");
+        const response = await fetch('/api/potential-matches', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add Telegram init data if it exists in the window object
+            ...(window.Telegram?.WebApp?.initData ? 
+              { 'x-telegram-init-data': window.Telegram.WebApp.initData } : {})
+          },
+          credentials: 'include'
+        });
+        
+        console.log("Potential matches API response status:", response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Potential matches API error:', errorText);
+          throw new Error(`Failed to fetch potential matches: ${response.status} ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log("Potential matches API response data:", data);
+        return data as PotentialMatch[];
+      } catch (error) {
+        console.error("Error fetching potential matches:", error);
+        return [] as PotentialMatch[]; // Return empty array on error to avoid breaking the UI
       }
-      const data = await response.json();
-      console.log("Potential matches API response data:", data);
-      return data as PotentialMatch[];
     }
   });
   
