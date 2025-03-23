@@ -2912,9 +2912,20 @@ export async function registerRoutes(app: Express) {
           if (direction === 'right') {
             console.log('MATCH CREATED! Both users swiped right.');
             
+            // Get the host user ID from the collaboration 
+            const [collaboration] = await db.select()
+                .from(collaborations)
+                .where(eq(collaborations.id, actualCollaborationId));
+                
+            console.log("Collaboration details for notification:", {
+                id: actualCollaborationId,
+                creator_id: collaboration?.creator_id,
+                collab_type: collaboration?.collab_type
+            });
+            
             // Create a notification for the collaboration host
             const hostNotification = await storage.createNotification({
-              user_id: originalSwipe.collaboration.user_id,
+              user_id: collaboration.creator_id, // Using the creator_id from the collaboration
               collaboration_id: actualCollaborationId,
               type: 'match',
               content: `${user.first_name} ${user.last_name || ''} matched with your ${collaborationType} collaboration!`,
@@ -2939,9 +2950,20 @@ export async function registerRoutes(app: Express) {
                 .from(companies)
                 .where(eq(companies.user_id, user.id));
                 
+              // Get the host user to get their Telegram ID
+              const [hostUser] = await db.select()
+                .from(users)
+                .where(eq(users.id, collaboration.creator_id));
+              
               // Send message to host
-              const hostChatId = parseInt(originalSwipe.user.telegram_id);
+              const hostChatId = parseInt(hostUser.telegram_id);
               const hostMessage = `🎉 New Match! ${user.first_name} ${user.last_name || ''} from ${userCompany?.name || 'a company'} matched with your ${collaborationType} collaboration!`;
+              
+              console.log("Sending Telegram notification to host:", {
+                host_user_id: collaboration.creator_id,
+                host_telegram_id: hostUser.telegram_id,
+                host_chat_id: hostChatId
+              });
               
               // Send message to requester
               const requesterChatId = parseInt(user.telegram_id);
