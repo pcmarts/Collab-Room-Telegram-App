@@ -15,7 +15,7 @@ import {
 } from "../shared/schema";
 import { eq, and, not, desc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved } from "./telegram";
+import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, bot } from "./telegram";
 import { storage } from "./storage";
 
 // Define our session data structure
@@ -2923,21 +2923,37 @@ export async function registerRoutes(app: Express) {
                 collab_type: collaboration?.collab_type
             });
             
+            // Determine who is the host and who is the requester
+            const isUserTheHost = user.id === collaboration.creator_id;
+            const otherUserId = isUserTheHost ? originalSwipe.user.id : collaboration.creator_id;
+            
+            console.log("Match roles:", {
+              current_user_id: user.id,
+              collaboration_creator_id: collaboration.creator_id,
+              original_swiper_id: originalSwipe.user.id,
+              is_user_the_host: isUserTheHost,
+              other_user_id: otherUserId
+            });
+            
+            // If current user is the host, the other user is the requester. Otherwise, the current user is the requester.
+            const hostId = isUserTheHost ? user.id : collaboration.creator_id;
+            const requesterId = isUserTheHost ? originalSwipe.user.id : user.id;
+            
             // Create a notification for the collaboration host
             const hostNotification = await storage.createNotification({
-              user_id: collaboration.creator_id, // Using the creator_id from the collaboration
+              user_id: hostId,
               collaboration_id: actualCollaborationId,
               type: 'match',
-              content: `${user.first_name} ${user.last_name || ''} matched with your ${collaborationType} collaboration!`,
+              content: `${isUserTheHost ? originalSwipe.user.first_name : user.first_name} ${isUserTheHost ? (originalSwipe.user.last_name || '') : (user.last_name || '')} matched with your ${collaborationType} collaboration!`,
               is_read: false
             });
             
             // Create a notification for the requester
             const requesterNotification = await storage.createNotification({
-              user_id: user.id,
+              user_id: requesterId,
               collaboration_id: actualCollaborationId,
               type: 'match',
-              content: `You matched with ${originalSwipe.user.first_name} ${originalSwipe.user.last_name || ''}'s ${collaborationType} collaboration!`,
+              content: `You matched with ${isUserTheHost ? user.first_name : originalSwipe.user.first_name} ${isUserTheHost ? (user.last_name || '') : (originalSwipe.user.last_name || '')}'s ${collaborationType} collaboration!`,
               is_read: false
             });
             
@@ -2950,27 +2966,42 @@ export async function registerRoutes(app: Express) {
                 .from(companies)
                 .where(eq(companies.user_id, user.id));
                 
-              // Get the host user to get their Telegram ID
+              // Get Telegram details for both users
               const [hostUser] = await db.select()
                 .from(users)
-                .where(eq(users.id, collaboration.creator_id));
+                .where(eq(users.id, hostId));
+                
+              const [requesterUser] = await db.select()
+                .from(users)
+                .where(eq(users.id, requesterId));
+              
+              // Get company details for the requester
+              const [requesterCompany] = await db.select()
+                .from(companies)
+                .where(eq(companies.user_id, requesterId));
               
               // Send message to host
               const hostChatId = parseInt(hostUser.telegram_id);
-              const hostMessage = `🎉 New Match! ${user.first_name} ${user.last_name || ''} from ${userCompany?.name || 'a company'} matched with your ${collaborationType} collaboration!`;
+              const hostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ''} from ${requesterCompany?.name || 'a company'} matched with your ${collaborationType} collaboration!`;
               
               console.log("Sending Telegram notification to host:", {
-                host_user_id: collaboration.creator_id,
+                host_id: hostId,
                 host_telegram_id: hostUser.telegram_id,
                 host_chat_id: hostChatId
               });
               
               // Send message to requester
-              const requesterChatId = parseInt(user.telegram_id);
-              const requesterMessage = `🎉 New Match! You matched with ${originalSwipe.user.first_name} ${originalSwipe.user.last_name || ''}'s ${collaborationType} collaboration!`;
+              const requesterChatId = parseInt(requesterUser.telegram_id);
+              const requesterMessage = `🎉 New Match! You matched with ${hostUser.first_name} ${hostUser.last_name || ''}'s ${collaborationType} collaboration!`;
+              
+              console.log("Sending Telegram notification to requester:", {
+                requester_id: requesterId,
+                requester_telegram_id: requesterUser.telegram_id,
+                requester_chat_id: requesterChatId
+              });
               
               // Use the bot to send messages
-              const { bot } = require('./telegram');
+              // bot is already imported at the top of the file
               
               // Create the keyboard with open app button
               const keyboard = {
