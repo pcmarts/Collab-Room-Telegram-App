@@ -20,7 +20,7 @@ function getTelegramUserFromRequest(req: any) {
     if (process.env.NODE_ENV !== 'production') {
       console.log('Using development fallback for Telegram data');
       return {
-        id: '7892486659',
+        id: 'test_user_id',
         first_name: 'Test',
         last_name: 'User',
         username: null
