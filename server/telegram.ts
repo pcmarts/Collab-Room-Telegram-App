@@ -724,8 +724,9 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
     const hostKeyboard = {
       inline_keyboard: [
         [{ text: "💬 Chat with Collaborator", url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}` }],
-        [{ text: "🔍 View Full Details", callback_data: `match_info_${requesterUserId}_${collaborationId}` }],
-        [{ text: "🚀 Discover More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }]
+        // Remove the callback button that's causing issues
+        [{ text: "🚀 Discover More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }],
+        [{ text: "👥 View Matches", web_app: { url: `${WEBAPP_URL}/matches` } }]
       ]
     };
 
@@ -733,8 +734,9 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
     const requesterKeyboard = {
       inline_keyboard: [
         [{ text: "💬 Chat with Host", url: `https://t.me/${hostUser.handle || hostUser.telegram_id}` }],
-        [{ text: "🔍 View Full Details", callback_data: `match_info_${hostUserId}_${collaborationId}` }],
-        [{ text: "🚀 Discover More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }]
+        // Remove the callback button that's causing issues
+        [{ text: "🚀 Discover More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }],
+        [{ text: "👥 View Matches", web_app: { url: `${WEBAPP_URL}/matches` } }]
       ]
     };
 
@@ -773,7 +775,15 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
           console.log('[DEBUG] Trying fallback message to host...');
           const plainHostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ''} from ${requesterCompany?.name || 'a company'} matched with your ${collaboration.collab_type} collaboration!`;
           
-          await bot.sendMessage(hostChatId, plainHostMessage);
+          // Simplified fallback keyboard without callback data
+          const fallbackHostKeyboard = {
+            inline_keyboard: [
+              [{ text: "Chat with Collaborator", url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}` }],
+              [{ text: "View Matches", web_app: { url: `${WEBAPP_URL}/matches` } }]
+            ]
+          };
+          
+          await bot.sendMessage(hostChatId, plainHostMessage, { reply_markup: fallbackHostKeyboard });
           console.log(`[DEBUG] Successfully sent fallback message to host (${hostChatId})`);
         }
         
@@ -782,7 +792,15 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
           console.log('[DEBUG] Trying fallback message to requester...');
           const plainRequesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ''} from ${hostCompany?.name || 'a company'} just approved your collab request for ${collaboration.collab_type}!`;
           
-          await bot.sendMessage(requesterChatId, plainRequesterMessage);
+          // Simplified fallback keyboard without callback data
+          const fallbackRequesterKeyboard = {
+            inline_keyboard: [
+              [{ text: "Chat with Host", url: `https://t.me/${hostUser.handle || hostUser.telegram_id}` }],
+              [{ text: "View Matches", web_app: { url: `${WEBAPP_URL}/matches` } }]
+            ]
+          };
+          
+          await bot.sendMessage(requesterChatId, plainRequesterMessage, { reply_markup: fallbackRequesterKeyboard });
           console.log(`[DEBUG] Successfully sent fallback message to requester (${requesterChatId})`);
         }
       } catch (fallbackError) {
