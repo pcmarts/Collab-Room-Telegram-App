@@ -16,6 +16,7 @@ import {
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
+import { GlowFilterButton } from "@/components/GlowFilterButton";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Collaboration } from "@shared/schema";
@@ -1263,15 +1264,10 @@ export default function DiscoverPage() {
       <div className="container max-w-md mx-auto py-4 flex-grow flex flex-col">
         <div className="flex justify-between items-center mb-2 px-4">
           <h1 className="text-2xl font-bold p-2">Discover</h1>
-          <Button 
-            variant="secondary" 
+          <GlowFilterButton 
             onClick={() => setLocation('/discovery-filters')}
-            aria-label="Filter"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center space-x-2"
-          >
-            <SlidersVertical className="h-5 w-5" />
-            <span>Filters</span>
-          </Button>
+            className="ml-2"
+          />
         </div>
         
         {/* Adjust card position to be higher on the page */}
