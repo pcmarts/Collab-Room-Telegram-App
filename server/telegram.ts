@@ -584,20 +584,61 @@ console.log("Telegram bot initialization completed");
  */
 async function sendDirectFormattedMessage(chatId: number, message: string, keyboard: any) {
   try {
-    // Log exact message being sent for debugging
-    console.log(`[DIRECT_MSG_DEBUG] Sending to ${chatId}:\nMESSAGE: ${message}\nKEYBOARD: ${JSON.stringify(keyboard)}`);
+    // Validate inputs
+    if (!chatId || isNaN(chatId)) {
+      console.error(`[DIRECT_MSG_DEBUG] Invalid chat ID: ${chatId}`);
+      throw new Error(`Invalid chat ID: ${chatId}`);
+    }
     
-    // Use lower-level sendMessage API for direct access
-    const result = await bot.sendMessage(chatId, message, {
-      parse_mode: 'HTML',
+    if (!message || typeof message !== 'string') {
+      console.error(`[DIRECT_MSG_DEBUG] Invalid message format, must be a string`);
+      throw new Error('Invalid message format');
+    }
+    
+    // Detect HTML tags to ensure proper formatting
+    const hasHtmlTags = message.includes('<b>') || message.includes('<i>') || message.includes('<a href');
+    
+    // Log exact message being sent for debugging
+    console.log(`[DIRECT_MSG_DEBUG] Preparing message to ${chatId}:`);
+    console.log(`[DIRECT_MSG_DEBUG] Contains HTML tags: ${hasHtmlTags}`);
+    console.log(`[DIRECT_MSG_DEBUG] MESSAGE:\n${message}`);
+    console.log(`[DIRECT_MSG_DEBUG] KEYBOARD:\n${JSON.stringify(keyboard, null, 2)}`);
+    
+    // Prepare message options
+    const messageOptions: TelegramBot.SendMessageOptions = {
+      parse_mode: hasHtmlTags ? 'HTML' : undefined, // Only set HTML mode when tags are present
       reply_markup: keyboard,
       disable_web_page_preview: false
-    });
+    };
+    
+    console.log(`[DIRECT_MSG_DEBUG] Message options:\n${JSON.stringify(messageOptions, null, 2)}`);
+    
+    // Use lower-level sendMessage API for direct access
+    console.log(`[DIRECT_MSG_DEBUG] Sending message to chat ID ${chatId}...`);
+    const result = await bot.sendMessage(chatId, message, messageOptions);
     
     console.log(`[DIRECT_MSG_DEBUG] Success! Message ID: ${result.message_id}`);
     return result;
   } catch (error) {
-    console.error(`[DIRECT_MSG_DEBUG] Failed to send message: ${error}`);
+    console.error(`[DIRECT_MSG_DEBUG] Failed to send message:`, error);
+    
+    // Attempt to determine error cause for better debugging
+    if (error instanceof Error) {
+      if (error.message.includes('ETELEGRAM')) {
+        console.error(`[DIRECT_MSG_DEBUG] Telegram API error: ${error.message}`);
+        
+        // Check for specific error conditions
+        if (error.message.includes('chat not found')) {
+          console.error(`[DIRECT_MSG_DEBUG] Chat ID ${chatId} not found. Verify the Telegram ID is correct.`);
+        } else if (error.message.includes('bot was blocked')) {
+          console.error(`[DIRECT_MSG_DEBUG] User has blocked the bot.`);
+        } else if (error.message.includes('can\'t parse entities')) {
+          console.error(`[DIRECT_MSG_DEBUG] HTML parsing error. Check your HTML formatting.`);
+          console.error(`[DIRECT_MSG_DEBUG] Message that failed: ${message}`);
+        }
+      }
+    }
+    
     throw error;
   }
 }
@@ -624,8 +665,10 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
     }
 
     console.log('[DEBUG] User records:', {
-      hostUser: JSON.stringify(hostUser),
-      requesterUser: JSON.stringify(requesterUser)
+      hostId: hostUser.id,
+      hostTelegramId: hostUser.telegram_id,
+      requesterIds: requesterUser.id,
+      requesterTelegramId: requesterUser.telegram_id
     });
 
     // Get collaboration details
@@ -647,10 +690,21 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
       .from(companies)
       .where(eq(companies.user_id, requesterUserId));
 
-    console.log('[DEBUG] Company records:', {
-      hostCompany: JSON.stringify(hostCompany),
-      requesterCompany: JSON.stringify(requesterCompany)
+    console.log('[DEBUG] Company records found:', {
+      hostCompanyFound: !!hostCompany,
+      requesterCompanyFound: !!requesterCompany
     });
+
+    // Convert telegram_id to integers for chat ID
+    const hostChatId = parseInt(hostUser.telegram_id);
+    const requesterChatId = parseInt(requesterUser.telegram_id);
+    
+    if (isNaN(hostChatId) || isNaN(requesterChatId)) {
+      console.error('[Telegram Bot] Invalid chat IDs:', { hostChatId, requesterChatId });
+      return;
+    }
+    
+    console.log('[DEBUG] Chat IDs for notifications:', { hostChatId, requesterChatId });
 
     // Format company website links
     const requesterCompanyWebsite = requesterCompany?.website ? requesterCompany.website.startsWith('http') ? requesterCompany.website : `https://${requesterCompany.website}` : '';
@@ -685,23 +739,59 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
     };
 
     // Prepare host notification with HTML formatting
-    const hostChatId = parseInt(hostUser.telegram_id);
     const hostMessage = `🎉 <b>New Match!</b>\n\n${requesterUser.first_name} ${requesterUser.last_name || ''} ${requesterUser.handle ? `(<a href="https://t.me/${requesterUser.handle}">@${requesterUser.handle}</a>)` : ''}, the <b>${requesterCompany?.job_title || 'professional'}</b> from ${requesterCompanyName} is a match for your <b>${collaboration.collab_type}</b> collaboration!\n\nThey've shown interest in collaborating with you - you can now chat directly using the buttons below.`;
     
     // Prepare requester notification with HTML formatting  
-    const requesterChatId = parseInt(requesterUser.telegram_id);
     const requesterMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ''} ${hostUser.handle ? `(<a href="https://t.me/${hostUser.handle}">@${hostUser.handle}</a>)` : ''} from ${hostCompanyName} just approved your collab request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly with ${hostUser.first_name} using the buttons below.`;
     
-    // Send both notifications using direct messaging function
+    console.log('[DEBUG] Formatted messages to send:');
+    console.log(`Host message (to ${hostChatId}):\n${hostMessage}`);
+    console.log(`Requester message (to ${requesterChatId}):\n${requesterMessage}`);
+    
+    // Send both notifications with full error handling
+    let hostSuccess = false;
+    let requesterSuccess = false;
+    
     try {
+      // First try the enhanced direct formatted message approach
       await sendDirectFormattedMessage(hostChatId, hostMessage, hostKeyboard);
+      hostSuccess = true;
+      console.log(`[DEBUG] Successfully sent formatted message to host (${hostChatId})`);
+      
       await sendDirectFormattedMessage(requesterChatId, requesterMessage, requesterKeyboard);
-      console.log('[Telegram Bot] Successfully sent match notifications to both users');
-    } catch (error) {
-      console.error('[Telegram Bot] Error in direct notification sending:', error);
+      requesterSuccess = true;
+      console.log(`[DEBUG] Successfully sent formatted message to requester (${requesterChatId})`);
+      
+      console.log('[Telegram Bot] Successfully sent enhanced HTML notifications to both users');
+    } catch (directError) {
+      console.error('[Telegram Bot] Error in direct notification sending:', directError);
+      
+      // If direct formatting failed, try standard message as fallback
+      try {
+        if (!hostSuccess) {
+          // Try sending plain message to host without HTML formatting
+          console.log('[DEBUG] Trying fallback message to host...');
+          const plainHostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ''} from ${requesterCompany?.name || 'a company'} matched with your ${collaboration.collab_type} collaboration!`;
+          
+          await bot.sendMessage(hostChatId, plainHostMessage);
+          console.log(`[DEBUG] Successfully sent fallback message to host (${hostChatId})`);
+        }
+        
+        if (!requesterSuccess) {
+          // Try sending plain message to requester without HTML formatting
+          console.log('[DEBUG] Trying fallback message to requester...');
+          const plainRequesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ''} from ${hostCompany?.name || 'a company'} just approved your collab request for ${collaboration.collab_type}!`;
+          
+          await bot.sendMessage(requesterChatId, plainRequesterMessage);
+          console.log(`[DEBUG] Successfully sent fallback message to requester (${requesterChatId})`);
+        }
+      } catch (fallbackError) {
+        console.error('[Telegram Bot] Even fallback notification failed:', fallbackError);
+      }
     }
     
   } catch (error) {
-    console.error('[Telegram Bot] Error sending match notifications:', error);
+    console.error('[Telegram Bot] Error preparing match notifications:', error);
+    console.error(error instanceof Error ? error.stack : 'No stack trace available');
   }
 }
