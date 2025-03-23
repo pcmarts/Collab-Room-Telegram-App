@@ -928,13 +928,16 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         <h1 className="text-2xl font-bold p-6">My Collaborations</h1>
         
         <div className="container mx-auto py-4 px-4">
-          <div className="flex justify-end mb-4">
-            <GlowButton 
-              onClick={() => setLocation('/create-collaboration-steps')}
-            >
-              Create New
-            </GlowButton>
-          </div>
+          {/* Only show the top right Create New button if there are collaborations */}
+          {collaborations && collaborations.length > 0 && (
+            <div className="flex justify-end mb-4">
+              <GlowButton 
+                onClick={() => setLocation('/create-collaboration-steps')}
+              >
+                Create New
+              </GlowButton>
+            </div>
+          )}
           
           {isLoadingCollabs ? (
             renderSkeletons()
