@@ -365,40 +365,126 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Collaboration applications
+  // Updated application methods to use swipes instead of collab_applications
   async applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication> {
-    const [newApplication] = await db
-      .insert(collab_applications)
-      .values(application)
+    console.log("Creating a swipe right from application data:", application);
+    
+    // Create a swipe right on the collaboration
+    const [newSwipe] = await db
+      .insert(swipes)
+      .values({
+        user_id: application.applicant_id,
+        collaboration_id: application.collaboration_id,
+        direction: 'right',
+        details: application.details, // Store application details in swipe details
+        created_at: new Date()
+      })
       .returning();
-    return newApplication;
+    
+    // Convert swipe to CollabApplication format for backward compatibility
+    return {
+      id: newSwipe.id,
+      collaboration_id: newSwipe.collaboration_id,
+      applicant_id: newSwipe.user_id,
+      status: 'pending', // Default status for new applications
+      details: newSwipe.details,
+      created_at: newSwipe.created_at || new Date()
+    };
   }
   
   async getCollaborationApplications(collaborationId: string): Promise<CollabApplication[]> {
-    return db
+    console.log("Getting applications (swipes) for collaboration:", collaborationId);
+    
+    // Get all "right" swipes for this collaboration
+    const swipesData = await db
       .select()
-      .from(collab_applications)
-      .where(eq(collab_applications.collaboration_id, collaborationId))
-      .orderBy(desc(collab_applications.created_at));
+      .from(swipes)
+      .where(and(
+        eq(swipes.collaboration_id, collaborationId),
+        eq(swipes.direction, 'right')
+      ))
+      .orderBy(desc(swipes.created_at));
+    
+    // Convert swipes to CollabApplication format
+    return swipesData.map(swipe => ({
+      id: swipe.id,
+      collaboration_id: swipe.collaboration_id,
+      applicant_id: swipe.user_id,
+      status: 'pending', // Default status for existing applications
+      details: swipe.details,
+      created_at: swipe.created_at || new Date()
+    }));
   }
   
   async getUserApplications(userId: string): Promise<CollabApplication[]> {
-    return db
+    console.log("Getting applications (swipes) by user:", userId);
+    
+    // Get all "right" swipes by this user
+    const swipesData = await db
       .select()
-      .from(collab_applications)
-      .where(eq(collab_applications.applicant_id, userId))
-      .orderBy(desc(collab_applications.created_at));
+      .from(swipes)
+      .where(and(
+        eq(swipes.user_id, userId),
+        eq(swipes.direction, 'right')
+      ))
+      .orderBy(desc(swipes.created_at));
+    
+    // Convert swipes to CollabApplication format
+    return swipesData.map(swipe => ({
+      id: swipe.id,
+      collaboration_id: swipe.collaboration_id,
+      applicant_id: swipe.user_id,
+      status: 'pending', // Default status
+      details: swipe.details,
+      created_at: swipe.created_at || new Date()
+    }));
   }
   
   async updateApplicationStatus(id: string, status: string): Promise<CollabApplication | undefined> {
-    const [application] = await db
-      .update(collab_applications)
-      .set({ 
-        status, 
-        updated_at: new Date()
-      })
-      .where(eq(collab_applications.id, id))
-      .returning();
-    return application;
+    console.log("Updating application (swipe) status:", id, status);
+    
+    // This is now a no-op as we're using swipes instead of applications
+    // But we need to maintain backward compatibility
+    
+    // Find the swipe
+    const [swipe] = await db
+      .select()
+      .from(swipes)
+      .where(eq(swipes.id, id));
+    
+    if (!swipe) {
+      return undefined;
+    }
+    
+    // If status is 'accepted', create a match
+    if (status === 'accepted') {
+      // Get the collaboration to find the creator_id
+      const [collaboration] = await db
+        .select()
+        .from(collaborations)
+        .where(eq(collaborations.id, swipe.collaboration_id));
+      
+      if (collaboration) {
+        // Create match
+        await this.createMatch({
+          collaboration_id: swipe.collaboration_id,
+          requester_id: swipe.user_id,
+          host_id: collaboration.creator_id,
+          status: 'active',
+          created_at: new Date()
+        });
+      }
+    }
+    
+    // Return converted swipe as CollabApplication
+    return {
+      id: swipe.id,
+      collaboration_id: swipe.collaboration_id,
+      applicant_id: swipe.user_id,
+      status: status, // Use the updated status
+      details: swipe.details,
+      created_at: swipe.created_at || new Date()
+    };
   }
   
   // Notification methods

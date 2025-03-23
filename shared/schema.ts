@@ -430,6 +430,7 @@ export const swipes = pgTable('swipes', {
   user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   collaboration_id: uuid('collaboration_id').notNull().references(() => collaborations.id, { onDelete: 'cascade' }),
   direction: text('direction').notNull(), // "left" or "right" (pass or request)
+  details: jsonb('details'), // To store application details for backward compatibility
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 

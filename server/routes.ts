@@ -2475,18 +2475,18 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: 'You cannot apply to your own collaboration' });
       }
 
-      // Prepare application data
-      const applicationData = {
+      // Prepare application data as InsertCollabApplication type
+      const applicationData: InsertCollabApplication = {
         collaboration_id: id,
         applicant_id: user.id,
         status: 'pending',
-        application_data: result.data,
-        notes: req.body.notes || '',
-        created_at: new Date(),
-        updated_at: new Date()
+        details: { // Store the form data in the details field
+          application_data: result.data,
+          notes: req.body.notes || ''
+        }
       };
 
-      // Submit the application
+      // Submit the application (which will create a swipe)
       try {
         const application = await storage.applyToCollaboration(applicationData);
         
@@ -2494,9 +2494,8 @@ export async function registerRoutes(app: Express) {
         await storage.createNotification({
           user_id: collaboration.creator_id,
           type: 'new_application',
-          content: `${user.first_name} ${user.last_name || ''} applied to your ${collaboration.title} collaboration`,
+          content: `${user.first_name} ${user.last_name || ''} applied to your "${collaboration.description}" collaboration`,
           collaboration_id: collaboration.id,
-          application_id: application.id,
           is_read: false,
           is_sent: false,
           created_at: new Date()
