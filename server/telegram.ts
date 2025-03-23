@@ -367,3 +367,90 @@ bot.on("error", (error) => {
 });
 
 console.log("Telegram bot initialization completed");
+
+/**
+ * Send a match notification to both users when a match occurs
+ * @param hostUserId ID of the host user (collaboration creator)
+ * @param requesterUserId ID of the requester user (user who swiped right)
+ * @param collaborationId ID of the collaboration that was matched
+ */
+export async function notifyMatchCreated(hostUserId: string, requesterUserId: string, collaborationId: string) {
+  try {
+    console.log('[Telegram Bot] Sending match notifications:', { hostUserId, requesterUserId, collaborationId });
+
+    // Get user details from database
+    const [hostUser] = await db.select()
+      .from(users)
+      .where(eq(users.id, hostUserId));
+      
+    const [requesterUser] = await db.select()
+      .from(users)
+      .where(eq(users.id, requesterUserId));
+      
+    if (!hostUser || !requesterUser) {
+      console.error('[Telegram Bot] Could not find user data for match notification:', { 
+        hostFound: !!hostUser, 
+        requesterFound: !!requesterUser 
+      });
+      return;
+    }
+
+    // Get collaboration details
+    const [collaboration] = await db.select()
+      .from(collaborations)
+      .where(eq(collaborations.id, collaborationId));
+    
+    if (!collaboration) {
+      console.error('[Telegram Bot] Could not find collaboration for match notification:', { collaborationId });
+      return;
+    }
+
+    // Get company details for both users
+    const [hostCompany] = await db.select()
+      .from(companies)
+      .where(eq(companies.user_id, hostUserId));
+    
+    const [requesterCompany] = await db.select()
+      .from(companies)
+      .where(eq(companies.user_id, requesterUserId));
+
+    // Create keyboard with open matches button
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "View Matches",
+            web_app: { url: `${WEBAPP_URL}/matches` },
+          },
+        ],
+      ],
+    };
+
+    // Send notification to host
+    const hostChatId = parseInt(hostUser.telegram_id);
+    const hostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ''} from ${requesterCompany?.name || 'a company'} matched with your ${collaboration.collab_type} collaboration!`;
+    
+    console.log('[Telegram Bot] Sending notification to host:', {
+      chatId: hostChatId,
+      name: `${hostUser.first_name} ${hostUser.last_name || ''}`,
+    });
+    
+    await bot.sendMessage(hostChatId, hostMessage, { reply_markup: keyboard });
+
+    // Send notification to requester
+    const requesterChatId = parseInt(requesterUser.telegram_id);
+    const requesterMessage = `🎉 New Match! You matched with ${hostUser.first_name} ${hostUser.last_name || ''}'s ${collaboration.collab_type} collaboration!`;
+    
+    console.log('[Telegram Bot] Sending notification to requester:', {
+      chatId: requesterChatId,
+      name: `${requesterUser.first_name} ${requesterUser.last_name || ''}`,
+    });
+    
+    await bot.sendMessage(requesterChatId, requesterMessage, { reply_markup: keyboard });
+    
+    console.log('[Telegram Bot] Successfully sent match notifications to both users');
+    
+  } catch (error) {
+    console.error('[Telegram Bot] Error sending match notifications:', error);
+  }
+}
