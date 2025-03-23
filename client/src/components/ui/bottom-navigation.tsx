@@ -64,7 +64,7 @@ const BottomNavigation = () => {
             href={item.href}
             className={cn(
               "flex flex-col items-center justify-center px-1 pt-2 hover:bg-accent relative",
-              location === item.href && "text-primary"
+              location === item.href ? "text-[#FAFAFA]" : "text-[#8F8F99]"
             )}
           >
             <div className="relative">
