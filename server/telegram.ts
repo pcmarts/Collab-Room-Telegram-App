@@ -421,7 +421,7 @@ async function handleMatchInfoCallback(callbackQuery: TelegramBot.CallbackQuery)
     
     // Format user and company info
     const userFullName = `${user.first_name} ${user.last_name || ''}`.trim();
-    const userHandle = user.username ? `@${user.username}` : '';
+    const userHandle = user.handle ? `@${user.handle}` : '';
     const twitterHandle = company?.twitter_handle || '';
     const twitterFollowers = company?.twitter_followers || 'Unknown';
     const linkedinUrl = company?.linkedin_url || '';
@@ -463,7 +463,7 @@ async function handleMatchInfoCallback(callbackQuery: TelegramBot.CallbackQuery)
         [
           {
             text: "💬 Chat",
-            url: `https://t.me/${user.username || user.telegram_id}`,
+            url: `https://t.me/${user.handle || user.telegram_id}`,
           },
           {
             text: "🔎 View Profile",
@@ -562,7 +562,7 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
         [
           {
             text: "💬 Chat",
-            url: `https://t.me/${requesterUser.username || requesterUser.telegram_id}`,
+            url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
           },
           {
             text: "🔍 More Info",
@@ -583,7 +583,7 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
         [
           {
             text: "💬 Chat",
-            url: `https://t.me/${hostUser.username || hostUser.telegram_id}`,
+            url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
           },
           {
             text: "🔍 More Info",
@@ -601,7 +601,7 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
 
     // Send enhanced notification to host (collaboration creator)
     const hostChatId = parseInt(hostUser.telegram_id);
-    const hostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ''} (@${requesterUser.username || ''}), the ${requesterCompany?.job_title || 'professional'} from ${requesterCompany?.name || 'a company'} is a match for your ${collaboration.collab_type} collaboration!
+    const hostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ''} ${requesterUser.handle ? `(@${requesterUser.handle})` : ''}, the ${requesterCompany?.job_title || 'professional'} from ${requesterCompany?.name || 'a company'} is a match for your ${collaboration.collab_type} collaboration!
 
 They've shown interest in collaborating with you - you can now chat directly using the buttons below.`;
     
