@@ -6,6 +6,49 @@ import { collaborations, swipes, users } from './shared/schema';
 import { eq } from 'drizzle-orm';
 import { db } from './server/db';
 
+// Helper function to extract Telegram user data from request
+function getTelegramUserFromRequest(req: any) {
+  console.log('Headers:', JSON.stringify(req.headers));
+  
+  // Check if the request contains Telegram init data
+  const telegramData = req.headers['x-telegram-init-data'];
+  if (!telegramData) {
+    console.log('No Telegram init data found in request headers');
+    console.log('Available headers:', JSON.stringify(req.headers));
+    
+    // Development fallback for testing
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Using development fallback for Telegram data');
+      return {
+        id: '7892486659',
+        first_name: 'Jim',
+        last_name: 'Testing',
+        username: 'jimtesting'
+      };
+    }
+    
+    return null;
+  }
+  
+  try {
+    // Parse the Telegram init data
+    const params = new URLSearchParams(telegramData);
+    const userData = params.get('user');
+    
+    if (!userData) {
+      console.log('No user data found in Telegram init data');
+      return null;
+    }
+    
+    const user = JSON.parse(userData);
+    console.log('Parsed Telegram user data:', user);
+    return user;
+  } catch (error) {
+    console.error('Error parsing Telegram user data:', error);
+    return null;
+  }
+}
+
 interface TelegramRequest extends Request {
   telegramData?: {
     id: string;
