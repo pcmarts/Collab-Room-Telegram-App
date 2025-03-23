@@ -24,6 +24,7 @@ The frontend code is organized in the `client` directory with the following stru
     - `layout/`: Layout components
     - `icons/`: Custom icons
     - `admin/`: Admin-specific components
+    - `cards/`: Collaboration card components
   - `pages/`: Page components (one per route)
   - `hooks/`: Custom React hooks
   - `lib/`: Utility functions and helpers
@@ -85,6 +86,87 @@ export const Stack = ({ onVote, children, ...props }) => {
   // Component implementation details
 };
 ```
+
+### Card Components
+
+The application uses a modular card system for displaying different types of collaborations:
+
+#### BaseCollabCard Component
+
+The BaseCollabCard serves as the foundation for all collaboration card types:
+
+```tsx
+interface BaseCardProps {
+  data: {
+    id?: string;
+    companyName: string;
+    topics?: string[];
+    preferredTopics?: string[];
+    [key: string]: any;
+  };
+  badgeIcon: React.ReactNode;
+  badgeText: string;
+  badgeClass?: string;
+  title: string;
+  children: React.ReactNode;
+}
+
+export const BaseCollabCard = ({ 
+  data, 
+  badgeIcon, 
+  badgeText, 
+  badgeClass, 
+  title, 
+  children 
+}: BaseCardProps) => {
+  // Component implementation
+};
+```
+
+#### Specialized Card Components
+
+Each collaboration type has its own specialized card component that extends BaseCollabCard:
+
+- `PodcastCard`: For podcast collaboration opportunities
+- `BlogPostCard`: For blog post collaborations
+- `TwitterSpacesCard`: For Twitter Spaces events
+- `LiveStreamCard`: For livestream collaborations
+- `ResearchReportCard`: For research report partnerships
+- `NewsletterCard`: For newsletter features
+- `MarketingCard`: For general marketing collaborations
+
+Each specialized card handles its specific data format and presents relevant information in a consistent UI.
+
+#### PotentialMatchCard Component
+
+The PotentialMatchCard is used to display users who have already swiped right on a host's collaborations:
+
+```tsx
+export interface PotentialMatchData {
+  first_name: string;
+  last_name?: string;
+  company_name: string;
+  job_title: string;
+}
+
+export interface PotentialMatchCardProps {
+  collab_type: string;
+  description?: string;
+  topics?: string[];
+  potentialMatchData: PotentialMatchData;
+}
+
+export function PotentialMatchCard({ 
+  collab_type,
+  description,
+  topics, 
+  potentialMatchData
+}: PotentialMatchCardProps) {
+  // Component implementation
+}
+```
+
+The PotentialMatchCard has a distinctive background gradient and layout to differentiate it from regular collaboration cards.
 
 ### Form Components
 
@@ -229,3 +311,32 @@ The application follows accessibility best practices:
 2. Providing appropriate ARIA attributes
 3. Ensuring sufficient color contrast
 4. Supporting keyboard navigation
+
+## Utility Functions
+
+### Collaboration Utilities
+
+The application includes utility functions for collaboration-related operations:
+
+```tsx
+/**
+ * Returns the appropriate icon component for a collaboration type
+ */
+export function getCollabTypeIcon(type: string | undefined): React.ReactNode {
+  switch (type?.toLowerCase()) {
+    case 'podcast':
+      return <Mic className="w-3 h-3 mr-1" />;
+    case 'blog post':
+      return <FileText className="w-3 h-3 mr-1" />;
+    case 'twitter spaces':
+      return <Twitter className="w-3 h-3 mr-1" />;
+    case 'live stream':
+      return <Video className="w-3 h-3 mr-1" />;
+    case 'research report':
+      return <FileText className="w-3 h-3 mr-1" />;
+    case 'newsletter':
+      return <BookOpen className="w-3 h-3 mr-1" />;
+    default:
+      return <Megaphone className="w-3 h-3 mr-1" />;
+  }
+}
