@@ -181,8 +181,7 @@ export default function MatchesPage() {
   const { data: matches, isLoading, error } = useQuery({
     queryKey: ['/api/matches'],
     queryFn: async () => {
-      const response = await apiRequest<Match[]>('/api/matches');
-      return response;
+      return await apiRequest('/api/matches');
     }
   });
   
@@ -285,7 +284,7 @@ export default function MatchesPage() {
       <h1 className="text-2xl font-bold p-6">My Matches</h1>
       
       <div className="px-4">
-        {matches && matches.length > 0 ? (
+        {matches && Array.isArray(matches) && matches.length > 0 ? (
           <div className="space-y-4">
             {matches.map((match) => (
               <Card key={match.id}>

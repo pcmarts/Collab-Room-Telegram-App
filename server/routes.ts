@@ -2675,10 +2675,26 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
       
+      // Special development mode handling for testing without Telegram data
+      const isDevelopmentFallback = process.env.NODE_ENV !== 'production' && telegramUser.id === '123456789';
+      
       // Get user from database
-      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      let user;
+      if (!isDevelopmentFallback) {
+        user = await storage.getUserByTelegramId(telegramUser.id.toString());
+        if (!user) {
+          console.log('User not found for Telegram ID:', telegramUser.id);
+          return res.status(404).json({ error: 'User not found' });
+        }
+      } else {
+        // For development mode with no Telegram auth, get any user
+        const [anyUser] = await db.select().from(users).limit(1);
+        user = anyUser;
+        console.log('Using development fallback user ID:', user?.id);
+      }
+      
       if (!user) {
-        console.log('User not found');
+        console.log('No user found even for development fallback');
         return res.status(404).json({ error: 'User not found' });
       }
       
@@ -2686,84 +2702,149 @@ export async function registerRoutes(app: Express) {
       const userMatches = await storage.getUserMatches(user.id);
       console.log(`Found ${userMatches.length} matches for user ${user.id}`);
       
-      // Fetch additional data for each match
-      const enrichedMatches = await Promise.all(userMatches.map(async (match) => {
-        try {
-          // Get collaboration data
-          const [collaboration] = await db.select()
-            .from(collaborations)
-            .where(eq(collaborations.id, match.collaboration_id));
-          
-          // Get host user data
-          const [hostUser] = await db.select()
-            .from(users)
-            .where(eq(users.id, match.host_id));
-          
-          // Get requester user data
-          const [requesterUser] = await db.select()
-            .from(users)
-            .where(eq(users.id, match.requester_id));
-          
-          // Get companies
-          const [hostCompany] = await db.select()
-            .from(companies)
-            .where(eq(companies.user_id, match.host_id));
-          
-          const [requesterCompany] = await db.select()
-            .from(companies)
-            .where(eq(companies.user_id, match.requester_id));
-          
-          // Determine if the current user is the host or requester
-          const isHost = match.host_id === user.id;
-          
-          // Construct match details
-          return {
-            id: match.id,
-            matchDate: new Date(match.created_at).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            }),
-            status: match.status,
-            collaborationType: collaboration?.collab_type || 'Unknown',
-            description: collaboration?.description || '',
-            details: collaboration?.details || {},
+      // In development mode with the fallback user, if no matches are found, create demo data
+      let enrichedMatches = [];
+      
+      if (userMatches.length === 0 && isDevelopmentFallback) {
+        console.log('Creating demo match data for development environment');
+        
+        // Create demo matches for development testing
+        enrichedMatches = [
+          {
+            id: "demo-match-1",
+            matchDate: "March 15, 2025",
+            status: "active",
+            collaborationType: "Podcast Guest Appearance",
+            description: "Join our weekly podcast discussing the latest in Web3 technology and decentralized finance.",
+            details: {
+              podcast_name: "The Web3 Revolution",
+              audience_size: "15,000+ weekly listeners",
+              episode_format: "Interview-style discussion, 45-60 minutes",
+              topic_areas: "Blockchain, DeFi, Web3 infrastructure"
+            },
+            matchedPerson: "Alex Thompson",
+            companyName: "Web3 Insights",
+            roleTitle: "VP of Marketing",
+            companyDescription: "Web3 Insights is a leading media company focusing on blockchain technology and crypto innovations.",
+            userDescription: "Alex is a seasoned tech executive who has been in the Web3 space for over 5 years."
+          },
+          {
+            id: "demo-match-2",
+            matchDate: "March 17, 2025",
+            status: "active",
+            collaborationType: "Twitter Spaces Guest",
+            description: "Co-host a Twitter Space discussing DeFi trends and market analysis.",
+            details: {
+              audience_size: "8,000+ average listeners",
+              duration: "60-90 minutes",
+              topics: "DeFi protocols, yield farming, market trends",
+              format: "Panel discussion with audience Q&A"
+            },
+            matchedPerson: "James Wilson",
+            companyName: "DeFi Daily",
+            roleTitle: "Content Director",
+            companyDescription: "DeFi Daily delivers the latest news and insights in decentralized finance.",
+            userDescription: "James leads content strategy and community engagement for DeFi publications."
+          },
+          {
+            id: "demo-match-3",
+            matchDate: "March 19, 2025",
+            status: "active",
+            collaborationType: "Research Report Feature",
+            description: "Collaborate on an industry research report about institutional blockchain adoption.",
+            details: {
+              audience: "Enterprise clients and institutional investors",
+              length: "25-30 pages with data visualization",
+              timeline: "4 weeks to completion",
+              distribution: "Published on company website and distributed to 5,000+ subscribers"
+            },
+            matchedPerson: "Sarah Johnson",
+            companyName: "Blockchain Analytics",
+            roleTitle: "Market Researcher",
+            companyDescription: "Blockchain Analytics provides data-driven research and insights for the crypto industry.",
+            userDescription: "Sarah specializes in market research and data analysis for blockchain technologies."
+          }
+        ];
+      } else {
+        // Process real database matches
+        enrichedMatches = await Promise.all(userMatches.map(async (match) => {
+          try {
+            // Get collaboration data
+            const [collaboration] = await db.select()
+              .from(collaborations)
+              .where(eq(collaborations.id, match.collaboration_id));
             
-            // Show the other party's info to the current user
-            matchedPerson: isHost ? 
-              `${requesterUser?.first_name || ''} ${requesterUser?.last_name || ''}` : 
-              `${hostUser?.first_name || ''} ${hostUser?.last_name || ''}`,
+            // Get host user data
+            const [hostUser] = await db.select()
+              .from(users)
+              .where(eq(users.id, match.host_id));
             
-            companyName: isHost ? 
-              requesterCompany?.name || 'Unknown Company' : 
-              hostCompany?.name || 'Unknown Company',
+            // Get requester user data
+            const [requesterUser] = await db.select()
+              .from(users)
+              .where(eq(users.id, match.requester_id));
             
-            roleTitle: isHost ? 
-              requesterCompany?.job_title || 'Unknown Role' : 
-              hostCompany?.job_title || 'Unknown Role',
+            // Get companies
+            const [hostCompany] = await db.select()
+              .from(companies)
+              .where(eq(companies.user_id, match.host_id));
             
-            companyDescription: isHost ?
-              requesterCompany?.short_description || 'No company description available.' :
-              hostCompany?.short_description || 'No company description available.',
+            const [requesterCompany] = await db.select()
+              .from(companies)
+              .where(eq(companies.user_id, match.requester_id));
             
-            userDescription: isHost ?
-              `${requesterUser?.first_name || ''} is a professional in the Web3 space.` :
-              `${hostUser?.first_name || ''} is a professional in the Web3 space.`
-          };
-        } catch (error) {
-          console.error(`Error enriching match ${match.id}:`, error);
-          return {
-            id: match.id,
-            matchDate: new Date(match.created_at).toLocaleDateString('en-US'),
-            status: match.status,
-            collaborationType: 'Unknown',
-            description: 'Unable to load full details',
-            matchedPerson: 'Unknown',
-            companyName: 'Unknown Company',
-            roleTitle: 'Unknown Role'
-          };
-        }
-      }));
+            // Determine if the current user is the host or requester
+            const isHost = match.host_id === user.id;
+            
+            // Construct match details
+            return {
+              id: match.id,
+              matchDate: match.created_at ? new Date(match.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }) : 'Unknown date',
+              status: match.status,
+              collaborationType: collaboration?.collab_type || 'Unknown',
+              description: collaboration?.description || '',
+              details: collaboration?.details || {},
+              
+              // Show the other party's info to the current user
+              matchedPerson: isHost ? 
+                `${requesterUser?.first_name || ''} ${requesterUser?.last_name || ''}` : 
+                `${hostUser?.first_name || ''} ${hostUser?.last_name || ''}`,
+              
+              companyName: isHost ? 
+                requesterCompany?.name || 'Unknown Company' : 
+                hostCompany?.name || 'Unknown Company',
+              
+              roleTitle: isHost ? 
+                requesterCompany?.job_title || 'Unknown Role' : 
+                hostCompany?.job_title || 'Unknown Role',
+              
+              companyDescription: isHost ?
+                requesterCompany?.short_description || 'No company description available.' :
+                hostCompany?.short_description || 'No company description available.',
+              
+              userDescription: isHost ?
+                `${requesterUser?.first_name || ''} is a professional in the Web3 space.` :
+                `${hostUser?.first_name || ''} is a professional in the Web3 space.`
+            };
+          } catch (error) {
+            console.error(`Error enriching match ${match.id}:`, error);
+            return {
+              id: match.id,
+              matchDate: match.created_at ? new Date(match.created_at).toLocaleDateString('en-US') : 'Unknown date',
+              status: match.status,
+              collaborationType: 'Unknown',
+              description: 'Unable to load full details',
+              matchedPerson: 'Unknown',
+              companyName: 'Unknown Company',
+              roleTitle: 'Unknown Role'
+            };
+          }
+        }));
+      }
       
       return res.json(enrichedMatches);
     } catch (error) {
