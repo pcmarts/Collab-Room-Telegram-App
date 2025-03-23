@@ -1585,7 +1585,7 @@ export async function registerRoutes(app: Express) {
         // In development, fallback to test user
         console.log('Using development fallback for Telegram data');
         const devUser = {
-          id: '1211030693',
+          id: '123456789',
           username: 'test_user',
           first_name: 'Test',
           last_name: 'User'
@@ -1674,7 +1674,7 @@ export async function registerRoutes(app: Express) {
         // In development, fallback to test user
         console.log('Using development fallback for Telegram data');
         const devUser = {
-          id: '1211030693',
+          id: '123456789',
           username: 'test_user',
           first_name: 'Test',
           last_name: 'User'
@@ -2891,7 +2891,7 @@ export async function registerRoutes(app: Express) {
         if (process.env.NODE_ENV !== 'production') {
           console.log('Using development fallback for Telegram data');
           telegramUser = {
-            id: '1211030693',
+            id: '123456789',
             username: 'test_user',
             first_name: 'Test',
             last_name: 'User'
@@ -2974,7 +2974,7 @@ export async function registerRoutes(app: Express) {
         if (process.env.NODE_ENV !== 'production') {
           console.log('Using development fallback for Telegram data');
           telegramUser = {
-            id: '1211030693',
+            id: '123456789',
             username: 'test_user',
             first_name: 'Test',
             last_name: 'User'
