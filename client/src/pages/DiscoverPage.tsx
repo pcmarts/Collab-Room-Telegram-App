@@ -1263,7 +1263,7 @@ export default function DiscoverPage() {
               whileTap={{ cursor: "grabbing" }}
             >
               <Card 
-                className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing border-2 border-blue-200"
+                className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing"
               >
                 {renderCard(currentCard)}
 
