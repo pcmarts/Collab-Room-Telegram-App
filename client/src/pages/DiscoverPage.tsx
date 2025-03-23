@@ -769,11 +769,34 @@ export default function DiscoverPage() {
   const { data: collaborationsData, isLoading: isLoadingCollabs, isError: isCollabsError, error: collabsError } = useQuery({
     queryKey: ['/api/collaborations/search'],
     queryFn: async () => {
-      const response = await apiRequest('/api/collaborations/search', 'GET');
-      if (!response.ok) {
-        throw new Error('Failed to fetch collaborations');
+      try {
+        console.log('Fetching collaborations...');
+        const response = await fetch('/api/collaborations/search', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add Telegram init data if it exists in the window object
+            ...(window.Telegram?.WebApp?.initData ? 
+              { 'x-telegram-init-data': window.Telegram.WebApp.initData } : {})
+          },
+          credentials: 'include'
+        });
+        
+        console.log('Collaboration response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Collaboration API error:', errorText);
+          throw new Error(`Failed to fetch collaborations: ${response.status} ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Collaborations fetched successfully, count:', data.length);
+        return data;
+      } catch (err) {
+        console.error('Collaboration fetch error:', err);
+        throw err;
       }
-      return response.json();
     },
     refetchOnWindowFocus: false,
     retry: 1, // Retry once in case of network issues
@@ -783,37 +806,61 @@ export default function DiscoverPage() {
   const { data: potentialMatchesData, isLoading: isLoadingMatches, isError: isMatchesError, error: matchesError } = useQuery({
     queryKey: ['/api/potential-matches'],
     queryFn: async () => {
-      const response = await apiRequest('/api/potential-matches', 'GET');
-      if (!response.ok) {
-        throw new Error('Failed to fetch potential matches');
-      }
-      const data = await response.json();
-      
-      // If data is empty array, return it directly
-      if (!data || data.length === 0) {
+      try {
+        console.log('Fetching potential matches...');
+        const response = await fetch('/api/potential-matches', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add Telegram init data if it exists in the window object
+            ...(window.Telegram?.WebApp?.initData ? 
+              { 'x-telegram-init-data': window.Telegram.WebApp.initData } : {})
+          },
+          credentials: 'include'
+        });
+        
+        console.log('Potential matches response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Potential matches API error:', errorText);
+          throw new Error(`Failed to fetch potential matches: ${response.status} ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Potential matches fetched successfully, count:', Array.isArray(data) ? data.length : 'not an array');
+        
+        // If data is empty array, return it directly
+        if (!data || !Array.isArray(data) || data.length === 0) {
+          return [];
+        }
+        
+        // Convert potential matches to a card format
+        return data.map((match) => ({
+          id: match.swipe_id, // Use the swipe ID as the unique identifier
+          isPotentialMatch: true, // Flag to identify this as a potential match card
+          collab_type: match.collaboration_type,
+          description: match.collaboration_description || 'Interested in your collaboration',
+          topics: match.collaboration_topics || [],
+          // User who swiped right details
+          potentialMatchData: {
+            user_id: match.user_id,
+            first_name: match.user_first_name,
+            last_name: match.user_last_name,
+            company_name: match.company_name, 
+            job_title: match.company_job_title,
+            twitter_followers: match.user_twitter_followers,
+            company_twitter_followers: match.company_twitter_followers,
+            swipe_created_at: match.swipe_created_at,
+            collaboration_id: match.collaboration_id
+          }
+        }));
+      } catch (err) {
+        console.error('Potential matches fetch error:', err);
+        // Return empty array instead of throwing to avoid error screen when only potential matches fail
+        // This allows regular collaborations to still be shown
         return [];
       }
-      
-      // Convert potential matches to a card format
-      return data.map((match) => ({
-        id: match.swipe_id, // Use the swipe ID as the unique identifier
-        isPotentialMatch: true, // Flag to identify this as a potential match card
-        collab_type: match.collaboration_type,
-        description: match.collaboration_description || 'Interested in your collaboration',
-        topics: match.collaboration_topics || [],
-        // User who swiped right details
-        potentialMatchData: {
-          user_id: match.user_id,
-          first_name: match.user_first_name,
-          last_name: match.user_last_name,
-          company_name: match.company_name, 
-          job_title: match.company_job_title,
-          twitter_followers: match.user_twitter_followers,
-          company_twitter_followers: match.company_twitter_followers,
-          swipe_created_at: match.swipe_created_at,
-          collaboration_id: match.collaboration_id
-        }
-      }));
     },
     refetchOnWindowFocus: false,
     retry: 1,
@@ -821,8 +868,9 @@ export default function DiscoverPage() {
   
   // Combine loading and error states
   const isLoading = isLoadingCollabs || isLoadingMatches;
-  const isError = isCollabsError || isMatchesError;
-  const error = collabsError || matchesError;
+  // Only flag error if collaborations query fails (we can still show the UI with just collaborations)
+  const isError = isCollabsError;
+  const error = collabsError;
   
   // Log any query errors
   useEffect(() => {
@@ -1204,6 +1252,12 @@ export default function DiscoverPage() {
     );
   };
 
+  // Show fallback rendering without error state if successful data load but no cards
+  if (collaborationsData && Array.isArray(collaborationsData) && regularCards.length === 0) {
+    console.log("Successfully loaded data but no collaborations available");
+    return renderEmptyState("No collaborations available right now. Check back later or adjust your filter settings.");
+  }
+  
   // No collaborations available
   if (cards.length === 0) {
     return renderEmptyState();
