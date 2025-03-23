@@ -21,9 +21,9 @@ function getTelegramUserFromRequest(req: any) {
       console.log('Using development fallback for Telegram data');
       return {
         id: '7892486659',
-        first_name: 'Jim',
-        last_name: 'Testing',
-        username: 'jimtesting'
+        first_name: 'Test',
+        last_name: 'User',
+        username: null
       };
     }
     
