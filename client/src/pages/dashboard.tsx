@@ -274,7 +274,7 @@ export default function Dashboard() {
           <p className="mb-2">Made with ❤️ by Paul Martin</p>
           <div className="flex justify-center gap-4">
             <a 
-              href="https://www.linkedin.com/in/thisispaulmartin/" 
+              href="https://www.linkedin.com/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-primary hover:underline"
@@ -283,7 +283,7 @@ export default function Dashboard() {
               <span>LinkedIn</span>
             </a>
             <a 
-              href="https://x.com/pcmarts" 
+              href="https://x.com/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-primary hover:underline"
