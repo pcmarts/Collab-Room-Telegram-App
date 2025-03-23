@@ -190,9 +190,33 @@ The Collab Room implements a bidirectional matching system similar to dating app
 1. **User-Initiated Swipes**: Users swipe right on collaborations they're interested in
 2. **Potential Match Exposure**: These swipes appear as "potential matches" in the collaboration creator's discovery feed
 3. **Completion of Match**: When the collaboration creator swipes right on a potential match, a mutual connection is established
-4. **Match Notification**: Both parties are notified of the successful match
+4. **Match Notification**: Both parties are notified of the successful match through the Telegram bot
 
 This implementation ensures that matches are created only with mutual consent, increasing the quality of connections.
+
+### Match Creation and Notification Process
+
+The complete match creation flow involves several components working together:
+
+1. **Swipe Recording**: When a user swipes right on a collaboration, a record is created in the `swipes` table with the user ID, collaboration ID, and direction ('right').
+
+2. **Match Detection**: The `checkForMatch` method in `server/storage.ts` is triggered after each swipe is recorded:
+   - For each right swipe, the system checks if the other party has also swiped right
+   - If both parties have swiped right, a new match record is created in the `matches` table
+   - The match record includes `collaboration_id`, `host_id` (collaboration creator), and `requester_id` (the user who swiped right)
+
+3. **Notification Creation**: When a match is created, two notification records are created in the `collab_notifications` table:
+   - One for the host (collaboration creator)
+   - One for the requester (the user who initially expressed interest)
+
+4. **Telegram Notifications**: The system sends real-time notifications to both users via the Telegram bot:
+   - Host receives: "{Requester Name} matched with your {Collaboration Type} collaboration!"
+   - Requester receives: "You matched with {Host Name}'s {Collaboration Type} collaboration!"
+
+The database structure supporting this flow includes:
+- `swipes` table: Records user swipe actions on collaborations
+- `matches` table: Records confirmed mutual matches between users
+- `collab_notifications` table: Stores notifications about matches and other events
 
 ## Future Enhancements
 

@@ -131,6 +131,35 @@ export const insertCollaborationSchema = createInsertSchema(collaborations);
 // etc.
 ```
 
+### Swipes and Matches
+
+The application implements a Tinder-like swiping system for collaborations:
+
+```typescript
+export const swipes = pgTable('swipes', {
+  id: text('id').primaryKey().notNull(),
+  user_id: text('user_id').references(() => users.id).notNull(),
+  collaboration_id: text('collaboration_id').references(() => collaborations.id).notNull(),
+  direction: text('direction').notNull(), // 'left' or 'right'
+  details: jsonb('details').default({}).notNull(),
+  created_at: timestamp('created_at', { mode: 'date' }).defaultNow(),
+});
+
+export const matches = pgTable('matches', {
+  id: text('id').primaryKey().notNull(),
+  collaboration_id: text('collaboration_id').references(() => collaborations.id).notNull(),
+  host_id: text('host_id').references(() => users.id).notNull(),
+  requester_id: text('requester_id').references(() => users.id).notNull(),
+  status: text('status').default('pending').notNull(),
+  host_accepted: boolean('host_accepted').default(false),
+  requester_accepted: boolean('requester_accepted').default(false),
+  created_at: timestamp('created_at', { mode: 'date' }).defaultNow(),
+  updated_at: timestamp('updated_at', { mode: 'date' }).defaultNow(),
+});
+```
+
+The `swipes` table records when a user swipes left or right on a collaboration, while the `matches` table is created when both users have swiped right on each other's collaborations.
+
 ## Relationships
 
 Key relationships in the database:
@@ -140,6 +169,9 @@ Key relationships in the database:
 3. Users can apply to multiple collaborations
 4. Each collaboration belongs to a specific user and company
 5. Applications link users to collaborations they're interested in
+6. Users can swipe on multiple collaborations (recorded in the swipes table)
+7. When both users swipe right on each other's collaborations, a match is created
+8. Each match connects a host (collaboration creator) with a requester (user who swiped right)
 
 ## Database Migrations
 
@@ -149,6 +181,8 @@ The project includes several migration scripts for evolving the database schema:
 - `db-migrate-blockchain-networks.js`: Adds blockchain networks related fields
 - `db-migrate-collab-fields.js`: Restructures collaboration fields
 - `db-migrate-preferences.js`: Updates preference tables
+- `db-migrate-add-details-to-swipes.js`: Adds the 'details' JSON column to the swipes table
+- `db-migrate-fix-matches-table.js`: Drops and recreates the matches table with correct foreign key references
 
 When updating the database schema:
 

@@ -172,11 +172,35 @@ Applies to a collaboration.
 }
 ```
 
+#### `GET /api/potential-matches`
+
+Retrieves potential matches for the current user. These are users who have already swiped right on the user's collaborations.
+
+**Response:**
+```json
+[
+  {
+    "id": "swipe-id",
+    "user_id": "user-id",
+    "collaboration_id": "collab-id",
+    "swipe_direction": "right",
+    "user_first_name": "First",
+    "user_last_name": "Last",
+    "user_twitter_followers": "1000-5000",
+    "company_name": "Company",
+    "company_job_title": "Job Title",
+    "company_twitter_followers": "5000-10000",
+    "collaboration_type": "Twitter Spaces Guest",
+    "collaboration_description": "Description of the collaboration"
+  }
+]
+```
+
 #### `POST /api/swipes`
 
-Records a user's swipe action on a collaboration.
+Records a user's swipe action on a collaboration or a potential match.
 
-**Request Body:**
+**Request Body for a Regular Collaboration:**
 ```json
 {
   "collaboration_id": "collab-id",
@@ -184,16 +208,38 @@ Records a user's swipe action on a collaboration.
 }
 ```
 
+**Request Body for a Potential Match:**
+```json
+{
+  "swipe_id": "original-swipe-id",
+  "direction": "left" | "right",
+  "is_potential_match": true
+}
+```
+
 **Response:**
 ```json
 {
-  "id": "swipe-id",
-  "user_id": "user-id",
-  "collaboration_id": "collab-id",
-  "direction": "left" | "right",
-  "created_at": "2025-03-22T12:00:00Z"
+  "swipe": {
+    "id": "swipe-id",
+    "user_id": "user-id",
+    "collaboration_id": "collab-id",
+    "direction": "left" | "right",
+    "details": {},
+    "created_at": "2025-03-22T12:00:00Z"
+  },
+  "match": {
+    "id": "match-id",
+    "collaboration_id": "collab-id",
+    "host_id": "host-user-id",
+    "requester_id": "requester-user-id",
+    "status": "pending",
+    "created_at": "2025-03-22T12:00:00Z"
+  }
 }
 ```
+
+The `match` field is only included when both users have swiped right on each other's collaborations, creating a match. When a match is created, both users will also receive a notification through the Telegram bot.
 
 ### Notification Management
 

@@ -2,48 +2,6 @@
 
 All notable changes to the Collab Room project will be documented in this file.
 
-Use these clear instructions when updating this changelog file:
-  1.    Identify Changes Clearly:
-  •     Classify changes under these headings:
-  •     Added (new features or functionality)
-  •     Changed (modifications or improvements)
-  •     Fixed (bug fixes or corrections)
-  •     Removed (deprecated or deleted features)
-  2.    Format Updates Consistently:
-  •     Use markdown bullet points (-) for each update.
-  •     Begin each bullet point with a brief, active verb phrase (e.g., “Fixed issue with login”).
-  3.    Include Version Number and Date:
-  •     Clearly state the release number and date at the top in the format:
-
-## [Version X.X.X] – YYYY-MM-DD
-
-
-  4.    Keep Updates Brief and Informative:
-  •     Limit each update description to a single concise sentence.
-  •     Avoid unnecessary detail.
-  5.    Organize Chronologically:
-  •     Most recent updates appear at the top of the file.
-
-Example Structure:
-
-## [Version 1.2.0] – 2025-03-22
-
-### Added
-- Implemented new user login dashboard.
-- Added search function for transactions.
-
-### Changed
-- Updated homepage layout for better readability.
-
-### Fixed
-- Resolved issue causing crashes on signup.
-
-### Removed
-- Removed deprecated payment gateway integration.
-
-Follow this structure every time you update this changelog file.
-
-
 
 
 ## [Version 1.3.0] - 2025-03-23
