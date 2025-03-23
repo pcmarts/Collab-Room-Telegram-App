@@ -35,6 +35,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GlowButton } from "@/components/GlowButton";
 import {
   Dialog,
   DialogContent,
@@ -928,12 +929,11 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         
         <div className="container mx-auto py-4 px-4">
           <div className="flex justify-end mb-4">
-            <Button 
-              variant="default" 
+            <GlowButton 
               onClick={() => setLocation('/create-collaboration-steps')}
             >
               Create New
-            </Button>
+            </GlowButton>
           </div>
           
           {isLoadingCollabs ? (
@@ -948,11 +948,11 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               <p className="text-gray-400 text-sm mb-6">
                 Create your first collaboration to connect with others in the blockchain space
               </p>
-              <Button 
+              <GlowButton 
                 onClick={() => setLocation('/create-collaboration-steps')}
               >
                 Create Collaboration
-              </Button>
+              </GlowButton>
             </div>
           )}
           

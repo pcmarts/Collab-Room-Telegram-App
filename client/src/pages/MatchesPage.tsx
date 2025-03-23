@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { GlowButton } from "@/components/GlowButton";
 import { MessageCircle, ChevronRight, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
@@ -389,9 +390,9 @@ export default function MatchesPage() {
         ) : (
           <Card className="p-6 text-center">
             <p className="text-muted-foreground mb-4">No matches yet</p>
-            <Button variant="outline" onClick={() => window.location.href = '/discover'}>
+            <GlowButton onClick={() => window.location.href = '/discover'}>
               Start Discovering
-            </Button>
+            </GlowButton>
           </Card>
         )}
       </div>
