@@ -1,6 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import { db } from "./db";
-import { users } from "@shared/schema";
+import { users, collaborations, companies } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { format } from "date-fns";
 

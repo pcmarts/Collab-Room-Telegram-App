@@ -12,6 +12,7 @@ import {
 import { z } from 'zod';
 import { db } from "./db";
 import { eq, and, or, inArray, isNull, not, desc, sql, ilike } from "drizzle-orm";
+import { notifyMatchCreated } from "./telegram";
 
 export interface IStorage {
   // User methods
@@ -659,7 +660,20 @@ export class DatabaseStorage implements IStorage {
       
       console.log("Match notifications created successfully");
       
-      // TODO: Add Telegram notification logic here
+      // Send Telegram notifications to both users
+      try {
+        console.log("Sending Telegram match notifications to users:", {
+          hostId,
+          requesterId,
+          collaborationId: newSwipe.collaboration_id
+        });
+        
+        await notifyMatchCreated(hostId, requesterId, newSwipe.collaboration_id);
+        console.log("Telegram notifications sent successfully");
+      } catch (telegramError) {
+        // Don't fail the process if Telegram notification fails
+        console.error("Error sending Telegram notifications:", telegramError);
+      }
     } catch (error) {
       console.error("Error checking for match:", error);
     }

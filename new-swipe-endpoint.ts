@@ -1,7 +1,10 @@
 // New simplified swipe endpoint implementation
 import { Request, Response } from 'express';
-import { storage } from './storage';
-import { getTelegramUserFromRequest } from './routes';
+import { storage } from './server/storage';
+// Import directly from schema.ts
+import { collaborations, swipes, users } from './shared/schema';
+import { eq } from 'drizzle-orm';
+import { db } from './server/db';
 
 interface TelegramRequest extends Request {
   telegramData?: {
@@ -68,13 +71,16 @@ export async function handleSwipeRequest(req: TelegramRequest, res: Response) {
       
       try {
         // Fetch the original swipe to get the collaboration ID
-        const originalSwipe = await db.query.swipes.findFirst({
-          where: (swipes, { eq }) => eq(swipes.id, swipe_id),
-          with: {
-            collaboration: true,
-            user: true
-          }
-        });
+        const [originalSwipe] = await db
+          .select({
+            swipe: swipes,
+            user: users,
+            collaboration: collaborations
+          })
+          .from(swipes)
+          .where(eq(swipes.id, swipe_id))
+          .innerJoin(users, eq(swipes.user_id, users.id))
+          .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id));
         
         if (!originalSwipe) {
           console.log(`Database error: Original swipe ${swipe_id} not found`);
