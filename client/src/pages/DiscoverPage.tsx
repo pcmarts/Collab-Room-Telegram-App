@@ -768,6 +768,13 @@ export default function DiscoverPage() {
   // Fetch collaborations from real API
   const { data: collaborationsData, isLoading: isLoadingCollabs, isError: isCollabsError, error: collabsError } = useQuery({
     queryKey: ['/api/collaborations/search'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/collaborations/search', 'GET');
+      if (!response.ok) {
+        throw new Error('Failed to fetch collaborations');
+      }
+      return response.json();
+    },
     refetchOnWindowFocus: false,
     retry: 1, // Retry once in case of network issues
   });
@@ -781,6 +788,12 @@ export default function DiscoverPage() {
         throw new Error('Failed to fetch potential matches');
       }
       const data = await response.json();
+      
+      // If data is empty array, return it directly
+      if (!data || data.length === 0) {
+        return [];
+      }
+      
       // Convert potential matches to a card format
       return data.map((match) => ({
         id: match.swipe_id, // Use the swipe ID as the unique identifier
@@ -818,9 +831,18 @@ export default function DiscoverPage() {
     }
   }, [isError, error]);
 
-  // Process the collaborations data
-  const regularCards = collaborationsData || [];
-  const potentialMatchCards = potentialMatchesData || [];
+  // Process the collaborations data with better error handling
+  const regularCards = Array.isArray(collaborationsData) ? collaborationsData : [];
+  const potentialMatchCards = Array.isArray(potentialMatchesData) ? potentialMatchesData : [];
+  
+  // Log data for debugging
+  console.log("Loaded data:", {
+    regularCardsCount: regularCards.length,
+    potentialMatchesCount: potentialMatchCards.length,
+    hasCollaborationsData: !!collaborationsData,
+    hasPotentialMatchesData: !!potentialMatchesData
+  });
+  
   // Combine cards, showing potential matches first
   const cards = [...potentialMatchCards, ...regularCards];
 

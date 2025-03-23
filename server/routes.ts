@@ -2166,12 +2166,17 @@ export async function registerRoutes(app: Express) {
         console.error('No Telegram user found');
         return res.status(400).json({ error: 'Invalid Telegram data' });
       }
+      
+      console.log('Found Telegram user:', telegramUser.id);
 
       // Get user
       const user = await storage.getUserByTelegramId(telegramUser.id.toString());
       if (!user) {
+        console.error('Database user not found for Telegram ID:', telegramUser.id);
         return res.status(404).json({ error: 'User not found' });
       }
+      
+      console.log('Found database user:', user.id);
 
       // Parse filters from query params
       const filters = {
@@ -2188,7 +2193,10 @@ export async function registerRoutes(app: Express) {
       };
 
       // Get filtered collaborations
+      console.log('Calling searchCollaborations with user ID:', user.id);
+      console.log('Using filters:', filters);
       const collaborations = await storage.searchCollaborations(user.id, filters);
+      console.log(`Found ${collaborations.length} collaborations`);
       return res.json(collaborations);
 
     } catch (error) {
