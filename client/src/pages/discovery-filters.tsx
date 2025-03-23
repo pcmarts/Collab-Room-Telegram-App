@@ -283,10 +283,63 @@ export default function DiscoveryFilters() {
 
   // Toggle filter section expansion
   const toggleFilterExpansion = (filterName: keyof typeof filtersExpanded) => {
+    // Check current expansion state
+    const isCurrentlyExpanded = filtersExpanded[filterName];
+    
+    // Toggle expansion state
     setFiltersExpanded(prev => ({
       ...prev,
-      [filterName]: !prev[filterName]
+      [filterName]: !isCurrentlyExpanded
     }));
+    
+    // Automatically enable/disable the filter based on whether section is being expanded/collapsed
+    // and whether there are any values selected
+    if (!isCurrentlyExpanded) {
+      // Expanding - automatically turn on the filter
+      setFiltersEnabled(prev => ({
+        ...prev,
+        [filterName]: true
+      }));
+    } else {
+      // Collapsing - check if there are any selected values
+      // If no values are selected, turn off the filter
+      let hasSelectedValues = false;
+      
+      switch (filterName) {
+        case 'collabTypes':
+          hasSelectedValues = form.getValues('collabTypes')?.length > 0;
+          break;
+        case 'topics':
+          hasSelectedValues = form.getValues('topics')?.length > 0;
+          break;
+        case 'companySectors':
+          hasSelectedValues = form.getValues('companySectors')?.length > 0;
+          break;
+        case 'companyFollowers':
+          hasSelectedValues = !!form.getValues('companyFollowers');
+          break;
+        case 'userFollowers':
+          hasSelectedValues = !!form.getValues('userFollowers');
+          break;
+        case 'fundingStages':
+          hasSelectedValues = form.getValues('fundingStages')?.length > 0;
+          break;
+        case 'hasToken':
+          hasSelectedValues = !!form.getValues('hasToken');
+          break;
+        case 'blockchainNetworks':
+          hasSelectedValues = form.getValues('blockchainNetworks')?.length > 0;
+          break;
+      }
+      
+      if (!hasSelectedValues) {
+        // If no values selected when collapsing, turn off the filter
+        setFiltersEnabled(prev => ({
+          ...prev,
+          [filterName]: false
+        }));
+      }
+    }
   };
 
   // Toggle category expansion

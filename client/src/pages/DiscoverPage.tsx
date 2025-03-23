@@ -17,7 +17,7 @@ import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Collaboration } from "@shared/schema";
 
 import { Badge } from "@/components/ui/badge";
@@ -686,6 +686,24 @@ export default function DiscoverPage() {
       console.error("Query error:", error);
     }
   }, [isError, error]);
+
+  // Track location changes to refresh data when returning from filters page
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    // Track the current location
+    const currentLocation = location;
+    
+    // If we previously were at /filters and now we're back at /discover, refresh the data
+    if (previousLocation === '/filters' && currentLocation === '/discover') {
+      console.log('Returning from filters page, refreshing data...');
+      // Invalidate the queries to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['/api/collaborations/search'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
+    }
+    
+    // Update the previous location state
+    setPreviousLocation(currentLocation);
+  }, [location, previousLocation, queryClient]);
 
   // Process the collaborations data with better error handling
   const regularCards = Array.isArray(collaborationsData) ? collaborationsData : [];
