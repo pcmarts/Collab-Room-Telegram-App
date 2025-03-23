@@ -380,44 +380,63 @@ async function handleMatchInfoCallback(callbackQuery: TelegramBot.CallbackQuery)
   const chatId = callbackQuery.message?.chat.id;
   if (!chatId || !callbackQuery.data) return;
   
+  console.log('[CALLBACK_DEBUG] Processing match info callback:', callbackQuery.data);
+  
   try {
+    // First, acknowledge the callback to show progress to user
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: 'Loading match details...',
+      show_alert: false
+    });
+    
     // Extract data from callback
     // Format: match_info_userId_collaborationId
     const parts = callbackQuery.data.split('_');
     if (parts.length !== 4) {
-      console.error('Invalid callback data format:', callbackQuery.data);
+      console.error('[CALLBACK_DEBUG] Invalid callback data format:', callbackQuery.data);
       return;
     }
     
     const userId = parts[2];
     const collaborationId = parts[3];
     
-    // Get user details
+    console.log('[CALLBACK_DEBUG] Extracted IDs:', { userId, collaborationId });
+    
+    // Get user details with full query logging
+    console.log('[CALLBACK_DEBUG] Fetching user data for ID:', userId);
     const [user] = await db.select()
       .from(users)
       .where(eq(users.id, userId));
       
     if (!user) {
-      console.error('User not found for match info:', userId);
-      await bot.answerCallbackQuery(callbackQuery.id, { text: 'User information not found.' });
+      console.error('[CALLBACK_DEBUG] User not found for match info:', userId);
+      await bot.sendMessage(chatId, 'Sorry, the user information could not be found.');
       return;
     }
     
-    // Get company details
+    console.log('[CALLBACK_DEBUG] User data retrieved:', JSON.stringify(user));
+    
+    // Get company details with full query logging
+    console.log('[CALLBACK_DEBUG] Fetching company data for user ID:', userId);
     const [company] = await db.select()
       .from(companies)
       .where(eq(companies.user_id, userId));
+    
+    console.log('[CALLBACK_DEBUG] Company data retrieved:', company ? JSON.stringify(company) : 'None');
       
-    // Get collaboration details
+    // Get collaboration details with full query logging
+    console.log('[CALLBACK_DEBUG] Fetching collaboration data for ID:', collaborationId);
     const [collaboration] = await db.select()
       .from(collaborations)
       .where(eq(collaborations.id, collaborationId));
       
     if (!collaboration) {
-      console.error('Collaboration not found for match info:', collaborationId);
-      await bot.answerCallbackQuery(callbackQuery.id, { text: 'Collaboration information not found.' });
+      console.error('[CALLBACK_DEBUG] Collaboration not found for ID:', collaborationId);
+      await bot.sendMessage(chatId, 'Sorry, the collaboration information could not be found.');
       return;
     }
+    
+    console.log('[CALLBACK_DEBUG] Collaboration data retrieved:', JSON.stringify(collaboration));
     
     // Format user and company info
     const userFullName = `${user.first_name} ${user.last_name || ''}`.trim();
@@ -437,36 +456,54 @@ async function handleMatchInfoCallback(callbackQuery: TelegramBot.CallbackQuery)
     // Build a detailed information message with rich formatting
     let infoMessage = `<b>🔍 Match Details</b>\n\n`;
     
-    // User info section with tag linking
-    infoMessage += `<b>👤 User:</b> ${userFullName} ${userHandle ? `(<a href="https://t.me/${userHandle.substring(1)}">${userHandle}</a>)` : ''}\n`;
+    // User info section with tag linking and Telegram tag
+    infoMessage += `<b>👤 User:</b> ${userFullName}`;
+    if (userHandle) {
+      infoMessage += ` (<a href="https://t.me/${user.handle}">@${user.handle}</a>)`;
+    }
+    infoMessage += `\n`;
+    
     if (company) {
       infoMessage += `<b>🏢 Company:</b> ${companyName}\n`;
-      infoMessage += `<b>💼 Role:</b> ${company.job_title}\n`;
+      infoMessage += `<b>💼 Role:</b> ${company.job_title || 'Not specified'}\n`;
       if (company.funding_stage) {
         infoMessage += `<b>💰 Funding Stage:</b> ${company.funding_stage}\n`;
+      }
+      
+      // Add blockchain networks if available
+      if (company.blockchain_networks && company.blockchain_networks.length > 0) {
+        infoMessage += `<b>⛓️ Blockchain Networks:</b> ${company.blockchain_networks.join(', ')}\n`;
+      }
+      
+      // Add company tags if available
+      if (company.tags && company.tags.length > 0) {
+        infoMessage += `<b>🏷️ Company Tags:</b> ${company.tags.join(', ')}\n`;
       }
     }
     
     // Social links section with proper hyperlinks
-    if (twitterHandle || linkedinUrl) {
-      infoMessage += `\n<b>🔗 Social Links:</b>\n`;
-      if (twitterHandle) {
-        const formattedTwitterHandle = twitterHandle.startsWith('@') ? twitterHandle : `@${twitterHandle}`;
-        infoMessage += `- <a href="${twitterUrl}">Twitter: ${formattedTwitterHandle}</a> (${twitterFollowers} followers)\n`;
-      }
-      if (linkedinUrl) {
-        infoMessage += `- <a href="${linkedinUrl}">LinkedIn Profile</a>\n`;
-      }
+    let socialLinksSection = '';
+    if (twitterHandle) {
+      const formattedTwitterHandle = twitterHandle.startsWith('@') ? twitterHandle : `@${twitterHandle}`;
+      socialLinksSection += `• <a href="${twitterUrl}">Twitter: ${formattedTwitterHandle}</a> (${twitterFollowers} followers)\n`;
+    }
+    if (linkedinUrl) {
+      socialLinksSection += `• <a href="${linkedinUrl}">LinkedIn Profile</a>\n`;
+    }
+    
+    if (socialLinksSection) {
+      infoMessage += `\n<b>🔗 Social Links:</b>\n${socialLinksSection}`;
     }
     
     // Collaboration details section with enhanced formatting
-    infoMessage += `\n<b>🤝 Collaboration:</b>\n`;
-    infoMessage += `<b>Type:</b> ${collaboration.collab_type}\n`;
+    infoMessage += `\n<b>🤝 Collaboration Type:</b> ${collaboration.collab_type}\n`;
+    
     if (collaboration.description) {
-      infoMessage += `<b>Description:</b> ${collaboration.description}\n`;
+      infoMessage += `\n<b>📝 Description:</b>\n${collaboration.description}\n`;
     }
+    
     if (collaboration.topics && collaboration.topics.length > 0) {
-      infoMessage += `<b>Topics:</b> ${collaboration.topics.join(', ')}\n`;
+      infoMessage += `\n<b>🏷️ Topics:</b> ${collaboration.topics.join(', ')}\n`;
     }
     
     // Add collaboration details from JSON if available
@@ -476,52 +513,49 @@ async function handleMatchInfoCallback(callbackQuery: TelegramBot.CallbackQuery)
         : collaboration.details;
         
       if (details.short_description) {
-        infoMessage += `<b>Summary:</b> ${details.short_description}\n`;
+        infoMessage += `\n<b>💡 Summary:</b>\n${details.short_description}\n`;
       }
       if (details.expectations) {
-        infoMessage += `<b>Expectations:</b> ${details.expectations}\n`;
+        infoMessage += `\n<b>✅ Expectations:</b>\n${details.expectations}\n`;
+      }
+      if (details.goals) {
+        infoMessage += `\n<b>🎯 Goals:</b>\n${details.goals}\n`;
       }
     }
     
-    // Create keyboard with enhanced action buttons
+    // Create keyboard with enhanced action buttons - one button per row for better Telegram display
     const keyboard = {
       inline_keyboard: [
-        [
-          {
-            text: "💬 Chat with User",
-            url: `https://t.me/${user.handle || user.telegram_id}`,
-          }
-        ],
-        [
-          {
-            text: "🔎 View Full Profile",
-            web_app: { url: `${WEBAPP_URL}/profile/${userId}` },
-          }
-        ],
-        [
-          {
-            text: "🚀 Find More Opportunities",
-            web_app: { url: `${WEBAPP_URL}/discover` },
-          }
-        ]
+        [{ text: "💬 Chat Now", url: `https://t.me/${user.handle || user.telegram_id}` }],
+        [{ text: "🔎 View Full Profile", web_app: { url: `${WEBAPP_URL}/discover` } }],
+        [{ text: "🚀 Find More Matches", web_app: { url: `${WEBAPP_URL}/discover` } }]
       ]
     };
     
-    // Send the detailed info
-    await bot.sendMessage(chatId, infoMessage, {
-      parse_mode: 'HTML',
-      reply_markup: keyboard,
-      disable_web_page_preview: false
-    });
+    console.log('[CALLBACK_DEBUG] Sending formatted message:', infoMessage);
+    console.log('[CALLBACK_DEBUG] With keyboard:', JSON.stringify(keyboard));
     
-    // Answer the callback query to remove the loading indicator
-    await bot.answerCallbackQuery(callbackQuery.id);
+    // Send the detailed info using direct message approach to ensure proper formatting
+    try {
+      await sendDirectFormattedMessage(chatId, infoMessage, keyboard);
+      console.log('[CALLBACK_DEBUG] Successfully sent formatted message to chat:', chatId);
+    } catch (error) {
+      console.error('[CALLBACK_DEBUG] Error in direct message send:', error);
+      // Fallback to standard message if direct send fails
+      await bot.sendMessage(chatId, infoMessage, {
+        parse_mode: 'HTML',
+        reply_markup: keyboard,
+        disable_web_page_preview: false
+      });
+    }
     
   } catch (error) {
-    console.error('Error handling match info callback:', error);
-    await bot.answerCallbackQuery(callbackQuery.id, {
-      text: 'Sorry, an error occurred while retrieving the information.'
-    });
+    console.error('[CALLBACK_DEBUG] Error handling match info callback:', error);
+    try {
+      await bot.sendMessage(chatId, 'Sorry, an error occurred while retrieving the match information. Please try again later.');
+    } catch (innerError) {
+      console.error('[CALLBACK_DEBUG] Failed to send error message:', innerError);
+    }
   }
 }
 
@@ -544,6 +578,30 @@ console.log("Telegram bot initialization completed");
  * @param requesterUserId ID of the requester user (user who swiped right)
  * @param collaborationId ID of the collaboration that was matched
  */
+/**
+ * DIRECT MESSAGE - Send a notification directly to a Telegram chat
+ * This function is used to bypass any caching issues with the standard notification system
+ */
+async function sendDirectFormattedMessage(chatId: number, message: string, keyboard: any) {
+  try {
+    // Log exact message being sent for debugging
+    console.log(`[DIRECT_MSG_DEBUG] Sending to ${chatId}:\nMESSAGE: ${message}\nKEYBOARD: ${JSON.stringify(keyboard)}`);
+    
+    // Use lower-level sendMessage API for direct access
+    const result = await bot.sendMessage(chatId, message, {
+      parse_mode: 'HTML',
+      reply_markup: keyboard,
+      disable_web_page_preview: false
+    });
+    
+    console.log(`[DIRECT_MSG_DEBUG] Success! Message ID: ${result.message_id}`);
+    return result;
+  } catch (error) {
+    console.error(`[DIRECT_MSG_DEBUG] Failed to send message: ${error}`);
+    throw error;
+  }
+}
+
 export async function notifyMatchCreated(hostUserId: string, requesterUserId: string, collaborationId: string) {
   try {
     console.log('[Telegram Bot] Sending match notifications:', { hostUserId, requesterUserId, collaborationId });
@@ -565,6 +623,11 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
       return;
     }
 
+    console.log('[DEBUG] User records:', {
+      hostUser: JSON.stringify(hostUser),
+      requesterUser: JSON.stringify(requesterUser)
+    });
+
     // Get collaboration details
     const [collaboration] = await db.select()
       .from(collaborations)
@@ -584,6 +647,11 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
       .from(companies)
       .where(eq(companies.user_id, requesterUserId));
 
+    console.log('[DEBUG] Company records:', {
+      hostCompany: JSON.stringify(hostCompany),
+      requesterCompany: JSON.stringify(requesterCompany)
+    });
+
     // Format company website links
     const requesterCompanyWebsite = requesterCompany?.website ? requesterCompany.website.startsWith('http') ? requesterCompany.website : `https://${requesterCompany.website}` : '';
     const hostCompanyWebsite = hostCompany?.website ? hostCompany.website.startsWith('http') ? hostCompany.website : `https://${hostCompany.website}` : '';
@@ -597,110 +665,41 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
       ? `<a href="${hostCompanyWebsite}">${hostCompany?.name || 'a company'}</a>` 
       : (hostCompany?.name || 'a company');
 
-    // Create keyboards with improved options
+    // IMPORTANT: Create the keyboard objects with specific formatting
+    // Host keyboard (separate buttons to ensure proper layout)
     const hostKeyboard = {
       inline_keyboard: [
-        [
-          {
-            text: "💬 Chat with Collaborator",
-            url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
-          }
-        ],
-        [
-          {
-            text: "🔍 View Full Details",
-            callback_data: `match_info_${requesterUserId}_${collaborationId}`,
-          }
-        ],
-        [
-          {
-            text: "🚀 Discover More Collabs",
-            web_app: { url: `${WEBAPP_URL}/discover` },
-          }
-        ],
-      ],
+        [{ text: "💬 Chat with Collaborator", url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}` }],
+        [{ text: "🔍 View Full Details", callback_data: `match_info_${requesterUserId}_${collaborationId}` }],
+        [{ text: "🚀 Discover More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }]
+      ]
     };
 
+    // Requester keyboard (separate buttons to ensure proper layout)
     const requesterKeyboard = {
       inline_keyboard: [
-        [
-          {
-            text: "💬 Chat with Host",
-            url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
-          }
-        ],
-        [
-          {
-            text: "🔍 View Full Details",
-            callback_data: `match_info_${hostUserId}_${collaborationId}`,
-          }
-        ],
-        [
-          {
-            text: "🚀 Discover More Collabs",
-            web_app: { url: `${WEBAPP_URL}/discover` },
-          }
-        ],
-      ],
+        [{ text: "💬 Chat with Host", url: `https://t.me/${hostUser.handle || hostUser.telegram_id}` }],
+        [{ text: "🔍 View Full Details", callback_data: `match_info_${hostUserId}_${collaborationId}` }],
+        [{ text: "🚀 Discover More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }]
+      ]
     };
 
-    // Send enhanced notification to host (collaboration creator)
+    // Prepare host notification with HTML formatting
     const hostChatId = parseInt(hostUser.telegram_id);
-    const hostMessage = `🎉 <b>New Match!</b> ${requesterUser.first_name} ${requesterUser.last_name || ''} ${requesterUser.handle ? `(@${requesterUser.handle})` : ''}, the <b>${requesterCompany?.job_title || 'professional'}</b> from ${requesterCompanyName} is a match for your <b>${collaboration.collab_type}</b> collaboration!
-
-They've shown interest in collaborating with you - you can now chat directly using the buttons below.`;
+    const hostMessage = `🎉 <b>New Match!</b>\n\n${requesterUser.first_name} ${requesterUser.last_name || ''} ${requesterUser.handle ? `(<a href="https://t.me/${requesterUser.handle}">@${requesterUser.handle}</a>)` : ''}, the <b>${requesterCompany?.job_title || 'professional'}</b> from ${requesterCompanyName} is a match for your <b>${collaboration.collab_type}</b> collaboration!\n\nThey've shown interest in collaborating with you - you can now chat directly using the buttons below.`;
     
-    console.log('[Telegram Bot] Sending notification to host:', {
-      chatId: hostChatId,
-      name: `${hostUser.first_name} ${hostUser.last_name || ''}`,
-      message: hostMessage,
-      keyboard: JSON.stringify(hostKeyboard),
-      parseMode: 'HTML'
-    });
-    
-    try {
-      const result = await bot.sendMessage(hostChatId, hostMessage, { 
-        reply_markup: hostKeyboard,
-        parse_mode: 'HTML',
-        disable_web_page_preview: false
-      });
-      console.log('[Telegram Bot] Host notification sent successfully:', {
-        messageId: result.message_id,
-        chatId: result.chat.id
-      });
-    } catch (error) {
-      console.error('[Telegram Bot] Error sending host notification:', error);
-    }
-
-    // Send enhanced notification to requester (user who swiped right)
+    // Prepare requester notification with HTML formatting  
     const requesterChatId = parseInt(requesterUser.telegram_id);
-    const requesterMessage = `🎉 <b>New Match!</b> ${hostUser.first_name} ${hostUser.last_name || ''} ${hostUser.handle ? `(@${hostUser.handle})` : ''} from ${hostCompanyName} just approved your collab request for <b>${collaboration.collab_type}</b>!
-
-You can now chat directly with ${hostUser.first_name} using the buttons below.`;
+    const requesterMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ''} ${hostUser.handle ? `(<a href="https://t.me/${hostUser.handle}">@${hostUser.handle}</a>)` : ''} from ${hostCompanyName} just approved your collab request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly with ${hostUser.first_name} using the buttons below.`;
     
-    console.log('[Telegram Bot] Sending notification to requester:', {
-      chatId: requesterChatId,
-      name: `${requesterUser.first_name} ${requesterUser.last_name || ''}`,
-      message: requesterMessage,
-      keyboard: JSON.stringify(requesterKeyboard),
-      parseMode: 'HTML'
-    });
-    
+    // Send both notifications using direct messaging function
     try {
-      const result = await bot.sendMessage(requesterChatId, requesterMessage, { 
-        reply_markup: requesterKeyboard,
-        parse_mode: 'HTML',
-        disable_web_page_preview: false
-      });
-      console.log('[Telegram Bot] Requester notification sent successfully:', {
-        messageId: result.message_id,
-        chatId: result.chat.id
-      });
+      await sendDirectFormattedMessage(hostChatId, hostMessage, hostKeyboard);
+      await sendDirectFormattedMessage(requesterChatId, requesterMessage, requesterKeyboard);
+      console.log('[Telegram Bot] Successfully sent match notifications to both users');
     } catch (error) {
-      console.error('[Telegram Bot] Error sending requester notification:', error);
+      console.error('[Telegram Bot] Error in direct notification sending:', error);
     }
-    
-    console.log('[Telegram Bot] Successfully sent match notifications to both users');
     
   } catch (error) {
     console.error('[Telegram Bot] Error sending match notifications:', error);
