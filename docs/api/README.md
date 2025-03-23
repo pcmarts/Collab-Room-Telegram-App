@@ -8,6 +8,26 @@ All API endpoints use Telegram WebApp authentication. The Telegram user data is 
 
 > **Note:** As of version 1.0.1, development fallback users have been removed to enforce strict authentication. All API requests must include valid Telegram authentication headers.
 
+### Authentication Best Practices
+
+1. **Single Source of Truth**: Always use the apiRequest function from `/client/src/lib/queryClient.ts` for all API requests to ensure consistent authentication header inclusion.
+
+2. **Avoid Duplicate Data**: When sending request bodies, do not include the Telegram initData as a field in the body, as it's already included as a header by the apiRequest function.
+
+3. **Proper Error Handling**: Always handle authentication errors (401 responses) properly in your client-side code with appropriate user feedback.
+
+4. **Cache Management**: When using React Query, be aware that the cache might retain data that requires authentication headers for subsequent requests.
+
+```typescript
+// Example of proper API request using the apiRequest utility
+const submitData = {
+  // Your form data without Telegram initData
+};
+
+// The apiRequest function automatically handles authentication headers
+const response = await apiRequest("/api/endpoint", "POST", submitData);
+```
+
 ## API Endpoints
 
 ### User Management
@@ -47,7 +67,9 @@ Retrieves the current user's profile information.
 
 #### `POST /api/onboarding`
 
-Creates a new user during the onboarding process.
+Creates a new user during the onboarding process or updates an existing user's profile. This endpoint serves dual purposes:
+1. For new users (determined by Telegram authentication), it creates a new user record
+2. For existing users, it updates their profile information
 
 **Request Body:**
 ```json
@@ -62,6 +84,27 @@ Creates a new user during the onboarding process.
   "referral_code": "REFCODE123"
 }
 ```
+
+**Response (Success):**
+```json
+{
+  "success": true,
+  "message": "Profile updated successfully"
+}
+```
+
+**Response (Error):**
+```json
+{
+  "error": "Error message"
+}
+```
+
+**Notes:**
+- The endpoint automatically determines whether to create or update based on the authenticated user
+- The same schema is used for both creation and updates
+- All fields are optional for updates; only specified fields will be updated
+- For profile updates, a 200 status code with `success: true` indicates successful update
 
 ### Company Management
 

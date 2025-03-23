@@ -5,6 +5,20 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.3.6] - 2025-03-23
+
+### Fixed
+- Fixed profile update functionality in the user profile page by resolving issues with error handling
+- Corrected authentication issues in React Query that were causing false-negative error messages during profile updates
+- Resolved nested try/catch block issues in profile-overview.tsx that were causing syntax errors
+
+### Technical Details
+- Completely rewrote the profile-overview.tsx component to remove nested try/catch blocks and improve error handling
+- Properly included Telegram authentication headers in API requests by removing duplicate 'initData' in request bodies
+- Implemented proper response handling to correctly process success and error states from the server
+- Fixed client-side caching to immediately update the UI after successful profile updates without requiring a refresh
+- Added proper form validation with clear error messages for required fields
+
 ## [Version 1.3.5] - 2025-03-23
 
 ### Changed
