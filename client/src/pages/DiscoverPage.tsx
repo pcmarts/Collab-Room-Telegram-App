@@ -607,6 +607,7 @@ export default function DiscoverPage() {
   const cardElem = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const [location, setLocation] = useLocation();
+  const [previousLocation, setPreviousLocation] = useState<string | null>(null);
   
   // Fetch collaborations from real API
   const { data: collaborationsData, isLoading: isLoadingCollabs, isError: isCollabsError, error: collabsError } = useQuery({
