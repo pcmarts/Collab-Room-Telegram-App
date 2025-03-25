@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLocation } from "wouter";
-import { ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { TextLoop } from "@/components/ui/text-loop";
+import { GlowButton } from "@/components/GlowButton";
 import { 
   COLLAB_TYPES,
   TWITTER_COLLAB_TYPES
@@ -69,14 +68,14 @@ export default function Welcome() {
               />
             </div>
 
-            <Button
-              onClick={handleContinue}
-              className="w-full group transition-all"
-              size="lg"
-            >
-              <span>Start Your Application</span>
-              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <div className="w-full flex justify-center">
+              <GlowButton
+                onClick={handleContinue}
+                className="flex-grow max-w-full"
+              >
+                Apply
+              </GlowButton>
+            </div>
           </CardContent>
         </Card>
       </div>
