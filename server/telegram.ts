@@ -196,7 +196,7 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
 
     // Create inline keyboard with two buttons:
     // 1. Approve Application - callback query with approve_user_{telegram_id} format
-    // 2. View Application - web app link to admin/users page
+    // 2. View Application - web app link to pending applications page
     const keyboard = {
       inline_keyboard: [
         [
@@ -208,7 +208,7 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
         [
           {
             text: "👁️ View Application",
-            web_app: { url: `${WEBAPP_URL}/admin/users` },
+            web_app: { url: `${WEBAPP_URL}/admin/applications` },
           },
         ],
       ],
@@ -482,7 +482,7 @@ async function handleApproveUserCallback(callbackQuery: TelegramBot.CallbackQuer
             [
               {
                 text: "👁️ View Application",
-                web_app: { url: `${WEBAPP_URL}/admin/users` }
+                web_app: { url: `${WEBAPP_URL}/admin/applications` }
               }
             ]
           ]

@@ -50,7 +50,7 @@ function adminNotificationDemo() {
       [
         {
           text: "👁️ View Application",
-          web_app: { url: `https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/admin/users` },
+          web_app: { url: `https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/admin/applications` },
         },
       ],
     ],
