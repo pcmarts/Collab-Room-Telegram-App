@@ -84,7 +84,7 @@ export default function PersonalInfo() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-auto">
       <OnboardingHeader
         title="Tell Us About Yourself"
         subtitle=""

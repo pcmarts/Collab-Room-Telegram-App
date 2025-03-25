@@ -90,7 +90,7 @@ export default function CompanyBasics() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-auto">
       <OnboardingHeader
         title="Company Basics"
         subtitle=""

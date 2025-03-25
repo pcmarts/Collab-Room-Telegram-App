@@ -80,12 +80,12 @@ export default function CompanySector() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-auto">
       <OnboardingHeader
         title="Company Sector"
-        subtitle="Select your company's sectors and technologies"
-        step={3}
-        totalSteps={4}
+        subtitle=""
+        step={0}
+        totalSteps={0}
         backUrl="/company-basics"
       />
 
@@ -171,7 +171,7 @@ export default function CompanySector() {
           </div>
 
           {/* Floating Save Button */}
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+          <div className="fixed bottom-8 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
             <Button
               type="submit"
               className="w-full"

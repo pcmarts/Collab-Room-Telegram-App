@@ -177,12 +177,12 @@ export default function CompanyDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-auto">
       <OnboardingHeader
         title="Token Information"
-        subtitle="Tell us about your company's token"
-        step={4}
-        totalSteps={4}
+        subtitle=""
+        step={0}
+        totalSteps={0}
         backUrl="/company-sector"
       />
 
@@ -296,10 +296,10 @@ export default function CompanyDetails() {
           )}
 
           {/* Floating Save Button */}
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+          <div className="fixed bottom-8 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-md hover:shadow-lg transition-all"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
