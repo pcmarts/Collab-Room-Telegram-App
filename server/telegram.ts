@@ -3,6 +3,8 @@ import { db } from "./db";
 import { users, collaborations, companies } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { format } from "date-fns";
+import fs from "fs";
+import path from "path";
 
 // Choose bot token based on environment
 const BOT_TOKEN =
@@ -16,6 +18,32 @@ if (!BOT_TOKEN) {
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("REPLIT_DOMAINS is required");
+}
+
+// Setup admin message logging
+const LOG_DIR = path.join(process.cwd(), 'logs');
+const ADMIN_MESSAGE_LOG = path.join(LOG_DIR, 'admin_messages.log');
+
+// Create logs directory if it doesn't exist
+try {
+  if (!fs.existsSync(LOG_DIR)) {
+    fs.mkdirSync(LOG_DIR, { recursive: true });
+    console.log('Created logs directory:', LOG_DIR);
+  }
+} catch (err) {
+  console.error('Failed to create logs directory:', err);
+}
+
+// Function to log admin messages
+function logAdminMessage(adminId: string, messageType: string, messageContent: string, recipientInfo?: string) {
+  try {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] ADMIN[${adminId}] TYPE[${messageType}] ${recipientInfo ? `RECIPIENT[${recipientInfo}] ` : ''}MESSAGE: ${messageContent}\n`;
+    
+    fs.appendFileSync(ADMIN_MESSAGE_LOG, logEntry);
+  } catch (err) {
+    console.error('Failed to log admin message:', err);
+  }
 }
 
 // Get the webapp URL from environment
@@ -217,12 +245,20 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
     // Send notification to each admin
     for (const admin of adminUsers) {
       try {
-        await bot.sendMessage(parseInt(admin.telegram_id), message, {
+        const result = await bot.sendMessage(parseInt(admin.telegram_id), message, {
           parse_mode: "HTML",
           disable_web_page_preview: false, // Allow website previews
           reply_markup: keyboard,
         });
         console.log(`Enhanced notification sent to admin ${admin.telegram_id}`);
+        
+        // Log the admin notification
+        logAdminMessage(
+          admin.telegram_id, 
+          "NEW_USER_APPLICATION", 
+          `New user application from ${userData.first_name} ${userData.last_name || ""} (${userData.telegram_id})`,
+          `${userData.first_name} ${userData.last_name || ""} (${userData.telegram_id})`
+        );
       } catch (error) {
         console.error(
           `Failed to send notification to admin ${admin.telegram_id}:`,
@@ -458,6 +494,15 @@ async function handleApproveUserCallback(callbackQuery: TelegramBot.CallbackQuer
       
     console.log('[CALLBACK_DEBUG] User approval successful:', updatedUser);
     
+    // Log the approval action
+    const adminTelegramId = callbackQuery.from?.id?.toString() || 'unknown';
+    logAdminMessage(
+      adminTelegramId,
+      "USER_APPROVAL",
+      `Approved user: ${user.first_name} ${user.last_name || ""} (${telegramId})`,
+      `${user.first_name} ${user.last_name || ""} (${telegramId})`
+    );
+    
     // Send notification to the approved user
     try {
       await notifyUserApproved(parseInt(telegramId));
@@ -471,17 +516,12 @@ async function handleApproveUserCallback(callbackQuery: TelegramBot.CallbackQuer
     try {
       // Only edit the message if it exists
       if (callbackQuery.message?.message_id) {
+        // Simplified keyboard for approval confirmation - no "Approved" button
         const updatedKeyboard = {
           inline_keyboard: [
             [
               {
-                text: "✅ Approved",
-                callback_data: "user_already_approved"
-              }
-            ],
-            [
-              {
-                text: "👁️ View Application",
+                text: "👁️ View Applications",
                 web_app: { url: `${WEBAPP_URL}/admin/applications` }
               }
             ]
