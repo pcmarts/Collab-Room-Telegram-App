@@ -41,18 +41,15 @@ export default function Dashboard() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(
     profile?.notificationPreferences?.notifications_enabled ?? true
   );
-  const [notificationFrequency, setNotificationFrequency] = useState(
-    profile?.notificationPreferences?.notification_frequency || 
-    profile?.preferences?.notification_frequency || 
-    'Daily'
-  );
+  // Always use 'Instant' as default frequency
+  const [notificationFrequency, setNotificationFrequency] = useState('Instant');
 
   const handleNotificationSettingsChange = async (enabled: boolean) => {
     setNotificationsEnabled(enabled);
     try {
       setIsSubmitting(true);
       
-      const newFrequency = enabled ? 'Daily' : 'Never';
+      const newFrequency = enabled ? 'Instant' : 'Never';
       
       // Update notification preferences
       const response = await apiRequest('/api/preferences', 'POST', {
@@ -86,7 +83,7 @@ export default function Dashboard() {
       
       // Update the local state if toggling on
       if (enabled) {
-        setNotificationFrequency('Daily');
+        setNotificationFrequency('Instant');
       }
 
       toast({
@@ -242,22 +239,9 @@ export default function Dashboard() {
               </CardTitle>
               <div className="flex items-center gap-2">
                 {notificationsEnabled && (
-                  <Select
-                    value={notificationFrequency}
-                    onValueChange={handleFrequencyChange}
-                    disabled={isSubmitting}
-                  >
-                    <SelectTrigger className="h-7 text-xs px-2 w-24">
-                      <SelectValue placeholder="Frequency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {NOTIFICATION_FREQUENCIES.map((frequency) => (
-                        <SelectItem key={frequency} value={frequency} className="text-xs">
-                          {frequency}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="h-7 text-xs px-2 text-primary">
+                    Instant
+                  </div>
                 )}
                 <Switch
                   checked={notificationsEnabled}
