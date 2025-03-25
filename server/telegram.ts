@@ -154,7 +154,9 @@ interface NewUserNotification {
   telegram_id: string;
   first_name: string;
   last_name?: string;
+  handle?: string;
   company_name: string;
+  company_website?: string;
   job_title: string;
 }
 
@@ -170,19 +172,42 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
       console.warn("No admin users found to notify");
       return;
     }
-
+    
+    // Format company website link if available
+    const companyWebsite = userData.company_website 
+      ? (userData.company_website.startsWith('http') ? userData.company_website : `https://${userData.company_website}`) 
+      : null;
+    
+    // Format the company name with a hyperlink if website is available
+    const companyNameFormatted = companyWebsite 
+      ? `<a href="${companyWebsite}">${userData.company_name}</a>`
+      : userData.company_name;
+    
+    // Format the Telegram handle
+    const telegramHandle = userData.handle ? `@${userData.handle}` : "";
+    
+    // Build the message with HTML formatting
     const message =
-      `🆕 New User Application!\n\n` +
-      `Name: ${userData.first_name} ${userData.last_name || ""}\n` +
-      `Company: ${userData.company_name}\n` +
-      `Role: ${userData.job_title}\n\n` +
-      `Click below to review the application:`;
+      `🆕 <b>New User Application!</b>\n\n` +
+      `<b>Name:</b> ${userData.first_name} ${userData.last_name || ""} ${telegramHandle ? `(${telegramHandle})` : ""}\n` +
+      `<b>Company:</b> ${companyNameFormatted}\n` +
+      `<b>Role:</b> ${userData.job_title}\n\n` +
+      `Use the buttons below to take action:`;
 
+    // Create inline keyboard with two buttons:
+    // 1. Approve Application - callback query with approve_user_{telegram_id} format
+    // 2. View Application - web app link to admin/users page
     const keyboard = {
       inline_keyboard: [
         [
           {
-            text: "Review Application",
+            text: "✅ Approve Application",
+            callback_data: `approve_user_${userData.telegram_id}`,
+          },
+        ],
+        [
+          {
+            text: "👁️ View Application",
             web_app: { url: `${WEBAPP_URL}/admin/users` },
           },
         ],
@@ -193,9 +218,11 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
     for (const admin of adminUsers) {
       try {
         await bot.sendMessage(parseInt(admin.telegram_id), message, {
+          parse_mode: "HTML",
+          disable_web_page_preview: false, // Allow website previews
           reply_markup: keyboard,
         });
-        console.log(`Notification sent to admin ${admin.telegram_id}`);
+        console.log(`Enhanced notification sent to admin ${admin.telegram_id}`);
       } catch (error) {
         console.error(
           `Failed to send notification to admin ${admin.telegram_id}:`,
@@ -355,7 +382,7 @@ async function handleStatus(msg: TelegramBot.Message) {
 
 bot.onText(/\/status/, handleStatus);
 
-// Handle callback queries for match info
+// Handle callback queries for match info and user approvals
 bot.on('callback_query', async (callbackQuery) => {
   const chatId = callbackQuery.message?.chat.id;
   
@@ -365,9 +392,13 @@ bot.on('callback_query', async (callbackQuery) => {
   }
   
   try {
-    // Check if this is a match info request
+    // Check callback data type and route to appropriate handler
     if (callbackQuery.data?.startsWith('match_info_')) {
       await handleMatchInfoCallback(callbackQuery);
+    }
+    // Handle user approval callback
+    else if (callbackQuery.data?.startsWith('approve_user_')) {
+      await handleApproveUserCallback(callbackQuery);
     }
   } catch (error) {
     console.error('Error handling callback query:', error);
