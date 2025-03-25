@@ -39,9 +39,11 @@ export function OnboardingHeader({
             <h1 className="text-lg font-medium leading-none">{title}</h1>
             {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
           </div>
-          <div className="ml-auto text-sm text-muted-foreground">
-            Step {step} of {totalSteps}
-          </div>
+          {step > 0 && totalSteps > 0 && (
+            <div className="ml-auto text-sm text-muted-foreground">
+              Step {step} of {totalSteps}
+            </div>
+          )}
         </div>
       </div>
     </div>
