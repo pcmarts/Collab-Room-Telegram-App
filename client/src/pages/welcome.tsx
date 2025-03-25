@@ -38,7 +38,7 @@ export default function Welcome() {
       <div className="max-w-md mx-auto space-y-8 w-full">
         <div className="text-center space-y-6">
           <div className="flex flex-col items-center justify-center space-y-8 px-4 py-6">
-            <h2 className="text-base tracking-tight text-white">Find your next</h2>
+            <h2 className="text-base tracking-tight" style={{ color: '#8F8F99' }}>Find your next...</h2>
             
             <div className="text-center w-full">
               <TextLoop
