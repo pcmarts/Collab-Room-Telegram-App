@@ -27,15 +27,6 @@ export default function Welcome() {
     <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4 flex flex-col items-center justify-center">
       <div className="max-w-md mx-auto space-y-8 w-full">
         <div className="text-center space-y-6">
-          {/* Logo */}
-          <div className="flex justify-center mb-8">
-            <img 
-              src="https://replit.com/@paulm86/The-Collab-Room/public/collab-logo.jpg" 
-              alt="Collab Room Logo" 
-              className="w-60 h-auto"
-            />
-          </div>
-
           <Card className="border border-primary/20 bg-card/50 backdrop-blur-sm">
             <CardContent className="pt-6">
               <div className="space-y-3 text-left">
