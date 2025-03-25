@@ -93,9 +93,9 @@ export default function CompanyBasics() {
     <div className="min-h-screen bg-background">
       <OnboardingHeader
         title="Company Basics"
-        subtitle="Tell us about your company"
-        step={2}
-        totalSteps={4}
+        subtitle=""
+        step={0}
+        totalSteps={0}
         backUrl="/personal-info"
       />
 

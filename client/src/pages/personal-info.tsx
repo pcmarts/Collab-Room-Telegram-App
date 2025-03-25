@@ -87,9 +87,9 @@ export default function PersonalInfo() {
     <div className="min-h-screen bg-background">
       <OnboardingHeader
         title="Tell Us About Yourself"
-        subtitle="Share your details to help us know you better"
-        step={1}
-        totalSteps={4}
+        subtitle=""
+        step={0}
+        totalSteps={0}
         backUrl="/welcome"
       />
 
@@ -192,7 +192,7 @@ export default function PersonalInfo() {
           </div>
 
           {/* Floating Save Button */}
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+          <div className="fixed bottom-8 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
             <Button
               type="submit"
               className="w-full"
