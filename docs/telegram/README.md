@@ -138,19 +138,233 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
 
 ### Admin Notifications
 
-The bot also notifies administrators about new users:
+The bot sends enhanced notifications to administrators about new user applications with interactive buttons for immediate actions:
 
 ```typescript
+interface NewUserNotification {
+  telegram_id: string;
+  first_name: string;
+  last_name?: string;
+  handle?: string;
+  company_name: string;
+  company_website?: string;
+  job_title: string;
+}
+
 export async function notifyAdminsNewUser(userData: NewUserNotification) {
-  for (const adminId of ADMIN_TELEGRAM_IDS) {
-    try {
-      await bot.sendMessage(
-        parseInt(adminId),
-        `🆕 New user registered:\n\nName: ${userData.first_name} ${userData.last_name || ''}\nCompany: ${userData.company_name}\nJob: ${userData.job_title}`
-      );
-    } catch (error) {
-      console.error(`Failed to notify admin ${adminId} about new user:`, error);
+  try {
+    // Get all admin users
+    const adminUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.is_admin, true));
+
+    if (!adminUsers.length) {
+      console.warn("No admin users found to notify");
+      return;
     }
+    
+    // Format company website link if available
+    const companyWebsite = userData.company_website 
+      ? (userData.company_website.startsWith('http') ? userData.company_website : `https://${userData.company_website}`) 
+      : null;
+    
+    // Format the company name with a hyperlink if website is available
+    const companyNameFormatted = companyWebsite 
+      ? `<a href="${companyWebsite}">${userData.company_name}</a>`
+      : userData.company_name;
+    
+    // Format the Telegram handle
+    const telegramHandle = userData.handle ? `@${userData.handle}` : "";
+    
+    // Build the message with HTML formatting
+    const message =
+      `🆕 <b>New User Application!</b>\n\n` +
+      `<b>Name:</b> ${userData.first_name} ${userData.last_name || ""} ${telegramHandle ? `(${telegramHandle})` : ""}\n` +
+      `<b>Company:</b> ${companyNameFormatted}\n` +
+      `<b>Role:</b> ${userData.job_title}\n\n` +
+      `Use the buttons below to take action:`;
+
+    // Create inline keyboard with two buttons:
+    // 1. Approve Application - callback query with approve_user_{telegram_id} format
+    // 2. View Application - web app link to pending applications page
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "✅ Approve Application",
+            callback_data: `approve_user_${userData.telegram_id}`,
+          },
+        ],
+        [
+          {
+            text: "👁️ View Application",
+            web_app: { url: `${WEBAPP_URL}/admin/applications` },
+          },
+        ],
+      ],
+    };
+
+    // Send notification to each admin
+    for (const admin of adminUsers) {
+      try {
+        const result = await bot.sendMessage(parseInt(admin.telegram_id), message, {
+          parse_mode: "HTML",
+          disable_web_page_preview: false, // Allow website previews
+          reply_markup: keyboard,
+        });
+        console.log(`Enhanced notification sent to admin ${admin.telegram_id}`);
+        
+        // Log the admin notification
+        logAdminMessage(
+          admin.telegram_id, 
+          "NEW_USER_APPLICATION", 
+          `New user application from ${userData.first_name} ${userData.last_name || ""} (${userData.telegram_id})`,
+          `${userData.first_name} ${userData.last_name || ""} (${userData.telegram_id})`
+        );
+      } catch (error) {
+        console.error(
+          `Failed to send notification to admin ${admin.telegram_id}:`,
+          error,
+        );
+      }
+    }
+  } catch (error) {
+    console.error("Failed to notify admins:", error);
+  }
+}
+```
+
+### Admin Message Logging
+
+A comprehensive logging system tracks all administrative actions and notifications:
+
+```typescript
+// Setup admin message logging
+const LOG_DIR = path.join(process.cwd(), 'logs');
+const ADMIN_MESSAGE_LOG = path.join(LOG_DIR, 'admin_messages.log');
+
+// Create logs directory if it doesn't exist
+try {
+  if (!fs.existsSync(LOG_DIR)) {
+    fs.mkdirSync(LOG_DIR, { recursive: true });
+    console.log('Created logs directory:', LOG_DIR);
+  }
+} catch (err) {
+  console.error('Failed to create logs directory:', err);
+}
+
+// Function to log admin messages
+function logAdminMessage(adminId: string, messageType: string, messageContent: string, recipientInfo?: string) {
+  try {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] ADMIN[${adminId}] TYPE[${messageType}] ${recipientInfo ? `RECIPIENT[${recipientInfo}] ` : ''}MESSAGE: ${messageContent}\n`;
+    
+    fs.appendFileSync(ADMIN_MESSAGE_LOG, logEntry);
+  } catch (err) {
+    console.error('Failed to log admin message:', err);
+  }
+}
+```
+
+### Inline Button Callbacks
+
+The system implements callback handlers for admin actions like approving users directly from Telegram notifications:
+
+```typescript
+// Handle callback queries for user approvals
+bot.on('callback_query', async (callbackQuery) => {
+  const chatId = callbackQuery.message?.chat.id;
+  if (!chatId) {
+    console.error('No chat ID found in callback query');
+    return;
+  }
+  
+  try {
+    // Check callback data type and route to appropriate handler
+    if (callbackQuery.data?.startsWith('approve_user_')) {
+      await handleApproveUserCallback(callbackQuery);
+    }
+  } catch (error) {
+    console.error('Error handling callback query:', error);
+    await bot.sendMessage(chatId, 'Sorry, there was an error processing your request.');
+  }
+});
+
+// Handle user approval callbacks from admin notifications
+async function handleApproveUserCallback(callbackQuery: TelegramBot.CallbackQuery) {
+  const chatId = callbackQuery.message?.chat.id;
+  if (!chatId || !callbackQuery.data) return;
+  
+  try {
+    // First, acknowledge the callback to show progress to admin
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: 'Processing approval...',
+      show_alert: false
+    });
+    
+    // Extract Telegram ID from callback data
+    // Format: approve_user_{telegram_id}
+    const telegramId = callbackQuery.data.replace('approve_user_', '');
+    
+    // Get user by Telegram ID
+    const [user] = await db.select()
+      .from(users)
+      .where(eq(users.telegram_id, telegramId));
+    
+    // Check if user is already approved
+    if (user.is_approved) {
+      await bot.sendMessage(chatId, `User ${user.first_name} ${user.last_name || ''} is already approved.`);
+      return;
+    }
+    
+    // Update user approval status
+    const [updatedUser] = await db.update(users)
+      .set({ is_approved: true })
+      .where(eq(users.id, user.id))
+      .returning();
+    
+    // Log the approval action
+    const adminTelegramId = callbackQuery.from?.id?.toString() || 'unknown';
+    logAdminMessage(
+      adminTelegramId,
+      "USER_APPROVAL",
+      `Approved user: ${user.first_name} ${user.last_name || ""} (${telegramId})`,
+      `${user.first_name} ${user.last_name || ""} (${telegramId})`
+    );
+    
+    // Send notification to the approved user
+    await notifyUserApproved(parseInt(telegramId));
+    
+    // Update the admin's message to show approval status
+    if (callbackQuery.message?.message_id) {
+      // Simplified keyboard for approval confirmation - no "Approved" button
+      const updatedKeyboard = {
+        inline_keyboard: [
+          [
+            {
+              text: "👁️ View Applications",
+              web_app: { url: `${WEBAPP_URL}/admin/applications` }
+            }
+          ]
+        ]
+      };
+      
+      await bot.editMessageText(
+        `✅ <b>Application Approved!</b>\n\n` +
+        `You have approved <b>${user.first_name} ${user.last_name || ''}</b>'s application.\n` +
+        `They have been notified and now have full access to the platform.`,
+        {
+          chat_id: chatId,
+          message_id: callbackQuery.message.message_id,
+          parse_mode: 'HTML',
+          reply_markup: updatedKeyboard
+        }
+      );
+    }
+  } catch (error) {
+    console.error('Error in user approval process:', error);
+    await bot.sendMessage(chatId, 'Sorry, there was an error processing the approval. Please try again or check the admin dashboard.');
   }
 }
 ```

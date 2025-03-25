@@ -5,6 +5,27 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.4.0] - 2025-03-25
+
+### Added
+- Implemented comprehensive admin message logging system to track all admin actions
+- Added enhanced Telegram notifications for new user applications
+- Implemented direct approval functionality through Telegram inline buttons
+
+### Changed
+- Improved new user notification format with hyperlinked company information
+- Added Telegram handle to user identification in admin notifications
+- Updated notification buttons to include "Approve Application" and "View Application" options
+- Modified "View Application" button to direct to pending applications page
+
+### Technical Details
+- Created a structured logging system in `server/telegram.ts` that saves admin actions to `logs/admin_messages.log`
+- Updated `notifyAdminsNewUser` function to include hyperlinks to company websites when available
+- Implemented `handleApproveUserCallback` function to process inline button approvals
+- Added Telegram callback handlers to support button-based user approval
+- Enhanced message formatting with HTML to improve readability of notifications
+- Added logging across all notification functions to track message delivery and admin actions
+
 ## [Version 1.3.9] - 2025-03-25
 
 ### Changed
