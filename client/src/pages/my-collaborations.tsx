@@ -339,12 +339,8 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   // Handle toggling collaboration active state
   const toggleCollaborationMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string, status: 'active' | 'paused' }) => {
-      const response = await apiRequest(`/api/collaborations/${id}/status`, 'PATCH', { status });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update collaboration status');
-      }
-      return await response.json();
+      // The apiRequest function already handles the response.ok check and JSON parsing
+      return await apiRequest(`/api/collaborations/${id}/status`, 'PATCH', { status });
     },
     onSuccess: () => {
       // Invalidate and refetch queries related to collaborations
