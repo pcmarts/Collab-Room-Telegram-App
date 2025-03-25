@@ -8,6 +8,7 @@ This documentation is organized into the following sections:
 
 1. [Architecture](./architecture/README.md) - Overview of the system architecture
 2. [Frontend](./frontend/README.md) - Documentation for the React frontend
+   * [Notifications System](./frontend/notifications.md) - Details on the simplified notification system
 3. [Backend](./backend/README.md) - Documentation for the Express backend
 4. [Database](./database/README.md) - Database schema and data models
 5. [API](./api/README.md) - API endpoints and usage
@@ -15,7 +16,7 @@ This documentation is organized into the following sections:
 7. [User Flows](./user-flows/README.md) - End-to-end user journeys
 8. [Discovery System](./discovery/README.md) - How the collaboration discovery system works
 9. [Matches System](./matches/README.md) - Details on the match display and interaction system
-10. [Changelog](./CHANGELOG.md) - History of changes to the application
+10. [Changelog](../CHANGELOG.md) - History of changes to the application
 
 ## Quick Start
 

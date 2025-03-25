@@ -2,6 +2,25 @@
 
 The frontend of The Collab Room is built with React and modern web technologies. This document provides an overview of the frontend architecture, components, and design patterns.
 
+## Table of Contents
+
+- [Technology Stack](#technology-stack)
+- [Application Structure](#application-structure)
+- [Key Pages](#key-pages)
+- [Components](#components)
+- [Routing](#routing)
+- [Data Fetching](#data-fetching)
+- [Styling and Theming](#styling-and-theming)
+- [State Management](#state-management)
+- [Telegram Integration](#telegram-integration)
+- [Mobile Responsiveness](#mobile-responsiveness)
+- [Accessibility](#accessibility)
+- [Utility Functions](#utility-functions)
+
+## Additional Documentation
+
+- [Notifications System](./notifications.md) - Documentation of the simplified notification system
+
 ## Technology Stack
 
 - **React**: Core UI library

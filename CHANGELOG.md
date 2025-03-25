@@ -5,6 +5,23 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.3.9] - 2025-03-25
+
+### Changed
+- Simplified notification handling by removing frequency selection dropdown
+- Set all notification settings to use "Instant" as the default and only frequency option
+- Improved error handling in notification toggle functionality
+
+### Fixed
+- Fixed "response.json is not a function" error that occurred when toggling collaborations
+- Resolved error handling in notification settings to avoid double-processing API responses
+
+### Technical Details
+- Modified the Dashboard component to hide the notification frequency dropdown
+- Simplified API response handling in apiRequest function to prevent double parsing JSON
+- Updated notification toggle UI to only show "Instant" label when notifications are enabled
+- Improved error handling throughout dashboard.tsx to properly catch and display errors
+
 ## [Version 1.3.8] - 2025-03-23
 
 ### Changed
