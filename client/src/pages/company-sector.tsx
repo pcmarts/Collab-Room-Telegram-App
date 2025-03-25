@@ -92,8 +92,6 @@ export default function CompanySector() {
       <div className="p-4">
         <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-24">
           <div className="space-y-4">
-            <Label>Company Sectors *</Label>
-
             {/* Display total selections count if any */}
             {formData.company_tags.length > 0 && (
               <div className="flex justify-between items-center mb-4">
