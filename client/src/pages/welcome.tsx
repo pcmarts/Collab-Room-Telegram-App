@@ -38,15 +38,15 @@ export default function Welcome() {
     <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4 flex flex-col items-center justify-center">
       <div className="max-w-md mx-auto space-y-8 w-full">
         <div className="text-center space-y-6">
-          <Card className="border border-primary/20 bg-card/50 backdrop-blur-sm">
+          <Card className="border border-primary/20 bg-black/50 backdrop-blur-sm">
             <CardContent className="pt-6 pb-8">
               <div className="flex flex-col items-center justify-center space-y-8 px-4">
-                <h2 className="text-2xl font-bold tracking-tight">Discover powerful</h2>
+                <h2 className="text-base tracking-tight text-white">Find your next</h2>
                 
                 <div className="text-center w-full">
                   <TextLoop
-                    interval={1.5}
-                    className="text-3xl font-bold text-primary block min-h-[48px]"
+                    interval={0.5}
+                    className="text-base text-white block min-h-[32px]"
                   >
                     {allCollabTypes.map((type) => (
                       <span key={type} className="block text-center whitespace-normal">
@@ -56,7 +56,7 @@ export default function Welcome() {
                   </TextLoop>
                 </div>
                 
-                <h2 className="text-2xl font-bold tracking-tight">for your Web3 brand</h2>
+                <h2 className="text-base tracking-tight text-white">for your Web3 brand</h2>
               </div>
             </CardContent>
           </Card>
