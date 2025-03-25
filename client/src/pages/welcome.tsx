@@ -30,7 +30,7 @@ export default function Welcome() {
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <img 
-              src="/images/collab-logo.jpg" 
+              src="https://replit.com/@paulm86/The-Collab-Room/public/collab-logo.jpg" 
               alt="Collab Room Logo" 
               className="w-60 h-auto"
             />
