@@ -177,7 +177,7 @@ export default function CompanyDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-auto">
+    <div className="min-h-screen bg-background">
       <OnboardingHeader
         title="Token Information"
         subtitle=""
@@ -186,8 +186,8 @@ export default function CompanyDetails() {
         backUrl="/company-sector"
       />
 
-      <div className="p-4">
-        <form onSubmit={handleSubmit} className="space-y-4 pb-24">
+      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
+        <form onSubmit={handleSubmit} className="space-y-4 pb-32">
           <div className="space-y-2">
             <div className="flex items-center justify-between border rounded-lg p-4">
               <Label htmlFor="has_token" className="text-sm font-medium">
@@ -296,20 +296,23 @@ export default function CompanyDetails() {
           )}
 
           {/* Floating Save Button */}
-          <div className="fixed bottom-8 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg">
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-md hover:shadow-lg transition-all"
+              className="w-full relative bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-md hover:shadow-lg transition-all overflow-hidden glow-button"
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                "Submit Application"
-              )}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 opacity-30 blur-md animate-pulse"></div>
+              <span className="relative z-10">
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Application"
+                )}
+              </span>
             </Button>
           </div>
         </form>

@@ -84,7 +84,7 @@ export default function PersonalInfo() {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-auto">
+    <div className="min-h-screen bg-background">
       <OnboardingHeader
         title="Tell Us About Yourself"
         subtitle=""
@@ -93,8 +93,8 @@ export default function PersonalInfo() {
         backUrl="/welcome"
       />
 
-      <div className="p-4">
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-24">
+      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
+        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-32">
           {/* Name fields in a grid */}
           <div className="grid grid-cols-2 gap-4">
             <div>

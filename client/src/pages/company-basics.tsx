@@ -90,7 +90,7 @@ export default function CompanyBasics() {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-auto">
+    <div className="min-h-screen bg-background">
       <OnboardingHeader
         title="Company Basics"
         subtitle=""
@@ -99,8 +99,8 @@ export default function CompanyBasics() {
         backUrl="/personal-info"
       />
 
-      <div className="p-4">
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-24">
+      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
+        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-32">
           <div>
             <Label htmlFor="company_name">Company Name *</Label>
             <Input
@@ -200,7 +200,7 @@ export default function CompanyBasics() {
           </div>
 
           {/* Floating Save Button */}
-          <div className="fixed bottom-8 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg">
             <Button
               type="submit"
               className="w-full"
