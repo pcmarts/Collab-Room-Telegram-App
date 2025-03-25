@@ -3,12 +3,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLocation } from "wouter";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { TextLoop } from "@/components/ui/text-loop";
+import { 
+  COLLAB_TYPES,
+  TWITTER_COLLAB_TYPES
+} from "@shared/schema";
 
 export default function Welcome() {
   const [_, setLocation] = useLocation();
   const [referralCode, setReferralCode] = useState('');
+  
+  // Combine all collaboration types for the animation
+  const allCollabTypes = [
+    ...COLLAB_TYPES, 
+    ...TWITTER_COLLAB_TYPES.map(type => `Twitter ${type}`)
+  ];
 
   const handleContinue = () => {
     if (referralCode.trim()) {
@@ -28,20 +39,24 @@ export default function Welcome() {
       <div className="max-w-md mx-auto space-y-8 w-full">
         <div className="text-center space-y-6">
           <Card className="border border-primary/20 bg-card/50 backdrop-blur-sm">
-            <CardContent className="pt-6">
-              <div className="space-y-3 text-left">
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <p>Connect with trusted CMOs and founders in the Web3 space</p>
+            <CardContent className="pt-6 pb-8">
+              <div className="flex flex-col items-center justify-center space-y-8 px-4">
+                <h2 className="text-2xl font-bold tracking-tight">Discover powerful</h2>
+                
+                <div className="text-center w-full">
+                  <TextLoop
+                    interval={1.5}
+                    className="text-3xl font-bold text-primary block min-h-[48px]"
+                  >
+                    {allCollabTypes.map((type) => (
+                      <span key={type} className="block text-center whitespace-normal">
+                        {type}
+                      </span>
+                    ))}
+                  </TextLoop>
                 </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <p>Find targeted collaboration opportunities that align with your brand</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <p>Privacy first — no contact details shared unless both parties match</p>
-                </div>
+                
+                <h2 className="text-2xl font-bold tracking-tight">for your Web3 brand</h2>
               </div>
             </CardContent>
           </Card>
