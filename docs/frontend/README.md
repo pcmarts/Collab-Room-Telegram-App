@@ -166,13 +166,13 @@ export function PotentialMatchCard({
 }
 ```
 
-The PotentialMatchCard has been redesigned with the following features:
-- Dynamic glowing effect using the GlowEffect component, providing a modern and engaging appearance
-- Full-width and full-height layout that maximizes the available space
-- Dark background with high contrast text (using #FAFAFA)
+The PotentialMatchCard has been designed with the following features:
+- Subtle glowing effect using the GlowEffect component with reduced opacity (70%)
+- Standard card sizing that matches other card components in the application
+- Standard border styling using `border border-border/40` for visual consistency
 - Clear visual hierarchy with prominent user and company information
-- Optimized layout that fills the entire parent container
-- Custom styling for topics and collaboration details
+- Consistent badge styling using the Shadcn Badge component for topics
+- Theme-aware text styling that respects the application's color scheme
 
 ### Form Components
 

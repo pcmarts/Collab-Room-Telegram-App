@@ -5,6 +5,23 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.3.8] - 2025-03-23
+
+### Changed
+- Reverted PotentialMatchCard to match regular card styling instead of full-container styling
+- Made GlowEffect more subtle and less expansive on potential match cards
+
+### Fixed
+- Fixed inconsistency between PotentialMatchCard and regular cards
+- Resolved visual layout issues with potential match cards taking up too much space
+
+### Technical Details
+- Removed `w-full h-full` styling that forced PotentialMatchCard to expand to fill the parent container
+- Changed GlowEffect opacity and scale to be more subtle with `opacity-70` and `scale={1.0}`
+- Added standard border with `border border-border/40` to match regular card styling
+- Reverted text coloring from hardcoded values like `text-[#FAFAFA]` to use theme variables
+- Changed badge styling to use standard Shadcn Badge components for topics instead of custom spans
+
 ## [Version 1.3.7] - 2025-03-23
 
 ### Added
