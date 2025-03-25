@@ -172,6 +172,14 @@ export async function sendApplicationConfirmation(chatId: number) {
       { reply_markup: keyboard },
     );
     console.log("Application confirmation message sent successfully");
+    
+    // Log application confirmation message
+    logAdminMessage(
+      "SYSTEM",
+      "APPLICATION_CONFIRMATION",
+      `Sent application confirmation to user with chat ID ${chatId}`,
+      `New user application received`
+    );
   } catch (error) {
     console.error("Failed to send application confirmation:", error);
   }
@@ -299,6 +307,14 @@ export async function notifyUserApproved(chatId: number) {
       { reply_markup: keyboard },
     );
     console.log("Approval notification sent successfully");
+    
+    // Log the approval notification
+    logAdminMessage(
+      "SYSTEM",
+      "USER_APPROVAL_NOTIFICATION",
+      `Sent approval notification to user with chat ID ${chatId}`,
+      `User approved and notified`
+    );
   } catch (error) {
     console.error("Failed to send approval notification:", error);
   }
@@ -946,6 +962,21 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
       console.log(`[DEBUG] Successfully sent formatted message to requester (${requesterChatId})`);
       
       console.log('[Telegram Bot] Successfully sent enhanced HTML notifications to both users');
+      
+      // Log the match notifications
+      logAdminMessage(
+        "SYSTEM",
+        "MATCH_NOTIFICATION_HOST",
+        `Sent match notification to host ${hostUser.first_name} ${hostUser.last_name || ""} (${hostUser.telegram_id})`,
+        `Match with ${requesterUser.first_name} ${requesterUser.last_name || ""} on ${collaboration.collab_type}`
+      );
+      
+      logAdminMessage(
+        "SYSTEM",
+        "MATCH_NOTIFICATION_REQUESTER",
+        `Sent match notification to requester ${requesterUser.first_name} ${requesterUser.last_name || ""} (${requesterUser.telegram_id})`,
+        `Match with ${hostUser.first_name} ${hostUser.last_name || ""} on ${collaboration.collab_type}`
+      );
     } catch (directError) {
       console.error('[Telegram Bot] Error in direct notification sending:', directError);
       
@@ -966,6 +997,14 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
           
           await bot.sendMessage(hostChatId, plainHostMessage, { reply_markup: fallbackHostKeyboard });
           console.log(`[DEBUG] Successfully sent fallback message to host (${hostChatId})`);
+          
+          // Log the fallback notification
+          logAdminMessage(
+            "SYSTEM",
+            "MATCH_NOTIFICATION_HOST_FALLBACK",
+            `Sent fallback match notification to host ${hostUser.first_name} ${hostUser.last_name || ""} (${hostUser.telegram_id})`,
+            `Match with ${requesterUser.first_name} ${requesterUser.last_name || ""} on ${collaboration.collab_type}`
+          );
         }
         
         if (!requesterSuccess) {
@@ -983,6 +1022,14 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
           
           await bot.sendMessage(requesterChatId, plainRequesterMessage, { reply_markup: fallbackRequesterKeyboard });
           console.log(`[DEBUG] Successfully sent fallback message to requester (${requesterChatId})`);
+          
+          // Log the fallback notification
+          logAdminMessage(
+            "SYSTEM",
+            "MATCH_NOTIFICATION_REQUESTER_FALLBACK",
+            `Sent fallback match notification to requester ${requesterUser.first_name} ${requesterUser.last_name || ""} (${requesterUser.telegram_id})`,
+            `Match with ${hostUser.first_name} ${hostUser.last_name || ""} on ${collaboration.collab_type}`
+          );
         }
       } catch (fallbackError) {
         console.error('[Telegram Bot] Even fallback notification failed:', fallbackError);
