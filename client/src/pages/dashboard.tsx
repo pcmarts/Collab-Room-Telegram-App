@@ -52,7 +52,7 @@ export default function Dashboard() {
       const newFrequency = enabled ? 'Instant' : 'Never';
       
       // Update notification preferences
-      const response = await apiRequest('/api/preferences', 'POST', {
+      await apiRequest('/api/preferences', 'POST', {
         // Notification preferences
         notification_frequency: newFrequency,
         notifications_enabled: enabled,
@@ -76,10 +76,6 @@ export default function Dashboard() {
         coffee_match_filter_funding_stages_enabled: profile?.conferencePreferences?.coffee_match_filter_funding_stages_enabled || false,
         coffee_match_filter_token_status_enabled: profile?.conferencePreferences?.coffee_match_filter_token_status_enabled || false
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update notification settings');
-      }
       
       // Update the local state if toggling on
       if (enabled) {
@@ -106,7 +102,7 @@ export default function Dashboard() {
       setIsSubmitting(true);
       
       // Update notification preferences
-      const response = await apiRequest('/api/preferences', 'POST', {
+      await apiRequest('/api/preferences', 'POST', {
         // Notification preferences
         notification_frequency: frequency,
         notifications_enabled: notificationsEnabled,
@@ -130,10 +126,6 @@ export default function Dashboard() {
         coffee_match_filter_funding_stages_enabled: profile?.conferencePreferences?.coffee_match_filter_funding_stages_enabled || false,
         coffee_match_filter_token_status_enabled: profile?.conferencePreferences?.coffee_match_filter_token_status_enabled || false
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update notification frequency');
-      }
 
       setNotificationFrequency(frequency);
       toast({
