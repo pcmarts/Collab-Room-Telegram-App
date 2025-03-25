@@ -6,12 +6,22 @@ import { useLocation } from 'wouter';
 import { Users, UserPlus } from 'lucide-react';
 import React, { useState } from 'react';
 
+// Define the profile data type that comes from the API
+interface ProfileData {
+  user: {
+    id: string;
+    is_admin: boolean;
+  };
+  company?: any;
+  preferences?: any;
+}
+
 export default function AdminDashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [, setLocation] = useLocation();
 
   // Check if current user is admin
-  const { data: currentUserData, isLoading: checkingAdmin } = useQuery({
+  const { data: currentUserData, isLoading: checkingAdmin } = useQuery<ProfileData>({
     queryKey: ['/api/profile']
   });
 
@@ -24,7 +34,7 @@ export default function AdminDashboard() {
   if (checkingAdmin) {
     return (
       <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Admin Dashboard" backUrl="/admin" />
+        <PageHeader title="Admin Dashboard" backUrl="/dashboard" />
         <div className="mt-8">Loading...</div>
       </div>
     );
@@ -33,7 +43,7 @@ export default function AdminDashboard() {
   if (!isAdmin) {
     return (
       <div className="container mx-auto py-6 px-4">
-        <PageHeader title="Admin Dashboard" backUrl="/admin" />
+        <PageHeader title="Admin Dashboard" backUrl="/dashboard" />
         <Card className="mt-8">
           <CardHeader>
             <CardTitle>Access Denied</CardTitle>
@@ -48,7 +58,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="container mx-auto py-6 px-4">
-      <PageHeader title="Admin Dashboard" backUrl="/admin" />
+      <PageHeader title="Admin Dashboard" backUrl="/dashboard" />
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
         {/* Applications Card */}
