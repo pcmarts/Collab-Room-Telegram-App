@@ -5,6 +5,27 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.4.1] - 2025-03-25
+
+### Added
+- Added a new animated TextLoop component on the welcome page to showcase different collaboration types with smooth transitions
+- Implemented glowing effect button for the "Submit Application" button on the final onboarding page
+
+### Changed
+- Enhanced the welcome page UI by removing the containing box, making text white with regular weight, and changing CTA to "Apply"
+- Improved all onboarding pages (/personal-info, /company-basics, /company-sector, /company-details) with better UI and usability
+- Removed subtitles and step count indicators from all onboarding pages for cleaner appearance
+- Added proper scrollable containers with fixed height to all onboarding pages to enable better navigation on smaller screens
+- Adjusted button positions on all pages to improve user experience
+- Fixed gap issues beneath buttons by ensuring consistent black background
+
+### Technical Details
+- Created new TextLoop UI component in `client/src/components/ui/text-loop.tsx` for rotating text display
+- Modified OnboardingHeader component to support a cleaner design without subtitles
+- Implemented scrollable containers using `overflow-y-auto` with calculated height
+- Added glowing button effect using CSS gradients and animations
+- Fixed visual inconsistencies by standardizing button container backgrounds across all pages
+
 ## [Version 1.4.0] - 2025-03-25
 
 ### Added

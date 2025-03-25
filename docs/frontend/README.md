@@ -20,6 +20,7 @@ The frontend of The Collab Room is built with React and modern web technologies.
 ## Additional Documentation
 
 - [Notifications System](./notifications.md) - Documentation of the simplified notification system
+- [UI Components](./ui-components.md) - Documentation of specialized UI components including TextLoop, GlowButton, and scrollable containers
 
 ## Technology Stack
 
