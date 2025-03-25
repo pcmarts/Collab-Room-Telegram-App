@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented scrollable containers using `overflow-y-auto` with calculated height
 - Added glowing button effect using CSS gradients and animations
 - Fixed visual inconsistencies by standardizing button container backgrounds across all pages
+- Created comprehensive documentation in `docs/frontend/ui-components.md` describing all specialized UI components
 
 ## [Version 1.4.0] - 2025-03-25
 
