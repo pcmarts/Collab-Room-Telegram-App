@@ -624,6 +624,36 @@ export async function registerRoutes(app: Express) {
         return { user };
       });
 
+      // If this is a new user application (not a profile update), notify admins
+      if (!isProfileUpdate && result.user) {
+        try {
+          // Get company data for the notification
+          const [company] = await db
+            .select()
+            .from(companies)
+            .where(eq(companies.user_id, result.user.id));
+
+          if (company) {
+            // Send notification to all admins with enhanced user data
+            await notifyAdminsNewUser({
+              telegram_id: result.user.telegram_id,
+              first_name: result.user.first_name,
+              last_name: result.user.last_name,
+              handle: result.user.handle,
+              company_name: company.name,
+              company_website: company.website,
+              job_title: company.job_title
+            });
+            console.log('Admin notification sent for new user application');
+          } else {
+            console.error('Could not find company data for admin notification');
+          }
+        } catch (notifyError) {
+          // Log error but don't fail the request
+          console.error('Failed to send admin notification:', notifyError);
+        }
+      }
+
       return res.json({
         success: true,
         message: isProfileUpdate ? 'Profile updated successfully' : 'Application submitted successfully',
