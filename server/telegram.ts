@@ -407,6 +407,116 @@ bot.on('callback_query', async (callbackQuery) => {
 });
 
 // Handler for match info callbacks
+// Handle user approval callbacks from admin notifications
+async function handleApproveUserCallback(callbackQuery: TelegramBot.CallbackQuery) {
+  const chatId = callbackQuery.message?.chat.id;
+  if (!chatId || !callbackQuery.data) return;
+  
+  console.log('[CALLBACK_DEBUG] Processing user approval callback:', callbackQuery.data);
+  
+  try {
+    // First, acknowledge the callback to show progress to admin
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: 'Processing approval...',
+      show_alert: false
+    });
+    
+    // Extract Telegram ID from callback data
+    // Format: approve_user_{telegram_id}
+    const telegramId = callbackQuery.data.replace('approve_user_', '');
+    if (!telegramId) {
+      console.error('[CALLBACK_DEBUG] Invalid user approval callback format:', callbackQuery.data);
+      await bot.sendMessage(chatId, 'Error: Invalid approval data format');
+      return;
+    }
+    
+    console.log('[CALLBACK_DEBUG] Approving user with Telegram ID:', telegramId);
+    
+    // Get user by Telegram ID
+    const [user] = await db.select()
+      .from(users)
+      .where(eq(users.telegram_id, telegramId));
+      
+    if (!user) {
+      console.error('[CALLBACK_DEBUG] User not found for approval:', telegramId);
+      await bot.sendMessage(chatId, 'Error: User not found');
+      return;
+    }
+    
+    // Check if user is already approved
+    if (user.is_approved) {
+      console.log('[CALLBACK_DEBUG] User is already approved:', telegramId);
+      await bot.sendMessage(chatId, `User ${user.first_name} ${user.last_name || ''} is already approved.`);
+      return;
+    }
+    
+    // Update user approval status
+    const [updatedUser] = await db.update(users)
+      .set({ is_approved: true })
+      .where(eq(users.id, user.id))
+      .returning();
+      
+    console.log('[CALLBACK_DEBUG] User approval successful:', updatedUser);
+    
+    // Send notification to the approved user
+    try {
+      await notifyUserApproved(parseInt(telegramId));
+      console.log('[CALLBACK_DEBUG] Approval notification sent to user');
+    } catch (notifyError) {
+      console.error('[CALLBACK_DEBUG] Failed to send approval notification:', notifyError);
+      // Continue execution even if notification fails
+    }
+    
+    // Update the admin's message to show approval status
+    try {
+      // Only edit the message if it exists
+      if (callbackQuery.message?.message_id) {
+        const updatedKeyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: "✅ Approved",
+                callback_data: "user_already_approved"
+              }
+            ],
+            [
+              {
+                text: "👁️ View Application",
+                web_app: { url: `${WEBAPP_URL}/admin/users` }
+              }
+            ]
+          ]
+        };
+        
+        await bot.editMessageText(
+          `✅ <b>Application Approved!</b>\n\n` +
+          `You have approved <b>${user.first_name} ${user.last_name || ''}</b>'s application.\n` +
+          `They have been notified and now have full access to the platform.`,
+          {
+            chat_id: chatId,
+            message_id: callbackQuery.message.message_id,
+            parse_mode: 'HTML',
+            reply_markup: updatedKeyboard
+          }
+        );
+      }
+    } catch (editError) {
+      console.error('[CALLBACK_DEBUG] Failed to update approval message:', editError);
+      // If editing fails, send a new message instead
+      await bot.sendMessage(
+        chatId,
+        `✅ <b>Application Approved!</b>\n\n` +
+        `You have approved <b>${user.first_name} ${user.last_name || ''}</b>'s application.\n` +
+        `They have been notified and now have full access to the platform.`,
+        { parse_mode: 'HTML' }
+      );
+    }
+  } catch (error) {
+    console.error('[CALLBACK_DEBUG] Error in user approval process:', error);
+    await bot.sendMessage(chatId, 'Sorry, there was an error processing the approval. Please try again or check the admin dashboard.');
+  }
+}
+
 async function handleMatchInfoCallback(callbackQuery: TelegramBot.CallbackQuery) {
   const chatId = callbackQuery.message?.chat.id;
   if (!chatId || !callbackQuery.data) return;
