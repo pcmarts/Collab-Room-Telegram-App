@@ -92,6 +92,7 @@ const BlogPostCollabCard = ({ data }) => {
 };
 
 // Podcast Guest Appearances Card (inline version - DEPRECATED)
+// Now updated to match the PodcastCard component in cards/PodcastCard.tsx
 const InlinePodcastCard = ({ data }) => {
   // Handle data.details (JSON field)
   const details = data.details || {};
@@ -113,7 +114,7 @@ const InlinePodcastCard = ({ data }) => {
   const streamingLink = details.podcast_link || data.streamingLink;
   
   // Determine twitter link
-  const twitterLink = details.company_twitter || "";
+  const twitterLink = details.company_twitter || data.companyTwitter || "";
   
   // Determine date with fallbacks
   const dateDisplay = details.date || data.date || (details.specific_date ? details.specific_date : "");
@@ -125,73 +126,59 @@ const InlinePodcastCard = ({ data }) => {
                 [];
   
   return (
-    <div className="space-y-2">
-      {/* Badge */}
-      <Badge variant="outline" className="bg-primary/10">
-        <Mic className="w-3 h-3 mr-1" />
-        <span className="ml-1">Podcast Guest Appearance</span>
-      </Badge>
+    <div className="space-y-3">
+      {/* Badge at the top */}
+      <div className="mb-2">
+        <Badge variant="secondary" className="bg-primary/20 text-primary dark:text-white dark:bg-primary/50">
+          <Mic className="w-4 h-4 mr-1" />
+          <span>Podcast Guest Appearance</span>
+        </Badge>
+      </div>
       
       {/* Title - Podcast Name with streaming link */}
-      <h3 className="text-lg font-semibold leading-snug">
+      <h3 className="text-xl font-semibold">
         {streamingLink ? (
           <a 
             href={streamingLink} 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="text-primary hover:underline flex items-center"
+            className="hover:underline"
           >
-            {podcastName} <FiExternalLink className="w-3 h-3 ml-1" />
+            {podcastName}
           </a>
         ) : (
           podcastName
         )}
       </h3>
       
-      {/* Short description */}
+      {/* Company name with Twitter link */}
+      <div className="text-sm">
+        {twitterLink ? (
+          <a 
+            href={twitterLink.startsWith('https://') ? twitterLink : `https://twitter.com/${twitterLink.replace('@', '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            {data.companyName}
+          </a>
+        ) : (
+          data.companyName
+        )}
+      </div>
+      
+      {/* Short description directly below company */}
       {description && (
-        <p className="text-xs text-muted-foreground line-clamp-2">
+        <p className="text-sm text-muted-foreground">
           {description}
         </p>
       )}
       
-      <div className="flex flex-col space-y-2 text-xs">
-        {/* Company name with Twitter link */}
-        <div className="flex items-center space-x-1">
-          {twitterLink ? (
-            <a 
-              href={twitterLink.startsWith('https://') ? twitterLink : `https://twitter.com/${twitterLink.replace('@', '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline flex items-center"
-            >
-              {data.companyName} <FaTwitter className="w-3 h-3 ml-1" />
-            </a>
-          ) : (
-            <span>{data.companyName}</span>
-          )}
-        </div>
-        
-        {/* Estimated reach */}
-        <div className="flex items-center space-x-2">
-          <Megaphone className="w-3 h-3" />
-          <span>Est. Reach: {estimatedReach}</span>
-        </div>
-        
-        {/* Date if available */}
-        {dateDisplay && (
-          <div className="flex items-center space-x-2">
-            <Calendar className="w-3 h-3" />
-            <span>{dateDisplay}</span>
-          </div>
-        )}
-      </div>
-      
-      {/* Topics as pills at the bottom */}
+      {/* Topics as pills */}
       {topics && topics.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">
           {topics.map((topic, i) => (
-            <Badge key={i} variant="secondary" className="text-xs">
+            <Badge key={i} variant="outline" className="text-xs rounded-full px-3 bg-background/50">
               {topic}
             </Badge>
           ))}
