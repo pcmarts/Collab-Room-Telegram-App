@@ -13,6 +13,7 @@ import {
   Linkedin, Building, Mic, Radio, Video, FileText, BookOpen,
   RotateCcw, SlidersVertical, Loader2, UserCheck
 } from "lucide-react";
+import { FaTwitter } from "react-icons/fa";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
@@ -94,49 +95,107 @@ const PodcastCard = ({ data }) => {
   // Handle data.details (JSON field)
   const details = data.details || {};
   
+  // Determine podcast name with fallbacks
+  const podcastName = details.podcast_name || data.podcastName || "Podcast";
+  
+  // Determine description with fallbacks
+  const description = details.short_description || 
+                  details.podcast_description || 
+                  data.shortDescription || 
+                  data.description || 
+                  "";
+  
+  // Determine reach with fallbacks
+  const estimatedReach = details.estimated_reach || data.estimatedReach || "TBD";
+  
+  // Determine streaming link with fallbacks
+  const streamingLink = details.podcast_link || data.streamingLink;
+  
+  // Determine twitter link
+  const twitterLink = details.company_twitter || "";
+  
+  // Determine date with fallbacks
+  const dateDisplay = details.date || data.date || (details.specific_date ? details.specific_date : "");
+  
+  // Determine topics
+  const topics = data.topics || 
+                details.topics || 
+                data.preferredTopics || 
+                [];
+  
   return (
     <div className="space-y-2">
+      {/* Badge */}
       <Badge variant="outline" className="bg-primary/10">
         <Mic className="w-3 h-3 mr-1" />
-        Podcast Guest
+        <span className="ml-1">Podcast Guest Appearance</span>
       </Badge>
+      
+      {/* Title - Podcast Name with streaming link */}
       <h3 className="text-lg font-semibold leading-snug">
-        {details.podcast_name || data.podcastName || "Podcast"}
+        {streamingLink ? (
+          <a 
+            href={streamingLink} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-primary hover:underline flex items-center"
+          >
+            {podcastName} <FiExternalLink className="w-3 h-3 ml-1" />
+          </a>
+        ) : (
+          podcastName
+        )}
       </h3>
-      <div className="space-y-0.5">
-        <p className="text-sm">{data.companyName}</p>
+      
+      {/* Short description */}
+      {description && (
+        <p className="text-xs text-muted-foreground line-clamp-2">
+          {description}
+        </p>
+      )}
+      
+      <div className="flex flex-col space-y-2 text-xs">
+        {/* Company name with Twitter link */}
+        <div className="flex items-center space-x-1">
+          {twitterLink ? (
+            <a 
+              href={twitterLink.startsWith('https://') ? twitterLink : `https://twitter.com/${twitterLink.replace('@', '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline flex items-center"
+            >
+              {data.companyName} <FaTwitter className="w-3 h-3 ml-1" />
+            </a>
+          ) : (
+            <span>{data.companyName}</span>
+          )}
+        </div>
+        
+        {/* Estimated reach */}
+        <div className="flex items-center space-x-2">
+          <Megaphone className="w-3 h-3" />
+          <span>Est. Reach: {estimatedReach}</span>
+        </div>
+        
+        {/* Date if available */}
+        {dateDisplay && (
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-3 h-3" />
+            <span>{dateDisplay}</span>
+          </div>
+        )}
       </div>
-      <p className="text-xs text-muted-foreground line-clamp-2">
-        {details.short_description || details.podcast_description || data.shortDescription || ""}
-      </p>
-      {data.topics && data.topics.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-1">
-          {data.topics.map((topic, i) => (
+      
+      {/* Topics as pills at the bottom */}
+      {topics && topics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {topics.map((topic, i) => (
             <Badge key={i} variant="secondary" className="text-xs">
               {topic}
             </Badge>
           ))}
         </div>
       )}
-      <div className="flex flex-col space-y-1 text-xs">
-        <div className="flex items-center space-x-2">
-          <Megaphone className="w-3 h-3" />
-          <span>{details.estimated_reach || data.estimatedReach || "TBD"}</span>
-        </div>
-        {(details.podcast_link || data.streamingLink) && (
-          <div className="flex items-center space-x-2 text-primary">
-            <FiExternalLink className="w-3 h-3" />
-            <a 
-              href={details.podcast_link || data.streamingLink} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="hover:underline"
-            >
-              Listen to podcast
-            </a>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

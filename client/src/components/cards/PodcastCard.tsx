@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, Megaphone, Calendar } from "lucide-react";
+import { Mic, Megaphone, Calendar, Twitter } from "lucide-react";
 import { FiExternalLink } from "react-icons/fi";
 import { FaTwitter } from "react-icons/fa";
 import { BaseCollabCard } from './BaseCollabCard';
