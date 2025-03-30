@@ -1,55 +1,57 @@
 import React from 'react';
-import { Mic, Megaphone, Calendar, Twitter } from "lucide-react";
-import { FiExternalLink } from "react-icons/fi";
-import { FaTwitter } from "react-icons/fa";
-import { BaseCollabCard } from './BaseCollabCard';
 import { Badge } from "@/components/ui/badge";
+import { Mic } from "lucide-react";
 
-interface PodcastCardData {
-  id?: string;
-  companyName: string;
-  companyTwitter?: string;
-  title?: string;
-  podcastName?: string;
-  shortDescription?: string;
-  description?: string;
-  estimatedReach?: string;
-  streamingLink?: string;
-  date?: string;
-  topics?: string[];
-  preferredTopics?: string[];
-  details?: {
-    podcast_name?: string;
-    podcast_description?: string;
-    podcast_link?: string;
-    short_description?: string;
-    estimated_reach?: string;
-    company_twitter?: string;
+export interface PodcastCardProps {
+  data: {
+    id?: string;
+    companyName: string;
+    details?: {
+      podcast_name?: string;
+      podcast_description?: string;
+      short_description?: string;
+      estimated_reach?: string;
+      podcast_link?: string;
+      specific_date?: string;
+      date_selection?: string;
+      topics?: string[];
+      company_twitter?: string;
+    };
+    podcastName?: string;
+    shortDescription?: string;
+    description?: string;
+    estimatedReach?: string;
+    streamingLink?: string;
     date?: string;
     topics?: string[];
-    [key: string]: any;
+    preferredTopics?: string[];
+    companyTwitter?: string;
   };
 }
 
-interface PodcastCardProps {
-  data: PodcastCardData;
-}
+// Helper function to get Twitter URL
+const getTwitterUrl = (handle: string) => {
+  if (!handle) return "";
+  if (handle.startsWith("https://")) return handle;
+  return `https://twitter.com/${handle.replace('@', '')}`;
+};
 
 export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
   console.log("PodcastCard received data:", data);
-  console.log("PodcastCard details:", typeof data.details, data.details);
   
+  // Handle data.details (JSON field)
   const details = data.details || {};
+  console.log("PodcastCard details:", details);
   
   // Determine podcast name with fallbacks
   const podcastName = details.podcast_name || data.podcastName || "Podcast";
   
   // Determine description with fallbacks
   const description = details.short_description || 
-                    details.podcast_description || 
-                    data.shortDescription || 
-                    data.description || 
-                    "";
+                  details.podcast_description || 
+                  data.shortDescription || 
+                  data.description || 
+                  "";
   
   // Determine reach with fallbacks
   const estimatedReach = details.estimated_reach || data.estimatedReach || "TBD";
@@ -57,21 +59,32 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
   // Determine streaming link with fallbacks
   const streamingLink = details.podcast_link || data.streamingLink;
   
-  // Determine twitter link with fallbacks
-  const twitterLink = details.company_twitter || 
-                      data.companyTwitter || 
-                      (data.details && (data as any).details.twitter_handle) || 
-                      "";
+  // Determine twitter link
+  const twitterHandle = details.company_twitter || data.companyTwitter || "";
+  const twitterLink = getTwitterUrl(twitterHandle);
   
   // Determine date with fallbacks
-  const dateDisplay = details.date || data.date || (details.specific_date ? details.specific_date : "");
+  const dateDisplay = details.specific_date || data.date || "";
   
   // Determine topics
   const topics = data.topics || 
                 details.topics || 
                 data.preferredTopics || 
                 [];
-  
+                
+  // Log the processed data
+  console.log("PodcastCard processed data:", {
+    podcastName,
+    companyName: data.companyName,
+    description,
+    estimatedReach,
+    streamingLink,
+    twitterHandle,
+    twitterLink,
+    dateDisplay,
+    topics
+  });
+
   return (
     <div className="space-y-3">
       {/* Badge at the top */}
@@ -102,7 +115,7 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
       <div className="text-sm">
         {twitterLink ? (
           <a 
-            href={twitterLink.startsWith('https://') ? twitterLink : `https://twitter.com/${twitterLink.replace('@', '')}`}
+            href={twitterLink}
             target="_blank"
             rel="noopener noreferrer"
             className="hover:underline"
@@ -114,11 +127,25 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
         )}
       </div>
       
-      {/* Short description directly below company */}
+      {/* Short description */}
       {description && (
         <p className="text-sm text-muted-foreground">
           {description}
         </p>
+      )}
+      
+      {/* Estimated reach */}
+      {estimatedReach && (
+        <div className="text-xs text-muted-foreground">
+          Estimated reach: {estimatedReach}
+        </div>
+      )}
+      
+      {/* Date */}
+      {dateDisplay && (
+        <div className="text-xs text-muted-foreground">
+          Date: {dateDisplay}
+        </div>
       )}
       
       {/* Topics as pills */}
