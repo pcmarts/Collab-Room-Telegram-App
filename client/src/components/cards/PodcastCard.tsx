@@ -65,15 +65,37 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
                 data.preferredTopics || 
                 [];
   
+  // Create a custom empty company data object to prevent BaseCollabCard from rendering the company name
+  const modifiedData = {
+    ...data,
+    companyName: "" // Empty string to prevent BaseCollabCard from displaying company name
+  };
+  
   return (
-    <BaseCollabCard
-      data={data}
-      badgeIcon={<Mic className="w-3 h-3 mr-1" />}
-      badgeText="Podcast Guest Appearance"
-      badgeClass="bg-primary/10"
-      title={podcastName}
-    >
-      {/* Short description shown directly after the title */}
+    <div className="space-y-2">
+      {/* Badge */}
+      <Badge variant="outline" className="bg-primary/10">
+        <Mic className="w-3 h-3 mr-1" />
+        <span className="ml-1">Podcast Guest Appearance</span>
+      </Badge>
+      
+      {/* Title - Podcast Name with streaming link */}
+      <h3 className="text-lg font-semibold leading-snug">
+        {streamingLink ? (
+          <a 
+            href={streamingLink} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-primary hover:underline flex items-center"
+          >
+            {podcastName} <FiExternalLink className="w-3 h-3 ml-1" />
+          </a>
+        ) : (
+          podcastName
+        )}
+      </h3>
+      
+      {/* Short description */}
       {description && (
         <p className="text-xs text-muted-foreground line-clamp-2">
           {description}
@@ -110,22 +132,6 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
             <span>{dateDisplay}</span>
           </div>
         )}
-        
-        {/* Streaming link */}
-        {streamingLink && (
-          <div className="flex items-center space-x-2 text-primary">
-            <FiExternalLink className="w-3 h-3" />
-            <a 
-              href={streamingLink} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="hover:underline"
-            >
-              {streamingLink.includes('spotify') ? 'Listen on Spotify' : 
-               streamingLink.includes('youtube') ? 'Watch on YouTube' : 'Listen to podcast'}
-            </a>
-          </div>
-        )}
       </div>
       
       {/* Topics as pills at the bottom */}
@@ -138,6 +144,6 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
           ))}
         </div>
       )}
-    </BaseCollabCard>
+    </div>
   );
 };
