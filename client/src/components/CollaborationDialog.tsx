@@ -35,11 +35,6 @@ interface CollaborationDialogProps {
     role?: string;
     date?: string;
     
-    // Database fields
-    id?: string;
-    creator_id?: string;
-    status?: string;
-    
     // Legacy & generic fields
     eventName?: string;
     availability?: string;

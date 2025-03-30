@@ -13,7 +13,6 @@ import {
   Linkedin, Building, Mic, Radio, Video, FileText, BookOpen,
   RotateCcw, SlidersVertical, Loader2, UserCheck
 } from "lucide-react";
-import { FaTwitter } from "react-icons/fa";
 import { CollaborationDialog } from "@/components/CollaborationDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
@@ -25,8 +24,6 @@ import { Collaboration } from "@shared/schema";
 
 import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
-// Make sure we're using the correct PodcastCard component
-import { PodcastCard } from "@/components/cards/PodcastCard";
 
 // Blog Post Collaboration Card (Replacing Conference Coffee Card)
 const BlogPostCollabCard = ({ data }) => {
@@ -92,8 +89,57 @@ const BlogPostCollabCard = ({ data }) => {
   );
 };
 
-// Note: We've removed the InlinePodcastCard component as it's now replaced
-// by the imported PodcastCard component from @/components/cards/PodcastCard
+// Podcast Guest Appearances Card
+const PodcastCard = ({ data }) => {
+  // Handle data.details (JSON field)
+  const details = data.details || {};
+  
+  return (
+    <div className="space-y-2">
+      <Badge variant="outline" className="bg-primary/10">
+        <Mic className="w-3 h-3 mr-1" />
+        Podcast Guest
+      </Badge>
+      <h3 className="text-lg font-semibold leading-snug">
+        {details.podcast_name || data.podcastName || "Podcast"}
+      </h3>
+      <div className="space-y-0.5">
+        <p className="text-sm">{data.companyName}</p>
+      </div>
+      <p className="text-xs text-muted-foreground line-clamp-2">
+        {details.short_description || details.podcast_description || data.shortDescription || ""}
+      </p>
+      {data.topics && data.topics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {data.topics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
+      <div className="flex flex-col space-y-1 text-xs">
+        <div className="flex items-center space-x-2">
+          <Megaphone className="w-3 h-3" />
+          <span>{details.estimated_reach || data.estimatedReach || "TBD"}</span>
+        </div>
+        {(details.podcast_link || data.streamingLink) && (
+          <div className="flex items-center space-x-2 text-primary">
+            <FiExternalLink className="w-3 h-3" />
+            <a 
+              href={details.podcast_link || data.streamingLink} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:underline"
+            >
+              Listen to podcast
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // Twitter Spaces Guest Card
 const TwitterSpacesCard = ({ data }) => {
@@ -953,63 +999,18 @@ export default function DiscoverPage() {
   const getCompanyName = (card: Collaboration): string => {
     if (!card) return "";
     
-    // First check if we have a company_name field directly on the card (from joined query)
-    if ((card as any).company_name) {
-      console.log("Found company_name on card:", (card as any).company_name);
-      return (card as any).company_name;
-    }
-    
-    // Check if there's a creator_company field (from joins with user/company tables)
-    if ((card as any).creator_company) {
-      console.log("Found creator_company on card:", (card as any).creator_company);
-      return (card as any).creator_company;
-    }
-    
-    // Then try to extract company name from details
+    // Try to extract company name from details
     try {
       if (card.details && typeof card.details === 'object') {
-        const details = card.details as any;
-        const companyNameFromDetails = details.company_name || details.companyName;
-        
-        if (companyNameFromDetails) {
-          console.log("Found company name in details:", companyNameFromDetails);
-          return companyNameFromDetails;
-        }
+        return card.details.company_name || 
+               card.details.companyName || 
+               "Company";
       }
     } catch (e) {
       console.error("Error parsing company name from details:", e);
     }
     
-    // Log entire card for debugging
-    console.log("Could not find company name, full card data:", card);
-    
-    // Return empty string instead of "Company" to avoid confusion
-    return "ZK Sync"; // For testing, hard-coding ZK Sync to confirm this function is being called
-  };
-  
-  // Helper function to get company Twitter handle
-  const getCompanyTwitter = (card: Collaboration): string | undefined => {
-    if (!card) return undefined;
-    
-    // First check if we have a twitter_handle field directly on the card (from joined query)
-    if ((card as any).twitter_handle) {
-      return (card as any).twitter_handle;
-    }
-    
-    // Then try to extract Twitter handle from details
-    try {
-      if (card.details && typeof card.details === 'object') {
-        const details = card.details as any;
-        return details.company_twitter || 
-               details.twitter_handle || 
-               details.companyTwitter ||
-               undefined;
-      }
-    } catch (e) {
-      console.error("Error parsing company Twitter from details:", e);
-    }
-    
-    return undefined;
+    return "Company";
   };
   
   // Helper function to get collaboration type from card for display
@@ -1096,9 +1097,6 @@ export default function DiscoverPage() {
   }
 
   const renderCard = (card: any) => {
-    // Add debug logging for cards to understand the structure
-    console.log("Rendering card:", card);
-    
     // Handle the case where card might be null (at the end of the deck)
     if (!card) {
       return (
@@ -1161,7 +1159,6 @@ export default function DiscoverPage() {
       ...card,
       details,
       companyName: getCompanyName(card),
-      companyTwitter: getCompanyTwitter(card), // Use the helper function to get Twitter handle
       title: card.title || 
              (details as any)?.title || 
              (details as any)?.podcast_name || 
@@ -1178,9 +1175,6 @@ export default function DiscoverPage() {
     let cardContent;
     switch (card.collab_type?.toLowerCase()) {
       case "podcast":
-      case "podcast guest appearance":
-        console.log("Creating PodcastCard component with data:", cardData);
-        // Force use of PodcastCard component from imports, not inline version
         cardContent = <PodcastCard data={cardData} />;
         break;
       case "twitter-spaces":
@@ -1342,9 +1336,9 @@ export default function DiscoverPage() {
               description: currentCard.description || "",
               // Ensure collaborationType is always a string
               type: currentCard.collab_type || undefined,
-              // Company twitter handle
-              companyTwitter: getCompanyTwitter(currentCard),
-              // Keep other essential properties
+              // Remove potentially problematic properties
+              details: undefined, // We've already extracted what we need
+              // Keep the rest of the properties
               id: currentCard.id,
               creator_id: currentCard.creator_id,
               status: currentCard.status || "active",
