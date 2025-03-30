@@ -1258,6 +1258,7 @@ export default function DiscoverPage() {
     switch (card.collab_type?.toLowerCase()) {
       case "podcast":
       case "podcast guest appearance":
+        console.log("Creating PodcastCard component with data:", cardData);
         cardContent = <PodcastCard data={cardData} />;
         break;
       case "twitter-spaces":

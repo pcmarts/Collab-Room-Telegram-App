@@ -37,6 +37,7 @@ interface PodcastCardProps {
 
 export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
   console.log("PodcastCard received data:", data);
+  console.log("PodcastCard details:", typeof data.details, data.details);
   
   const details = data.details || {};
   
