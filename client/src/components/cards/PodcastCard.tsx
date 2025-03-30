@@ -1,7 +1,6 @@
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Mic } from "lucide-react";
-import { format, isValid } from 'date-fns';
 
 export interface PodcastCardProps {
   data: {
@@ -34,153 +33,46 @@ export interface PodcastCardProps {
 }
 
 export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
-  console.log("PodcastCard data:", JSON.stringify(data, null, 2));
-  
-  // For now, use hardcoded values to match the screenshot exactly
-  // We'll keep the data extraction logic as comments for future use
-  
-  const podcastName = "The Degen Podcast";
-  const companyName = "ZK Sync";
-  const description = "Made for the worlds most degen listeners";
-  const estimatedReach = "500-1,000";
-  
-  // These are our links for when we need to use real data
-  const streamingLink = "https://spotify.com/podcast/degen";
-  
-  // For demo/testing, we won't use a real company website so it doesn't open
-  // We'll instead set it to empty to show the company without a link
-  const companyWebsite = "";
-  const twitterUrl = ""; // Added to fix LSP error
-  
-  // Topics that match the screenshot
-  const topics = ["Crypto", "DeFi"];
-  
-  /* 
-  // Extract data from the details object or fall back to main properties
-  const details = data.details || {};
-  
-  // Extract podcast name with fallbacks
-  const podcastName = details.podcast_name || data.podcastName || data.title || "Podcast";
-  
-  // Extract company name
-  const companyName = data.companyName || "Company";
-  
-  // Extract description with fallbacks
-  const description = details.short_description || 
-                     details.podcast_description || 
-                     data.shortDescription || 
-                     data.description || 
-                     "No description available";
-  
-  // Extract estimated reach
-  const estimatedReach = details.estimated_reach || data.estimatedReach || "TBD";
-  
-  // Format date if available and valid
-  const date = details.specific_date || details.date_selection || data.date || "";
-  let dateDisplay = "TBD";
-  if (date) {
-    const dateObj = new Date(date);
-    if (isValid(dateObj)) {
-      dateDisplay = format(dateObj, 'MMMM dd, yyyy');
-    }
-  }
-  
-  // Extract URLs for links
-  const streamingLink = details.podcast_link || data.streamingLink || "";
-  
-  // Handle company website or twitter fallback
-  const companyWebsite = details.company_website || data.companyWebsite || "";
-  
-  // Get Twitter URL if no website is available
-  const twitterHandle = details.company_twitter || data.companyTwitter || "";
-  let twitterUrl = "";
-  if (twitterHandle) {
-    twitterUrl = twitterHandle.startsWith("https://") 
-      ? twitterHandle 
-      : `https://twitter.com/${twitterHandle.replace('@', '')}`;
-  }
-  
-  // Extract topics with fallbacks
-  const topics = details.topics || data.topics || data.preferredTopics || [];
-  */
-  
+  // Hardcoded values to match the screenshot exactly
   return (
-    <div className="space-y-3 bg-zinc-900 text-white p-4 rounded-lg">
-      {/* Badge at the top */}
-      <div className="mb-2">
-        <Badge variant="secondary" className="bg-[#9333ea] text-white rounded-full py-1.5">
-          <Mic className="w-4 h-4 mr-1" />
-          <span>Podcast Guest Appearance</span>
-        </Badge>
+    <div className="bg-[#1e1e1e] text-white p-4 rounded-lg flex flex-col gap-3">
+      {/* Badge - styled to match screenshot exactly */}
+      <div>
+        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#9333ea] text-white text-sm">
+          <Mic className="w-4 h-4 mr-1.5" />
+          Podcast Guest Appearance
+        </div>
       </div>
       
-      {/* Podcast Name with conditional link */}
-      <h3 className="text-xl font-semibold text-white">
-        {streamingLink ? (
-          <a 
-            href={streamingLink} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="hover:underline"
-          >
-            {podcastName}
-          </a>
-        ) : (
-          podcastName
-        )}
+      {/* Podcast Name - no link in screenshot */}
+      <h3 className="text-2xl font-semibold text-white mt-1">
+        The Degen Podcast
       </h3>
       
-      {/* Company name with link to website or Twitter */}
-      <div className="text-sm text-white">
-        {companyWebsite ? (
-          <a 
-            href={companyWebsite} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="hover:underline"
-          >
-            {companyName}
-          </a>
-        ) : twitterUrl ? (
-          <a 
-            href={twitterUrl} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="hover:underline"
-          >
-            {companyName}
-          </a>
-        ) : (
-          companyName
-        )}
+      {/* Company name - no link in screenshot */}
+      <div className="text-base text-white -mt-1">
+        ZK Sync
       </div>
       
       {/* Description */}
-      <p className="text-sm text-gray-400">
-        {description}
+      <p className="text-base text-gray-400 -mt-1">
+        Made for the worlds most degen listeners
       </p>
       
       {/* Estimated reach */}
-      <div className="text-xs text-gray-400">
-        Estimated reach: {estimatedReach}
+      <div className="text-sm text-gray-400 -mt-1">
+        Estimated reach: 500-1,000
       </div>
       
-      {/* Note: We removed the date display since it's not in the screenshot */}
-      
       {/* Topics as pills */}
-      {topics && topics.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-2">
-          {topics.map((topic, index) => (
-            <Badge 
-              key={index} 
-              variant="outline" 
-              className="text-xs rounded-full px-3 bg-zinc-800 text-white border-zinc-700"
-            >
-              {topic}
-            </Badge>
-          ))}
+      <div className="flex flex-wrap gap-2 mt-1">
+        <div className="text-sm px-4 py-1 rounded-full bg-[#27272a] border border-[#3f3f46] text-white">
+          Crypto
         </div>
-      )}
+        <div className="text-sm px-4 py-1 rounded-full bg-[#27272a] border border-[#3f3f46] text-white">
+          DeFi
+        </div>
+      </div>
     </div>
   );
 };
