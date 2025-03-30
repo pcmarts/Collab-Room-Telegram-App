@@ -1002,8 +1002,9 @@ export default function DiscoverPage() {
     // Try to extract company name from details
     try {
       if (card.details && typeof card.details === 'object') {
-        return card.details.company_name || 
-               card.details.companyName || 
+        const details = card.details as Record<string, any>;
+        return details.company_name || 
+               details.companyName || 
                "Company";
       }
     } catch (e) {
@@ -1234,9 +1235,9 @@ export default function DiscoverPage() {
             {/* Background Card (Next in Stack) */}
             {currentIndex < cards.length - 1 && (
               <div className="absolute inset-0 transform scale-[0.95] opacity-50">
-                <Card className="w-full h-full p-5 select-none">
+                <div className="w-full h-full p-5 select-none rounded-lg border bg-card text-card-foreground shadow-sm">
                   {renderCard(cards[currentIndex + 1])}
-                </Card>
+                </div>
               </div>
             )}
 
@@ -1262,8 +1263,8 @@ export default function DiscoverPage() {
               }}
               whileTap={{ cursor: "grabbing" }}
             >
-              <Card 
-                className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing"
+              <div 
+                className="w-full h-full p-5 select-none cursor-grab active:cursor-grabbing rounded-lg border bg-card text-card-foreground shadow-sm"
               >
                 {renderCard(currentCard)}
 
@@ -1312,7 +1313,7 @@ export default function DiscoverPage() {
                     </Button>
                   </div>
                 </div>
-              </Card>
+              </div>
             </motion.div>
           </div>
         
@@ -1336,8 +1337,6 @@ export default function DiscoverPage() {
               description: currentCard.description || "",
               // Ensure collaborationType is always a string
               type: currentCard.collab_type || undefined,
-              // Remove potentially problematic properties
-              details: undefined, // We've already extracted what we need
               // Keep the rest of the properties
               id: currentCard.id,
               creator_id: currentCard.creator_id,
