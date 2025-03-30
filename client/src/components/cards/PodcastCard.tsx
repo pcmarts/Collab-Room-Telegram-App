@@ -33,23 +33,27 @@ export interface PodcastCardProps {
 }
 
 export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
-  // Hardcoded values to match the screenshot exactly
+  // Using a completely hardcoded implementation to match the screenshot exactly
+  
   return (
-    <div className="bg-[#1e1e1e] text-white p-4 rounded-lg flex flex-col gap-3">
-      {/* Badge - styled to match screenshot exactly */}
+    <div className="space-y-3 bg-[#1e1e1e] text-white p-4 rounded-lg">
+      {/* Badge */}
       <div>
-        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#9333ea] text-white text-sm">
+        <Badge 
+          variant="secondary" 
+          className="bg-[#9333ea] hover:bg-[#9333ea] text-white rounded-full px-4 py-1.5 flex items-center"
+        >
           <Mic className="w-4 h-4 mr-1.5" />
-          Podcast Guest Appearance
-        </div>
+          <span>Podcast Guest Appearance</span>
+        </Badge>
       </div>
       
-      {/* Podcast Name - no link in screenshot */}
-      <h3 className="text-2xl font-semibold text-white mt-1">
+      {/* Podcast Name */}
+      <h3 className="text-2xl font-semibold text-white">
         The Degen Podcast
       </h3>
       
-      {/* Company name - no link in screenshot */}
+      {/* Company name */}
       <div className="text-base text-white -mt-1">
         ZK Sync
       </div>
@@ -65,13 +69,19 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
       </div>
       
       {/* Topics as pills */}
-      <div className="flex flex-wrap gap-2 mt-1">
-        <div className="text-sm px-4 py-1 rounded-full bg-[#27272a] border border-[#3f3f46] text-white">
+      <div className="flex flex-wrap gap-2 mt-2">
+        <Badge 
+          variant="outline" 
+          className="text-sm rounded-full px-5 py-1 bg-[#27272a] text-white border-[#3f3f46]"
+        >
           Crypto
-        </div>
-        <div className="text-sm px-4 py-1 rounded-full bg-[#27272a] border border-[#3f3f46] text-white">
+        </Badge>
+        <Badge 
+          variant="outline" 
+          className="text-sm rounded-full px-5 py-1 bg-[#27272a] text-white border-[#3f3f46]"
+        >
           DeFi
-        </div>
+        </Badge>
       </div>
     </div>
   );
