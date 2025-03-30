@@ -1,7 +1,7 @@
 import React from 'react';
 import { BookOpen, Calendar, Megaphone } from "lucide-react";
 import { FiExternalLink } from "react-icons/fi";
-import { BaseCollabCard } from './BaseCollabCard';
+import { Badge } from "@/components/ui/badge";
 
 interface NewsletterCardData {
   id?: string;
@@ -10,6 +10,7 @@ interface NewsletterCardData {
   totalSubscribers?: string;
   newsletterUrl?: string;
   date?: string;
+  role?: string;
   description?: string;
   topics?: string[];
   preferredTopics?: string[];
@@ -52,14 +53,72 @@ export const NewsletterCard: React.FC<NewsletterCardProps> = ({ data }) => {
   // Determine description with fallbacks
   const description = details.short_description || data.description || "";
   
+  // Rendering helper for topics
+  const renderTopics = () => {
+    // First check for topics in main data
+    if (data.topics && data.topics.length > 0) {
+      return (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {data.topics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      );
+    }
+    
+    // Then check for preferredTopics (legacy support)
+    if (data.preferredTopics && data.preferredTopics.length > 0) {
+      return (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {data.preferredTopics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      );
+    }
+    
+    // Finally check for topics in details object
+    if (details.topics && details.topics.length > 0) {
+      return (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {details.topics.map((topic: string, i: number) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      );
+    }
+    
+    return null;
+  };
+  
   return (
-    <BaseCollabCard
-      data={data}
-      badgeIcon={<BookOpen className="w-3 h-3 mr-1" />}
-      badgeText="Newsletter"
-      badgeClass="bg-emerald-500/10"
-      title={title}
-    >
+    <div className="space-y-2">
+      <Badge variant="outline" className="bg-emerald-500/10">
+        <BookOpen className="w-3 h-3 mr-1" />
+        <span>Newsletter</span>
+      </Badge>
+      
+      <h3 className="text-lg font-semibold leading-snug">
+        {title}
+      </h3>
+      
+      <div className="space-y-0.5">
+        <p className="text-sm">{data.companyName}</p>
+        {data.role && (
+          <p className="text-xs text-muted-foreground">
+            {data.role}
+          </p>
+        )}
+      </div>
+      
+      {renderTopics()}
+      
       <div className="flex flex-col space-y-1 text-xs">
         <div className="flex items-center space-x-2 text-muted-foreground">
           <Megaphone className="w-3 h-3" />
@@ -91,6 +150,6 @@ export const NewsletterCard: React.FC<NewsletterCardProps> = ({ data }) => {
           </p>
         )}
       </div>
-    </BaseCollabCard>
+    </div>
   );
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileText, Calendar, Megaphone } from "lucide-react";
-import { BaseCollabCard } from './BaseCollabCard';
+import { Badge } from "@/components/ui/badge";
 
 interface ResearchReportCardData {
   id?: string;
@@ -10,6 +10,7 @@ interface ResearchReportCardData {
   reportTargetReleaseDate?: string;
   reportReach?: string;
   date?: string;
+  role?: string;
   description?: string;
   topics?: string[];
   preferredTopics?: string[];
@@ -19,6 +20,8 @@ interface ResearchReportCardData {
     target_release_date?: string;
     estimated_reach?: string;
     short_description?: string;
+    specific_date?: string;
+    date_selection?: string;
     topics?: string[];
     [key: string]: any;
   };
@@ -46,17 +49,110 @@ export const ResearchReportCard: React.FC<ResearchReportCardProps> = ({ data }) 
   // Determine description with fallbacks
   const description = details.short_description || data.description || "";
   
+  // Rendering helper for topics
+  const renderTopics = () => {
+    // First check for topics in main data
+    if (data.topics && data.topics.length > 0) {
+      return (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {data.topics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      );
+    }
+    
+    // Then check for preferredTopics (legacy support)
+    if (data.preferredTopics && data.preferredTopics.length > 0) {
+      return (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {data.preferredTopics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      );
+    }
+    
+    // Finally check for topics in details object
+    if (details.topics && details.topics.length > 0) {
+      return (
+        <div className="flex flex-wrap gap-1 mb-1">
+          {details.topics.map((topic: string, i: number) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
+  // Rendering helper for date
+  const renderDate = () => {
+    // First check primary date
+    if (data.date) {
+      return (
+        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+          <Calendar className="w-3 h-3" />
+          <span>{data.date}</span>
+        </div>
+      );
+    }
+    
+    // Then try to extract from details
+    if (details) {
+      const dateText = details.specific_date 
+        ? details.specific_date 
+        : details.date_selection === "specific_date" 
+          ? "Date TBD" 
+          : "Flexible date";
+      
+      return (
+        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+          <Calendar className="w-3 h-3" />
+          <span>{dateText}</span>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+  
   return (
-    <BaseCollabCard
-      data={data}
-      badgeIcon={<FileText className="w-3 h-3 mr-1" />}
-      badgeText="Research Report"
-      badgeClass="bg-violet-500/10"
-      title={title}
-    >
-      <div className="flex flex-col space-y-1 text-xs text-muted-foreground">
-        {topic && <p>{topic}</p>}
-        
+    <div className="space-y-2">
+      <Badge variant="outline" className="bg-violet-500/10">
+        <FileText className="w-3 h-3 mr-1" />
+        <span>Research Report</span>
+      </Badge>
+      
+      <h3 className="text-lg font-semibold leading-snug">
+        {title}
+      </h3>
+      
+      <div className="space-y-0.5">
+        <p className="text-sm">{data.companyName}</p>
+        {data.role && (
+          <p className="text-xs text-muted-foreground">
+            {data.role}
+          </p>
+        )}
+        {topic && (
+          <p className="text-xs text-muted-foreground">
+            {topic}
+          </p>
+        )}
+      </div>
+      
+      {renderTopics()}
+      {renderDate()}
+      
+      <div className="flex flex-col space-y-1 text-xs text-muted-foreground">        
         <div className="flex items-center space-x-2">
           <Calendar className="w-3 h-3" />
           <span>{releaseDate}</span>
@@ -73,6 +169,6 @@ export const ResearchReportCard: React.FC<ResearchReportCardProps> = ({ data }) 
           </p>
         )}
       </div>
-    </BaseCollabCard>
+    </div>
   );
 };

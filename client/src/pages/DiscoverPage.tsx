@@ -1337,10 +1337,7 @@ export default function DiscoverPage() {
               description: currentCard.description || "",
               // Ensure collaborationType is always a string
               type: currentCard.collab_type || undefined,
-              // Keep the rest of the properties
-              id: currentCard.id,
-              creator_id: currentCard.creator_id,
-              status: currentCard.status || "active",
+              // Only pass properties that are defined in the CollaborationDialog interface
               topics: currentCard.topics || []
             }}
           />

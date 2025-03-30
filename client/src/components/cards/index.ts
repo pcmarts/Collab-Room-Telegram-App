@@ -5,4 +5,3 @@ export * from './ResearchReportCard';
 export * from './NewsletterCard';
 export * from './BlogPostCollabCard';
 export * from './MarketingCard';
-export * from './BaseCollabCard';
