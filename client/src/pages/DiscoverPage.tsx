@@ -25,6 +25,7 @@ import { Collaboration } from "@shared/schema";
 
 import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
+import { PodcastCard as ImportedPodcastCard } from "@/components/cards/PodcastCard";
 
 // Blog Post Collaboration Card (Replacing Conference Coffee Card)
 const BlogPostCollabCard = ({ data }) => {
@@ -1234,7 +1235,7 @@ export default function DiscoverPage() {
     let cardContent;
     switch (card.collab_type?.toLowerCase()) {
       case "podcast":
-        cardContent = <PodcastCard data={cardData} />;
+        cardContent = <ImportedPodcastCard data={cardData} />;
         break;
       case "twitter-spaces":
       case "twitter spaces":
