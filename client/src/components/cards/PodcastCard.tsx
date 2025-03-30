@@ -16,6 +16,7 @@ export interface PodcastCardProps {
       date_selection?: string;
       topics?: string[];
       company_twitter?: string;
+      company_website?: string;
     };
     podcastName?: string;
     shortDescription?: string;
@@ -26,6 +27,7 @@ export interface PodcastCardProps {
     topics?: string[];
     preferredTopics?: string[];
     companyTwitter?: string;
+    companyWebsite?: string;
     title?: string; // Added for compatibility
   };
 }
@@ -64,8 +66,16 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
   const twitterHandle = details.company_twitter || data.companyTwitter || "";
   const twitterLink = getTwitterUrl(twitterHandle);
   
-  // Determine date with fallbacks
-  const dateDisplay = details.specific_date || data.date || "";
+  // Determine company website link
+  const companyWebsite = details.company_website || data.companyWebsite || "";
+  
+  // Determine date with fallbacks and format it
+  const date = details.specific_date || details.date_selection || data.date || "";
+  const dateDisplay = date ? new Date(date).toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  }) : "";
   
   // Determine topics
   const topics = data.topics || 
@@ -82,6 +92,7 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
     streamingLink,
     twitterHandle,
     twitterLink,
+    companyWebsite,
     dateDisplay,
     topics,
     fullData: data // Log the entire data object for debugging
@@ -113,9 +124,18 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
         )}
       </h3>
       
-      {/* Company name with Twitter link */}
+      {/* Company name with website or Twitter link */}
       <div className="text-sm text-white">
-        {twitterLink ? (
+        {companyWebsite ? (
+          <a 
+            href={companyWebsite} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="hover:underline"
+          >
+            {data.companyName}
+          </a>
+        ) : twitterLink ? (
           <a 
             href={twitterLink} 
             target="_blank" 
