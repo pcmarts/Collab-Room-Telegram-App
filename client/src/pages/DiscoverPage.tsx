@@ -1157,6 +1157,9 @@ export default function DiscoverPage() {
   }
 
   const renderCard = (card: any) => {
+    // Add debug logging for cards to understand the structure
+    console.log("Rendering card:", card);
+    
     // Handle the case where card might be null (at the end of the deck)
     if (!card) {
       return (

@@ -35,6 +35,8 @@ interface PodcastCardProps {
 }
 
 export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
+  console.log("PodcastCard received data:", data);
+  
   const details = data.details || {};
   
   // Determine podcast name with fallbacks
@@ -65,15 +67,9 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
                 data.preferredTopics || 
                 [];
   
-  // Create a custom empty company data object to prevent BaseCollabCard from rendering the company name
-  const modifiedData = {
-    ...data,
-    companyName: "" // Empty string to prevent BaseCollabCard from displaying company name
-  };
-  
   return (
-    <div className="space-y-2">
-      {/* Badge */}
+    <div className="space-y-3">
+      {/* Badge at the top */}
       <Badge variant="outline" className="bg-primary/10">
         <Mic className="w-3 h-3 mr-1" />
         <span className="ml-1">Podcast Guest Appearance</span>
@@ -95,16 +91,17 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
         )}
       </h3>
       
-      {/* Short description */}
+      {/* Short description directly below title */}
       {description && (
-        <p className="text-xs text-muted-foreground line-clamp-2">
+        <p className="text-sm text-muted-foreground line-clamp-2">
           {description}
         </p>
       )}
       
-      <div className="flex flex-col space-y-2 text-xs">
+      {/* Company and metadata section */}
+      <div className="flex flex-col gap-2 mt-2">
         {/* Company name with Twitter link */}
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center text-sm">
           {twitterLink ? (
             <a 
               href={twitterLink.startsWith('https://') ? twitterLink : `https://twitter.com/${twitterLink.replace('@', '')}`}
@@ -120,15 +117,15 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
         </div>
         
         {/* Estimated reach */}
-        <div className="flex items-center space-x-2">
-          <Megaphone className="w-3 h-3" />
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Megaphone className="w-3 h-3 flex-shrink-0" />
           <span>Est. Reach: {estimatedReach}</span>
         </div>
         
         {/* Date if available */}
         {dateDisplay && (
-          <div className="flex items-center space-x-2">
-            <Calendar className="w-3 h-3" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Calendar className="w-3 h-3 flex-shrink-0" />
             <span>{dateDisplay}</span>
           </div>
         )}
