@@ -97,30 +97,67 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
         </Badge>
       </div>
       
-      {/* Title - Podcast Name - hardcoded for screenshot match */}
+      {/* Title - Podcast Name with streaming link */}
       <h3 className="text-xl font-semibold text-white">
-        The Degen Podcast
+        {streamingLink ? (
+          <a 
+            href={streamingLink} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="hover:underline"
+          >
+            {podcastName || "Podcast Name"}
+          </a>
+        ) : (
+          podcastName || "Podcast Name"
+        )}
       </h3>
       
-      {/* Company name - hardcoded for screenshot match */}
-      <div className="text-sm text-white">ZK Sync</div>
+      {/* Company name with Twitter link */}
+      <div className="text-sm text-white">
+        {twitterLink ? (
+          <a 
+            href={twitterLink} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="hover:underline"
+          >
+            {data.companyName}
+          </a>
+        ) : (
+          data.companyName
+        )}
+      </div>
       
-      {/* Short description - hardcoded for screenshot match */}
+      {/* Short description */}
       <p className="text-sm text-gray-400">
-        Made for the worlds most degen listeners
+        {description || "No description available"}
       </p>
       
-      {/* Hiding estimated reach and date for screenshot match */}
+      {/* Estimated reach */}
+      {estimatedReach && (
+        <div className="text-xs text-gray-400">
+          Estimated reach: {estimatedReach}
+        </div>
+      )}
       
-      {/* Topics as pills - hardcoded for screenshot match */}
-      <div className="flex flex-wrap gap-1 mt-2">
-        <Badge variant="outline" className="text-xs rounded-full px-3 bg-zinc-800 text-white border-zinc-700">
-          Crypto
-        </Badge>
-        <Badge variant="outline" className="text-xs rounded-full px-3 bg-zinc-800 text-white border-zinc-700">
-          DeFi
-        </Badge>
-      </div>
+      {/* Date */}
+      {dateDisplay && (
+        <div className="text-xs text-gray-400">
+          Date: {dateDisplay}
+        </div>
+      )}
+      
+      {/* Topics as pills */}
+      {topics && topics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {topics.map((topic, i) => (
+            <Badge key={i} variant="outline" className="text-xs rounded-full px-3 bg-zinc-800 text-white border-zinc-700">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
