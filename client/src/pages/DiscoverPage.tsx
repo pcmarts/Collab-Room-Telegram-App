@@ -1059,11 +1059,17 @@ export default function DiscoverPage() {
   const getCompanyName = (card: Collaboration): string => {
     if (!card) return "";
     
-    // Try to extract company name from details
+    // First check if we have a company_name field directly on the card (from joined query)
+    if ((card as any).company_name) {
+      return (card as any).company_name;
+    }
+    
+    // Then try to extract company name from details
     try {
       if (card.details && typeof card.details === 'object') {
-        return card.details.company_name || 
-               card.details.companyName || 
+        const details = card.details as any;
+        return details.company_name || 
+               details.companyName || 
                "Company";
       }
     } catch (e) {
@@ -1071,6 +1077,31 @@ export default function DiscoverPage() {
     }
     
     return "Company";
+  };
+  
+  // Helper function to get company Twitter handle
+  const getCompanyTwitter = (card: Collaboration): string | undefined => {
+    if (!card) return undefined;
+    
+    // First check if we have a twitter_handle field directly on the card (from joined query)
+    if ((card as any).twitter_handle) {
+      return (card as any).twitter_handle;
+    }
+    
+    // Then try to extract Twitter handle from details
+    try {
+      if (card.details && typeof card.details === 'object') {
+        const details = card.details as any;
+        return details.company_twitter || 
+               details.twitter_handle || 
+               details.companyTwitter ||
+               undefined;
+      }
+    } catch (e) {
+      console.error("Error parsing company Twitter from details:", e);
+    }
+    
+    return undefined;
   };
   
   // Helper function to get collaboration type from card for display
@@ -1222,6 +1253,7 @@ export default function DiscoverPage() {
       ...card,
       details,
       companyName: getCompanyName(card),
+      companyTwitter: getCompanyTwitter(card), // Use the helper function to get Twitter handle
       title: card.title || 
              (details as any)?.title || 
              (details as any)?.podcast_name || 
@@ -1238,6 +1270,7 @@ export default function DiscoverPage() {
     let cardContent;
     switch (card.collab_type?.toLowerCase()) {
       case "podcast":
+      case "podcast guest appearance":
         cardContent = <PodcastCard data={cardData} />;
         break;
       case "twitter-spaces":
@@ -1399,9 +1432,9 @@ export default function DiscoverPage() {
               description: currentCard.description || "",
               // Ensure collaborationType is always a string
               type: currentCard.collab_type || undefined,
-              // Remove potentially problematic properties
-              details: undefined, // We've already extracted what we need
-              // Keep the rest of the properties
+              // Company twitter handle
+              companyTwitter: getCompanyTwitter(currentCard),
+              // Keep other essential properties
               id: currentCard.id,
               creator_id: currentCard.creator_id,
               status: currentCard.status || "active",
