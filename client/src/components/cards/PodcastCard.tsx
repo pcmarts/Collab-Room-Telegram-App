@@ -83,7 +83,6 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
       <div className="flex flex-col space-y-2 text-xs">
         {/* Company name with Twitter link */}
         <div className="flex items-center space-x-1">
-          <span>Company:</span>
           {twitterLink ? (
             <a 
               href={twitterLink.startsWith('https://') ? twitterLink : `https://twitter.com/${twitterLink.replace('@', '')}`}
