@@ -115,6 +115,30 @@ export async function apiRequest(
 }
 ```
 
+### IMPORTANT: Using apiRequest Return Values Correctly
+
+When using the `apiRequest` function, remember:
+
+1. It returns an already parsed JSON object, not a Response object
+2. Never check `response.ok` on the returned value; error checking is already handled internally
+3. Never call `response.json()` on the returned value; JSON parsing is already done
+
+**Wrong:**
+```tsx
+const response = await apiRequest('/api/endpoint', 'POST', data);
+if (!response.ok) { // ERROR: response is not a Response object
+  const error = await response.json(); // ERROR: response.json is not available
+  throw new Error(error.message);
+}
+```
+
+**Correct:**
+```tsx
+const responseData = await apiRequest('/api/endpoint', 'POST', data);
+// Use responseData directly - it's already parsed JSON
+console.log(responseData.success);
+```
+
 ## Benefits of Simplified Notification Settings
 
 1. **Improved User Experience**: Simplifies the notification settings to a single on/off toggle

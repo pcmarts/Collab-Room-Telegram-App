@@ -5,6 +5,17 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.4.6] - 2025-03-31
+
+### Fixed
+- Fixed "response.json is not a function" error when updating company information
+- Resolved issue with company profile form handling API responses incorrectly
+
+### Technical Details
+- Removed redundant response.ok check and response.json() call in company-info.tsx
+- Modified error handling in company profile form to respect the API request function's behavior
+- Added comments explaining that apiRequest already handles error checking and JSON parsing
+
 ## [Version 1.4.5] - 2025-03-31
 
 ### Changed

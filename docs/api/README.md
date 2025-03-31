@@ -25,7 +25,12 @@ const submitData = {
 };
 
 // The apiRequest function automatically handles authentication headers
+// and processes the response (error checking and JSON parsing)
 const response = await apiRequest("/api/endpoint", "POST", submitData);
+
+// IMPORTANT: The response is already a parsed JSON object, not a Response object
+// Do NOT check response.ok or call response.json() again
+console.log(response.some_property); // Use the returned data directly
 ```
 
 ## API Endpoints
