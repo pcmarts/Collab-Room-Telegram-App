@@ -396,10 +396,28 @@ export class DatabaseStorage implements IStorage {
           .where(eq(companies.user_id, collab.creator_id));
         
         if (company) {
-          // Add creator company name to the collaboration object
+          // Add all company data to the collaboration object
+          console.log(`Found company data for collaboration ${collab.id}:`, company);
           return {
             ...collab,
-            creator_company_name: company.name
+            creator_company_name: company.name,
+            // Add all company information
+            company_data: {
+              id: company.id,
+              name: company.name,
+              short_description: company.short_description,
+              long_description: company.long_description,
+              website: company.website,
+              job_title: company.job_title,
+              twitter_handle: company.twitter_handle,
+              twitter_followers: company.twitter_followers,
+              linkedin_url: company.linkedin_url,
+              funding_stage: company.funding_stage,
+              has_token: company.has_token,
+              token_ticker: company.token_ticker,
+              blockchain_networks: company.blockchain_networks,
+              tags: company.tags
+            }
           };
         }
         

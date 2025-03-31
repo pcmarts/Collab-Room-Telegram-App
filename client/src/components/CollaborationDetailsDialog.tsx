@@ -16,6 +16,24 @@ import { Separator } from "@/components/ui/separator";
 import { FiExternalLink } from "react-icons/fi";
 import { FaTwitter } from "react-icons/fa";
 
+// Define company data type
+type CompanyData = {
+  id?: string;
+  name?: string;
+  short_description?: string;
+  long_description?: string;
+  website?: string;
+  job_title?: string;
+  twitter_handle?: string;
+  twitter_followers?: string;
+  linkedin_url?: string;
+  funding_stage?: string;
+  has_token?: boolean;
+  token_ticker?: string;
+  blockchain_networks?: string[];
+  tags?: string[];
+};
+
 interface CollaborationDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,7 +46,7 @@ interface CollaborationDetailsDialogProps {
     date?: string;
     topics?: string[];
     
-    // Company Info
+    // Company Info from legacy fields
     companyName?: string;
     roleTitle?: string;
     companyWebsite?: string;
@@ -40,6 +58,9 @@ interface CollaborationDetailsDialogProps {
     blockchainNetworks?: string[];
     tokenTicker?: string;
     hasToken?: boolean;
+    
+    // Complete company data from database
+    company_data?: CompanyData;
     
     // Details object (JSON from database)
     details?: Record<string, any>;
@@ -58,6 +79,9 @@ export function CollaborationDetailsDialog({
   // Get collaboration type from either field
   const collabType = collaboration.collab_type || collaboration.type || "";
   const details = collaboration.details || {};
+  
+  // Get company data with proper typing and force cast to CompanyData
+  const companyData = (collaboration.company_data || {}) as CompanyData;
   
   // Get title based on collaboration type
   const getDialogTitle = () => {
@@ -276,11 +300,12 @@ export function CollaborationDetailsDialog({
               <div className="flex items-center gap-2 mb-3">
                 <Building className="h-5 w-5 text-primary" />
                 <span className="text-base font-medium">
-                  {/* Prioritize company name from details (which comes from company table) */}
-                  {details.company_name || details.companyName || collaboration.companyName || "Company"}
+                  {/* Prioritize company name from company_data (which comes directly from company table) */}
+                  {companyData.name || details.company_name || details.companyName || collaboration.companyName || "Company"}
                 </span>
                 {/* Special handling for Polygon */}
                 {(collaboration.id === "4c95f244-d5c1-4369-9531-834401fdce12" || 
+                  companyData.name === "Polygon" ||
                   details.company_name === "Polygon" || 
                   collaboration.companyName === "Polygon") && (
                   <Badge variant="outline" className="ml-2 text-xs bg-purple-500/10">Polygon</Badge>
@@ -288,11 +313,11 @@ export function CollaborationDetailsDialog({
               </div>
               
               {/* Role Information - Always show if any data exists */}
-              {(details.job_title || details.role || collaboration.roleTitle) && (
+              {(companyData.job_title || details.job_title || details.role || collaboration.roleTitle) && (
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    {details.job_title || details.role || collaboration.roleTitle || "Team Member"}
+                    {companyData.job_title || details.job_title || details.role || collaboration.roleTitle || "Team Member"}
                   </span>
                 </div>
               )}
@@ -300,11 +325,11 @@ export function CollaborationDetailsDialog({
               {/* Important Links Section - Always show this section */}
               <div className="flex flex-wrap gap-3 mb-3">
                 {/* Company Website */}
-                {(details.website || details.company_website || collaboration.companyWebsite) && (
+                {(companyData.website || details.website || details.company_website || collaboration.companyWebsite) && (
                   <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                     <Globe className="h-4 w-4 text-primary" />
                     <a
-                      href={details.website || details.company_website || collaboration.companyWebsite}
+                      href={companyData.website || details.website || details.company_website || collaboration.companyWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:underline flex items-center font-medium"
@@ -316,11 +341,11 @@ export function CollaborationDetailsDialog({
                 )}
                 
                 {/* LinkedIn */}
-                {(details.linkedin_url || collaboration.companyLinkedIn) && (
+                {(companyData.linkedin_url || details.linkedin_url || collaboration.companyLinkedIn) && (
                   <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                     <Linkedin className="h-4 w-4 text-primary" />
                     <a
-                      href={`https://linkedin.com/company/${details.linkedin_url || collaboration.companyLinkedIn || ''}`}
+                      href={`https://linkedin.com/company/${companyData.linkedin_url || details.linkedin_url || collaboration.companyLinkedIn || ''}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:underline font-medium"
@@ -331,21 +356,21 @@ export function CollaborationDetailsDialog({
                 )}
                 
                 {/* Twitter */}
-                {(details.twitter_handle || collaboration.companyTwitter) && (
+                {(companyData.twitter_handle || details.twitter_handle || collaboration.companyTwitter) && (
                   <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                     <FaTwitter className="h-4 w-4 text-primary" />
                     <a
-                      href={`https://twitter.com/${(details.twitter_handle || collaboration.companyTwitter || '').replace('@', '')}`}
+                      href={`https://twitter.com/${(companyData.twitter_handle || details.twitter_handle || collaboration.companyTwitter || '').replace('@', '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:underline font-medium"
                     >
-                      @{(details.twitter_handle || collaboration.companyTwitter || '').replace('@', '')}
+                      @{(companyData.twitter_handle || details.twitter_handle || collaboration.companyTwitter || '').replace('@', '')}
                     </a>
-                    {(details.twitter_followers || collaboration.twitterFollowers) && (
+                    {(companyData.twitter_followers || details.twitter_followers || collaboration.twitterFollowers) && (
                       <span className="text-sm text-muted-foreground flex items-center ml-1">
                         <Users className="h-3 w-3 mr-1" />
-                        {details.twitter_followers || collaboration.twitterFollowers}
+                        {companyData.twitter_followers || details.twitter_followers || collaboration.twitterFollowers}
                       </span>
                     )}
                   </div>
@@ -359,56 +384,63 @@ export function CollaborationDetailsDialog({
                 <div className="text-sm">
                   <h5 className="font-medium mb-1">Company Description</h5>
                   <p className="text-muted-foreground">
-                    {details.short_description || details.short_company_description || 
+                    {companyData.short_description || details.short_description || details.short_company_description || 
                      details.shortDescription || collaboration.description || 
-                     `${details.company_name || collaboration.companyName || "Company"} is a blockchain technology company.`}
+                     `${companyData.name || details.company_name || collaboration.companyName || "Company"} is a blockchain technology company.`}
                   </p>
                 </div>
               </div>
               
               {/* Long Description - Only show if it exists */}
-              {(details.long_description || details.full_description || details.company_description) && (
+              {(companyData.long_description || details.long_description || details.full_description || details.company_description) && (
                 <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
                   <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <div className="text-sm">
                     <h5 className="font-medium mb-1">Full Company Profile</h5>
                     <p className="text-muted-foreground">
-                      {details.long_description || details.full_description || details.company_description}
+                      {companyData.long_description || details.long_description || details.full_description || details.company_description}
                     </p>
                   </div>
                 </div>
               )}
 
               {/* Company Details Section */}
-              {/* Sector Information */}
-              {(details.sector || details.company_sector || collaboration.companySector) && (
+              {/* Sector Information - Use tags from company_data if available */}
+              {(companyData.tags && companyData.tags.length > 0) ? (
                 <div className="flex items-center gap-2">
                   <Building className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    Sector: {details.sector || details.company_sector || collaboration.companySector}
+                    Sector: {companyData.tags[0] || ""}
                   </span>
                 </div>
+              ) : (
+                (details.sector || details.company_sector || collaboration.companySector) && (
+                  <div className="flex items-center gap-2">
+                    <Building className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      Sector: {details.sector || details.company_sector || collaboration.companySector}
+                    </span>
+                  </div>
+                )
               )}
               
               {/* Funding Stage - Always show for funding companies */}
               <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                 <Coins className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">
-                  Series Round: {details.funding_stage || details.series_round || 
+                  Series Round: {companyData.funding_stage || details.funding_stage || details.series_round || 
                   details.seriesRound || collaboration.fundingStage || "Not disclosed"}
                 </span>
               </div>
               
-              {/* Blockchain Networks */}
-              {(details.blockchain_networks || collaboration.blockchainNetworks) && 
-               (Array.isArray(details.blockchain_networks) || Array.isArray(collaboration.blockchainNetworks)) && 
-               ((details.blockchain_networks || []).length > 0 || (collaboration.blockchainNetworks || []).length > 0) ? (
+              {/* Blockchain Networks - Use company_data networks first */}
+              {(companyData.blockchain_networks && companyData.blockchain_networks.length > 0) ? (
                 <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
                   <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <div>
                     <span className="text-sm font-medium block mb-1">Blockchain Networks:</span>
                     <div className="flex flex-wrap gap-1">
-                      {(details.blockchain_networks || collaboration.blockchainNetworks || []).map((network, index) => (
+                      {companyData.blockchain_networks.map((network, index) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {network}
                         </Badge>
@@ -417,21 +449,42 @@ export function CollaborationDetailsDialog({
                   </div>
                 </div>
               ) : (
-                // If no blockchain networks specified, show a generic one for Web3 companies
-                <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
-                  <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                  <div>
-                    <span className="text-sm font-medium block">Blockchain Technology Company</span>
+                // Fall back to details or collaboration data
+                (details.blockchain_networks || collaboration.blockchainNetworks) && 
+                (Array.isArray(details.blockchain_networks) || Array.isArray(collaboration.blockchainNetworks)) && 
+                ((details.blockchain_networks || []).length > 0 || (collaboration.blockchainNetworks || []).length > 0) ? (
+                  <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
+                    <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <span className="text-sm font-medium block mb-1">Blockchain Networks:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {(details.blockchain_networks || collaboration.blockchainNetworks || []).map((network, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {network}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  // If no blockchain networks specified, show a generic one for Web3 companies
+                  <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
+                    <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <span className="text-sm font-medium block">Blockchain Technology Company</span>
+                    </div>
+                  </div>
+                )
               )}
               
-              {/* Token Information */}
-              {(details.has_token || details.token_ticker || collaboration.hasToken || collaboration.tokenTicker) && (
+              {/* Token Information - Use company_data has_token first */}
+              {(companyData.has_token || companyData.token_ticker || 
+                details.has_token || details.token_ticker || 
+                collaboration.hasToken || collaboration.tokenTicker) && (
                 <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                   <Coins className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium">
-                    Token: {details.token_ticker || collaboration.tokenTicker || "Yes"}
+                    Token: {companyData.token_ticker || details.token_ticker || collaboration.tokenTicker || "Yes"}
                   </span>
                 </div>
               )}
