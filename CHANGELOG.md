@@ -5,6 +5,22 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.4.4] - 2025-03-31
+
+### Changed
+- Enhanced type safety for all specialized card components with proper TypeScript type assertions
+- Improved type handling for JSON details objects in card components to provide better developer experience
+- Refined card detection system to better map collaboration types to appropriate specialized cards
+- Added fuzzy matching for collaboration types to handle variations in naming conventions
+
+### Technical Details
+- Added explicit TypeScript interfaces and type assertions for all card components
+- Implemented properly typed details objects for each specialized card (PodcastCard, TwitterSpacesCard, BlogPostCollabCard, etc.)
+- Enhanced the debug section with strict type handling and better error reporting
+- Fixed type errors by adding comprehensive type assertions throughout components
+- Improved maintainability of the codebase through consistent type handling
+- Created a robust system for mapping incoming collaboration types to the correct card components
+
 ## [Version 1.4.3] - 2025-03-31
 
 ### Changed

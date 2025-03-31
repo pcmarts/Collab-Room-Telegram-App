@@ -55,6 +55,51 @@ interface Collaboration {
 }
 ```
 
+## Type Safety and Interface Design
+
+Each card component implements strict TypeScript typing with proper interfaces for collaboration details:
+
+```typescript
+// Example for PodcastCard
+interface PodcastDetails {
+  podcast_name?: string;
+  podcast_episodes?: number;
+  podcast_duration?: string;
+  expected_audience_size?: string;
+  podcast_topic?: string;
+  podcast_url?: string;
+  podcast_host?: string;
+  podcast_image?: string;
+}
+
+interface PodcastCardProps {
+  collaboration: Collaboration & {
+    details: Record<string, any> & Partial<PodcastDetails>;
+  };
+  onSwipe?: (direction: 'left' | 'right', collaboration: Collaboration) => void;
+  isPotentialMatch?: boolean;
+  potentialMatchData?: PotentialMatch;
+  onViewDetails?: (collaboration: Collaboration) => void;
+  disabled?: boolean;
+}
+```
+
+Inside each component, we use proper type assertions to ensure type safety:
+
+```typescript
+const PodcastCard: React.FC<PodcastCardProps> = ({ collaboration, onSwipe, onViewDetails, disabled, isPotentialMatch, potentialMatchData }) => {
+  // Safely cast details to the expected type with proper fallbacks
+  const details = collaboration.details as Record<string, any> & Partial<PodcastDetails>;
+  
+  // Type-safe access with default values
+  const podcastName = details.podcast_name || "Unnamed Podcast";
+  const episodes = details.podcast_episodes || "TBD";
+  const duration = details.podcast_duration || "20-40";
+  
+  // ...rest of component
+}
+```
+
 ## Component Structure
 
 Each specialized card component follows this general structure:
@@ -78,7 +123,21 @@ Each specialized card component follows this general structure:
       {collaboration.details.short_description}
     </p>
     
-    {/* Type-specific content here */}
+    {/* Type-specific content with proper type assertions */}
+    {details.podcast_name && (
+      <div className="mt-2 flex items-center gap-2">
+        <Headphones className="h-4 w-4 text-primary" />
+        <a 
+          href={formatExternalUrl(details.podcast_url)} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-sm font-medium hover:underline flex items-center"
+        >
+          {details.podcast_name}
+          <FiExternalLink className="ml-1 h-3 w-3" />
+        </a>
+      </div>
+    )}
   </div>
   
   {/* Card Footer */}
@@ -223,39 +282,87 @@ const query = db
 
 ## Usage in the Discovery Page
 
-The Discovery page in `client/src/pages/DiscoverPage.tsx` renders the appropriate card component based on the collaboration type:
+The Discovery page in `client/src/pages/DiscoverPage.tsx` uses a sophisticated mapping and fuzzy matching system to render the appropriate card component based on the collaboration type:
 
 ```jsx
-function renderCard(collaboration: Collaboration) {
-  const { type } = collaboration;
+// Define a mapping between database collaboration types and card components
+const CARD_TYPE_MAPPING: Record<string, React.FC<{ data: CardData }>> = {
+  // Podcast variations
+  "podcast": PodcastCard,
+  "podcast guest appearance": PodcastCard,
+  "podcast interview": PodcastCard,
+  "podcast feature": PodcastCard,
   
-  const commonProps = {
-    collaboration,
-    onSwipe: handleSwipe,
-    onViewDetails: handleViewDetails,
-    disabled: isLoading,
-  };
+  // Twitter Spaces variations
+  "twitter-spaces": TwitterSpacesCard,
+  "twitter spaces": TwitterSpacesCard, 
+  "twitter spaces guest": TwitterSpacesCard,
+  "twitter space": TwitterSpacesCard,
   
-  switch (type.toLowerCase()) {
-    case 'podcast':
-      return <PodcastCard {...commonProps} />;
-    case 'twitter spaces':
-      return <TwitterSpacesCard {...commonProps} />;
-    case 'live stream':
-      return <LiveStreamCard {...commonProps} />;
-    case 'blog post':
-      return <BlogPostCollabCard {...commonProps} />;
-    case 'research report':
-      return <ResearchReportCard {...commonProps} />;
-    case 'newsletter':
-      return <NewsletterCard {...commonProps} />;
-    case 'marketing':
-      return <MarketingCard {...commonProps} />;
-    default:
-      // Fallback for any new types that don't have specialized components yet
-      return <GenericCollabCard {...commonProps} />;
+  // Livestream variations
+  "livestream": LiveStreamCard,
+  "live stream": LiveStreamCard,
+  "video livestream": LiveStreamCard,
+  
+  // Research report variations
+  "research-report": ResearchReportCard,
+  "research report": ResearchReportCard,
+  "market report": ResearchReportCard,
+  
+  // Newsletter variations
+  "newsletter": NewsletterCard,
+  "email newsletter": NewsletterCard,
+  "newsletter feature": NewsletterCard,
+  
+  // Blog post variations
+  "blog-post": BlogPostCollabCard,
+  "blog post": BlogPostCollabCard,
+  "blog post feature": BlogPostCollabCard,
+  "guest blog": BlogPostCollabCard,
+};
+
+// Function to find the best card component using fuzzy matching
+const findBestCardComponent = (type: string): React.FC<{ data: CardData }> => {
+  // 1. Direct match (fastest path)
+  if (CARD_TYPE_MAPPING[type]) {
+    return CARD_TYPE_MAPPING[type];
   }
-}
+  
+  // 2. Try to find a partial match
+  const typeWords = type.split(/[\s-]+/).filter(word => word.length > 2);
+  
+  // Check for keyword matches in the collaboration type
+  if (typeWords.some(word => word === 'podcast')) {
+    return PodcastCard;
+  }
+  
+  if (typeWords.some(word => word === 'twitter' || word === 'spaces')) {
+    return TwitterSpacesCard;
+  }
+  
+  if (typeWords.some(word => word === 'livestream' || word === 'stream' || word === 'live')) {
+    return LiveStreamCard;
+  }
+  
+  if (typeWords.some(word => word === 'blog' || word === 'post')) {
+    return BlogPostCollabCard;
+  }
+  
+  if (typeWords.some(word => word === 'research' || word === 'report')) {
+    return ResearchReportCard;
+  }
+  
+  if (typeWords.some(word => word === 'newsletter' || word === 'email')) {
+    return NewsletterCard;
+  }
+  
+  // 3. If no matches are found, use the default card
+  return MarketingCard;
+};
+
+// In the renderCard function
+const CardComponent = findBestCardComponent(cardType);
+return <CardComponent data={cardData} />;
 ```
 
 ## Best Practices
@@ -277,6 +384,79 @@ function renderCard(collaboration: Collaboration) {
    - Test changes thoroughly in both the discovery feed and detail views
    - Document significant changes in CHANGELOG.md
 
+## Debugging Type Issues
+
+The card components include a debugging system that can help identify type mismatches and rendering issues. This is particularly useful during development:
+
+```jsx
+// Debugging section in DiscoverPage.tsx
+{process.env.NODE_ENV === 'development' && (
+  <div className="mt-8 p-4 border border-yellow-500 bg-yellow-50 rounded-md">
+    <h3 className="text-lg font-medium text-yellow-700">Debug Information</h3>
+    <div className="mt-2 text-sm text-yellow-600">
+      <p>Selected card type: <span className="font-mono">{cardType}</span></p>
+      <p>Detected component: <span className="font-mono">{CardComponent?.name || 'Unknown'}</span></p>
+      <p>Raw type from database: <span className="font-mono">{collaboration.type}</span></p>
+      
+      <div className="mt-2">
+        <p className="font-medium">Details object:</p>
+        <pre className="mt-1 p-2 bg-yellow-100 rounded overflow-x-auto">
+          {JSON.stringify(collaboration.details, null, 2)}
+        </pre>
+      </div>
+      
+      {/* Type-specific debugging */}
+      {CardComponent === PodcastCard && (
+        <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+          <p className="font-medium text-green-700">Podcast-specific fields:</p>
+          <ul className="list-disc pl-5 mt-1 text-green-600">
+            <li>podcast_name: {(collaboration.details as any).podcast_name || 'missing'}</li>
+            <li>podcast_episodes: {(collaboration.details as any).podcast_episodes || 'missing'}</li>
+            <li>podcast_duration: {(collaboration.details as any).podcast_duration || 'missing'}</li>
+          </ul>
+        </div>
+      )}
+      
+      {/* Similar sections for other card types */}
+    </div>
+  </div>
+)}
+```
+
+## Type Assertions vs Type Guards
+
+The card components use type assertions rather than type guards for performance reasons. This approach works well with our implementation but has some important considerations:
+
+### Type Assertions
+
+```typescript
+// Using a type assertion (cast)
+const details = collaboration.details as Record<string, any> & Partial<PodcastDetails>;
+```
+
+- **Pros**: Simple, minimal runtime overhead
+- **Cons**: No runtime validation, can lead to errors if the structure doesn't match
+
+### Type Guards (Alternative Approach)
+
+```typescript
+// Using a type guard function
+function isPodcastDetails(details: Record<string, any>): details is PodcastDetails {
+  return 'podcast_name' in details || 'podcast_episodes' in details;
+}
+
+// Usage
+const details = collaboration.details;
+if (isPodcastDetails(details)) {
+  // Use podcast-specific fields safely
+}
+```
+
+- **Pros**: Runtime validation, safer code
+- **Cons**: More complex, additional runtime overhead
+
+We chose type assertions for our implementation because our card mapping system already ensures that the correct card component is used for each collaboration type.
+
 ## Future Enhancements
 
 Planned improvements for the card system include:
@@ -285,3 +465,4 @@ Planned improvements for the card system include:
 2. **Enhanced Animation**: More sophisticated transition effects between cards
 3. **Card Templates**: Allow users to choose from multiple layout templates for each collaboration type
 4. **Accessibility Improvements**: Enhanced keyboard navigation and screen reader support for all card interactions
+5. **Type Validation**: Add runtime type validation with graceful fallbacks for unexpected data structures
