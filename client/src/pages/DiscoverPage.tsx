@@ -13,7 +13,7 @@ import {
   Linkedin, Building, Mic, Radio, Video, FileText, BookOpen,
   RotateCcw, SlidersVertical, Loader2, UserCheck
 } from "lucide-react";
-import { CollaborationDialog } from "@/components/CollaborationDialog";
+import { CollaborationDetailsDialog } from "@/components/CollaborationDetailsDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
 import { GlowFilterButton } from "@/components/GlowFilterButton";
@@ -1524,20 +1524,36 @@ export default function DiscoverPage() {
         </div>
         {/* Detailed View Dialog */}
         {currentCard && (
-          <CollaborationDialog
+          <CollaborationDetailsDialog
             isOpen={showDialog}
             onClose={() => setShowDialog(false)}
             collaboration={{
-              // Required props 
-              companyName: getCompanyName(currentCard),
-              // Optional props with actual data
+              // Basic collaboration info
+              id: currentCard.id,
               title: currentCard.title || "Collaboration Opportunity",
-              collaborationType: currentCard.collab_type || "Collaboration",
+              collab_type: currentCard.collab_type || "Collaboration",
               description: currentCard.description || "",
-              // Ensure collaborationType is always a string
-              type: currentCard.collab_type || undefined,
-              // Only pass properties that are defined in the CollaborationDialog interface
-              topics: currentCard.topics || []
+              date: currentCard.specific_date || "",
+              topics: currentCard.topics || [],
+              
+              // Company Info
+              companyName: getCompanyName(currentCard),
+              // Add any company fields we have from the database
+              companyWebsite: currentCard.details?.company_website || currentCard.details?.website,
+              companyTwitter: currentCard.details?.twitter_handle || currentCard.details?.companyTwitter,
+              twitterFollowers: currentCard.company_twitter_followers || currentCard.details?.twitter_followers,
+              companyLinkedIn: currentCard.details?.linkedin_url || currentCard.details?.companyLinkedIn,
+              companySector: currentCard.details?.sector || currentCard.company_tags?.[0],
+              fundingStage: currentCard.funding_stage,
+              blockchainNetworks: currentCard.company_blockchain_networks || currentCard.required_blockchain_networks,
+              hasToken: currentCard.company_has_token || currentCard.required_token_status,
+              tokenTicker: currentCard.company_token_ticker,
+              
+              // Pass the detailed data for the collaboration
+              details: currentCard.details || {},
+              
+              // Backward compatibility
+              type: currentCard.collab_type
             }}
           />
         )}
