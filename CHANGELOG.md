@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.4.3] - 2025-03-31
+
+### Changed
+- Enhanced the TwitterSpacesCard component with clickable company name linking to company website
+- Made the Twitter handle in TwitterSpacesCard clickable, directing to the Twitter profile
+- Improved the follower count display in TwitterSpacesCard for better visibility
+- Added "View Twitter profile" external link to TwitterSpacesCard for easier navigation
+
+### Technical Details
+- Updated TwitterSpacesCard interface to support companyWebsite field paralleling PodcastCard
+- Added proper URL formatting for Twitter handles, ensuring they work whether prefixed with @ or not
+- Enhanced follower count display with bold styling and dedicated Users icon
+- Added FiExternalLink icon integration for consistency with PodcastCard design
+- Improved UI with consistent spacing and organization of metadata
+
 ## [Version 1.4.2] - 2025-03-31
 
 ### Changed

@@ -1,10 +1,12 @@
 import React from 'react';
-import { Twitter, Calendar } from "lucide-react";
+import { Twitter, Calendar, Users } from "lucide-react";
+import { FiExternalLink } from "react-icons/fi";
 import { Badge } from "@/components/ui/badge";
 
 interface TwitterSpacesCardData {
   id?: string;
   companyName: string;
+  companyWebsite?: string;  // Added company website field
   topic?: string;
   role?: string;
   hostHandle?: string;
@@ -19,6 +21,7 @@ interface TwitterSpacesCardData {
     topics?: string[];
     specific_date?: string;
     date_selection?: string;
+    company_website?: string;  // Added company website in details
     [key: string]: any;
   };
 }
@@ -35,11 +38,17 @@ export const TwitterSpacesCard: React.FC<TwitterSpacesCardProps> = ({ data }) =>
   
   // Determine twitter handle with fallbacks
   const twitterHandle = details.twitter_handle 
-    ? details.twitter_handle.replace('https://x.com/', '')
-    : (data.hostHandle || 'username');
+    ? details.twitter_handle.replace('https://x.com/', '').replace('@', '')
+    : (data.hostHandle || 'username').replace('@', '');
+  
+  // Format the full Twitter URL
+  const twitterUrl = `https://twitter.com/${twitterHandle}`;
   
   // Determine follower count with fallbacks
   const followerCount = details.host_follower_count || data.hostFollowerCount || "0";
+
+  // Determine company website with fallbacks
+  const companyWebsite = details.company_website || data.companyWebsite;
 
   // Rendering helper for topics
   const renderTopics = () => {
@@ -127,7 +136,18 @@ export const TwitterSpacesCard: React.FC<TwitterSpacesCardProps> = ({ data }) =>
       </div>
       
       <h3 className="text-lg font-semibold leading-snug">
-        {data.companyName}
+        {companyWebsite ? (
+          <a 
+            href={companyWebsite.startsWith('http') ? companyWebsite : `https://${companyWebsite}`}
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:underline text-primary"
+          >
+            {data.companyName}
+          </a>
+        ) : (
+          data.companyName
+        )}
       </h3>
       
       <div className="space-y-0.5">
@@ -141,11 +161,38 @@ export const TwitterSpacesCard: React.FC<TwitterSpacesCardProps> = ({ data }) =>
       
       {renderTopics()}
       
-      <div className="flex items-center space-x-1 text-primary">
-        <Twitter className="w-3 h-3" />
-        <span>@{twitterHandle}</span>
+      <div className="flex flex-col space-y-1 text-xs">
+        <div className="flex items-center space-x-2">
+          <Twitter className="w-3 h-3 text-primary" />
+          <a 
+            href={twitterUrl} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-primary hover:underline"
+          >
+            @{twitterHandle}
+          </a>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Users className="w-3 h-3" />
+          <span><strong>{followerCount}</strong> followers</span>
+        </div>
+        
+        {twitterUrl && (
+          <div className="flex items-center space-x-2 text-primary">
+            <FiExternalLink className="w-3 h-3" />
+            <a 
+              href={twitterUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:underline"
+            >
+              View Twitter profile
+            </a>
+          </div>
+        )}
       </div>
-      <p className="text-xs text-muted-foreground">{followerCount} followers</p>
     </div>
   );
 };
