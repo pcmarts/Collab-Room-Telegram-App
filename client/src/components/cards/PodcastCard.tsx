@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 interface PodcastCardData {
   id?: string;
   companyName: string;
+  companyWebsite?: string;  // Added company website field
   title?: string;
   podcastName?: string;
   shortDescription?: string;
@@ -25,6 +26,7 @@ interface PodcastCardData {
     topics?: string[];
     specific_date?: string;
     date_selection?: string;
+    company_website?: string;  // Added company website in details
     [key: string]: any;
   };
 }
@@ -51,6 +53,9 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
   
   // Determine link with fallbacks
   const streamingLink = details.podcast_link || data.streamingLink;
+  
+  // Determine company website with fallbacks
+  const companyWebsite = details.company_website || data.companyWebsite;
 
   // Rendering helper for topics
   const renderTopics = () => {
@@ -135,11 +140,34 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
       </Badge>
       
       <h3 className="text-lg font-semibold leading-snug">
-        {title}
+        {streamingLink ? (
+          <a 
+            href={streamingLink} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="hover:underline text-primary"
+          >
+            {title}
+          </a>
+        ) : (
+          title
+        )}
       </h3>
       
       <div className="space-y-0.5">
-        <p className="text-sm">{data.companyName}</p>
+        {companyWebsite ? (
+          <a 
+            href={companyWebsite.startsWith('http') ? companyWebsite : `https://${companyWebsite}`}
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-sm hover:underline text-primary"
+          >
+            {data.companyName}
+          </a>
+        ) : (
+          <p className="text-sm">{data.companyName}</p>
+        )}
+        
         {data.role && (
           <p className="text-xs text-muted-foreground">
             {data.role}
@@ -153,7 +181,7 @@ export const PodcastCard: React.FC<PodcastCardProps> = ({ data }) => {
       <div className="flex flex-col space-y-1 text-xs">
         <div className="flex items-center space-x-2">
           <Megaphone className="w-3 h-3" />
-          <span>{estimatedReach}</span>
+          <span>Estimated reach: {estimatedReach}</span>
         </div>
         
         {streamingLink && (
