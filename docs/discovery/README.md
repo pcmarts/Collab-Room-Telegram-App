@@ -164,9 +164,12 @@ Each filter can be independently enabled or disabled, giving users fine-grained 
 
 The Discovery feed displays two types of cards:
 
-1. **Regular Collaboration Cards**: Standard cards that represent collaboration opportunities created by other users.
-   - Displayed with styling based on the collaboration type (podcast, twitter spaces, etc.)
-   - Includes collaboration details, company information, and goals
+1. **Regular Collaboration Cards**: Specialized cards that represent collaboration opportunities created by other users.
+   - Each collaboration type has its own dedicated card component (PodcastCard, TwitterSpacesCard, etc.)
+   - All cards share a consistent structure but include specialized UI elements for their content type
+   - Cards prominently display company information and collaboration type
+   - Company names are retrieved through database joins to ensure proper attribution
+   - Includes collaboration details, topic tags, and specific metadata for each type
    
 2. **Potential Match Cards**: Special cards that represent users who have already swiped right on your collaborations.
    - Redesigned with a dynamic glowing effect that fills the entire card
@@ -176,6 +179,18 @@ The Discovery feed displays two types of cards:
    - Indicates the collaboration type they're interested in
    - Optimized to use the full space of the parent container
    - Includes clear instructions for the user to swipe right to connect or left to pass
+
+The specialized card components are implemented as standalone components in the `client/src/components/cards/` directory. Each card type is optimized for its specific content:
+
+- **Podcast Cards**: Feature audio-specific UI elements like episode counts and durations
+- **Twitter Spaces Cards**: Include Twitter-specific branding and audience metrics
+- **Live Stream Cards**: Highlight streaming platforms and scheduled times
+- **Blog Post Cards**: Emphasize reading time and article previews
+- **Research Report Cards**: Focus on report topics and research methodologies
+- **Newsletter Cards**: Display frequency and subscriber information
+- **Marketing Cards**: Showcase campaign metrics and target audiences
+
+This specialized approach allows for a more tailored user experience based on the content type while maintaining visual consistency across the discovery feed.
 
 ### Empty States
 

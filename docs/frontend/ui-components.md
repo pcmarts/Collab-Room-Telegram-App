@@ -38,6 +38,109 @@ interface TextLoopProps {
 - `intervalDuration`: Time in ms between text changes (default: 2000ms)
 - `animationDuration`: Duration of the transition animation (default: 500ms)
 
+## Specialized Card Components
+
+The application uses specialized card components for each collaboration type in the Discovery feed. Each card type is a standalone component with styling and layout optimized for its specific content.
+
+### Implementation
+
+All specialized card components are located in `client/src/components/cards/` directory:
+
+- `PodcastCard.tsx`: For podcast collaborations
+- `TwitterSpacesCard.tsx`: For Twitter Spaces collaborations
+- `LiveStreamCard.tsx`: For live streaming collaborations
+- `BlogPostCollabCard.tsx`: For blog post collaborations
+- `ResearchReportCard.tsx`: For research report collaborations
+- `NewsletterCard.tsx`: For newsletter collaborations
+- `MarketingCard.tsx`: For marketing collaborations
+
+### Common Card Interface
+
+All card components follow a consistent interface pattern:
+
+```typescript
+interface CardProps {
+  collaboration: Collaboration;
+  onSwipe?: (direction: 'left' | 'right', collaboration: Collaboration) => void;
+  isPotentialMatch?: boolean;
+  potentialMatchData?: PotentialMatch;
+  onViewDetails?: (collaboration: Collaboration) => void;
+  disabled?: boolean;
+}
+```
+
+### Base Card Structure
+
+Each specialized card component follows this general structure:
+
+```jsx
+<div className="relative flex flex-col h-full rounded-xl overflow-hidden border border-border/40 bg-card transition-all duration-300 hover:border-primary/40 shadow-md">
+  {/* Card Header */}
+  <div className="p-4 bg-gradient-to-b from-card-foreground/10 to-transparent">
+    <div className="flex items-center justify-between">
+      <Badge variant="outline" className="bg-card-foreground/5 text-xs">
+        {collaborationType}
+      </Badge>
+      {/* Company Badge */}
+      <CompanyBadge name={company_name} />
+    </div>
+  </div>
+  
+  {/* Card Content - Varies by type */}
+  <div className="flex-grow p-4 space-y-2">
+    <h3 className="text-xl font-semibold text-card-foreground/90">{title}</h3>
+    <p className="text-sm text-card-foreground/70 line-clamp-2">{description}</p>
+    
+    {/* Type-specific content here */}
+  </div>
+  
+  {/* Card Footer */}
+  <div className="p-4 bg-gradient-to-t from-card-foreground/10 to-transparent mt-auto">
+    <div className="flex flex-wrap gap-1">
+      {topics.map((topic, i) => (
+        <Badge key={i} variant="secondary" className="text-xs">
+          {topic}
+        </Badge>
+      ))}
+    </div>
+  </div>
+</div>
+```
+
+### Type-Specific Customizations
+
+Each card type implements specialized UI elements based on its content type:
+
+1. **Podcast Card**: 
+   - Audio wave visualization icon
+   - Episode count and duration
+   - Microphone icon with listener count
+
+2. **Twitter Spaces Card**:
+   - Twitter bird icon
+   - Expected audience size
+   - Previous Space engagement metrics
+
+3. **Live Stream Card**:
+   - Video player-like preview
+   - Stream time and duration
+   - Platform indicators
+
+4. **Blog Post Card**:
+   - Article preview layout
+   - Reading time estimation
+   - Topic tags prominently displayed
+
+### Usage Example
+
+```jsx
+<PodcastCard
+  collaboration={podcastData}
+  onSwipe={(direction, collab) => handleSwipe(direction, collab)}
+  onViewDetails={(collab) => setSelectedCollaboration(collab)}
+/>
+```
+
 ## Glow Button
 
 Enhanced buttons with animated glow effects for important call-to-action elements. Used for primary actions throughout the application.
@@ -103,6 +206,14 @@ Key features:
 - Use for showcasing multiple options or features in a space-efficient way
 - Keep text items similar in length to avoid layout shifts
 - Use on welcome/landing pages, not within forms or data-entry screens
+
+### Specialized Cards
+
+- Use the appropriate card component based on collaboration type
+- Maintain consistent card dimensions across all types for uniform display in the Discovery feed
+- Ensure company name and card type are always prominently displayed
+- Include relevant topic tags at the bottom of each card
+- For new collaboration types, create a dedicated card component following the established pattern
 
 ### Glow Buttons
 

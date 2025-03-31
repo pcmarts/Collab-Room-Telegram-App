@@ -5,6 +5,26 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.4.2] - 2025-03-31
+
+### Changed
+- Improved Discovery page card components by replacing generic BaseCollabCard with standalone specialized cards
+- Modified searchCollaborations function to join with companies table for proper company name display
+- Enhanced collaboration API responses to include company names with each collaboration
+- Extended Collaboration type in frontend to properly handle company names
+
+### Fixed
+- Fixed issue where company names were displaying as "company" instead of real company names
+- Resolved database schema field reference errors in collaboration filtering system
+- Corrected SQL syntax in token status and funding stage filtering
+
+### Technical Details
+- Completely removed BaseCollabCard.tsx, replacing with standalone card components for each collaboration type
+- Added company information enhancement to searchCollaborations in server/storage.ts
+- Modified API to include creator_company_name in collaboration objects
+- Updated Typescript types in DiscoverPage to handle the enhanced collaboration objects
+- Fixed database field references to use the correct schema field names (funding_stage, twitter_followers)
+
 ## [Version 1.4.1] - 2025-03-25
 
 ### Added
