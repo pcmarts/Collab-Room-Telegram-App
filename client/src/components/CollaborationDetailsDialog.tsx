@@ -272,21 +272,34 @@ export function CollaborationDetailsDialog({
           <div className="bg-muted/30 p-3 rounded-md">
             <h4 className="text-sm font-bold mb-3">Company Information</h4>
             <div className="space-y-3">
-              {/* Company Name - Prioritize data from company table */}
+              {/* Company Name - This will always be shown */}
               <div className="flex items-center gap-2 mb-3">
                 <Building className="h-5 w-5 text-primary" />
                 <span className="text-base font-medium">
                   {/* Prioritize company name from details (which comes from company table) */}
                   {details.company_name || details.companyName || collaboration.companyName || "Company"}
                 </span>
-                {collaboration.id === "4c95f244-d5c1-4369-9531-834401fdce12" && (
+                {/* Special handling for Polygon */}
+                {(collaboration.id === "4c95f244-d5c1-4369-9531-834401fdce12" || 
+                  details.company_name === "Polygon" || 
+                  collaboration.companyName === "Polygon") && (
                   <Badge variant="outline" className="ml-2 text-xs bg-purple-500/10">Polygon</Badge>
                 )}
               </div>
               
-              {/* Important Links Section */}
+              {/* Role Information - Always show if any data exists */}
+              {(details.job_title || details.role || collaboration.roleTitle) && (
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {details.job_title || details.role || collaboration.roleTitle || "Team Member"}
+                  </span>
+                </div>
+              )}
+              
+              {/* Important Links Section - Always show this section */}
               <div className="flex flex-wrap gap-3 mb-3">
-                {/* Company Website - Prioritize company table data */}
+                {/* Company Website */}
                 {(details.website || details.company_website || collaboration.companyWebsite) && (
                   <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                     <Globe className="h-4 w-4 text-primary" />
@@ -302,7 +315,7 @@ export function CollaborationDetailsDialog({
                   </div>
                 )}
                 
-                {/* LinkedIn - Prioritize company table data */}
+                {/* LinkedIn */}
                 {(details.linkedin_url || collaboration.companyLinkedIn) && (
                   <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                     <Linkedin className="h-4 w-4 text-primary" />
@@ -317,7 +330,7 @@ export function CollaborationDetailsDialog({
                   </div>
                 )}
                 
-                {/* Twitter - Prioritize company table data */}
+                {/* Twitter */}
                 {(details.twitter_handle || collaboration.companyTwitter) && (
                   <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                     <FaTwitter className="h-4 w-4 text-primary" />
@@ -338,36 +351,27 @@ export function CollaborationDetailsDialog({
                   </div>
                 )}
               </div>
-              
-              {/* Role Title - Prioritize company table data */}
-              {(details.job_title || details.role || collaboration.roleTitle) && (
-                <div className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {details.job_title || details.role || collaboration.roleTitle}
-                  </span>
-                </div>
-              )}
 
-              {/* Company Short Description - Prioritize company table data */}
-              {(details.short_description || details.short_company_description || details.shortDescription) && (
-                <div className="flex gap-2 bg-muted/50 p-2 rounded-md">
-                  <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                  <div className="text-sm">
-                    <h5 className="font-medium mb-1">Short Description</h5>
-                    <p className="text-muted-foreground">
-                      {details.short_description || details.short_company_description || details.shortDescription || ""}
-                    </p>
-                  </div>
+              {/* Company Description Section */}
+              {/* Short Description - Show even if empty */}
+              <div className="flex gap-2 bg-muted/50 p-2 rounded-md">
+                <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div className="text-sm">
+                  <h5 className="font-medium mb-1">Company Description</h5>
+                  <p className="text-muted-foreground">
+                    {details.short_description || details.short_company_description || 
+                     details.shortDescription || collaboration.description || 
+                     `${details.company_name || collaboration.companyName || "Company"} is a blockchain technology company.`}
+                  </p>
                 </div>
-              )}
+              </div>
               
-              {/* Company Full/Long Description - Prioritize company table data */}
+              {/* Long Description - Only show if it exists */}
               {(details.long_description || details.full_description || details.company_description) && (
                 <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
                   <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <div className="text-sm">
-                    <h5 className="font-medium mb-1">Full Company Description</h5>
+                    <h5 className="font-medium mb-1">Full Company Profile</h5>
                     <p className="text-muted-foreground">
                       {details.long_description || details.full_description || details.company_description}
                     </p>
@@ -375,7 +379,8 @@ export function CollaborationDetailsDialog({
                 </div>
               )}
 
-              {/* Company Sector - Prioritize company table data */}
+              {/* Company Details Section */}
+              {/* Sector Information */}
               {(details.sector || details.company_sector || collaboration.companySector) && (
                 <div className="flex items-center gap-2">
                   <Building className="h-4 w-4 text-muted-foreground" />
@@ -385,20 +390,19 @@ export function CollaborationDetailsDialog({
                 </div>
               )}
               
-              {/* Funding Stage / Series Round - Prioritize company table data */}
-              {(details.funding_stage || details.series_round || details.seriesRound || collaboration.fundingStage) && (
-                <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                  <Coins className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">
-                    Series Round: {details.funding_stage || details.series_round || details.seriesRound || collaboration.fundingStage}
-                  </span>
-                </div>
-              )}
+              {/* Funding Stage - Always show for funding companies */}
+              <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                <Coins className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">
+                  Series Round: {details.funding_stage || details.series_round || 
+                  details.seriesRound || collaboration.fundingStage || "Not disclosed"}
+                </span>
+              </div>
               
-              {/* Blockchain Networks - Prioritize company table data */}
+              {/* Blockchain Networks */}
               {(details.blockchain_networks || collaboration.blockchainNetworks) && 
                (Array.isArray(details.blockchain_networks) || Array.isArray(collaboration.blockchainNetworks)) && 
-               ((details.blockchain_networks || []).length > 0 || (collaboration.blockchainNetworks || []).length > 0) && (
+               ((details.blockchain_networks || []).length > 0 || (collaboration.blockchainNetworks || []).length > 0) ? (
                 <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
                   <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <div>
@@ -412,9 +416,17 @@ export function CollaborationDetailsDialog({
                     </div>
                   </div>
                 </div>
+              ) : (
+                // If no blockchain networks specified, show a generic one for Web3 companies
+                <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
+                  <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <span className="text-sm font-medium block">Blockchain Technology Company</span>
+                  </div>
+                </div>
               )}
               
-              {/* Token Information - Prioritize company table data */}
+              {/* Token Information */}
               {(details.has_token || details.token_ticker || collaboration.hasToken || collaboration.tokenTicker) && (
                 <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                   <Coins className="h-4 w-4 text-primary" />
