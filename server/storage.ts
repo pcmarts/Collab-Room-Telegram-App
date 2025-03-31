@@ -25,7 +25,7 @@ export interface IStorage {
   createCollaboration(collaboration: any): Promise<Collaboration>;
   getCollaboration(id: string): Promise<Collaboration | undefined>;
   getUserCollaborations(userId: string): Promise<Collaboration[]>;
-  searchCollaborations(userId: string, filters: CollaborationFilters): Promise<PaginatedCollaborations>;
+  searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]>;
   updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined>;
   
   // Collaboration applications
@@ -66,16 +66,6 @@ export interface IStorage {
   updateUserConferencePreferences(userId: string, preferences: Partial<ConferencePreferences>): Promise<ConferencePreferences | undefined>;
 }
 
-export interface PaginatedCollaborations {
-  data: Collaboration[];
-  page: number;
-  limit: number;
-  totalItems: number;
-  totalPages: number;
-  hasMore: boolean;
-  nextCursor?: string;
-}
-
 export interface CollaborationFilters {
   collabTypes?: string[];
   companyTags?: string[];
@@ -85,9 +75,6 @@ export interface CollaborationFilters {
   fundingStages?: string[];
   blockchainNetworks?: string[];
   excludeOwn?: boolean; // Controls whether to exclude collaborations created by the current user
-  page?: number; // Page number for pagination
-  limit?: number; // Number of items per page
-  cursor?: string; // Cursor for cursor-based pagination
 }
 
 export class DatabaseStorage implements IStorage {
@@ -252,7 +239,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(collaborations.created_at));
   }
   
-  async searchCollaborations(userId: string, filters: CollaborationFilters): Promise<PaginatedCollaborations> {
+  async searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
     // First get the user's marketing preferences to apply any filtering
     const marketingPrefs = await this.getUserMarketingPreferences(userId);
     
@@ -394,59 +381,10 @@ export class DatabaseStorage implements IStorage {
     }
     
     // Add additional debug logging
-    console.log('Final filter query constructed, executing count query');
+    console.log('Final filter query constructed, executing and returning results');
     
-    // Get count of items for pagination - safely extract where conditions
-    let countQuery;
-    try {
-      const sqlString = query.toSQL().query;
-      // Check if there's a WHERE clause before trying to split
-      if (sqlString && sqlString.includes('WHERE')) {
-        const whereConditions = sqlString.split('WHERE')[1];
-        if (whereConditions) {
-          countQuery = db
-            .select({ count: sql`count(*)` })
-            .from(collaborations)
-            .where(sql`${sql.raw(whereConditions)}`);
-        } else {
-          // No conditions after WHERE, use a simple count
-          countQuery = db.select({ count: sql`count(*)` }).from(collaborations);
-        }
-      } else {
-        // No WHERE clause at all, use a simple count
-        countQuery = db.select({ count: sql`count(*)` }).from(collaborations);
-      }
-    } catch (error) {
-      console.error("Error constructing count query:", error);
-      // Fallback to a simple count without conditions
-      countQuery = db.select({ count: sql`count(*)` }).from(collaborations);
-    }
-    
-    const [countResult] = await countQuery;
-    const totalItems = Number(countResult?.count || 0);
-    
-    // Set up pagination parameters
-    const page = filters.page || 1;
-    const limit = filters.limit || 10;
-    const offset = (page - 1) * limit;
-    const totalPages = Math.ceil(totalItems / limit);
-    const hasMore = page < totalPages;
-    
-    console.log(`Pagination: totalItems=${totalItems}, page=${page}/${totalPages}, limit=${limit}, offset=${offset}`);
-    
-    // Apply pagination to the query
-    query = query.orderBy(desc(collaborations.created_at))
-      .limit(limit)
-      .offset(offset);
-    
-    // Execute the final paginated query
-    console.log('Executing paginated query');
-    const rawCollaborations = await query;
-    
-    // Calculate next cursor (using ID of last item)
-    const nextCursor = rawCollaborations.length > 0 && hasMore
-      ? rawCollaborations[rawCollaborations.length - 1].id
-      : undefined;
+    // Get the raw collaborations first
+    const rawCollaborations = await query.orderBy(desc(collaborations.created_at));
     
     // Enhance collaborations with creator company info
     const enhancedCollaborations = await Promise.all(rawCollaborations.map(async (collab) => {
@@ -490,16 +428,7 @@ export class DatabaseStorage implements IStorage {
       }
     }));
     
-    // Return paginated result object
-    return {
-      data: enhancedCollaborations,
-      page,
-      limit,
-      totalItems,
-      totalPages,
-      hasMore,
-      nextCursor
-    };
+    return enhancedCollaborations;
   }
   
   async updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined> {
