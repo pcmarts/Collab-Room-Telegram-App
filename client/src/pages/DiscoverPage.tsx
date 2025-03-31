@@ -1234,6 +1234,7 @@ export default function DiscoverPage() {
     
     switch (cardType) {
       case "podcast":
+      case "podcast guest appearance":  // Added this case to handle the actual type in database
         console.log("Rendering PodcastCard component");
         cardContent = <PodcastCard data={cardData} />;
         break;
