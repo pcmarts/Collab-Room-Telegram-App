@@ -27,13 +27,40 @@ interface Collaboration extends BaseCollaboration {
   creator_company_name?: string;
 }
 
+// Define a generic card data interface that all specialized cards can use
+interface CardData {
+  id?: string;
+  companyName?: string;
+  title?: string;
+  description?: string;
+  type?: string;
+  collaborationType?: string;
+  topics?: string[];
+  companyWebsite?: string;
+  hostHandle?: string;
+  estimatedReach?: string;
+  podcastName?: string;
+  podcastLink?: string;
+  // Allow additional properties for specialized card types
+  details?: Record<string, any>;
+  [key: string]: any;
+}
+
 import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
 
 // Blog Post Collaboration Card (Replacing Conference Coffee Card)
-const BlogPostCollabCard = ({ data }) => {
-  // Handle data.details (JSON field)
-  const details = data.details || {};
+const BlogPostCollabCard = ({ data }: { data: CardData }) => {
+  // Handle data.details (JSON field) with type assertion for Blog Post specific fields
+  const details = data.details || {} as {
+    blog_title?: string;
+    role?: string;
+    publication_date?: string;
+    specific_date?: string;
+    short_description?: string;
+    website_url?: string;
+    topics?: string[];
+  };
   
   return (
     <div className="space-y-2">
@@ -95,9 +122,15 @@ const BlogPostCollabCard = ({ data }) => {
 };
 
 // Podcast Guest Appearances Card
-const PodcastCard = ({ data }) => {
-  // Handle data.details (JSON field)
-  const details = data.details || {};
+const PodcastCard = ({ data }: { data: CardData }) => {
+  // Handle data.details (JSON field) with type assertion for podcast-specific fields
+  const details = data.details || {} as {
+    podcast_name?: string;
+    podcast_description?: string;
+    short_description?: string;
+    estimated_reach?: string;
+    podcast_link?: string;
+  };
   
   return (
     <div className="space-y-2">
@@ -147,9 +180,17 @@ const PodcastCard = ({ data }) => {
 };
 
 // Twitter Spaces Guest Card
-const TwitterSpacesCard = ({ data }) => {
-  // Handle data.details (JSON field)
-  const details = data.details || {};
+const TwitterSpacesCard = ({ data }: { data: CardData }) => {
+  // Handle data.details (JSON field) with type assertion for Twitter Spaces specific fields
+  const details = data.details || {} as {
+    short_description?: string;
+    twitter_handle?: string;
+    host_follower_count?: string;
+    space_name?: string;
+    space_date?: string;
+    estimated_reach?: string;
+    topics?: string[];
+  };
   
   return (
     <div className="space-y-2">
@@ -186,9 +227,17 @@ const TwitterSpacesCard = ({ data }) => {
 };
 
 // Live Stream Guest Appearance Card
-const LiveStreamCard = ({ data }) => {
-  // Handle data.details (JSON field)
-  const details = data.details || {};
+const LiveStreamCard = ({ data }: { data: CardData }) => {
+  // Handle data.details (JSON field) with type assertion for Live Stream specific fields
+  const details = data.details || {} as {
+    title?: string;
+    expected_audience_size?: string;
+    specific_date?: string;
+    date_selection?: string;
+    previous_stream_link?: string;
+    short_description?: string;
+    topics?: string[];
+  };
   
   return (
     <div className="space-y-2">
@@ -248,9 +297,16 @@ const LiveStreamCard = ({ data }) => {
 };
 
 // Report and Research Features Card
-const ResearchReportCard = ({ data }) => {
-  // Handle data.details (JSON field)
-  const details = data.details || {};
+const ResearchReportCard = ({ data }: { data: CardData }) => {
+  // Handle data.details (JSON field) with type assertion for Research Report specific fields
+  const details = data.details || {} as {
+    report_name?: string;
+    research_topic?: string;
+    target_release_date?: string;
+    estimated_reach?: string;
+    short_description?: string;
+    topics?: string[];
+  };
   
   return (
     <div className="space-y-2">
@@ -307,9 +363,17 @@ const ResearchReportCard = ({ data }) => {
 };
 
 // Newsletter Features or Guest Posts Card
-const NewsletterCard = ({ data }) => {
-  // Handle data.details (JSON field)
-  const details = data.details || {};
+const NewsletterCard = ({ data }: { data: CardData }) => {
+  // Handle data.details (JSON field) with type assertion for Newsletter specific fields
+  const details = data.details || {} as {
+    newsletter_name?: string;
+    subscribers_count?: string;
+    newsletter_url?: string;
+    specific_date?: string;
+    date_selection?: string;
+    short_description?: string;
+    topics?: string[];
+  };
   
   return (
     <div className="space-y-2">
@@ -396,7 +460,7 @@ const getCollabTypeIcon = (collabType: string) => {
 };
 
 // My Collaboration Card - Shows when another user is requesting to collaborate on the active user's own collaboration
-const MyCollabCard = ({ data }) => (
+const MyCollabCard = ({ data }: { data: CardData }) => (
   <div className="space-y-4 relative text-gray-100 p-0">    
     {/* Badge */}
     <Badge className="bg-blue-700 text-white border-0 py-1 px-3 rounded-full">
@@ -450,7 +514,7 @@ const MyCollabCard = ({ data }) => (
 );
 
 // Legacy/Generic Cards (for backward compatibility)
-const MarketingCard = ({ data }) => (
+const MarketingCard = ({ data }: { data: CardData }) => (
   <div className="space-y-3">
     <Badge variant="outline" className="bg-primary/10">
       <Megaphone className="w-3 h-3 mr-1" />
@@ -484,7 +548,7 @@ const MarketingCard = ({ data }) => (
   </div>
 );
 
-const ConferenceCard = ({ data }) => (
+const ConferenceCard = ({ data }: { data: CardData }) => (
   <div className="space-y-3">
     <Badge variant="outline" className="bg-secondary/10">
       <Coffee className="w-3 h-3 mr-1" />
@@ -511,7 +575,7 @@ const ConferenceCard = ({ data }) => (
   </div>
 );
 
-const RequestCard = ({ data }) => (
+const RequestCard = ({ data }: { data: CardData }) => (
   <div className="space-y-3">
     <Badge variant="outline" className="bg-destructive/10">
       Collaboration Request
@@ -1202,20 +1266,33 @@ export default function DiscoverPage() {
       console.log(`Collab Type Lowercase: ${card.collab_type?.toLowerCase()}`);
       console.log(`Collab Type Case Insensitive Check: podcast = ${card.collab_type?.toLowerCase() === 'podcast'}`);
       
+      // Type assertion for the podcast-specific details
+      const podcastDetails = details as {
+        podcast_name?: string;
+        podcast_link?: string;
+        estimated_reach?: string;
+      };
+      
       // Check for properties specific to podcast cards
-      console.log(`Has podcast_name: ${!!details?.podcast_name}`);
-      console.log(`Podcast Name: ${details?.podcast_name || 'N/A'}`);
-      console.log(`Has podcast_link: ${!!details?.podcast_link}`);
-      console.log(`Podcast Link: ${details?.podcast_link || 'N/A'}`);
-      console.log(`Has estimated_reach: ${!!details?.estimated_reach}`);
-      console.log(`Estimated Reach: ${details?.estimated_reach || 'N/A'}`);
+      console.log(`Has podcast_name: ${!!podcastDetails.podcast_name}`);
+      console.log(`Podcast Name: ${podcastDetails.podcast_name || 'N/A'}`);
+      console.log(`Has podcast_link: ${!!podcastDetails.podcast_link}`);
+      console.log(`Podcast Link: ${podcastDetails.podcast_link || 'N/A'}`);
+      console.log(`Has estimated_reach: ${!!podcastDetails.estimated_reach}`);
+      console.log(`Estimated Reach: ${podcastDetails.estimated_reach || 'N/A'}`);
     }
     
+    // Type assertion for additional common details that might be in any card type
+    const extendedDetails = details as {
+      twitter_handle?: string;
+      company_website?: string;
+    };
+    
     // Log additional card properties that might affect rendering
-    console.log(`Has Twitter handle: ${!!(details?.twitter_handle || cardData.hostHandle)}`);
-    console.log(`Twitter handle value: ${details?.twitter_handle || cardData.hostHandle || 'N/A'}`);
-    console.log(`Has company website: ${!!(details?.company_website || cardData.companyWebsite)}`);
-    console.log(`Company website value: ${details?.company_website || cardData.companyWebsite || 'N/A'}`);
+    console.log(`Has Twitter handle: ${!!(extendedDetails.twitter_handle || cardData.hostHandle)}`);
+    console.log(`Twitter handle value: ${extendedDetails.twitter_handle || cardData.hostHandle || 'N/A'}`);
+    console.log(`Has company website: ${!!(extendedDetails.company_website || cardData.companyWebsite)}`);
+    console.log(`Company website value: ${extendedDetails.company_website || cardData.companyWebsite || 'N/A'}`);
     
     // Log data passed to card components
     console.log(`Card data being passed to component:`, JSON.stringify(cardData, null, 2));
@@ -1226,48 +1303,100 @@ export default function DiscoverPage() {
     
     console.log(`Selecting card component for type: ${cardType}`);
     
-    // Logging to see which component will be used without overrides
-    if (card.id === 'e1d8af65-5fd9-4585-be3a-f65d9ad7c565') {
-      console.log('SPECIAL ATTENTION: Checking podcast collaboration without override!');
-      console.log('Current card type:', cardType);
+    // Define a mapping between database collaboration types and card components
+    // This makes it easy to add new types or modify existing ones in a single place
+    const CARD_TYPE_MAPPING: Record<string, React.FC<{ data: CardData }>> = {
+      // Podcast variations
+      "podcast": PodcastCard,
+      "podcast guest appearance": PodcastCard,
+      "podcast interview": PodcastCard,
+      "podcast feature": PodcastCard,
+      
+      // Twitter Spaces variations
+      "twitter-spaces": TwitterSpacesCard,
+      "twitter spaces": TwitterSpacesCard, 
+      "twitter spaces guest": TwitterSpacesCard,
+      "twitter space": TwitterSpacesCard,
+      
+      // Livestream variations
+      "livestream": LiveStreamCard,
+      "live stream": LiveStreamCard,
+      "video livestream": LiveStreamCard,
+      
+      // Research report variations
+      "research-report": ResearchReportCard,
+      "research report": ResearchReportCard,
+      "market report": ResearchReportCard,
+      
+      // Newsletter variations
+      "newsletter": NewsletterCard,
+      "email newsletter": NewsletterCard,
+      "newsletter feature": NewsletterCard,
+      
+      // Blog post variations
+      "blog-post": BlogPostCollabCard,
+      "blog post": BlogPostCollabCard,
+      "blog post feature": BlogPostCollabCard,
+      "guest blog": BlogPostCollabCard,
+    };
+    
+    // Logging to help with debugging
+    console.log('CARD TYPE SELECTION:', cardType);
+    if (CARD_TYPE_MAPPING[cardType]) {
+      console.log(`Found matching card component for type: ${cardType}`);
+    } else {
+      console.log(`No specialized card found for type '${cardType}', using MarketingCard as fallback`);
     }
     
-    switch (cardType) {
-      case "podcast":
-      case "podcast guest appearance":  // Added this case to handle the actual type in database
-        console.log("Rendering PodcastCard component");
-        cardContent = <PodcastCard data={cardData} />;
-        break;
-      case "twitter-spaces":
-      case "twitter spaces":
-      case "twitter spaces guest":  // Added this case to handle variations
-        console.log("Rendering TwitterSpacesCard component");
-        cardContent = <TwitterSpacesCard data={cardData} />;
-        break;
-      case "livestream":
-      case "live stream":
-        console.log("Rendering LiveStreamCard component");
-        cardContent = <LiveStreamCard data={cardData} />;
-        break;
-      case "research-report":
-      case "research report":
-        console.log("Rendering ResearchReportCard component");
-        cardContent = <ResearchReportCard data={cardData} />;
-        break;
-      case "newsletter":
-        console.log("Rendering NewsletterCard component");
-        cardContent = <NewsletterCard data={cardData} />;
-        break;
-      case "blog-post":
-      case "blog post":
-      case "blog post feature":  // Added support for blog post feature type
-        console.log("Rendering BlogPostCollabCard component");
-        cardContent = <BlogPostCollabCard data={cardData} />;
-        break;
-      default:
-        console.log(`No specialized card found for type '${cardType}', using MarketingCard as fallback`);
-        cardContent = <MarketingCard data={cardData} />;
-        break;
+    // Function to find the best card component using fuzzy matching
+    // This helps handle minor variations in naming that aren't explicitly mapped
+    const findBestCardComponent = (type: string): React.FC<{ data: CardData }> => {
+      // 1. Direct match (fastest path)
+      if (CARD_TYPE_MAPPING[type]) {
+        return CARD_TYPE_MAPPING[type];
+      }
+      
+      // 2. Try to find a partial match
+      const typeWords = type.split(/[\s-]+/).filter(word => word.length > 2);
+      
+      // Check for keyword matches in the collaboration type
+      if (typeWords.some(word => word === 'podcast')) {
+        return PodcastCard;
+      }
+      
+      if (typeWords.some(word => word === 'twitter' || word === 'spaces')) {
+        return TwitterSpacesCard;
+      }
+      
+      if (typeWords.some(word => word === 'livestream' || word === 'stream' || word === 'live')) {
+        return LiveStreamCard;
+      }
+      
+      if (typeWords.some(word => word === 'blog' || word === 'post')) {
+        return BlogPostCollabCard;
+      }
+      
+      if (typeWords.some(word => word === 'research' || word === 'report')) {
+        return ResearchReportCard;
+      }
+      
+      if (typeWords.some(word => word === 'newsletter' || word === 'email')) {
+        return NewsletterCard;
+      }
+      
+      // 3. If no matches are found, use the default card
+      return MarketingCard;
+    };
+    
+    // Use the fuzzy matching function to find the best component
+    const CardComponent = findBestCardComponent(cardType);
+    cardContent = <CardComponent data={cardData} />;
+    
+    console.log(`Rendering ${CardComponent.name} component for type "${cardType}"`);
+    
+    // Log if a fuzzy match was used instead of an exact match
+    if (!CARD_TYPE_MAPPING[cardType]) {
+      console.log(`Note: Using fuzzy matching to determine card component for "${cardType}"`);
     }
     
     console.log("====================================");
