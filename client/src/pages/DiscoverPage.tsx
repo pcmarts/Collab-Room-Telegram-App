@@ -712,6 +712,12 @@ export default function DiscoverPage() {
   const [showDialog, setShowDialog] = useState(false);
   // Store history of swiped cards for undo functionality
   const [swipeHistory, setSwipeHistory] = useState<Array<{card: ExtendedCard, direction: "left" | "right", index: number}>>([]);
+  // Track swiped card IDs to exclude from future queries
+  const [swipedCardIds, setSwipedCardIds] = useState<string[]>(() => {
+    // Initialize from localStorage if available
+    const savedIds = localStorage.getItem('swipedCardIds');
+    return savedIds ? JSON.parse(savedIds) : [];
+  });
   // Match moment states
   const [showMatch, setShowMatch] = useState(false);
   const [matchData, setMatchData] = useState<{
@@ -739,13 +745,20 @@ export default function DiscoverPage() {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
 
   const { data: collaborationsPageData, isLoading: isLoadingCollabs, isError: isCollabsError, error: collabsError } = useQuery({
-    queryKey: ['/api/collaborations/search', page],
+    queryKey: ['/api/collaborations/search', page, swipedCardIds], // Add swipedCardIds to dependencies so it refetches when they change
     queryFn: async () => {
       try {
         setIsFetchingMore(true);
         console.log(`Fetching collaborations page ${page}...`);
+        
+        // Log the exclusion IDs
+        if (swipedCardIds.length > 0) {
+          console.log(`Excluding ${swipedCardIds.length} previously swiped cards from results:`, swipedCardIds);
+        }
+        
         // Use the standardized apiRequest function to ensure Telegram headers are included
         // Add page and limit as query parameters
+        // Note: ideally we should send the swipedCardIds to the server for filtering, but for now we'll filter client-side
         const data = await apiRequest(`/api/collaborations/search?page=${page}&limit=10`);
         console.log('Collaborations page fetched successfully:', data);
         
@@ -753,26 +766,43 @@ export default function DiscoverPage() {
         if (data && data.data && Array.isArray(data.data)) {
           console.log(`Received ${data.data.length} collaborations (page ${data.page} of ${data.totalPages})`);
           
+          // Filter out any cards that we've already swiped on
+          const filteredData = {
+            ...data,
+            data: data.data.filter(item => !swipedCardIds.includes(item.id))
+          };
+          
+          // Log the filtering results
+          if (data.data.length !== filteredData.data.length) {
+            console.log(`Filtered out ${data.data.length - filteredData.data.length} already swiped cards`);
+          }
+          
           // Update hasMore state based on response
-          setHasMoreCollabs(data.hasMore);
+          setHasMoreCollabs(filteredData.hasMore);
           
           // Update all collaborations
           setAllCollaborations(prev => {
             // If it's the first page, replace the entire array
-            if (page === 1) return [...data.data];
+            if (page === 1) return [...filteredData.data];
             // Otherwise append to existing data
-            return [...prev, ...data.data];
+            return [...prev, ...filteredData.data];
           });
           
           setIsFetchingMore(false);
-          return data;
+          return filteredData;
         } else {
           // If the response doesn't match expected format, handle as legacy case
           console.log('Collaborations fetched in legacy format, count:', Array.isArray(data) ? data.length : 0);
+          
+          // Filter out cards we've already swiped on
+          const filteredData = Array.isArray(data) 
+            ? data.filter(item => !swipedCardIds.includes(item.id))
+            : [];
+            
           setHasMoreCollabs(false);
-          setAllCollaborations(Array.isArray(data) ? data : []);
+          setAllCollaborations(filteredData);
           setIsFetchingMore(false);
-          return { data: Array.isArray(data) ? data : [], page: 1, hasMore: false, totalPages: 1 };
+          return { data: filteredData, page: 1, hasMore: false, totalPages: 1 };
         }
       } catch (err) {
         console.error('Collaboration fetch error:', err);
@@ -787,10 +817,16 @@ export default function DiscoverPage() {
   
   // Fetch potential matches (users who swiped right on host's collaborations)
   const { data: potentialMatchesData, isLoading: isLoadingMatches, isError: isMatchesError, error: matchesError } = useQuery({
-    queryKey: ['/api/potential-matches'],
+    queryKey: ['/api/potential-matches', swipedCardIds], // Add swipedCardIds to dependencies
     queryFn: async () => {
       try {
         console.log('Fetching potential matches...');
+        
+        // Log the exclusion IDs for potential matches
+        if (swipedCardIds.length > 0) {
+          console.log(`Will filter out ${swipedCardIds.length} previously swiped cards from potential matches as well`);
+        }
+        
         // Use the standardized apiRequest function to ensure Telegram headers are included
         const data = await apiRequest('/api/potential-matches');
         console.log('Potential matches fetched successfully, count:', Array.isArray(data) ? data.length : 'not an array');
@@ -800,8 +836,16 @@ export default function DiscoverPage() {
           return [];
         }
         
+        // Filter out any potential matches that have already been swiped on
+        const filteredData = data.filter(match => !swipedCardIds.includes(match.swipe_id));
+        
+        // Log if we filtered anything
+        if (data.length !== filteredData.length) {
+          console.log(`Filtered out ${data.length - filteredData.length} already swiped potential matches`);
+        }
+        
         // Convert potential matches to a card format
-        return data.map((match) => ({
+        return filteredData.map((match) => ({
           id: match.swipe_id, // Use the swipe ID as the unique identifier
           isPotentialMatch: true, // Flag to identify this as a potential match card
           collab_type: match.collaboration_type,
@@ -1042,6 +1086,15 @@ export default function DiscoverPage() {
     try {
       const currentCard = cards[currentIndex];
       if (currentCard && currentCard.id) {
+        // Add this card ID to our local swipedCardIds state
+        setSwipedCardIds(prev => {
+          const newIds = [...prev, currentCard.id];
+          // Store in localStorage for persistence across refreshes
+          localStorage.setItem('swipedCardIds', JSON.stringify(newIds));
+          console.log(`Added card ID ${currentCard.id} to swiped cards list, new total: ${newIds.length}`);
+          return newIds;
+        });
+
         // Check if this is a potential match card using the type guard
         if (isPotentialMatch(currentCard)) {
           console.log(`Recording ${direction} swipe for potential match with ID: ${currentCard.id}`);
@@ -1166,6 +1219,15 @@ export default function DiscoverPage() {
     // Get the last swiped card
     const lastAction = swipeHistory[swipeHistory.length - 1];
     
+    // Also remove this card from the swiped card IDs
+    if (lastAction.card && lastAction.card.id) {
+      setSwipedCardIds(prev => {
+        const newIds = prev.filter(id => id !== lastAction.card.id);
+        localStorage.setItem('swipedCardIds', JSON.stringify(newIds));
+        return newIds;
+      });
+    }
+    
     // Remove the last action from history
     setSwipeHistory(prev => prev.slice(0, -1));
     
@@ -1260,6 +1322,15 @@ export default function DiscoverPage() {
     setCurrentIndex(0);
     // Clear swipe history
     setSwipeHistory([]);
+    
+    // Option to clear all swiped card IDs (comment in to enable)
+    // setSwipedCardIds([]);
+    // localStorage.removeItem('swipedCardIds');
+    
+    // Log current state for debugging
+    console.log(`Current swiped card IDs (will be excluded from results): ${swipedCardIds.length} cards`);
+    console.log(swipedCardIds);
+    
     // Refetch the data
     queryClient.invalidateQueries({ queryKey: ['/api/collaborations/search'] });
   };
