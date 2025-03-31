@@ -1496,7 +1496,10 @@ export default function DiscoverPage() {
                       variant="outline"
                       size="icon"
                       className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
-                      onClick={() => setShowDialog(true)}
+                      onClick={() => {
+                        console.log("Current Card Data:", JSON.stringify(currentCard, null, 2));
+                        setShowDialog(true);
+                      }}
                     >
                       <Info className="h-5 w-5" />
                     </Button>
