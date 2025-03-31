@@ -1187,35 +1187,66 @@ export default function DiscoverPage() {
       collaborationType: card.collab_type || "Collaboration", // For compatibility with the card components
     };
     
+    // Add detailed logging to help debug card rendering issues
+    console.log("========== CARD DEBUG INFO ==========");
+    console.log(`Card ID: ${card.id}`);
+    console.log(`Card Type: ${card.collab_type}`);
+    console.log(`Card Title: ${cardData.title}`);
+    console.log(`Company Name: ${cardData.companyName}`);
+    console.log(`Card Details:`, JSON.stringify(details, null, 2));
+    
+    // Log additional card properties that might affect rendering
+    console.log(`Has Twitter handle: ${!!(details?.twitter_handle || cardData.hostHandle)}`);
+    console.log(`Twitter handle value: ${details?.twitter_handle || cardData.hostHandle || 'N/A'}`);
+    console.log(`Has company website: ${!!(details?.company_website || cardData.companyWebsite)}`);
+    console.log(`Company website value: ${details?.company_website || cardData.companyWebsite || 'N/A'}`);
+    
+    // Log data passed to card components
+    console.log(`Card data being passed to component:`, JSON.stringify(cardData, null, 2));
+    
     // Create the appropriate component based on collab_type
     let cardContent;
-    switch (card.collab_type?.toLowerCase()) {
+    let cardType = card.collab_type?.toLowerCase() || 'unknown';
+    
+    console.log(`Selecting card component for type: ${cardType}`);
+    
+    switch (cardType) {
       case "podcast":
+        console.log("Rendering PodcastCard component");
         cardContent = <PodcastCard data={cardData} />;
         break;
       case "twitter-spaces":
       case "twitter spaces":
+      case "twitter spaces guest":  // Added this case to handle variations
+        console.log("Rendering TwitterSpacesCard component");
         cardContent = <TwitterSpacesCard data={cardData} />;
         break;
       case "livestream":
       case "live stream":
+        console.log("Rendering LiveStreamCard component");
         cardContent = <LiveStreamCard data={cardData} />;
         break;
       case "research-report":
       case "research report":
+        console.log("Rendering ResearchReportCard component");
         cardContent = <ResearchReportCard data={cardData} />;
         break;
       case "newsletter":
+        console.log("Rendering NewsletterCard component");
         cardContent = <NewsletterCard data={cardData} />;
         break;
       case "blog-post":
       case "blog post":
+        console.log("Rendering BlogPostCollabCard component");
         cardContent = <BlogPostCollabCard data={cardData} />;
         break;
       default:
+        console.log(`No specialized card found for type '${cardType}', using MarketingCard as fallback`);
         cardContent = <MarketingCard data={cardData} />;
         break;
     }
+    
+    console.log("====================================");
     
     // For MyCollab cards, we need to wrap them with a data attribute
     // to target with custom CSS for the gradient background
