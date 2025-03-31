@@ -164,13 +164,9 @@ export default function CompanyInfoForm() {
         long_description: formData.long_description
       };
 
+      // apiRequest already parses the JSON and throws an error if response is not OK
       const response = await apiRequest('/api/company', 'POST', submitData);
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to update company information');
-      }
-
+      
       await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
 
       toast({
