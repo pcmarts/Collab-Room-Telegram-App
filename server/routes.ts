@@ -2132,15 +2132,20 @@ export async function registerRoutes(app: Express) {
         blockchainNetworks: req.query.blockchainNetworks ? (req.query.blockchainNetworks as string).split(',') : undefined,
         // Always exclude user's own collaborations in Regular Collaboration Cards
         // This is a non-negotiable rule for the application
-        excludeOwn: true
+        excludeOwn: true,
+        // Pagination parameters
+        page: req.query.page ? parseInt(req.query.page as string, 10) : 1,
+        limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10,
+        cursor: req.query.cursor as string | undefined
       };
 
-      // Get filtered collaborations
+      // Get filtered collaborations with pagination
       console.log('Calling searchCollaborations with user ID:', user.id);
       console.log('Using filters:', filters);
-      const collaborations = await storage.searchCollaborations(user.id, filters);
-      console.log(`Found ${collaborations.length} collaborations`);
-      return res.json(collaborations);
+      const paginatedCollaborations = await storage.searchCollaborations(user.id, filters);
+      console.log(`Found ${paginatedCollaborations.data.length} collaborations (page ${paginatedCollaborations.page} of ${paginatedCollaborations.totalPages})`);
+      console.log(`Total results: ${paginatedCollaborations.totalItems}, Has more: ${paginatedCollaborations.hasMore}`);
+      return res.json(paginatedCollaborations);
 
     } catch (error) {
       console.error('Failed to search collaborations:', error);

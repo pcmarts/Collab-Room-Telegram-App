@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import {
   motion,
@@ -41,6 +41,38 @@ interface Collaboration extends BaseCollaboration {
     blockchain_networks?: string[];
     tags?: string[];
   };
+}
+
+// Potential match card structure
+interface PotentialMatch {
+  id: string;
+  isPotentialMatch: boolean;
+  collab_type: string;
+  description: string;
+  topics: string[];
+  potentialMatchData: {
+    user_id: string;
+    first_name: string;
+    last_name?: string;
+    company_name?: string;
+    job_title?: string;
+    twitter_followers?: string;
+    company_twitter_followers?: string;
+    swipe_created_at: string;
+    collaboration_id: string;
+  };
+}
+
+// Union type for cards in discovery that can be either regular collaborations or potential matches
+type ExtendedCard = Collaboration | PotentialMatch;
+
+// Type guard functions
+function isPotentialMatch(card: ExtendedCard): card is PotentialMatch {
+  return 'isPotentialMatch' in card && card.isPotentialMatch === true;
+}
+
+function isCollaboration(card: ExtendedCard): card is Collaboration {
+  return !isPotentialMatch(card) && 'creator_id' in card;
 }
 
 // Define a generic card data interface that all specialized cards can use
@@ -679,7 +711,7 @@ export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDialog, setShowDialog] = useState(false);
   // Store history of swiped cards for undo functionality
-  const [swipeHistory, setSwipeHistory] = useState<Array<{card: any, direction: "left" | "right", index: number}>>([]);
+  const [swipeHistory, setSwipeHistory] = useState<Array<{card: ExtendedCard, direction: "left" | "right", index: number}>>([]);
   // Match moment states
   const [showMatch, setShowMatch] = useState(false);
   const [matchData, setMatchData] = useState<{
@@ -697,22 +729,60 @@ export default function DiscoverPage() {
   const [previousLocation, setPreviousLocation] = useState<string | null>(null);
   
   // Fetch collaborations from real API
-  const { data: collaborationsData, isLoading: isLoadingCollabs, isError: isCollabsError, error: collabsError } = useQuery({
-    queryKey: ['/api/collaborations/search'],
+  // State to track current page and if we should load more data
+  const [page, setPage] = useState(1);
+  const [hasMoreCollabs, setHasMoreCollabs] = useState(true);
+  const [allCollaborations, setAllCollaborations] = useState<Collaboration[]>([]);
+  
+  // Query for fetching paginated collaborations
+  // Track fetching state manually since we can't use isFetchingNextPage from react-query v4
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+
+  const { data: collaborationsPageData, isLoading: isLoadingCollabs, isError: isCollabsError, error: collabsError } = useQuery({
+    queryKey: ['/api/collaborations/search', page],
     queryFn: async () => {
       try {
-        console.log('Fetching collaborations...');
+        setIsFetchingMore(true);
+        console.log(`Fetching collaborations page ${page}...`);
         // Use the standardized apiRequest function to ensure Telegram headers are included
-        const data = await apiRequest('/api/collaborations/search');
-        console.log('Collaborations fetched successfully, count:', data.length);
-        return data;
+        // Add page and limit as query parameters
+        const data = await apiRequest(`/api/collaborations/search?page=${page}&limit=10`);
+        console.log('Collaborations page fetched successfully:', data);
+        
+        // Check if this is a paginated response with data property
+        if (data && data.data && Array.isArray(data.data)) {
+          console.log(`Received ${data.data.length} collaborations (page ${data.page} of ${data.totalPages})`);
+          
+          // Update hasMore state based on response
+          setHasMoreCollabs(data.hasMore);
+          
+          // Update all collaborations
+          setAllCollaborations(prev => {
+            // If it's the first page, replace the entire array
+            if (page === 1) return [...data.data];
+            // Otherwise append to existing data
+            return [...prev, ...data.data];
+          });
+          
+          setIsFetchingMore(false);
+          return data;
+        } else {
+          // If the response doesn't match expected format, handle as legacy case
+          console.log('Collaborations fetched in legacy format, count:', Array.isArray(data) ? data.length : 0);
+          setHasMoreCollabs(false);
+          setAllCollaborations(Array.isArray(data) ? data : []);
+          setIsFetchingMore(false);
+          return { data: Array.isArray(data) ? data : [], page: 1, hasMore: false, totalPages: 1 };
+        }
       } catch (err) {
         console.error('Collaboration fetch error:', err);
+        setIsFetchingMore(false);
         throw err;
       }
     },
     refetchOnWindowFocus: false,
     retry: 1, // Retry once in case of network issues
+    staleTime: 60000 // Consider data fresh for 1 minute
   });
   
   // Fetch potential matches (users who swiped right on host's collaborations)
@@ -792,20 +862,37 @@ export default function DiscoverPage() {
     setPreviousLocation(currentLocation);
   }, [location, previousLocation, queryClient]);
 
+  // Function to load more data when needed
+  const loadMoreCollaborations = useCallback(() => {
+    if (hasMoreCollabs && !isLoadingCollabs && !isFetchingMore) {
+      console.log(`Loading more collaborations, incrementing page to ${page + 1}`);
+      setPage(prev => prev + 1);
+    }
+  }, [hasMoreCollabs, isLoadingCollabs, isFetchingMore, page]);
+  
+  // Preload next batch when we're getting close to the end of current batch
+  useEffect(() => {
+    if (allCollaborations.length > 0 && cards.length > 0 && currentIndex >= cards.length - 3) {
+      console.log('Getting close to the end of available cards, preloading next batch...');
+      loadMoreCollaborations();
+    }
+  }, [currentIndex, cards.length, allCollaborations.length, loadMoreCollaborations]);
+  
   // Process the collaborations data with better error handling
-  const regularCards = Array.isArray(collaborationsData) ? collaborationsData : [];
+  const regularCards = allCollaborations || [];
   const potentialMatchCards = Array.isArray(potentialMatchesData) ? potentialMatchesData : [];
   
   // Log data for debugging
   console.log("Loaded data:", {
     regularCardsCount: regularCards.length,
     potentialMatchesCount: potentialMatchCards.length,
-    hasCollaborationsData: !!collaborationsData,
-    hasPotentialMatchesData: !!potentialMatchesData
+    hasMoreCollabs,
+    currentPage: page,
+    totalCollaborations: collaborationsPageData?.totalItems || 0
   });
   
   // Combine cards, showing potential matches first
-  const cards = [...potentialMatchCards, ...regularCards];
+  const cards: ExtendedCard[] = [...potentialMatchCards, ...regularCards];
 
   // Initialize Telegram WebApp and handle viewport
   useEffect(() => {
@@ -949,8 +1036,8 @@ export default function DiscoverPage() {
     try {
       const currentCard = cards[currentIndex];
       if (currentCard && currentCard.id) {
-        // Check if this is a potential match card
-        if (currentCard.isPotentialMatch) {
+        // Check if this is a potential match card using the type guard
+        if (isPotentialMatch(currentCard)) {
           console.log(`Recording ${direction} swipe for potential match with ID: ${currentCard.id}`);
           console.log("API Request payload for potential match:", {
             swipe_id: currentCard.id,
@@ -1023,7 +1110,7 @@ export default function DiscoverPage() {
       const card = cards[currentIndex];
       
       // Different handling based on whether this is a potential match or regular collaboration
-      if (card.isPotentialMatch) {
+      if (isPotentialMatch(card)) {
         // For potential matches, a right swipe immediately creates a match
         // since the other person already swiped right on your collaboration
         const { first_name, last_name, company_name } = card.potentialMatchData;
@@ -1080,50 +1167,57 @@ export default function DiscoverPage() {
     setCurrentIndex(lastAction.index);
   };
 
-  // Helper function to get company name from collaboration
-  const getCompanyName = (card: Collaboration): string => {
+  // Helper function to get company name from any card type
+  const getCompanyName = (card: ExtendedCard): string => {
     if (!card) return "";
     
-    // Add logging to debug the company data
-    console.log("Getting company name for card:", {
-      card_id: card.id,
-      has_company_data: !!card.company_data,
-      company_data_name: card.company_data?.name,
-      creator_company_name: card.creator_company_name
-    });
-    
-    // Try to extract company name from details
-    try {
-      // First check if company_data is available (directly from the database)
-      if (card.company_data && card.company_data.name) {
-        return card.company_data.name;
-      }
-      
-      // Then check if the creator's company information is available
-      if (card.creator_company_name) {
-        return card.creator_company_name;
-      }
-      
-      // Then check the details object
-      if (card.details && typeof card.details === 'object') {
-        const details = card.details as Record<string, any>;
-        if (details.company_name) return details.company_name;
-        if (details.companyName) return details.companyName;
-      }
-      
-      // Finally, provide a fallback name
-      return "Company";
-    } catch (e) {
-      console.error("Error extracting company name:", e);
-      return "Company";
+    // Handle potential match cards differently
+    if (isPotentialMatch(card)) {
+      return card.potentialMatchData?.company_name || "Company";
     }
+    
+    // For regular collaboration cards
+    if (isCollaboration(card)) {
+      // Add logging to debug the company data
+      console.log("Getting company name for card:", {
+        card_id: card.id,
+        has_company_data: !!card.company_data,
+        company_data_name: card.company_data?.name,
+        creator_company_name: card.creator_company_name
+      });
+      
+      // Try to extract company name from details
+      try {
+        // First check if company_data is available (directly from the database)
+        if (card.company_data && card.company_data.name) {
+          return card.company_data.name;
+        }
+        
+        // Then check if the creator's company information is available
+        if (card.creator_company_name) {
+          return card.creator_company_name;
+        }
+        
+        // Then check the details object
+        if (card.details && typeof card.details === 'object') {
+          const details = card.details as Record<string, any>;
+          if (details.company_name) return details.company_name;
+          if (details.companyName) return details.companyName;
+        }
+      } catch (e) {
+        console.error("Error extracting company name:", e);
+      }
+    }
+    
+    // Fallback for all card types
+    return "Company";
   };
   
   // Helper function to get collaboration type from card for display
-  const getCollaborationTypeFromCard = (card: Collaboration): string => {
+  const getCollaborationTypeFromCard = (card: ExtendedCard): string => {
     if (!card) return "Collaboration";
     
-    // Use the collab_type property if available
+    // Use the collab_type property if available (works for both card types)
     return card.collab_type || "Collaboration";
   };
 
@@ -1187,7 +1281,7 @@ export default function DiscoverPage() {
   };
 
   // Show fallback rendering without error state if successful data load but no cards
-  if (collaborationsData && Array.isArray(collaborationsData) && regularCards.length === 0) {
+  if (collaborationsPageData && regularCards.length === 0) {
     console.log("Successfully loaded data but no collaborations available");
     return renderEmptyState("No collaborations available right now. Check back later or adjust your filter settings.");
   }
@@ -1202,7 +1296,7 @@ export default function DiscoverPage() {
     return renderEmptyState("You've viewed all available collaborations. Check back later or adjust your filters to see more.");
   }
 
-  const renderCard = (card: any) => {
+  const renderCard = (card: ExtendedCard | null) => {
     // Handle the case where card might be null (at the end of the deck)
     if (!card) {
       return (
@@ -1232,8 +1326,8 @@ export default function DiscoverPage() {
       );
     }
     
-    // Check if it's a potential match card
-    if (card.isPotentialMatch && card.potentialMatchData) {
+    // Check if it's a potential match card using the type guard
+    if (isPotentialMatch(card)) {
       // Use our dedicated PotentialMatchCard component
       return (
         <PotentialMatchCard
@@ -1556,52 +1650,109 @@ export default function DiscoverPage() {
           <CollaborationDetailsDialog
             isOpen={showDialog}
             onClose={() => setShowDialog(false)}
-            collaboration={{
-              // Basic collaboration info
-              id: currentCard.id,
-              title: currentCard.title || "Collaboration Opportunity",
-              collab_type: currentCard.collab_type || "Collaboration",
-              description: currentCard.description || "",
-              date: currentCard.specific_date || "",
-              topics: currentCard.topics || [],
-              
-              // Company Info - these are legacy fields, but we'll keep them for compatibility
-              companyName: getCompanyName(currentCard),
-              companyWebsite: currentCard.details?.company_website || currentCard.details?.website,
-              companyTwitter: currentCard.details?.twitter_handle || currentCard.details?.companyTwitter,
-              twitterFollowers: currentCard.company_twitter_followers || currentCard.details?.twitter_followers,
-              companyLinkedIn: currentCard.details?.linkedin_url || currentCard.details?.companyLinkedIn,
-              companySector: currentCard.details?.sector || currentCard.company_tags?.[0],
-              fundingStage: currentCard.funding_stage,
-              blockchainNetworks: currentCard.company_blockchain_networks || currentCard.required_blockchain_networks,
-              hasToken: currentCard.company_has_token || currentCard.required_token_status,
-              tokenTicker: currentCard.company_token_ticker,
-              
-              // Pass the detailed data for the collaboration
-              details: currentCard.details || {},
-              
-              // Pass company data directly from the API
-              // Explicitly log what we're passing to help debug
-              company_data: {
-                id: currentCard.company_data?.id,
-                name: currentCard.company_data?.name,
-                short_description: currentCard.company_data?.short_description,
-                long_description: currentCard.company_data?.long_description,
-                website: currentCard.company_data?.website,
-                job_title: currentCard.company_data?.job_title,
-                twitter_handle: currentCard.company_data?.twitter_handle,
-                twitter_followers: currentCard.company_data?.twitter_followers,
-                linkedin_url: currentCard.company_data?.linkedin_url,
-                funding_stage: currentCard.company_data?.funding_stage,
-                has_token: currentCard.company_data?.has_token,
-                token_ticker: currentCard.company_data?.token_ticker,
-                blockchain_networks: currentCard.company_data?.blockchain_networks,
-                tags: currentCard.company_data?.tags
-              },
-              
-              // Backward compatibility
-              type: currentCard.collab_type
-            }}
+            collaboration={
+              isPotentialMatch(currentCard) ? {
+                // Basic collaboration info for potential match
+                id: currentCard.id,
+                title: "Potential Match",
+                collab_type: currentCard.collab_type || "Collaboration",
+                description: currentCard.description || "",
+                date: "",
+                topics: currentCard.topics || [],
+                
+                // Company Info from potential match data
+                companyName: currentCard.potentialMatchData?.company_name || "Company",
+                companyWebsite: "",
+                companyTwitter: "",
+                twitterFollowers: currentCard.potentialMatchData?.twitter_followers || "",
+                companyLinkedIn: "",
+                companySector: "",
+                fundingStage: "",
+                blockchainNetworks: [],
+                hasToken: false,
+                tokenTicker: "",
+                
+                // Empty details for potential match
+                details: {},
+                
+                // Empty company data for potential match
+                company_data: {
+                  id: "",
+                  name: currentCard.potentialMatchData?.company_name || "",
+                  short_description: "",
+                  long_description: "",
+                  website: "",
+                  job_title: currentCard.potentialMatchData?.job_title || "",
+                  twitter_handle: "",
+                  twitter_followers: currentCard.potentialMatchData?.twitter_followers || "",
+                  linkedin_url: "",
+                  funding_stage: "",
+                  has_token: false,
+                  token_ticker: "",
+                  blockchain_networks: [],
+                  tags: []
+                },
+                
+                // Backward compatibility
+                type: currentCard.collab_type
+              } : isCollaboration(currentCard) ? {
+                // Basic collaboration info
+                id: currentCard.id,
+                title: currentCard.title || "Collaboration Opportunity",
+                collab_type: currentCard.collab_type || "Collaboration",
+                description: currentCard.description || "",
+                date: currentCard.specific_date || "",
+                topics: currentCard.topics || [],
+                
+                // Company Info - these are legacy fields, but we'll keep them for compatibility
+                companyName: getCompanyName(currentCard),
+                companyWebsite: currentCard.details?.company_website || currentCard.details?.website,
+                companyTwitter: currentCard.details?.twitter_handle || currentCard.details?.companyTwitter,
+                twitterFollowers: currentCard.company_twitter_followers || currentCard.details?.twitter_followers,
+                companyLinkedIn: currentCard.details?.linkedin_url || currentCard.details?.companyLinkedIn,
+                companySector: currentCard.details?.sector || currentCard.company_tags?.[0],
+                fundingStage: currentCard.funding_stage,
+                blockchainNetworks: currentCard.company_blockchain_networks || currentCard.required_blockchain_networks,
+                hasToken: currentCard.company_has_token || currentCard.required_token_status,
+                tokenTicker: currentCard.company_token_ticker,
+                
+                // Pass the detailed data for the collaboration
+                details: currentCard.details || {},
+                
+                // Pass company data directly from the API
+                // Explicitly log what we're passing to help debug
+                company_data: {
+                  id: currentCard.company_data?.id,
+                  name: currentCard.company_data?.name,
+                  short_description: currentCard.company_data?.short_description,
+                  long_description: currentCard.company_data?.long_description,
+                  website: currentCard.company_data?.website,
+                  job_title: currentCard.company_data?.job_title,
+                  twitter_handle: currentCard.company_data?.twitter_handle,
+                  twitter_followers: currentCard.company_data?.twitter_followers,
+                  linkedin_url: currentCard.company_data?.linkedin_url,
+                  funding_stage: currentCard.company_data?.funding_stage,
+                  has_token: currentCard.company_data?.has_token,
+                  token_ticker: currentCard.company_data?.token_ticker,
+                  blockchain_networks: currentCard.company_data?.blockchain_networks,
+                  tags: currentCard.company_data?.tags
+                },
+                
+                // Backward compatibility
+                type: currentCard.collab_type
+              } : {
+                // Fallback data if somehow the card doesn't match either type
+                id: currentCard.id,
+                title: "Collaboration Opportunity",
+                collab_type: currentCard.collab_type || "Collaboration",
+                description: currentCard.description || "",
+                date: "",
+                topics: [],
+                companyName: "Company",
+                details: {},
+                type: currentCard.collab_type
+              }
+            }
           />
         )}
         
