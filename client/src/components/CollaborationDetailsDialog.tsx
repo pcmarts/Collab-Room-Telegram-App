@@ -166,7 +166,7 @@ export function CollaborationDetailsDialog({
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="pr-8">{getDialogTitle()}</DialogTitle>
           {/* We're removing the custom close button since Dialog component already has one */}
@@ -263,21 +263,9 @@ export function CollaborationDetailsDialog({
             </div>
           )}
           
-          {/* Blockchain Networks */}
-          {renderBlockchainNetworks()}
+          {/* Removed duplicate blockchain networks section as it's now in Company Info */}
           
-          {/* Token Info */}
-          {hasTokenInfo() && (
-            <div>
-              <h4 className="text-sm font-medium mb-1">Token</h4>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Coins className="h-4 w-4" />
-                <span>
-                  {collaboration.tokenTicker || details.token_ticker || "Available"}
-                </span>
-              </div>
-            </div>
-          )}
+          {/* Removed duplicate token info section as it's now in Company Info */}
           
           {/* Company Information Section */}
           <Separator />
@@ -291,11 +279,11 @@ export function CollaborationDetailsDialog({
               </div>
               
               {/* Role Title */}
-              {collaboration.roleTitle && (
+              {(collaboration.roleTitle || details.job_title || details.role) && (
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    {collaboration.roleTitle}
+                    {collaboration.roleTitle || details.job_title || details.role}
                   </span>
                 </div>
               )}
@@ -317,32 +305,42 @@ export function CollaborationDetailsDialog({
               )}
               
               {/* Twitter */}
-              {collaboration.companyTwitter && (
+              {(collaboration.companyTwitter || details.twitter_handle) && (
                 <div className="flex items-center gap-2">
                   <FaTwitter className="h-4 w-4 text-muted-foreground" />
                   <a
-                    href={`https://twitter.com/${collaboration.companyTwitter.replace('@', '')}`}
+                    href={`https://twitter.com/${(collaboration.companyTwitter || details.twitter_handle || '').replace('@', '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline"
                   >
-                    @{collaboration.companyTwitter.replace('@', '')}
+                    @{(collaboration.companyTwitter || details.twitter_handle || '').replace('@', '')}
                   </a>
-                  {collaboration.twitterFollowers && (
+                  {(collaboration.twitterFollowers || details.twitter_followers) && (
                     <span className="text-sm text-muted-foreground flex items-center ml-1">
                       <Users className="h-3 w-3 mr-1" />
-                      {collaboration.twitterFollowers}
+                      {collaboration.twitterFollowers || details.twitter_followers}
                     </span>
                   )}
                 </div>
               )}
 
+              {/* Company Short Description */}
+              {(details.company_description || details.short_company_description) && (
+                <div className="flex gap-2">
+                  <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <p className="text-sm text-muted-foreground">
+                    {details.company_description || details.short_company_description}
+                  </p>
+                </div>
+              )}
+
               {/* LinkedIn */}
-              {collaboration.companyLinkedIn && (
+              {(collaboration.companyLinkedIn || details.linkedin_url) && (
                 <div className="flex items-center gap-2">
                   <Linkedin className="h-4 w-4 text-muted-foreground" />
                   <a
-                    href={`https://linkedin.com/company/${collaboration.companyLinkedIn}`}
+                    href={`https://linkedin.com/company/${collaboration.companyLinkedIn || details.linkedin_url || ''}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline"
@@ -353,21 +351,50 @@ export function CollaborationDetailsDialog({
               )}
 
               {/* Company Sector */}
-              {collaboration.companySector && (
+              {(collaboration.companySector || details.sector || details.company_sector) && (
                 <div className="flex items-center gap-2">
                   <Building className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    {collaboration.companySector}
+                    Sector: {collaboration.companySector || details.sector || details.company_sector}
                   </span>
                 </div>
               )}
               
               {/* Funding Stage */}
-              {collaboration.fundingStage && (
+              {(collaboration.fundingStage || details.funding_stage) && (
                 <div className="flex items-center gap-2">
                   <Coins className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    Funding: {collaboration.fundingStage}
+                    Funding: {collaboration.fundingStage || details.funding_stage}
+                  </span>
+                </div>
+              )}
+              
+              {/* Blockchain Networks */}
+              {(collaboration.blockchainNetworks || details.blockchain_networks) && 
+               (Array.isArray(collaboration.blockchainNetworks) || Array.isArray(details.blockchain_networks)) && 
+               ((collaboration.blockchainNetworks || []).length > 0 || (details.blockchain_networks || []).length > 0) && (
+                <div className="flex gap-2">
+                  <Network className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <span className="text-sm text-muted-foreground block mb-1">Blockchain Networks:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {(collaboration.blockchainNetworks || details.blockchain_networks || []).map((network, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {network}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Token Information */}
+              {(collaboration.hasToken || details.has_token || collaboration.tokenTicker || details.token_ticker) && (
+                <div className="flex items-center gap-2">
+                  <Coins className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Token: {collaboration.tokenTicker || details.token_ticker || "Yes"}
                   </span>
                 </div>
               )}
