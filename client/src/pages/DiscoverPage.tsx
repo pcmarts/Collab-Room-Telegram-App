@@ -1226,11 +1226,10 @@ export default function DiscoverPage() {
     
     console.log(`Selecting card component for type: ${cardType}`);
     
-    // For card e1d8af65-5fd9-4585-be3a-f65d9ad7c565, force it to be a podcast card for testing
+    // Logging to see which component will be used without overrides
     if (card.id === 'e1d8af65-5fd9-4585-be3a-f65d9ad7c565') {
-      console.log('OVERRIDE: Forcing podcast card for e1d8af65-5fd9-4585-be3a-f65d9ad7c565');
-      console.log('Original type was:', cardType);
-      cardType = 'podcast';
+      console.log('SPECIAL ATTENTION: Checking podcast collaboration without override!');
+      console.log('Current card type:', cardType);
     }
     
     switch (cardType) {
