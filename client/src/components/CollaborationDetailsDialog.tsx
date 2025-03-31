@@ -166,12 +166,12 @@ export function CollaborationDetailsDialog({
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="pr-8">{getDialogTitle()}</DialogTitle>
           {/* We're removing the custom close button since Dialog component already has one */}
-          <DialogDescription className="text-lg font-medium">
-            {collaboration.companyName}
+          <DialogDescription className="text-lg font-medium text-primary">
+            {collaboration.companyName || details.company_name || 'Company'}
           </DialogDescription>
         </DialogHeader>
 
@@ -268,9 +268,9 @@ export function CollaborationDetailsDialog({
           {/* Removed duplicate token info section as it's now in Company Info */}
           
           {/* Company Information Section */}
-          <Separator />
-          <div>
-            <h4 className="text-sm font-bold mb-2">Company Information</h4>
+          <Separator className="my-3" />
+          <div className="bg-muted/30 p-3 rounded-md">
+            <h4 className="text-sm font-bold mb-3">Company Information</h4>
             <div className="space-y-3">
               {/* Company Name */}
               <div className="flex items-center gap-2">
@@ -374,10 +374,10 @@ export function CollaborationDetailsDialog({
               {(collaboration.blockchainNetworks || details.blockchain_networks) && 
                (Array.isArray(collaboration.blockchainNetworks) || Array.isArray(details.blockchain_networks)) && 
                ((collaboration.blockchainNetworks || []).length > 0 || (details.blockchain_networks || []).length > 0) && (
-                <div className="flex gap-2">
-                  <Network className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
+                  <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <div>
-                    <span className="text-sm text-muted-foreground block mb-1">Blockchain Networks:</span>
+                    <span className="text-sm font-medium block mb-1">Blockchain Networks:</span>
                     <div className="flex flex-wrap gap-1">
                       {(collaboration.blockchainNetworks || details.blockchain_networks || []).map((network, index) => (
                         <Badge key={index} variant="outline" className="text-xs">
@@ -391,9 +391,9 @@ export function CollaborationDetailsDialog({
               
               {/* Token Information */}
               {(collaboration.hasToken || details.has_token || collaboration.tokenTicker || details.token_ticker) && (
-                <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                  <Coins className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">
                     Token: {collaboration.tokenTicker || details.token_ticker || "Yes"}
                   </span>
                 </div>
