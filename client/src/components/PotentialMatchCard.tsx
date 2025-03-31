@@ -6,8 +6,13 @@ import { GlowEffect } from "@/components/ui/glow-effect";
 export interface PotentialMatchData {
   first_name: string;
   last_name?: string;
-  company_name: string;
-  job_title: string;
+  company_name?: string; // Make optional to fix type issues
+  job_title?: string;   // Make optional to fix type issues
+  twitter_followers?: string;
+  company_twitter_followers?: string;
+  user_id: string;
+  collaboration_id: string;
+  swipe_created_at: string;
 }
 
 export interface PotentialMatchCardProps {
@@ -47,11 +52,13 @@ export function PotentialMatchCard({
               Potential Match
             </Badge>
             <h3 className="text-lg font-semibold mb-1">
-              {first_name} from {company_name} is interested in your collab
+              {first_name} {company_name ? `from ${company_name}` : ''} is interested in your collab
             </h3>
-            <p className="text-sm text-muted-foreground">
-              {job_title}
-            </p>
+            {job_title && (
+              <p className="text-sm text-muted-foreground">
+                {job_title}
+              </p>
+            )}
           </div>
           
           <div>

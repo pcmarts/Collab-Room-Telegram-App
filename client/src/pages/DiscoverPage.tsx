@@ -872,11 +872,14 @@ export default function DiscoverPage() {
   
   // Preload next batch when we're getting close to the end of current batch
   useEffect(() => {
-    if (allCollaborations.length > 0 && cards.length > 0 && currentIndex >= cards.length - 3) {
+    // Define cards inside this effect to avoid the "uninitialized variable" error
+    const combinedCards = [...(Array.isArray(potentialMatchesData) ? potentialMatchesData : []), ...(allCollaborations || [])];
+    
+    if (allCollaborations.length > 0 && combinedCards.length > 0 && currentIndex >= combinedCards.length - 3) {
       console.log('Getting close to the end of available cards, preloading next batch...');
       loadMoreCollaborations();
     }
-  }, [currentIndex, cards.length, allCollaborations.length, loadMoreCollaborations]);
+  }, [currentIndex, allCollaborations, potentialMatchesData, loadMoreCollaborations]);
   
   // Process the collaborations data with better error handling
   const regularCards = allCollaborations || [];
@@ -997,8 +1000,11 @@ export default function DiscoverPage() {
     console.log("Current card:", {
       id: currentCard.id,
       type: currentCard.collab_type,
-      creator_id: currentCard.creator_id,
-      status: currentCard.status
+      // Fix type issues by checking the card type before accessing properties
+      ...(isCollaboration(currentCard) ? {
+        creator_id: currentCard.creator_id,
+        status: currentCard.status
+      } : {})
     });
     
     setConstrained(false);
@@ -1119,7 +1125,7 @@ export default function DiscoverPage() {
         // Set the match data
         setMatchData({
           title: `Match with ${fullName}`,
-          companyName: company_name,
+          companyName: company_name || "Company", // Provide a fallback for company_name
           collaborationType: card.collab_type || "Collaboration"
         });
         
