@@ -1,0 +1,971 @@
+
+
+
+
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/matches',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+
+8:15:28 PM [express] GET /api/profile 200 in 104ms :: {"user":{"id":"a8364e70-de01-4b7d-b7f8-52f6f18…
+
+
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE',
+  'if-none-match': 'W/"64b-Ixn3r8eJoygdjNaH3zRfMiMdBrU"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/matches',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+No Telegram init data found in request headers
+Available headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "if-none-match": "W/\"64b-Ixn3r8eJoygdjNaH3zRfMiMdBrU\"",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/matches",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.9.110",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": ""
+}
+⚠️ No Telegram data found in request
+8:15:29 PM [express] GET /api/profile 401 in 1ms :: {"error":"Unauthorized"}
+============ DEBUG: User Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/matches',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.3.135',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Found 0 matches for user a8364e70-de01-4b7d-b7f8-52f6f186391d
+8:15:29 PM [express] GET /api/matches 200 in 35ms :: []
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE',
+  'if-none-match': 'W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.3.135',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+============ DEBUG: Search Collaborations Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE',
+  'if-none-match': 'W/"3419-McnO2Y5KbyepD5KLjzPEDhzGk6o"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2'
+}
+Query: {}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Found Telegram user: 7892486659
+Found 0 potential matches for user a8364e70-de01-4b7d-b7f8-52f6f186391d
+8:15:36 PM [express] GET /api/potential-matches 304 in 72ms :: []
+Found database user: a8364e70-de01-4b7d-b7f8-52f6f186391d
+Calling searchCollaborations with user ID: a8364e70-de01-4b7d-b7f8-52f6f186391d
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true
+}
+Found 18 previous swipes by user a8364e70-de01-4b7d-b7f8-52f6f186391d
+Found 2 collaborations created by user a8364e70-de01-4b7d-b7f8-52f6f186391d
+Total IDs to exclude: 8 (2 own + 18 swiped)
+Excluding 8 total collaborations from results
+Excluding user's own collaborations (creator_id filtering)
+Final filter query constructed, executing and returning results
+Found company data for collaboration 1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found company data for collaboration 4fa70efd-7c73-4cd1-99af-ce7d4d67fc28: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found company data for collaboration 81f35dd4-fae2-4872-a10b-a8cb8af32360: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found company data for collaboration 51221906-fef5-4908-8c94-5b90e44f4ff7: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found company data for collaboration 2dd0f45d-28c3-4568-873d-ee0855be2a8d: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found company data for collaboration ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found 6 collaborations
+8:15:36 PM [express] GET /api/collaborations/search 304 in 254ms :: [{"id":"4fa70efd-7c73-4cd1-99af-…
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-03-31T20:15:59.089Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "content-length": "78",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.9.110",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2"
+}
+Body: {
+  "collaboration_id": "4fa70efd-7c73-4cd1-99af-ce7d4d67fc28",
+  "direction": "left"
+}
+Parsed request parameters: {
+  collaboration_id: '4fa70efd-7c73-4cd1-99af-ce7d4d67fc28',
+  swipe_id: undefined,
+  direction: 'left',
+  is_potential_match: undefined
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Authentication success: Found Telegram ID: 7892486659
+User details: first_name=Jim, last_name=Testing, username=jimtesting
+Looking up user by Telegram ID: 7892486659...
+Database success: Found user a8364e70-de01-4b7d-b7f8-52f6f186391d (Jim Bean)
+Creating swipe for collaboration: 4fa70efd-7c73-4cd1-99af-ce7d4d67fc28
+Collaboration verification success: Found type: Newsletter Feature, status: active
+Creating swipe record with parameters: {
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  collaboration_id: '4fa70efd-7c73-4cd1-99af-ce7d4d67fc28',
+  direction: 'left'
+}
+Creating swipe with data: {
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "4fa70efd-7c73-4cd1-99af-ce7d4d67fc28",
+  "direction": "left"
+}
+Swipe created: {
+  "id": "83c9ed1a-d319-4aad-97c6-cf5fe7252255",
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "4fa70efd-7c73-4cd1-99af-ce7d4d67fc28",
+  "direction": "left",
+  "details": {},
+  "created_at": "2025-03-31T20:15:59.193Z"
+}
+Success: Created swipe record with ID: 83c9ed1a-d319-4aad-97c6-cf5fe7252255
+Details: left swipe for collaboration 4fa70efd-7c73-4cd1-99af-ce7d4d67fc28 by user a8364e70-de01-4b7d-b7f8-52f6f186391d
+Timestamp: Mon Mar 31 2025 20:15:59 GMT+0000 (Coordinated Universal Time)
+8:15:59 PM [express] POST /api/swipes 201 in 124ms :: {"id":"83c9ed1a-d319-4aad-97c6-cf5fe7252255","…
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-03-31T20:16:00.638Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "content-length": "78",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.9.110",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2"
+}
+Body: {
+  "collaboration_id": "1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9",
+  "direction": "left"
+}
+Parsed request parameters: {
+  collaboration_id: '1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9',
+  swipe_id: undefined,
+  direction: 'left',
+  is_potential_match: undefined
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Authentication success: Found Telegram ID: 7892486659
+User details: first_name=Jim, last_name=Testing, username=jimtesting
+Looking up user by Telegram ID: 7892486659...
+Database success: Found user a8364e70-de01-4b7d-b7f8-52f6f186391d (Jim Bean)
+Creating swipe for collaboration: 1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9
+Collaboration verification success: Found type: Report & Research Feature, status: active
+Creating swipe record with parameters: {
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  collaboration_id: '1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9',
+  direction: 'left'
+}
+Creating swipe with data: {
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9",
+  "direction": "left"
+}
+Swipe created: {
+  "id": "2638888c-4afc-4a17-9afa-211971223bfb",
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9",
+  "direction": "left",
+  "details": {},
+  "created_at": "2025-03-31T20:16:00.678Z"
+}
+Success: Created swipe record with ID: 2638888c-4afc-4a17-9afa-211971223bfb
+Details: left swipe for collaboration 1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9 by user a8364e70-de01-4b7d-b7f8-52f6f186391d
+Timestamp: Mon Mar 31 2025 20:16:00 GMT+0000 (Coordinated Universal Time)
+8:16:00 PM [express] POST /api/swipes 201 in 50ms :: {"id":"2638888c-4afc-4a17-9afa-211971223bfb","u…
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-03-31T20:16:04.305Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "content-length": "78",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.9.110",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2"
+}
+Body: {
+  "collaboration_id": "2dd0f45d-28c3-4568-873d-ee0855be2a8d",
+  "direction": "left"
+}
+Parsed request parameters: {
+  collaboration_id: '2dd0f45d-28c3-4568-873d-ee0855be2a8d',
+  swipe_id: undefined,
+  direction: 'left',
+  is_potential_match: undefined
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Authentication success: Found Telegram ID: 7892486659
+User details: first_name=Jim, last_name=Testing, username=jimtesting
+Looking up user by Telegram ID: 7892486659...
+Database success: Found user a8364e70-de01-4b7d-b7f8-52f6f186391d (Jim Bean)
+Creating swipe for collaboration: 2dd0f45d-28c3-4568-873d-ee0855be2a8d
+Collaboration verification success: Found type: Podcast Guest Appearance, status: active
+Creating swipe record with parameters: {
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  collaboration_id: '2dd0f45d-28c3-4568-873d-ee0855be2a8d',
+  direction: 'left'
+}
+Creating swipe with data: {
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "2dd0f45d-28c3-4568-873d-ee0855be2a8d",
+  "direction": "left"
+}
+Swipe created: {
+  "id": "0f8639ea-b55c-484d-ae6b-64d79d948ce2",
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "2dd0f45d-28c3-4568-873d-ee0855be2a8d",
+  "direction": "left",
+  "details": {},
+  "created_at": "2025-03-31T20:16:04.346Z"
+}
+Success: Created swipe record with ID: 0f8639ea-b55c-484d-ae6b-64d79d948ce2
+Details: left swipe for collaboration 2dd0f45d-28c3-4568-873d-ee0855be2a8d by user a8364e70-de01-4b7d-b7f8-52f6f186391d
+Timestamp: Mon Mar 31 2025 20:16:04 GMT+0000 (Coordinated Universal Time)
+8:16:04 PM [express] POST /api/swipes 201 in 52ms :: {"id":"0f8639ea-b55c-484d-ae6b-64d79d948ce2","u…
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-03-31T20:16:05.271Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "content-length": "78",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.9.110",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2"
+}
+Body: {
+  "collaboration_id": "51221906-fef5-4908-8c94-5b90e44f4ff7",
+  "direction": "left"
+}
+Parsed request parameters: {
+  collaboration_id: '51221906-fef5-4908-8c94-5b90e44f4ff7',
+  swipe_id: undefined,
+  direction: 'left',
+  is_potential_match: undefined
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Authentication success: Found Telegram ID: 7892486659
+User details: first_name=Jim, last_name=Testing, username=jimtesting
+Looking up user by Telegram ID: 7892486659...
+Database success: Found user a8364e70-de01-4b7d-b7f8-52f6f186391d (Jim Bean)
+Creating swipe for collaboration: 51221906-fef5-4908-8c94-5b90e44f4ff7
+Collaboration verification success: Found type: Co-Marketing on Twitter, status: active
+Creating swipe record with parameters: {
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  collaboration_id: '51221906-fef5-4908-8c94-5b90e44f4ff7',
+  direction: 'left'
+}
+Creating swipe with data: {
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "51221906-fef5-4908-8c94-5b90e44f4ff7",
+  "direction": "left"
+}
+Swipe created: {
+  "id": "b9b80490-e2e2-4ac5-82fd-ec9774f7ef6e",
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "51221906-fef5-4908-8c94-5b90e44f4ff7",
+  "direction": "left",
+  "details": {},
+  "created_at": "2025-03-31T20:16:05.311Z"
+}
+Success: Created swipe record with ID: b9b80490-e2e2-4ac5-82fd-ec9774f7ef6e
+Details: left swipe for collaboration 51221906-fef5-4908-8c94-5b90e44f4ff7 by user a8364e70-de01-4b7d-b7f8-52f6f186391d
+Timestamp: Mon Mar 31 2025 20:16:05 GMT+0000 (Coordinated Universal Time)
+8:16:05 PM [express] POST /api/swipes 201 in 49ms :: {"id":"b9b80490-e2e2-4ac5-82fd-ec9774f7ef6e","u…
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-03-31T20:16:06.389Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "content-length": "78",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.9.110",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2"
+}
+Body: {
+  "collaboration_id": "81f35dd4-fae2-4872-a10b-a8cb8af32360",
+  "direction": "left"
+}
+Parsed request parameters: {
+  collaboration_id: '81f35dd4-fae2-4872-a10b-a8cb8af32360',
+  swipe_id: undefined,
+  direction: 'left',
+  is_potential_match: undefined
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Authentication success: Found Telegram ID: 7892486659
+User details: first_name=Jim, last_name=Testing, username=jimtesting
+Looking up user by Telegram ID: 7892486659...
+Database success: Found user a8364e70-de01-4b7d-b7f8-52f6f186391d (Jim Bean)
+Creating swipe for collaboration: 81f35dd4-fae2-4872-a10b-a8cb8af32360
+Collaboration verification success: Found type: Twitter Spaces Guest, status: active
+Creating swipe record with parameters: {
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  collaboration_id: '81f35dd4-fae2-4872-a10b-a8cb8af32360',
+  direction: 'left'
+}
+Creating swipe with data: {
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "81f35dd4-fae2-4872-a10b-a8cb8af32360",
+  "direction": "left"
+}
+Swipe created: {
+  "id": "2fb43ecb-4951-41e8-b28d-a885cf78e980",
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "81f35dd4-fae2-4872-a10b-a8cb8af32360",
+  "direction": "left",
+  "details": {},
+  "created_at": "2025-03-31T20:16:06.429Z"
+}
+Success: Created swipe record with ID: 2fb43ecb-4951-41e8-b28d-a885cf78e980
+Details: left swipe for collaboration 81f35dd4-fae2-4872-a10b-a8cb8af32360 by user a8364e70-de01-4b7d-b7f8-52f6f186391d
+Timestamp: Mon Mar 31 2025 20:16:06 GMT+0000 (Coordinated Universal Time)
+8:16:06 PM [express] POST /api/swipes 201 in 51ms :: {"id":"2fb43ecb-4951-41e8-b28d-a885cf78e980","u…
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-03-31T20:16:07.404Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "content-length": "78",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.9.110",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2"
+}
+Body: {
+  "collaboration_id": "ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5",
+  "direction": "left"
+}
+Parsed request parameters: {
+  collaboration_id: 'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5',
+  swipe_id: undefined,
+  direction: 'left',
+  is_potential_match: undefined
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Authentication success: Found Telegram ID: 7892486659
+User details: first_name=Jim, last_name=Testing, username=jimtesting
+Looking up user by Telegram ID: 7892486659...
+Database success: Found user a8364e70-de01-4b7d-b7f8-52f6f186391d (Jim Bean)
+Creating swipe for collaboration: ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5
+Collaboration verification success: Found type: Blog Post Feature, status: active
+Creating swipe record with parameters: {
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  collaboration_id: 'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5',
+  direction: 'left'
+}
+Creating swipe with data: {
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5",
+  "direction": "left"
+}
+Swipe created: {
+  "id": "ba6a832f-59a3-4770-9326-6cd1507b20d8",
+  "user_id": "a8364e70-de01-4b7d-b7f8-52f6f186391d",
+  "collaboration_id": "ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5",
+  "direction": "left",
+  "details": {},
+  "created_at": "2025-03-31T20:16:07.443Z"
+}
+Success: Created swipe record with ID: ba6a832f-59a3-4770-9326-6cd1507b20d8
+Details: left swipe for collaboration ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5 by user a8364e70-de01-4b7d-b7f8-52f6f186391d
+Timestamp: Mon Mar 31 2025 20:16:07 GMT+0000 (Coordinated Universal Time)
+8:16:07 PM [express] POST /api/swipes 201 in 49ms :: {"id":"ba6a832f-59a3-4770-9326-6cd1507b20d8","u…
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+8:16:13 PM [express] GET /api/profile 200 in 34ms :: {"user":{"id":"a8364e70-de01-4b7d-b7f8-52f6f186…
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE',
+  'if-none-match': 'W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.1.156',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+============ DEBUG: Search Collaborations Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE',
+  'if-none-match': 'W/"3419-McnO2Y5KbyepD5KLjzPEDhzGk6o"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.0.68',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2'
+}
+Query: {}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Found Telegram user: 7892486659
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE',
+  'if-none-match': 'W/"64b-Ixn3r8eJoygdjNaH3zRfMiMdBrU"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+No Telegram init data found in request headers
+Available headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "if-none-match": "W/\"64b-Ixn3r8eJoygdjNaH3zRfMiMdBrU\"",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.9.110",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": ""
+}
+⚠️ No Telegram data found in request
+8:16:14 PM [express] GET /api/profile 401 in 1ms :: {"error":"Unauthorized"}
+============ DEBUG: User Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A8fUegFK0o_LBFGB7EiOGhW9pNzw2Out5.6HgdT9Obx0UV7GeNqFWYhmM7LR1SvXFOlkZRNZymeDE',
+  'if-modified-since': 'Mon, 31 Mar 2025 20:12:23 GMT',
+  'if-none-match': 'W/"0-1743451943237"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.7.85',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVa8uF6p&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743451524&signature=GYi7IvfhKB8D80GJfjRBh9jQY1DPII2zOAZT6UO_ArilkIb0oKakhZoNNULB3ajnx6Wn41QY53chk1g7o2cYBA&hash=4eca3f05118359fce6013b7637bf44e9ee6e93a1d11fee7b6fdaea14151b40c2'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Found 0 potential matches for user a8364e70-de01-4b7d-b7f8-52f6f186391d
+8:16:14 PM [express] GET /api/potential-matches 304 in 70ms :: []
+Found database user: a8364e70-de01-4b7d-b7f8-52f6f186391d
+Calling searchCollaborations with user ID: a8364e70-de01-4b7d-b7f8-52f6f186391d
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true
+}
+Found 24 previous swipes by user a8364e70-de01-4b7d-b7f8-52f6f186391d
+Found 0 matches for user a8364e70-de01-4b7d-b7f8-52f6f186391d
+8:16:14 PM [express] GET /api/matches 200 in 113ms :: []
+Found 2 collaborations created by user a8364e70-de01-4b7d-b7f8-52f6f186391d
+Total IDs to exclude: 8 (2 own + 24 swiped)
+Excluding 8 total collaborations from results
+Excluding user's own collaborations (creator_id filtering)
+Final filter query constructed, executing and returning results
+Found company data for collaboration 2dd0f45d-28c3-4568-873d-ee0855be2a8d: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found company data for collaboration 4fa70efd-7c73-4cd1-99af-ce7d4d67fc28: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found company data for collaboration 1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found company data for collaboration ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found company data for collaboration 51221906-fef5-4908-8c94-5b90e44f4ff7: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found company data for collaboration 81f35dd4-fae2-4872-a10b-a8cb8af32360: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments', 'Finance' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Found 6 collaborations
+8:16:14 PM [express] GET /api/collaborations/search 304 in 257ms :: [{"id":"4fa70efd-7c73-4cd1-99af-…
