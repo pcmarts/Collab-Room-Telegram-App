@@ -330,7 +330,7 @@ export class DatabaseStorage implements IStorage {
         marketingPrefs?.twitter_followers) {
       
       console.log(`Filtering by min user Twitter followers: ${marketingPrefs.twitter_followers}`);
-      query = query.where(sql`${collaborations.creator_twitter_followers} >= ${marketingPrefs.twitter_followers}`);
+      query = query.where(sql`${collaborations.twitter_followers} >= ${marketingPrefs.twitter_followers}`);
     }
     
     // 5. Company Twitter Follower Count Filter
@@ -356,13 +356,13 @@ export class DatabaseStorage implements IStorage {
       // Filter for collaborations where funding stage matches any selected funding stage
       // Using = ANY() operator since this is a single value field (not an array)
       // This implements OR logic between selected funding stages
-      query = query.where(sql`${collaborations.company_funding_stage} = ANY(${fundingStagesPgArray}::text[])`);
+      query = query.where(sql`${collaborations.funding_stage} = ANY(${fundingStagesPgArray}::text[])`);
     }
     
     // 7. Token Status Filter (only filter if enabled)
     if (marketingPrefs?.discovery_filter_token_status_enabled) {
       console.log(`Filtering by token status: ${marketingPrefs.company_has_token}`);
-      query = query.where(eq(collaborations.company_has_token, marketingPrefs.company_has_token));
+      query = query.where(sql`${collaborations.company_has_token} = ${marketingPrefs.company_has_token}`);
     }
     
     // 8. Blockchain Networks Filter
@@ -383,7 +383,34 @@ export class DatabaseStorage implements IStorage {
     // Add additional debug logging
     console.log('Final filter query constructed, executing and returning results');
     
-    return query.orderBy(desc(collaborations.created_at));
+    // Get the raw collaborations first
+    const rawCollaborations = await query.orderBy(desc(collaborations.created_at));
+    
+    // Enhance collaborations with creator company info
+    const enhancedCollaborations = await Promise.all(rawCollaborations.map(async (collab) => {
+      try {
+        // Find the company associated with the creator_id
+        const [company] = await db
+          .select()
+          .from(companies)
+          .where(eq(companies.user_id, collab.creator_id));
+        
+        if (company) {
+          // Add creator company name to the collaboration object
+          return {
+            ...collab,
+            creator_company_name: company.name
+          };
+        }
+        
+        return collab;
+      } catch (err) {
+        console.error('Error getting company info for collaboration:', err);
+        return collab;
+      }
+    }));
+    
+    return enhancedCollaborations;
   }
   
   async updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined> {

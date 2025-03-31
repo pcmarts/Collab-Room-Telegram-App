@@ -20,7 +20,12 @@ import { GlowFilterButton } from "@/components/GlowFilterButton";
 import { PotentialMatchCard } from "@/components/PotentialMatchCard";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Collaboration } from "@shared/schema";
+import { Collaboration as BaseCollaboration } from "@shared/schema";
+
+// Extended Collaboration type to include the company name from our API
+interface Collaboration extends BaseCollaboration {
+  creator_company_name?: string;
+}
 
 import { Badge } from "@/components/ui/badge";
 import { FiExternalLink } from "react-icons/fi";
@@ -995,23 +1000,33 @@ export default function DiscoverPage() {
     setCurrentIndex(lastAction.index);
   };
 
-  // Helper function to get company name from details
+  // Helper function to get company name from collaboration
   const getCompanyName = (card: Collaboration): string => {
     if (!card) return "";
     
     // Try to extract company name from details
     try {
+      // First try to get the company_name directly from the collaboration record
+      // This is the most reliable method as it comes from the database relationship
+      
+      // First check if the creator's company information is available
+      if (card.creator_company_name) {
+        return card.creator_company_name;
+      }
+      
+      // Then check the details object
       if (card.details && typeof card.details === 'object') {
         const details = card.details as Record<string, any>;
-        return details.company_name || 
-               details.companyName || 
-               "Company";
+        if (details.company_name) return details.company_name;
+        if (details.companyName) return details.companyName;
       }
+      
+      // Finally, provide a fallback name
+      return "Company";
     } catch (e) {
-      console.error("Error parsing company name from details:", e);
+      console.error("Error extracting company name:", e);
+      return "Company";
     }
-    
-    return "Company";
   };
   
   // Helper function to get collaboration type from card for display
