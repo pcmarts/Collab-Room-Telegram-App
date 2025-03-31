@@ -396,12 +396,31 @@ export class DatabaseStorage implements IStorage {
     // Add additional debug logging
     console.log('Final filter query constructed, executing count query');
     
-    // Get count of items for pagination - clone the existing where conditions
-    const whereConditions = query.toSQL().query.split('WHERE')[1];
-    const countQuery = db
-      .select({ count: sql`count(*)` })
-      .from(collaborations)
-      .where(sql`${sql.raw(whereConditions)}`);
+    // Get count of items for pagination - safely extract where conditions
+    let countQuery;
+    try {
+      const sqlString = query.toSQL().query;
+      // Check if there's a WHERE clause before trying to split
+      if (sqlString && sqlString.includes('WHERE')) {
+        const whereConditions = sqlString.split('WHERE')[1];
+        if (whereConditions) {
+          countQuery = db
+            .select({ count: sql`count(*)` })
+            .from(collaborations)
+            .where(sql`${sql.raw(whereConditions)}`);
+        } else {
+          // No conditions after WHERE, use a simple count
+          countQuery = db.select({ count: sql`count(*)` }).from(collaborations);
+        }
+      } else {
+        // No WHERE clause at all, use a simple count
+        countQuery = db.select({ count: sql`count(*)` }).from(collaborations);
+      }
+    } catch (error) {
+      console.error("Error constructing count query:", error);
+      // Fallback to a simple count without conditions
+      countQuery = db.select({ count: sql`count(*)` }).from(collaborations);
+    }
     
     const [countResult] = await countQuery;
     const totalItems = Number(countResult?.count || 0);
