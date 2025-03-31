@@ -272,10 +272,13 @@ export function CollaborationDetailsDialog({
           <div className="bg-muted/30 p-3 rounded-md">
             <h4 className="text-sm font-bold mb-3">Company Information</h4>
             <div className="space-y-3">
-              {/* Company Name */}
+              {/* Company Name - Prioritize data from company table */}
               <div className="flex items-center gap-2 mb-3">
                 <Building className="h-5 w-5 text-primary" />
-                <span className="text-base font-medium">{collaboration.companyName}</span>
+                <span className="text-base font-medium">
+                  {/* Prioritize company name from details (which comes from company table) */}
+                  {details.company_name || details.companyName || collaboration.companyName || "Company"}
+                </span>
                 {collaboration.id === "4c95f244-d5c1-4369-9531-834401fdce12" && (
                   <Badge variant="outline" className="ml-2 text-xs bg-purple-500/10">Polygon</Badge>
                 )}
@@ -283,12 +286,12 @@ export function CollaborationDetailsDialog({
               
               {/* Important Links Section */}
               <div className="flex flex-wrap gap-3 mb-3">
-                {/* Company Website */}
-                {(collaboration.companyWebsite || details.company_website || details.website) && (
+                {/* Company Website - Prioritize company table data */}
+                {(details.website || details.company_website || collaboration.companyWebsite) && (
                   <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                     <Globe className="h-4 w-4 text-primary" />
                     <a
-                      href={collaboration.companyWebsite || details.company_website || details.website}
+                      href={details.website || details.company_website || collaboration.companyWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:underline flex items-center font-medium"
@@ -299,12 +302,12 @@ export function CollaborationDetailsDialog({
                   </div>
                 )}
                 
-                {/* LinkedIn */}
-                {(collaboration.companyLinkedIn || details.linkedin_url) && (
+                {/* LinkedIn - Prioritize company table data */}
+                {(details.linkedin_url || collaboration.companyLinkedIn) && (
                   <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                     <Linkedin className="h-4 w-4 text-primary" />
                     <a
-                      href={`https://linkedin.com/company/${collaboration.companyLinkedIn || details.linkedin_url || ''}`}
+                      href={`https://linkedin.com/company/${details.linkedin_url || collaboration.companyLinkedIn || ''}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:underline font-medium"
@@ -314,57 +317,53 @@ export function CollaborationDetailsDialog({
                   </div>
                 )}
                 
-                {/* Twitter */}
-                {(collaboration.companyTwitter || details.twitter_handle) && (
+                {/* Twitter - Prioritize company table data */}
+                {(details.twitter_handle || collaboration.companyTwitter) && (
                   <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                     <FaTwitter className="h-4 w-4 text-primary" />
                     <a
-                      href={`https://twitter.com/${(collaboration.companyTwitter || details.twitter_handle || '').replace('@', '')}`}
+                      href={`https://twitter.com/${(details.twitter_handle || collaboration.companyTwitter || '').replace('@', '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:underline font-medium"
                     >
-                      @{(collaboration.companyTwitter || details.twitter_handle || '').replace('@', '')}
+                      @{(details.twitter_handle || collaboration.companyTwitter || '').replace('@', '')}
                     </a>
-                    {(collaboration.twitterFollowers || details.twitter_followers) && (
+                    {(details.twitter_followers || collaboration.twitterFollowers) && (
                       <span className="text-sm text-muted-foreground flex items-center ml-1">
                         <Users className="h-3 w-3 mr-1" />
-                        {collaboration.twitterFollowers || details.twitter_followers}
+                        {details.twitter_followers || collaboration.twitterFollowers}
                       </span>
                     )}
                   </div>
                 )}
               </div>
               
-              {/* Role Title */}
-              {(collaboration.roleTitle || details.job_title || details.role) && (
+              {/* Role Title - Prioritize company table data */}
+              {(details.job_title || details.role || collaboration.roleTitle) && (
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    {collaboration.roleTitle || details.job_title || details.role}
+                    {details.job_title || details.role || collaboration.roleTitle}
                   </span>
                 </div>
               )}
 
-              {/* Company Short Description */}
-              {(details.short_company_description || details.company_description || details.shortDescription) && (
+              {/* Company Short Description - Prioritize company table data */}
+              {(details.short_description || details.short_company_description || details.shortDescription) && (
                 <div className="flex gap-2 bg-muted/50 p-2 rounded-md">
                   <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                   <div className="text-sm">
                     <h5 className="font-medium mb-1">Short Description</h5>
                     <p className="text-muted-foreground">
-                      {details.short_company_description || details.shortDescription || (
-                        details.company_description && details.company_description.length > 100 ? 
-                        details.company_description.substring(0, 100) + '...' : 
-                        details.company_description
-                      )}
+                      {details.short_description || details.short_company_description || details.shortDescription || ""}
                     </p>
                   </div>
                 </div>
               )}
               
-              {/* Company Full Description (Expandable) */}
-              {(details.long_description || details.full_description || (details.company_description && details.company_description.length > 100)) && (
+              {/* Company Full/Long Description - Prioritize company table data */}
+              {(details.long_description || details.full_description || details.company_description) && (
                 <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
                   <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <div className="text-sm">
@@ -376,36 +375,36 @@ export function CollaborationDetailsDialog({
                 </div>
               )}
 
-              {/* Company Sector */}
-              {(collaboration.companySector || details.sector || details.company_sector) && (
+              {/* Company Sector - Prioritize company table data */}
+              {(details.sector || details.company_sector || collaboration.companySector) && (
                 <div className="flex items-center gap-2">
                   <Building className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    Sector: {collaboration.companySector || details.sector || details.company_sector}
+                    Sector: {details.sector || details.company_sector || collaboration.companySector}
                   </span>
                 </div>
               )}
               
-              {/* Funding Stage / Series Round */}
-              {(collaboration.fundingStage || details.funding_stage || details.series_round || details.seriesRound) && (
+              {/* Funding Stage / Series Round - Prioritize company table data */}
+              {(details.funding_stage || details.series_round || details.seriesRound || collaboration.fundingStage) && (
                 <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                   <Coins className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium">
-                    Series Round: {collaboration.fundingStage || details.funding_stage || details.series_round || details.seriesRound}
+                    Series Round: {details.funding_stage || details.series_round || details.seriesRound || collaboration.fundingStage}
                   </span>
                 </div>
               )}
               
-              {/* Blockchain Networks */}
-              {(collaboration.blockchainNetworks || details.blockchain_networks) && 
-               (Array.isArray(collaboration.blockchainNetworks) || Array.isArray(details.blockchain_networks)) && 
-               ((collaboration.blockchainNetworks || []).length > 0 || (details.blockchain_networks || []).length > 0) && (
+              {/* Blockchain Networks - Prioritize company table data */}
+              {(details.blockchain_networks || collaboration.blockchainNetworks) && 
+               (Array.isArray(details.blockchain_networks) || Array.isArray(collaboration.blockchainNetworks)) && 
+               ((details.blockchain_networks || []).length > 0 || (collaboration.blockchainNetworks || []).length > 0) && (
                 <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
                   <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <div>
                     <span className="text-sm font-medium block mb-1">Blockchain Networks:</span>
                     <div className="flex flex-wrap gap-1">
-                      {(collaboration.blockchainNetworks || details.blockchain_networks || []).map((network, index) => (
+                      {(details.blockchain_networks || collaboration.blockchainNetworks || []).map((network, index) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {network}
                         </Badge>
@@ -415,12 +414,12 @@ export function CollaborationDetailsDialog({
                 </div>
               )}
               
-              {/* Token Information */}
-              {(collaboration.hasToken || details.has_token || collaboration.tokenTicker || details.token_ticker) && (
+              {/* Token Information - Prioritize company table data */}
+              {(details.has_token || details.token_ticker || collaboration.hasToken || collaboration.tokenTicker) && (
                 <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
                   <Coins className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium">
-                    Token: {collaboration.tokenTicker || details.token_ticker || "Yes"}
+                    Token: {details.token_ticker || collaboration.tokenTicker || "Yes"}
                   </span>
                 </div>
               )}
