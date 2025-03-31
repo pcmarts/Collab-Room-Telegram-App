@@ -273,9 +273,67 @@ export function CollaborationDetailsDialog({
             <h4 className="text-sm font-bold mb-3">Company Information</h4>
             <div className="space-y-3">
               {/* Company Name */}
-              <div className="flex items-center gap-2">
-                <Building className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{collaboration.companyName}</span>
+              <div className="flex items-center gap-2 mb-3">
+                <Building className="h-5 w-5 text-primary" />
+                <span className="text-base font-medium">{collaboration.companyName}</span>
+                {collaboration.id === "4c95f244-d5c1-4369-9531-834401fdce12" && (
+                  <Badge variant="outline" className="ml-2 text-xs bg-purple-500/10">Polygon</Badge>
+                )}
+              </div>
+              
+              {/* Important Links Section */}
+              <div className="flex flex-wrap gap-3 mb-3">
+                {/* Company Website */}
+                {(collaboration.companyWebsite || details.company_website || details.website) && (
+                  <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                    <Globe className="h-4 w-4 text-primary" />
+                    <a
+                      href={collaboration.companyWebsite || details.company_website || details.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline flex items-center font-medium"
+                    >
+                      Website
+                      <ExternalLink className="h-3 w-3 ml-1" />
+                    </a>
+                  </div>
+                )}
+                
+                {/* LinkedIn */}
+                {(collaboration.companyLinkedIn || details.linkedin_url) && (
+                  <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                    <Linkedin className="h-4 w-4 text-primary" />
+                    <a
+                      href={`https://linkedin.com/company/${collaboration.companyLinkedIn || details.linkedin_url || ''}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline font-medium"
+                    >
+                      LinkedIn
+                    </a>
+                  </div>
+                )}
+                
+                {/* Twitter */}
+                {(collaboration.companyTwitter || details.twitter_handle) && (
+                  <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                    <FaTwitter className="h-4 w-4 text-primary" />
+                    <a
+                      href={`https://twitter.com/${(collaboration.companyTwitter || details.twitter_handle || '').replace('@', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline font-medium"
+                    >
+                      @{(collaboration.companyTwitter || details.twitter_handle || '').replace('@', '')}
+                    </a>
+                    {(collaboration.twitterFollowers || details.twitter_followers) && (
+                      <span className="text-sm text-muted-foreground flex items-center ml-1">
+                        <Users className="h-3 w-3 mr-1" />
+                        {collaboration.twitterFollowers || details.twitter_followers}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               
               {/* Role Title */}
@@ -287,66 +345,34 @@ export function CollaborationDetailsDialog({
                   </span>
                 </div>
               )}
-              
-              {/* Company Website */}
-              {(collaboration.companyWebsite || details.company_website || details.website) && (
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <a
-                    href={collaboration.companyWebsite || details.company_website || details.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline flex items-center"
-                  >
-                    Website
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </a>
-                </div>
-              )}
-              
-              {/* Twitter */}
-              {(collaboration.companyTwitter || details.twitter_handle) && (
-                <div className="flex items-center gap-2">
-                  <FaTwitter className="h-4 w-4 text-muted-foreground" />
-                  <a
-                    href={`https://twitter.com/${(collaboration.companyTwitter || details.twitter_handle || '').replace('@', '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    @{(collaboration.companyTwitter || details.twitter_handle || '').replace('@', '')}
-                  </a>
-                  {(collaboration.twitterFollowers || details.twitter_followers) && (
-                    <span className="text-sm text-muted-foreground flex items-center ml-1">
-                      <Users className="h-3 w-3 mr-1" />
-                      {collaboration.twitterFollowers || details.twitter_followers}
-                    </span>
-                  )}
-                </div>
-              )}
 
               {/* Company Short Description */}
-              {(details.company_description || details.short_company_description) && (
-                <div className="flex gap-2">
+              {(details.short_company_description || details.company_description || details.shortDescription) && (
+                <div className="flex gap-2 bg-muted/50 p-2 rounded-md">
                   <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                  <p className="text-sm text-muted-foreground">
-                    {details.company_description || details.short_company_description}
-                  </p>
+                  <div className="text-sm">
+                    <h5 className="font-medium mb-1">Short Description</h5>
+                    <p className="text-muted-foreground">
+                      {details.short_company_description || details.shortDescription || (
+                        details.company_description && details.company_description.length > 100 ? 
+                        details.company_description.substring(0, 100) + '...' : 
+                        details.company_description
+                      )}
+                    </p>
+                  </div>
                 </div>
               )}
-
-              {/* LinkedIn */}
-              {(collaboration.companyLinkedIn || details.linkedin_url) && (
-                <div className="flex items-center gap-2">
-                  <Linkedin className="h-4 w-4 text-muted-foreground" />
-                  <a
-                    href={`https://linkedin.com/company/${collaboration.companyLinkedIn || details.linkedin_url || ''}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    LinkedIn
-                  </a>
+              
+              {/* Company Full Description (Expandable) */}
+              {(details.long_description || details.full_description || (details.company_description && details.company_description.length > 100)) && (
+                <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
+                  <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div className="text-sm">
+                    <h5 className="font-medium mb-1">Full Company Description</h5>
+                    <p className="text-muted-foreground">
+                      {details.long_description || details.full_description || details.company_description}
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -360,12 +386,12 @@ export function CollaborationDetailsDialog({
                 </div>
               )}
               
-              {/* Funding Stage */}
-              {(collaboration.fundingStage || details.funding_stage) && (
-                <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    Funding: {collaboration.fundingStage || details.funding_stage}
+              {/* Funding Stage / Series Round */}
+              {(collaboration.fundingStage || details.funding_stage || details.series_round || details.seriesRound) && (
+                <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                  <Coins className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">
+                    Series Round: {collaboration.fundingStage || details.funding_stage || details.series_round || details.seriesRound}
                   </span>
                 </div>
               )}
