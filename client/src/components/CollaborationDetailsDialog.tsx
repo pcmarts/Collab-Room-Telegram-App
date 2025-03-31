@@ -169,14 +169,7 @@ export function CollaborationDetailsDialog({
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="pr-8">{getDialogTitle()}</DialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-4 top-4"
-            onClick={onClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          {/* We're removing the custom close button since Dialog component already has one */}
           <DialogDescription className="text-lg font-medium">
             {collaboration.companyName}
           </DialogDescription>
