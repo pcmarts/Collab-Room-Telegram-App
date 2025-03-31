@@ -1,17 +1,18 @@
+import React from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
+  FileText, Briefcase, Tag, Network, ExternalLink, Globe, Users, 
   Twitter, Linkedin, Building, X, Calendar, Megaphone, 
-  Mic, Video, FileText, BookOpen, Link, Coffee, Users,
-  Briefcase, Globe, ExternalLink, Clock, Tag, Coins, Network
+  Coins 
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { FiExternalLink } from "react-icons/fi";
 import { FaTwitter } from "react-icons/fa";
@@ -287,178 +288,143 @@ export function CollaborationDetailsDialog({
             </div>
           )}
           
-          {/* Removed duplicate blockchain networks section as it's now in Company Info */}
-          
-          {/* Removed duplicate token info section as it's now in Company Info */}
-          
-          {/* Company Information Section */}
+          {/* Company Information Section - Completely rewritten to only use data from companies table */}
           <Separator className="my-3" />
-          <div className="bg-muted/30 p-3 rounded-md">
-            <h4 className="text-sm font-bold mb-3">Company Information</h4>
-            <div className="space-y-3">
-              {/* Company Name - This will always be shown */}
-              <div className="flex items-center gap-2 mb-3">
-                <Building className="h-5 w-5 text-primary" />
-                <span className="text-base font-medium">
-                  {/* Prioritize company name from company_data (which comes directly from company table) */}
-                  {companyData.name || details.company_name || details.companyName || collaboration.companyName || "Company"}
-                </span>
-                {/* Special handling for Polygon */}
-                {(collaboration.id === "4c95f244-d5c1-4369-9531-834401fdce12" || 
-                  companyData.name === "Polygon" ||
-                  details.company_name === "Polygon" || 
-                  collaboration.companyName === "Polygon") && (
-                  <Badge variant="outline" className="ml-2 text-xs bg-purple-500/10">Polygon</Badge>
-                )}
-              </div>
-              
-              {/* Role Information - Always show if any data exists */}
-              {(companyData.job_title || details.job_title || details.role || collaboration.roleTitle) && (
-                <div className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {companyData.job_title || details.job_title || details.role || collaboration.roleTitle || "Team Member"}
-                  </span>
-                </div>
-              )}
-              
-              {/* Important Links Section - Always show this section */}
-              <div className="flex flex-wrap gap-3 mb-3">
-                {/* Company Website */}
-                {(companyData.website || details.website || details.company_website || collaboration.companyWebsite) && (
-                  <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                    <Globe className="h-4 w-4 text-primary" />
-                    <a
-                      href={companyData.website || details.website || details.company_website || collaboration.companyWebsite}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline flex items-center font-medium"
-                    >
-                      Website
-                      <ExternalLink className="h-3 w-3 ml-1" />
-                    </a>
+          
+          {/* Only show company section if company data exists */}
+          {companyData && Object.keys(companyData).length > 0 && (
+            <div className="bg-muted/30 p-3 rounded-md">
+              <h4 className="text-sm font-bold mb-3">Company Information</h4>
+              <div className="space-y-3">
+                {/* Company Name */}
+                {companyData.name && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <Building className="h-5 w-5 text-primary" />
+                    <span className="text-base font-medium">
+                      {companyData.name}
+                    </span>
                   </div>
                 )}
                 
-                {/* LinkedIn */}
-                {(companyData.linkedin_url || details.linkedin_url || collaboration.companyLinkedIn) && (
-                  <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                    <Linkedin className="h-4 w-4 text-primary" />
-                    <a
-                      href={`https://linkedin.com/company/${companyData.linkedin_url || details.linkedin_url || collaboration.companyLinkedIn || ''}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline font-medium"
-                    >
-                      LinkedIn
-                    </a>
+                {/* Role/Job Title Information */}
+                {companyData.job_title && (
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {companyData.job_title}
+                    </span>
                   </div>
                 )}
                 
-                {/* Twitter */}
-                {(companyData.twitter_handle || details.twitter_handle || collaboration.companyTwitter) && (
-                  <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                    <FaTwitter className="h-4 w-4 text-primary" />
-                    <a
-                      href={`https://twitter.com/${(companyData.twitter_handle || details.twitter_handle || collaboration.companyTwitter || '').replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline font-medium"
-                    >
-                      @{(companyData.twitter_handle || details.twitter_handle || collaboration.companyTwitter || '').replace('@', '')}
-                    </a>
-                    {(companyData.twitter_followers || details.twitter_followers || collaboration.twitterFollowers) && (
-                      <span className="text-sm text-muted-foreground flex items-center ml-1">
-                        <Users className="h-3 w-3 mr-1" />
-                        {companyData.twitter_followers || details.twitter_followers || collaboration.twitterFollowers}
-                      </span>
-                    )}
+                {/* Important Links Section */}
+                <div className="flex flex-wrap gap-3 mb-3">
+                  {/* Company Website */}
+                  {companyData.website && (
+                    <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                      <Globe className="h-4 w-4 text-primary" />
+                      <a
+                        href={companyData.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline flex items-center font-medium"
+                      >
+                        Website
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </a>
+                    </div>
+                  )}
+                  
+                  {/* LinkedIn */}
+                  {companyData.linkedin_url && (
+                    <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                      <Linkedin className="h-4 w-4 text-primary" />
+                      <a
+                        href={`https://linkedin.com/company/${companyData.linkedin_url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline flex items-center font-medium"
+                      >
+                        LinkedIn
+                      </a>
+                    </div>
+                  )}
+                  
+                  {/* Twitter */}
+                  {companyData.twitter_handle && (
+                    <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                      <FaTwitter className="h-4 w-4 text-primary" />
+                      <a
+                        href={`https://twitter.com/${companyData.twitter_handle.replace('@', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline flex items-center font-medium"
+                      >
+                        @{companyData.twitter_handle.replace('@', '')}
+                        {companyData.twitter_followers && (
+                          <span className="text-sm text-muted-foreground flex items-center ml-1">
+                            <Users className="h-3 w-3 mr-1" />
+                            {companyData.twitter_followers}
+                          </span>
+                        )}
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* Company Short Description */}
+                {companyData.short_description && (
+                  <div className="flex gap-2 bg-muted/50 p-2 rounded-md">
+                    <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                    <div className="text-sm">
+                      <h5 className="font-medium mb-1">Company Description</h5>
+                      <p className="text-muted-foreground">
+                        {companyData.short_description}
+                      </p>
+                    </div>
                   </div>
                 )}
-              </div>
-
-              {/* Company Description Section */}
-              {/* Short Description - Show even if empty */}
-              <div className="flex gap-2 bg-muted/50 p-2 rounded-md">
-                <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                <div className="text-sm">
-                  <h5 className="font-medium mb-1">Company Description</h5>
-                  <p className="text-muted-foreground">
-                    {companyData.short_description || details.short_description || details.short_company_description || 
-                     details.shortDescription || collaboration.description || 
-                     `${companyData.name || details.company_name || collaboration.companyName || "Company"} is a blockchain technology company.`}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Long Description - Only show if it exists */}
-              {(companyData.long_description || details.long_description || details.full_description || details.company_description) && (
-                <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
-                  <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                  <div className="text-sm">
-                    <h5 className="font-medium mb-1">Full Company Profile</h5>
-                    <p className="text-muted-foreground">
-                      {companyData.long_description || details.long_description || details.full_description || details.company_description}
-                    </p>
+                
+                {/* Company Long Description */}
+                {companyData.long_description && (
+                  <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
+                    <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <div className="text-sm">
+                      <h5 className="font-medium mb-1">Full Company Profile</h5>
+                      <p className="text-muted-foreground">
+                        {companyData.long_description}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Company Details Section */}
-              {/* Sector Information - Use tags from company_data if available */}
-              {(companyData.tags && companyData.tags.length > 0) ? (
-                <div className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    Sector: {companyData.tags[0] || ""}
-                  </span>
-                </div>
-              ) : (
-                (details.sector || details.company_sector || collaboration.companySector) && (
+                {/* Company Tags/Sector */}
+                {companyData.tags && companyData.tags.length > 0 && (
                   <div className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      Sector: {details.sector || details.company_sector || collaboration.companySector}
+                      Sector: {companyData.tags.join(', ')}
                     </span>
                   </div>
-                )
-              )}
-              
-              {/* Funding Stage - Always show for funding companies */}
-              <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                <Coins className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">
-                  Series Round: {companyData.funding_stage || details.funding_stage || details.series_round || 
-                  details.seriesRound || collaboration.fundingStage || "Not disclosed"}
-                </span>
-              </div>
-              
-              {/* Blockchain Networks - Use company_data networks first */}
-              {(companyData.blockchain_networks && companyData.blockchain_networks.length > 0) ? (
-                <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
-                  <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                  <div>
-                    <span className="text-sm font-medium block mb-1">Blockchain Networks:</span>
-                    <div className="flex flex-wrap gap-1">
-                      {companyData.blockchain_networks.map((network, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {network}
-                        </Badge>
-                      ))}
-                    </div>
+                )}
+                
+                {/* Funding Stage */}
+                {companyData.funding_stage && (
+                  <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                    <Coins className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">
+                      Funding: {companyData.funding_stage}
+                    </span>
                   </div>
-                </div>
-              ) : (
-                // Fall back to details or collaboration data
-                (details.blockchain_networks || collaboration.blockchainNetworks) && 
-                (Array.isArray(details.blockchain_networks) || Array.isArray(collaboration.blockchainNetworks)) && 
-                ((details.blockchain_networks || []).length > 0 || (collaboration.blockchainNetworks || []).length > 0) ? (
+                )}
+                
+                {/* Blockchain Networks */}
+                {companyData.blockchain_networks && companyData.blockchain_networks.length > 0 && (
                   <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
                     <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                     <div>
                       <span className="text-sm font-medium block mb-1">Blockchain Networks:</span>
                       <div className="flex flex-wrap gap-1">
-                        {(details.blockchain_networks || collaboration.blockchainNetworks || []).map((network, index) => (
+                        {companyData.blockchain_networks.map((network, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
                             {network}
                           </Badge>
@@ -466,30 +432,20 @@ export function CollaborationDetailsDialog({
                       </div>
                     </div>
                   </div>
-                ) : (
-                  // If no blockchain networks specified, show a generic one for Web3 companies
-                  <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
-                    <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <span className="text-sm font-medium block">Blockchain Technology Company</span>
-                    </div>
+                )}
+                
+                {/* Token Information */}
+                {companyData.token_ticker && (
+                  <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
+                    <Coins className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">
+                      Token: {companyData.token_ticker}
+                    </span>
                   </div>
-                )
-              )}
-              
-              {/* Token Information - Use company_data has_token first */}
-              {(companyData.has_token || companyData.token_ticker || 
-                details.has_token || details.token_ticker || 
-                collaboration.hasToken || collaboration.tokenTicker) && (
-                <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                  <Coins className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">
-                    Token: {companyData.token_ticker || details.token_ticker || collaboration.tokenTicker || "Yes"}
-                  </span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 mt-2">
