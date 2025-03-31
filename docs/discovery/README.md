@@ -139,7 +139,7 @@ The Discovery interface is implemented in `client/src/pages/DiscoverPage.tsx` an
 
 - `Stack`: Container component that manages the stack of cards
 - `SwipeableCard`: Individual card component with swipe gestures
-- `CollaborationDialog`: Modal component for displaying collaboration details
+- `CollaborationDetailsDialog`: Enhanced modal component that displays comprehensive collaboration and company information
 - `MatchNotification`: Component that displays when a match is found
 - `EmptyState`: Component displayed when no cards are available, with action buttons
 
@@ -191,6 +191,37 @@ The specialized card components are implemented as standalone components in the 
 - **Marketing Cards**: Showcase campaign metrics and target audiences
 
 This specialized approach allows for a more tailored user experience based on the content type while maintaining visual consistency across the discovery feed.
+
+### Collaboration Details Dialog
+
+The `CollaborationDetailsDialog` component provides a comprehensive view of collaboration information when users click "More Info" on any card. This reusable component is implemented in `client/src/components/CollaborationDetailsDialog.tsx` and is used across all sections of the app where collaboration cards are displayed (Discovery page, My Matches, Telegram messaging).
+
+Key features of the CollaborationDetailsDialog:
+
+1. **Rich Collaboration Information**:
+   - Displays collaboration type, title, and date
+   - Shows detailed topics and short description
+   - Presents collaboration-specific fields based on the type (podcast details, Twitter spaces info, etc.)
+
+2. **Company Information Section**:
+   - Pulls data exclusively from the companies table using the following fields:
+     - Company name and descriptions (short and long)
+     - Website URL and social media links (Twitter, LinkedIn)
+     - Professional details (job title, token ticker)
+     - Funding stage and blockchain networks
+     - Company tags/sectors
+
+3. **Consistent Styling**:
+   - Uses a scrollable dialog design to accommodate varying amounts of content
+   - Features white social media icons for consistent visual appearance
+   - Implements responsive layout for both mobile and desktop views
+
+4. **Implementation Details**:
+   - Uses the company_data passed from the parent component
+   - Retrieves company information through proper database joins
+   - Handles missing data gracefully with appropriate defaults
+
+This component enhances the user experience by providing detailed context when evaluating potential collaboration opportunities, leading to more informed decisions about whether to swipe right or left on a collaboration card.
 
 ### Empty States
 

@@ -5,6 +5,24 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.4.5] - 2025-03-31
+
+### Changed
+- Enhanced collaboration details dialog to properly display company information from database
+- Improved company information section in collaboration details with more comprehensive data
+- Modified social media icons to use consistent white styling for better user experience
+
+### Fixed
+- Fixed issue where company data was not properly passed to the CollaborationDetailsDialog component
+- Resolved problem where company information was inconsistently displayed across different collaboration types
+
+### Technical Details
+- Modified getCompanyName function in DiscoverPage.tsx to prioritize company_data from the database
+- Updated CollaborationDetailsDialog component to exclusively use data from the companies table
+- Enhanced collaboration object passed to components with proper company data fields
+- Added comprehensive logging to help debug company data retrieval issues
+- Replaced colored social media icons with consistent white icons from Lucide for better UI coherence
+
 ## [Version 1.4.4] - 2025-03-31
 
 ### Changed

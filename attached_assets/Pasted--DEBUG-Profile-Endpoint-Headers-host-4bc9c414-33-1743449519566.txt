@@ -1,0 +1,214 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3ADUInBHgOIxa4xU2qjO5gymI0zYsnats3.AN6ARZtUjWmZ0x2jedOMn1dpIDXLaLuUv3TeEaMGiyw',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/dashboard',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkirUV2T&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743447274&signature=OjaVsPTIt_eW4Y07K2kWt9kYK8sLEFeim_LLKy7mmG3Vcdor-tdpof616h8r6TOwEoMOHNAbgbfi63_72h1HDw&hash=536f65db444d3ae386286f6252c05f2922aca2d4ab353d740116c637ba4e01b3'
+}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+7:31:09 PM [express] GET /api/profile 200 in 88ms :: {"user":{"id":"b4093f49-f0c3-4bae-a294-35fb87c4…
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3ADUInBHgOIxa4xU2qjO5gymI0zYsnats3.AN6ARZtUjWmZ0x2jedOMn1dpIDXLaLuUv3TeEaMGiyw',
+  'if-none-match': 'W/"630-GTiOL1skfOrr/ZStBdsxOt4jeVY"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/dashboard',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+No Telegram init data found in request headers
+Available headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "if-none-match": "W/\"630-GTiOL1skfOrr/ZStBdsxOt4jeVY\"",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/dashboard",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.9.110",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": ""
+}
+⚠️ No Telegram data found in request
+7:31:10 PM [express] GET /api/profile 401 in 3ms :: {"error":"Unauthorized"}
+============ DEBUG: User Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3ADUInBHgOIxa4xU2qjO5gymI0zYsnats3.AN6ARZtUjWmZ0x2jedOMn1dpIDXLaLuUv3TeEaMGiyw',
+  'if-modified-since': 'Mon, 31 Mar 2025 19:30:18 GMT',
+  'if-none-match': 'W/"0-1743449418738"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/dashboard',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkirUV2T&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743447274&signature=OjaVsPTIt_eW4Y07K2kWt9kYK8sLEFeim_LLKy7mmG3Vcdor-tdpof616h8r6TOwEoMOHNAbgbfi63_72h1HDw&hash=536f65db444d3ae386286f6252c05f2922aca2d4ab353d740116c637ba4e01b3'
+}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+Found 0 matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+7:31:11 PM [express] GET /api/matches 200 in 42ms :: []
+7:31:11 PM [express] GET /api/network-stats 304 in 95ms :: {"users":3,"collaborations":3}
+============ DEBUG: Company Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '1009',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3ADUInBHgOIxa4xU2qjO5gymI0zYsnats3.AN6ARZtUjWmZ0x2jedOMn1dpIDXLaLuUv3TeEaMGiyw',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/company-info',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkirUV2T&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743447274&signature=OjaVsPTIt_eW4Y07K2kWt9kYK8sLEFeim_LLKy7mmG3Vcdor-tdpof616h8r6TOwEoMOHNAbgbfi63_72h1HDw&hash=536f65db444d3ae386286f6252c05f2922aca2d4ab353d740116c637ba4e01b3'
+}
+Body: {
+  company_name: 'Polygon',
+  job_title: 'VP Marketing',
+  website: 'https://polygon.technology',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments' ],
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.'
+}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+Company data to save: {
+  name: 'Polygon',
+  job_title: 'VP Marketing',
+  website: 'https://polygon.technology',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments' ],
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.'
+}
+Updating existing company: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+Updated company: {
+  id: '4c95f244-d5c1-4369-9531-834401fdce12',
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  name: 'Polygon',
+  short_description: 'Polygon is a protocol and framework for building and scaling Ethereum-compatible blockchain networks with low fees and fast transactions.',
+  long_description: 'Polygon is a Layer 2 scaling solution for Ethereum that improves speed and reduces costs by processing transactions off-chain. It offers a suite of protocols including the Polygon PoS chain, zkEVM, and Supernets. Designed for developers building dApps and infrastructure, Polygon supports EVM compatibility and aims to bring Web3 to the masses through efficient, scalable blockchain architecture. It’s backed by a growing ecosystem and strategic partnerships.',
+  website: 'https://polygon.technology',
+  job_title: 'VP Marketing',
+  twitter_handle: 'polygon',
+  twitter_followers: '100K-500K',
+  linkedin_url: 'https://linkedin.com/company/olygon',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: '$POL',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'L1 (Layer 1 Blockchains)', 'Stablecoins & Payments' ],
+  created_at: 2025-03-20T19:13:37.974Z
+}
+7:31:30 PM [express] POST /api/company 200 in 136ms :: {"success":true,"company":{"id":"4c95f244-d5c…
