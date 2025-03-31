@@ -22,9 +22,25 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Collaboration as BaseCollaboration } from "@shared/schema";
 
-// Extended Collaboration type to include the company name from our API
+// Extended Collaboration type to include the company name and data from our API
 interface Collaboration extends BaseCollaboration {
   creator_company_name?: string;
+  company_data?: {
+    id: string;
+    name?: string;
+    short_description?: string;
+    long_description?: string;
+    website?: string;
+    job_title?: string;
+    twitter_handle?: string;
+    twitter_followers?: string;
+    linkedin_url?: string;
+    funding_stage?: string;
+    has_token?: boolean;
+    token_ticker?: string;
+    blockchain_networks?: string[];
+    tags?: string[];
+  };
 }
 
 // Define a generic card data interface that all specialized cards can use
@@ -1068,12 +1084,22 @@ export default function DiscoverPage() {
   const getCompanyName = (card: Collaboration): string => {
     if (!card) return "";
     
+    // Add logging to debug the company data
+    console.log("Getting company name for card:", {
+      card_id: card.id,
+      has_company_data: !!card.company_data,
+      company_data_name: card.company_data?.name,
+      creator_company_name: card.creator_company_name
+    });
+    
     // Try to extract company name from details
     try {
-      // First try to get the company_name directly from the collaboration record
-      // This is the most reliable method as it comes from the database relationship
+      // First check if company_data is available (directly from the database)
+      if (card.company_data && card.company_data.name) {
+        return card.company_data.name;
+      }
       
-      // First check if the creator's company information is available
+      // Then check if the creator's company information is available
       if (card.creator_company_name) {
         return card.creator_company_name;
       }
@@ -1539,9 +1565,8 @@ export default function DiscoverPage() {
               date: currentCard.specific_date || "",
               topics: currentCard.topics || [],
               
-              // Company Info
+              // Company Info - these are legacy fields, but we'll keep them for compatibility
               companyName: getCompanyName(currentCard),
-              // Add any company fields we have from the database
               companyWebsite: currentCard.details?.company_website || currentCard.details?.website,
               companyTwitter: currentCard.details?.twitter_handle || currentCard.details?.companyTwitter,
               twitterFollowers: currentCard.company_twitter_followers || currentCard.details?.twitter_followers,
@@ -1554,6 +1579,25 @@ export default function DiscoverPage() {
               
               // Pass the detailed data for the collaboration
               details: currentCard.details || {},
+              
+              // Pass company data directly from the API
+              // Explicitly log what we're passing to help debug
+              company_data: {
+                id: currentCard.company_data?.id,
+                name: currentCard.company_data?.name,
+                short_description: currentCard.company_data?.short_description,
+                long_description: currentCard.company_data?.long_description,
+                website: currentCard.company_data?.website,
+                job_title: currentCard.company_data?.job_title,
+                twitter_handle: currentCard.company_data?.twitter_handle,
+                twitter_followers: currentCard.company_data?.twitter_followers,
+                linkedin_url: currentCard.company_data?.linkedin_url,
+                funding_stage: currentCard.company_data?.funding_stage,
+                has_token: currentCard.company_data?.has_token,
+                token_ticker: currentCard.company_data?.token_ticker,
+                blockchain_networks: currentCard.company_data?.blockchain_networks,
+                tags: currentCard.company_data?.tags
+              },
               
               // Backward compatibility
               type: currentCard.collab_type

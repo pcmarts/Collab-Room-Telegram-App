@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { FiExternalLink } from "react-icons/fi";
-import { FaTwitter } from "react-icons/fa";
 
 // Define company data type
 type CompanyData = {
@@ -352,7 +351,7 @@ export function CollaborationDetailsDialog({
                   {/* Twitter */}
                   {companyData.twitter_handle && (
                     <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                      <FaTwitter className="h-4 w-4 text-primary" />
+                      <Twitter className="h-4 w-4 text-primary" />
                       <a
                         href={`https://twitter.com/${companyData.twitter_handle.replace('@', '')}`}
                         target="_blank"
