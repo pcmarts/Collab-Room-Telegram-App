@@ -118,17 +118,20 @@ export const TwitterSpacesCard: React.FC<TwitterSpacesCardProps> = ({ data }) =>
   
   return (
     <div className="space-y-2">
-      <Badge variant="outline" className="bg-blue-500/10">
-        <Twitter className="w-3 h-3 mr-1" />
-        <span>Twitter Spaces</span>
-      </Badge>
+      <div className="flex justify-between items-start">
+        <Badge variant="outline" className="bg-blue-500/10">
+          <Twitter className="w-3 h-3 mr-1" />
+          <span>Twitter Spaces</span>
+        </Badge>
+        {renderDate()}
+      </div>
       
       <h3 className="text-lg font-semibold leading-snug">
-        {title}
+        {data.companyName}
       </h3>
       
       <div className="space-y-0.5">
-        <p className="text-sm">{data.companyName}</p>
+        <p className="text-sm">{title}</p>
         {data.role && (
           <p className="text-xs text-muted-foreground">
             {data.role}
@@ -137,8 +140,7 @@ export const TwitterSpacesCard: React.FC<TwitterSpacesCardProps> = ({ data }) =>
       </div>
       
       {renderTopics()}
-      {renderDate()}
-
+      
       <div className="flex items-center space-x-1 text-primary">
         <Twitter className="w-3 h-3" />
         <span>@{twitterHandle}</span>
