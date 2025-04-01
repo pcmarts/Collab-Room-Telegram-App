@@ -686,6 +686,9 @@ export default function DiscoverPage() {
     index: number;
   }
   
+  // Track if all cards have been viewed (to avoid unnecessary API calls)
+  const [allCardsViewed, setAllCardsViewed] = useState(false);
+
   // Fetch the user's swipe history from the server
   const { data: serverSwipeHistory, isLoading: isLoadingSwipeHistory } = useQuery({
     queryKey: ['/api/user-swipes'],
@@ -699,7 +702,9 @@ export default function DiscoverPage() {
         console.error('User swipe history fetch error:', err);
         throw err;
       }
-    }
+    },
+    // Always fetch swipe history even if all cards viewed - needed for filtering
+    // and to determine if new cards are available
   });
 
   // Store history of swiped cards for the current session
@@ -733,6 +738,12 @@ export default function DiscoverPage() {
     queryKey: ['/api/collaborations/search'],
     queryFn: async () => {
       try {
+        // Skip fetching if all cards have been viewed and we're not explicitly refreshing
+        if (allCardsViewed) {
+          console.log('Skipping collaboration fetch - all cards have been viewed');
+          return [];
+        }
+        
         console.log('Fetching collaborations...');
         // Use the standardized apiRequest function to ensure Telegram headers are included
         const data = await apiRequest('/api/collaborations/search');
@@ -752,6 +763,12 @@ export default function DiscoverPage() {
     queryKey: ['/api/potential-matches'],
     queryFn: async () => {
       try {
+        // Skip fetching if all cards have been viewed and we're not explicitly refreshing
+        if (allCardsViewed) {
+          console.log('Skipping potential matches fetch - all cards have been viewed');
+          return [];
+        }
+        
         console.log('Fetching potential matches...');
         // Use the standardized apiRequest function to ensure Telegram headers are included
         const data = await apiRequest('/api/potential-matches');
@@ -818,6 +835,7 @@ export default function DiscoverPage() {
       // Invalidate the queries to trigger a refetch
       queryClient.invalidateQueries({ queryKey: ['/api/collaborations/search'] });
       queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
     }
     
     // Update the previous location state
@@ -836,15 +854,21 @@ export default function DiscoverPage() {
       ? serverSwipeHistory.map(swipe => swipe.collaboration_id)
       : [];
     
+    // Log server swipe history for debugging
+    if (serverSwipeHistory && serverSwipeHistory.length > 0) {
+      console.log('Server swipe history:', serverSwipeHistory);
+    }
+    
     // Combine all IDs and remove duplicates using Set
-    // Use spread syntax to convert Set to array to avoid TypeScript error
+    // Use Array.from() to convert Set to array to avoid TypeScript error
     const uniqueIdsSet = new Set([...sessionIds, ...serverIds]);
-    const uniqueIds = [...uniqueIdsSet];
+    const uniqueIds = Array.from(uniqueIdsSet);
     
     console.log('All swiped card IDs:', {
       fromRef: swipeHistoryRef.current.length, 
       fromState: swipeHistory.length,
       fromServer: serverIds.length,
+      uniqueIds: uniqueIds,
       uniqueIdsCount: uniqueIds.length
     });
     
@@ -895,11 +919,23 @@ export default function DiscoverPage() {
                         (filteredPotentialMatches.length + filteredRegulars.length)
     });
     
+    // Check if we should set allCardsViewed flag
+    // If regularCards and potentialMatches have items BUT filtered versions are empty
+    // then the user has viewed all cards
+    const totalCards = potentialMatches.length + regularCards.length;
+    const totalFilteredCards = filteredPotentialMatches.length + filteredRegulars.length;
+    
+    if (totalCards > 0 && totalFilteredCards === 0 && !isLoading) {
+      console.log("All cards have been viewed - setting allCardsViewed flag");
+      // Set allCardsViewed to true only if there was data but all has been filtered out
+      setAllCardsViewed(true);
+    }
+    
     return {
       filteredPotentialMatchCards: filteredPotentialMatches,
       filteredRegularCards: filteredRegulars
     };
-  }, [collaborationsData, potentialMatchesData, allSwipedCardIds]);
+  }, [collaborationsData, potentialMatchesData, allSwipedCardIds, isLoading]);
   
   // Combine cards, showing potential matches first - using useMemo for performance
   const cards = useMemo(() => {
@@ -1084,6 +1120,9 @@ export default function DiscoverPage() {
             );
             
             console.log('Match decision recorded successfully:', matchResult);
+            
+            // Invalidate the user-swipes query to ensure we get the latest data
+            queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
           } else {
             // If swiped left on a potential match, we just record the rejection
             console.log("Rejecting potential match");
@@ -1098,6 +1137,9 @@ export default function DiscoverPage() {
             );
             
             console.log('Match rejection recorded successfully:', rejectResult);
+            
+            // Invalidate the user-swipes query to ensure we get the latest data
+            queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
           }
         } else {
           // This is a regular collaboration card
@@ -1119,6 +1161,9 @@ export default function DiscoverPage() {
           );
           
           console.log('Swipe recorded successfully:', swipeResult);
+          
+          // Invalidate the user-swipes query to ensure we get the latest data
+          queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
         }
       } else {
         console.error("Cannot record swipe - missing card ID:", currentCard);
@@ -1287,7 +1332,11 @@ export default function DiscoverPage() {
       currentIndex,
       swipeHistoryLength: swipeHistory.length,
       cardCount: cards.length,
+      allCardsViewed
     });
+    
+    // Reset the allCardsViewed flag to allow new fetches
+    setAllCardsViewed(false);
     
     // First clear the swipe history
     setSwipeHistory([]);
@@ -1301,10 +1350,12 @@ export default function DiscoverPage() {
     // Force immediate refetch to ensure we get fresh data
     queryClient.resetQueries({ queryKey: ['/api/collaborations/search'] });
     queryClient.resetQueries({ queryKey: ['/api/potential-matches'] });
+    queryClient.resetQueries({ queryKey: ['/api/user-swipes'] });
     
     // Then trigger a refetch with invalidation (these are different operations)
     queryClient.invalidateQueries({ queryKey: ['/api/collaborations/search'] });
     queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
     
     console.log('Cache cleared and queries invalidated');
     console.log('Refreshing both collaboration cards and potential matches...');
@@ -1312,6 +1363,7 @@ export default function DiscoverPage() {
     // Force a delay to ensure the state updates are applied
     setTimeout(() => {
       console.log('Refresh state check:', {
+        allCardsViewedFlag: allCardsViewed, // Should be false now
         swipeHistoryLength: swipeHistory.length,
         swipeHistoryRefLength: swipeHistoryRef.current.length,
         cardCount: cards.length,
@@ -1342,6 +1394,14 @@ export default function DiscoverPage() {
     );
   };
 
+  // Handle scenarios where we need to show the empty state
+  
+  // If explicitly marked as "all cards viewed", show appropriate state
+  if (allCardsViewed) {
+    console.log("All cards viewed flag is true - showing empty state");
+    return renderEmptyState("You've viewed all available collaborations. Check back later or adjust your filters to see more.");
+  }
+  
   // Show fallback rendering without error state if successful data load but no cards
   if (collaborationsData && Array.isArray(collaborationsData) && filteredRegularCards.length === 0) {
     console.log("Successfully loaded data but no collaborations available");
@@ -1355,6 +1415,8 @@ export default function DiscoverPage() {
   
   // If user has viewed all cards (reached the end)
   if (currentIndex === cards.length - 1 && swipeHistory.length > 0 && swipeHistory.length >= cards.length) {
+    // Set the allCardsViewed flag for future API optimization
+    setAllCardsViewed(true);
     return renderEmptyState("You've viewed all available collaborations. Check back later or adjust your filters to see more.");
   }
 
