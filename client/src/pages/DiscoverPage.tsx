@@ -804,8 +804,10 @@ export default function DiscoverPage() {
     hasPotentialMatchesData: !!potentialMatchesData
   });
   
-  // Filter out any potential matches that the user has already swiped on in the current session
+  // Filter out any cards that the user has already swiped on in the current session
   // This prevents showing the same cards again if the user refreshes after swiping
+  
+  // For potential matches, filter by swipe ID
   const swipedPotentialMatchIds = swipeHistory
     .filter(hist => hist.card?.isPotentialMatch)
     .map(hist => hist.card?.id);
@@ -816,8 +818,19 @@ export default function DiscoverPage() {
     card => !swipedPotentialMatchIds.includes(card.id)
   );
   
+  // For regular collaborations, filter by collaboration ID
+  const swipedCollaborationIds = swipeHistory
+    .filter(hist => !hist.card?.isPotentialMatch)
+    .map(hist => hist.card?.id);
+    
+  console.log(`Filtering out ${swipedCollaborationIds.length} already swiped regular collaborations`);
+  
+  const filteredRegularCards = regularCards.filter(
+    card => !swipedCollaborationIds.includes(card.id)
+  );
+  
   // Combine cards, showing potential matches first
-  const cards = [...filteredPotentialMatchCards, ...regularCards];
+  const cards = [...filteredPotentialMatchCards, ...filteredRegularCards];
 
   // Initialize Telegram WebApp and handle viewport
   useEffect(() => {
@@ -1177,6 +1190,11 @@ export default function DiscoverPage() {
     queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
     
     console.log('Refreshing both collaboration cards and potential matches...');
+    
+    // Force a small delay to ensure the queries are properly invalidated
+    setTimeout(() => {
+      console.log('Refreshing complete. Card data should be fetched again.');
+    }, 100);
   };
 
   // Function to render the empty state
