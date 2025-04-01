@@ -761,17 +761,9 @@ export default function DiscoverPage() {
   
   // Use server swipe history to check if we need to fetch more data
   // This effect ensures we check swipe history and prevent unnecessary queries
-  useEffect(() => {
-    if (serverSwipeHistory && !isLoadingSwipeHistory) {
-      // Check if user has already swiped on a significant number of cards
-      // We now set this to 2+ cards as our database has a small number of cards
-      // for testing purposes. In production with more cards, this could be higher.
-      if (serverSwipeHistory.length >= 2) {
-        console.log(`User has already swiped ${serverSwipeHistory.length} cards, setting allCardsViewed=true`);
-        setAllCardsViewed(true);
-      }
-    }
-  }, [serverSwipeHistory, isLoadingSwipeHistory]);
+  // We no longer set the allCardsViewed flag based on a simple threshold
+  // Instead, we'll compare the number of cards available to the number swiped
+  // This is handled in the cards useMemo block where we have access to both values
 
   // Fetch collaborations from real API
   const { data: collaborationsData, isLoading: isLoadingCollabs, isError: isCollabsError, error: collabsError } = useQuery({
@@ -953,15 +945,21 @@ export default function DiscoverPage() {
                         (filteredPotentialMatches.length + filteredRegulars.length)
     });
     
-    // Check if we should set allCardsViewed flag
-    // If regularCards and potentialMatches have items BUT filtered versions are empty
-    // then the user has viewed all cards
+    // Check if we should set allCardsViewed flag with smarter logic
     const totalCards = potentialMatches.length + regularCards.length;
     const totalFilteredCards = filteredPotentialMatches.length + filteredRegulars.length;
+    const totalSwipedCards = allSwipedCardIds.length;
     
-    if (totalCards > 0 && totalFilteredCards === 0 && !isLoading) {
-      console.log("All cards have been viewed - setting allCardsViewed flag");
-      // Set allCardsViewed to true only if there was data but all has been filtered out
+    // Only set allCardsViewed in two cases:
+    // 1. Initial data load returned cards, but after filtering none are left
+    // 2. User has swiped on 75% or more of the total available cards AND has at least made 1 swipe
+    if (
+      (totalCards > 0 && totalFilteredCards === 0 && !isLoading) || 
+      (totalCards > 0 && totalSwipedCards > 0 && totalSwipedCards >= Math.floor(totalCards * 0.75) && !isLoading)
+    ) {
+      console.log(`All cards viewed check: totalCards=${totalCards}, totalSwipedCards=${totalSwipedCards}, filtered=${totalFilteredCards}, ratio=${totalSwipedCards/totalCards}`);
+      console.log("Threshold reached - setting allCardsViewed=true");
+      // Set allCardsViewed to true
       setAllCardsViewed(true);
     }
     
