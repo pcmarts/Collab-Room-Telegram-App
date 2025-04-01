@@ -688,9 +688,19 @@ export default function DiscoverPage() {
   
   // Track if all cards have been viewed (to avoid unnecessary API calls)
   const [allCardsViewed, setAllCardsViewed] = useState(false);
-
-  // Fetch the user's swipe history from the server
-  const { data: serverSwipeHistory, isLoading: isLoadingSwipeHistory } = useQuery({
+  
+  // Store history of swiped cards for the current session
+  const [swipeHistory, setSwipeHistory] = useState<SwipeHistoryItem[]>([]);
+  
+  // Create a ref for swipe history to use in effects and callbacks
+  const swipeHistoryRef = useRef<SwipeHistoryItem[]>([]);
+  
+  // Fetch the user's swipe history from the server first
+  // This is the primary query that will determine if we should load other data
+  const { 
+    data: serverSwipeHistory, 
+    isLoading: isLoadingSwipeHistory
+  } = useQuery({
     queryKey: ['/api/user-swipes'],
     queryFn: async () => {
       try {
@@ -703,15 +713,9 @@ export default function DiscoverPage() {
         throw err;
       }
     },
-    // Keep this enabled even when allCardsViewed is true as we need this data
-    // for properly showing empty state and determining when all cards have been viewed
+    // Always need swipe history to determine if we should load other data
+    staleTime: 10 * 60 * 1000, // 10 minutes - reduce refetching
   });
-
-  // Store history of swiped cards for the current session
-  const [swipeHistory, setSwipeHistory] = useState<SwipeHistoryItem[]>([]);
-  
-  // Create a ref for swipe history to use in effects and callbacks
-  const swipeHistoryRef = useRef<SwipeHistoryItem[]>([]);
   
   // Update the ref whenever the state changes
   useEffect(() => {
@@ -733,6 +737,20 @@ export default function DiscoverPage() {
   const [location, setLocation] = useLocation();
   const [previousLocation, setPreviousLocation] = useState<string | null>(null);
   
+  // Use server swipe history to check if we need to fetch more data
+  // This effect ensures we check swipe history and prevent unnecessary queries
+  useEffect(() => {
+    if (serverSwipeHistory && !isLoadingSwipeHistory) {
+      // Check if user has already swiped on a significant number of cards
+      // If they've swiped on 8+ cards, it suggests they've probably gone through most/all cards
+      // This is a heuristic to avoid unnecessary API calls
+      if (serverSwipeHistory.length >= 8) {
+        console.log(`User has already swiped ${serverSwipeHistory.length} cards, setting allCardsViewed=true`);
+        setAllCardsViewed(true);
+      }
+    }
+  }, [serverSwipeHistory, isLoadingSwipeHistory]);
+
   // Fetch collaborations from real API
   const { data: collaborationsData, isLoading: isLoadingCollabs, isError: isCollabsError, error: collabsError } = useQuery({
     queryKey: ['/api/collaborations/search'],
@@ -751,7 +769,8 @@ export default function DiscoverPage() {
     refetchOnWindowFocus: false,
     retry: 1, // Retry once in case of network issues
     // Completely disable this query when allCardsViewed is true
-    enabled: !allCardsViewed
+    // Also wait for server swipe history to load before making this call
+    enabled: !allCardsViewed && !isLoadingSwipeHistory
   });
   
   // Fetch potential matches (users who swiped right on host's collaborations)
@@ -799,7 +818,8 @@ export default function DiscoverPage() {
     refetchOnWindowFocus: false,
     retry: 1,
     // Completely disable this query when allCardsViewed is true
-    enabled: !allCardsViewed
+    // Also wait for server swipe history to load before making this call
+    enabled: !allCardsViewed && !isLoadingSwipeHistory
   });
   
   // Combine loading and error states
