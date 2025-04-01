@@ -703,8 +703,8 @@ export default function DiscoverPage() {
         throw err;
       }
     },
-    // Always fetch swipe history even if all cards viewed - needed for filtering
-    // and to determine if new cards are available
+    // Keep this enabled even when allCardsViewed is true as we need this data
+    // for properly showing empty state and determining when all cards have been viewed
   });
 
   // Store history of swiped cards for the current session
@@ -738,12 +738,6 @@ export default function DiscoverPage() {
     queryKey: ['/api/collaborations/search'],
     queryFn: async () => {
       try {
-        // Skip fetching if all cards have been viewed and we're not explicitly refreshing
-        if (allCardsViewed) {
-          console.log('Skipping collaboration fetch - all cards have been viewed');
-          return [];
-        }
-        
         console.log('Fetching collaborations...');
         // Use the standardized apiRequest function to ensure Telegram headers are included
         const data = await apiRequest('/api/collaborations/search');
@@ -756,6 +750,8 @@ export default function DiscoverPage() {
     },
     refetchOnWindowFocus: false,
     retry: 1, // Retry once in case of network issues
+    // Completely disable this query when allCardsViewed is true
+    enabled: !allCardsViewed
   });
   
   // Fetch potential matches (users who swiped right on host's collaborations)
@@ -763,12 +759,6 @@ export default function DiscoverPage() {
     queryKey: ['/api/potential-matches'],
     queryFn: async () => {
       try {
-        // Skip fetching if all cards have been viewed and we're not explicitly refreshing
-        if (allCardsViewed) {
-          console.log('Skipping potential matches fetch - all cards have been viewed');
-          return [];
-        }
-        
         console.log('Fetching potential matches...');
         // Use the standardized apiRequest function to ensure Telegram headers are included
         const data = await apiRequest('/api/potential-matches');
@@ -808,6 +798,8 @@ export default function DiscoverPage() {
     },
     refetchOnWindowFocus: false,
     retry: 1,
+    // Completely disable this query when allCardsViewed is true
+    enabled: !allCardsViewed
   });
   
   // Combine loading and error states
