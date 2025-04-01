@@ -2097,8 +2097,9 @@ export async function registerRoutes(app: Express) {
   });
 
   // Search collaborations with pagination support
+  // GET endpoint for collaborations search
   app.get("/api/collaborations/search", async (req: TelegramRequest, res: Response) => {
-    console.log('============ DEBUG: Search Collaborations Endpoint ============');
+    console.log('============ DEBUG: Search Collaborations GET Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Query:', req.query);
 
@@ -2143,6 +2144,77 @@ export async function registerRoutes(app: Express) {
       console.log('Using filters:', filters);
       
       const paginatedResults = await storage.searchCollaborationsPaginated(user.id, filters);
+      console.log(`Found ${paginatedResults.items.length} collaborations, hasMore: ${paginatedResults.hasMore}`);
+      
+      return res.json(paginatedResults);
+
+    } catch (error) {
+      console.error('Failed to search collaborations:', error);
+      res.status(500).json({ 
+        error: 'Failed to search collaborations', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+  
+  // POST endpoint for collaborations search (for discovery page)
+  app.post("/api/collaborations/search", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Search Collaborations POST Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Query:', req.query);
+    console.log('Body:', req.body);
+
+    try {
+      // Get Telegram user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user found');
+        return res.status(400).json({ error: 'Invalid Telegram data' });
+      }
+      
+      console.log('Found Telegram user:', telegramUser.id);
+
+      // Get user
+      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
+      if (!user) {
+        console.error('Database user not found for Telegram ID:', telegramUser.id);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      console.log('Found database user:', user.id);
+
+      // Parse filters from query params
+      const filters = {
+        collabTypes: req.query.collabTypes ? (req.query.collabTypes as string).split(',') : undefined,
+        companyTags: req.query.companyTags ? (req.query.companyTags as string).split(',') : undefined,
+        minCompanyFollowers: req.query.minCompanyFollowers as string | undefined,
+        minUserFollowers: req.query.minUserFollowers as string | undefined,
+        hasToken: req.query.hasToken ? req.query.hasToken === 'true' : undefined,
+        fundingStages: req.query.fundingStages ? (req.query.fundingStages as string).split(',') : undefined,
+        blockchainNetworks: req.query.blockchainNetworks ? (req.query.blockchainNetworks as string).split(',') : undefined,
+        // Always exclude user's own collaborations in Regular Collaboration Cards
+        // This is a non-negotiable rule for the application
+        excludeOwn: true,
+        // Pagination parameters
+        cursor: req.query.cursor as string | undefined,
+        limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10
+      };
+      
+      // Handle additional excluded IDs from request body (used by DiscoverPageNew)
+      let excludeIds: string[] = [];
+      if (req.body && req.body.excludeIds && Array.isArray(req.body.excludeIds)) {
+        excludeIds = req.body.excludeIds;
+        console.log(`Excluding ${excludeIds.length} additional IDs from body:`, excludeIds);
+      }
+
+      // Get filtered collaborations with pagination
+      console.log('Calling searchCollaborationsPaginated with user ID:', user.id);
+      console.log('Using filters:', filters);
+      
+      const paginatedResults = await storage.searchCollaborationsPaginated(user.id, {
+        ...filters,
+        excludeIds // Pass additional excluded IDs to storage function
+      });
       console.log(`Found ${paginatedResults.items.length} collaborations, hasMore: ${paginatedResults.hasMore}`);
       
       return res.json(paginatedResults);

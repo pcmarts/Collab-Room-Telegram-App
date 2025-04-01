@@ -78,6 +78,7 @@ export interface CollaborationFilters {
   excludeOwn?: boolean; // Controls whether to exclude collaborations created by the current user
   cursor?: string; // Used for pagination - ID of the last collaboration in previous batch
   limit?: number; // Number of collaborations to fetch per page
+  excludeIds?: string[]; // Additional collaboration IDs to exclude (from POST body)
 }
 
 export interface PaginatedCollaborations {
@@ -279,10 +280,15 @@ export class DatabaseStorage implements IStorage {
     console.log(`Found ${userCollaborations.length} collaborations created by user ${userId}`);
     
     // Create a combined array of IDs to exclude (both user's own and previously swiped)
+    // Also include any additional excludeIds from the request (for discovery page)
     // Use simple concatenation and filtering to remove duplicates
-    const allIds = [...userCollaborationIds, ...swipedCollaborationIds];
+    const allIds = [
+      ...userCollaborationIds, 
+      ...swipedCollaborationIds,
+      ...(filters.excludeIds || []) // Add any additional excluded IDs from the request
+    ];
     const excludeIds = allIds.filter((id, index) => allIds.indexOf(id) === index);
-    console.log(`Total IDs to exclude: ${excludeIds.length} (${userCollaborationIds.length} own + ${swipedCollaborationIds.length} swiped)`);
+    console.log(`Total IDs to exclude: ${excludeIds.length} (${userCollaborationIds.length} own + ${swipedCollaborationIds.length} swiped + ${filters.excludeIds?.length || 0} additional)`);
     
     // Build the base query - we'll handle all exclusions together 
     let query = db
