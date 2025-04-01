@@ -3241,5 +3241,43 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Endpoint to retrieve a user's swipe history
+  app.get("/api/user-swipes", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Get User Swipes Endpoint ============');
+    console.log('Headers:', req.headers);
+
+    try {
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Get user from database
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found in database');
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Get all swipes for this user (both left and right)
+      const userSwipes = await storage.getUserSwipes(user.id);
+      console.log(`Found ${userSwipes.length} swipes for user ${user.id}`);
+      
+      // Return swipes
+      return res.json(userSwipes);
+    } catch (error) {
+      console.error('Failed to fetch user swipes:', error);
+      return res.status(500).json({ 
+        error: 'Failed to fetch user swipes', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   return httpServer;
 }

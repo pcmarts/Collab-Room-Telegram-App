@@ -686,6 +686,23 @@ export default function DiscoverPage() {
     index: number;
   }
   
+  // Fetch the user's swipe history from the server
+  const { data: serverSwipeHistory, isLoading: isLoadingSwipeHistory } = useQuery({
+    queryKey: ['/api/user-swipes'],
+    queryFn: async () => {
+      try {
+        console.log('Fetching user swipe history...');
+        const data = await apiRequest('/api/user-swipes');
+        console.log('User swipe history fetched successfully, count:', data.length);
+        return data;
+      } catch (err) {
+        console.error('User swipe history fetch error:', err);
+        throw err;
+      }
+    }
+  });
+
+  // Store history of swiped cards for the current session
   const [swipeHistory, setSwipeHistory] = useState<SwipeHistoryItem[]>([]);
   
   // Create a ref for swipe history to use in effects and callbacks
@@ -777,7 +794,7 @@ export default function DiscoverPage() {
   });
   
   // Combine loading and error states
-  const isLoading = isLoadingCollabs || isLoadingMatches;
+  const isLoading = isLoadingCollabs || isLoadingMatches || isLoadingSwipeHistory;
   // Only flag error if collaborations query fails (we can still show the UI with just collaborations)
   const isError = isCollabsError;
   const error = collabsError;
@@ -807,26 +824,32 @@ export default function DiscoverPage() {
     setPreviousLocation(currentLocation);
   }, [location, previousLocation, queryClient]);
 
-  // Extract all swiped card IDs (both potential matches and regular collaborations)
-  // Use the ref directly for consistent access to the most up-to-date data
+  // Extract all swiped card IDs (from both client-side history and server-side history)
   const allSwipedCardIds = useMemo(() => {
-    // Combine IDs from both state and ref to ensure we catch everything
-    const ids = [...swipeHistoryRef.current, ...swipeHistory]
+    // Get IDs from current session swipe history
+    const sessionIds = [...swipeHistoryRef.current, ...swipeHistory]
       .map(hist => hist.card?.id)
-      .filter(Boolean);
+      .filter(Boolean) as string[];
     
-    // Remove duplicates by converting to Set and back to array
-    const uniqueIds = [...new Set(ids)] as string[];
+    // Get IDs from server swipe history
+    const serverIds = serverSwipeHistory 
+      ? serverSwipeHistory.map(swipe => swipe.collaboration_id)
+      : [];
+    
+    // Combine all IDs and remove duplicates using Set
+    // Use spread syntax to convert Set to array to avoid TypeScript error
+    const uniqueIdsSet = new Set([...sessionIds, ...serverIds]);
+    const uniqueIds = [...uniqueIdsSet];
     
     console.log('All swiped card IDs:', {
       fromRef: swipeHistoryRef.current.length, 
       fromState: swipeHistory.length,
-      uniqueIdsCount: uniqueIds.length,
-      uniqueIds
+      fromServer: serverIds.length,
+      uniqueIdsCount: uniqueIds.length
     });
     
     return uniqueIds;
-  }, [swipeHistory, swipeHistoryRef.current]);
+  }, [swipeHistory, swipeHistoryRef.current, serverSwipeHistory]);
   
   // Process and filter the cards in a single useMemo for better performance and consistency
   const { filteredPotentialMatchCards, filteredRegularCards } = useMemo(() => {
