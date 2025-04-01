@@ -11,7 +11,7 @@ import {
 } from "@shared/schema";
 import { z } from 'zod';
 import { db } from "./db";
-import { eq, and, or, inArray, isNull, not, desc, sql, ilike } from "drizzle-orm";
+import { eq, and, or, inArray, isNull, not, desc, sql, ilike, lt } from "drizzle-orm";
 import { notifyMatchCreated } from "./telegram";
 
 export interface IStorage {
@@ -26,6 +26,7 @@ export interface IStorage {
   getCollaboration(id: string): Promise<Collaboration | undefined>;
   getUserCollaborations(userId: string): Promise<Collaboration[]>;
   searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]>;
+  searchCollaborationsPaginated(userId: string, filters: CollaborationFilters): Promise<PaginatedCollaborations>;
   updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined>;
   
   // Collaboration applications
@@ -75,6 +76,14 @@ export interface CollaborationFilters {
   fundingStages?: string[];
   blockchainNetworks?: string[];
   excludeOwn?: boolean; // Controls whether to exclude collaborations created by the current user
+  cursor?: string; // Used for pagination - ID of the last collaboration in previous batch
+  limit?: number; // Number of collaborations to fetch per page
+}
+
+export interface PaginatedCollaborations {
+  items: Collaboration[];
+  hasMore: boolean;
+  nextCursor?: string;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -240,6 +249,20 @@ export class DatabaseStorage implements IStorage {
   }
   
   async searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
+    // Call the paginated version but return just the items
+    const result = await this.searchCollaborationsPaginated(userId, filters);
+    return result.items;
+  }
+  
+  async searchCollaborationsPaginated(userId: string, filters: CollaborationFilters): Promise<PaginatedCollaborations> {
+    console.log('============ DEBUG: Search Collaborations Paginated ============');
+    console.log('Filters:', filters);
+    console.log('User ID:', userId);
+    
+    // Set default limit if not provided
+    const limit = filters.limit || 10;
+    console.log(`Using limit: ${limit}`);
+    
     // First get the user's marketing preferences to apply any filtering
     const marketingPrefs = await this.getUserMarketingPreferences(userId);
     
@@ -380,14 +403,55 @@ export class DatabaseStorage implements IStorage {
       query = query.where(sql`${collaborations.company_blockchain_networks} && ${networksPgArray}::text[]`);
     }
     
+    // Apply cursor-based pagination if a cursor is provided
+    if (filters.cursor) {
+      console.log(`Using cursor-based pagination with cursor: ${filters.cursor}`);
+      
+      try {
+        // Find the creation timestamp of the cursor collaboration
+        const [cursorCollab] = await db
+          .select({ created_at: collaborations.created_at })
+          .from(collaborations)
+          .where(eq(collaborations.id, filters.cursor));
+        
+        if (cursorCollab) {
+          console.log(`Found cursor collaboration with timestamp: ${cursorCollab.created_at}`);
+          
+          // Add a filter to get only collaborations older than the cursor
+          query = query.where(
+            sql`${collaborations.created_at} < ${cursorCollab.created_at}`
+          );
+        } else {
+          console.warn(`Cursor collaboration not found: ${filters.cursor}`);
+        }
+      } catch (err) {
+        console.error('Error applying cursor-based pagination:', err);
+      }
+    }
+    
     // Add additional debug logging
     console.log('Final filter query constructed, executing and returning results');
     
-    // Get the raw collaborations first
-    const rawCollaborations = await query.orderBy(desc(collaborations.created_at));
+    // Get the raw collaborations first, with limit + 1 to determine if there are more
+    const rawCollaborations = await query
+      .orderBy(desc(collaborations.created_at))
+      .limit(limit + 1);
+    
+    // Determine if there are more collaborations
+    const hasMore = rawCollaborations.length > limit;
+    
+    // Remove the extra item if we have more than the limit
+    const limitedCollaborations = hasMore ? rawCollaborations.slice(0, limit) : rawCollaborations;
+    
+    // The next cursor will be the ID of the last item in the current page
+    const nextCursor = hasMore && limitedCollaborations.length > 0 
+      ? limitedCollaborations[limitedCollaborations.length - 1].id 
+      : undefined;
+    
+    console.log(`Returning ${limitedCollaborations.length} collaborations with hasMore=${hasMore}`);
     
     // Enhance collaborations with creator company info
-    const enhancedCollaborations = await Promise.all(rawCollaborations.map(async (collab) => {
+    const enhancedCollaborations = await Promise.all(limitedCollaborations.map(async (collab) => {
       try {
         // Find the company associated with the creator_id
         const [company] = await db
@@ -397,7 +461,6 @@ export class DatabaseStorage implements IStorage {
         
         if (company) {
           // Add all company data to the collaboration object
-          console.log(`Found company data for collaboration ${collab.id}:`, company);
           return {
             ...collab,
             creator_company_name: company.name,
@@ -428,7 +491,11 @@ export class DatabaseStorage implements IStorage {
       }
     }));
     
-    return enhancedCollaborations;
+    return {
+      items: enhancedCollaborations,
+      hasMore,
+      nextCursor
+    };
   }
   
   async updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined> {

@@ -1,462 +1,201 @@
-import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { 
-  FileText, Briefcase, Tag, Network, ExternalLink, Globe, Users, 
-  Twitter, Linkedin, Building, X, Calendar, Megaphone, 
-  Coins 
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import {
+  Calendar,
+  Globe,
+  Twitter,
+  Briefcase,
+  DollarSign,
+  Tag,
+  Hash,
+  Clock,
+  Users,
+  Building,
+  ChevronLeft
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { FiExternalLink } from "react-icons/fi";
-
-// Define company data type
-type CompanyData = {
-  id?: string;
-  name?: string;
-  short_description?: string;
-  long_description?: string;
-  website?: string;
-  job_title?: string;
-  twitter_handle?: string;
-  twitter_followers?: string;
-  linkedin_url?: string;
-  funding_stage?: string;
-  has_token?: boolean;
-  token_ticker?: string;
-  blockchain_networks?: string[];
-  tags?: string[];
-};
 
 interface CollaborationDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  collaboration: {
-    // Basic collaboration info
+  collaboration?: {
     id?: string;
     title?: string;
-    collab_type?: string; // Used instead of 'type' to match database schema
+    collab_type?: string;
     description?: string;
     date?: string;
     topics?: string[];
-    
-    // Company Info from legacy fields
     companyName?: string;
-    roleTitle?: string;
-    companyWebsite?: string;
-    companyTwitter?: string;
-    twitterFollowers?: string;
-    companyLinkedIn?: string;
-    companySector?: string;
-    fundingStage?: string;
-    blockchainNetworks?: string[];
-    tokenTicker?: string;
-    hasToken?: boolean;
-    
-    // Complete company data from database
-    company_data?: CompanyData;
-    
-    // Details object (JSON from database)
+    company_data?: {
+      name?: string;
+      short_description?: string;
+      twitter_handle?: string;
+      twitter_followers?: string;
+      website?: string;
+      funding_stage?: string;
+      has_token?: boolean;
+      token_ticker?: string;
+      blockchain_networks?: string[];
+      job_title?: string;
+      tags?: string[];
+    };
     details?: Record<string, any>;
-    
-    // Legacy type field
+    isPotentialMatch?: boolean;
+    potentialMatchData?: {
+      user_id?: string;
+      first_name?: string;
+      last_name?: string;
+      company_name?: string;
+      job_title?: string;
+    };
     type?: string;
   };
 }
 
-export function CollaborationDetailsDialog({ 
-  isOpen, 
-  onClose, 
-  collaboration 
+export function CollaborationDetailsDialog({
+  isOpen,
+  onClose,
+  collaboration
 }: CollaborationDetailsDialogProps) {
-  
-  // Get collaboration type from either field
-  const collabType = collaboration.collab_type || collaboration.type || "";
+  if (!collaboration) return null;
+
+  // Extract fields with fallbacks
+  const title = collaboration.title || collaboration.collab_type || "Collaboration";
+  const description = collaboration.description || "No description provided";
+  const topics = collaboration.topics || [];
+  const companyData = collaboration.company_data || {};
   const details = collaboration.details || {};
+  const isPotentialMatch = collaboration.isPotentialMatch || false;
+  const potentialMatchData = collaboration.potentialMatchData || {};
   
-  // Get company data with proper typing and force cast to CompanyData
-  const companyData = (collaboration.company_data || {}) as CompanyData;
-  
-  // Get title based on collaboration type
-  const getDialogTitle = () => {
-    // First check for explicit title
-    if (collaboration.title) return collaboration.title;
-    
-    // Then try to extract type-specific titles from details or main object
-    switch (collabType.toLowerCase()) {
-      case "podcast":
-      case "podcast guest appearance":
-        return details.podcast_name || details.podcastName || "Podcast Opportunity";
-      
-      case "twitter spaces":
-      case "twitter spaces guest":
-      case "twitter-spaces":
-        return details.topic || details.spaceTopic || "Twitter Space";
-      
-      case "livestream":
-      case "live stream":
-      case "live stream guest appearance":
-        return details.stream_title || details.streamTitle || "Livestream Opportunity";
-      
-      case "research-report":
-      case "research report":
-      case "report & research feature":
-        return details.report_name || details.reportName || "Research Report";
-      
-      case "newsletter":
-      case "newsletter feature": 
-        return details.newsletter_name || details.newsletterName || "Newsletter Feature";
-        
-      case "blog post":
-      case "blog-post":
-      case "blog post feature":
-        return details.blog_title || details.blogTitle || "Blog Post Feature";
-        
-      default:
-        return "Collaboration Opportunity";
-    }
-  };
-  
-  // Get short description
-  const getShortDescription = () => {
-    // First check main description field
-    if (collaboration.description) return collaboration.description;
-    
-    // Then check details for short_description
-    if (details.short_description) return details.short_description;
-    if (details.shortDescription) return details.shortDescription;
-    
-    return "";
-  };
-  
-  // Get all potential topics
-  const getTopics = () => {
-    // First check main topics array
-    if (collaboration.topics && collaboration.topics.length > 0) {
-      return collaboration.topics;
-    }
-    
-    // Then check details for topics
-    if (details.topics && Array.isArray(details.topics)) {
-      return details.topics;
-    }
-    
-    return [];
-  };
-  
-  // Function to render blockchain networks if available
-  const renderBlockchainNetworks = () => {
-    const networks = collaboration.blockchainNetworks || 
-                    details.blockchain_networks || 
-                    [];
-                    
-    if (networks.length === 0) return null;
-    
-    return (
-      <div>
-        <h4 className="text-sm font-medium mb-1">Blockchain Networks</h4>
-        <div className="flex flex-wrap gap-1">
-          {networks.map((network, index) => (
-            <Badge key={index} variant="outline" className="text-xs bg-blue-500/10">
-              <Network className="h-3 w-3 mr-1" />
-              {network}
-            </Badge>
-          ))}
-        </div>
-      </div>
-    );
-  };
-  
-  // Function to check if there's token info
-  const hasTokenInfo = () => {
-    return collaboration.hasToken || details.has_token || collaboration.tokenTicker || details.token_ticker;
-  };
-  
-  // Get date information (could come from different fields)
-  const getDateInfo = () => {
-    return collaboration.date || 
-           details.date || 
-           details.specific_date || 
-           details.scheduledDate || 
-           details.target_release_date || 
-           "";
-  };
-  
+  // Format company name from the appropriate source
+  const companyName = 
+    potentialMatchData.company_name || 
+    companyData.name || 
+    collaboration.companyName || 
+    "Unknown Company";
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle className="pr-8">{getDialogTitle()}</DialogTitle>
-          {/* We're removing the custom close button since Dialog component already has one */}
-          <DialogDescription className="text-lg font-medium text-primary">
-            {collaboration.companyName || details.company_name || 'Company'}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onClose} 
+            className="absolute left-2 top-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <DialogTitle className="pt-2">{title}</DialogTitle>
+          <DialogDescription>
+            {isPotentialMatch ? "This user is interested in your collaboration" : "Collaboration details"}
           </DialogDescription>
         </DialogHeader>
-
-        <div className="grid gap-4 py-2">
-          {/* Collaboration Type */}
-          <div>
-            <h4 className="text-sm font-medium mb-1">Collaboration Type</h4>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Tag className="h-4 w-4" />
-              <span>{collabType}</span>
-            </div>
-          </div>
-          
-          {/* Collaboration Details */}
-          {Object.keys(details).length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium mb-1">Collaboration Details</h4>
-              <div className="space-y-2">
-                {Object.entries(details).map(([key, value]) => {
-                  // Skip certain fields that are handled specially elsewhere
-                  if (['topics', 'short_description', 'shortDescription', 'company_name', 'companyName',
-                       'blockchain_networks', 'has_token', 'token_ticker', 'date', 'specific_date'].includes(key)) {
-                    return null;
-                  }
-                  
-                  // Skip empty values or arrays
-                  if (!value || (Array.isArray(value) && value.length === 0)) {
-                    return null;
-                  }
-                  
-                  // Format the key for display
-                  const displayKey = key
-                    .replace(/_/g, ' ')
-                    .split(' ')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(' ');
-                  
-                  // Format the value based on type
-                  let displayValue: React.ReactNode = value;
-                  if (typeof value === 'object' && !Array.isArray(value)) {
-                    return null; // Skip nested objects
-                  } else if (Array.isArray(value)) {
-                    displayValue = value.join(', ');
-                  } else if (typeof value === 'boolean') {
-                    displayValue = value ? 'Yes' : 'No';
-                  }
-                  
-                  return (
-                    <div key={key} className="text-sm">
-                      <span className="font-medium">{displayKey}:</span>{' '}
-                      <span className="text-muted-foreground">{displayValue}</span>
-                    </div>
-                  );
-                })}
+        
+        <div className="space-y-4 pt-2">
+          {/* Company info section */}
+          <Card className="p-4 bg-card/50 border shadow-sm">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Building className="h-5 w-5 text-muted-foreground" />
+              {companyName}
+            </h3>
+            
+            {isPotentialMatch && potentialMatchData.first_name && (
+              <div className="flex items-center mt-1 text-sm text-primary">
+                <Users className="h-4 w-4 mr-1" />
+                <span>
+                  {potentialMatchData.first_name} {potentialMatchData.last_name || ""}
+                  {potentialMatchData.job_title && ` • ${potentialMatchData.job_title}`}
+                </span>
               </div>
+            )}
+            
+            {companyData.short_description && (
+              <p className="text-sm mt-2 text-muted-foreground">
+                {companyData.short_description}
+              </p>
+            )}
+            
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              {companyData.website && (
+                <div className="flex items-center gap-1 text-xs">
+                  <Globe className="h-3 w-3 text-muted-foreground" />
+                  <span className="truncate" title={companyData.website}>
+                    {companyData.website.replace(/https?:\/\/(www\.)?/, "")}
+                  </span>
+                </div>
+              )}
+              
+              {companyData.twitter_handle && (
+                <div className="flex items-center gap-1 text-xs">
+                  <Twitter className="h-3 w-3 text-muted-foreground" />
+                  <span className="truncate" title={companyData.twitter_handle}>
+                    {companyData.twitter_handle.replace(/https?:\/\/(www\.)?twitter\.com\//, "@")}
+                  </span>
+                </div>
+              )}
+              
+              {companyData.funding_stage && (
+                <div className="flex items-center gap-1 text-xs">
+                  <DollarSign className="h-3 w-3 text-muted-foreground" />
+                  <span>{companyData.funding_stage}</span>
+                </div>
+              )}
+              
+              {companyData.job_title && (
+                <div className="flex items-center gap-1 text-xs">
+                  <Briefcase className="h-3 w-3 text-muted-foreground" />
+                  <span className="truncate" title={companyData.job_title}>
+                    {companyData.job_title}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
+          </Card>
           
-          {/* Topics */}
-          {getTopics().length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium mb-1">Topics</h4>
-              <div className="flex flex-wrap gap-1">
-                {getTopics().map((topic, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
+          {/* Collaboration details */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
+            <p className="text-sm whitespace-pre-line">{description}</p>
+            
+            {topics && topics.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-3">
+                <div className="w-full flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                  <Tag className="h-3 w-3" />
+                  <span>Topics:</span>
+                </div>
+                {topics.map((topic, i) => (
+                  <Badge key={i} variant="secondary" className="text-xs">
                     {topic}
                   </Badge>
                 ))}
               </div>
-            </div>
-          )}
-          
-          {/* Short Description */}
-          {getShortDescription() && (
-            <div>
-              <h4 className="text-sm font-medium mb-1">Short Description</h4>
-              <p className="text-sm text-muted-foreground">{getShortDescription()}</p>
-            </div>
-          )}
-          
-          {/* Date */}
-          {getDateInfo() && (
-            <div>
-              <h4 className="text-sm font-medium mb-1">Date</h4>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>{getDateInfo()}</span>
+            )}
+            
+            {/* Type-specific details */}
+            {collaboration.collab_type === "Twitter Spaces Guest" && details.host_follower_count && (
+              <div className="flex items-center gap-1 text-xs mt-2">
+                <Users className="h-3 w-3 text-muted-foreground" />
+                <span>Host followers: {details.host_follower_count}</span>
               </div>
-            </div>
-          )}
-          
-          {/* Company Information Section - Completely rewritten to only use data from companies table */}
-          <Separator className="my-3" />
-          
-          {/* Only show company section if company data exists */}
-          {companyData && Object.keys(companyData).length > 0 && (
-            <div className="bg-muted/30 p-3 rounded-md">
-              <h4 className="text-sm font-bold mb-3">Company Information</h4>
-              <div className="space-y-3">
-                {/* Company Name */}
-                {companyData.name && (
-                  <div className="flex items-center gap-2 mb-3">
-                    <Building className="h-5 w-5 text-primary" />
-                    <span className="text-base font-medium">
-                      {companyData.name}
-                    </span>
-                  </div>
-                )}
-                
-                {/* Role/Job Title Information */}
-                {companyData.job_title && (
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {companyData.job_title}
-                    </span>
-                  </div>
-                )}
-                
-                {/* Important Links Section */}
-                <div className="flex flex-wrap gap-3 mb-3">
-                  {/* Company Website */}
-                  {companyData.website && (
-                    <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                      <Globe className="h-4 w-4 text-primary" />
-                      <a
-                        href={companyData.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline flex items-center font-medium"
-                      >
-                        Website
-                        <ExternalLink className="h-3 w-3 ml-1" />
-                      </a>
-                    </div>
-                  )}
-                  
-                  {/* LinkedIn */}
-                  {companyData.linkedin_url && (
-                    <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                      <Linkedin className="h-4 w-4 text-primary" />
-                      <a
-                        href={`https://linkedin.com/company/${companyData.linkedin_url}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline flex items-center font-medium"
-                      >
-                        LinkedIn
-                      </a>
-                    </div>
-                  )}
-                  
-                  {/* Twitter */}
-                  {companyData.twitter_handle && (
-                    <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                      <Twitter className="h-4 w-4 text-primary" />
-                      <a
-                        href={`https://twitter.com/${companyData.twitter_handle.replace('@', '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline flex items-center font-medium"
-                      >
-                        @{companyData.twitter_handle.replace('@', '')}
-                        {companyData.twitter_followers && (
-                          <span className="text-sm text-muted-foreground flex items-center ml-1">
-                            <Users className="h-3 w-3 mr-1" />
-                            {companyData.twitter_followers}
-                          </span>
-                        )}
-                      </a>
-                    </div>
-                  )}
-                </div>
-
-                {/* Company Short Description */}
-                {companyData.short_description && (
-                  <div className="flex gap-2 bg-muted/50 p-2 rounded-md">
-                    <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                    <div className="text-sm">
-                      <h5 className="font-medium mb-1">Company Description</h5>
-                      <p className="text-muted-foreground">
-                        {companyData.short_description}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Company Long Description */}
-                {companyData.long_description && (
-                  <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
-                    <FileText className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <div className="text-sm">
-                      <h5 className="font-medium mb-1">Full Company Profile</h5>
-                      <p className="text-muted-foreground">
-                        {companyData.long_description}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Company Tags/Sector */}
-                {companyData.tags && companyData.tags.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      Sector: {companyData.tags.join(', ')}
-                    </span>
-                  </div>
-                )}
-                
-                {/* Funding Stage */}
-                {companyData.funding_stage && (
-                  <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                    <Coins className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium">
-                      Funding: {companyData.funding_stage}
-                    </span>
-                  </div>
-                )}
-                
-                {/* Blockchain Networks */}
-                {companyData.blockchain_networks && companyData.blockchain_networks.length > 0 && (
-                  <div className="flex gap-2 bg-primary/5 p-2 rounded-md">
-                    <Network className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <span className="text-sm font-medium block mb-1">Blockchain Networks:</span>
-                      <div className="flex flex-wrap gap-1">
-                        {companyData.blockchain_networks.map((network, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {network}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Token Information */}
-                {companyData.token_ticker && (
-                  <div className="flex items-center gap-2 bg-primary/5 p-2 rounded-md">
-                    <Coins className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium">
-                      Token: {companyData.token_ticker}
-                    </span>
-                  </div>
-                )}
+            )}
+            
+            {collaboration.collab_type === "Co-Marketing on Twitter" && details.host_follower_count && (
+              <div className="flex items-center gap-1 text-xs mt-2">
+                <Users className="h-3 w-3 text-muted-foreground" />
+                <span>Host followers: {details.host_follower_count}</span>
               </div>
+            )}
+            
+            {/* Close button */}
+            <div className="pt-4">
+              <Button onClick={onClose} className="w-full">
+                Close
+              </Button>
             </div>
-          )}
-        </div>
-
-        <div className="flex justify-end gap-3 mt-2">
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-          <Button onClick={() => {
-            console.log("Request collaboration:", getDialogTitle());
-            onClose();
-          }}>
-            Request Collaboration
-          </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

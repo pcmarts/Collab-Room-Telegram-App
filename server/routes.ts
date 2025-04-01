@@ -2096,7 +2096,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Search collaborations
+  // Search collaborations with pagination support
   app.get("/api/collaborations/search", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Search Collaborations Endpoint ============');
     console.log('Headers:', req.headers);
@@ -2132,15 +2132,20 @@ export async function registerRoutes(app: Express) {
         blockchainNetworks: req.query.blockchainNetworks ? (req.query.blockchainNetworks as string).split(',') : undefined,
         // Always exclude user's own collaborations in Regular Collaboration Cards
         // This is a non-negotiable rule for the application
-        excludeOwn: true
+        excludeOwn: true,
+        // Pagination parameters
+        cursor: req.query.cursor as string | undefined,
+        limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10
       };
 
-      // Get filtered collaborations
-      console.log('Calling searchCollaborations with user ID:', user.id);
+      // Get filtered collaborations with pagination
+      console.log('Calling searchCollaborationsPaginated with user ID:', user.id);
       console.log('Using filters:', filters);
-      const collaborations = await storage.searchCollaborations(user.id, filters);
-      console.log(`Found ${collaborations.length} collaborations`);
-      return res.json(collaborations);
+      
+      const paginatedResults = await storage.searchCollaborationsPaginated(user.id, filters);
+      console.log(`Found ${paginatedResults.items.length} collaborations, hasMore: ${paginatedResults.hasMore}`);
+      
+      return res.json(paginatedResults);
 
     } catch (error) {
       console.error('Failed to search collaborations:', error);
