@@ -764,9 +764,9 @@ export default function DiscoverPage() {
   useEffect(() => {
     if (serverSwipeHistory && !isLoadingSwipeHistory) {
       // Check if user has already swiped on a significant number of cards
-      // If they've swiped on 8+ cards, it suggests they've probably gone through most/all cards
-      // This is a heuristic to avoid unnecessary API calls
-      if (serverSwipeHistory.length >= 8) {
+      // We now set this to 2+ cards as our database has a small number of cards
+      // for testing purposes. In production with more cards, this could be higher.
+      if (serverSwipeHistory.length >= 2) {
         console.log(`User has already swiped ${serverSwipeHistory.length} cards, setting allCardsViewed=true`);
         setAllCardsViewed(true);
       }
