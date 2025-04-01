@@ -687,23 +687,34 @@ export default function DiscoverPage() {
   }
   
   // Track if all cards have been viewed (to avoid unnecessary API calls)
-  // Initialize from localStorage if available
+  // Initialize from localStorage if available with user-specific key
   const [allCardsViewed, setAllCardsViewedState] = useState<boolean>(() => {
     try {
+      // Get user-specific localStorage key
+      const userId = userProfileData?.user?.id;
+      const storageKey = userId ? `allCardsViewed_${userId}` : 'allCardsViewed';
+      
       // Check if we've stored the "all cards viewed" state in localStorage
-      const storedValue = localStorage.getItem('allCardsViewed');
+      const storedValue = localStorage.getItem(storageKey);
+      console.log(`Reading allCardsViewed from localStorage with key ${storageKey}: ${storedValue}`);
       return storedValue === 'true';
     } catch (e) {
       // If any error occurs reading from localStorage, default to false
+      console.error('Error reading from localStorage:', e);
       return false;
     }
   });
   
-  // Override setState to also update localStorage
+  // Override setState to also update localStorage with user-specific key
   const setAllCardsViewed = (value: boolean) => {
     try {
+      // Get user-specific localStorage key
+      const userId = userProfileData?.user?.id;
+      const storageKey = userId ? `allCardsViewed_${userId}` : 'allCardsViewed';
+      
       // Update localStorage when state changes
-      localStorage.setItem('allCardsViewed', String(value));
+      localStorage.setItem(storageKey, String(value));
+      console.log(`Saved allCardsViewed=${value} to localStorage with key ${storageKey}`);
     } catch (e) {
       console.error('Failed to save allCardsViewed state to localStorage:', e);
     }
@@ -945,21 +956,16 @@ export default function DiscoverPage() {
                         (filteredPotentialMatches.length + filteredRegulars.length)
     });
     
-    // Check if we should set allCardsViewed flag with smarter logic
+    // Check if we should set allCardsViewed flag with reliable logic
     const totalCards = potentialMatches.length + regularCards.length;
     const totalFilteredCards = filteredPotentialMatches.length + filteredRegulars.length;
     const totalSwipedCards = allSwipedCardIds.length;
     
-    // Only set allCardsViewed in two cases:
-    // 1. Initial data load returned cards, but after filtering none are left
-    // 2. User has swiped on 75% or more of the total available cards AND has at least made 1 swipe
-    if (
-      (totalCards > 0 && totalFilteredCards === 0 && !isLoading) || 
-      (totalCards > 0 && totalSwipedCards > 0 && totalSwipedCards >= Math.floor(totalCards * 0.75) && !isLoading)
-    ) {
+    // ONLY set allCardsViewed when filtering leaves us with zero cards
+    // This is the most reliable approach that won't trigger prematurely
+    if (totalCards > 0 && totalFilteredCards === 0 && !isLoading) {
       console.log(`All cards viewed check: totalCards=${totalCards}, totalSwipedCards=${totalSwipedCards}, filtered=${totalFilteredCards}, ratio=${totalSwipedCards/totalCards}`);
-      console.log("Threshold reached - setting allCardsViewed=true");
-      // Set allCardsViewed to true
+      console.log("No cards remain after filtering - setting allCardsViewed=true");
       setAllCardsViewed(true);
     }
     
