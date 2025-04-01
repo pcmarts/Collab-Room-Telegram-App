@@ -808,11 +808,25 @@ export default function DiscoverPage() {
   }, [location, previousLocation, queryClient]);
 
   // Extract all swiped card IDs (both potential matches and regular collaborations)
+  // Use the ref directly for consistent access to the most up-to-date data
   const allSwipedCardIds = useMemo(() => {
-    return swipeHistory
+    // Combine IDs from both state and ref to ensure we catch everything
+    const ids = [...swipeHistoryRef.current, ...swipeHistory]
       .map(hist => hist.card?.id)
-      .filter(Boolean) as string[];
-  }, [swipeHistory]);
+      .filter(Boolean);
+    
+    // Remove duplicates by converting to Set and back to array
+    const uniqueIds = [...new Set(ids)] as string[];
+    
+    console.log('All swiped card IDs:', {
+      fromRef: swipeHistoryRef.current.length, 
+      fromState: swipeHistory.length,
+      uniqueIdsCount: uniqueIds.length,
+      uniqueIds
+    });
+    
+    return uniqueIds;
+  }, [swipeHistory, swipeHistoryRef.current]);
   
   // Process and filter the cards in a single useMemo for better performance and consistency
   const { filteredPotentialMatchCards, filteredRegularCards } = useMemo(() => {
@@ -1000,12 +1014,24 @@ export default function DiscoverPage() {
     console.log(`Swiped ${direction} on card index:`, currentIndex);
 
     // Save the current card to history before changing index
-    setSwipeHistory(prev => [...prev, {
+    const newSwipeHistoryItem = {
       card: cards[currentIndex],
       direction: direction,
       index: currentIndex
-    }]);
-    console.log("Updated swipe history, new length:", swipeHistory.length + 1);
+    };
+    
+    // Update both the state and the ref directly for immediate consistency
+    setSwipeHistory(prev => [...prev, newSwipeHistoryItem]);
+    
+    // Also update the ref immediately so it's available for filtering right away
+    swipeHistoryRef.current = [...swipeHistoryRef.current, newSwipeHistoryItem];
+    
+    console.log("Updated swipe history:", {
+      stateLength: swipeHistory.length + 1,
+      refLength: swipeHistoryRef.current.length,
+      cardId: cards[currentIndex]?.id,
+      cardType: cards[currentIndex]?.isPotentialMatch ? 'potential match' : 'regular collab'
+    });
     
     // Record the swipe in the database
     try {
@@ -1135,11 +1161,26 @@ export default function DiscoverPage() {
     // Get the last swiped card
     const lastAction = swipeHistory[swipeHistory.length - 1];
     
+    console.log('Undo action:', {
+      lastAction,
+      currentSwipeHistoryLength: swipeHistory.length,
+      currentRefLength: swipeHistoryRef.current.length
+    });
+    
     // Remove the last action from history
     setSwipeHistory(prev => prev.slice(0, -1));
     
+    // Also update the ref immediately
+    swipeHistoryRef.current = swipeHistoryRef.current.slice(0, -1);
+    
     // Set the current index back to the previous card
     setCurrentIndex(lastAction.index);
+    
+    console.log('After undo:', {
+      newSwipeHistoryLength: swipeHistory.length - 1,
+      newRefLength: swipeHistoryRef.current.length,
+      newIndex: lastAction.index
+    });
   };
 
   // Helper function to get company name from collaboration
