@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, MotionValue } from "framer-motion";
 import { Loader2, Filter, SearchX, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -13,6 +13,67 @@ import { MatchMoment } from "../components/MatchMoment";
 import { CollaborationDetailsDialog } from "../components/CollaborationDetailsDialog";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+
+// Define props for CardStack component
+interface CardStackProps {
+  cards: CardData[];
+  handleSwipe: (direction: "left" | "right") => void;
+  handleViewCardDetails: (card: CardData) => void;
+  x: MotionValue<number>;
+  rotate: MotionValue<number>;
+  opacity: MotionValue<number>;
+}
+
+// CardStack component to handle rendering cards
+const CardStack = ({ cards, handleSwipe, handleViewCardDetails, x, rotate, opacity }: CardStackProps) => {
+  // Create constrained states for each card position
+  const [constrained0, setConstrained0] = useState(true);
+  const [constrained1, setConstrained1] = useState(true);
+  const [constrained2, setConstrained2] = useState(true);
+  
+  return (
+    <>
+      {cards.slice(0, 3).map((card, index) => {
+        // Determine z-index and apply scaling
+        const zIndex = cards.length - index;
+        const scale = index === 0 ? 1 : 1 - index * 0.05;
+        const translateY = index === 0 ? 0 : index * 10;
+        
+        // Select the appropriate constrained state based on index
+        const constrained = index === 0 ? constrained0 : (index === 1 ? constrained1 : constrained2);
+        const setConstrained = index === 0 ? setConstrained0 : (index === 1 ? setConstrained1 : setConstrained2);
+        
+        return card.isPotentialMatch ? (
+          <PotentialMatchCard
+            key={card.id + "-" + index}
+            data={card}
+            handleSwipe={handleSwipe}
+            onInfoClick={() => handleViewCardDetails(card)}
+            zIndex={zIndex}
+            constrained={constrained}
+            setConstrained={setConstrained}
+            x={index === 0 ? x : undefined}
+            rotate={index === 0 ? rotate : undefined}
+            opacity={opacity}
+          />
+        ) : (
+          <SwipeableCard
+            key={card.id + "-" + index}
+            data={card}
+            handleSwipe={handleSwipe}
+            onInfoClick={() => handleViewCardDetails(card)}
+            zIndex={zIndex}
+            constrained={constrained}
+            setConstrained={setConstrained}
+            x={index === 0 ? x : undefined}
+            rotate={index === 0 ? rotate : undefined}
+            opacity={opacity}
+          />
+        );
+      })}
+    </>
+  );
+};
 
 // Define types for card data
 interface CardData {
@@ -438,43 +499,14 @@ export default function DiscoverPage() {
           className="w-full h-full max-w-md mx-auto relative"
           style={{ perspective: "1000px" }} // 3D effect for cards
         >
-          {/* Stack of cards */}
-          {cards.slice(0, 3).map((card, index) => {
-            // Determine z-index and apply scaling
-            const zIndex = cards.length - index;
-            const scale = index === 0 ? 1 : 1 - index * 0.05;
-            const translateY = index === 0 ? 0 : index * 10;
-            
-            const [constrained, setConstrained] = useState(true);
-            
-            return card.isPotentialMatch ? (
-              <PotentialMatchCard
-                key={card.id + "-" + index}
-                data={card}
-                handleSwipe={handleSwipe}
-                onInfoClick={() => handleViewCardDetails(card)}
-                zIndex={zIndex}
-                constrained={constrained}
-                setConstrained={setConstrained}
-                x={index === 0 ? x : undefined}
-                rotate={index === 0 ? rotate : undefined}
-                opacity={opacity}
-              />
-            ) : (
-              <SwipeableCard
-                key={card.id + "-" + index}
-                data={card}
-                handleSwipe={handleSwipe}
-                onInfoClick={() => handleViewCardDetails(card)}
-                zIndex={zIndex}
-                constrained={constrained}
-                setConstrained={setConstrained}
-                x={index === 0 ? x : undefined}
-                rotate={index === 0 ? rotate : undefined}
-                opacity={opacity}
-              />
-            );
-          })}
+          <CardStack 
+            cards={cards}
+            handleSwipe={handleSwipe}
+            handleViewCardDetails={handleViewCardDetails}
+            x={x}
+            rotate={rotate}
+            opacity={opacity}
+          />
           
           {/* Loading More Indicator */}
           {loadingMore && cards.length === 0 && (
