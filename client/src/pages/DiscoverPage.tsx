@@ -687,7 +687,29 @@ export default function DiscoverPage() {
   }
   
   // Track if all cards have been viewed (to avoid unnecessary API calls)
-  const [allCardsViewed, setAllCardsViewed] = useState(false);
+  // Initialize from localStorage if available
+  const [allCardsViewed, setAllCardsViewedState] = useState<boolean>(() => {
+    try {
+      // Check if we've stored the "all cards viewed" state in localStorage
+      const storedValue = localStorage.getItem('allCardsViewed');
+      return storedValue === 'true';
+    } catch (e) {
+      // If any error occurs reading from localStorage, default to false
+      return false;
+    }
+  });
+  
+  // Override setState to also update localStorage
+  const setAllCardsViewed = (value: boolean) => {
+    try {
+      // Update localStorage when state changes
+      localStorage.setItem('allCardsViewed', String(value));
+    } catch (e) {
+      console.error('Failed to save allCardsViewed state to localStorage:', e);
+    }
+    // Update React state
+    setAllCardsViewedState(value);
+  };
   
   // Store history of swiped cards for the current session
   const [swipeHistory, setSwipeHistory] = useState<SwipeHistoryItem[]>([]);
