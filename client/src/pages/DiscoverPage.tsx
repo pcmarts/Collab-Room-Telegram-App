@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import {
   motion,
@@ -679,7 +679,22 @@ export default function DiscoverPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDialog, setShowDialog] = useState(false);
   // Store history of swiped cards for undo functionality
-  const [swipeHistory, setSwipeHistory] = useState<Array<{card: any, direction: "left" | "right", index: number}>>([]);
+  // Define swipe history type with proper interface
+  interface SwipeHistoryItem {
+    card: any;
+    direction: "left" | "right";
+    index: number;
+  }
+  
+  const [swipeHistory, setSwipeHistory] = useState<SwipeHistoryItem[]>([]);
+  
+  // Create a ref for swipe history to use in effects and callbacks
+  const swipeHistoryRef = useRef<SwipeHistoryItem[]>([]);
+  
+  // Update the ref whenever the state changes
+  useEffect(() => {
+    swipeHistoryRef.current = swipeHistory;
+  }, [swipeHistory]);
   // Match moment states
   const [showMatch, setShowMatch] = useState(false);
   const [matchData, setMatchData] = useState<{
@@ -792,45 +807,67 @@ export default function DiscoverPage() {
     setPreviousLocation(currentLocation);
   }, [location, previousLocation, queryClient]);
 
-  // Process the collaborations data with better error handling
-  const regularCards = Array.isArray(collaborationsData) ? collaborationsData : [];
-  const potentialMatchCards = Array.isArray(potentialMatchesData) ? potentialMatchesData : [];
+  // Extract all swiped card IDs (both potential matches and regular collaborations)
+  const allSwipedCardIds = useMemo(() => {
+    return swipeHistory
+      .map(hist => hist.card?.id)
+      .filter(Boolean) as string[];
+  }, [swipeHistory]);
   
-  // Log data for debugging
-  console.log("Loaded data:", {
-    regularCardsCount: regularCards.length,
-    potentialMatchesCount: potentialMatchCards.length,
-    hasCollaborationsData: !!collaborationsData,
-    hasPotentialMatchesData: !!potentialMatchesData
-  });
-  
-  // Filter out any cards that the user has already swiped on in the current session
-  // This prevents showing the same cards again if the user refreshes after swiping
-  
-  // For potential matches, filter by swipe ID
-  const swipedPotentialMatchIds = swipeHistory
-    .filter(hist => hist.card?.isPotentialMatch)
-    .map(hist => hist.card?.id);
+  // Process and filter the cards in a single useMemo for better performance and consistency
+  const { filteredPotentialMatchCards, filteredRegularCards } = useMemo(() => {
+    // Process potential match cards
+    const potentialMatches = Array.isArray(potentialMatchesData) 
+      ? potentialMatchesData.map(card => ({
+          ...card,
+          isPotentialMatch: true
+        }))
+      : [];
+      
+    // Process regular collaboration cards  
+    const regularCards = Array.isArray(collaborationsData)
+      ? collaborationsData.map(card => ({
+          ...card,
+          isPotentialMatch: false
+        }))
+      : [];
     
-  console.log(`Filtering out ${swipedPotentialMatchIds.length} already swiped potential matches`);
-  
-  const filteredPotentialMatchCards = potentialMatchCards.filter(
-    card => !swipedPotentialMatchIds.includes(card.id)
-  );
-  
-  // For regular collaborations, filter by collaboration ID
-  const swipedCollaborationIds = swipeHistory
-    .filter(hist => !hist.card?.isPotentialMatch)
-    .map(hist => hist.card?.id);
+    // Log data for debugging
+    console.log("Loaded card data:", {
+      regularCardsCount: regularCards.length,
+      potentialMatchesCount: potentialMatches.length,
+      swipedCardsCount: allSwipedCardIds.length,
+      swipedCardIds: allSwipedCardIds,
+      hasCollaborationsData: !!collaborationsData,
+      hasPotentialMatchesData: !!potentialMatchesData
+    });
     
-  console.log(`Filtering out ${swipedCollaborationIds.length} already swiped regular collaborations`);
+    // Filter out cards that have been swiped on in the current session
+    const filteredPotentialMatches = potentialMatches.filter(
+      card => !allSwipedCardIds.includes(card.id)
+    );
+    
+    const filteredRegulars = regularCards.filter(
+      card => !allSwipedCardIds.includes(card.id)
+    );
+    
+    console.log(`Filtered cards:`, {
+      potentialMatchesRemaining: filteredPotentialMatches.length,
+      regularCardsRemaining: filteredRegulars.length,
+      filteredOutCount: (potentialMatches.length + regularCards.length) - 
+                        (filteredPotentialMatches.length + filteredRegulars.length)
+    });
+    
+    return {
+      filteredPotentialMatchCards: filteredPotentialMatches,
+      filteredRegularCards: filteredRegulars
+    };
+  }, [collaborationsData, potentialMatchesData, allSwipedCardIds]);
   
-  const filteredRegularCards = regularCards.filter(
-    card => !swipedCollaborationIds.includes(card.id)
-  );
-  
-  // Combine cards, showing potential matches first
-  const cards = [...filteredPotentialMatchCards, ...filteredRegularCards];
+  // Combine cards, showing potential matches first - using useMemo for performance
+  const cards = useMemo(() => {
+    return [...filteredPotentialMatchCards, ...filteredRegularCards];
+  }, [filteredPotentialMatchCards, filteredRegularCards]);
 
   // Initialize Telegram WebApp and handle viewport
   useEffect(() => {
@@ -1179,22 +1216,44 @@ export default function DiscoverPage() {
     );
   }
 
-  // Function to refresh collaborations
+  // Function to refresh collaborations with more robust handling
   const refreshCollaborations = () => {
+    console.log('=== REFRESH ACTION START ===');
+    console.log('Current state before refresh:', {
+      currentIndex,
+      swipeHistoryLength: swipeHistory.length,
+      cardCount: cards.length,
+    });
+    
+    // First clear the swipe history
+    setSwipeHistory([]);
+    
     // Reset current index
     setCurrentIndex(0);
-    // Clear swipe history
-    setSwipeHistory([]);
-    // Refetch both collaborations and potential matches data
+    
+    // Update the swipe history ref directly in addition to the state
+    swipeHistoryRef.current = [];
+    
+    // Force immediate refetch to ensure we get fresh data
+    queryClient.resetQueries({ queryKey: ['/api/collaborations/search'] });
+    queryClient.resetQueries({ queryKey: ['/api/potential-matches'] });
+    
+    // Then trigger a refetch with invalidation (these are different operations)
     queryClient.invalidateQueries({ queryKey: ['/api/collaborations/search'] });
     queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
     
+    console.log('Cache cleared and queries invalidated');
     console.log('Refreshing both collaboration cards and potential matches...');
     
-    // Force a small delay to ensure the queries are properly invalidated
+    // Force a delay to ensure the state updates are applied
     setTimeout(() => {
-      console.log('Refreshing complete. Card data should be fetched again.');
-    }, 100);
+      console.log('Refresh state check:', {
+        swipeHistoryLength: swipeHistory.length,
+        swipeHistoryRefLength: swipeHistoryRef.current.length,
+        cardCount: cards.length,
+        currentIndex
+      });
+    }, 300);
   };
 
   // Function to render the empty state
@@ -1220,7 +1279,7 @@ export default function DiscoverPage() {
   };
 
   // Show fallback rendering without error state if successful data load but no cards
-  if (collaborationsData && Array.isArray(collaborationsData) && regularCards.length === 0) {
+  if (collaborationsData && Array.isArray(collaborationsData) && filteredRegularCards.length === 0) {
     console.log("Successfully loaded data but no collaborations available");
     return renderEmptyState("No collaborations available right now. Check back later or adjust your filter settings.");
   }
