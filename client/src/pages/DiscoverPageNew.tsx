@@ -171,7 +171,17 @@ export default function DiscoverPage() {
   
   // Function to fetch the next batch of cards with cursor-based pagination
   const fetchNextBatch = async () => {
-    if (isFetchingNextBatchRef.current || !hasMore) return;
+    // Prevent fetching if already in progress or if no more cards are available
+    if (isFetchingNextBatchRef.current || !hasMore) {
+      console.log('[Discovery] Skipping fetchNextBatch - already fetching or no more cards');
+      return;
+    }
+    
+    // If we already have more than 10 cards, don't fetch more yet
+    if (cards.length > 10) {
+      console.log('[Discovery] Skipping fetchNextBatch - already have enough cards cached');
+      return;
+    }
     
     try {
       setLoadingMore(true);
@@ -189,12 +199,6 @@ export default function DiscoverPage() {
       
       // Add limit
       params.append('limit', '10'); // Fetch 10 cards at a time
-      
-      // Add swiped cards filter
-      if (allSwipedCardIds.length > 0) {
-        // We'll send this as part of the request body instead of URL params
-        // due to potential length limitations
-      }
       
       // Fetch data with cursor-based pagination
       const response = await apiRequest(`/api/collaborations/search?${params.toString()}`, 'POST', {
@@ -258,13 +262,17 @@ export default function DiscoverPage() {
   
   // Auto-fetch more cards when we're running low
   useEffect(() => {
-    const shouldFetchMore = cards.length < 5 && hasMore && !loadingMore && !isLoading;
+    const shouldFetchMore = cards.length > 0 && cards.length < 5 && hasMore && !loadingMore && !isLoading;
+    const emptyNoMore = cards.length === 0 && !hasMore && !loadingMore && !isLoading;
     
     if (shouldFetchMore) {
       console.log('[Discovery] Card count below threshold, fetching more cards...');
       fetchNextBatch();
+    } else if (emptyNoMore) {
+      console.log('[Discovery] No more cards available to fetch');
+      setAllCardsViewed(true);
     }
-  }, [cards, hasMore, loadingMore, isLoading]);
+  }, [cards.length, hasMore, loadingMore, isLoading]);
   
   // Update the swipe history ref whenever the state changes
   useEffect(() => {
