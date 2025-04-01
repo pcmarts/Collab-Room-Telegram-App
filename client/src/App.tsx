@@ -8,7 +8,7 @@ import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import Dashboard from "@/pages/dashboard";
-import DiscoverPage from "@/pages/DiscoverPage.new";
+import DiscoverPage from "@/pages/DiscoverPageNew";
 import MatchesPage from "@/pages/MatchesPage";
 import Welcome from "@/pages/welcome";
 import PersonalInfo from "@/pages/personal-info";
