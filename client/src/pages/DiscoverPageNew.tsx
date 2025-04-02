@@ -448,7 +448,7 @@ export default function DiscoverPage() {
   
   // Navigate to filters
   const handleOpenFilters = () => {
-    setLocation('/discover/filters');
+    setLocation('/discovery-filters');
   };
   
   // Render loading state
