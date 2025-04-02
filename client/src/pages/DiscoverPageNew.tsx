@@ -30,6 +30,13 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, x, rotate, opaci
   const [constrained0, setConstrained0] = useState(true);
   const [constrained1, setConstrained1] = useState(true);
   const [constrained2, setConstrained2] = useState(true);
+
+  // Log current cards state
+  console.log('[CardStack] Rendering with', cards.length, 'cards');
+  
+  if (cards.length === 0) {
+    console.log('[CardStack] No cards to render');
+  }
   
   return (
     <>
@@ -274,11 +281,17 @@ export default function DiscoverPage() {
       
       // Update state with new cards and pagination info
       if (response.items.length > 0) {
-        setCards(prevCards => [...prevCards, ...response.items]);
+        console.log('[Discovery] Adding items to cards:', JSON.stringify(response.items));
+        setCards(prevCards => {
+          const newCards = [...prevCards, ...response.items];
+          console.log('[Discovery] New cards state will have', newCards.length, 'cards');
+          return newCards;
+        });
         setNextCursor(response.nextCursor);
         setHasMore(response.hasMore);
       } else {
         // No more cards available
+        console.log('[Discovery] No items in response, setting allCardsViewed=true');
         setAllCardsViewed(true);
         setHasMore(false);
       }
