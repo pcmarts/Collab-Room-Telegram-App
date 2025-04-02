@@ -1,5 +1,5 @@
-import React from "react";
-import { RefreshCw } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { RefreshCw, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 
@@ -12,25 +12,56 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
   message = "Authentication error",
   onRetry,
 }) => {
-  const handleReload = () => {
-    // Try to reload the Telegram WebApp first
-    if (window.Telegram?.WebApp) {
-      console.log('[Auth] Attempting to refresh Telegram WebApp');
-      try {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-      } catch (e) {
-        console.error('[Auth] Error refreshing Telegram WebApp:', e);
-      }
+  const [isAttemptingReconnect, setIsAttemptingReconnect] = useState(false);
+  const [attemptCount, setAttemptCount] = useState(0);
+  
+  useEffect(() => {
+    // Auto-retry once on component mount
+    if (attemptCount === 0) {
+      handleReconnect();
     }
+  }, []);
+
+  const handleReconnect = () => {
+    setIsAttemptingReconnect(true);
+    setAttemptCount(prev => prev + 1);
     
-    // If there's a custom retry function, call it
-    if (onRetry) {
-      onRetry();
-    } else {
-      // Otherwise reload the entire page
-      window.location.reload();
-    }
+    // Create a sequence of attempts with increasing delays
+    const attemptSequence = async () => {
+      // Try to initialize Telegram WebApp
+      if (window.Telegram?.WebApp) {
+        console.log('[Auth] Attempting to refresh Telegram WebApp connection');
+        try {
+          window.Telegram.WebApp.ready();
+          window.Telegram.WebApp.expand();
+          
+          // Small delay to let initialization complete
+          await new Promise(resolve => setTimeout(resolve, 800));
+          
+          // If there's a custom retry function, call it
+          if (onRetry) {
+            onRetry();
+          }
+          
+          // Wait a bit more to see if that worked
+          await new Promise(resolve => setTimeout(resolve, 1200));
+        } catch (e) {
+          console.error('[Auth] Error refreshing Telegram WebApp:', e);
+        }
+      } else {
+        console.warn('[Auth] Telegram WebApp not available for reconnection attempt');
+      }
+      
+      // Reset the attempting state regardless of outcome
+      setIsAttemptingReconnect(false);
+    };
+    
+    attemptSequence();
+  };
+  
+  const handleFullReload = () => {
+    // This performs a complete page reload
+    window.location.reload();
   };
 
   return (
@@ -43,15 +74,31 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
       
       <div className="flex flex-col gap-2 w-full max-w-xs">
         <Button 
-          onClick={handleReload}
+          onClick={handleReconnect}
           className="flex items-center gap-2"
+          disabled={isAttemptingReconnect}
         >
-          <RefreshCw className="h-4 w-4" />
-          Refresh Connection
+          {isAttemptingReconnect ? (
+            <RotateCw className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          {isAttemptingReconnect ? "Reconnecting..." : "Reconnect"}
         </Button>
-        <p className="text-sm text-muted-foreground mt-2">
+        
+        <Button 
+          onClick={handleFullReload}
+          variant="outline"
+          className="mt-2"
+          disabled={isAttemptingReconnect}
+        >
+          Reload Page
+        </Button>
+        
+        <p className="text-sm text-muted-foreground mt-3">
           Make sure you're opening this app through the Telegram app.
         </p>
+        
         <div className="mt-4 p-4 bg-muted/50 rounded-md text-sm text-left">
           <p className="font-medium mb-1">How to access through Telegram:</p>
           <ol className="list-decimal pl-5 space-y-1">
@@ -60,6 +107,18 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
             <li>Click on the "Discover" button</li>
           </ol>
         </div>
+        
+        {attemptCount > 2 && (
+          <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900 rounded-md text-sm text-left">
+            <p className="font-medium mb-1 text-yellow-800 dark:text-yellow-400">Still having trouble?</p>
+            <ul className="list-disc pl-5 space-y-1 text-yellow-700 dark:text-yellow-300">
+              <li>Make sure you're using the official Telegram app</li>
+              <li>Try closing and reopening Telegram</li>
+              <li>Check your internet connection</li>
+              <li>Try accessing through the CollabRoom bot again</li>
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

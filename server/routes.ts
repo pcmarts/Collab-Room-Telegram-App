@@ -28,6 +28,14 @@ interface ImpersonationSession extends Session {
       last_name?: string;
       username?: string;
     }
+  },
+  telegramUser?: {
+    id: string;
+    username?: string;
+    first_name: string;
+    last_name?: string;
+    // Add expiry time to invalidate cached user data after a certain period
+    cachedAt: number;
   }
 }
 
@@ -63,6 +71,17 @@ function getTelegramUserFromRequest(req: TelegramReq) {
       return req.session.impersonating.impersonatedUser;
     }
 
+    // Check if we have valid cached Telegram user data in the session
+    // and it's less than 30 minutes old
+    const SESSION_DATA_TTL = 30 * 60 * 1000; // 30 minutes
+    if (req.session?.telegramUser && 
+        req.session.telegramUser.id && 
+        (Date.now() - req.session.telegramUser.cachedAt < SESSION_DATA_TTL)) {
+      // Use the cached data from session
+      return req.session.telegramUser;
+    }
+
+    // No valid session data, try to get from request headers
     const initData = req.headers['x-telegram-init-data'] as string;
     if (!initData) {
       console.log('No Telegram init data found in request headers');
@@ -85,6 +104,16 @@ function getTelegramUserFromRequest(req: TelegramReq) {
     if (!telegramUser.id) {
       console.error('Telegram user ID missing from parsed data');
       return null;
+    }
+    
+    // Store the parsed data in session for future requests
+    if (req.session) {
+      req.session.telegramUser = {
+        ...telegramUser,
+        cachedAt: Date.now()
+      };
+      // No need to explicitly call session.save() as Express session middleware
+      // will save the session when the response is sent
     }
     
     return telegramUser;
