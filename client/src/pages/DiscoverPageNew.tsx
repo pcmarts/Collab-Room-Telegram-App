@@ -684,7 +684,7 @@ export default function DiscoverPage() {
       {/* Card Stack Container */}
       <div className="flex-grow relative flex items-center justify-center p-4">
         <div 
-          className="w-full h-full max-w-md mx-auto relative"
+          className="w-full h-[500px] max-w-md mx-auto relative"
           style={{ perspective: "1000px" }} // 3D effect for cards
         >
           <CardStack 
