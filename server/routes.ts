@@ -73,6 +73,19 @@ function getTelegramUserFromRequest(req: TelegramReq) {
       console.log('Available headers:', JSON.stringify(safeHeaders, null, 2));
       
       console.warn('⚠️ No Telegram data found in request');
+      
+      // DEVELOPMENT FALLBACK: Use a test user when running in development mode
+      // This allows testing without Telegram WebApp integration
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Using development fallback for Telegram data');
+        return {
+          id: '7892486659', // Test user ID
+          first_name: 'Test',
+          last_name: 'User',
+          username: 'testuser'
+        };
+      }
+      
       return null;
     }
     
