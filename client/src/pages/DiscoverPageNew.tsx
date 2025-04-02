@@ -11,6 +11,7 @@ import { SwipeableCard } from "../components/SwipeableCard";
 import { PotentialMatchCard } from "../components/PotentialMatchCard";
 import { MatchMoment } from "../components/MatchMoment";
 import { CollaborationDetailsDialog } from "../components/CollaborationDetailsDialog";
+import { AuthenticationError } from "../components/AuthenticationError";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
@@ -129,6 +130,7 @@ export default function DiscoverPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [allCardsViewed, setAllCardsViewed] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [authError, setAuthError] = useState<boolean>(false);
   
   // State for cards and pagination
   const [cards, setCards] = useState<CardData[]>([]);
@@ -180,6 +182,13 @@ export default function DiscoverPage() {
         return data;
       } catch (err) {
         console.error('[Discovery] User swipe history fetch error:', err);
+        // Check if this is an authentication error
+        if (err && (
+          (err as Error).name === 'AuthenticationError' || 
+          ((err as Error).message && (err as Error).message.includes('Unauthorized'))
+        )) {
+          setAuthError(true);
+        }
         throw err;
       }
     },
@@ -231,6 +240,13 @@ export default function DiscoverPage() {
         }));
       } catch (err) {
         console.error('[Discovery] Potential matches fetch error:', err);
+        // Check if this is an authentication error
+        if (err && (
+          (err as Error).name === 'AuthenticationError' || 
+          ((err as Error).message && (err as Error).message.includes('Unauthorized'))
+        )) {
+          setAuthError(true);
+        }
         return [];
       }
     },
@@ -268,10 +284,25 @@ export default function DiscoverPage() {
       // Add limit
       params.append('limit', '10'); // Fetch 10 cards at a time
       
+      // Additional diagnostic logging
+      console.log('[Discovery] Making collaboration search request with params:', {
+        url: `/api/collaborations/search?${params.toString()}`,
+        excludeIds: allSwipedCardIds,
+        telegramAvailable: !!window.Telegram?.WebApp,
+        telegramInitData: !!window.Telegram?.WebApp?.initData
+      });
+      
       // Fetch data with cursor-based pagination
       const response = await apiRequest(`/api/collaborations/search?${params.toString()}`, 'POST', {
         excludeIds: allSwipedCardIds // Send swiped card IDs in request body
       }) as PaginatedResponse;
+      
+      // Log detailed response data for debugging
+      console.log('[Discovery] Received collaboration search response:', {
+        success: !!response,
+        status: 'success',
+        itemCount: response?.items?.length || 0
+      });
       
       console.log('[Discovery] Fetched batch response:', {
         itemCount: response.items.length,
@@ -297,6 +328,13 @@ export default function DiscoverPage() {
       }
     } catch (error) {
       console.error('[Discovery] Error fetching next batch:', error);
+      // Check if this is an authentication error
+      if (error && (
+        (error as Error).name === 'AuthenticationError' || 
+        ((error as Error).message && (error as Error).message.includes('Unauthorized'))
+      )) {
+        setAuthError(true);
+      }
     } finally {
       setLoadingMore(false);
       isFetchingNextBatchRef.current = false;
@@ -316,13 +354,22 @@ export default function DiscoverPage() {
         setNextCursor(undefined);
         setHasMore(true);
         
+        // Log the discovered preferences filters to help diagnose
+        console.log('[Discovery] Current discovery preferences:', {
+          telegram: window.Telegram?.WebApp ? 'Available' : 'Not Available',
+          initData: window.Telegram?.WebApp?.initData ? 'Present' : 'Missing'
+        });
+        
         // Combine potential matches with initial batch of regular cards
         if (potentialMatches && potentialMatches.length > 0) {
           console.log(`[Discovery] Adding ${potentialMatches.length} potential matches to card stack`);
           setCards(prevCards => [...potentialMatches, ...prevCards]);
+        } else {
+          console.log('[Discovery] No potential matches available');
         }
         
         // Fetch first batch of regular cards
+        console.log('[Discovery] Initiating fetch of regular collaboration cards');
         await fetchNextBatch();
       } catch (error) {
         console.error('[Discovery] Error initializing cards:', error);
@@ -352,6 +399,109 @@ export default function DiscoverPage() {
   useEffect(() => {
     swipeHistoryRef.current = swipeHistory;
   }, [swipeHistory]);
+  
+  // Initialize Telegram WebApp when component mounts
+  useEffect(() => {
+    // Check if we need to initialize Telegram WebApp
+    if (window.Telegram?.WebApp) {
+      try {
+        // Signal that the WebApp is ready
+        console.log('[Auth] Initializing Telegram WebApp');
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        
+        // Check if initData is available
+        const initDataAvailable = !!window.Telegram.WebApp.initData;
+        console.log(`[Auth] Telegram initData is ${initDataAvailable ? 'available' : 'missing'} after initialization`);
+        
+        if (!initDataAvailable) {
+          console.warn('[Auth] Telegram WebApp initData is missing after initialization');
+        }
+      } catch (e) {
+        console.error('[Auth] Error initializing Telegram WebApp:', e);
+      }
+    } else {
+      console.warn('[Auth] Telegram WebApp is not available - this app should be opened from Telegram');
+    }
+  }, []);
+  
+  // Add error handling for API authentication errors
+  useEffect(() => {
+    const errorHandler = (event: ErrorEvent) => {
+      // Check if the error is an authentication error
+      if (event.error && (
+        event.error.name === 'AuthenticationError' ||
+        (event.error.message && event.error.message.includes('Unauthorized'))
+      )) {
+        console.log('[Auth] Authentication error detected:', event.error);
+        setAuthError(true);
+      }
+    };
+    
+    // Handle unhandled rejections as well (for async errors)
+    const rejectionHandler = (event: PromiseRejectionEvent) => {
+      if (event.reason && (
+        (event.reason.name === 'AuthenticationError') ||
+        (event.reason.message && event.reason.message.includes('Unauthorized'))
+      )) {
+        console.log('[Auth] Authentication rejection detected:', event.reason);
+        setAuthError(true);
+      }
+    };
+    
+    // Add event listeners
+    window.addEventListener('error', errorHandler);
+    window.addEventListener('unhandledrejection', rejectionHandler);
+    
+    // Remove event listeners on cleanup
+    return () => {
+      window.removeEventListener('error', errorHandler);
+      window.removeEventListener('unhandledrejection', rejectionHandler);
+    };
+  }, []);
+  
+  // Handle authentication retry
+  const handleAuthRetry = () => {
+    setAuthError(false);
+    
+    // Reset loading state
+    setIsLoading(false);
+    
+    // If Telegram WebApp is available, try to refresh it
+    if (window.Telegram?.WebApp) {
+      try {
+        console.log('[Auth] Attempting to refresh Telegram WebApp');
+        
+        // Ensure Telegram WebApp is fully initialized
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        
+        // Check if init data is available after refresh
+        const initDataAvailable = !!window.Telegram.WebApp.initData;
+        console.log(`[Auth] After refresh, Telegram initData is ${initDataAvailable ? 'available' : 'missing'}`);
+        
+        if (!initDataAvailable) {
+          console.warn('[Auth] Telegram WebApp initData still missing after refresh');
+          // Try a direct window reload as a last resort if we're in a real browser
+          if (typeof window !== 'undefined' && window.location && typeof window.location.reload === 'function') {
+            console.log('[Auth] Attempting to reload the page to reinitialize Telegram WebApp');
+            setTimeout(() => window.location.reload(), 500);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('[Auth] Error refreshing Telegram WebApp:', e);
+      }
+    } else {
+      console.warn('[Auth] Telegram WebApp is not available - this app needs to be opened from Telegram');
+    }
+    
+    // Invalidate all queries to trigger refetching
+    queryClient.invalidateQueries();
+    
+    // Attempt to reload the cards
+    handleRefresh();
+  };
   
   // Handle swipe actions
   const handleSwipe = async (direction: "left" | "right") => {
@@ -454,6 +604,13 @@ export default function DiscoverPage() {
       await fetchNextBatch();
     } catch (error) {
       console.error('[Discovery] Error refreshing feed:', error);
+      // Check if this is an authentication error
+      if (error && (
+        (error as Error).name === 'AuthenticationError' || 
+        ((error as Error).message && (error as Error).message.includes('Unauthorized'))
+      )) {
+        setAuthError(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -463,6 +620,23 @@ export default function DiscoverPage() {
   const handleOpenFilters = () => {
     setLocation('/discovery-filters');
   };
+  
+  // Render authentication error state
+  if (authError) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="p-4 border-b flex items-center">
+          <h1 className="text-xl font-semibold">Discover</h1>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <AuthenticationError
+            message="Unable to authenticate with Telegram. Please ensure you're opening this app through the Telegram app."
+            onRetry={handleAuthRetry}
+          />
+        </div>
+      </div>
+    );
+  }
   
   // Render loading state
   if (isLoading) {
