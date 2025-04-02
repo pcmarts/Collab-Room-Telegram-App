@@ -42,6 +42,16 @@ export function SwipeableCard({
   const cardRef = useRef<HTMLDivElement>(null);
   const [exitX, setExitX] = useState(0);
   
+  // Define direct button click handler
+  const handleButtonClick = async (direction: "left" | "right") => {
+    try {
+      setExitX(direction === 'right' ? 1000 : -1000);
+      await handleSwipe(direction);
+    } catch (error) {
+      console.error("Error handling button click:", error);
+    }
+  };
+  
   // Define swipe handlers
   const handleDragEnd = async (e: any, info: any) => {
     if (!constrained) return;
@@ -78,7 +88,7 @@ export function SwipeableCard({
       whileDrag={{ scale: 1.05 }}
       animate={controls}
     >
-      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl">
+      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl isolate">
         {/* Overlay effects for swipe direction */}
         <motion.div 
           className="absolute inset-0 bg-red-500/20 z-20" 
@@ -99,7 +109,7 @@ export function SwipeableCard({
         </motion.div>
         
         {/* Card header with company info */}
-        <div className="px-4 py-3 bg-primary/5 border-b">
+        <div className="px-4 py-3 bg-primary/5 border-b relative z-30">
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-bold text-lg line-clamp-1">{data.creator_company_name || "Company"}</h3>
@@ -108,7 +118,7 @@ export function SwipeableCard({
             <Button 
               variant="ghost" 
               size="icon" 
-              className="shrink-0 h-8 w-8 text-muted-foreground hover:text-primary"
+              className="shrink-0 h-8 w-8 text-muted-foreground hover:text-primary relative z-50"
               onClick={onInfoClick}
             >
               <Info className="h-4 w-4" />
@@ -138,12 +148,12 @@ export function SwipeableCard({
         </div>
         
         {/* Card footer with action buttons */}
-        <div className="px-4 py-3 border-t bg-card/50 flex justify-between items-center gap-2">
+        <div className="px-4 py-3 border-t bg-card/50 flex justify-between items-center gap-2 relative z-30">
           <Button 
             variant="outline" 
             size="sm" 
-            className="w-full border-red-200 hover:bg-red-50 hover:text-red-600"
-            onClick={() => handleSwipe("left")}
+            className="w-full border-red-200 hover:bg-red-50 hover:text-red-600 relative z-50"
+            onClick={() => handleButtonClick("left")}
           >
             <X className="h-4 w-4 mr-1" />
             Pass
@@ -152,8 +162,8 @@ export function SwipeableCard({
           <Button 
             variant="outline" 
             size="sm" 
-            className="w-full border-green-200 hover:bg-green-50 hover:text-green-600"
-            onClick={() => handleSwipe("right")}
+            className="w-full border-green-200 hover:bg-green-50 hover:text-green-600 relative z-50"
+            onClick={() => handleButtonClick("right")}
           >
             <Check className="h-4 w-4 mr-1" />
             Connect

@@ -58,6 +58,16 @@ export function PotentialMatchCard({
   // Format the user's name
   const userName = [matchData.first_name, matchData.last_name].filter(Boolean).join(' ');
   
+  // Define direct button click handler
+  const handleButtonClick = async (direction: "left" | "right") => {
+    try {
+      setExitX(direction === 'right' ? 1000 : -1000);
+      await handleSwipe(direction);
+    } catch (error) {
+      console.error("Error handling button click:", error);
+    }
+  };
+  
   // Define swipe handlers
   const handleDragEnd = async (e: any, info: any) => {
     if (!constrained) return;
@@ -92,7 +102,7 @@ export function PotentialMatchCard({
       whileDrag={{ scale: 1.05 }}
       animate={controls}
     >
-      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 border-primary/30 shadow-xl rounded-xl bg-gradient-to-b from-primary/5 to-background">
+      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 border-primary/30 shadow-xl rounded-xl bg-gradient-to-b from-primary/5 to-background isolate">
         {/* Special badge for potential matches */}
         <div className="absolute top-2 right-2 z-30">
           <Badge variant="default" className="flex items-center gap-1 font-medium">
@@ -121,7 +131,7 @@ export function PotentialMatchCard({
         </motion.div>
         
         {/* Card header with company and user info */}
-        <div className="px-4 py-3 bg-primary/10 border-b">
+        <div className="px-4 py-3 bg-primary/10 border-b relative z-30">
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-bold text-lg line-clamp-1">{matchData.company_name || "Company"}</h3>
@@ -135,7 +145,7 @@ export function PotentialMatchCard({
             <Button 
               variant="ghost" 
               size="icon" 
-              className="shrink-0 h-8 w-8 text-muted-foreground hover:text-primary"
+              className="shrink-0 h-8 w-8 text-muted-foreground hover:text-primary relative z-50"
               onClick={onInfoClick}
             >
               <Info className="h-4 w-4" />
@@ -188,12 +198,12 @@ export function PotentialMatchCard({
         </div>
         
         {/* Card footer with action buttons */}
-        <div className="px-4 py-3 border-t bg-card/50 flex justify-between items-center gap-2">
+        <div className="px-4 py-3 border-t bg-card/50 flex justify-between items-center gap-2 relative z-30">
           <Button 
             variant="outline" 
             size="sm" 
-            className="w-full border-red-200 hover:bg-red-50 hover:text-red-600"
-            onClick={() => handleSwipe("left")}
+            className="w-full border-red-200 hover:bg-red-50 hover:text-red-600 relative z-50"
+            onClick={() => handleButtonClick("left")}
           >
             <X className="h-4 w-4 mr-1" />
             Decline
@@ -202,8 +212,8 @@ export function PotentialMatchCard({
           <Button 
             variant="default" 
             size="sm" 
-            className="w-full bg-primary hover:bg-primary/90"
-            onClick={() => handleSwipe("right")}
+            className="w-full bg-primary hover:bg-primary/90 relative z-50"
+            onClick={() => handleButtonClick("right")}
           >
             <Sparkles className="h-4 w-4 mr-1" />
             Match Now
