@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { RefreshCw, RotateCw } from "lucide-react";
+import { RefreshCw, RotateCw, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 
@@ -8,12 +8,32 @@ interface AuthenticationErrorProps {
   onRetry?: () => void;
 }
 
+// Session authentication status keys
+const SESSION_AUTH_KEY = 'sessionAuthEstablished';
+const SESSION_TIME_KEY = 'lastSessionTime';
+
+// Helper to check if we have a valid session
+const checkSessionValidity = (): boolean => {
+  const sessionAuthStatus = localStorage.getItem(SESSION_AUTH_KEY);
+  const hasEstablishedSession = sessionAuthStatus === 'true';
+  
+  if (hasEstablishedSession) {
+    // Check if session is still likely valid (less than 24 hours old)
+    const lastSessionTime = parseInt(localStorage.getItem(SESSION_TIME_KEY) || '0', 10);
+    const SESSION_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
+    return Date.now() - lastSessionTime < SESSION_MAX_AGE;
+  }
+  
+  return false;
+};
+
 export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
   message = "Authentication error",
   onRetry,
 }) => {
   const [isAttemptingReconnect, setIsAttemptingReconnect] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
+  const [hasValidSession, setHasValidSession] = useState(checkSessionValidity());
   
   useEffect(() => {
     // Auto-retry once on component mount
@@ -22,13 +42,39 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
     }
   }, []);
 
+  // Clear session
+  const handleClearSession = () => {
+    console.log('[Auth] Clearing session authentication data');
+    localStorage.removeItem(SESSION_AUTH_KEY);
+    localStorage.removeItem(SESSION_TIME_KEY);
+    setHasValidSession(false);
+    
+    // After clearing session, try to reconnect
+    setTimeout(handleReconnect, 500);
+  };
+
   const handleReconnect = () => {
     setIsAttemptingReconnect(true);
     setAttemptCount(prev => prev + 1);
     
     // Create a sequence of attempts with increasing delays
     const attemptSequence = async () => {
-      // Try to initialize Telegram WebApp
+      // First check if we have a valid session, if so try to use that
+      const sessionValid = checkSessionValidity();
+      setHasValidSession(sessionValid);
+      
+      if (sessionValid) {
+        console.log('[Auth] Attempting to use existing session');
+        // If we have a session, just try the retry function
+        if (onRetry) {
+          onRetry();
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          setIsAttemptingReconnect(false);
+          return;
+        }
+      }
+      
+      // No valid session, try with Telegram WebApp
       if (window.Telegram?.WebApp) {
         console.log('[Auth] Attempting to refresh Telegram WebApp connection');
         try {
@@ -47,6 +93,11 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
             const initDataAvailable = !!window.Telegram.WebApp.initData;
             if (initDataAvailable) {
               console.log('[Auth] Successfully reconnected to Telegram WebApp');
+              
+              // Mark that we now have a valid session
+              localStorage.setItem(SESSION_AUTH_KEY, 'true');
+              localStorage.setItem(SESSION_TIME_KEY, Date.now().toString());
+              setHasValidSession(true);
               
               // If there's a custom retry function, call it
               if (onRetry) {
@@ -110,6 +161,18 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
           Reload Page
         </Button>
         
+        {hasValidSession && (
+          <Button 
+            onClick={handleClearSession}
+            variant="destructive"
+            className="mt-2 flex items-center gap-2"
+            disabled={isAttemptingReconnect}
+          >
+            <XCircle className="h-4 w-4" />
+            Reset Session
+          </Button>
+        )}
+        
         <p className="text-sm text-muted-foreground mt-3">
           Make sure you're opening this app through the Telegram app.
         </p>
@@ -134,6 +197,16 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
               <li>If using iOS, try using Safari instead of in-app browser</li>
               <li>On Android, make sure Chrome is set as default browser</li>
             </ul>
+          </div>
+        )}
+        
+        {hasValidSession && (
+          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-md text-sm text-left">
+            <p className="font-medium mb-1 text-blue-800 dark:text-blue-400">Session information</p>
+            <p className="mb-2 text-blue-700 dark:text-blue-300">
+              A previous session was detected, but we're having trouble with authentication. 
+              Try using the "Reset Session" button above to clear your existing session and establish a new one.
+            </p>
           </div>
         )}
         

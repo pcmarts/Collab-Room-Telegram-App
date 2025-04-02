@@ -53,6 +53,10 @@ export async function apiRequest(
   // Add Telegram initData to headers if available
   const headers: Record<string, string> = {};
   
+  // Check if session authentication is available (stored in localStorage)
+  const sessionAuthStatus = localStorage.getItem('sessionAuthEstablished');
+  const hasEstablishedSession = sessionAuthStatus === 'true';
+  
   // Try to wait for Telegram initData (with a short timeout)
   const hasTelegramData = await waitForTelegramInitData();
   
@@ -60,27 +64,60 @@ export async function apiRequest(
   if (hasTelegramData && window.Telegram?.WebApp?.initData) {
     headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
     console.log('[API] Telegram initData found and added to request headers');
-  } else {
-    console.warn('[API] No Telegram initData available after retry attempts');
     
-    // With our improved session-based authentication, the request may still succeed
-    // even without Telegram initData in the headers since the session will preserve
-    // the user's authentication state after the first successful authentication
+    // If we successfully got Telegram initData, mark that we have established a session
+    // This is used as a fallback when future Telegram initData might be missing
+    localStorage.setItem('sessionAuthEstablished', 'true');
+    localStorage.setItem('lastSessionTime', Date.now().toString());
+  } else {
+    // Check if we've established a session before
+    if (hasEstablishedSession) {
+      console.log('[API] No current Telegram initData but session is established');
+      // Check if session is still likely to be valid (less than 24 hours old)
+      const lastSessionTime = parseInt(localStorage.getItem('lastSessionTime') || '0', 10);
+      const SESSION_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
+      
+      if (Date.now() - lastSessionTime < SESSION_MAX_AGE) {
+        console.log('[API] Using established session - last session within timeframe');
+      } else {
+        console.warn('[API] Session may have expired - attempting request but may fail');
+      }
+    } else {
+      console.warn('[API] No Telegram initData available after retry attempts and no established session');
+    }
+    
     console.log('[API] Continuing with request using session authentication');
   }
+  
   if (data) {
     headers['Content-Type'] = 'application/json';
   }
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  try {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include", // Ensure cookies are sent for session authentication
+    });
+    
+    if (res.ok) {
+      // If request succeeds, we know we have a working session
+      localStorage.setItem('sessionAuthEstablished', 'true');
+      localStorage.setItem('lastSessionTime', Date.now().toString());
+    }
 
-  await throwIfResNotOk(res);
-  return await res.json(); // Parse JSON response
+    await throwIfResNotOk(res);
+    return await res.json(); // Parse JSON response
+  } catch (error) {
+    // If we get an authentication error and had a supposedly valid session,
+    // our session might have expired or been invalidated
+    if (error && (error as Error).name === 'AuthenticationError' && hasEstablishedSession) {
+      console.warn('[API] Session authentication failed - clearing session status');
+      localStorage.removeItem('sessionAuthEstablished');
+    }
+    throw error;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -93,6 +130,10 @@ export const getQueryFn: <T>(options: {
     // Add Telegram initData to headers if available
     const headers: Record<string, string> = {};
     
+    // Check if session authentication is available (stored in localStorage)
+    const sessionAuthStatus = localStorage.getItem('sessionAuthEstablished');
+    const hasEstablishedSession = sessionAuthStatus === 'true';
+    
     // Try to wait for Telegram initData (with a short timeout)
     const hasTelegramData = await waitForTelegramInitData();
     
@@ -100,25 +141,62 @@ export const getQueryFn: <T>(options: {
     if (hasTelegramData && window.Telegram?.WebApp?.initData) {
       headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
       console.log('[API] Telegram initData found and added to query request headers');
-    } else {
-      console.warn('[API] No Telegram initData available in query after retry attempts');
       
-      // With our session-based authentication, we can still try the request as the session 
-      // cookie will be sent automatically with credentials: "include"
+      // If we successfully got Telegram initData, mark that we have established a session
+      localStorage.setItem('sessionAuthEstablished', 'true');
+      localStorage.setItem('lastSessionTime', Date.now().toString());
+    } else {
+      // Check if we've established a session before
+      if (hasEstablishedSession) {
+        console.log('[API] No current Telegram initData but session is established');
+        // Check if session is still likely to be valid (less than 24 hours old)
+        const lastSessionTime = parseInt(localStorage.getItem('lastSessionTime') || '0', 10);
+        const SESSION_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
+        
+        if (Date.now() - lastSessionTime < SESSION_MAX_AGE) {
+          console.log('[API] Using established session - last session within timeframe');
+        } else {
+          console.warn('[API] Session may have expired - attempting request but may fail');
+        }
+      } else {
+        console.warn('[API] No Telegram initData available in query after retry attempts and no established session');
+      }
+      
       console.log('[API] Continuing with request using session authentication');
     }
 
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-      headers
-    });
+    try {
+      const res = await fetch(queryKey[0] as string, {
+        credentials: "include", // Ensure cookies are sent for session authentication
+        headers
+      });
+      
+      if (res.ok) {
+        // If request succeeds, we know we have a working session
+        localStorage.setItem('sessionAuthEstablished', 'true');
+        localStorage.setItem('lastSessionTime', Date.now().toString());
+      }
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        // Session might have expired if we get a 401
+        if (hasEstablishedSession) {
+          console.warn('[API] Session authentication failed - clearing session status');
+          localStorage.removeItem('sessionAuthEstablished');
+        }
+        return null;
+      }
+
+      await throwIfResNotOk(res);
+      return await res.json();
+    } catch (error) {
+      // If we get an authentication error and had a supposedly valid session,
+      // our session might have expired or been invalidated
+      if (error && (error as Error).name === 'AuthenticationError' && hasEstablishedSession) {
+        console.warn('[API] Session authentication failed in query - clearing session status');
+        localStorage.removeItem('sessionAuthEstablished');
+      }
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
