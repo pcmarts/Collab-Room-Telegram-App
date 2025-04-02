@@ -289,7 +289,8 @@ export default function DiscoverPage() {
         url: `/api/collaborations/search?${params.toString()}`,
         excludeIds: allSwipedCardIds,
         telegramAvailable: !!window.Telegram?.WebApp,
-        telegramInitData: !!window.Telegram?.WebApp?.initData
+        telegramInitData: !!window.Telegram?.WebApp?.initData,
+        sessionAuth: !!document.cookie.includes('connect.sid') // Check if we have a session cookie
       });
       
       // Fetch data with cursor-based pagination

@@ -32,19 +32,34 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
       if (window.Telegram?.WebApp) {
         console.log('[Auth] Attempting to refresh Telegram WebApp connection');
         try {
-          window.Telegram.WebApp.ready();
-          window.Telegram.WebApp.expand();
-          
-          // Small delay to let initialization complete
-          await new Promise(resolve => setTimeout(resolve, 800));
-          
-          // If there's a custom retry function, call it
-          if (onRetry) {
-            onRetry();
+          // Try multiple times with increasing delays
+          for (let i = 0; i < 3; i++) {
+            console.log(`[Auth] Reconnection attempt ${i + 1}/3`);
+            
+            // Reset any Telegram WebApp state
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+            
+            // Small delay to let initialization complete (increasing with each attempt)
+            await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
+            
+            // Check if we have init data now
+            const initDataAvailable = !!window.Telegram.WebApp.initData;
+            if (initDataAvailable) {
+              console.log('[Auth] Successfully reconnected to Telegram WebApp');
+              
+              // If there's a custom retry function, call it
+              if (onRetry) {
+                onRetry();
+                // Wait to see if the retry worked before returning
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                setIsAttemptingReconnect(false);
+                return; // Exit early on success
+              }
+            }
           }
           
-          // Wait a bit more to see if that worked
-          await new Promise(resolve => setTimeout(resolve, 1200));
+          console.warn('[Auth] Failed to reconnect after multiple attempts');
         } catch (e) {
           console.error('[Auth] Error refreshing Telegram WebApp:', e);
         }
@@ -116,7 +131,24 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
               <li>Try closing and reopening Telegram</li>
               <li>Check your internet connection</li>
               <li>Try accessing through the CollabRoom bot again</li>
+              <li>If using iOS, try using Safari instead of in-app browser</li>
+              <li>On Android, make sure Chrome is set as default browser</li>
             </ul>
+          </div>
+        )}
+        
+        {attemptCount > 4 && (
+          <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-md text-sm text-left">
+            <p className="font-medium mb-1 text-red-800 dark:text-red-400">Session issue detected</p>
+            <p className="mb-2 text-red-700 dark:text-red-300">
+              It looks like your session may have expired or is invalid. Try these steps:
+            </p>
+            <ol className="list-decimal pl-5 space-y-1 text-red-700 dark:text-red-300">
+              <li>Exit Telegram completely (close the app)</li>
+              <li>Reopen Telegram and wait a few seconds</li>
+              <li>Go to @CollabRoomBot and start a new session</li>
+              <li>Try accessing the app again from the bot menu</li>
+            </ol>
           </div>
         )}
       </div>

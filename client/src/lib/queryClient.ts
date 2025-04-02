@@ -61,7 +61,12 @@ export async function apiRequest(
     headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
     console.log('[API] Telegram initData found and added to request headers');
   } else {
-    console.warn('[API] No Telegram initData available after retry attempts - authentication may fail');
+    console.warn('[API] No Telegram initData available after retry attempts');
+    
+    // With our improved session-based authentication, the request may still succeed
+    // even without Telegram initData in the headers since the session will preserve
+    // the user's authentication state after the first successful authentication
+    console.log('[API] Continuing with request using session authentication');
   }
   if (data) {
     headers['Content-Type'] = 'application/json';
@@ -96,7 +101,11 @@ export const getQueryFn: <T>(options: {
       headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
       console.log('[API] Telegram initData found and added to query request headers');
     } else {
-      console.warn('[API] No Telegram initData available in query after retry attempts - authentication may fail');
+      console.warn('[API] No Telegram initData available in query after retry attempts');
+      
+      // With our session-based authentication, we can still try the request as the session 
+      // cookie will be sent automatically with credentials: "include"
+      console.log('[API] Continuing with request using session authentication');
     }
 
     const res = await fetch(queryKey[0] as string, {

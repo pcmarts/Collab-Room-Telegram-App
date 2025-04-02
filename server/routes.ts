@@ -1,11 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import type { Session } from 'express-session';
 import { createServer } from "http";
-import session from 'express-session';
-import MemoryStore from 'memorystore';
 import { db } from "./db";
-
-const MemoryStoreSession = MemoryStore(session);
 import { 
   users, companies, notification_preferences, marketing_preferences, conference_preferences, 
   events, user_events, collaborations, collab_notifications, swipes,
@@ -184,20 +180,6 @@ export async function registerRoutes(app: Express) {
     }
   });
   const httpServer = createServer(app);
-
-  // Initialize session middleware
-  app.use(session({
-    secret: 'your-secret-key',
-    resave: false,
-    saveUninitialized: true,
-    store: new MemoryStoreSession({
-      checkPeriod: 86400000 // prune expired entries every 24h
-    }),
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
-  }));
 
   // Profile API endpoint
   app.get("/api/profile", async (req: TelegramRequest, res: Response) => {
