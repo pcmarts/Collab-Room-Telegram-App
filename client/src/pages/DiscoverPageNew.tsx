@@ -624,33 +624,81 @@ export default function DiscoverPage() {
       const currentCards = [...cards];
       const wasEmpty = cards.length === 0;
       
-      // Only reset pagination state if we had no cards (avoid flicker and maintain state)
-      // but don't clear the cards yet in case fetching fails
-      if (wasEmpty) {
-        // Full reset only if there were no cards
-        setAllCardsViewed(false);
-        setNextCursor(undefined);
-        setHasMore(true);
-      }
+      // Complete reset of pagination state for a fresh start
+      setAllCardsViewed(false);
+      setNextCursor(undefined);
+      setHasMore(true);
       
-      // Invalidate and refetch queries
+      // Invalidate and refetch queries to ensure we have fresh data
       await queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
       
       try {
-        // Reset pagination state for a clean fetch
-        setNextCursor(undefined);
+        // Get the latest swipe data from the server to ensure we don't show swiped cards
+        const latestSwipes = await apiRequest('/api/user-swipes') as any[];
+        console.log(`[Discovery] Refresh: Got ${latestSwipes?.length || 0} swipes from server`);
         
-        // Attempt to fetch new cards using the existing fetchNextBatch function
-        await fetchNextBatch();
+        // Reset cards array completely for a fresh start
+        setCards([]);
         
-        // fetchNextBatch will update the cards state directly if successful
-        console.log('[Discovery] Refresh complete, new card count:', cards.length);
+        // Fetch potential matches first (users who swiped right on your collaborations)
+        const potentialMatchesData = await apiRequest('/api/potential-matches') as any[];
+        console.log(`[Discovery] Refresh: Got ${potentialMatchesData?.length || 0} potential matches`);
+        
+        if (potentialMatchesData && potentialMatchesData.length > 0) {
+          // Transform and add potential matches to the card stack
+          const formattedMatches = potentialMatchesData.map((match: any) => ({
+            ...match,
+            id: match.id,
+            isPotentialMatch: true,
+            collab_type: match.collab_type || 'Collaboration',
+            creator_company_name: match.potentialMatchData?.company_name || '',
+          }));
+          
+          setCards(formattedMatches);
+        }
+        
+        // Now fetch regular collaborations
+        // Get all swiped card IDs from the fresh server data
+        const serverSwipedIds = latestSwipes 
+          ? latestSwipes.map(swipe => swipe.collaboration_id)
+          : [];
+          
+        // Add current session swipes
+        const sessionIds = swipeHistory
+          .map(hist => hist.card?.id)
+          .filter(Boolean) as string[];
+            
+        // Combine all IDs to exclude from results
+        const allIdsToExclude = Array.from(new Set([...serverSwipedIds, ...sessionIds]));
+        console.log(`[Discovery] Refresh: Excluding ${allIdsToExclude.length} swiped cards`);
+        
+        // Fetch fresh batch of regular collaborations
+        const params = new URLSearchParams();
+        params.append('limit', '10');
+        
+        const response = await apiRequest(`/api/collaborations/search?${params.toString()}`, 'POST', {
+          excludeIds: allIdsToExclude
+        }) as PaginatedResponse;
+        
+        // Update state with new cards and pagination info
+        if (response.items && response.items.length > 0) {
+          setCards(prevCards => [...prevCards, ...response.items]);
+          setNextCursor(response.nextCursor);
+          setHasMore(response.hasMore);
+          
+          console.log('[Discovery] Refresh complete, card count:', 
+            (potentialMatchesData?.length || 0) + response.items.length);
+        } else if (cards.length === 0) {
+          console.log('[Discovery] No cards available after refresh');
+          setAllCardsViewed(true);
+        }
       } catch (fetchError) {
         console.error('[Discovery] Error fetching new cards during refresh:', fetchError);
-        // If the fetch fails, don't modify the card state - just keep what we have
+        // If the fetch fails, restore the previous cards
         if (currentCards.length > 0) {
-          console.log('[Discovery] Keeping existing cards after fetch error');
+          console.log('[Discovery] Restoring previous cards after fetch error');
+          setCards(currentCards);
         }
       }
     } catch (error) {
