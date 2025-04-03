@@ -18,6 +18,7 @@ import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
 import { GlowFilterButton } from "@/components/GlowFilterButton";
 import { PotentialMatchCard } from "@/components/PotentialMatchCard";
+import { MarketingCard } from "@/components/cards/MarketingCard";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Collaboration as BaseCollaboration } from "@shared/schema";
@@ -529,40 +530,122 @@ const MyCollabCard = ({ data }: { data: CardData }) => (
   </div>
 );
 
-// Legacy/Generic Cards (for backward compatibility)
-const MarketingCard = ({ data }: { data: CardData }) => (
-  <div className="space-y-3">
-    <Badge variant="outline" className="bg-primary/10">
-      <Megaphone className="w-3 h-3 mr-1" />
-      {data.collaborationType}
-    </Badge>
-    <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
-    <div className="space-y-0.5">
-      <p className="text-base">{data.companyName}</p>
-      <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
+// Legacy/Generic Cards (for backward compatibility) 
+// Using an inline card that calls out to the full component
+const InlineMarketingCard = ({ data }: { data: CardData }) => {
+  // Check if it has Twitter marketing details
+  const isTwitterCoMarketing = 
+    data.details?.host_twitter_handle || 
+    (data.collaborationType?.toLowerCase().includes('twitter') && 
+     data.collaborationType?.toLowerCase().includes('co-marketing')) ||
+    data.details?.twittercomarketing_type;
+  
+  if (isTwitterCoMarketing) {
+    return (
+      <div className="space-y-3">
+        <Badge variant="outline" className="bg-blue-500/10 border-blue-500/30 text-[#1DA1F2] p-1.5">
+          <Twitter className="w-3.5 h-3.5 mr-1.5" />
+          <span>Twitter Co-Marketing</span>
+        </Badge>
+        
+        <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
+        
+        <div className="space-y-0.5">
+          <p className="text-base">{data.companyName}</p>
+          <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
+        </div>
+        
+        {/* Twitter specific info */}
+        {data.details?.host_twitter_handle && (
+          <div className="flex flex-col space-y-2 p-2 bg-blue-500/5 rounded-md border border-blue-500/10">
+            <div className="flex items-center space-x-1.5">
+              <Twitter className="w-4 h-4 text-[#1DA1F2]" />
+              <span className="text-sm font-medium text-[#1DA1F2]">
+                @{data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
+              </span>
+            </div>
+            
+            {data.details?.host_follower_count && (
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium">{data.details.host_follower_count}</span> followers
+              </p>
+            )}
+            
+            {data.details?.twittercomarketing_type && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {(Array.isArray(data.details.twittercomarketing_type) 
+                  ? data.details.twittercomarketing_type 
+                  : [data.details.twittercomarketing_type]).map((type, i) => (
+                  <Badge key={i} variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-blue-700">
+                    {type}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        
+        <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
+        
+        {data.topics && data.topics.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {data.topics.map((topic, i) => (
+              <Badge key={i} variant="secondary" className="text-xs">
+                {topic}
+              </Badge>
+            ))}
+          </div>
+        )}
+        
+        {/* For legacy preferredTopics support */}
+        {!data.topics && data.preferredTopics && data.preferredTopics.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {data.preferredTopics.map((topic, i) => (
+              <Badge key={i} variant="secondary" className="text-xs">
+                {topic}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+  
+  // Fallback to standard marketing card
+  return (
+    <div className="space-y-3">
+      <Badge variant="outline" className="bg-primary/10">
+        <Megaphone className="w-3 h-3 mr-1" />
+        {data.collaborationType}
+      </Badge>
+      <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
+      <div className="space-y-0.5">
+        <p className="text-base">{data.companyName}</p>
+        <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
+      </div>
+      <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
+      {data.topics && data.topics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {data.topics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
+      {/* For legacy preferredTopics support */}
+      {!data.topics && data.preferredTopics && data.preferredTopics.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {data.preferredTopics.map((topic, i) => (
+            <Badge key={i} variant="secondary" className="text-xs">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
     </div>
-    <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
-    {data.topics && data.topics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-2">
-        {data.topics.map((topic, i) => (
-          <Badge key={i} variant="secondary" className="text-xs">
-            {topic}
-          </Badge>
-        ))}
-      </div>
-    )}
-    {/* For legacy preferredTopics support */}
-    {!data.topics && data.preferredTopics && data.preferredTopics.length > 0 && (
-      <div className="flex flex-wrap gap-1 mb-2">
-        {data.preferredTopics.map((topic, i) => (
-          <Badge key={i} variant="secondary" className="text-xs">
-            {topic}
-          </Badge>
-        ))}
-      </div>
-    )}
-  </div>
-);
+  );
+};
 
 const ConferenceCard = ({ data }: { data: CardData }) => (
   <div className="space-y-3">
@@ -1601,10 +1684,10 @@ export default function DiscoverPage() {
       "twitter space": TwitterSpacesCard,
       
       // Twitter Co-Marketing variations
-      "twitter co-marketing": MarketingCard,
-      "twitter comarketing": MarketingCard,
-      "co-marketing on twitter": MarketingCard,
-      "comarketing on twitter": MarketingCard,
+      "twitter co-marketing": InlineMarketingCard,
+      "twitter comarketing": InlineMarketingCard,
+      "co-marketing on twitter": InlineMarketingCard,
+      "comarketing on twitter": InlineMarketingCard,
       
       // Livestream variations
       "livestream": LiveStreamCard,
@@ -1633,7 +1716,7 @@ export default function DiscoverPage() {
     if (CARD_TYPE_MAPPING[cardType]) {
       console.log(`Found matching card component for type: ${cardType}`);
     } else {
-      console.log(`No specialized card found for type '${cardType}', using MarketingCard as fallback`);
+      console.log(`No specialized card found for type '${cardType}', using InlineMarketingCard as fallback`);
     }
     
     // Function to find the best card component using fuzzy matching
@@ -1655,7 +1738,7 @@ export default function DiscoverPage() {
       // First check for Twitter co-marketing to ensure it doesn't match with Twitter Spaces
       if ((typeWords.includes('twitter') && (typeWords.includes('co-marketing') || typeWords.includes('comarketing'))) ||
           (typeWords.includes('twitter') && typeWords.includes('marketing'))) {
-        return MarketingCard;
+        return InlineMarketingCard;
       }
       
       // Then check for Twitter Spaces
@@ -1663,7 +1746,7 @@ export default function DiscoverPage() {
         // Check if it's a Twitter Spaces or a Twitter co-marketing collab based on details
         const details = cardData.details;
         if (details && details.host_twitter_handle && details.twittercomarketing_type) {
-          return MarketingCard;
+          return InlineMarketingCard;
         }
         return TwitterSpacesCard;
       }
@@ -1685,7 +1768,7 @@ export default function DiscoverPage() {
       }
       
       // 3. If no matches are found, use the default card
-      return MarketingCard;
+      return InlineMarketingCard;
     };
     
     // Use the fuzzy matching function to find the best component
