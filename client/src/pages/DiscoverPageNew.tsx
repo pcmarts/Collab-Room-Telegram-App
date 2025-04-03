@@ -27,6 +27,11 @@ interface CardStackProps {
 
 // CardStack component to handle rendering cards
 const CardStack = ({ cards, handleSwipe, handleViewCardDetails, x, rotate, opacity }: CardStackProps) => {
+  // Create constrained states for each card position
+  const [constrained0, setConstrained0] = useState(true);
+  const [constrained1, setConstrained1] = useState(true);
+  const [constrained2, setConstrained2] = useState(true);
+
   // Log current cards state
   console.log('[CardStack] Rendering with', cards.length, 'cards');
   
@@ -40,6 +45,10 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, x, rotate, opaci
         // Determine z-index and apply scaling
         const zIndex = cards.length - index;
         
+        // Select the appropriate constrained state based on index
+        const constrained = index === 0 ? constrained0 : (index === 1 ? constrained1 : constrained2);
+        const setConstrained = index === 0 ? setConstrained0 : (index === 1 ? setConstrained1 : setConstrained2);
+        
         // Use SwipeableCard for both regular and potential match cards
         return (
           <SwipeableCard
@@ -48,6 +57,8 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, x, rotate, opaci
             handleSwipe={handleSwipe}
             onInfoClick={() => handleViewCardDetails(card)}
             zIndex={zIndex}
+            constrained={constrained}
+            setConstrained={setConstrained}
             x={index === 0 ? x : undefined}
             rotate={index === 0 ? rotate : undefined}
             opacity={opacity}
