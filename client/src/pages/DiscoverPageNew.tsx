@@ -18,7 +18,7 @@ import { useLocation } from "wouter";
 // Define props for CardStack component
 interface CardStackProps {
   cards: CardData[];
-  handleSwipe: (direction: "left" | "right") => void;
+  handleSwipe: (direction: "left" | "right") => Promise<void>;
   handleViewCardDetails: (card: CardData) => void;
   x: MotionValue<number>;
   rotate: MotionValue<number>;
@@ -44,40 +44,62 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, x, rotate, opaci
       {cards.slice(0, 3).map((card, index) => {
         // Determine z-index and apply scaling
         const zIndex = cards.length - index;
-        const scale = index === 0 ? 1 : 1 - index * 0.05;
-        const translateY = index === 0 ? 0 : index * 10;
         
         // Select the appropriate constrained state based on index
         const constrained = index === 0 ? constrained0 : (index === 1 ? constrained1 : constrained2);
         const setConstrained = index === 0 ? setConstrained0 : (index === 1 ? setConstrained1 : setConstrained2);
         
-        return card.isPotentialMatch ? (
-          <PotentialMatchCard
-            key={card.id + "-" + index}
-            data={card}
-            handleSwipe={handleSwipe}
-            onInfoClick={() => handleViewCardDetails(card)}
-            zIndex={zIndex}
-            constrained={constrained}
-            setConstrained={setConstrained}
-            x={index === 0 ? x : undefined}
-            rotate={index === 0 ? rotate : undefined}
-            opacity={opacity}
-          />
-        ) : (
-          <SwipeableCard
-            key={card.id + "-" + index}
-            data={card}
-            handleSwipe={handleSwipe}
-            onInfoClick={() => handleViewCardDetails(card)}
-            zIndex={zIndex}
-            constrained={constrained}
-            setConstrained={setConstrained}
-            x={index === 0 ? x : undefined}
-            rotate={index === 0 ? rotate : undefined}
-            opacity={opacity}
-          />
-        );
+        // Check if the card is a valid potential match with complete data
+        if (card.isPotentialMatch && card.potentialMatchData && 
+            card.potentialMatchData.user_id && 
+            card.potentialMatchData.company_name && 
+            card.potentialMatchData.first_name) {
+          // This card is a properly formatted potential match card
+          return (
+            <PotentialMatchCard
+              key={card.id + "-" + index}
+              data={{
+                ...card,
+                // Explicitly include all required fields for the TypeScript check
+                potentialMatchData: {
+                  user_id: card.potentialMatchData.user_id,
+                  first_name: card.potentialMatchData.first_name,
+                  last_name: card.potentialMatchData.last_name,
+                  company_name: card.potentialMatchData.company_name,
+                  job_title: card.potentialMatchData.job_title,
+                  twitter_followers: card.potentialMatchData.twitter_followers,
+                  company_twitter_followers: card.potentialMatchData.company_twitter_followers,
+                  swipe_created_at: card.potentialMatchData.swipe_created_at,
+                  collaboration_id: card.potentialMatchData.collaboration_id || card.id // Fallback
+                }
+              }}
+              handleSwipe={handleSwipe}
+              onInfoClick={() => handleViewCardDetails(card)}
+              zIndex={zIndex}
+              constrained={constrained}
+              setConstrained={setConstrained}
+              x={index === 0 ? x : undefined}
+              rotate={index === 0 ? rotate : undefined}
+              opacity={opacity}
+            />
+          );
+        } else {
+          // This is a regular collaboration card
+          return (
+            <SwipeableCard
+              key={card.id + "-" + index}
+              data={card}
+              handleSwipe={handleSwipe}
+              onInfoClick={() => handleViewCardDetails(card)}
+              zIndex={zIndex}
+              constrained={constrained}
+              setConstrained={setConstrained}
+              x={index === 0 ? x : undefined}
+              rotate={index === 0 ? rotate : undefined}
+              opacity={opacity}
+            />
+          );
+        }
       })}
     </>
   );
@@ -382,6 +404,8 @@ export default function DiscoverPage() {
     initializeCards();
   }, [potentialMatches]);
   
+
+  
   // Auto-fetch more cards when we're running low
   useEffect(() => {
     const shouldFetchMore = cards.length > 0 && cards.length < 5 && hasMore && !loadingMore && !isLoading;
@@ -504,15 +528,18 @@ export default function DiscoverPage() {
     handleRefresh();
   };
   
+  // Helper function already defined above with better variable name (fetchNextBatch)
+  // Using that function instead of duplicating code
+
   // Handle swipe actions
-  const handleSwipe = async (direction: "left" | "right") => {
+  const handleSwipe = async (direction: "left" | "right"): Promise<void> => {
     try {
       console.log(`[Discovery] Swipe action: ${direction}`);
       
       // Ensure we have cards to swipe
       if (cards.length === 0) {
         console.warn('[Discovery] No cards available to swipe');
-        return;
+        return; // Return promise fulfills without doing anything
       }
       
       const card = cards[0];
@@ -520,7 +547,7 @@ export default function DiscoverPage() {
       // Skip if card is null (shouldn't happen, but just in case)
       if (!card) {
         console.warn('[Discovery] Attempted to swipe on null card');
-        return;
+        return; // Return promise fulfills without doing anything
       }
       
       // Determine if this is a potential match card or regular collaboration
@@ -577,6 +604,8 @@ export default function DiscoverPage() {
       }
     } catch (error) {
       console.error('[Discovery] Error handling swipe:', error);
+      // Even if there's an error, we need to fulfill the promise 
+      // so the UI can continue
     }
   };
   
@@ -591,18 +620,39 @@ export default function DiscoverPage() {
     try {
       setIsLoading(true);
       
-      // Reset state
-      setCards([]);
-      setAllCardsViewed(false);
-      setNextCursor(undefined);
-      setHasMore(true);
+      // Save current cards state before refreshing
+      const currentCards = [...cards];
+      const wasEmpty = cards.length === 0;
+      
+      // Only reset pagination state if we had no cards (avoid flicker and maintain state)
+      // but don't clear the cards yet in case fetching fails
+      if (wasEmpty) {
+        // Full reset only if there were no cards
+        setAllCardsViewed(false);
+        setNextCursor(undefined);
+        setHasMore(true);
+      }
       
       // Invalidate and refetch queries
       await queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
       
-      // Fetch new cards
-      await fetchNextBatch();
+      try {
+        // Reset pagination state for a clean fetch
+        setNextCursor(undefined);
+        
+        // Attempt to fetch new cards using the existing fetchNextBatch function
+        await fetchNextBatch();
+        
+        // fetchNextBatch will update the cards state directly if successful
+        console.log('[Discovery] Refresh complete, new card count:', cards.length);
+      } catch (fetchError) {
+        console.error('[Discovery] Error fetching new cards during refresh:', fetchError);
+        // If the fetch fails, don't modify the card state - just keep what we have
+        if (currentCards.length > 0) {
+          console.log('[Discovery] Keeping existing cards after fetch error');
+        }
+      }
     } catch (error) {
       console.error('[Discovery] Error refreshing feed:', error);
       // Check if this is an authentication error
