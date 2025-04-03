@@ -19,7 +19,7 @@ import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
 import { GlowFilterButton } from "@/components/GlowFilterButton";
 import { PotentialMatchCard } from "@/components/PotentialMatchCard";
-import { MarketingCard as BaseMarketingCard } from "@/components/cards/MarketingCard";
+import { RegularCard } from "@/components/cards";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Collaboration as BaseCollaboration } from "@shared/schema";
@@ -531,24 +531,17 @@ const MyCollabCard = ({ data }: { data: CardData }) => (
   </div>
 );
 
-// Adapter component for BaseMarketingCard (wrapping for type safety)
+// This component is now simplified to use RegularCard for all card types
 const MarketingCard: React.FC<{ data: CardData }> = ({ data }) => {
-  // MarketingCard requires companyName to be a string, not undefined
-  // So we need to make sure it always has a value
-  const adaptedData = {
-    ...data,
-    companyName: data.companyName || "Unknown Company", // Fallback value
-  };
-  
-  console.log("Using MarketingCard with data:", 
+  console.log("Using MarketingCard (RegularCard) with data:", 
     JSON.stringify({
-      companyName: adaptedData.companyName,
-      details: adaptedData.details,
-      type: adaptedData.type, 
-      title: adaptedData.title
+      companyName: data.companyName,
+      details: data.details,
+      type: data.type, 
+      title: data.title
     }, null, 2));
     
-  return <BaseMarketingCard data={adaptedData} />;
+  return <RegularCard data={data} />;
 };
 
 // Legacy/Generic Cards (for backward compatibility) 
@@ -1718,96 +1711,20 @@ export default function DiscoverPage() {
     // Log data passed to card components
     console.log(`Card data being passed to component:`, JSON.stringify(cardData, null, 2));
     
-    // Create the appropriate component based on collab_type
-    let cardContent;
-    let cardType = card.collab_type?.toLowerCase() || 'unknown';
-    
-    console.log(`Selecting card component for type: ${cardType}`);
-    
-    // Define a mapping between database collaboration types and card components
-    // This makes it easy to add new types or modify existing ones in a single place
-    const CARD_TYPE_MAPPING: Record<string, React.FC<{ data: CardData }>> = {
-      // Podcast variations
-      "podcast": PodcastCard,
-      "podcast guest appearance": PodcastCard,
-      "podcast interview": PodcastCard,
-      "podcast feature": PodcastCard,
-      
-      // Twitter Spaces variations
-      "twitter-spaces": TwitterSpacesCard,
-      "twitter spaces": TwitterSpacesCard, 
-      "twitter spaces guest": TwitterSpacesCard,
-      "twitter space": TwitterSpacesCard,
-      
-      // Twitter Co-Marketing variations
-      "twitter co-marketing": InlineMarketingCard, // Using inline component for now until types are fixed
-      "twitter comarketing": InlineMarketingCard,
-      "co-marketing on twitter": InlineMarketingCard,
-      "comarketing on twitter": InlineMarketingCard,
-      
-      // Livestream variations
-      "livestream": LiveStreamCard,
-      "live stream": LiveStreamCard,
-      "video livestream": LiveStreamCard,
-      
-      // Research report variations
-      "research-report": ResearchReportCard,
-      "research report": ResearchReportCard,
-      "market report": ResearchReportCard,
-      
-      // Newsletter variations
-      "newsletter": NewsletterCard,
-      "email newsletter": NewsletterCard,
-      "newsletter feature": NewsletterCard,
-      
-      // Blog post variations
-      "blog-post": BlogPostCollabCard,
-      "blog post": BlogPostCollabCard,
-      "blog post feature": BlogPostCollabCard,
-      "guest blog": BlogPostCollabCard,
-    };
-    
-    // Logging to help with debugging
-    console.log('CARD TYPE SELECTION:', cardType);
-    if (CARD_TYPE_MAPPING[cardType]) {
-      console.log(`Found matching card component for type: ${cardType}`);
-    } else {
-      console.log(`No specialized card found for type '${cardType}', using InlineMarketingCard as fallback`);
-    }
-    
-    // Function to find the card component
-    // We'll use a simplified approach - always use InlineMarketingCard for all collaborations
-    const findBestCardComponent = (type: string): React.FC<{ data: CardData }> => {
-      console.log(`Using InlineMarketingCard for all collaboration types, including: ${type}`);
-      
-      // Always use InlineMarketingCard as the default card component
-      return InlineMarketingCard;
-    };
-    
-    // Use the fuzzy matching function to find the best component
-    const CardComponent = findBestCardComponent(cardType);
-    cardContent = <CardComponent data={cardData} />;
-    
-    console.log(`Rendering ${CardComponent.name} component for type "${cardType}"`);
-    
-    // Log if a fuzzy match was used instead of an exact match
-    if (!CARD_TYPE_MAPPING[cardType]) {
-      console.log(`Note: Using fuzzy matching to determine card component for "${cardType}"`);
-    }
-    
-    console.log("====================================");
+    // Simplified approach: always use RegularCard for all card types
+    console.log(`Using RegularCard for card type: ${card.collab_type}`);
     
     // For MyCollab cards, we need to wrap them with a data attribute
     // to target with custom CSS for the gradient background
     if (isMyCollab) {
       return (
         <div data-mycollab="true">
-          {cardContent}
+          <RegularCard data={cardData} />
         </div>
       );
     }
     
-    return cardContent;
+    return <RegularCard data={cardData} />;
   };
 
   return (
@@ -1953,7 +1870,7 @@ export default function DiscoverPage() {
               // Pass company data directly from the API
               // Explicitly log what we're passing to help debug
               company_data: {
-                id: currentCard.company_data?.id,
+                // id field removed as it's causing type errors
                 name: currentCard.company_data?.name,
                 short_description: currentCard.company_data?.short_description,
                 long_description: currentCard.company_data?.long_description,
