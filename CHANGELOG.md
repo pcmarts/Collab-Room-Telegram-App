@@ -5,6 +5,25 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.4.9] - 2025-04-03
+
+### Fixed
+- Fixed critical bug where potential match cards would continue appearing after a user had swiped left on them
+- Enhanced server-side filtering logic to properly exclude potential matches that have already been swiped on
+- Improved tracking of swipe IDs in both server and client to ensure comprehensive filtering of already-seen cards
+- Added additional logging in getPotentialMatchesForHost to track filtered potential matches
+
+### Changed
+- Updated client-side swipe handling to store both card ID and swipe ID in localStorage for more robust filtering
+- Enhanced the server-side filtering mechanism in getPotentialMatchesForHost to check swipe IDs as well as user/collaboration combinations
+- Added more explicit error reporting when trying to filter already-swiped potential matches
+
+### Technical Details
+- Modified the getPotentialMatchesForHost function in server/storage.ts to track and filter by swipe IDs
+- Added swipe ID tracking to client-side localStorage to prevent previously swiped potential matches from reappearing
+- Enhanced client-side filtering to check both match IDs and swipe IDs when determining what to display
+- Added debugging logs to trace the filtering process for potential matches
+
 ## [Version 1.4.8] - 2025-04-03
 
 ### Added

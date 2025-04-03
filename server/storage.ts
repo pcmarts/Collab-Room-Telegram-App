@@ -920,13 +920,13 @@ export class DatabaseStorage implements IStorage {
         .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
         .orderBy(desc(swipes.created_at));
       
-      // 3. Filter out users that the host has already swiped on
-      // Get all swipes made by the host
+      // 3. Filter out potential matches that have already been swiped on
+      
+      // First, get all swipes made by the host for regular collaborations
       const hostSwipes = await this.getUserSwipes(userId);
       const hostSwipeMap = new Map();
       
       // Create a map of user_id -> collaboration_id -> direction
-      // This lets us quickly check if the host has already swiped on a particular user for a particular collab
       hostSwipes.forEach(swipe => {
         if (!hostSwipeMap.has(swipe.user_id)) {
           hostSwipeMap.set(swipe.user_id, new Map());
@@ -934,8 +934,22 @@ export class DatabaseStorage implements IStorage {
         hostSwipeMap.get(swipe.user_id).set(swipe.collaboration_id, swipe.direction);
       });
       
-      // Filter out already-swiped users
+      // Also track swipes made on potential matches by their swipe ID
+      // This is critical - we need to exclude potential matches that have already been swiped on
+      const swipeIdSet = new Set<string>();
+      hostSwipes.forEach(swipe => {
+        swipeIdSet.add(swipe.id);
+      });
+      
+      // Filter out already-swiped users or already-swiped potential matches
       const potentialMatches = rightSwipes.filter(match => {
+        // Skip if this swipe ID is in our previously swiped set
+        if (swipeIdSet.has(match.swipe.id)) {
+          console.log(`Filtering out already swiped potential match with swipe ID: ${match.swipe.id}`);
+          return false;
+        }
+        
+        // Also check the traditional way - if host has swiped on this user's collaboration
         const userMap = hostSwipeMap.get(match.user.id);
         if (!userMap) return true; // Host hasn't swiped on this user at all
         

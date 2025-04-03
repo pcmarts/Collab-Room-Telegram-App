@@ -280,8 +280,15 @@ export default function DiscoverPage() {
         // Also remove any potential matches where collaboration_id is missing
         const filteredMatches = data.filter((match: any) => {
           const matchId = match.id;
+          const swipeId = match.swipe_id;
           const collabId = match.collaboration_id;
-          return matchId && !persistentSwipedIds.includes(matchId) && collabId;
+          
+          // Check if either the match ID or swipe ID is in the list of already swiped IDs
+          const alreadySwiped = 
+            (matchId && persistentSwipedIds.includes(matchId)) || 
+            (swipeId && persistentSwipedIds.includes(swipeId));
+            
+          return matchId && !alreadySwiped && collabId;
         });
         
         console.log(`[Discovery] After filtering, ${filteredMatches.length} potential matches remain`);
@@ -647,6 +654,13 @@ export default function DiscoverPage() {
           persistentSwipedIds.push(card.id);
           localStorage.setItem('swipedCardIds', JSON.stringify(persistentSwipedIds));
           console.log(`[Discovery] Added card ID ${card.id} to persistent storage (total: ${persistentSwipedIds.length})`);
+        }
+        
+        // If this is a potential match, also save the swipe_id to ensure we properly filter
+        if (isPotentialMatch && card.swipe_id && !persistentSwipedIds.includes(card.swipe_id)) {
+          persistentSwipedIds.push(card.swipe_id);
+          localStorage.setItem('swipedCardIds', JSON.stringify(persistentSwipedIds));
+          console.log(`[Discovery] Added swipe ID ${card.swipe_id} to persistent storage (total: ${persistentSwipedIds.length})`);
         }
       } catch (e) {
         console.warn('[Discovery] Failed to store swiped card ID in localStorage:', e);
