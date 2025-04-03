@@ -2,7 +2,10 @@ import { useState, useRef } from "react";
 import { motion, useMotionValue, MotionValue, useTransform, AnimationControls } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Info, X, Check, Sparkles, Twitter, Calendar } from "lucide-react";
+import { 
+  Info, X, Check, Sparkles, Twitter, Calendar, Mic, Users, 
+  Link, FileText, FileSearch, Mail, Radio
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Types
@@ -126,20 +129,48 @@ export function SwipeableCard({
         
         {/* Card header with company info */}
         <div className={`px-4 py-3 border-b relative z-30 ${
-          data.collab_type?.toLowerCase().includes('twitter') && 
-          data.collab_type?.toLowerCase().includes('co-marketing') 
+          data.collab_type?.toLowerCase().includes('twitter') || data.collab_type?.toLowerCase().includes('co-marketing')
             ? 'bg-blue-500/5' 
-            : 'bg-primary/5'
+            : data.collab_type === 'Podcast Guest Appearance'
+              ? 'bg-purple-500/5'
+              : data.collab_type === 'Blog Post Feature'
+                ? 'bg-emerald-500/5'
+                : data.collab_type === 'Report & Research Feature'
+                  ? 'bg-amber-500/5'
+                  : data.collab_type === 'Newsletter Feature'
+                    ? 'bg-indigo-500/5'
+                    : 'bg-primary/5'
         }`}>
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-bold text-lg line-clamp-1">{data.creator_company_name || "Company"}</h3>
               <div className="flex items-center gap-1.5">
-                {data.collab_type?.toLowerCase().includes('twitter') && 
-                 data.collab_type?.toLowerCase().includes('co-marketing') ? (
+                {/* Twitter Co-Marketing Badge */}
+                {(data.collab_type?.toLowerCase().includes('twitter') || 
+                 data.collab_type?.toLowerCase().includes('co-marketing')) ? (
                   <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-[#1DA1F2]">
                     <Twitter className="w-3 h-3 mr-1" />
                     {data.collab_type || "Twitter Co-Marketing"}
+                  </Badge>
+                ) : data.collab_type === 'Podcast Guest Appearance' ? (
+                  <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/20 text-purple-700">
+                    <Mic className="w-3 h-3 mr-1" />
+                    {data.collab_type}
+                  </Badge>
+                ) : data.collab_type === 'Blog Post Feature' ? (
+                  <Badge variant="outline" className="text-xs bg-emerald-500/10 border-emerald-500/20 text-emerald-700">
+                    <FileText className="w-3 h-3 mr-1" />
+                    {data.collab_type}
+                  </Badge>
+                ) : data.collab_type === 'Report & Research Feature' ? (
+                  <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-500/20 text-amber-700">
+                    <FileSearch className="w-3 h-3 mr-1" />
+                    {data.collab_type}
+                  </Badge>
+                ) : data.collab_type === 'Newsletter Feature' ? (
+                  <Badge variant="outline" className="text-xs bg-indigo-500/10 border-indigo-500/20 text-indigo-700">
+                    <Mail className="w-3 h-3 mr-1" />
+                    {data.collab_type}
                   </Badge>
                 ) : (
                   <p className="text-sm text-muted-foreground line-clamp-1">{data.collab_type || "Collaboration"}</p>
@@ -160,14 +191,14 @@ export function SwipeableCard({
         {/* Card content */}
         <div className="p-4 flex-grow overflow-auto">
           {/* Twitter Co-Marketing Details */}
-          {data.collab_type?.toLowerCase().includes('twitter') && 
-           data.collab_type?.toLowerCase().includes('co-marketing') && 
+          {(data.collab_type?.toLowerCase().includes('twitter') || 
+            data.collab_type?.toLowerCase().includes('co-marketing')) && 
            data.details?.host_twitter_handle && (
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
               <div className="flex items-center space-x-1.5">
                 <Twitter className="w-4 h-4 text-[#1DA1F2]" />
                 <span className="text-sm font-medium text-[#1DA1F2]">
-                  @{data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '')}
+                  @{data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
                 </span>
               </div>
               
@@ -186,6 +217,176 @@ export function SwipeableCard({
                       {type}
                     </Badge>
                   ))}
+                </div>
+              )}
+              
+              {/* Show date if available */}
+              {(data.date || data.specific_date || data.details?.date) && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{data.date || data.specific_date || data.details?.date}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Twitter Spaces Guest */}
+          {data.collab_type === 'Twitter Spaces Guest' && data.details?.twitter_handle && (
+            <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
+              <div className="flex items-center space-x-1.5">
+                <Twitter className="w-4 h-4 text-[#1DA1F2]" />
+                <span className="text-sm font-medium text-[#1DA1F2]">
+                  {data.details.twitter_handle.includes('@') ? data.details.twitter_handle : '@' + data.details.twitter_handle.replace('https://twitter.com/', '').replace('https://x.com/', '')}
+                </span>
+              </div>
+              
+              {data.details?.host_follower_count && (
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium">{data.details.host_follower_count}</span> followers
+                </p>
+              )}
+              
+              {/* Show date if available */}
+              {(data.date || data.specific_date || data.details?.date) && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{data.date || data.specific_date || data.details?.date}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Podcast Guest Appearance */}
+          {data.collab_type === 'Podcast Guest Appearance' && data.details?.podcast_name && (
+            <div className="flex flex-col space-y-2 p-3 bg-purple-500/5 rounded-md border border-purple-500/10 mb-3">
+              <div className="flex items-center space-x-1.5">
+                <Mic className="w-4 h-4 text-purple-500" />
+                <span className="text-sm font-medium text-purple-700">
+                  {data.details.podcast_name}
+                </span>
+              </div>
+              
+              {data.details?.estimated_reach && (
+                <p className="text-xs text-muted-foreground">
+                  <Users className="w-3 h-3 inline mr-1" />
+                  <span className="font-medium">{data.details.estimated_reach}</span> estimated listeners
+                </p>
+              )}
+              
+              {data.details?.podcast_link && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Link className="w-3 h-3" />
+                  <span className="truncate">{data.details.podcast_link}</span>
+                </div>
+              )}
+              
+              {/* Show date if available */}
+              {(data.date || data.specific_date || data.details?.date) && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{data.date || data.specific_date || data.details?.date}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Blog Post Feature */}
+          {data.collab_type === 'Blog Post Feature' && data.details?.blog_name && (
+            <div className="flex flex-col space-y-2 p-3 bg-emerald-500/5 rounded-md border border-emerald-500/10 mb-3">
+              <div className="flex items-center space-x-1.5">
+                <FileText className="w-4 h-4 text-emerald-600" />
+                <span className="text-sm font-medium text-emerald-700">
+                  {data.details.blog_name}
+                </span>
+              </div>
+              
+              {data.details?.est_readers && (
+                <p className="text-xs text-muted-foreground">
+                  <Users className="w-3 h-3 inline mr-1" />
+                  <span className="font-medium">{data.details.est_readers}</span> estimated readers
+                </p>
+              )}
+              
+              {data.details?.blog_topic && (
+                <p className="text-xs">
+                  <span className="font-medium">Topic:</span> {data.details.blog_topic}
+                </p>
+              )}
+              
+              {data.details?.blog_link && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Link className="w-3 h-3" />
+                  <span className="truncate">{data.details.blog_link}</span>
+                </div>
+              )}
+              
+              {/* Show date if available */}
+              {(data.date || data.specific_date || data.details?.estimated_release_date) && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{data.date || data.specific_date || data.details?.estimated_release_date}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Report & Research Feature */}
+          {data.collab_type === 'Report & Research Feature' && (
+            <div className="flex flex-col space-y-2 p-3 bg-amber-500/5 rounded-md border border-amber-500/10 mb-3">
+              {data.details?.research_topic && Array.isArray(data.details.research_topic) && data.details.research_topic.length > 0 && (
+                <div className="flex items-center space-x-1.5">
+                  <FileSearch className="w-4 h-4 text-amber-600" />
+                  <span className="text-sm font-medium text-amber-700">
+                    Research Topics: {data.details.research_topic.join(', ')}
+                  </span>
+                </div>
+              )}
+              
+              {data.details?.target_audience && (
+                <p className="text-xs text-muted-foreground">
+                  <Users className="w-3 h-3 inline mr-1" />
+                  <span className="font-medium">Target:</span> {data.details.target_audience}
+                </p>
+              )}
+              
+              {/* Show date if available */}
+              {(data.date || data.specific_date || data.details?.estimated_release_date) && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{data.date || data.specific_date || data.details?.estimated_release_date}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Newsletter Feature */}
+          {data.collab_type === 'Newsletter Feature' && data.details?.newsletter_name && (
+            <div className="flex flex-col space-y-2 p-3 bg-indigo-500/5 rounded-md border border-indigo-500/10 mb-3">
+              <div className="flex items-center space-x-1.5">
+                <Mail className="w-4 h-4 text-indigo-600" />
+                <span className="text-sm font-medium text-indigo-700">
+                  {data.details.newsletter_name}
+                </span>
+              </div>
+              
+              {data.details?.total_subscribers && (
+                <p className="text-xs text-muted-foreground">
+                  <Users className="w-3 h-3 inline mr-1" />
+                  <span className="font-medium">{data.details.total_subscribers}</span> subscribers
+                </p>
+              )}
+              
+              {data.details?.audience_reach && (
+                <p className="text-xs text-muted-foreground">
+                  <Radio className="w-3 h-3 inline mr-1" />
+                  <span className="font-medium">Reach:</span> {data.details.audience_reach}
+                </p>
+              )}
+              
+              {data.details?.newsletter_url && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Link className="w-3 h-3" />
+                  <span className="truncate">{data.details.newsletter_url}</span>
                 </div>
               )}
               
