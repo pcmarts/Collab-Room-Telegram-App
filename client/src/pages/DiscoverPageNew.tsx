@@ -287,7 +287,7 @@ export default function DiscoverPage() {
     staleTime: 60 * 1000 // 1 minute
   });
   
-  // Function to fetch the next batch of cards with cursor-based pagination
+  // Function to AGGRESSIVELY ENSURE we're not showing already swiped cards
   const fetchNextBatch = async () => {
     // Prevent fetching if already in progress or if no more cards are available
     if (isFetchingNextBatchRef.current || !hasMore) {
@@ -307,7 +307,8 @@ export default function DiscoverPage() {
       
       console.log(`[Discovery] Fetching next batch with cursor: ${nextCursor || 'initial'}`);
       
-      // Get any IDs from localStorage to add to the exclusion list
+      // CRITICALLY IMPORTANT: Get and ensure IDs from localStorage are available
+      // This is our primary defense against swiped cards reappearing
       let persistentIds: string[] = [];
       try {
         const storedIds = localStorage.getItem('swipedCardIds');
@@ -319,8 +320,38 @@ export default function DiscoverPage() {
         console.warn('[Discovery] Failed to retrieve localStorage swiped cards:', e);
       }
       
-      // Combine with our regular exclusion list
-      const combinedExcludeIds = Array.from(new Set([...allSwipedCardIds, ...persistentIds]));
+      // Get server swipes directly even though we should have them
+      let serverSwipedIds: string[] = [];
+      try {
+        const latestSwipes = await apiRequest('/api/user-swipes') as any[];
+        if (latestSwipes && latestSwipes.length > 0) {
+          serverSwipedIds = latestSwipes.map(swipe => swipe.collaboration_id);
+          console.log(`[Discovery] Direct fetch found ${serverSwipedIds.length} swipes on server`);
+        }
+      } catch (e) {
+        console.warn('[Discovery] Failed to directly fetch user swipes:', e);
+      }
+      
+      // Session swipes (should be included in allSwipedCardIds, but double-check)
+      const sessionIds = swipeHistory
+        .map(hist => hist.card?.id)
+        .filter(Boolean) as string[];
+      
+      // Combine ALL sources with maximum coverage
+      const combinedExcludeIds = Array.from(new Set([
+        ...allSwipedCardIds,    // From memo
+        ...persistentIds,       // From localStorage
+        ...serverSwipedIds,     // Direct from server
+        ...sessionIds           // From current session
+      ]));
+      
+      // ENSURE the localStorage has ALL these IDs for future requests
+      try {
+        localStorage.setItem('swipedCardIds', JSON.stringify(combinedExcludeIds));
+        console.log('[Discovery] Updated localStorage with comprehensive list of', combinedExcludeIds.length, 'cards');
+      } catch (e) {
+        console.warn('[Discovery] Failed to update localStorage with complete exclusion list:', e);
+      }
       
       // Construct the query parameters
       const params = new URLSearchParams();
@@ -337,8 +368,8 @@ export default function DiscoverPage() {
       console.log('[Discovery] Making collaboration search request with params:', {
         url: `/api/collaborations/search?${params.toString()}`,
         excludeIdsCount: combinedExcludeIds.length,
+        excludeIds: combinedExcludeIds, // Log the actual IDs for debugging
         telegramAvailable: !!window.Telegram?.WebApp,
-        telegramInitData: !!window.Telegram?.WebApp?.initData,
         sessionAuth: !!document.cookie.includes('connect.sid') // Check if we have a session cookie
       });
       
@@ -662,19 +693,25 @@ export default function DiscoverPage() {
     setCardDialogOpen(true);
   };
   
-  // Refresh discover feed
+  // COMPLETELY REDESIGNED refresh discover feed for maximum reliability
   const handleRefresh = async () => {
     try {
       setIsLoading(true);
       
       // Save current cards state before refreshing
       const currentCards = [...cards];
-      const wasEmpty = cards.length === 0;
       
       // Complete reset of pagination state for a fresh start
       setAllCardsViewed(false);
       setNextCursor(undefined);
       setHasMore(true);
+      
+      // CRITICAL DEBUGGING: Log any changes to session ID that might be causing data loss
+      console.log('[Discovery] Refresh: Session information', {
+        hasCookie: document.cookie.includes('connect.sid'),
+        telegramAvailable: !!window.Telegram?.WebApp,
+        telegramDataAvailable: !!window.Telegram?.WebApp?.initData
+      });
       
       // Invalidate and refetch queries to ensure we have fresh data
       await queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
@@ -684,26 +721,30 @@ export default function DiscoverPage() {
         // Reset cards array completely for a fresh start
         setCards([]);
 
-        // IMPORTANT: We need to manually track the card IDs we've swiped locally
-        // This ensures we don't lose track of swiped cards if the server response is empty
+        // AGGRESSIVE DEFENSE: Create a comprehensive collection of all swiped card IDs
+        // from every possible source to ensure no card ever reappears
         
-        // First collect the session history from the client-side state
+        // Step 1: Get direct client-side state (most recent)
         const sessionCardIds = swipeHistory
           .map(hist => hist.card?.id)
           .filter(Boolean) as string[];
         console.log(`[Discovery] Refresh: Found ${sessionCardIds.length} cards in local swipe history`);
         
-        // Get latest swipe data from server
-        const latestSwipes = await apiRequest('/api/user-swipes') as any[];
-        console.log(`[Discovery] Refresh: Got ${latestSwipes?.length || 0} swipes from server`);
+        // Step 2: Directly fetch server data even if it should already be loaded
+        let serverSwipedIds: string[] = [];
+        try {
+          const latestSwipes = await apiRequest('/api/user-swipes') as any[];
+          if (latestSwipes && latestSwipes.length > 0) {
+            serverSwipedIds = latestSwipes.map(swipe => swipe.collaboration_id);
+            console.log(`[Discovery] Refresh: Got ${serverSwipedIds.length} swipes from server`);
+          } else {
+            console.warn('[Discovery] Refresh: Server returned no swipes - potential session issue');
+          }
+        } catch (error) {
+          console.error('[Discovery] Failed to fetch swipes from server:', error);
+        }
         
-        // Get server-side swiped IDs
-        const serverSwipedIds = latestSwipes && latestSwipes.length > 0
-          ? latestSwipes.map(swipe => swipe.collaboration_id)
-          : [];
-          
-        // Store a persistent record of all swiped card IDs in localStorage
-        // This acts as a backup in case the session or server data is lost
+        // Step 3: Get stored persistent data (our most reliable defense)
         let persistentSwipedIds: string[] = [];
         try {
           const storedIds = localStorage.getItem('swipedCardIds');
@@ -713,22 +754,23 @@ export default function DiscoverPage() {
           console.warn('[Discovery] Failed to retrieve swiped cards from localStorage:', e);
         }
         
-        // Merge all sources of swiped card IDs
-        const allIdsToExclude = Array.from(new Set([
+        // Step 4: Merge ALL sources with maximum coverage - super aggressive combination
+        const comprehensiveExcludeList = Array.from(new Set([
           ...sessionCardIds,        // From current session
-          ...serverSwipedIds,       // From server API
+          ...serverSwipedIds,       // Direct from server
           ...persistentSwipedIds,   // From persistent storage
           ...allSwipedCardIds       // From memoized state
         ]));
         
-        // Update persistent storage with the complete set
+        // CRITICAL: Always update localStorage for future resilience
         try {
-          localStorage.setItem('swipedCardIds', JSON.stringify(allIdsToExclude));
+          localStorage.setItem('swipedCardIds', JSON.stringify(comprehensiveExcludeList));
+          console.log('[Discovery] Refresh: Updated localStorage with comprehensive list of', comprehensiveExcludeList.length, 'cards');
         } catch (e) {
-          console.warn('[Discovery] Failed to save swiped cards to localStorage:', e);
+          console.error('[Discovery] CRITICAL FAILURE: Could not save exclusion list to localStorage:', e);
         }
         
-        console.log(`[Discovery] Refresh: Excluding ${allIdsToExclude.length} total swiped cards`);
+        console.log(`[Discovery] Refresh: Using a comprehensive exclusion list of ${comprehensiveExcludeList.length} total swiped cards:`, comprehensiveExcludeList);
         
         // Fetch potential matches first (users who swiped right on your collaborations)
         const potentialMatchesData = await apiRequest('/api/potential-matches') as any[];
@@ -752,7 +794,7 @@ export default function DiscoverPage() {
         params.append('limit', '10');
         
         const response = await apiRequest(`/api/collaborations/search?${params.toString()}`, 'POST', {
-          excludeIds: allIdsToExclude
+          excludeIds: comprehensiveExcludeList
         }) as PaginatedResponse;
         
         // Update state with new cards and pagination info
