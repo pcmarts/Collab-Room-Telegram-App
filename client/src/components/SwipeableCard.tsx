@@ -4,7 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   Info, X, Check, Sparkles, Twitter, Calendar, Mic, Users, 
-  Link, FileText, FileSearch, Mail, Radio, Star, Building, User
+  Link, FileText, FileSearch, Mail, Radio, Star, Building, User,
+  Globe, Linkedin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -25,6 +26,10 @@ interface SwipeableCardProps {
       first_name: string;
       last_name?: string;
       company_name: string;
+      company_description?: string;
+      company_website?: string;
+      company_twitter?: string;
+      company_linkedin?: string;
       job_title?: string;
       twitter_followers?: string;
       company_twitter_followers?: string;
@@ -436,6 +441,55 @@ export function SwipeableCard({
                 <span className="font-medium">{data.potentialMatchData.company_name}</span>
               </div>
               
+              {/* Company description */}
+              {data.potentialMatchData.company_description && (
+                <div className="text-xs italic text-muted-foreground">
+                  "{data.potentialMatchData.company_description}"
+                </div>
+              )}
+              
+              {/* Company links */}
+              <div className="flex flex-wrap gap-2">
+                {data.potentialMatchData.company_website && (
+                  <a
+                    href={data.potentialMatchData.company_website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Globe className="h-3 w-3 mr-0.5" />
+                    Website
+                  </a>
+                )}
+                
+                {data.potentialMatchData.company_twitter && (
+                  <a
+                    href={`https://twitter.com/${data.potentialMatchData.company_twitter}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Twitter className="h-3 w-3 mr-0.5 text-[#1DA1F2]" />
+                    @{data.potentialMatchData.company_twitter}
+                  </a>
+                )}
+                
+                {data.potentialMatchData.company_linkedin && (
+                  <a
+                    href={data.potentialMatchData.company_linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Linkedin className="h-3 w-3 mr-0.5 text-blue-700" />
+                    LinkedIn
+                  </a>
+                )}
+              </div>
+              
               {data.potentialMatchData.twitter_followers && (
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                   <Twitter className="w-3 h-3 text-[#1DA1F2]" />
@@ -491,14 +545,18 @@ export function SwipeableCard({
           </Button>
           
           <Button 
-            variant="outline" 
+            variant={data.isPotentialMatch ? "default" : "outline"} 
             size="sm" 
             className={`w-full ${data.isPotentialMatch 
-              ? 'border-rose-200 hover:bg-rose-50 hover:text-rose-600' 
+              ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-md' 
               : 'border-green-200 hover:bg-green-50 hover:text-green-600'} relative z-50`}
             onClick={() => handleButtonClick("right")}
           >
-            <Check className="h-4 w-4 mr-1" />
+            {data.isPotentialMatch ? (
+              <Sparkles className="h-4 w-4 mr-1" />
+            ) : (
+              <Check className="h-4 w-4 mr-1" />
+            )}
             {data.isPotentialMatch ? 'Match' : 'Connect'}
           </Button>
         </div>
