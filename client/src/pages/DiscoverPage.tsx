@@ -42,7 +42,7 @@ import { motion, useMotionValue, useTransform, useAnimationControls } from "fram
 
 // Custom styling for MyCollab cards (with gradient background)
 const MyCollabStyles = () => (
-  <style jsx global>{`
+  <style>{`
     [data-mycollab="true"] {
       background: linear-gradient(to bottom right, hsl(var(--primary)) 0%, hsl(var(--primary)/0.7) 100%);
       color: white;
@@ -132,7 +132,17 @@ export default function DiscoverPage() {
   
   // Match notification state
   const [showMatchNotification, setShowMatchNotification] = useState(false);
-  const [matchData, setMatchData] = useState<{id: string, title: string}>({id: "", title: ""});
+  const [matchData, setMatchData] = useState<{
+    id: string; 
+    title: string;
+    companyName: string;
+    collaborationType: string;
+  }>({
+    id: "", 
+    title: "",
+    companyName: "Company",
+    collaborationType: "Collaboration"
+  });
   
   // All cards viewed state
   const [allCardsViewed, setAllCardsViewedState] = useState<boolean>(() => {
@@ -277,21 +287,24 @@ export default function DiscoverPage() {
       const isLike = direction === 'right';
       
       // API call to record the swipe
-      const response = await apiRequest(`/api/swipes`, {
-        method: 'POST',
-        body: JSON.stringify({
+      const response = await apiRequest(
+        `/api/swipes`, 
+        'POST',
+        {
           collaboration_id: currentCardId,
           direction: isLike ? 'right' : 'left',
           is_like: isLike,
-        }),
-      });
+        }
+      );
       
       // Check if it's a match
       if (isLike && response.isMatch) {
         // Show match notification and temporarily pause swiping
         setMatchData({
           id: currentCardId,
-          title: currentCard.title || "New Collaboration"
+          title: currentCard.title || "New Collaboration",
+          companyName: getCompanyName(currentCard),
+          collaborationType: getCollaborationTypeFromCard(currentCard)
         });
         setShowMatchNotification(true);
         
@@ -334,9 +347,10 @@ export default function DiscoverPage() {
     
     try {
       // Call the API to undo the swipe
-      await apiRequest(`/api/swipes/${lastSwipe.id}`, {
-        method: 'DELETE',
-      });
+      await apiRequest(
+        `/api/swipes/${lastSwipe.id}`, 
+        'DELETE'
+      );
       
       // Debug log
       console.log(`Successfully undid swipe on card ${lastSwipe.id}`);
@@ -672,11 +686,11 @@ export default function DiscoverPage() {
           open={showDialog}
           onOpenChange={setShowDialog}
           collaboration={{
-            id: currentCard.id,
+            id: currentCard.id || "",
             title: currentCard.title || "Collaboration",
             companyName: getCompanyName(currentCard),
-            description: currentCard.description || "",
             collaborationType: getCollaborationTypeFromCard(currentCard),
+            description: currentCard.description || "",
             topics: currentCard.topics || [],
             details: currentCard.details || {},
           }}
@@ -687,7 +701,7 @@ export default function DiscoverPage() {
       
       {/* Match Notification */}
       <MatchNotification
-        show={showMatchNotification}
+        isOpen={showMatchNotification}
         onClose={() => setShowMatchNotification(false)}
         matchData={matchData}
       />
