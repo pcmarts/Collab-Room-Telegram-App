@@ -1,5 +1,5 @@
 import React from 'react';
-import { Megaphone, Calendar } from "lucide-react";
+import { Megaphone, Calendar, Twitter, Users, BarChart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface MarketingCardData {
@@ -20,6 +20,13 @@ interface MarketingCardData {
     specific_date?: string;
     date_selection?: string;
     topics?: string[];
+    twitter_handle?: string;
+    twitter_followers?: number;
+    twitter_engagement_rate?: string;
+    expected_reach?: string;
+    campaign_duration?: string;
+    tweet_frequency?: string;
+    hashtags?: string[];
     [key: string]: any;
   };
 }
@@ -89,7 +96,17 @@ export const MarketingCard: React.FC<MarketingCardProps> = ({ data }) => {
 
   // Rendering helper for date
   const renderDate = () => {
-    // First check primary date
+    // First check for campaign duration in twitter details
+    if (type.toLowerCase().includes('twitter') && details.campaign_duration) {
+      return (
+        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+          <Calendar className="w-3 h-3" />
+          <span>Campaign: {details.campaign_duration}</span>
+        </div>
+      );
+    }
+    
+    // Check primary date
     if (data.date) {
       return (
         <div className="flex items-center space-x-2 text-xs text-muted-foreground">
@@ -117,11 +134,73 @@ export const MarketingCard: React.FC<MarketingCardProps> = ({ data }) => {
     
     return null;
   };
+
+  // Rendering helper for Twitter specific details
+  const renderTwitterDetails = () => {
+    if (!type.toLowerCase().includes('twitter')) return null;
+    
+    return (
+      <div className="mt-2 space-y-1">
+        {details.twitter_handle && (
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            <Twitter className="w-3 h-3 text-[#1DA1F2]" />
+            <span>@{details.twitter_handle}</span>
+          </div>
+        )}
+        
+        {details.twitter_followers && (
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            <Users className="w-3 h-3" />
+            <span>{Number(details.twitter_followers).toLocaleString()} followers</span>
+          </div>
+        )}
+        
+        {details.twitter_engagement_rate && (
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            <BarChart className="w-3 h-3" />
+            <span>{details.twitter_engagement_rate} engagement</span>
+          </div>
+        )}
+        
+        {details.expected_reach && (
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            <Megaphone className="w-3 h-3" />
+            <span>Est. reach: {details.expected_reach}</span>
+          </div>
+        )}
+        
+        {details.tweet_frequency && (
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            <Calendar className="w-3 h-3" />
+            <span>Frequency: {details.tweet_frequency}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Rendering helper for hashtags
+  const renderHashtags = () => {
+    if (!type.toLowerCase().includes('twitter') || !details.hashtags || details.hashtags.length === 0) return null;
+    
+    return (
+      <div className="flex flex-wrap gap-1 mb-1">
+        {details.hashtags.map((hashtag: string, i: number) => (
+          <Badge key={i} variant="outline" className="text-xs text-[#1DA1F2] border-[#1DA1F2]/30">
+            #{hashtag}
+          </Badge>
+        ))}
+      </div>
+    );
+  };
   
   return (
     <div className="space-y-2">
-      <Badge variant="outline" className="bg-primary/10">
-        <Megaphone className="w-3 h-3 mr-1" />
+      <Badge variant="outline" className={`${type.toLowerCase().includes('twitter') ? 'bg-[#1DA1F2]/10' : 'bg-primary/10'}`}>
+        {type.toLowerCase().includes('twitter') ? 
+          <Twitter className="w-3 h-3 mr-1 text-[#1DA1F2]" /> : 
+          <Megaphone className="w-3 h-3 mr-1" />
+        }
         <span>{type}</span>
       </Badge>
       
@@ -139,7 +218,9 @@ export const MarketingCard: React.FC<MarketingCardProps> = ({ data }) => {
       </div>
       
       {renderTopics()}
+      {renderHashtags()}
       {renderDate()}
+      {renderTwitterDetails()}
       
       {description && (
         <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
