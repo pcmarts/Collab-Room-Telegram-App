@@ -75,6 +75,12 @@ const getCollaborationBadgeClass = (type: string | undefined): string => {
 
 // Regular Card Component
 export const RegularCard = ({ data }: { data: CardData }) => {
+  console.log("✅ REGULARCARD COMPONENT BEING USED!", { 
+    title: data.title, 
+    type: data.collaborationType,
+    hasTwitterDetails: !!data.details?.host_twitter_handle
+  });
+  
   // Check if it has Twitter marketing details
   const isTwitterCoMarketing = 
     data.details?.host_twitter_handle || 
