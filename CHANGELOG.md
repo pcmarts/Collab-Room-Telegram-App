@@ -5,6 +5,22 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.5.3] - 2025-04-03
+
+### Added
+- Improved UI consistency across all states in the Discovery page
+- Enhanced navigation between Match and Discovery pages with smoother transitions
+
+### Fixed
+- Added consistent header to loading and empty states in DiscoverPageNew component
+- Updated "Start Discovering" button in MatchesPage to use client-side routing instead of full page reload
+- Fixed layout inconsistencies between different UI states in the Discovery page
+
+### Technical Details
+- Refactored DiscoverPageNew.tsx to maintain the same header and layout structure in all states (loading, empty, and active)
+- Updated MatchesPage.tsx to use Wouter's useLocation hook for client-side navigation
+- Implemented consistent component hierarchy across all UI states for better maintainability
+
 ## [Version 1.5.2] - 2025-04-03
 
 ### Fixed

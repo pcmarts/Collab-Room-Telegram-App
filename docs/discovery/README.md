@@ -9,6 +9,7 @@ The discovery system is responsible for helping users find relevant collaboratio
 ## Discovery Documentation
 
 - [Swipe Filtering System](./swipe-filtering.md) - Detailed explanation of how the system prevents duplicate cards
+- [Potential Matches](./potential-matches.md) - Documentation for the potential matches feature
 
 ## Key Features
 
@@ -79,11 +80,47 @@ The discovery system integrates with several other core features:
 - **Match System**: Creates matches when both users express interest
 - **Notification System**: Sends notifications when matches are created
 
+## UI and Navigation
+
+### UI Consistency
+
+The discovery system maintains UI consistency across all states:
+
+1. **Loading State**: 
+   - Displays a spinning loader while maintaining the same layout structure as the active state
+   - Preserves the header and overall page structure for a consistent experience
+   - Avoids jarring layout shifts during state transitions
+
+2. **Empty State**:
+   - Shows a message when no cards are available while maintaining the same header and layout
+   - Consistent styling with the rest of the application
+   - Clear call-to-action when appropriate
+
+3. **Active State**:
+   - Full card display with consistent positioning and layout
+   - Standardized card dimensions and spacing
+
+### Navigation Integration
+
+The discovery system integrates with the application's navigation system:
+
+1. **Cross-Page Navigation**:
+   - Seamless transitions between Discovery and Matches pages using Wouter
+   - Client-side routing to prevent full page reloads when moving between related features
+   - Preserves state when appropriate to maintain user context
+
+2. **Data Consistency**:
+   - Uses MatchContext to maintain consistent data across pages
+   - Automatically updates related components when matches are created
+   - Ensures a coherent experience when navigating between discovery and matches views
+
 ## Implementation History
 
 - **Version 1.0.0**: Basic card discovery with local storage swipe tracking
 - **Version 1.3.0**: Improved filtering system with OR/AND logic
 - **Version 1.4.7**: Server-side swipe tracking with secondary safety filter
+- **Version 1.5.2**: Enhanced match filtering to prevent duplicate matches
+- **Version 1.5.3**: Improved UI consistency across all states and enhanced navigation
 
 ## Related Documentation
 

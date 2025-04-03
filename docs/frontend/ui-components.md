@@ -199,6 +199,93 @@ Key features:
 - Bottom-fixed button container with consistent styling and positioning
 - Padding at the bottom of content (`pb-32`) to ensure nothing is hidden behind the button
 
+## Consistent State Components
+
+### State-Consistent Layout Pattern
+
+A pattern implemented in v1.5.3 that ensures consistent UI across loading, empty, and active states in major pages like DiscoverPageNew. This pattern maintains header and layout structure regardless of content state:
+
+```jsx
+const DiscoverPageNew = () => {
+  // State declarations...
+  
+  return (
+    <div className="pb-24 pt-4 px-4 max-w-3xl mx-auto">
+      {/* Header - Present in all states */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">Discover</h1>
+        <p className="text-muted-foreground">Find collaborations that match your interests</p>
+      </div>
+      
+      {isLoading ? (
+        // Loading state - Same structure as active state
+        <div className="h-[60vh] flex flex-col items-center justify-center">
+          <Spinner size="lg" />
+          <p className="text-muted-foreground mt-4">Loading collaborations...</p>
+        </div>
+      ) : collaborations.length === 0 ? (
+        // Empty state - Same structure as active state
+        <div className="h-[60vh] flex flex-col items-center justify-center text-center">
+          <div className="mb-4">
+            <Package className="h-12 w-12 text-muted-foreground/50 mx-auto" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">No collaborations found</h3>
+          <p className="text-muted-foreground max-w-md mx-auto mb-6">
+            We couldn't find any collaborations matching your criteria. Try adjusting your filters.
+          </p>
+          <Button onClick={handleResetFilters}>Reset Filters</Button>
+        </div>
+      ) : (
+        // Active state - Core content with same overall structure
+        <div className="space-y-4">
+          {/* Card display logic */}
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+Key features:
+- Common header maintained across all states
+- Consistent spacing and layout regardless of content
+- Container heights matched between states to prevent layout shifts
+- Same semantic structure (headings, paragraphs) maintained across states
+
+### Client-Side Navigation Pattern
+
+Updated in v1.5.3 to use Wouter for seamless client-side navigation between related features:
+
+```jsx
+// Import from wouter instead of using window.location
+import { useLocation } from "wouter";
+
+const MatchesPage = () => {
+  // Get navigate function from useLocation hook
+  const [_, navigate] = useLocation();
+  
+  // Use navigate instead of window.location
+  const handleStartDiscovering = () => {
+    navigate("/discover");
+  };
+  
+  return (
+    <div>
+      {/* Page content */}
+      <Button onClick={handleStartDiscovering}>
+        Start Discovering
+      </Button>
+    </div>
+  );
+};
+```
+
+Benefits:
+- Prevents full page reloads when navigating between related sections
+- Maintains application state during navigation
+- Provides smoother user experience with instant transitions
+- Follows React best practices for client-side routing
+
 ## Usage Guidelines
 
 ### Text Loop
@@ -227,3 +314,17 @@ Key features:
 - Apply to all pages with variable content length
 - Ensure the header and button areas remain fixed while content scrolls
 - Use standard padding and spacing to maintain consistent appearance
+
+### State-Consistent Layouts
+
+- Maintain the same header and overall structure across loading, empty, and active states
+- Use consistent height containers to prevent layout shifts between states
+- Include appropriate visual indicators for each state (spinners, empty state illustrations)
+- Keep semantic structure consistent to maintain accessibility across states
+
+### Client-Side Navigation
+
+- Always use Wouter's useLocation hook for navigation between pages instead of window.location
+- Use the navigate function for programmatic navigation triggered by user actions
+- Use Link component for navigation elements that are always visible (menus, navigation bars)
+- Add descriptive onClick handlers that clearly indicate the navigation purpose
