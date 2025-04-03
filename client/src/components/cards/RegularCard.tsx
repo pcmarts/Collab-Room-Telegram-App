@@ -75,11 +75,18 @@ const getCollaborationBadgeClass = (type: string | undefined): string => {
 
 // Regular Card Component
 export const RegularCard = ({ data }: { data: CardData }) => {
-  console.log("✅ REGULARCARD COMPONENT BEING USED!", { 
+  // Highly visible debug logging to help troubleshoot
+  console.log("🔵🔵🔵 TWITTER CARD DEBUG 🔵🔵🔵");
+  console.log("✅ REGULARCARD COMPONENT RENDERING", { 
     title: data.title, 
     type: data.collaborationType,
-    hasTwitterDetails: !!data.details?.host_twitter_handle
+    hasTwitterDetails: !!data.details?.host_twitter_handle,
+    twitterHandle: data.details?.host_twitter_handle || "NONE",
+    followerCount: data.details?.host_follower_count || "NONE",
+    twitterType: data.details?.twittercomarketing_type || "NONE",
+    fullDetails: data.details
   });
+  console.log("🔵🔵🔵 END TWITTER CARD DEBUG 🔵🔵🔵");
   
   // Check if it has Twitter marketing details
   const isTwitterCoMarketing = 

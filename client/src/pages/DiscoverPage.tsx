@@ -467,13 +467,29 @@ export default function DiscoverPage() {
     };
     
     // Add detailed logging to help debug card rendering issues
-    console.log("========== CARD DEBUG INFO ==========");
+    console.log("🔴🔴🔴 DISCOVER PAGE CARD DEBUG INFO 🔴🔴🔴");
     console.log(`Card ID: ${card.id}`);
     console.log(`Card Type (raw): ${card.collab_type}`);
     console.log(`Is Podcast Card? ${card.id === 'e1d8af65-5fd9-4585-be3a-f65d9ad7c565'}`);
     console.log(`Card Title: ${cardData.title}`);
     console.log(`Company Name: ${cardData.companyName}`);
     console.log(`Card Details:`, JSON.stringify(details, null, 2));
+    
+    // Check if card has Twitter co-marketing elements
+    const hasTwitterDetails = 
+      (details as any)?.host_twitter_handle || 
+      (card.collab_type?.toLowerCase().includes('twitter') && 
+       (card.collab_type?.toLowerCase().includes('co-marketing') || 
+        card.collab_type?.toLowerCase().includes('comarketing'))) ||
+      (details as any)?.twittercomarketing_type;
+      
+    // Log specific Twitter details for debugging
+    console.log(`Twitter marketing? ${hasTwitterDetails ? 'YES' : 'NO'}`);
+    if (details) {
+      console.log(`Twitter handle: ${(details as any)?.host_twitter_handle || 'none'}`);
+      console.log(`Twitter follower count: ${(details as any)?.host_follower_count || 'none'}`);
+      console.log(`Twitter collab type: ${(details as any)?.twittercomarketing_type || 'none'}`);
+    }
     
     // Special check for podcast collaboration with ID e1d8af65-5fd9-4585-be3a-f65d9ad7c565
     if (card.id === 'e1d8af65-5fd9-4585-be3a-f65d9ad7c565') {
@@ -611,18 +627,20 @@ export default function DiscoverPage() {
                   }}
                   whileTap={{ cursor: 'grabbing' }}
                 >
-                  <Card className="w-full h-full border rounded-lg p-5 bg-card cursor-grab relative shadow-md">
-                    {/* Card Content */}
-                    {renderCard(currentCard)}
+                  <Card className="w-full h-full border rounded-lg bg-card cursor-grab relative shadow-md overflow-hidden flex flex-col">
+                    {/* Card Content in a scrollable container with padding */}
+                    <div className="flex-grow overflow-y-auto p-5 pb-20">
+                      {renderCard(currentCard)}
+                    </div>
 
-                    {/* Action Buttons */}
-                    <div className="absolute bottom-5 left-5 right-5">
-                      <div className="flex justify-between gap-1">
+                    {/* Action Buttons fixed at bottom */}
+                    <div className="absolute bottom-5 left-5 right-5 bg-background/60 backdrop-blur-sm py-2 rounded-lg">
+                      <div className="flex justify-between gap-1 px-2">
                         {/* No (X) Button */}
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                          className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm shadow-sm"
                           onClick={() => handleSwipe("left")}
                         >
                           <X className="h-5 w-5" />
@@ -632,7 +650,7 @@ export default function DiscoverPage() {
                         <Button
                           variant="outline"
                           size="icon"
-                          className={`h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm ${swipeHistory.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          className={`h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm shadow-sm ${swipeHistory.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                           onClick={handleUndo}
                           disabled={swipeHistory.length === 0}
                         >
@@ -643,7 +661,7 @@ export default function DiscoverPage() {
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                          className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm shadow-sm"
                           onClick={showCardInfo}
                         >
                           <Info className="h-4 w-4" />
@@ -653,7 +671,7 @@ export default function DiscoverPage() {
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm"
+                          className="h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm shadow-sm"
                           onClick={() => handleSwipe("right")}
                         >
                           <Heart className="h-5 w-5" />
