@@ -974,6 +974,10 @@ export class DatabaseStorage implements IStorage {
         company_name: match.company.name,
         company_job_title: match.company.job_title,
         company_twitter_followers: match.company.twitter_followers,
+        company_description: match.company.short_description,
+        company_website: match.company.website,
+        company_twitter: match.company.twitter_handle,
+        company_linkedin: match.company.linkedin,
         requester_company: match.company.name,
         requester_role: match.company.job_title
       }));
