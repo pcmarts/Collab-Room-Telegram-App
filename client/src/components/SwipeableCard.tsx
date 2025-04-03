@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { motion, useMotionValue, MotionValue, useTransform, AnimationControls } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,8 +41,6 @@ interface SwipeableCardProps {
   handleSwipe: (direction: "left" | "right") => Promise<void>;
   onInfoClick: () => void;
   zIndex: number;
-  constrained: boolean;
-  setConstrained?: (constrained: boolean) => void;
   x?: MotionValue<number>;
   controls?: AnimationControls;
   opacity?: MotionValue<number>;
@@ -54,15 +52,12 @@ export function SwipeableCard({
   handleSwipe,
   onInfoClick,
   zIndex = 1,
-  constrained = true,
-  setConstrained,
   x,
   controls,
   opacity,
   rotate
 }: SwipeableCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [exitX, setExitX] = useState(0);
   
   // Debug information to console
   console.log("🔵🔵🔵 SWIPEABLE CARD DEBUG 🔵🔵🔵", {
@@ -81,31 +76,9 @@ export function SwipeableCard({
   // Define direct button click handler
   const handleButtonClick = async (direction: "left" | "right") => {
     try {
-      setExitX(direction === 'right' ? 1000 : -1000);
       await handleSwipe(direction);
     } catch (error) {
       console.error("Error handling button click:", error);
-    }
-  };
-  
-  // Define swipe handlers with a click threshold
-  const handleDragEnd = async (e: any, info: any) => {
-    if (!constrained) return;
-    
-    const xOffset = info.offset.x;
-    const dragDistance = Math.abs(info.offset.x);
-    
-    // Consider it a swipe only if dragged more than 100px
-    if (dragDistance > 100) {
-      const direction = xOffset > 0 ? "right" : "left";
-      setExitX(xOffset > 0 ? 1000 : -1000);
-      await handleSwipe(direction);
-    } else if (dragDistance < 5) {
-      // If dragged less than 5px, it's considered a click, do nothing to allow link clicks
-      controls?.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
-    } else {
-      // Reset position if not swiped far enough but more than click threshold
-      controls?.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
     }
   };
   
@@ -122,16 +95,6 @@ export function SwipeableCard({
         top: 0,
         left: 0
       }}
-      drag={constrained ? "x" : false}
-      dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-      dragElastic={0.7}
-      dragTransition={{ power: 0.2, timeConstant: 400 }}
-      dragMomentum={true}
-      dragSnapToOrigin={false}
-      dragThreshold={5} // Add a drag threshold to improve detection of clicks vs. drags
-      onDragStart={() => setConstrained && setConstrained(false)}
-      onDragEnd={(e, info) => handleDragEnd(e, info)}
-      whileDrag={{ scale: 1.05 }}
       animate={controls}
     >
       <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl isolate">
@@ -224,9 +187,14 @@ export function SwipeableCard({
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
               <div className="flex items-center space-x-1.5">
                 <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-                <span className="text-sm font-medium text-[#1DA1F2]">
+                <a 
+                  href={`https://twitter.com/${data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}`}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-[#1DA1F2] hover:underline"
+                >
                   @{data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
-                </span>
+                </a>
               </div>
               
               {data.details?.host_follower_count && (
@@ -262,9 +230,14 @@ export function SwipeableCard({
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
               <div className="flex items-center space-x-1.5">
                 <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-                <span className="text-sm font-medium text-[#1DA1F2]">
+                <a 
+                  href={`https://twitter.com/${data.details.twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}`}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-[#1DA1F2] hover:underline"
+                >
                   {data.details.twitter_handle.includes('@') ? data.details.twitter_handle : '@' + data.details.twitter_handle.replace('https://twitter.com/', '').replace('https://x.com/', '')}
-                </span>
+                </a>
               </div>
               
               {data.details?.host_follower_count && (
@@ -308,7 +281,6 @@ export function SwipeableCard({
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="truncate text-blue-600 hover:text-blue-800 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
                   >
                     {data.details.podcast_link}
                   </a>
@@ -356,7 +328,6 @@ export function SwipeableCard({
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="truncate text-blue-600 hover:text-blue-800 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
                   >
                     {data.details.blog_link}
                   </a>
@@ -434,7 +405,6 @@ export function SwipeableCard({
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="truncate text-blue-600 hover:text-blue-800 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
                   >
                     {data.details.newsletter_url}
                   </a>
@@ -489,8 +459,7 @@ export function SwipeableCard({
                     href={data.potentialMatchData.company_website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
-                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 hover:underline"
                   >
                     <Globe className="h-3 w-3 mr-0.5" />
                     Website
@@ -502,8 +471,7 @@ export function SwipeableCard({
                     href={`https://twitter.com/${data.potentialMatchData.company_twitter}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
-                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 hover:underline"
                   >
                     <Twitter className="h-3 w-3 mr-0.5 text-[#1DA1F2]" />
                     @{data.potentialMatchData.company_twitter}
@@ -515,8 +483,7 @@ export function SwipeableCard({
                     href={data.potentialMatchData.company_linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
-                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 hover:underline"
                   >
                     <Linkedin className="h-3 w-3 mr-0.5 text-blue-700" />
                     LinkedIn
@@ -571,7 +538,7 @@ export function SwipeableCard({
           <Button 
             variant="outline" 
             size="sm" 
-            className="w-full border-red-200 hover:bg-red-50 hover:text-red-600 relative z-50"
+            className="w-full border-red-200 hover:bg-red-50 hover:text-red-600"
             onClick={() => handleButtonClick("left")}
           >
             <X className="h-4 w-4 mr-1" />
@@ -583,7 +550,7 @@ export function SwipeableCard({
             size="sm" 
             className={`w-full ${data.isPotentialMatch 
               ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-md' 
-              : 'border-green-200 hover:bg-green-50 hover:text-green-600'} relative z-50`}
+              : 'border-green-200 hover:bg-green-50 hover:text-green-600'}`}
             onClick={() => handleButtonClick("right")}
           >
             {data.isPotentialMatch ? (
