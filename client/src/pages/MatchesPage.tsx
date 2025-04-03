@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { apiRequest } from "@/lib/queryClient";
 import { getCollabTypeIcon } from "@/lib/collab-utils";
 import { useMatchContext } from "@/contexts/MatchContext";
+import { useLocation } from "wouter";
 
 // Define Match type for API response
 interface Match {
@@ -188,6 +189,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
 export default function MatchesPage() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const { newMatchCreated, refreshMatches } = useMatchContext();
+  const [, setLocation] = useLocation();
   
   // Fetch matches from API
   const { data: matches, isLoading, error } = useQuery({
@@ -365,7 +367,7 @@ export default function MatchesPage() {
         ) : (
           <Card className="p-6 text-center">
             <p className="text-muted-foreground mb-4">No matches yet</p>
-            <GlowButton onClick={() => window.location.href = '/discover'}>
+            <GlowButton onClick={() => setLocation('/discover')}>
               Start Discovering
             </GlowButton>
           </Card>
