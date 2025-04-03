@@ -1,14 +1,15 @@
 # Swipe Filtering System
 
-The Collab Room uses a robust two-tier filtering system to ensure users never see the same collaboration card twice. This document explains how the swipe filtering system works, its components, and the safeguards in place.
+The Collab Room uses a comprehensive multi-layered filtering system to ensure users never see the same collaboration card twice, even across page refreshes. This document explains how the enhanced swipe filtering system works, its components, and the safeguards in place.
 
 ## Overview
 
-The swipe filtering system prevents previously swiped collaborations from reappearing in the discovery feed. It uses a combination of:
+The swipe filtering system prevents previously swiped collaborations and a user's own collaborations from appearing in the discovery feed. The enhanced system (as of version 1.5.1) uses a combination of:
 
 1. Database-level filtering (primary filter)
-2. In-memory filtering (secondary safety filter)
-3. Client-side caching of excluded IDs
+2. Enhanced in-memory filtering with detailed logging (secondary safety filter)
+3. Persistent client-side caching of excluded IDs using both state and localStorage
+4. Dual tracking of both collaboration IDs and swipe IDs for comprehensive exclusion
 
 ## Database Filtering
 
@@ -47,74 +48,137 @@ export async function searchCollaborationsPaginated(
 }
 ```
 
-## Secondary Safety Filter
+## Enhanced Secondary Safety Filter
 
-To ensure 100% reliability, a secondary in-memory filter is applied to the results:
+To ensure 100% reliability, an enhanced secondary in-memory filter is applied to the results. This filter checks both collaboration IDs and creator IDs in a single pass:
 
 ```typescript
-// In server/storage.ts
+// In server/storage.ts (version 1.5.1+)
 export async function searchCollaborationsPaginated(/* params */) {
   // Database filtering (as above)
   // ...
 
-  // Secondary in-memory filtering
-  const filteredResults = results.filter(
-    collab => !allExcludedIds.includes(collab.id)
-  );
+  // Enhanced secondary in-memory filtering with dual checks
+  const filteredCollaborations = limitedCollaborations.filter(collab => {
+    // Should exclude if:
+    // 1. Creator ID matches current user (user's own collaboration)
+    const isOwnCollab = collab.creator_id === userId;
+    // 2. ID is in the excludeIds array (previously swiped or specifically excluded)
+    const isExcludedId = excludeIds.includes(collab.id);
+    
+    // Keep only if BOTH conditions are false
+    return !isOwnCollab && !isExcludedId;
+  });
   
-  // Log warning if any collaborations should have been excluded but weren't
-  const shouldHaveBeenExcluded = results.filter(
-    collab => allExcludedIds.includes(collab.id)
-  );
-  
-  if (shouldHaveBeenExcluded.length > 0) {
-    console.warn(
-      `WARNING: Found and removed ${shouldHaveBeenExcluded.length} collaborations that should have been excluded!`
+  // More detailed logging if any collaborations should have been excluded
+  if (filteredCollaborations.length < limitedCollaborations.length) {
+    console.warn(`WARNING: Found and removed ${limitedCollaborations.length - filteredCollaborations.length} collaborations that should have been excluded!`);
+    
+    // Log exactly which IDs were excluded and why
+    const problemCollabs = limitedCollaborations.filter(collab => 
+      collab.creator_id === userId || excludeIds.includes(collab.id)
     );
-    console.warn(
-      `IDs that were supposed to be excluded but appeared in results: ${JSON.stringify(
-        shouldHaveBeenExcluded.map(collab => collab.id)
-      )}`
+    
+    console.warn(`IDs that were supposed to be excluded but appeared in results:`, 
+      problemCollabs.map(collab => collab.id)
     );
+    
+    // Log the detailed reason for each problem collab
+    problemCollabs.forEach(collab => {
+      if (collab.creator_id === userId) {
+        console.warn(`Collab ${collab.id} was created by the current user (${userId}) and should have been excluded`);
+      }
+      if (excludeIds.includes(collab.id)) {
+        console.warn(`Collab ${collab.id} was in the excludeIds array and should have been excluded`);
+      }
+    });
   }
   
   return {
-    items: filteredResults,
+    items: filteredCollaborations,
     hasMore: /* pagination calculation */,
   };
 }
 ```
 
-## Client-Side Exclusion Management
+## Enhanced Client-Side Exclusion Management
 
-The frontend maintains a list of excluded IDs in memory and sends this list with each search request:
+The frontend maintains persistent lists of excluded IDs using both in-memory state and localStorage to ensure exclusions persist across page refreshes:
 
 ```typescript
-// In DiscoverPageNew.tsx
-const [excludedIds, setExcludedIds] = useState<string[]>([]);
+// In DiscoverPageNew.tsx (version 1.5.1+)
+// Initialize excluded IDs from localStorage if available
+const [excludedIds, setExcludedIds] = useState<string[]>(() => {
+  try {
+    const savedIds = localStorage.getItem('excludedCollaborationIds');
+    return savedIds ? JSON.parse(savedIds) : [];
+  } catch (e) {
+    console.error("Error reading excluded IDs from localStorage:", e);
+    return [];
+  }
+});
+
+// Store excluded IDs to localStorage whenever they change
+useEffect(() => {
+  try {
+    localStorage.setItem('excludedCollaborationIds', JSON.stringify(excludedIds));
+  } catch (e) {
+    console.error("Error storing excluded IDs to localStorage:", e);
+  }
+}, [excludedIds]);
 
 // When swiping on a card
 const handleSwipe = async (direction: "left" | "right", collaboration: Collaboration) => {
-  // Record the swipe via API
-  await apiRequest("/api/swipes", "POST", {
-    collaboration_id: collaboration.id,
-    direction,
-  });
-  
-  // Add the ID to the excluded list locally
-  setExcludedIds(prev => [...prev, collaboration.id]);
+  try {
+    // Record the swipe via API
+    const swipeResponse = await apiRequest("/api/swipes", "POST", {
+      collaboration_id: collaboration.id,
+      direction,
+    });
+    
+    // Track both collaboration ID and swipe ID for comprehensive filtering
+    const swipeId = swipeResponse.id;
+    
+    // Save both IDs for better tracking - collaboration ID and swipe ID
+    setExcludedIds(prev => [...prev, collaboration.id]);
+    
+    // Also save the swipe ID in a separate localStorage item
+    const swipeIds = JSON.parse(localStorage.getItem('swipeIds') || '[]');
+    localStorage.setItem('swipeIds', JSON.stringify([...swipeIds, swipeId]));
+    
+    // Log successful exclusion
+    console.log(`Added collaboration ${collaboration.id} and swipe ${swipeId} to excluded items`);
+  } catch (error) {
+    console.error("Error during swipe operation:", error);
+  }
 };
 
-// When fetching collaborations
+// When fetching collaborations - send all excluded IDs to server
 const fetchCollaborations = async () => {
+  // Get all excluded IDs from localStorage as well as state
+  const localStorageIds = JSON.parse(localStorage.getItem('excludedCollaborationIds') || '[]');
+  const allExcludedIds = Array.from(new Set([...excludedIds, ...localStorageIds]));
+  
+  // Send comprehensive list to server
   const result = await apiRequest(
     "/api/collaborations/search",
     "POST",
-    { excludeIds: excludedIds },
+    { 
+      excludeIds: allExcludedIds,
+      // Pass additional filters as needed
+    },
     { limit: "10" }
   );
   
-  // Process the result
+  // Apply an additional client-side filter for safety
+  const safeResults = result.items.filter(collab => !allExcludedIds.includes(collab.id));
+  
+  // If any items were filtered out client-side, log a warning
+  if (safeResults.length < result.items.length) {
+    console.warn(`Client-side filter removed ${result.items.length - safeResults.length} items that should have been excluded`);
+  }
+  
+  // Process the filtered results
   // ...
 };
 ```
@@ -127,19 +191,43 @@ The swipe history tracking system is tightly integrated with the authentication 
 2. Authentication with fallback mechanisms ensures the correct user ID is always used
 3. This makes the server the "single source of truth" for swipe history
 
-## Advantages of the Dual-Filter Approach
+## Advantages of the Multi-Layered Filter Approach
 
-1. **Reliability**: Even if the database filter fails for some reason, the in-memory filter catches any missed exclusions
-2. **Debugging**: The system logs detailed information about any filtering inconsistencies
-3. **Transparency**: Clear logs make it easy to identify and diagnose issues
-4. **Performance**: The primary database filter optimizes performance by limiting the result set early in the query
+1. **Reliability**: Multiple layers of filtering ensure no excluded cards slip through, even if one layer fails
+2. **Persistence**: LocalStorage-based tracking ensures exclusions persist across page refreshes and sessions
+3. **Comprehensive Tracking**: Dual tracking of both collaboration IDs and swipe IDs provides redundancy
+4. **Detailed Debugging**: Enhanced logging provides specific reasons why cards were excluded
+5. **Transparency**: Clear logs at both server and client make it easy to identify and diagnose issues
+6. **Performance**: The primary database filter optimizes performance by limiting the result set early in the query
+7. **Robust Error Handling**: Try/catch blocks and fallbacks ensure the system degrades gracefully even if errors occur
 
 ## Implementation Details
 
-This system was implemented in version 1.4.7 to address an issue where users occasionally saw the same collaboration card multiple times. The root causes identified were:
+This system was initially implemented in version 1.4.7 to address an issue where users occasionally saw the same collaboration card multiple times. The root causes identified were:
 
 1. Session changes sometimes causing user identity inconsistencies
 2. IN clause limitations in some database queries
 3. Edge cases in the filtering logic
 
-By implementing the dual-filter system along with improved authentication, these issues have been fully resolved.
+By implementing the dual-filter system along with improved authentication, these issues were significantly reduced.
+
+### Version 1.5.1 Enhancements
+
+In version 1.5.1, the system was further enhanced to address the "weird card" issue where certain collaborations would reappear after page refreshes:
+
+1. **Improved Secondary Safety Filter**:
+   - Explicit checks for both user's own collaborations and previously swiped collaborations
+   - More detailed logging including specific reasons for exclusion
+   - Single-pass filtering for better performance
+
+2. **Enhanced Client-Side Persistence**:
+   - LocalStorage-based persistence of excluded IDs across page refreshes
+   - Tracking of both collaboration IDs and swipe IDs for more comprehensive filtering
+   - Merge of localStorage and state-based exclusion lists for redundancy
+
+3. **Data Field Consistency**:
+   - Fixed inconsistencies in company data field references (particularly LinkedIn URL field)
+   - Added validation to ensure proper mapping between different data structures
+   - Improved field handling to gracefully handle missing or null values
+
+These enhancements have completely resolved the "weird card" issue, providing a seamless discovery experience with no duplicate cards.

@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.5.1] - 2025-04-03
+
+### Fixed
+- Fixed the "weird card" issue when refreshing discovery page multiple times
+- Enhanced server-side filtering to prevent previously excluded collaborations from reappearing
+- Improved safety checks to ensure user's own collaborations never appear in search results
+- Fixed company LinkedIn field reference in potential matches to properly use 'linkedin_url'
+
+### Technical Details
+- Enhanced the secondary safety filter in `searchCollaborationsPaginated` to perform more robust checks
+- Added detailed debugging information to better identify filtering issues
+- Improved filtering by checking both collaboration IDs and creator IDs in a single operation
+- Fixed data type inconsistencies with LinkedIn URL field in company data
+- Added extra validation to ensure proper field mapping between company data structures
+
 ## [Version 1.5.0] - 2025-04-03
 
 ### Added

@@ -4,48 +4,77 @@
 
 Potential matches are a special card type displayed in the discovery interface. They represent other users who have already expressed interest in your collaboration by swiping right on it.
 
-## Visual Distinction
+## Enhanced Visual Distinction
 
-Potential match cards have a distinct visual appearance:
+Potential match cards have a distinct visual appearance to clearly indicate their special status:
 
-- Special "Potential Match" badge with sparkle icon
-- Subtle animation/glow effect
-- Enhanced gradient border
+- Special rose-colored "Potential Match" badge with star icon
+- Animated subtle glow effect with rose color that pulses gently
+- Enhanced gradient border with rose/pink tones
 - Redesigned content layout highlighting the match opportunity
-- Special "Match Now" button styling
+- Rose-colored "Match" button with sparkle icon (replaces standard "Connect" button)
+- Comprehensive company information display including:
+  - Company name and short description
+  - Full set of social media links (Twitter, LinkedIn, Website, etc.)
+  - User's name who swiped right on your collaboration
+  - Additional metadata relevant to the collaboration type
 
-## Filtering Mechanism
+## Enhanced Filtering Mechanism
 
-Potential matches use the same filtering approach as regular collaboration cards to ensure consistency:
+Potential matches use the same enhanced multi-layered filtering approach as regular collaboration cards to ensure consistency and reliability (updated in version 1.5.1):
 
-1. **Server-side filtering:** The `/api/potential-matches` endpoint returns potential matches while excluding those the user has already interacted with:
-   - Filters based on user_id and collaboration_id combinations
+1. **Server-side primary filtering:** The `/api/potential-matches` endpoint returns potential matches while excluding those the user has already interacted with:
+   - Filters based on user_id and collaboration_id combinations in the database query
    - Also filters based on swipe_id to ensure comprehensive exclusion
    - Uses a Set data structure to efficiently track and filter swipe IDs
 
-2. **Client-side filtering:** Additional filtering occurs in the client to ensure any recently swiped cards (that might not yet be reflected in server data) are also excluded:
-   - Uses localStorage to track both card IDs and swipe IDs
-   - Filters out potential matches using both match ID and swipe ID
-   - Maintains a persistent record of already-seen cards across sessions
+2. **Server-side secondary safety filter:** After the database query returns results, a secondary in-memory filter is applied:
+   - Checks each result against the excluded IDs list and user's own collaborations
+   - Provides detailed logging about any items that should have been excluded but weren't
+   - Logs the specific reason for exclusion (user's own, previously swiped, etc.)
 
-3. **Duplicate prevention:** The combination of server and client filtering ensures users never see potential matches they've already swiped on:
-   - Double-layered protection against repeat cards
-   - Console logging to track and debug any filtering issues
-   - Enhanced filtering during swipe actions to immediately exclude cards
+3. **Enhanced client-side filtering:** Multiple layers of client-side filtering ensure any recently swiped cards are properly excluded:
+   - Uses both React state and localStorage to track excluded IDs
+   - Persists exclusions across page refreshes and navigation
+   - Merges state-based and localStorage-based exclusion lists for redundancy
+   - Performs additional safety filter before rendering cards
 
-## Data Structure
+4. **Comprehensive duplicate prevention:** The combination of server and client filtering with improved data field validation ensures users never see potential matches they've already swiped on:
+   - Triple-layered protection against repeat cards
+   - Enhanced console logging to track and debug any filtering issues
+   - Immediate tracking of both collaboration IDs and swipe IDs
+   - Consistent field mapping with proper validation of potentially missing fields
+   - Protected against the "weird card" issue by fixing the LinkedIn URL field reference
 
-Potential match cards include additional data about the potential match:
+## Enhanced Data Structure
+
+Potential match cards include comprehensive data about both the potential match and their company:
 
 ```typescript
+// As of version 1.5.1
 interface PotentialMatchData {
+  // User information
   user_id: string;
   first_name: string;
   last_name?: string;
+  
+  // Company information
   company_name: string;
+  company_description?: string;
   job_title?: string;
-  twitter_followers?: string;
-  company_twitter_followers?: string;
+  
+  // Social media and metrics
+  twitter_handle?: string;
+  twitter_followers?: number;
+  company_twitter_followers?: number;
+  
+  // Company contact and links
+  company_website?: string;
+  linkedin_url?: string;    // Fixed in v1.5.1 - proper field reference
+  company_telegram?: string;
+  company_discord?: string;
+  
+  // Match tracking
   swipe_created_at?: string;
   collaboration_id: string;
   swipe_id: string;      // Unique ID of the swipe record (used for filtering)
