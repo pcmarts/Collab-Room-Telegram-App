@@ -493,11 +493,13 @@ export function SwipeableCard({
           <Button 
             variant="outline" 
             size="sm" 
-            className="w-full border-green-200 hover:bg-green-50 hover:text-green-600 relative z-50"
+            className={`w-full ${data.isPotentialMatch 
+              ? 'border-rose-200 hover:bg-rose-50 hover:text-rose-600' 
+              : 'border-green-200 hover:bg-green-50 hover:text-green-600'} relative z-50`}
             onClick={() => handleButtonClick("right")}
           >
             <Check className="h-4 w-4 mr-1" />
-            Connect
+            {data.isPotentialMatch ? 'Match' : 'Connect'}
           </Button>
         </div>
       </Card>
