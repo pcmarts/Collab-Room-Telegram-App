@@ -5,6 +5,23 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.5.0] - 2025-04-03
+
+### Added
+- Created new MatchContext system with React Context API to track match creation and updates
+- Implemented automatic match list refreshing when new matches are created
+- Added integration between DiscoverPage and MatchesPage for seamless match updates
+
+### Fixed
+- Resolved issue where newly created matches weren't appearing in the Matches page until manual refresh
+- Ensured consistent match data synchronization between Discovery and Matches pages
+
+### Technical Details
+- Implemented `MatchContext.tsx` to provide a shared state for match creation events
+- Enhanced `DiscoverPage.tsx` to update the global match state when a match is created
+- Modified `MatchesPage.tsx` to listen for match creation events and automatically refresh data
+- Added detailed logging throughout the match creation and refresh process
+
 ## [Version 1.4.9] - 2025-04-03
 
 ### Fixed

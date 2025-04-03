@@ -55,3 +55,14 @@ interface PotentialMatchData {
 ## Special UX Handling
 
 Swiping right on a potential match card creates an immediate match, triggering the match animation. This is different from regular collaboration cards where a right swipe only creates a potential match for the other user.
+
+## Match Creation and Notification
+
+When a match is created (by swiping right on a potential match):
+
+1. The client updates the global MatchContext state to indicate a new match was created
+2. A visual "Match Moment" animation is displayed to the user
+3. The Matches page (if visited) will automatically refresh its data to show the new match
+4. Server-side Telegram notifications are sent to both users
+
+The MatchContext provides a shared state mechanism that ensures consistent match data across different pages of the application, eliminating the need for manual refreshes when navigating to the Matches page.

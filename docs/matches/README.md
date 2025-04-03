@@ -52,10 +52,27 @@ interface Match {
 }
 ```
 
+## Real-time Updates with MatchContext
+
+A new MatchContext system has been implemented to provide real-time match updates across the application:
+
+- **Global State Management**: Uses React Context API to maintain match creation/update state
+- **Automatic Refresh**: The Matches page automatically refreshes when new matches are created
+- **Cross-Page Communication**: No manual refresh needed when navigating from Discovery to Matches page
+- **Implementation Details**:
+  - `MatchContext.tsx` provides the shared state for match events
+  - `DiscoverPage.tsx` updates the context when matches are created
+  - `MatchesPage.tsx` subscribes to context changes to refresh data
+  - Each match creation fires a match event that updates the global state
+
 ## Recent Fixes
 
-**Version 1.3.1 (2025-03-23):**
+**Version 1.5.0 (2025-04-03):**
+- Implemented MatchContext system for automatic match list refreshing
+- Fixed issue where newly created matches weren't appearing in Matches page until manual refresh
+- Enhanced integration between Discovery and Matches pages for seamless data synchronization
 
+**Version 1.3.1 (2025-03-23):**
 - Fixed server-side 500 error caused by incompatible `require('crypto')` call in ESM context
 - Resolved infinite API requests issue by implementing stable React Query keys
 - Improved API response handling with proper JSON parsing
