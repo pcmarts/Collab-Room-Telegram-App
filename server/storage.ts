@@ -970,11 +970,26 @@ export class DatabaseStorage implements IStorage {
         swipeIdSet.add(swipe.id);
       });
       
+      // 3b. Get all existing matches for the user to filter out already matched collaborations
+      const userMatches = await this.getUserMatches(userId);
+      console.log(`Found ${userMatches.length} existing matches for user ${userId}`);
+      
+      // Create a set of collaboration IDs that are already in the matches table
+      const matchedCollaborationIds = new Set<string>(
+        userMatches.map(match => match.collaboration_id)
+      );
+      
       // Filter out already-swiped users or already-swiped potential matches
       const potentialMatches = rightSwipes.filter(match => {
         // Skip if this swipe ID is in our previously swiped set
         if (swipeIdSet.has(match.swipe.id)) {
           console.log(`Filtering out already swiped potential match with swipe ID: ${match.swipe.id}`);
+          return false;
+        }
+        
+        // Check if this collaboration already has a match
+        if (matchedCollaborationIds.has(match.collaboration.id)) {
+          console.log(`Filtering out already matched collaboration with ID: ${match.collaboration.id}`);
           return false;
         }
         
