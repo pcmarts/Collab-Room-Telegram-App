@@ -311,6 +311,7 @@ export class DatabaseStorage implements IStorage {
     // Always exclude the user's own collaborations for Regular Collaboration Cards
     // This rule should be non-negotiable and is separate from the excludeIds logic
     console.log('Excluding user\'s own collaborations (creator_id filtering)');
+    // Explicitly exclude regardless of the excludeIds array
     query = query.where(not(eq(collaborations.creator_id, userId)));
     
     // Apply filters based on user preferences
@@ -456,23 +457,51 @@ export class DatabaseStorage implements IStorage {
     // ADDITIONAL SAFETY CHECK: Double check that no excluded IDs made it through the query
     // This shouldn't be necessary if the SQL query worked correctly, but we're adding it as a fallback
     // This is especially important in case of race conditions where swipes happen during the query execution
-    if (excludeIds.length > 0) {
-      const filteredCollaborations = limitedCollaborations.filter(collab => !excludeIds.includes(collab.id));
+    
+    // We need to make sure NO MATTER WHAT that:
+    // 1. User's own collaborations are filtered out (using creator_id)
+    // 2. Previously swiped collaborations are filtered out
+    // 3. Any excludeIds from the request are filtered out
+    
+    // First check for previously swiped collaborations and excludeIds
+    const filteredCollaborations = limitedCollaborations.filter(collab => {
+      // Should exclude if:
+      // 1. Creator ID matches current user (user's own collaboration)
+      const isOwnCollab = collab.creator_id === userId;
+      // 2. ID is in the excludeIds array (previously swiped or specifically excluded)
+      const isExcludedId = excludeIds.includes(collab.id);
       
-      // If we filtered out any collaborations, log a warning
-      if (filteredCollaborations.length < limitedCollaborations.length) {
-        console.warn(`WARNING: Found and removed ${limitedCollaborations.length - filteredCollaborations.length} collaborations that should have been excluded!`);
-        console.warn(`IDs that were supposed to be excluded but appeared in results:`, 
-          limitedCollaborations
-            .filter(collab => excludeIds.includes(collab.id))
-            .map(collab => collab.id)
-        );
-      }
+      // Keep only if BOTH conditions are false
+      return !isOwnCollab && !isExcludedId;
+    });
+    
+    // If we filtered out any collaborations, log a warning
+    if (filteredCollaborations.length < limitedCollaborations.length) {
+      console.warn(`WARNING: Found and removed ${limitedCollaborations.length - filteredCollaborations.length} collaborations that should have been excluded!`);
       
-      // Replace the limitedCollaborations with our filtered version
-      limitedCollaborations.length = 0;
-      limitedCollaborations.push(...filteredCollaborations);
+      // Log exactly which IDs were excluded and why
+      const problemCollabs = limitedCollaborations.filter(collab => 
+        collab.creator_id === userId || excludeIds.includes(collab.id)
+      );
+      
+      console.warn(`IDs that were supposed to be excluded but appeared in results:`, 
+        problemCollabs.map(collab => collab.id)
+      );
+      
+      // Log the detailed reason for each problem collab
+      problemCollabs.forEach(collab => {
+        if (collab.creator_id === userId) {
+          console.warn(`Collab ${collab.id} was created by the current user (${userId}) and should have been excluded`);
+        }
+        if (excludeIds.includes(collab.id)) {
+          console.warn(`Collab ${collab.id} was in the excludeIds array and should have been excluded`);
+        }
+      });
     }
+    
+    // Replace the limitedCollaborations with our filtered version
+    limitedCollaborations.length = 0;
+    limitedCollaborations.push(...filteredCollaborations);
     
     // The next cursor will be the ID of the last item in the current page
     const nextCursor = hasMore && limitedCollaborations.length > 0 
@@ -977,7 +1006,7 @@ export class DatabaseStorage implements IStorage {
         company_description: match.company.short_description,
         company_website: match.company.website,
         company_twitter: match.company.twitter_handle,
-        company_linkedin: match.company.linkedin,
+        company_linkedin: match.company.linkedin_url,
         requester_company: match.company.name,
         requester_role: match.company.job_title
       }));
