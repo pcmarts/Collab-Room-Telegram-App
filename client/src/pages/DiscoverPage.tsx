@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { 
   X, Info, Check, Coffee, Calendar, Megaphone, Twitter, 
   Linkedin, Building, Mic, Radio, Video, FileText, BookOpen,
-  RotateCcw, SlidersVertical, Loader2, UserCheck
+  RotateCcw, SlidersVertical, Loader2, UserCheck, Headphones,
+  Mail, BarChart
 } from "lucide-react";
 import { CollaborationDetailsDialog } from "@/components/CollaborationDetailsDialog";
 import { NetworkStatus } from "@/components/NetworkStatus";
@@ -552,6 +553,56 @@ const MarketingCard: React.FC<{ data: CardData }> = ({ data }) => {
 
 // Legacy/Generic Cards (for backward compatibility) 
 // Using an inline card that calls out to the full component
+// Helper function to get the icon for a collaboration type
+const getCollaborationTypeIcon = (type: string | undefined): any => {
+  if (!type) return Megaphone;
+  
+  const typeLower = type.toLowerCase();
+  
+  if (typeLower.includes('twitter') && (typeLower.includes('co-marketing') || typeLower.includes('comarketing'))) {
+    return Twitter;
+  } else if (typeLower.includes('twitter')) {
+    return Twitter;
+  } else if (typeLower.includes('podcast')) {
+    return Headphones;
+  } else if (typeLower.includes('blog')) {
+    return FileText;
+  } else if (typeLower.includes('livestream') || typeLower.includes('live stream')) {
+    return Video;
+  } else if (typeLower.includes('newsletter')) {
+    return Mail;
+  } else if (typeLower.includes('research') || typeLower.includes('report')) {
+    return BarChart;
+  }
+  
+  return Megaphone;
+};
+
+// Helper function to get badge styling based on collaboration type
+const getCollaborationBadgeClass = (type: string | undefined): string => {
+  if (!type) return "bg-primary/10 border-primary/20";
+  
+  const typeLower = type.toLowerCase();
+  
+  if (typeLower.includes('twitter') && (typeLower.includes('co-marketing') || typeLower.includes('comarketing'))) {
+    return "bg-blue-500/10 border-blue-500/30 text-[#1DA1F2]";
+  } else if (typeLower.includes('twitter')) {
+    return "bg-blue-500/10 border-blue-500/30";
+  } else if (typeLower.includes('podcast')) {
+    return "bg-purple-500/10 border-purple-500/30";
+  } else if (typeLower.includes('blog')) {
+    return "bg-emerald-500/10 border-emerald-500/30";
+  } else if (typeLower.includes('livestream') || typeLower.includes('live stream')) {
+    return "bg-red-500/10 border-red-500/30";
+  } else if (typeLower.includes('newsletter')) {
+    return "bg-emerald-500/10 border-emerald-500/30";
+  } else if (typeLower.includes('research') || typeLower.includes('report')) {
+    return "bg-violet-500/10 border-violet-500/30";
+  }
+  
+  return "bg-primary/10 border-primary/20";
+};
+
 const InlineMarketingCard = ({ data }: { data: CardData }) => {
   // Check if it has Twitter marketing details
   const isTwitterCoMarketing = 
@@ -560,90 +611,64 @@ const InlineMarketingCard = ({ data }: { data: CardData }) => {
      data.collaborationType?.toLowerCase().includes('co-marketing')) ||
     data.details?.twittercomarketing_type;
   
-  if (isTwitterCoMarketing) {
-    return (
-      <div className="space-y-3">
-        <Badge variant="outline" className="bg-blue-500/10 border-blue-500/30 text-[#1DA1F2] p-1.5">
-          <Twitter className="w-3.5 h-3.5 mr-1.5" />
-          <span>Twitter Co-Marketing</span>
-        </Badge>
-        
-        <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
-        
-        <div className="space-y-0.5">
-          <p className="text-base">{data.companyName}</p>
-          <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
-        </div>
-        
-        {/* Twitter specific info */}
-        {data.details?.host_twitter_handle && (
-          <div className="flex flex-col space-y-2 p-2 bg-blue-500/5 rounded-md border border-blue-500/10">
-            <div className="flex items-center space-x-1.5">
-              <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-              <span className="text-sm font-medium text-[#1DA1F2]">
-                @{data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
-              </span>
-            </div>
-            
-            {data.details?.host_follower_count && (
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium">{data.details.host_follower_count}</span> followers
-              </p>
-            )}
-            
-            {data.details?.twittercomarketing_type && (
-              <div className="flex flex-wrap gap-1 mt-1">
-                {(Array.isArray(data.details.twittercomarketing_type) 
-                  ? data.details.twittercomarketing_type 
-                  : [data.details.twittercomarketing_type]).map((type, i) => (
-                  <Badge key={i} variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-blue-700">
-                    {type}
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        
-        <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
-        
-        {data.topics && data.topics.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
-            {data.topics.map((topic, i) => (
-              <Badge key={i} variant="secondary" className="text-xs">
-                {topic}
-              </Badge>
-            ))}
-          </div>
-        )}
-        
-        {/* For legacy preferredTopics support */}
-        {!data.topics && data.preferredTopics && data.preferredTopics.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
-            {data.preferredTopics.map((topic, i) => (
-              <Badge key={i} variant="secondary" className="text-xs">
-                {topic}
-              </Badge>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
+  // Get icon and badge styling based on collaboration type
+  const CollabIcon = getCollaborationTypeIcon(data.collaborationType);
+  const badgeClass = getCollaborationBadgeClass(data.collaborationType);
   
-  // Fallback to standard marketing card
   return (
     <div className="space-y-3">
-      <Badge variant="outline" className="bg-primary/10">
-        <Megaphone className="w-3 h-3 mr-1" />
-        {data.collaborationType}
+      <Badge variant="outline" className={`${badgeClass} p-1.5`}>
+        <CollabIcon className="w-3.5 h-3.5 mr-1.5" />
+        <span>{data.collaborationType || "Collaboration"}</span>
       </Badge>
+      
       <h3 className="text-xl font-semibold leading-snug">{data.title}</h3>
+      
       <div className="space-y-0.5">
         <p className="text-base">{data.companyName}</p>
         <p className="text-sm text-muted-foreground">{data.roleTitle}</p>
       </div>
+      
+      {/* Twitter specific info - show prominently for Twitter co-marketing */}
+      {isTwitterCoMarketing && data.details?.host_twitter_handle && (
+        <div className="flex flex-col space-y-2 p-2 bg-blue-500/5 rounded-md border border-blue-500/10 mt-2 mb-2">
+          <div className="flex items-center space-x-1.5">
+            <Twitter className="w-4 h-4 text-[#1DA1F2]" />
+            <span className="text-sm font-medium text-[#1DA1F2]">
+              @{data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
+            </span>
+          </div>
+          
+          {data.details?.host_follower_count && (
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium">{data.details.host_follower_count}</span> followers
+            </p>
+          )}
+          
+          {data.details?.twittercomarketing_type && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {(Array.isArray(data.details.twittercomarketing_type) 
+                ? data.details.twittercomarketing_type 
+                : [data.details.twittercomarketing_type]).map((type, i) => (
+                <Badge key={i} variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-blue-700">
+                  {type}
+                </Badge>
+              ))}
+            </div>
+          )}
+          
+          {/* Show date if available */}
+          {(data.date || data.specific_date) && (
+            <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+              <Calendar className="w-3 h-3" />
+              <span>{data.date || data.specific_date}</span>
+            </div>
+          )}
+        </div>
+      )}
+      
       <p className="text-sm text-muted-foreground line-clamp-2">{data.description}</p>
+      
       {data.topics && data.topics.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
           {data.topics.map((topic, i) => (
@@ -653,6 +678,7 @@ const InlineMarketingCard = ({ data }: { data: CardData }) => {
           ))}
         </div>
       )}
+      
       {/* For legacy preferredTopics support */}
       {!data.topics && data.preferredTopics && data.preferredTopics.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
@@ -793,9 +819,8 @@ export default function DiscoverPage() {
   // Initialize from localStorage if available with user-specific key
   const [allCardsViewed, setAllCardsViewedState] = useState<boolean>(() => {
     try {
-      // Get user-specific localStorage key
-      const userId = userProfileData?.user?.id;
-      const storageKey = userId ? `allCardsViewed_${userId}` : 'allCardsViewed';
+      // Use a simple all cards viewed key since we don't have user profile data here
+      const storageKey = 'allCardsViewed';
       
       // Check if we've stored the "all cards viewed" state in localStorage
       const storedValue = localStorage.getItem(storageKey);
@@ -811,9 +836,8 @@ export default function DiscoverPage() {
   // Override setState to also update localStorage with user-specific key
   const setAllCardsViewed = (value: boolean) => {
     try {
-      // Get user-specific localStorage key
-      const userId = userProfileData?.user?.id;
-      const storageKey = userId ? `allCardsViewed_${userId}` : 'allCardsViewed';
+      // Use a simple all cards viewed key since we don't have user profile data here
+      const storageKey = 'allCardsViewed';
       
       // Update localStorage when state changes
       localStorage.setItem(storageKey, String(value));
@@ -1596,10 +1620,22 @@ export default function DiscoverPage() {
       // Use our dedicated PotentialMatchCard component
       return (
         <PotentialMatchCard
-          collab_type={card.collab_type}
-          description={card.description}
-          topics={card.topics}
-          potentialMatchData={card.potentialMatchData}
+          data={{
+            id: card.id,
+            collab_type: card.collab_type,
+            description: card.description,
+            topics: card.topics,
+            potentialMatchData: card.potentialMatchData
+          }}
+          handleSwipe={handleSwipe}
+          onInfoClick={() => setShowDialog(true)}
+          zIndex={1}
+          constrained={constrained}
+          setConstrained={setConstrained}
+          x={x}
+          controls={controls}
+          opacity={opacity}
+          rotate={rotate}
         />
       );
     }
@@ -1739,57 +1775,12 @@ export default function DiscoverPage() {
       console.log(`No specialized card found for type '${cardType}', using InlineMarketingCard as fallback`);
     }
     
-    // Function to find the best card component using fuzzy matching
-    // This helps handle minor variations in naming that aren't explicitly mapped
+    // Function to find the card component
+    // We'll use a simplified approach - always use InlineMarketingCard for all collaborations
     const findBestCardComponent = (type: string): React.FC<{ data: CardData }> => {
-      // 1. Direct match (fastest path)
-      if (CARD_TYPE_MAPPING[type]) {
-        return CARD_TYPE_MAPPING[type];
-      }
+      console.log(`Using InlineMarketingCard for all collaboration types, including: ${type}`);
       
-      // 2. Try to find a partial match
-      const typeWords = type.split(/[\s-]+/).filter(word => word.length > 2);
-      
-      // Check for keyword matches in the collaboration type
-      if (typeWords.some(word => word === 'podcast')) {
-        return PodcastCard;
-      }
-      
-      // First check for Twitter co-marketing to ensure it doesn't match with Twitter Spaces
-      if ((typeWords.includes('twitter') && (typeWords.includes('co-marketing') || typeWords.includes('comarketing'))) ||
-          (typeWords.includes('twitter') && typeWords.includes('marketing'))) {
-        console.log("FUZZY MATCH: Detected Twitter co-marketing from type words");
-        return InlineMarketingCard;
-      }
-      
-      // Then check for Twitter Spaces
-      if (typeWords.some(word => word === 'twitter' || word === 'spaces')) {
-        // Check if it's a Twitter Spaces or a Twitter co-marketing collab based on details
-        const details = cardData.details;
-        if (details && details.host_twitter_handle && details.twittercomarketing_type) {
-          console.log("FUZZY MATCH: Detected Twitter co-marketing from details");
-          return InlineMarketingCard;
-        }
-        return TwitterSpacesCard;
-      }
-      
-      if (typeWords.some(word => word === 'livestream' || word === 'stream' || word === 'live')) {
-        return LiveStreamCard;
-      }
-      
-      if (typeWords.some(word => word === 'blog' || word === 'post')) {
-        return BlogPostCollabCard;
-      }
-      
-      if (typeWords.some(word => word === 'research' || word === 'report')) {
-        return ResearchReportCard;
-      }
-      
-      if (typeWords.some(word => word === 'newsletter' || word === 'email')) {
-        return NewsletterCard;
-      }
-      
-      // 3. If no matches are found, use the default card
+      // Always use InlineMarketingCard as the default card component
       return InlineMarketingCard;
     };
     
