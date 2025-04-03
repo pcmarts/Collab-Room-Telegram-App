@@ -4,9 +4,24 @@ The Collab Room exposes a RESTful API for frontend-backend communication. This d
 
 ## Authentication
 
-All API endpoints use Telegram WebApp authentication. The Telegram user data is sent in the `x-telegram-init-data` header, which is verified by the backend.
+The Collab Room uses a robust authentication system with multiple fallback mechanisms to ensure reliable user identification across all API endpoints:
 
-> **Note:** As of version 1.0.1, development fallback users have been removed to enforce strict authentication. All API requests must include valid Telegram authentication headers.
+1. **Primary Authentication**: Telegram WebApp authentication via the `x-telegram-init-data` header
+2. **Fallback Mechanism**: Direct Telegram User ID via the `x-telegram-user-id` custom header
+3. **Session-based Authentication**: Express session cookies for maintaining login state between requests
+
+### Authentication Flow
+
+1. When a user first opens the app through Telegram, their Telegram data is verified and stored in both:
+   - Server-side session
+   - Client-side localStorage (Telegram user ID only)
+   
+2. For each subsequent request, the authentication system tries multiple methods in order:
+   - First checks the session cookie
+   - If session is invalid/expired, checks the `x-telegram-init-data` header
+   - If both fail, falls back to the `x-telegram-user-id` header
+
+> **Note:** As of version 1.4.7, the system uses the client-side cached Telegram user ID as a fallback when session cookies change, ensuring persistent authentication without requiring re-authentication through Telegram.
 
 ### Authentication Best Practices
 
@@ -17,6 +32,8 @@ All API endpoints use Telegram WebApp authentication. The Telegram user data is 
 3. **Proper Error Handling**: Always handle authentication errors (401 responses) properly in your client-side code with appropriate user feedback.
 
 4. **Cache Management**: When using React Query, be aware that the cache might retain data that requires authentication headers for subsequent requests.
+
+5. **Robust Authentication Headers**: The apiRequest function automatically includes both the full Telegram initialization data and the isolated Telegram user ID for maximum compatibility.
 
 ```typescript
 // Example of proper API request using the apiRequest utility

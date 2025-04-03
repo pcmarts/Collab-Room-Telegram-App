@@ -14,9 +14,13 @@ This documentation is organized into the following sections:
 5. [API](./api/README.md) - API endpoints and usage
 6. [Telegram Integration](./telegram/README.md) - Integration with Telegram WebApp
 7. [User Flows](./user-flows/README.md) - End-to-end user journeys
-8. [Discovery System](./discovery/README.md) - How the collaboration discovery system works
-9. [Matches System](./matches/README.md) - Details on the match display and interaction system
-10. [Changelog](../CHANGELOG.md) - History of changes to the application
+8. [Authentication System](./auth/README.md) - Multi-layered authentication with fallback mechanisms
+   * [Persistent Authentication](./auth/persistent-auth.md) - How the system maintains user identity
+   * [Authentication Testing](./auth/auth-test.md) - Testing tools for authentication
+9. [Discovery System](./discovery/README.md) - How the collaboration discovery system works
+   * [Swipe Filtering](./discovery/swipe-filtering.md) - Preventing duplicate cards in discovery
+10. [Matches System](./matches/README.md) - Details on the match display and interaction system
+11. [Changelog](../CHANGELOG.md) - History of changes to the application
 
 ## Quick Start
 
@@ -29,10 +33,11 @@ For developers getting started with the project:
 
 ## Key Features
 
-- **Discovery Feed**: Swipeable cards showing collaboration opportunities
+- **Discovery Feed**: Swipeable cards showing collaboration opportunities with dual-layer filtering
 - **Matching System**: Intelligent matching based on user preferences
 - **Matches Page**: View and interact with successful matches
 - **Collaboration Creation**: Create various types of collaboration opportunities
+- **Persistent Authentication**: Multi-layered authentication with Telegram fallback mechanism
 - **Blockchain Integration**: Support for multiple blockchain networks
 - **Telegram Integration**: Seamless login, chat, and notifications via Telegram
 

@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.4.7] - 2025-04-03
+
+### Fixed
+- Fixed critical bug where previously swiped cards were still appearing in the discovery feed
+- Resolved authentication persistence issues by implementing a fallback mechanism using Telegram user ID
+- Added secondary safety check to ensure excluded cards never appear in search results
+
+### Technical Details
+- Implemented local storage caching of Telegram user ID for persistent authentication across sessions
+- Added custom header 'x-telegram-user-id' that's sent with every API request as an authentication fallback
+- Enhanced server authentication middleware to check for the custom header when session cookies fail
+- Implemented a double filtering system in searchCollaborationsPaginated that applies filters both in SQL and in memory
+- Added detailed logging that identifies when excluded cards are incorrectly returned by the database query
+- Created a test page at /auth-test to verify the authentication mechanism works properly
+
 ## [Version 1.4.6] - 2025-03-31
 
 ### Fixed
