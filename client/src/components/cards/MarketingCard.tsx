@@ -1,5 +1,5 @@
 import React from 'react';
-import { Megaphone, Calendar } from "lucide-react";
+import { Megaphone, Calendar, Twitter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface MarketingCardData {
@@ -20,6 +20,10 @@ interface MarketingCardData {
     specific_date?: string;
     date_selection?: string;
     topics?: string[];
+    // Twitter co-marketing specific fields
+    host_twitter_handle?: string;
+    host_follower_count?: string;
+    twittercomarketing_type?: string[];
     [key: string]: any;
   };
 }
@@ -118,11 +122,57 @@ export const MarketingCard: React.FC<MarketingCardProps> = ({ data }) => {
     return null;
   };
   
+  // Helper for Twitter information
+  const renderTwitterInfo = () => {
+    if (details.host_twitter_handle) {
+      // Extract username from Twitter URL if needed
+      const username = details.host_twitter_handle.includes('x.com/') 
+        ? details.host_twitter_handle.split('/').pop() 
+        : details.host_twitter_handle.replace('@', '');
+        
+      return (
+        <div className="flex flex-col space-y-1 text-xs">
+          {username && (
+            <div className="flex items-center space-x-1 text-primary">
+              <Twitter className="w-3 h-3" />
+              <span>@{username}</span>
+            </div>
+          )}
+          {details.host_follower_count && (
+            <p className="text-xs text-muted-foreground">
+              {details.host_follower_count} followers
+            </p>
+          )}
+          {details.twittercomarketing_type && details.twittercomarketing_type.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {details.twittercomarketing_type.map((marketingType, i) => (
+                <Badge key={i} variant="outline" className="text-xs bg-blue-500/10">
+                  {marketingType}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Determine if this is a Twitter co-marketing card based on details
+  const isTwitterCoMarketing = details.host_twitter_handle && 
+    (type.toLowerCase().includes('twitter') || 
+     type.toLowerCase().includes('co-marketing') ||
+     (details.twittercomarketing_type && details.twittercomarketing_type.length > 0));
+
   return (
     <div className="space-y-2">
-      <Badge variant="outline" className="bg-primary/10">
-        <Megaphone className="w-3 h-3 mr-1" />
-        <span>{type}</span>
+      <Badge variant="outline" className={isTwitterCoMarketing ? "bg-blue-500/10" : "bg-primary/10"}>
+        {isTwitterCoMarketing ? (
+          <Twitter className="w-3 h-3 mr-1" />
+        ) : (
+          <Megaphone className="w-3 h-3 mr-1" />
+        )}
+        <span>{isTwitterCoMarketing ? "Twitter Co-Marketing" : type}</span>
       </Badge>
       
       <h3 className="text-lg font-semibold leading-snug">
@@ -138,6 +188,7 @@ export const MarketingCard: React.FC<MarketingCardProps> = ({ data }) => {
         )}
       </div>
       
+      {isTwitterCoMarketing ? renderTwitterInfo() : null}
       {renderTopics()}
       {renderDate()}
       

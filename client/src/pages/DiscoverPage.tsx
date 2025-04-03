@@ -1600,6 +1600,12 @@ export default function DiscoverPage() {
       "twitter spaces guest": TwitterSpacesCard,
       "twitter space": TwitterSpacesCard,
       
+      // Twitter Co-Marketing variations
+      "twitter co-marketing": MarketingCard,
+      "twitter comarketing": MarketingCard,
+      "co-marketing on twitter": MarketingCard,
+      "comarketing on twitter": MarketingCard,
+      
       // Livestream variations
       "livestream": LiveStreamCard,
       "live stream": LiveStreamCard,
@@ -1646,7 +1652,19 @@ export default function DiscoverPage() {
         return PodcastCard;
       }
       
+      // First check for Twitter co-marketing to ensure it doesn't match with Twitter Spaces
+      if ((typeWords.includes('twitter') && (typeWords.includes('co-marketing') || typeWords.includes('comarketing'))) ||
+          (typeWords.includes('twitter') && typeWords.includes('marketing'))) {
+        return MarketingCard;
+      }
+      
+      // Then check for Twitter Spaces
       if (typeWords.some(word => word === 'twitter' || word === 'spaces')) {
+        // Check if it's a Twitter Spaces or a Twitter co-marketing collab based on details
+        const details = cardData.details;
+        if (details && details.host_twitter_handle && details.twittercomarketing_type) {
+          return MarketingCard;
+        }
         return TwitterSpacesCard;
       }
       
