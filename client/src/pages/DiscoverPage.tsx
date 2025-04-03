@@ -18,7 +18,7 @@ import { NetworkStatus } from "@/components/NetworkStatus";
 import { MatchNotification } from "@/components/MatchNotification";
 import { GlowFilterButton } from "@/components/GlowFilterButton";
 import { PotentialMatchCard } from "@/components/PotentialMatchCard";
-import { MarketingCard } from "@/components/cards/MarketingCard";
+import { MarketingCard as BaseMarketingCard } from "@/components/cards/MarketingCard";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Collaboration as BaseCollaboration } from "@shared/schema";
@@ -529,6 +529,26 @@ const MyCollabCard = ({ data }: { data: CardData }) => (
     )}
   </div>
 );
+
+// Adapter component for BaseMarketingCard (wrapping for type safety)
+const MarketingCard: React.FC<{ data: CardData }> = ({ data }) => {
+  // MarketingCard requires companyName to be a string, not undefined
+  // So we need to make sure it always has a value
+  const adaptedData = {
+    ...data,
+    companyName: data.companyName || "Unknown Company", // Fallback value
+  };
+  
+  console.log("Using MarketingCard with data:", 
+    JSON.stringify({
+      companyName: adaptedData.companyName,
+      details: adaptedData.details,
+      type: adaptedData.type, 
+      title: adaptedData.title
+    }, null, 2));
+    
+  return <BaseMarketingCard data={adaptedData} />;
+};
 
 // Legacy/Generic Cards (for backward compatibility) 
 // Using an inline card that calls out to the full component
@@ -1684,7 +1704,7 @@ export default function DiscoverPage() {
       "twitter space": TwitterSpacesCard,
       
       // Twitter Co-Marketing variations
-      "twitter co-marketing": InlineMarketingCard,
+      "twitter co-marketing": InlineMarketingCard, // Using inline component for now until types are fixed
       "twitter comarketing": InlineMarketingCard,
       "co-marketing on twitter": InlineMarketingCard,
       "comarketing on twitter": InlineMarketingCard,
@@ -1738,6 +1758,7 @@ export default function DiscoverPage() {
       // First check for Twitter co-marketing to ensure it doesn't match with Twitter Spaces
       if ((typeWords.includes('twitter') && (typeWords.includes('co-marketing') || typeWords.includes('comarketing'))) ||
           (typeWords.includes('twitter') && typeWords.includes('marketing'))) {
+        console.log("FUZZY MATCH: Detected Twitter co-marketing from type words");
         return InlineMarketingCard;
       }
       
@@ -1746,6 +1767,7 @@ export default function DiscoverPage() {
         // Check if it's a Twitter Spaces or a Twitter co-marketing collab based on details
         const details = cardData.details;
         if (details && details.host_twitter_handle && details.twittercomarketing_type) {
+          console.log("FUZZY MATCH: Detected Twitter co-marketing from details");
           return InlineMarketingCard;
         }
         return TwitterSpacesCard;
