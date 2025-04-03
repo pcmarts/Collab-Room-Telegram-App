@@ -7,9 +7,11 @@ import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
+import AuthTest from "@/components/AuthTest";
 import Dashboard from "@/pages/dashboard";
 import DiscoverPage from "@/pages/DiscoverPageNew";
 import MatchesPage from "@/pages/MatchesPage";
+import AuthTestPage from "@/pages/auth-test";
 import Welcome from "@/pages/welcome";
 import PersonalInfo from "@/pages/personal-info";
 import CompanyBasics from "@/pages/company-basics";
@@ -136,6 +138,9 @@ function Router() {
           {/* Profile Routes */}
           <Route path="/profile-overview" component={ProfileOverview} />
           <Route path="/company-info" component={CompanyInfo} />
+          
+          {/* Testing Routes */}
+          <Route path="/auth-test" component={AuthTestPage} />
 
           <Route path="/not-found" component={NotFound} />
           <Route path="*" component={NotFound} />

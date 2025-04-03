@@ -7,6 +7,20 @@ const waitForTelegramInitData = async (maxAttempts = 3, delay = 500): Promise<bo
   while (attempts < maxAttempts) {
     // Check if Telegram WebApp is available and has initData
     if (window.Telegram?.WebApp?.initData) {
+      // Cache the Telegram user data when available
+      try {
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+          const userData = window.Telegram.WebApp.initDataUnsafe.user;
+          // Store basic user info in localStorage as a fallback for authentication
+          localStorage.setItem('telegram_user_id', userData.id?.toString() || '');
+          localStorage.setItem('telegram_user_first_name', userData.first_name || '');
+          if (userData.last_name) localStorage.setItem('telegram_user_last_name', userData.last_name);
+          if (userData.username) localStorage.setItem('telegram_user_username', userData.username);
+          console.log('[API] Cached Telegram user data in localStorage:', userData.id);
+        }
+      } catch (e) {
+        console.warn('[API] Failed to cache Telegram user data:', e);
+      }
       return true;
     }
     
@@ -89,6 +103,14 @@ export async function apiRequest(
     console.log('[API] Continuing with request using session authentication');
   }
   
+  // Add the cached Telegram User ID as a fallback authentication mechanism
+  // This allows the server to identify the user even when session cookies change
+  const cachedUserId = localStorage.getItem('telegram_user_id');
+  if (cachedUserId) {
+    headers['x-telegram-user-id'] = cachedUserId;
+    console.log('[API] Added cached Telegram user ID to headers:', cachedUserId);
+  }
+  
   if (data) {
     headers['Content-Type'] = 'application/json';
   }
@@ -163,6 +185,14 @@ export const getQueryFn: <T>(options: {
       }
       
       console.log('[API] Continuing with request using session authentication');
+    }
+    
+    // Add the cached Telegram User ID as a fallback authentication mechanism
+    // This allows the server to identify the user even when session cookies change
+    const cachedUserId = localStorage.getItem('telegram_user_id');
+    if (cachedUserId) {
+      headers['x-telegram-user-id'] = cachedUserId;
+      console.log('[API] Added cached Telegram user ID to query headers:', cachedUserId);
     }
 
     try {

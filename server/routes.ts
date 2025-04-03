@@ -77,42 +77,64 @@ function getTelegramUserFromRequest(req: TelegramReq) {
       return req.session.telegramUser;
     }
 
-    // No valid session data, try to get from request headers
+    // STEP 1: First try to get from the standard Telegram init data
     const initData = req.headers['x-telegram-init-data'] as string;
-    if (!initData) {
-      console.log('No Telegram init data found in request headers');
-      // Log full headers for debugging (but sanitize any sensitive info)
-      const safeHeaders = { ...req.headers };
-      delete safeHeaders.cookie; // Remove cookies for security
-      delete safeHeaders.authorization; // Remove auth tokens
-      console.log('Available headers:', JSON.stringify(safeHeaders, null, 2));
+    if (initData) {
+      try {
+        // Parse Telegram data
+        const decodedInitData = new URLSearchParams(initData);
+        const userJson = decodedInitData.get('user') || '{}';
+        console.log('Parsed Telegram user data:', userJson);
+        const telegramUser = JSON.parse(userJson);
+        
+        if (telegramUser.id) {
+          // Store the parsed data in session for future requests
+          if (req.session) {
+            req.session.telegramUser = {
+              ...telegramUser,
+              cachedAt: Date.now()
+            };
+          }
+          return telegramUser;
+        }
+      } catch (parseError) {
+        console.error('Error parsing Telegram init data:', parseError);
+        // Continue to try the next authentication method
+      }
+    }
+    
+    // STEP 2: Check for direct Telegram user ID in header (fallback mechanism)
+    const telegramUserId = req.headers['x-telegram-user-id'] as string;
+    if (telegramUserId) {
+      console.log('Using Telegram user ID from headers:', telegramUserId);
       
-      console.warn('⚠️ No Telegram data found in request');
-      return null;
-    }
-    
-    // Parse Telegram data
-    const decodedInitData = new URLSearchParams(initData);
-    const userJson = decodedInitData.get('user') || '{}';
-    console.log('Parsed Telegram user data:', userJson);
-    const telegramUser = JSON.parse(userJson);
-    
-    if (!telegramUser.id) {
-      console.error('Telegram user ID missing from parsed data');
-      return null;
-    }
-    
-    // Store the parsed data in session for future requests
-    if (req.session) {
-      req.session.telegramUser = {
-        ...telegramUser,
+      // Create a minimal Telegram user object with just the ID
+      // This is enough for authentication purposes
+      const minimalTelegramUser = {
+        id: telegramUserId,
+        // We might not have these values, but they're needed for type compatibility
+        first_name: 'User', // Generic placeholder
         cachedAt: Date.now()
       };
-      // No need to explicitly call session.save() as Express session middleware
-      // will save the session when the response is sent
+      
+      // Store this minimal data in session for future requests
+      if (req.session) {
+        req.session.telegramUser = minimalTelegramUser;
+      }
+      
+      return minimalTelegramUser;
     }
+
+    // If we got here, we couldn't find Telegram user data
+    console.log('No Telegram init data or user ID found in request headers');
+    // Log full headers for debugging (but sanitize any sensitive info)
+    const safeHeaders = { ...req.headers };
+    delete safeHeaders.cookie; // Remove cookies for security
+    delete safeHeaders.authorization; // Remove auth tokens
+    console.log('Available headers:', JSON.stringify(safeHeaders, null, 2));
     
-    return telegramUser;
+    console.warn('⚠️ No Telegram data found in request');
+    return null;
   } catch (error) {
     console.error('Error in getTelegramUserFromRequest:', error);
     console.error(error instanceof Error ? error.stack : String(error));
@@ -1941,6 +1963,52 @@ export async function registerRoutes(app: Express) {
       res.status(500).json({ 
         error: 'Server error', 
         details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Test endpoint to check auth fallback mechanism
+  app.get("/api/auth-test", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Auth Test Endpoint ============');
+    console.log('Headers:', req.headers);
+    
+    try {
+      // Get Telegram user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user found in request');
+        return res.status(401).json({ error: 'Unauthorized - No Telegram user found' });
+      }
+      
+      console.log('Found Telegram user in request:', telegramUser.id);
+      
+      // Get user from database
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+      
+      if (!user) {
+        console.error('User not found in database for Telegram ID:', telegramUser.id);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      console.log('Found database user:', user.id);
+      
+      // Test successful - return user info
+      return res.json({
+        success: true,
+        message: 'Authentication successful',
+        auth_method: req.headers['x-telegram-user-id'] ? 'Direct User ID' : 'Telegram Init Data',
+        telegram_id: telegramUser.id,
+        user_id: user.id,
+        first_name: user.first_name
+      });
+      
+    } catch (error) {
+      console.error('Auth test failed:', error);
+      return res.status(500).json({
+        error: 'Auth test failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
