@@ -8,7 +8,6 @@ import { Card } from "@/components/ui/card";
 // Use relative imports for our custom components
 import { GlowButton } from "../components/ui/glow-button";
 import { SwipeableCard } from "../components/SwipeableCard";
-import { PotentialMatchCard } from "../components/PotentialMatchCard";
 import { MatchMoment } from "../components/MatchMoment";
 import { CollaborationDetailsDialog } from "../components/CollaborationDetailsDialog";
 import { AuthenticationError } from "../components/AuthenticationError";
@@ -50,57 +49,21 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, x, rotate, opaci
         const constrained = index === 0 ? constrained0 : (index === 1 ? constrained1 : constrained2);
         const setConstrained = index === 0 ? setConstrained0 : (index === 1 ? setConstrained1 : setConstrained2);
         
-        // Check if the card is a valid potential match with complete data
-        if (card.isPotentialMatch && card.potentialMatchData && 
-            card.potentialMatchData.user_id && 
-            card.potentialMatchData.company_name && 
-            card.potentialMatchData.first_name) {
-          // This card is a properly formatted potential match card
-          return (
-            <PotentialMatchCard
-              key={card.id + "-" + index}
-              data={{
-                ...card,
-                // Explicitly include all required fields for the TypeScript check
-                potentialMatchData: {
-                  user_id: card.potentialMatchData.user_id,
-                  first_name: card.potentialMatchData.first_name,
-                  last_name: card.potentialMatchData.last_name,
-                  company_name: card.potentialMatchData.company_name,
-                  job_title: card.potentialMatchData.job_title,
-                  twitter_followers: card.potentialMatchData.twitter_followers,
-                  company_twitter_followers: card.potentialMatchData.company_twitter_followers,
-                  swipe_created_at: card.potentialMatchData.swipe_created_at,
-                  collaboration_id: card.potentialMatchData.collaboration_id || card.id // Fallback
-                }
-              }}
-              handleSwipe={handleSwipe}
-              onInfoClick={() => handleViewCardDetails(card)}
-              zIndex={zIndex}
-              constrained={constrained}
-              setConstrained={setConstrained}
-              x={index === 0 ? x : undefined}
-              rotate={index === 0 ? rotate : undefined}
-              opacity={opacity}
-            />
-          );
-        } else {
-          // This is a regular collaboration card
-          return (
-            <SwipeableCard
-              key={card.id + "-" + index}
-              data={card}
-              handleSwipe={handleSwipe}
-              onInfoClick={() => handleViewCardDetails(card)}
-              zIndex={zIndex}
-              constrained={constrained}
-              setConstrained={setConstrained}
-              x={index === 0 ? x : undefined}
-              rotate={index === 0 ? rotate : undefined}
-              opacity={opacity}
-            />
-          );
-        }
+        // Use SwipeableCard for both regular and potential match cards
+        return (
+          <SwipeableCard
+            key={card.id + "-" + index}
+            data={card}
+            handleSwipe={handleSwipe}
+            onInfoClick={() => handleViewCardDetails(card)}
+            zIndex={zIndex}
+            constrained={constrained}
+            setConstrained={setConstrained}
+            x={index === 0 ? x : undefined}
+            rotate={index === 0 ? rotate : undefined}
+            opacity={opacity}
+          />
+        );
       })}
     </>
   );

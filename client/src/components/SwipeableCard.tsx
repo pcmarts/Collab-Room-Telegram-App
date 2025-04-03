@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   Info, X, Check, Sparkles, Twitter, Calendar, Mic, Users, 
-  Link, FileText, FileSearch, Mail, Radio
+  Link, FileText, FileSearch, Mail, Radio, Star, Building, User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +19,18 @@ interface SwipeableCardProps {
     creator_company_name?: string;
     date?: string;
     specific_date?: string;
+    isPotentialMatch?: boolean;
+    potentialMatchData?: {
+      user_id: string;
+      first_name: string;
+      last_name?: string;
+      company_name: string;
+      job_title?: string;
+      twitter_followers?: string;
+      company_twitter_followers?: string;
+      swipe_created_at?: string;
+      collaboration_id: string;
+    };
     [key: string]: any;
   };
   handleSwipe: (direction: "left" | "right") => Promise<void>;
@@ -395,6 +407,53 @@ export function SwipeableCard({
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
                   <Calendar className="w-3 h-3" />
                   <span>{data.date || data.specific_date || data.details?.date}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Potential Match Information */}
+          {data.isPotentialMatch && data.potentialMatchData && (
+            <div className="flex flex-col space-y-2 p-3 bg-rose-500/5 rounded-md border border-rose-500/10 mb-3">
+              <div className="flex items-center space-x-1.5">
+                <Star className="w-4 h-4 text-rose-600" />
+                <span className="text-sm font-medium text-rose-700">
+                  Potential Match
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                <User className="w-3 h-3" />
+                <span>
+                  {data.potentialMatchData.first_name} 
+                  {data.potentialMatchData.last_name ? ` ${data.potentialMatchData.last_name}` : ''} 
+                  {data.potentialMatchData.job_title ? ` • ${data.potentialMatchData.job_title}` : ''}
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                <Building className="w-3 h-3" />
+                <span className="font-medium">{data.potentialMatchData.company_name}</span>
+              </div>
+              
+              {data.potentialMatchData.twitter_followers && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Twitter className="w-3 h-3 text-[#1DA1F2]" />
+                  <span><span className="font-medium">{data.potentialMatchData.twitter_followers}</span> followers</span>
+                </div>
+              )}
+              
+              {data.potentialMatchData.company_twitter_followers && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Twitter className="w-3 h-3 text-[#1DA1F2]" />
+                  <span><span className="font-medium">{data.potentialMatchData.company_twitter_followers}</span> company followers</span>
+                </div>
+              )}
+              
+              {data.potentialMatchData.swipe_created_at && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Calendar className="w-3 h-3" />
+                  <span>Swiped {new Date(data.potentialMatchData.swipe_created_at).toLocaleDateString()}</span>
                 </div>
               )}
             </div>
