@@ -261,17 +261,45 @@ export default function DiscoverPage() {
         console.log(`[Discovery] After filtering, ${filteredMatches.length} potential matches remain`);
         
         // Transform the potential matches data to match CardData structure
-        return filteredMatches.map((match: any) => ({
-          ...match,
-          id: match.id,
-          isPotentialMatch: true,
-          collab_type: match.collaboration_type || match.collab_type || 'Collaboration',
-          description: match.collaboration_description || match.description || '',
-          topics: match.collaboration_topics || match.topics || [],
-          creator_company_name: match.potentialMatchData?.company_name || match.company_name || '',
-          requester_company: match.requester_company || match.company_name || '',
-          requester_role: match.requester_role || match.company_job_title || '',
-        }));
+        return filteredMatches.map((match: any) => {
+          // Debug the structure of incoming potential matches
+          console.log('[Discovery] Processing potential match data:', {
+            hasMatchData: !!match.potentialMatchData,
+            matchId: match.id,
+            userInfo: match.user_data || match.user || 'No user data',
+            companyInfo: match.company_data || match.company || 'No company data'
+          });
+          
+          // Construct the proper potentialMatchData object
+          const potentialMatchData = {
+            user_id: match.user_id || match.requester_id || '',
+            first_name: match.first_name || match.requester_first_name || '',
+            last_name: match.last_name || match.requester_last_name || '',
+            company_name: match.company_name || match.requester_company || '',
+            job_title: match.job_title || match.requester_role || '',
+            twitter_followers: match.twitter_followers || '',
+            company_twitter_followers: match.company_twitter_followers || '',
+            swipe_created_at: match.created_at || match.swipe_created_at || new Date().toISOString(),
+            collaboration_id: match.collaboration_id || match.id
+          };
+          
+          // Log the constructed potentialMatchData for debugging
+          console.log('[Discovery] Constructed potentialMatchData:', potentialMatchData);
+          
+          return {
+            ...match,
+            id: match.id,
+            isPotentialMatch: true,
+            potentialMatchData: potentialMatchData,
+            collab_type: match.collaboration_type || match.collab_type || 'Collaboration',
+            description: match.collaboration_description || match.description || '',
+            topics: match.collaboration_topics || match.topics || [],
+            creator_company_name: match.company_name || '',
+            // Keep these for backward compatibility
+            requester_company: match.requester_company || match.company_name || '',
+            requester_role: match.requester_role || match.job_title || '',
+          };
+        });
       } catch (err) {
         console.error('[Discovery] Potential matches fetch error:', err);
         // Check if this is an authentication error
