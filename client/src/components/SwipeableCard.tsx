@@ -88,18 +88,23 @@ export function SwipeableCard({
     }
   };
   
-  // Define swipe handlers
+  // Define swipe handlers with a click threshold
   const handleDragEnd = async (e: any, info: any) => {
     if (!constrained) return;
     
     const xOffset = info.offset.x;
-    const direction = xOffset > 100 ? "right" : xOffset < -100 ? "left" : undefined;
+    const dragDistance = Math.abs(info.offset.x);
     
-    if (direction) {
+    // Consider it a swipe only if dragged more than 100px
+    if (dragDistance > 100) {
+      const direction = xOffset > 0 ? "right" : "left";
       setExitX(xOffset > 0 ? 1000 : -1000);
       await handleSwipe(direction);
+    } else if (dragDistance < 5) {
+      // If dragged less than 5px, it's considered a click, do nothing to allow link clicks
+      controls?.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
     } else {
-      // Reset position if not swiped far enough
+      // Reset position if not swiped far enough but more than click threshold
       controls?.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
     }
   };
@@ -119,6 +124,11 @@ export function SwipeableCard({
       }}
       drag={constrained ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+      dragElastic={0.7}
+      dragTransition={{ power: 0.2, timeConstant: 400 }}
+      dragMomentum={true}
+      dragSnapToOrigin={false}
+      dragThreshold={5} // Add a drag threshold to improve detection of clicks vs. drags
       onDragStart={() => setConstrained && setConstrained(false)}
       onDragEnd={(e, info) => handleDragEnd(e, info)}
       whileDrag={{ scale: 1.05 }}
@@ -293,7 +303,15 @@ export function SwipeableCard({
               {data.details?.podcast_link && (
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                   <Link className="w-3 h-3" />
-                  <span className="truncate">{data.details.podcast_link}</span>
+                  <a 
+                    href={data.details.podcast_link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {data.details.podcast_link}
+                  </a>
                 </div>
               )}
               
@@ -333,7 +351,15 @@ export function SwipeableCard({
               {data.details?.blog_link && (
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                   <Link className="w-3 h-3" />
-                  <span className="truncate">{data.details.blog_link}</span>
+                  <a 
+                    href={data.details.blog_link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {data.details.blog_link}
+                  </a>
                 </div>
               )}
               
@@ -403,7 +429,15 @@ export function SwipeableCard({
               {data.details?.newsletter_url && (
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                   <Link className="w-3 h-3" />
-                  <span className="truncate">{data.details.newsletter_url}</span>
+                  <a 
+                    href={data.details.newsletter_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {data.details.newsletter_url}
+                  </a>
                 </div>
               )}
               
