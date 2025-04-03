@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiRequest } from "@/lib/queryClient";
 import { getCollabTypeIcon } from "@/lib/collab-utils";
+import { useMatchContext } from "@/contexts/MatchContext";
 
 // Define Match type for API response
 interface Match {
@@ -186,6 +187,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
 
 export default function MatchesPage() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const { newMatchCreated, refreshMatches } = useMatchContext();
   
   // Fetch matches from API
   const { data: matches, isLoading, error } = useQuery({
@@ -207,6 +209,14 @@ export default function MatchesPage() {
     refetchOnWindowFocus: false, // Don't refetch on window focus
     retry: 1 // Only retry once to prevent infinite loops
   });
+  
+  // Check if we have a new match created flag and refresh matches if needed
+  useEffect(() => {
+    if (newMatchCreated) {
+      console.log('[MatchesPage] New match created, refreshing matches...');
+      refreshMatches();
+    }
+  }, [newMatchCreated, refreshMatches]);
   
   // This disables the default fixed positioning and overflow hidden
   // so that we can have a normal scrolling container with a scrollbar

@@ -7,6 +7,7 @@ import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
+import { MatchProvider } from "@/contexts/MatchContext";
 import AuthTest from "@/components/AuthTest";
 import Dashboard from "@/pages/dashboard";
 import DiscoverPage from "@/pages/DiscoverPageNew";
@@ -191,14 +192,16 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {isLoading ? (
-        <LoadingScreen />
-      ) : (
-        <MobileCheck>
-          <Router />
-        </MobileCheck>
-      )}
-      <Toaster />
+      <MatchProvider>
+        {isLoading ? (
+          <LoadingScreen />
+        ) : (
+          <MobileCheck>
+            <Router />
+          </MobileCheck>
+        )}
+        <Toaster />
+      </MatchProvider>
     </QueryClientProvider>
   );
 }

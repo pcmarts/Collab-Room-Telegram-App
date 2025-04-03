@@ -14,6 +14,7 @@ import { CollaborationDetailsDialog } from "../components/CollaborationDetailsDi
 import { AuthenticationError } from "../components/AuthenticationError";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { useMatchContext } from "@/contexts/MatchContext";
 
 // Define props for CardStack component
 interface CardStackProps {
@@ -163,6 +164,9 @@ export default function DiscoverPage() {
   // Refs
   const swipeHistoryRef = useRef<SwipeHistoryItem[]>([]);
   const isFetchingNextBatchRef = useRef(false);
+  
+  // Get access to the match context
+  const { setNewMatchCreated } = useMatchContext();
   
   // Match data for the match moment dialog
   const [matchData, setMatchData] = useState<{
@@ -690,6 +694,10 @@ export default function DiscoverPage() {
           companyName: isPotentialMatch ? card.potentialMatchData?.company_name || '' : card.creator_company_name || '',
           collaborationType: card.collab_type || 'Collaboration'
         });
+        
+        // Update match context to indicate a new match was created
+        console.log('[Discovery] Match created, updating context');
+        setNewMatchCreated(true);
         
         // Show match moment after a short delay
         setTimeout(() => setShowMatch(true), 300);
