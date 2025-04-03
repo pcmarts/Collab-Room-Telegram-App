@@ -858,9 +858,16 @@ export default function DiscoverPage() {
   // Render loading state
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-        <p className="text-muted-foreground">Loading collaboration cards...</p>
+      <div className="flex flex-col h-full">
+        <div className="p-4 border-b flex items-center">
+          <h1 className="text-xl font-semibold">Discover</h1>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center">
+            <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+            <p className="text-muted-foreground">Loading collaboration cards...</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -868,28 +875,35 @@ export default function DiscoverPage() {
   // Render empty state
   if (allCardsViewed && cards.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-        <SearchX className="w-12 h-12 text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold mb-2">No more cards to display</h2>
-        <p className="text-muted-foreground mb-6">You've viewed all available collaborations that match your criteria.</p>
-        
-        <div className="flex flex-col gap-2 w-full max-w-xs">
-          <GlowButton 
-            onClick={handleOpenFilters}
-            icon={<Filter className="h-4 w-4" />}
-            variant="default"
-          >
-            Adjust Filters
-          </GlowButton>
-          
-          <Button 
-            variant="outline" 
-            onClick={handleRefresh}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
+      <div className="flex flex-col h-full">
+        <div className="p-4 border-b flex items-center">
+          <h1 className="text-xl font-semibold">Discover</h1>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center p-4 text-center">
+            <SearchX className="w-12 h-12 text-muted-foreground mb-4" />
+            <h2 className="text-xl font-semibold mb-2">No more cards to display</h2>
+            <p className="text-muted-foreground mb-6">You've viewed all available collaborations that match your criteria.</p>
+            
+            <div className="flex flex-col gap-2 w-full max-w-xs">
+              <GlowButton 
+                onClick={handleOpenFilters}
+                icon={<Filter className="h-4 w-4" />}
+                variant="default"
+              >
+                Adjust Filters
+              </GlowButton>
+              
+              <Button 
+                variant="outline" 
+                onClick={handleRefresh}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );

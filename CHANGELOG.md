@@ -5,6 +5,19 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.5.2] - 2025-04-03
+
+### Fixed
+- Fixed critical bug where already matched collaborations continued to appear in potential match cards
+- Enhanced the filtering mechanism to check existing matches before showing potential matches
+- Eliminated duplicate matches by filtering against both swipe history and the matches database table
+
+### Technical Details
+- Updated `getPotentialMatchesForHost` function in server/storage.ts to check for existing matches
+- Added functionality to retrieve and filter based on matched collaboration IDs
+- Implemented multi-layered filtering approach that ensures consistent filtering between discovery methods
+- Added detailed logging for match filtering to better identify excluded collaborations
+
 ## [Version 1.5.1] - 2025-04-03
 
 ### Fixed

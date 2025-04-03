@@ -21,17 +21,19 @@ Potential match cards have a distinct visual appearance to clearly indicate thei
 
 ## Enhanced Filtering Mechanism
 
-Potential matches use the same enhanced multi-layered filtering approach as regular collaboration cards to ensure consistency and reliability (updated in version 1.5.1):
+Potential matches use a comprehensive multi-layered filtering approach to ensure consistency and reliability (updated in version 1.5.2):
 
 1. **Server-side primary filtering:** The `/api/potential-matches` endpoint returns potential matches while excluding those the user has already interacted with:
    - Filters based on user_id and collaboration_id combinations in the database query
    - Also filters based on swipe_id to ensure comprehensive exclusion
    - Uses a Set data structure to efficiently track and filter swipe IDs
+   - **NEW in v1.5.2:** Checks the matches table to exclude collaborations that already have a match
 
 2. **Server-side secondary safety filter:** After the database query returns results, a secondary in-memory filter is applied:
    - Checks each result against the excluded IDs list and user's own collaborations
    - Provides detailed logging about any items that should have been excluded but weren't
-   - Logs the specific reason for exclusion (user's own, previously swiped, etc.)
+   - Logs the specific reason for exclusion (user's own, previously swiped, already matched, etc.)
+   - **NEW in v1.5.2:** Provides specific logging for matches that are excluded due to already existing in the matches table
 
 3. **Enhanced client-side filtering:** Multiple layers of client-side filtering ensure any recently swiped cards are properly excluded:
    - Uses both React state and localStorage to track excluded IDs
@@ -39,19 +41,19 @@ Potential matches use the same enhanced multi-layered filtering approach as regu
    - Merges state-based and localStorage-based exclusion lists for redundancy
    - Performs additional safety filter before rendering cards
 
-4. **Comprehensive duplicate prevention:** The combination of server and client filtering with improved data field validation ensures users never see potential matches they've already swiped on:
-   - Triple-layered protection against repeat cards
+4. **Comprehensive duplicate prevention:** The combination of server and client filtering with improved data field validation ensures users never see potential matches they've already swiped on or matched with:
+   - Quadruple-layered protection against repeat cards
    - Enhanced console logging to track and debug any filtering issues
-   - Immediate tracking of both collaboration IDs and swipe IDs
+   - Immediate tracking of collaboration IDs, swipe IDs, and match IDs
    - Consistent field mapping with proper validation of potentially missing fields
-   - Protected against the "weird card" issue by fixing the LinkedIn URL field reference
+   - **NEW in v1.5.2:** Completely eliminates duplicate matches by checking existing matches table before showing potential match cards
 
 ## Enhanced Data Structure
 
 Potential match cards include comprehensive data about both the potential match and their company:
 
 ```typescript
-// As of version 1.5.1
+// As of version 1.5.2
 interface PotentialMatchData {
   // User information
   user_id: string;
