@@ -109,6 +109,14 @@ export function SwipeableCard({
     }
   };
   
+  // Function to handle link click and prevent card swipe
+  const handleLinkClick = (e: React.MouseEvent) => {
+    // This stops the click from triggering a drag action
+    e.stopPropagation();
+    // This prevents the parent card from receiving the click 
+    e.nativeEvent.stopImmediatePropagation();
+  };
+
   return (
     <motion.div
       ref={cardRef}
@@ -128,7 +136,6 @@ export function SwipeableCard({
       dragTransition={{ power: 0.2, timeConstant: 400 }}
       dragMomentum={true}
       dragSnapToOrigin={false}
-      dragThreshold={5} // Add a drag threshold to improve detection of clicks vs. drags
       onDragStart={() => setConstrained && setConstrained(false)}
       onDragEnd={(e, info) => handleDragEnd(e, info)}
       whileDrag={{ scale: 1.05 }}
