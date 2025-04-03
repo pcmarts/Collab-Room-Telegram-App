@@ -301,7 +301,11 @@ export class DatabaseStorage implements IStorage {
     // First, exclude any collaborations that were previously swiped
     if (excludeIds.length > 0) {
       console.log(`Excluding ${excludeIds.length} total collaborations from results`);
+      // Ensure we're using the correct operator and correctly excluding IDs
       query = query.where(not(inArray(collaborations.id, excludeIds)));
+      
+      // Double check exclusion with explicit logging for debugging
+      console.log('Excluded IDs for debugging:', excludeIds);
     }
     
     // Always exclude the user's own collaborations for Regular Collaboration Cards
@@ -448,6 +452,27 @@ export class DatabaseStorage implements IStorage {
     
     // Remove the extra item if we have more than the limit
     const limitedCollaborations = hasMore ? rawCollaborations.slice(0, limit) : rawCollaborations;
+    
+    // ADDITIONAL SAFETY CHECK: Double check that no excluded IDs made it through the query
+    // This shouldn't be necessary if the SQL query worked correctly, but we're adding it as a fallback
+    // This is especially important in case of race conditions where swipes happen during the query execution
+    if (excludeIds.length > 0) {
+      const filteredCollaborations = limitedCollaborations.filter(collab => !excludeIds.includes(collab.id));
+      
+      // If we filtered out any collaborations, log a warning
+      if (filteredCollaborations.length < limitedCollaborations.length) {
+        console.warn(`WARNING: Found and removed ${limitedCollaborations.length - filteredCollaborations.length} collaborations that should have been excluded!`);
+        console.warn(`IDs that were supposed to be excluded but appeared in results:`, 
+          limitedCollaborations
+            .filter(collab => excludeIds.includes(collab.id))
+            .map(collab => collab.id)
+        );
+      }
+      
+      // Replace the limitedCollaborations with our filtered version
+      limitedCollaborations.length = 0;
+      limitedCollaborations.push(...filteredCollaborations);
+    }
     
     // The next cursor will be the ID of the last item in the current page
     const nextCursor = hasMore && limitedCollaborations.length > 0 
