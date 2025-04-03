@@ -5,6 +5,26 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.4.8] - 2025-04-03
+
+### Added
+- Enhanced visual design for potential match cards with animated glow effects and improved badge styling
+- Improved content display in potential match cards to better highlight collaboration details
+- Added gradient styling to the "Match Now" button for better visual emphasis
+- Created new documentation for potential matches in docs/discovery/potential-matches.md
+
+### Fixed
+- Fixed inconsistent filtering between potential match cards and regular cards
+- Ensured potential match cards apply the same localStorage-based filtering as regular cards
+- Resolved issues with missing or inconsistent data display in potential match cards
+- Improved field mapping for potential match data to handle varied API response formats
+
+### Technical Details
+- Updated PotentialMatchCard component with enhanced UI and animations
+- Applied consistent filtering logic to ensure recently swiped cards are properly excluded from both regular and potential match cards
+- Implemented more robust data mapping to handle different data structures in API responses
+- Added detailed field fallbacks to prevent display issues with missing data
+
 ## [Version 1.4.7] - 2025-04-03
 
 ### Fixed

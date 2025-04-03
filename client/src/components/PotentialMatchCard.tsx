@@ -102,10 +102,15 @@ export function PotentialMatchCard({
       whileDrag={{ scale: 1.05 }}
       animate={controls}
     >
-      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 border-primary/30 shadow-xl rounded-xl bg-gradient-to-b from-primary/5 to-background isolate">
+      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 border-primary/50 shadow-xl rounded-xl bg-gradient-to-b from-primary/10 to-background isolate">
+        {/* Animated glow effect for potential matches */}
+        <div className="absolute inset-0 z-10 overflow-hidden rounded-xl pointer-events-none">
+          <div className="absolute inset-0 opacity-20 bg-gradient-to-tr from-primary/40 via-primary/5 to-primary/40 animate-pulse" />
+        </div>
+        
         {/* Special badge for potential matches */}
         <div className="absolute top-2 right-2 z-30">
-          <Badge variant="default" className="flex items-center gap-1 font-medium">
+          <Badge variant="default" className="flex items-center gap-1 font-medium bg-primary text-primary-foreground shadow-sm">
             <Sparkles className="h-3 w-3" />
             Potential Match
           </Badge>
@@ -155,44 +160,64 @@ export function PotentialMatchCard({
         
         {/* Card content */}
         <div className="p-4 flex-grow overflow-auto">
-          <div className="mb-3 flex items-center gap-2">
-            <Badge variant="outline" className="bg-primary/5 text-primary">
-              Interested in your {data.collab_type}
-            </Badge>
+          {/* Match highlight */}
+          <div className="mb-4 p-2 rounded-md bg-primary/5 border border-primary/20">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <h4 className="font-medium text-sm text-primary">Interested in your {data.collab_type}</h4>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              This user swiped right on your collaboration. Match now to start working together!
+            </p>
           </div>
           
-          <p className="text-sm mb-4 line-clamp-3">{data.description}</p>
+          {/* Collaboration description */}
+          {data.description && (
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-1">About the collaboration:</h4>
+              <p className="text-sm line-clamp-3">{data.description}</p>
+            </div>
+          )}
           
-          {/* Additional match info */}
-          <div className="space-y-2 mt-2">
+          {/* Additional match info - Improved layout */}
+          <div className="grid grid-cols-2 gap-2 mt-3 mb-3">
             {matchData.twitter_followers && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Users className="h-3 w-3" />
-                <span>User followers: {matchData.twitter_followers}</span>
+              <div className="col-span-1 bg-muted/30 rounded-md p-2">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                  <Users className="h-3 w-3" />
+                  <span className="font-medium">User Followers</span>
+                </div>
+                <p className="text-sm font-semibold">{matchData.twitter_followers}</p>
               </div>
             )}
             
             {matchData.company_twitter_followers && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Users className="h-3 w-3" />
-                <span>Company followers: {matchData.company_twitter_followers}</span>
+              <div className="col-span-1 bg-muted/30 rounded-md p-2">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                  <Users className="h-3 w-3" />
+                  <span className="font-medium">Company Followers</span>
+                </div>
+                <p className="text-sm font-semibold">{matchData.company_twitter_followers}</p>
               </div>
             )}
           </div>
           
-          {/* Topics/tags */}
+          {/* Topics/tags - Improved layout */}
           {data.topics && data.topics.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-3">
-              {data.topics.slice(0, 3).map((topic: string, i: number) => (
-                <Badge key={i} variant="secondary" className="text-xs">
-                  {topic}
-                </Badge>
-              ))}
-              {data.topics.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{data.topics.length - 3} more
-                </Badge>
-              )}
+            <div className="mt-3">
+              <p className="text-xs text-muted-foreground mb-1">Topics</p>
+              <div className="flex flex-wrap gap-1">
+                {data.topics.slice(0, 3).map((topic: string, i: number) => (
+                  <Badge key={i} variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
+                    {topic}
+                  </Badge>
+                ))}
+                {data.topics.length > 3 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{data.topics.length - 3} more
+                  </Badge>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -212,12 +237,20 @@ export function PotentialMatchCard({
           <Button 
             variant="default" 
             size="sm" 
-            className="w-full bg-primary hover:bg-primary/90 relative z-50"
+            className="w-full bg-gradient-to-r from-primary to-primary/80 shadow-md hover:opacity-90 text-primary-foreground font-medium relative z-50 border-none"
             onClick={() => handleButtonClick("right")}
           >
             <Sparkles className="h-4 w-4 mr-1" />
             Match Now
           </Button>
+        </div>
+        
+        {/* Subtle animated hint at bottom */}
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-1 z-30">
+          <p className="text-xs text-muted-foreground/70 flex items-center">
+            <span className="mr-1 animate-pulse">✨</span> 
+            Swipe right to match instantly
+          </p>
         </div>
       </Card>
     </motion.div>

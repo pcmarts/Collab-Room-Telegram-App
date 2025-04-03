@@ -263,14 +263,40 @@ export default function DiscoverPage() {
         const data = await apiRequest('/api/potential-matches');
         console.log(`[Discovery] Potential matches fetched, count: ${data.length}`);
         
+        // Get local storage swiped IDs to filter out any cards the user has already swiped on
+        let persistentSwipedIds: string[] = [];
+        try {
+          const storedIds = localStorage.getItem('swipedCardIds');
+          if (storedIds) {
+            persistentSwipedIds = JSON.parse(storedIds);
+          }
+        } catch (e) {
+          console.warn('[Discovery] Failed to read swiped card IDs from localStorage:', e);
+        }
+        
+        console.log(`[Discovery] Filtering potential matches with ${persistentSwipedIds.length} locally stored swiped IDs`);
+        
+        // Filter out any potential matches for cards the user has already swiped on
+        // Also remove any potential matches where collaboration_id is missing
+        const filteredMatches = data.filter((match: any) => {
+          const matchId = match.id;
+          const collabId = match.collaboration_id;
+          return matchId && !persistentSwipedIds.includes(matchId) && collabId;
+        });
+        
+        console.log(`[Discovery] After filtering, ${filteredMatches.length} potential matches remain`);
+        
         // Transform the potential matches data to match CardData structure
-        return data.map((match: any) => ({
+        return filteredMatches.map((match: any) => ({
           ...match,
           id: match.id,
           isPotentialMatch: true,
-          collab_type: match.collab_type || 'Collaboration',
-          creator_company_name: match.potentialMatchData?.company_name || '',
-          // Include other needed fields
+          collab_type: match.collaboration_type || match.collab_type || 'Collaboration',
+          description: match.collaboration_description || match.description || '',
+          topics: match.collaboration_topics || match.topics || [],
+          creator_company_name: match.potentialMatchData?.company_name || match.company_name || '',
+          requester_company: match.requester_company || match.company_name || '',
+          requester_role: match.requester_role || match.company_job_title || '',
         }));
       } catch (err) {
         console.error('[Discovery] Potential matches fetch error:', err);
