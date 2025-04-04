@@ -1,12 +1,15 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, X, MessageCircle } from "lucide-react";
+import { Sparkles, X, MessageCircle, Users } from "lucide-react";
+import { LuCopy } from "react-icons/lu";
+import { useLocation } from "wouter";
 
 interface MatchMomentProps {
   title: string;
   companyName: string;
   collaborationType: string;
+  userName?: string;
   isOpen: boolean;
   onClose: () => void;
   onMessage?: () => void;
@@ -16,10 +19,12 @@ export function MatchMoment({
   title, 
   companyName, 
   collaborationType, 
+  userName,
   isOpen, 
   onClose,
   onMessage
 }: MatchMomentProps) {
+  const [_, navigate] = useLocation();
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -33,15 +38,6 @@ export function MatchMoment({
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.3 }}
             >
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={onClose} 
-                className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-              
               <div className="mb-4 mt-2">
                 <motion.div
                   initial={{ rotate: -10, scale: 0.8 }}
@@ -71,7 +67,7 @@ export function MatchMoment({
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                You've matched with <span className="font-medium text-foreground">{companyName}</span>
+                You've matched with{userName ? <> <span className="font-medium text-foreground">{userName}</span> from</> : ''} <span className="font-medium text-foreground">{companyName}</span>
               </motion.p>
               
               <motion.div 
@@ -80,8 +76,7 @@ export function MatchMoment({
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                <h3 className="font-semibold text-lg mb-1">{title}</h3>
-                <p className="text-sm text-muted-foreground">{collaborationType}</p>
+                <h3 className="font-semibold text-lg">{collaborationType}</h3>
               </motion.div>
               
               <motion.div 
@@ -101,10 +96,23 @@ export function MatchMoment({
                 )}
                 
                 <Button 
+                  variant="secondary" 
+                  className="w-full gap-2" 
+                  onClick={() => {
+                    navigate('/matches');
+                    onClose();
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  View My Matches
+                </Button>
+                
+                <Button 
                   variant="outline" 
-                  className="w-full" 
+                  className="w-full gap-2" 
                   onClick={onClose}
                 >
+                  <LuCopy className="h-4 w-4" />
                   Continue Discovering
                 </Button>
               </motion.div>

@@ -136,10 +136,12 @@ export default function DiscoverPage() {
     title: string;
     companyName: string;
     collaborationType: string;
+    userName?: string;
   }>({
     title: '',
     companyName: '',
-    collaborationType: ''
+    collaborationType: '',
+    userName: ''
   });
   
   // Routing
@@ -687,7 +689,8 @@ export default function DiscoverPage() {
         setMatchData({
           title: card.collab_type,
           companyName: isPotentialMatch ? card.potentialMatchData?.company_name || '' : card.creator_company_name || '',
-          collaborationType: card.collab_type || 'Collaboration'
+          collaborationType: card.collab_type || 'Collaboration',
+          userName: isPotentialMatch ? card.potentialMatchData?.first_name || '' : ''
         });
         
         // Update match context to indicate a new match was created
@@ -973,6 +976,7 @@ export default function DiscoverPage() {
         title={matchData.title}
         companyName={matchData.companyName}
         collaborationType={matchData.collaborationType}
+        userName={matchData.userName}
       />
     </div>
   );
