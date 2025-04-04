@@ -4,23 +4,82 @@ import { setupVite, serveStatic, log } from "./vite";
 import { bot } from "./telegram";
 import session from 'express-session';
 import MemoryStore from 'memorystore';
+import { config } from "../shared/config";
+import { pool } from "./db";
+import connectPgSimple from 'connect-pg-simple';
+import { apiLimiter } from './middleware/rate-limiter';
 
+// Use PostgreSQL for session storage in production, memory store in development
 const MemoryStoreSession = MemoryStore(session);
+const PgSession = connectPgSimple(session);
 
+// Create Express application
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Set security headers manually since we can't use helmet directly
+app.use((req, res, next) => {
+  // Skip if security headers are disabled (not recommended)
+  if (!config.ENABLE_SECURITY_HEADERS) {
+    return next();
+  }
+  
+  // Content Security Policy
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://cdn.jsdelivr.net; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "img-src 'self' data: https://telegram.org; " +
+    "connect-src 'self' https://api.telegram.org; " +
+    "font-src 'self' https://fonts.gstatic.com; " +
+    "object-src 'none'; " +
+    "frame-ancestors 'self' https://telegram.org;"
+  );
+  
+  // Basic security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  
+  // Remove headers that might reveal too much information
+  res.removeHeader('X-Powered-By');
+  
+  next();
+});
+
+// Body parsers with size limits for security
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
+
+// Set up session store based on environment
+let sessionStore;
+if (config.NODE_ENV === 'production') {
+  // Use PostgreSQL session store in production
+  sessionStore = new PgSession({
+    pool: pool,
+    tableName: 'sessions',
+    createTableIfMissing: true,
+  });
+  log('Using PostgreSQL for session storage');
+} else {
+  // Use memory store in development
+  sessionStore = new MemoryStoreSession({
+    checkPeriod: 86400000 // prune expired entries every 24h
+  });
+  log('Using in-memory session storage (not suitable for production)');
+}
 
 // Initialize session middleware early to ensure it's available for all routes
 app.use(session({
-  secret: 'your-secret-key',
+  store: sessionStore,
+  secret: config.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
-  store: new MemoryStoreSession({
-    checkPeriod: 86400000 // prune expired entries every 24h
-  }),
+  saveUninitialized: false, // Set to false for GDPR compliance
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: config.NODE_ENV === 'production', // Only send cookies over HTTPS in production
+    httpOnly: true, // Prevent JavaScript access to cookies
+    sameSite: 'lax', // Helps prevent CSRF attacks
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
@@ -79,18 +138,36 @@ app.use((req, res, next) => {
   next();
 });
 
+//Apply rate limiting to all API routes
+app.use('/api', apiLimiter);
+
 (async () => {
   log('Starting server initialization...');
 
   try {
     const server = await registerRoutes(app);
 
+    // Enhanced error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
+      
+      // In production, hide detailed error messages to prevent information leakage
+      const message = config.NODE_ENV === 'production' && status === 500
+        ? "Internal Server Error" 
+        : err.message || "Internal Server Error";
+      
+      // Log the full error in any environment
       console.error('Server error:', err);
-      res.status(status).json({ message });
-      throw err;
+      
+      // Return a sanitized error response
+      res.status(status).json({ 
+        error: message,
+        // Include stack trace only in development
+        ...(config.NODE_ENV !== 'production' && { stack: err.stack })
+      });
+      
+      // Do not rethrow the error as it can crash the server
+      // Previously: throw err;
     });
 
     if (app.get("env") === "development") {
