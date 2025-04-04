@@ -241,12 +241,12 @@ export default function Dashboard() {
         </Card>
         
         {/* Network Stats - Moved below notifications */}
-        <div className="mt-6 mb-5">
+        <div className="my-8">
           <NetworkStatus />
         </div>
 
         {/* Footer with credits */}
-        <div className="text-center pt-4 pb-8 text-sm text-muted-foreground">
+        <div className="text-center pt-2 pb-8 text-sm text-muted-foreground">
           <p className="mb-2">Made with ❤️ by Paul Martin</p>
           <div className="flex justify-center gap-4">
             <a 
