@@ -5,6 +5,28 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.6.0] - 2025-04-04
+
+### Added
+- Implemented comprehensive security infrastructure across the application
+- Created a centralized configuration module with strict environment variable validation
+- Added custom rate limiting middleware to protect against brute force attacks
+- Implemented production-ready session management with PostgreSQL session store
+- Enhanced security headers to mitigate common web vulnerabilities
+
+### Changed
+- Improved database connection security with optimized connection pooling
+- Enhanced error handling with proper sanitization in production environments 
+- Updated server initialization with more robust validation and fallback warnings
+
+### Technical Details
+- Created a robust config validation system in `shared/config.ts` using Zod schemas
+- Implemented custom rate limiting in `server/middleware/rate-limiter.ts` with IP-based tracking
+- Enhanced database connection with proper SSL support and connection parameters in `server/db.ts`
+- Added Content Security Policy headers and other security best practices to Express configuration
+- Improved error handling to hide sensitive information in production environments
+- Created comprehensive documentation of security features in the docs folder
+
 ## [Version 1.5.3] - 2025-04-03
 
 ### Added

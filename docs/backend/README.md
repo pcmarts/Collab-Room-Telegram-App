@@ -10,8 +10,10 @@ The backend of The Collab Room is built with Node.js and Express. This document 
 - **PostgreSQL**: Database
 - **Drizzle ORM**: Database ORM
 - **Zod**: Schema validation
-- **Express Session**: Session management
+- **Express Session**: Session management with PostgreSQL store
 - **Telegram Bot API**: Bot integration
+- **Custom Rate Limiting**: Protection against abuse
+- **Security Headers**: Protection against common web vulnerabilities
 
 ## Server Structure
 
@@ -251,3 +253,9 @@ app.post("/api/admin/impersonate", checkAdminMiddleware, async (req: TelegramReq
   // Implementation...
 });
 ```
+
+## Related Documentation
+
+- [Security Implementation](./security.md) - Detailed documentation about security features and best practices
+- [API Documentation](../api/README.md) - API endpoints and usage
+- [Authentication Documentation](../auth/README.md) - Authentication system details
