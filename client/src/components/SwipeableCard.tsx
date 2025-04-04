@@ -609,7 +609,7 @@ export function SwipeableCard({
             ) : (
               <Check className="h-4 w-4 mr-1" />
             )}
-            {data.isPotentialMatch ? 'Match' : 'Connect'}
+            {data.isPotentialMatch ? 'Match' : 'Request'}
           </Button>
         </div>
       </Card>
