@@ -224,9 +224,15 @@ export function SwipeableCard({
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
               <div className="flex items-center space-x-1.5">
                 <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-                <span className="text-sm font-medium text-[#1DA1F2]">
+                <a 
+                  href={`https://twitter.com/${data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}`}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-[#1DA1F2] hover:underline pointer-events-auto relative z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   @{data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
-                </span>
+                </a>
               </div>
               
               {data.details?.host_follower_count && (
@@ -262,9 +268,15 @@ export function SwipeableCard({
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
               <div className="flex items-center space-x-1.5">
                 <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-                <span className="text-sm font-medium text-[#1DA1F2]">
+                <a 
+                  href={`https://twitter.com/${data.details.twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}`}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-[#1DA1F2] hover:underline pointer-events-auto relative z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {data.details.twitter_handle.includes('@') ? data.details.twitter_handle : '@' + data.details.twitter_handle.replace('https://twitter.com/', '').replace('https://x.com/', '')}
-                </span>
+                </a>
               </div>
               
               {data.details?.host_follower_count && (
