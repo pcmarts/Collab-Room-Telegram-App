@@ -4,7 +4,7 @@ import { createServer } from "http";
 import { db } from "./db";
 import { 
   users, companies, notification_preferences, marketing_preferences, conference_preferences, 
-  events, user_events, collaborations, collab_notifications, swipes,
+  events, user_events, collaborations, collab_notifications, swipes, matches,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
   InsertCollaboration, CollabApplication, InsertCollabApplication,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
@@ -191,10 +191,14 @@ export async function registerRoutes(app: Express) {
       // Count all active collaborations
       const collabsResult = await db.select({ count: sql`count(*)` }).from(collaborations)
         .where(eq(collaborations.status, "active"));
+        
+      // Count all matches
+      const matchesResult = await db.select({ count: sql`count(*)` }).from(matches);
 
       res.json({
         users: Number(usersResult[0]?.count || 0),
-        collaborations: Number(collabsResult[0]?.count || 0)
+        collaborations: Number(collabsResult[0]?.count || 0),
+        matches: Number(matchesResult[0]?.count || 0)
       });
     } catch (error) {
       console.error("Error fetching network stats:", error);
