@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { User, MessageSquare, FolderPlus } from "lucide-react"
+import { User, MessageSquare, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DiscoveryIcon } from "@/components/icons/DiscoveryIcon"
 import { Badge } from "@/components/ui/badge"
@@ -39,7 +39,7 @@ const BottomNavigation = () => {
     },
     {
       label: "My Collabs",
-      icon: FolderPlus,
+      icon: Users,
       href: "/my-collaborations",
     },
     {
