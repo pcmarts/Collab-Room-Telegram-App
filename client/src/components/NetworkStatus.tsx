@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { Users, FileSpreadsheet, Activity, Handshake } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Activity } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
-import { Card } from "@/components/ui/card";
 
 interface NetworkStatusProps {
   className?: string;
@@ -24,50 +22,25 @@ export function NetworkStatus({ className = "" }: NetworkStatusProps) {
 
   if (isLoading) {
     return (
-      <div className={`flex justify-center gap-3 ${className}`}>
-        <Card className="px-3 py-2 flex items-center justify-center opacity-70 bg-background/80 backdrop-blur-sm animate-pulse">
-          <Activity className="h-4 w-4 mr-2 text-muted-foreground" />
-          <span className="text-sm">Loading network stats...</span>
-        </Card>
+      <div className={`flex justify-center ${className}`}>
+        <div className="flex items-center justify-center text-sm text-muted-foreground animate-pulse">
+          <Activity className="h-4 w-4 mr-2" />
+          <span>Loading network stats...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={`grid grid-cols-3 gap-2 ${className}`}>
-      <Card className="p-2 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
-        <div className="flex items-center justify-between">
-          <div className="bg-primary/10 rounded-full p-1.5">
-            <Users className="h-4 w-4 text-primary" />
-          </div>
-          <span className="text-xs uppercase font-semibold text-muted-foreground tracking-wider">Users</span>
-        </div>
-        <div className="mt-2 text-center">
-          <div className="text-2xl font-bold">{networkStats?.users ?? 0}</div>
-        </div>
-      </Card>
-      <Card className="p-2 bg-gradient-to-br from-blue-500/5 to-blue-500/10 border border-blue-500/20">
-        <div className="flex items-center justify-between">
-          <div className="bg-blue-500/10 rounded-full p-1.5">
-            <FileSpreadsheet className="h-4 w-4 text-blue-500" />
-          </div>
-          <span className="text-xs uppercase font-semibold text-muted-foreground tracking-wider">LIVE COLLABS</span>
-        </div>
-        <div className="mt-2 text-center">
-          <div className="text-2xl font-bold">{networkStats?.collaborations ?? 0}</div>
-        </div>
-      </Card>
-      <Card className="p-2 bg-gradient-to-br from-green-500/5 to-green-500/10 border border-green-500/20">
-        <div className="flex items-center justify-between">
-          <div className="bg-green-500/10 rounded-full p-1.5">
-            <Handshake className="h-4 w-4 text-green-500" />
-          </div>
-          <span className="text-xs uppercase font-semibold text-muted-foreground tracking-wider">MATCHES</span>
-        </div>
-        <div className="mt-2 text-center">
-          <div className="text-2xl font-bold">{networkStats?.matches ?? 0}</div>
-        </div>
-      </Card>
+    <div className={`${className}`}>
+      <h3 className="text-sm font-medium mb-1.5">Network Statistics</h3>
+      <div className="flex text-sm text-muted-foreground">
+        <div>{networkStats?.users ?? 0} Total Users</div>
+        <div className="mx-2">|</div>
+        <div>{networkStats?.collaborations ?? 0} Live Collabs</div>
+        <div className="mx-2">|</div>
+        <div>{networkStats?.matches ?? 0} Matches</div>
+      </div>
     </div>
   );
 }
