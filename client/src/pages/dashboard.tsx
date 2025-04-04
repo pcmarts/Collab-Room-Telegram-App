@@ -184,11 +184,6 @@ export default function Dashboard() {
       </div>
 
       <div className="p-4 space-y-4 pb-safe">
-        {/* Network Stats */}
-        <div className="mb-5">
-          <NetworkStatus />
-        </div>
-
         {/* Profile Actions */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Button
@@ -244,6 +239,11 @@ export default function Dashboard() {
             </div>
           </CardHeader>
         </Card>
+        
+        {/* Network Stats - Moved below notifications */}
+        <div className="mt-6 mb-5">
+          <NetworkStatus />
+        </div>
 
         {/* Footer with credits */}
         <div className="text-center pt-4 pb-8 text-sm text-muted-foreground">
