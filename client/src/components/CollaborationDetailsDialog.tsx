@@ -122,18 +122,38 @@ export function CollaborationDetailsDialog({
               {companyData.website && (
                 <div className="flex items-center gap-1 text-xs">
                   <Globe className="h-3 w-3 text-muted-foreground" />
-                  <span className="truncate" title={companyData.website}>
+                  <a 
+                    href={companyData.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
+                  >
                     {companyData.website.replace(/https?:\/\/(www\.)?/, "")}
-                  </span>
+                  </a>
                 </div>
               )}
               
               {companyData.twitter_handle && (
                 <div className="flex items-center gap-1 text-xs">
                   <Twitter className="h-3 w-3 text-muted-foreground" />
-                  <span className="truncate" title={companyData.twitter_handle}>
+                  <a 
+                    href={companyData.twitter_handle.startsWith("http") 
+                      ? companyData.twitter_handle 
+                      : `https://twitter.com/${companyData.twitter_handle.replace('@', '')}`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
+                  >
                     {companyData.twitter_handle.replace(/https?:\/\/(www\.)?twitter\.com\//, "@")}
-                  </span>
+                  </a>
                 </div>
               )}
               
