@@ -37,17 +37,17 @@ export function NetworkStatus({ className = "" }: NetworkStatusProps) {
       <h3 className="text-sm font-medium mb-2 text-muted-foreground">Network Statistics</h3>
       <div className="flex justify-between text-sm">
         <div className="flex items-center">
-          <Users className="h-3.5 w-3.5 mr-1.5 text-primary/70" />
+          <Users className="h-3.5 w-3.5 mr-1.5 text-foreground" />
           <span className="font-medium">{networkStats?.users ?? 0}</span>
           <span className="ml-1 text-muted-foreground text-xs">users</span>
         </div>
         <div className="flex items-center">
-          <Zap className="h-3.5 w-3.5 mr-1.5 text-primary/70" />
+          <Zap className="h-3.5 w-3.5 mr-1.5 text-foreground" />
           <span className="font-medium">{networkStats?.collaborations ?? 0}</span>
           <span className="ml-1 text-muted-foreground text-xs">collabs</span>
         </div>
         <div className="flex items-center">
-          <Handshake className="h-3.5 w-3.5 mr-1.5 text-primary/70" />
+          <Handshake className="h-3.5 w-3.5 mr-1.5 text-foreground" />
           <span className="font-medium">{networkStats?.matches ?? 0}</span>
           <span className="ml-1 text-muted-foreground text-xs">matches</span>
         </div>
