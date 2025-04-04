@@ -18,7 +18,12 @@ export function NetworkStatus({ className = "" }: NetworkStatusProps) {
   const { data: networkStats, isLoading } = useQuery<NetworkStatsData>({
     queryKey: ['/api/network-stats'],
     queryFn: getQueryFn({ on401: "returnNull" }),
-    refetchInterval: 10000, // Refetch every 10 seconds
+    // No automatic refetching - will only fetch on component mount
+    refetchInterval: false,
+    // Cache stats for 1 hour - they don't need to change frequently
+    staleTime: 60 * 60 * 1000,
+    // Don't refetch on window focus to prevent unnecessary loads
+    refetchOnWindowFocus: false,
   });
 
   if (isLoading) {

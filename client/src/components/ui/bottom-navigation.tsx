@@ -22,10 +22,11 @@ const BottomNavigation = () => {
         return [];
       }
     },
-    // Don't show loading states or errors in navigation
-    staleTime: 60000, // 1 minute
-    refetchOnWindowFocus: false,
-    retry: 1,
+    // Optimize to reduce network requests
+    staleTime: 5 * 60 * 1000, // 5 minutes - matches don't change frequently enough to need faster updates
+    refetchOnWindowFocus: false, // Don't refetch when window gets focus
+    refetchInterval: false, // Don't automatically refresh
+    retry: 1, // Only retry once on failure
   });
 
   // Calculate actual matches count
