@@ -13,7 +13,10 @@ import {
   Clock,
   Users,
   Building,
-  ChevronLeft
+  ChevronLeft,
+  Linkedin,
+  Coins,
+  Layers
 } from "lucide-react";
 
 interface CollaborationDetailsDialogProps {
@@ -33,6 +36,7 @@ interface CollaborationDetailsDialogProps {
       twitter_handle?: string;
       twitter_followers?: string;
       website?: string;
+      linkedin_url?: string;
       funding_stage?: string;
       has_token?: boolean;
       token_ticker?: string;
@@ -157,6 +161,24 @@ export function CollaborationDetailsDialog({
                 </div>
               )}
               
+              {companyData.linkedin_url && (
+                <div className="flex items-center gap-1 text-xs">
+                  <Linkedin className="h-3 w-3 text-muted-foreground" />
+                  <a 
+                    href={companyData.linkedin_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
+                  >
+                    LinkedIn
+                  </a>
+                </div>
+              )}
+              
               {companyData.funding_stage && (
                 <div className="flex items-center gap-1 text-xs">
                   <DollarSign className="h-3 w-3 text-muted-foreground" />
@@ -172,28 +194,32 @@ export function CollaborationDetailsDialog({
                   </span>
                 </div>
               )}
+
+              {companyData.has_token && companyData.token_ticker && (
+                <div className="flex items-center gap-1 text-xs">
+                  <Coins className="h-3 w-3 text-muted-foreground" />
+                  <span>${companyData.token_ticker}</span>
+                </div>
+              )}
+              
+              {companyData.blockchain_networks && companyData.blockchain_networks.length > 0 && (
+                <div className="flex items-center gap-1 text-xs">
+                  <Layers className="h-3 w-3 text-muted-foreground" />
+                  <span>Chain: {companyData.blockchain_networks.join(', ')}</span>
+                </div>
+              )}
+              
+              {companyData.tags && companyData.tags.length > 0 && (
+                <div className="col-span-2 flex items-center gap-1 text-xs mt-1">
+                  <Tag className="h-3 w-3 text-muted-foreground" />
+                  <span>Sector: {companyData.tags.join(', ')}</span>
+                </div>
+              )}
             </div>
           </Card>
           
-          {/* Collaboration details */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
-            <p className="text-sm whitespace-pre-line">{description}</p>
-            
-            {topics && topics.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-3">
-                <div className="w-full flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                  <Tag className="h-3 w-3" />
-                  <span>Topics:</span>
-                </div>
-                {topics.map((topic, i) => (
-                  <Badge key={i} variant="secondary" className="text-xs">
-                    {topic}
-                  </Badge>
-                ))}
-              </div>
-            )}
-            
+          {/* More Company Information */}
+          <div className="space-y-2">            
             {/* Type-specific details */}
             {collaboration.collab_type === "Twitter Spaces Guest" && details.host_follower_count && (
               <div className="flex items-center gap-1 text-xs mt-2">
