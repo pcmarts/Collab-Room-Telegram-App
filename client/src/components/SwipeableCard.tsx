@@ -100,8 +100,8 @@ export function SwipeableCard({
       const direction = xOffset > 0 ? "right" : "left";
       setExitX(xOffset > 0 ? 1000 : -1000);
       await handleSwipe(direction);
-    } else if (dragDistance < 5) {
-      // If dragged less than 5px, it's considered a click, do nothing to allow link clicks
+    } else if (dragDistance < 10) {
+      // If dragged less than 10px, it's considered a click, do nothing to allow link clicks
       controls?.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
     } else {
       // Reset position if not swiped far enough but more than click threshold
@@ -128,7 +128,7 @@ export function SwipeableCard({
       dragTransition={{ power: 0.2, timeConstant: 400 }}
       dragMomentum={true}
       dragSnapToOrigin={false}
-      dragThreshold={5} // Add a drag threshold to improve detection of clicks vs. drags
+      // Using drag configuration instead of dragThreshold property
       onDragStart={() => setConstrained && setConstrained(false)}
       onDragEnd={(e, info) => handleDragEnd(e, info)}
       whileDrag={{ scale: 1.05 }}
@@ -307,8 +307,11 @@ export function SwipeableCard({
                     href={data.details.podcast_link} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="truncate text-blue-600 hover:text-blue-800 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
                   >
                     {data.details.podcast_link}
                   </a>
@@ -355,8 +358,11 @@ export function SwipeableCard({
                     href={data.details.blog_link} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="truncate text-blue-600 hover:text-blue-800 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
                   >
                     {data.details.blog_link}
                   </a>
@@ -433,8 +439,11 @@ export function SwipeableCard({
                     href={data.details.newsletter_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="truncate text-blue-600 hover:text-blue-800 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
                   >
                     {data.details.newsletter_url}
                   </a>
@@ -489,8 +498,11 @@ export function SwipeableCard({
                     href={data.potentialMatchData.company_website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
-                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
                   >
                     <Globe className="h-3 w-3 mr-0.5" />
                     Website
@@ -502,8 +514,11 @@ export function SwipeableCard({
                     href={`https://twitter.com/${data.potentialMatchData.company_twitter}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
-                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
                   >
                     <Twitter className="h-3 w-3 mr-0.5 text-[#1DA1F2]" />
                     @{data.potentialMatchData.company_twitter}
@@ -515,8 +530,11 @@ export function SwipeableCard({
                     href={data.potentialMatchData.company_linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
-                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
                   >
                     <Linkedin className="h-3 w-3 mr-0.5 text-blue-700" />
                     LinkedIn
