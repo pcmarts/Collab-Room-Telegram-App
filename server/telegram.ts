@@ -1,6 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import { db } from "./db";
-import { users, collaborations, companies } from "@shared/schema";
+import { users, collaborations, companies, notification_preferences, swipes, matches } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { format } from "date-fns";
 import fs from "fs";
@@ -462,6 +462,10 @@ bot.on("callback_query", async (callbackQuery) => {
     // Handle user approval callback
     else if (callbackQuery.data?.startsWith("approve_user_")) {
       await handleApproveUserCallback(callbackQuery);
+    }
+    // Handle swipe actions from notifications
+    else if (callbackQuery.data?.startsWith("swipe_")) {
+      await handleSwipeCallback(callbackQuery);
     }
   } catch (error) {
     console.error("Error handling callback query:", error);
@@ -962,6 +966,409 @@ async function sendDirectFormattedMessage(
     }
 
     throw error;
+  }
+}
+
+/**
+ * Callback handler for swipe actions from Telegram notifications
+ */
+async function handleSwipeCallback(
+  callbackQuery: TelegramBot.CallbackQuery,
+) {
+  const chatId = callbackQuery.message?.chat.id;
+  if (!chatId || !callbackQuery.data) return;
+
+  console.log(
+    "[CALLBACK_DEBUG] Processing swipe callback:",
+    callbackQuery.data,
+  );
+
+  try {
+    // First, acknowledge the callback to show progress
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Processing action...",
+      show_alert: false,
+    });
+
+    // Extract data from callback
+    // Format: swipe_action_collaborationId_userId
+    // Where action is 'match' or 'pass'
+    const parts = callbackQuery.data.split("_");
+    if (parts.length !== 4) {
+      console.error(
+        "[CALLBACK_DEBUG] Invalid swipe callback format:",
+        callbackQuery.data,
+      );
+      await bot.sendMessage(chatId, "Error: Invalid action format");
+      return;
+    }
+
+    const action = parts[1];
+    const collaborationId = parts[2];
+    const userId = parts[3];
+
+    console.log("[CALLBACK_DEBUG] Swipe action:", {
+      action,
+      collaborationId,
+      userId,
+    });
+
+    // Get the current user (host) from the chatId
+    const telegramId = callbackQuery.from?.id.toString();
+    if (!telegramId) {
+      console.error("[CALLBACK_DEBUG] No Telegram ID in callback");
+      await bot.sendMessage(chatId, "Error: User identification failed");
+      return;
+    }
+
+    // Get host user record from Telegram ID
+    const [hostUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.telegram_id, telegramId));
+
+    if (!hostUser) {
+      console.error("[CALLBACK_DEBUG] Host user not found:", telegramId);
+      await bot.sendMessage(chatId, "Error: Your user account was not found");
+      return;
+    }
+
+    // Check if the host owns the collaboration
+    const [collaboration] = await db
+      .select()
+      .from(collaborations)
+      .where(
+        eq(collaborations.id, collaborationId),
+      );
+
+    if (!collaboration) {
+      console.error(
+        "[CALLBACK_DEBUG] Collaboration not found:",
+        collaborationId,
+      );
+      await bot.sendMessage(chatId, "Error: Collaboration not found");
+      return;
+    }
+
+    if (collaboration.creator_id !== hostUser.id) {
+      console.error(
+        "[CALLBACK_DEBUG] User is not the collaboration creator:",
+        { hostId: hostUser.id, creatorId: collaboration.creator_id },
+      );
+      await bot.sendMessage(
+        chatId,
+        "Error: You don't have permission to perform this action",
+      );
+      return;
+    }
+
+    // Get the other user's details
+    const [requesterUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId));
+
+    if (!requesterUser) {
+      console.error("[CALLBACK_DEBUG] Requester user not found:", userId);
+      await bot.sendMessage(chatId, "Error: The other user was not found");
+      return;
+    }
+
+    // Create the appropriate swipe based on the action
+    const direction = action === "match" ? "right" : "left";
+    
+    // Create a swipe record
+    // Use db directly since we don't have access to storage here
+    const [swipe] = await db
+      .insert(swipes)
+      .values({
+        user_id: hostUser.id,
+        collaboration_id: collaborationId,
+        direction,
+        created_at: new Date(),
+      })
+      .returning();
+
+    console.log("[CALLBACK_DEBUG] Created swipe record:", swipe);
+
+    // Update message based on action taken
+    let responseMessage;
+    let updatedKeyboard;
+
+    if (action === "match") {
+      // If it's a match, create a match record and notify both users
+      const [match] = await db
+        .insert(matches)
+        .values({
+          collaboration_id: collaborationId,
+          host_id: hostUser.id,
+          requester_id: userId,
+          status: "active",
+          created_at: new Date(),
+        })
+        .returning();
+
+      console.log("[CALLBACK_DEBUG] Created match record:", match);
+
+      // Notify both users about the match
+      try {
+        await notifyMatchCreated(hostUser.id, userId, collaborationId);
+        console.log("[CALLBACK_DEBUG] Match notifications sent");
+      } catch (notifyError) {
+        console.error(
+          "[CALLBACK_DEBUG] Error sending match notifications:",
+          notifyError,
+        );
+        // Continue execution even if notification fails
+      }
+
+      // Update the message to show match success
+      responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""}. A notification has been sent to both of you with contact details.`;
+      
+      updatedKeyboard = {
+        inline_keyboard: [
+          [
+            {
+              text: "💬 Chat With User",
+              url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
+            },
+          ],
+          [
+            {
+              text: "👥 View All Matches",
+              web_app: { url: `${WEBAPP_URL}/matches` },
+            },
+          ],
+        ],
+      };
+    } else {
+      // For pass, just show a simple confirmation
+      responseMessage = `❌ <b>Passed</b>\n\nYou've passed on ${requesterUser.first_name} ${requesterUser.last_name || ""}'s request.`;
+      
+      updatedKeyboard = {
+        inline_keyboard: [
+          [
+            {
+              text: "🔎 View More Requests",
+              web_app: { url: `${WEBAPP_URL}/discover` },
+            },
+          ],
+        ],
+      };
+    }
+
+    // Update the message with the new status
+    try {
+      if (callbackQuery.message?.message_id) {
+        await bot.editMessageText(responseMessage, {
+          chat_id: chatId,
+          message_id: callbackQuery.message.message_id,
+          parse_mode: "HTML",
+          reply_markup: updatedKeyboard,
+        });
+      } else {
+        // Fallback if message_id is not available
+        await bot.sendMessage(chatId, responseMessage, {
+          parse_mode: "HTML",
+          reply_markup: updatedKeyboard,
+        });
+      }
+    } catch (editError) {
+      console.error(
+        "[CALLBACK_DEBUG] Failed to update message:",
+        editError,
+      );
+      // Send a new message as fallback
+      await bot.sendMessage(chatId, responseMessage, {
+        parse_mode: "HTML",
+        reply_markup: updatedKeyboard,
+      });
+    }
+  } catch (error) {
+    console.error("[CALLBACK_DEBUG] Error in swipe callback handler:", error);
+    try {
+      await bot.sendMessage(
+        chatId,
+        "Sorry, there was an error processing your action. Please try again using the app.",
+      );
+    } catch (sendError) {
+      console.error("[CALLBACK_DEBUG] Failed to send error message:", sendError);
+    }
+  }
+}
+
+/**
+ * Notify a host when someone swipes right on their collaboration
+ * @param hostUserId ID of the host user (collaboration creator)
+ * @param requesterUserId ID of the requester user (user who swiped right)
+ * @param collaborationId ID of the collaboration that received the right swipe
+ */
+export async function notifyNewCollabRequest(
+  hostUserId: string,
+  requesterUserId: string,
+  collaborationId: string,
+) {
+  try {
+    console.log("[Telegram Bot] Sending collab request notification:", {
+      hostUserId,
+      requesterUserId,
+      collaborationId,
+    });
+
+    // Check if host has notifications enabled
+    const [notificationPrefs] = await db
+      .select()
+      .from(notification_preferences)
+      .where(eq(notification_preferences.user_id, hostUserId));
+    
+    // Skip if notifications are disabled
+    if (notificationPrefs && !notificationPrefs.notifications_enabled) {
+      console.log("[Telegram Bot] Host has notifications disabled:", hostUserId);
+      return;
+    }
+
+    // Get user details from database
+    const [hostUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, hostUserId));
+
+    const [requesterUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, requesterUserId));
+
+    if (!hostUser || !requesterUser) {
+      console.error(
+        "[Telegram Bot] Could not find user data for collab request notification:",
+        {
+          hostFound: !!hostUser,
+          requesterFound: !!requesterUser,
+        },
+      );
+      return;
+    }
+
+    // Get collaboration details
+    const [collaboration] = await db
+      .select()
+      .from(collaborations)
+      .where(eq(collaborations.id, collaborationId));
+
+    if (!collaboration) {
+      console.error(
+        "[Telegram Bot] Could not find collaboration for request notification:",
+        { collaborationId },
+      );
+      return;
+    }
+
+    // Get company details for both users
+    const [requesterCompany] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.user_id, requesterUserId));
+
+    if (!requesterCompany) {
+      console.error(
+        "[Telegram Bot] Could not find requester company data:",
+        { requesterUserId },
+      );
+      return;
+    }
+
+    // Convert telegram_id to integers for chat ID
+    const hostChatId = parseInt(hostUser.telegram_id);
+
+    if (isNaN(hostChatId)) {
+      console.error("[Telegram Bot] Invalid host chat ID:", {
+        hostChatId,
+      });
+      return;
+    }
+
+    // Format company twitter URL if available
+    const twitterHandle = requesterCompany.twitter_handle 
+      ? requesterCompany.twitter_handle.replace('@', '')
+      : null;
+    
+    const twitterUrl = twitterHandle 
+      ? `https://twitter.com/${twitterHandle}`
+      : null;
+    
+    // Format company name with Twitter hyperlink if available
+    const companyNameFormatted = twitterUrl
+      ? `<a href="${twitterUrl}">${requesterCompany.name}</a>`
+      : requesterCompany.name;
+
+    // Format the collaboration date if available
+    let collabDate = "Any future date";
+    if (collaboration.date_type === 'specific_date' && collaboration.specific_date) {
+      collabDate = collaboration.specific_date;
+    }
+
+    // Format topics as a comma-separated string
+    const topicsText = collaboration.topics && collaboration.topics.length > 0
+      ? collaboration.topics.join(", ")
+      : "Not specified";
+    
+    // Extract short description from details if available
+    let shortDescription = "";
+    if (collaboration.details) {
+      const details = typeof collaboration.details === "string"
+        ? JSON.parse(collaboration.details)
+        : collaboration.details;
+      
+      shortDescription = details.short_description || details.description || collaboration.description || "";
+    } else {
+      shortDescription = collaboration.description || "";
+    }
+
+    // Build the message with HTML formatting
+    const message =
+      `<b>New Collab Request</b>\n\n` +
+      `💼: ${companyNameFormatted}\n` +
+      `👤: ${requesterCompany.job_title}\n\n` +
+      `Your Collab: ${collaboration.collab_type} - ${shortDescription}\n` +
+      `Topic: ${topicsText}\n` +
+      `Date: ${collabDate}\n`;
+
+    // Create inline keyboard with two buttons on separate rows
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "View",
+            web_app: { url: `${WEBAPP_URL}/discover` },
+          },
+        ],
+        [
+          {
+            text: "❌ Pass",
+            callback_data: `swipe_pass_${collaborationId}_${requesterUserId}`,
+          },
+          {
+            text: "✅ Match",
+            callback_data: `swipe_match_${collaborationId}_${requesterUserId}`,
+          },
+        ],
+      ],
+    };
+
+    // Send notification to host
+    try {
+      await sendDirectFormattedMessage(hostChatId, message, keyboard);
+      console.log(
+        `[Telegram Bot] Successfully sent collab request notification to host (${hostChatId})`,
+      );
+    } catch (error) {
+      console.error(
+        `[Telegram Bot] Failed to send collab request notification to host (${hostChatId}):`,
+        error,
+      );
+    }
+  } catch (error) {
+    console.error("[Telegram Bot] Error sending collab request notification:", error);
   }
 }
 

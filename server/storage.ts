@@ -12,7 +12,7 @@ import {
 import { z } from 'zod';
 import { db } from "./db";
 import { eq, and, or, inArray, isNull, not, desc, sql, ilike, lt } from "drizzle-orm";
-import { notifyMatchCreated } from "./telegram";
+import { notifyMatchCreated, notifyNewCollabRequest } from "./telegram";
 
 export interface IStorage {
   // User methods
@@ -755,9 +755,40 @@ export class DatabaseStorage implements IStorage {
       
       console.log("Swipe created:", JSON.stringify(newSwipe, null, 2));
 
-      // If this is a right swipe, check for a match
+      // If this is a right swipe, get the collaboration details for notifications
       if (swipe.direction === 'right') {
-        await this.checkForMatch(newSwipe);
+        // Get the collaboration details
+        const [collaboration] = await db
+          .select()
+          .from(collaborations)
+          .where(eq(collaborations.id, swipe.collaboration_id));
+        
+        if (collaboration) {
+          // Send a notification to the host (collaboration creator)
+          // but only if the swiper is not the host themselves
+          if (collaboration.creator_id !== swipe.user_id) {
+            try {
+              console.log("Sending collaboration request notification to host:", {
+                hostId: collaboration.creator_id,
+                requesterId: swipe.user_id,
+                collaborationId: swipe.collaboration_id
+              });
+              
+              // Send the notification using our new function
+              await notifyNewCollabRequest(
+                collaboration.creator_id,
+                swipe.user_id,
+                swipe.collaboration_id
+              );
+            } catch (notifyError) {
+              console.error("Error sending collab request notification:", notifyError);
+              // Continue processing even if notification fails
+            }
+          }
+          
+          // Check for a match
+          await this.checkForMatch(newSwipe);
+        }
       }
       
       return newSwipe;
