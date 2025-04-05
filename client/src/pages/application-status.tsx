@@ -25,49 +25,65 @@ export default function ApplicationStatus() {
     gcTime: 0
   });
 
-  // Effect to refetch data and manage countdown
+  // Effect to refetch data with exponential backoff strategy
   useEffect(() => {
     // Invalidate and refetch when component mounts
     queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
     console.log('Fetching profile data...');
 
     let attempts = 0;
-    const maxAttempts = 30;
+    const maxAttempts = 10; // Reduced from 30 to avoid excessive polling
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    // Calculate delay with exponential backoff
+    const getBackoffDelay = (attempt: number) => {
+      // Start at 1s, double each time, cap at 30s: 1, 2, 4, 8, 16, 30, 30...
+      return Math.min(1000 * Math.pow(2, attempt), 30000);
+    };
 
     // Update processing state message based on attempts
     const updateProcessingState = (attempt: number) => {
-      if (attempt < 10) {
+      if (attempt < 3) {
         setProcessingState('initializing');
-      } else if (attempt < 20) {
+      } else if (attempt < 6) {
         setProcessingState('processing');
       } else {
         setProcessingState('finalizing');
       }
     };
 
-    // Set up periodic refetch until data is available
-    const retryInterval = setInterval(() => {
+    // Function to check status with exponential backoff
+    const checkStatus = () => {
       if (!profile?.user) {
-        console.log('Profile data not found, retrying...', { attempts });
+        console.log(`Checking profile status, attempt ${attempts + 1}`);
         updateProcessingState(attempts);
         refetch();
+        
         attempts++;
         setCountdown(maxAttempts - attempts);
-
+        
         if (attempts >= maxAttempts) {
-          clearInterval(retryInterval);
           setShowReload(true);
           console.log('Max attempts reached, showing reload option');
+        } else {
+          // Schedule next check with exponential backoff
+          const nextDelay = getBackoffDelay(attempts);
+          console.log(`Next check in ${nextDelay/1000} seconds`);
+          timeoutId = setTimeout(checkStatus, nextDelay);
         }
       } else {
         console.log('Profile data found:', profile);
-        clearInterval(retryInterval);
         setShowReload(false);
       }
-    }, 1000);
-
-    // Cleanup interval
-    return () => clearInterval(retryInterval);
+    };
+    
+    // Start the first check
+    checkStatus();
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [queryClient, refetch, profile]);
 
   const getProcessingMessage = () => {
@@ -107,7 +123,7 @@ export default function ApplicationStatus() {
         <Button 
           onClick={() => {
             setShowReload(false);
-            setCountdown(30);
+            setCountdown(10); // Match the new maxAttempts value
             setProcessingState('initializing');
             refetch();
           }}
