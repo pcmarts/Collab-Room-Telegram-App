@@ -463,6 +463,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented bidirectional matching system showing potential matches directly in discovery feed
 - Added dedicated card UI for potential matches with UserCheck icon and distinctive styling
 - Enhanced swipe handling to process both regular collaborations and potential matches
+- Telegram notification system that alerts hosts when users swipe right on their collaborations
+- Interactive buttons in Telegram notifications that allow hosts to pass or match with interested users
+
+### Fixed
+- Fixed Telegram callback_data length exceeding 64-byte limit by implementing shortened IDs for buttons
 - Created reusable BaseCollabCard component as foundation for all card types
 - Added specialized card components for each collaboration type (Podcast, Blog Post, Twitter Spaces, Live Stream, Research Report, Newsletter, Marketing)
 

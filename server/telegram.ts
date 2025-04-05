@@ -1,7 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import { db } from "./db";
 import { users, collaborations, companies, notification_preferences, swipes, matches } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
@@ -991,8 +991,8 @@ async function handleSwipeCallback(
     });
 
     // Extract data from callback
-    // Format: swipe_action_collaborationId_userId
-    // Where action is 'match' or 'pass'
+    // Format: swipe_action_shortCollabId_shortUserId
+    // Where action is 'm' (match) or 'p' (pass)
     const parts = callbackQuery.data.split("_");
     if (parts.length !== 4) {
       console.error(
@@ -1003,9 +1003,58 @@ async function handleSwipeCallback(
       return;
     }
 
-    const action = parts[1];
-    const collaborationId = parts[2];
-    const userId = parts[3];
+    const actionCode = parts[1]; // 'm' or 'p'
+    const shortCollabId = parts[2]; // First 8 chars of collaboration ID
+    const shortUserId = parts[3]; // First 8 chars of user ID
+    
+    // Convert from shorthand action code to full action
+    const action = actionCode === 'm' ? 'match' : 'pass';
+    
+    console.log("[CALLBACK_DEBUG] Parsed short IDs:", {
+      actionCode,
+      shortCollabId,
+      shortUserId,
+      fullAction: action
+    });
+    
+    // Query the database to get the full IDs based on the shortened versions
+    // Find collaboration ID that starts with the short ID
+    const [collaboration] = await db
+      .select()
+      .from(collaborations)
+      .where(eq(collaborations.id, 
+        sql`(SELECT id FROM collaborations WHERE id::text LIKE ${shortCollabId + '%'} LIMIT 1)`
+      ));
+      
+    if (!collaboration) {
+      console.error(
+        "[CALLBACK_DEBUG] Collaboration not found for short ID:",
+        shortCollabId,
+      );
+      await bot.sendMessage(chatId, "Error: Collaboration not found");
+      return;
+    }
+    
+    // Find user ID that starts with the short ID
+    const [matchedUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, 
+        sql`(SELECT id FROM users WHERE id::text LIKE ${shortUserId + '%'} LIMIT 1)`
+      ));
+      
+    if (!matchedUser) {
+      console.error(
+        "[CALLBACK_DEBUG] User not found for short ID:",
+        shortUserId,
+      );
+      await bot.sendMessage(chatId, "Error: User not found");
+      return;
+    }
+    
+    // Now we have the full IDs
+    const collaborationId = collaboration.id;
+    const userId = matchedUser.id;
 
     console.log("[CALLBACK_DEBUG] Swipe action:", {
       action,
@@ -1034,22 +1083,6 @@ async function handleSwipeCallback(
     }
 
     // Check if the host owns the collaboration
-    const [collaboration] = await db
-      .select()
-      .from(collaborations)
-      .where(
-        eq(collaborations.id, collaborationId),
-      );
-
-    if (!collaboration) {
-      console.error(
-        "[CALLBACK_DEBUG] Collaboration not found:",
-        collaborationId,
-      );
-      await bot.sendMessage(chatId, "Error: Collaboration not found");
-      return;
-    }
-
     if (collaboration.creator_id !== hostUser.id) {
       console.error(
         "[CALLBACK_DEBUG] User is not the collaboration creator:",
@@ -1061,13 +1094,13 @@ async function handleSwipeCallback(
       );
       return;
     }
-
-    // Get the other user's details
+    
+    // Get the requester user's details
     const [requesterUser] = await db
       .select()
       .from(users)
       .where(eq(users.id, userId));
-
+      
     if (!requesterUser) {
       console.error("[CALLBACK_DEBUG] Requester user not found:", userId);
       await bot.sendMessage(chatId, "Error: The other user was not found");
@@ -1333,6 +1366,11 @@ export async function notifyNewCollabRequest(
       `Topic: ${topicsText}\n` +
       `Date: ${collabDate}\n`;
 
+    // Create shortened IDs for callback data (Telegram has a 64-byte limit)
+    // Generate shorter identifiers by taking first 8 chars of each UUID
+    const shortCollabId = collaborationId.substring(0, 8);
+    const shortUserId = requesterUserId.substring(0, 8);
+    
     // Create inline keyboard with two buttons on separate rows
     const keyboard = {
       inline_keyboard: [
@@ -1345,11 +1383,11 @@ export async function notifyNewCollabRequest(
         [
           {
             text: "❌ Pass",
-            callback_data: `swipe_pass_${collaborationId}_${requesterUserId}`,
+            callback_data: `swipe_p_${shortCollabId}_${shortUserId}`,
           },
           {
             text: "✅ Match",
-            callback_data: `swipe_match_${collaborationId}_${requesterUserId}`,
+            callback_data: `swipe_m_${shortCollabId}_${shortUserId}`,
           },
         ],
       ],
