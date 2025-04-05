@@ -114,6 +114,26 @@ The discovery system integrates with the application's navigation system:
    - Automatically updates related components when matches are created
    - Ensures a coherent experience when navigating between discovery and matches views
 
+## Match Moments
+
+When a match is created through the discovery system, a match moment dialog is displayed to inform the user and provide navigation options:
+
+1. **Match Display**:
+   - Shows collaboration type and company name
+   - Displays the user's first name when available ("You've matched with [Name] from [Company]")
+   - Uses animated entrance transitions for an engaging experience
+
+2. **Navigation Options**:
+   - "View My Matches" button with a MessageCircle (chat) icon for viewing all matches
+   - "Continue Discovering" button with the discovery icon (LuCopy) for returning to discovery
+   - Optional direct message button for immediate communication
+
+3. **User Experience**:
+   - Seamless integration with the discovery flow
+   - Consistent visual design with the rest of the application
+   - Clear call-to-action buttons with appropriate icons
+   - Proper context preservation when navigating between pages
+
 ## Implementation History
 
 - **Version 1.0.0**: Basic card discovery with local storage swipe tracking
@@ -121,6 +141,7 @@ The discovery system integrates with the application's navigation system:
 - **Version 1.4.7**: Server-side swipe tracking with secondary safety filter
 - **Version 1.5.2**: Enhanced match filtering to prevent duplicate matches
 - **Version 1.5.3**: Improved UI consistency across all states and enhanced navigation
+- **Version 1.6.1**: Enhanced match moment UI with improved button icons and user name display
 
 ## Related Documentation
 

@@ -286,6 +286,50 @@ Benefits:
 - Provides smoother user experience with instant transitions
 - Follows React best practices for client-side routing
 
+## Match Moment Component
+
+The Match Moment component displays a celebratory dialog when users create a match through the swipe interface. It provides match details and navigation options.
+
+### Implementation
+
+Located at `client/src/components/MatchMoment.tsx`, this component provides a consistent and engaging match notification experience.
+
+```typescript
+interface MatchMomentProps {
+  title: string;
+  companyName: string;
+  collaborationType: string;
+  userName?: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onMessage?: () => void;
+}
+```
+
+### Usage Example
+
+```jsx
+<MatchMoment
+  isOpen={showMatch}
+  onClose={() => setShowMatch(false)}
+  title="Podcast Guest Appearance"
+  companyName="TechTalk Inc."
+  collaborationType="Podcast Guest Appearance"
+  userName="John"
+/>
+```
+
+### Features
+
+- Animated entrance with Framer Motion
+- Displays collaboration type and company name
+- Shows user's name when available ("You've matched with [Name] from [Company]")
+- Consistent button design with appropriate icons:
+  - MessageCircle icon for "View My Matches" button
+  - LuCopy icon (discovery icon) for "Continue Discovering" button
+- Optional direct message button for immediate communication
+- Seamless navigation to the Matches page
+
 ## Usage Guidelines
 
 ### Text Loop
@@ -328,3 +372,12 @@ Benefits:
 - Use the navigate function for programmatic navigation triggered by user actions
 - Use Link component for navigation elements that are always visible (menus, navigation bars)
 - Add descriptive onClick handlers that clearly indicate the navigation purpose
+
+### Match Moment
+
+- Use when displaying match notifications to provide a celebratory experience
+- Pass the user's first name when available for personalized messaging
+- Maintain consistent icon usage with main navigation elements:
+  - Use MessageCircle for match-related actions
+  - Use LuCopy (discovery icon) for discovery-related actions
+- Ensure all animations work properly on both desktop and mobile screens

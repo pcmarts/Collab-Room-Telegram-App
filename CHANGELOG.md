@@ -5,6 +5,20 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.6.1] - 2025-04-04
+
+### Changed
+- Enhanced Match Moment UI with improved button icons for better visual consistency
+- Added user's first name to match notifications ("You've matched with [Name] from [Company]")
+- Updated "View My Matches" button to use the MessageCircle (chat) icon
+- Changed "Continue Discovering" button to use the discovery icon (LuCopy) for visual consistency
+
+### Technical Details
+- Modified MatchMoment.tsx component to display the user's name when available
+- Updated DiscoverPageNew.tsx to pass userName to the MatchMoment component
+- Integrated React Icons with existing Lucide icons for consistent interface design
+- Enhanced match notifications with more detailed and personalized information
+
 ## [Version 1.6.0] - 2025-04-04
 
 ### Added

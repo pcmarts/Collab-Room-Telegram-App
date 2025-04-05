@@ -65,7 +65,32 @@ A new MatchContext system has been implemented to provide real-time match update
   - `MatchesPage.tsx` subscribes to context changes to refresh data
   - Each match creation fires a match event that updates the global state
 
+## Match Notifications
+
+When a match is created through the discovery system, a Match Moment dialog is displayed to notify the user:
+
+- **Enhanced User Information**:
+  - Shows the user's first name when available ("You've matched with [Name] from [Company]")
+  - Displays company name and collaboration type for context
+  - Uses animation to create an engaging match notification experience
+
+- **Navigation Options**:
+  - "View My Matches" button with MessageCircle (chat) icon takes users to the Matches page
+  - "Continue Discovering" button with discovery icon (LuCopy) returns users to discovery
+  - Consistent icon usage with the main navigation for better visual comprehension
+
+- **Implementation**:
+  - Located in `client/src/components/MatchMoment.tsx`
+  - Triggered from `DiscoverPageNew.tsx` when matches are created
+  - Responsive design works across screen sizes
+
 ## Recent Fixes
+
+**Version 1.6.1 (2025-04-04):**
+- Enhanced Match Moment UI with improved button icons and consistent styling
+- Added user's first name to match notifications for a more personalized experience
+- Updated "View My Matches" button to use the MessageCircle (chat) icon
+- Changed "Continue Discovering" button to use the discovery icon (LuCopy) for visual consistency
 
 **Version 1.5.0 (2025-04-03):**
 - Implemented MatchContext system for automatic match list refreshing
