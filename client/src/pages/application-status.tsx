@@ -103,17 +103,17 @@ export default function ApplicationStatusPage() {
   // Loading state
   if (isLoadingProfile) {
     return (
-      <div className="container mx-auto p-4 max-w-3xl">
-        <Card>
+      <div className="container mx-auto p-4 max-w-3xl bg-black min-h-screen">
+        <Card className="bg-gray-950 text-white border-gray-800">
           <CardHeader>
-            <Skeleton className="h-8 w-3/4 mb-2" />
-            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-8 w-3/4 mb-2 bg-gray-800" />
+            <Skeleton className="h-4 w-1/2 bg-gray-800" />
           </CardHeader>
           <CardContent>
-            <Skeleton className="h-24 w-full mb-4" />
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-24 w-full mb-4 bg-gray-800" />
+            <Skeleton className="h-4 w-full mb-2 bg-gray-800" />
+            <Skeleton className="h-4 w-full mb-2 bg-gray-800" />
+            <Skeleton className="h-4 w-3/4 bg-gray-800" />
           </CardContent>
         </Card>
       </div>
@@ -123,35 +123,29 @@ export default function ApplicationStatusPage() {
   // Error state
   if (profileError) {
     return (
-      <div className="container mx-auto p-4 max-w-3xl">
-        <Card className="border-red-300">
+      <div className="container mx-auto p-4 max-w-3xl bg-black min-h-screen">
+        <Card className="bg-gray-950 text-white border-red-900">
           <CardHeader>
             <CardTitle className="text-red-500 flex items-center">
               <AlertCircle className="mr-2" /> Error Loading Application Status
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-400">
               We couldn't load your application status. Please try again later.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-400">
               If this problem persists, please contact support.
             </p>
           </CardContent>
-          <CardFooter>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
-          </CardFooter>
         </Card>
       </div>
     );
   }
   
   return (
-    <div className="container mx-auto p-4 max-w-3xl">
-      <Card className={`mb-6 ${
-        currentStatus === 'approved' ? 'border-green-300' : 
-        currentStatus === 'rejected' ? 'border-red-300' : 'border-yellow-300'
-      }`}>
+    <div className="container mx-auto p-4 max-w-3xl bg-black min-h-screen">
+      <Card className="mb-6 bg-gray-950 text-white border-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center">
             {currentStatus === 'approved' ? (
@@ -162,13 +156,13 @@ export default function ApplicationStatusPage() {
               <><Clock className="text-yellow-500 mr-2" /> Application Processing</>
             )}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-400">
             {connectionActive ? 'Receiving real-time status updates...' : 'Status updates paused.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            <div className="bg-gray-50 p-4 rounded-md">
+            <div className="bg-gray-900 p-4 rounded-md text-white">
               <h3 className="font-medium mb-2">Current Status</h3>
               <p className="text-sm mb-1">
                 {statusUpdates.length > 0 ? statusUpdates[0].message : 
@@ -176,7 +170,7 @@ export default function ApplicationStatusPage() {
                     ? 'Your application has been approved! You can now access all platform features.'
                     : 'Your application is currently being processed...'}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-400">
                 Last updated: {statusUpdates.length > 0 
                   ? new Date(statusUpdates[0].timestamp).toLocaleString()
                   : 'Initial status'}
@@ -184,13 +178,13 @@ export default function ApplicationStatusPage() {
             </div>
             
             {statusUpdates.length > 1 && (
-              <div>
+              <div className="bg-gray-800 p-4 rounded-md text-white">
                 <h3 className="font-medium mb-2">Update History</h3>
                 <div className="space-y-3">
                   {statusUpdates.slice(1).map((update, index) => (
-                    <div key={index} className="border-l-2 pl-3 py-1 border-gray-300">
+                    <div key={index} className="border-l-2 pl-3 py-1 border-gray-700">
                       <p className="text-sm">{update.message}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-400">
                         {new Date(update.timestamp).toLocaleString()}
                       </p>
                     </div>
@@ -200,8 +194,8 @@ export default function ApplicationStatusPage() {
             )}
             
             {currentStatus === 'approved' && (
-              <div className="bg-green-50 p-4 rounded-md">
-                <h3 className="font-medium text-green-700 mb-2">What's Next?</h3>
+              <div className="bg-gray-800 p-4 rounded-md text-white">
+                <h3 className="font-medium text-primary mb-2">What's Next?</h3>
                 <p className="text-sm mb-3">
                   Your application has been approved! You can now access all platform features:
                 </p>
@@ -211,21 +205,10 @@ export default function ApplicationStatusPage() {
                   <li>Apply to others' collaborations</li>
                   <li>Set up your detailed preferences</li>
                 </ul>
-                <Button asChild className="mt-2">
-                  <Link href="/dashboard">Go to Dashboard</Link>
-                </Button>
               </div>
             )}
           </div>
         </CardContent>
-        {currentStatus !== 'approved' && (
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" asChild>
-              <Link href="/dashboard">Back to Dashboard</Link>
-            </Button>
-            <Button onClick={() => window.location.reload()}>Refresh Status</Button>
-          </CardFooter>
-        )}
       </Card>
     </div>
   );
