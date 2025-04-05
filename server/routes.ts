@@ -2891,161 +2891,96 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: 'User not found' });
       }
       
-      // Get user matches
-      const userMatches = await storage.getUserMatches(user.id);
-      console.log(`Found ${userMatches.length} matches for user ${user.id}`);
+      // Get user matches with all details in a single query
+      console.log(`Fetching matches with details for user ${user.id}`);
+      const startTime = Date.now();
       
-      // Process matches from database - no development fallbacks
-      let enrichedMatches = await Promise.all(userMatches.map(async (match) => {
-          try {
-            // Get collaboration data
-            const [collaboration] = await db.select()
-              .from(collaborations)
-              .where(eq(collaborations.id, match.collaboration_id));
+      const matchDetails = await storage.getUserMatchesWithDetails(user.id);
+      
+      console.log(`Found ${matchDetails.length} matches in ${Date.now() - startTime}ms`);
+      
+      // Format the data for the client
+      const enrichedMatches = matchDetails.map(match => {
+        try {
+          return {
+            id: match.match_id,
+            matchDate: match.match_date ? new Date(match.match_date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) : 'Unknown date',
+            status: match.match_status,
+            collaborationType: match.collab_type || 'Unknown',
+            description: match.collab_description || '',
+            details: {}, // Empty details since we don't use this anymore
             
-            // Get host user data
-            const [hostUser] = await db.select()
-              .from(users)
-              .where(eq(users.id, match.host_id));
+            // User information
+            matchedPerson: `${match.other_user_first_name || ''} ${match.other_user_last_name || ''}`.trim(),
+            companyName: match.company_name || 'Unknown Company',
+            roleTitle: match.role_title || 'Unknown Role',
+            companyDescription: match.company_description || 'No company description available.',
+            userDescription: `${match.other_user_first_name || ''} is a professional in the Web3 space.`,
+            username: match.other_user_handle,
             
-            // Get requester user data
-            const [requesterUser] = await db.select()
-              .from(users)
-              .where(eq(users.id, match.requester_id));
+            // Additional user information
+            linkedinUrl: match.other_user_linkedin_url || null,
+            twitterUrl: match.other_user_twitter_url || null,
+            twitterHandle: match.company_twitter_handle || null,
+            twitterFollowers: match.other_user_twitter_followers || null,
+            email: null, // We don't return email for privacy reasons
             
-            // Get companies
-            const [hostCompany] = await db.select()
-              .from(companies)
-              .where(eq(companies.user_id, match.host_id));
+            // Additional company information
+            companyWebsite: match.company_website || null,
+            companyLinkedinUrl: match.company_linkedin_url || null,
+            companyTwitterHandle: match.company_twitter_handle || null,
+            companyTwitterFollowers: match.company_twitter_followers || null,
+            fundingStage: match.funding_stage || null,
+            hasToken: match.has_token || false,
+            tokenTicker: match.token_ticker || null,
+            blockchainNetworks: match.blockchain_networks || [],
+            companyTags: match.company_tags || []
+          };
+        } catch (error) {
+          console.error(`Error formatting match ${match.match_id}:`, error);
+          return {
+            id: match.match_id,
+            matchDate: match.match_date ? new Date(match.match_date).toLocaleDateString('en-US') : 'Unknown date',
+            status: match.match_status || 'Unknown',
+            collaborationType: match.collab_type || 'Unknown',
+            description: 'Unable to load full details',
+            details: {},
+            matchedPerson: 'Unknown',
+            companyName: 'Unknown Company',
+            roleTitle: 'Unknown Role',
+            companyDescription: 'No company description available.',
+            userDescription: 'No user description available.',
+            username: null,
             
-            const [requesterCompany] = await db.select()
-              .from(companies)
-              .where(eq(companies.user_id, match.requester_id));
+            // Additional user information
+            linkedinUrl: null,
+            twitterUrl: null,
+            twitterHandle: null,
+            twitterFollowers: null,
+            email: null,
             
-            // Determine if the current user is the host or requester
-            const isHost = match.host_id === user.id;
-            
-            // Get the relevant user and company based on who the current user is
-            const matchedUser = isHost ? requesterUser : hostUser;
-            const matchedCompany = isHost ? requesterCompany : hostCompany;
-
-            // Extract blockchainNetworks array from company details
-            let blockchainNetworks = [];
-            try {
-              if (matchedCompany?.details?.blockchain_networks) {
-                blockchainNetworks = matchedCompany.details.blockchain_networks;
-              }
-            } catch (error) {
-              console.error('Error parsing blockchainNetworks:', error);
-            }
-
-            // Extract companyTags array from company details
-            let companyTags = [];
-            try {
-              if (matchedCompany?.tags) {
-                companyTags = matchedCompany.tags;
-              }
-            } catch (error) {
-              console.error('Error parsing companyTags:', error);
-            }
-            
-            // Construct match details
-            return {
-              id: match.id,
-              matchDate: match.created_at ? new Date(match.created_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              }) : 'Unknown date',
-              status: match.status,
-              collaborationType: collaboration?.collab_type || 'Unknown',
-              description: collaboration?.description || '',
-              details: collaboration?.details || {},
-              
-              // Show the other party's info to the current user
-              matchedPerson: isHost ? 
-                `${requesterUser?.first_name || ''} ${requesterUser?.last_name || ''}` : 
-                `${hostUser?.first_name || ''} ${hostUser?.last_name || ''}`,
-              
-              companyName: isHost ? 
-                requesterCompany?.name || 'Unknown Company' : 
-                hostCompany?.name || 'Unknown Company',
-              
-              roleTitle: isHost ? 
-                requesterCompany?.job_title || 'Unknown Role' : 
-                hostCompany?.job_title || 'Unknown Role',
-              
-              companyDescription: isHost ?
-                requesterCompany?.short_description || 'No company description available.' :
-                hostCompany?.short_description || 'No company description available.',
-              
-              userDescription: isHost ?
-                `${requesterUser?.first_name || ''} is a professional in the Web3 space.` :
-                `${hostUser?.first_name || ''} is a professional in the Web3 space.`,
-                
-              // Add username for chat functionality  
-              username: isHost ? requesterUser?.handle : hostUser?.handle,
-              
-              // Additional user information
-              linkedinUrl: matchedUser?.linkedin_url || null,
-              twitterUrl: matchedUser?.twitter_url || null,
-              twitterHandle: matchedUser?.twitter_handle || null,
-              twitterFollowers: matchedUser?.twitter_followers || null,
-              email: matchedUser?.email || null,
-              
-              // Additional company information
-              companyWebsite: matchedCompany?.website || null,
-              companyLinkedinUrl: matchedCompany?.linkedin_url || null,
-              companyTwitterHandle: matchedCompany?.twitter_handle || null,
-              companyTwitterFollowers: matchedCompany?.twitter_followers || null,
-              fundingStage: matchedCompany?.funding_stage || null,
-              hasToken: matchedCompany?.has_token || false,
-              tokenTicker: matchedCompany?.token_ticker || null,
-              blockchainNetworks: blockchainNetworks,
-              companyTags: companyTags
-            };
-          } catch (error) {
-            console.error(`Error enriching match ${match.id}:`, error);
-            return {
-              id: match.id,
-              matchDate: match.created_at ? new Date(match.created_at).toLocaleDateString('en-US') : 'Unknown date',
-              status: match.status,
-              collaborationType: 'Unknown',
-              description: 'Unable to load full details',
-              details: {},
-              matchedPerson: 'Unknown',
-              companyName: 'Unknown Company',
-              roleTitle: 'Unknown Role',
-              companyDescription: 'No company description available.',
-              userDescription: 'No user description available.',
-              username: null,
-              
-              // Additional user information
-              linkedinUrl: null,
-              twitterUrl: null,
-              twitterHandle: null,
-              twitterFollowers: null,
-              email: null,
-              
-              // Additional company information
-              companyWebsite: null,
-              companyLinkedinUrl: null,
-              companyTwitterHandle: null,
-              companyTwitterFollowers: null,
-              fundingStage: null,
-              hasToken: false,
-              tokenTicker: null,
-              blockchainNetworks: [],
-              companyTags: []
-            };
-          }
-        }));
+            // Additional company information
+            companyWebsite: null,
+            companyLinkedinUrl: null,
+            companyTwitterHandle: null,
+            companyTwitterFollowers: null,
+            fundingStage: null,
+            hasToken: false,
+            tokenTicker: null,
+            blockchainNetworks: [],
+            companyTags: []
+          };
+        }
+      });
       
       // Allow caching for a short period (30 seconds)
       res.setHeader('Cache-Control', 'private, max-age=30');
       
       // Set a stable ETag based on the content
-      const responseBody = JSON.stringify(enrichedMatches);
       // Generate a simple hash instead of using require('crypto')
       const simpleHash = String(enrichedMatches.length) + '-' + Date.now();
       res.setHeader('ETag', `W/"${simpleHash}"`);

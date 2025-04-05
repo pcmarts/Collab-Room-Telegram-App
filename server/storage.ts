@@ -1095,6 +1095,84 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+  
+  async getUserMatchesWithDetails(userId: string): Promise<any[]> {
+    try {
+      console.log(`Fetching complete match details for user ${userId}`);
+      
+      // Get matches with collaboration and user details in a single query
+      const result = await db.execute(sql`
+        WITH user_matches AS (
+          SELECT 
+            m.*,
+            CASE
+              WHEN m.host_id = ${userId} THEN m.requester_id
+              ELSE m.host_id
+            END AS other_user_id,
+            CASE
+              WHEN m.host_id = ${userId} THEN 'host'
+              ELSE 'requester'
+            END AS user_role
+          FROM matches m
+          WHERE m.host_id = ${userId} OR m.requester_id = ${userId}
+          ORDER BY m.created_at DESC
+        )
+        SELECT
+          um.id AS match_id,
+          um.collaboration_id,
+          um.status AS match_status,
+          um.created_at AS match_date,
+          um.user_role,
+          
+          -- Collaboration details
+          c.id AS collab_id,
+          c.collab_type,
+          c.description AS collab_description,
+          c.topics AS collab_topics,
+          c.status AS collab_status,
+          
+          -- Other user details
+          ou.id AS other_user_id,
+          ou.first_name AS other_user_first_name,
+          ou.last_name AS other_user_last_name,
+          ou.handle AS other_user_handle,
+          ou.twitter_followers AS other_user_twitter_followers,
+          ou.twitter_url AS other_user_twitter_url,
+          ou.linkedin_url AS other_user_linkedin_url,
+          
+          -- Other user's company details
+          comp.id AS company_id,
+          comp.name AS company_name,
+          comp.job_title AS role_title,
+          comp.short_description AS company_description,
+          comp.website AS company_website,
+          comp.twitter_handle AS company_twitter_handle,
+          comp.twitter_followers AS company_twitter_followers,
+          comp.linkedin_url AS company_linkedin_url,
+          comp.funding_stage,
+          comp.has_token,
+          comp.token_ticker,
+          comp.blockchain_networks,
+          comp.tags AS company_tags
+        FROM user_matches um
+        JOIN collaborations c ON um.collaboration_id = c.id
+        JOIN users ou ON um.other_user_id = ou.id
+        LEFT JOIN companies comp ON ou.id = comp.user_id
+        ORDER BY um.created_at DESC
+      `);
+      
+      // Access the rows directly from the query result and convert to array of objects
+      const matchesResult = Array.isArray(result) ? result : [];
+      const rows = 'rows' in result ? result.rows : matchesResult;
+      const userMatchesWithDetails = Array.isArray(rows) ? rows : [];
+      
+      console.log(`Found ${userMatchesWithDetails.length} enriched matches for user ${userId}`);
+      return userMatchesWithDetails;
+    } catch (error) {
+      console.error("Error getting user matches with details:", error);
+      throw error;
+    }
+  }
 
   async getCollaborationMatches(collaborationId: string): Promise<Match[]> {
     try {
