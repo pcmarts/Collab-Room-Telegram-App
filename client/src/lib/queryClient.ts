@@ -1,5 +1,29 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// Configure log levels - set to false in production for performance
+const LOG_LEVELS = {
+  DEBUG: false,  // Set to true to enable detailed debug logs
+  INFO: false,   // Set to true to enable info logs
+  WARN: true,    // Warnings stay enabled
+  ERROR: true    // Errors stay enabled
+};
+
+// Simple logger with configurable levels to improve performance
+const logger = {
+  debug: (message: string, ...args: any[]) => {
+    if (LOG_LEVELS.DEBUG) console.debug(`[API] ${message}`, ...args);
+  },
+  info: (message: string, ...args: any[]) => {
+    if (LOG_LEVELS.INFO) console.log(`[API] ${message}`, ...args);
+  },
+  warn: (message: string, ...args: any[]) => {
+    if (LOG_LEVELS.WARN) console.warn(`[API] ${message}`, ...args);
+  },
+  error: (message: string, ...args: any[]) => {
+    if (LOG_LEVELS.ERROR) console.error(`[API] ${message}`, ...args);
+  }
+};
+
 // Helper function to wait for Telegram initialization (shared between API functions)
 const waitForTelegramInitData = async (maxAttempts = 3, delay = 500): Promise<boolean> => {
   let attempts = 0;
@@ -16,10 +40,10 @@ const waitForTelegramInitData = async (maxAttempts = 3, delay = 500): Promise<bo
           localStorage.setItem('telegram_user_first_name', userData.first_name || '');
           if (userData.last_name) localStorage.setItem('telegram_user_last_name', userData.last_name);
           if (userData.username) localStorage.setItem('telegram_user_username', userData.username);
-          console.log('[API] Cached Telegram user data in localStorage:', userData.id);
+          logger.debug('Cached Telegram user data in localStorage:', userData.id);
         }
       } catch (e) {
-        console.warn('[API] Failed to cache Telegram user data:', e);
+        logger.warn('Failed to cache Telegram user data:', e);
       }
       return true;
     }
@@ -27,11 +51,11 @@ const waitForTelegramInitData = async (maxAttempts = 3, delay = 500): Promise<bo
     // If Telegram is available but no initData, try to initialize it
     if (window.Telegram?.WebApp) {
       try {
-        console.log(`[API] Attempt ${attempts + 1}: Initializing Telegram WebApp`);
+        logger.debug(`Attempt ${attempts + 1}: Initializing Telegram WebApp`);
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
       } catch (e) {
-        console.error('[API] Error initializing Telegram WebApp:', e);
+        logger.error('Error initializing Telegram WebApp:', e);
       }
     }
     
@@ -51,7 +75,7 @@ async function throwIfResNotOk(res: Response) {
     if (res.status === 401) {
       const authError = new Error(`Authentication Error: ${text}`);
       authError.name = 'AuthenticationError';
-      console.error('[API] Authentication failed:', authError);
+      logger.error('Authentication failed:', authError);
       throw authError;
     }
     
@@ -77,7 +101,7 @@ export async function apiRequest(
   // Check for and add Telegram WebApp authentication
   if (hasTelegramData && window.Telegram?.WebApp?.initData) {
     headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
-    console.log('[API] Telegram initData found and added to request headers');
+    logger.info('Telegram initData found and added to request headers');
     
     // If we successfully got Telegram initData, mark that we have established a session
     // This is used as a fallback when future Telegram initData might be missing
@@ -86,21 +110,21 @@ export async function apiRequest(
   } else {
     // Check if we've established a session before
     if (hasEstablishedSession) {
-      console.log('[API] No current Telegram initData but session is established');
+      logger.info('No current Telegram initData but session is established');
       // Check if session is still likely to be valid (less than 24 hours old)
       const lastSessionTime = parseInt(localStorage.getItem('lastSessionTime') || '0', 10);
       const SESSION_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
       
       if (Date.now() - lastSessionTime < SESSION_MAX_AGE) {
-        console.log('[API] Using established session - last session within timeframe');
+        logger.debug('Using established session - last session within timeframe');
       } else {
-        console.warn('[API] Session may have expired - attempting request but may fail');
+        logger.warn('Session may have expired - attempting request but may fail');
       }
     } else {
-      console.warn('[API] No Telegram initData available after retry attempts and no established session');
+      logger.warn('No Telegram initData available after retry attempts and no established session');
     }
     
-    console.log('[API] Continuing with request using session authentication');
+    logger.debug('Continuing with request using session authentication');
   }
   
   // Add the cached Telegram User ID as a fallback authentication mechanism
@@ -108,7 +132,7 @@ export async function apiRequest(
   const cachedUserId = localStorage.getItem('telegram_user_id');
   if (cachedUserId) {
     headers['x-telegram-user-id'] = cachedUserId;
-    console.log('[API] Added cached Telegram user ID to headers:', cachedUserId);
+    logger.debug('Added cached Telegram user ID to headers:', cachedUserId);
   }
   
   if (data) {
@@ -135,7 +159,7 @@ export async function apiRequest(
     // If we get an authentication error and had a supposedly valid session,
     // our session might have expired or been invalidated
     if (error && (error as Error).name === 'AuthenticationError' && hasEstablishedSession) {
-      console.warn('[API] Session authentication failed - clearing session status');
+      logger.warn('Session authentication failed - clearing session status');
       localStorage.removeItem('sessionAuthEstablished');
     }
     throw error;
@@ -162,7 +186,7 @@ export const getQueryFn: <T>(options: {
     // Check for and add Telegram WebApp authentication
     if (hasTelegramData && window.Telegram?.WebApp?.initData) {
       headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
-      console.log('[API] Telegram initData found and added to query request headers');
+      logger.info('Telegram initData found and added to query request headers');
       
       // If we successfully got Telegram initData, mark that we have established a session
       localStorage.setItem('sessionAuthEstablished', 'true');
@@ -170,21 +194,21 @@ export const getQueryFn: <T>(options: {
     } else {
       // Check if we've established a session before
       if (hasEstablishedSession) {
-        console.log('[API] No current Telegram initData but session is established');
+        logger.info('No current Telegram initData but session is established');
         // Check if session is still likely to be valid (less than 24 hours old)
         const lastSessionTime = parseInt(localStorage.getItem('lastSessionTime') || '0', 10);
         const SESSION_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
         
         if (Date.now() - lastSessionTime < SESSION_MAX_AGE) {
-          console.log('[API] Using established session - last session within timeframe');
+          logger.debug('Using established session - last session within timeframe');
         } else {
-          console.warn('[API] Session may have expired - attempting request but may fail');
+          logger.warn('Session may have expired - attempting request but may fail');
         }
       } else {
-        console.warn('[API] No Telegram initData available in query after retry attempts and no established session');
+        logger.warn('No Telegram initData available in query after retry attempts and no established session');
       }
       
-      console.log('[API] Continuing with request using session authentication');
+      logger.debug('Continuing with request using session authentication');
     }
     
     // Add the cached Telegram User ID as a fallback authentication mechanism
@@ -192,7 +216,7 @@ export const getQueryFn: <T>(options: {
     const cachedUserId = localStorage.getItem('telegram_user_id');
     if (cachedUserId) {
       headers['x-telegram-user-id'] = cachedUserId;
-      console.log('[API] Added cached Telegram user ID to query headers:', cachedUserId);
+      logger.debug('Added cached Telegram user ID to query headers:', cachedUserId);
     }
 
     try {
@@ -210,7 +234,7 @@ export const getQueryFn: <T>(options: {
       if (unauthorizedBehavior === "returnNull" && res.status === 401) {
         // Session might have expired if we get a 401
         if (hasEstablishedSession) {
-          console.warn('[API] Session authentication failed - clearing session status');
+          logger.warn('Session authentication failed - clearing session status');
           localStorage.removeItem('sessionAuthEstablished');
         }
         return null;
@@ -222,7 +246,7 @@ export const getQueryFn: <T>(options: {
       // If we get an authentication error and had a supposedly valid session,
       // our session might have expired or been invalidated
       if (error && (error as Error).name === 'AuthenticationError' && hasEstablishedSession) {
-        console.warn('[API] Session authentication failed in query - clearing session status');
+        logger.warn('Session authentication failed in query - clearing session status');
         localStorage.removeItem('sessionAuthEstablished');
       }
       throw error;
