@@ -5,6 +5,19 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.6.2] - 2025-04-05
+
+### Fixed
+- Fixed issue with duplicate match notifications being sent to collaboration hosts when using the "Match" button
+- Enhanced the notification system to only send one confirmation message to the requester user
+- Updated success message wording to correctly reflect notification behavior
+
+### Technical Details
+- Redesigned the match notification mechanism in `server/telegram.ts` to avoid redundant messages
+- Removed the call to `notifyMatchCreated` when a host clicks "Match" and instead directly notifies only the requester
+- Implemented direct inline message processing to handle match notifications more efficiently
+- Improved error handling and logging throughout the match notification process
+
 ## [Version 1.6.1] - 2025-04-04
 
 ### Changed

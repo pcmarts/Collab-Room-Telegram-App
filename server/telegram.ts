@@ -1143,20 +1143,53 @@ async function handleSwipeCallback(
 
       console.log("[CALLBACK_DEBUG] Created match record:", match);
 
-      // Notify both users about the match
+      // Only notify the requester about the match, as the host will see the updated message
       try {
-        await notifyMatchCreated(hostUser.id, userId, collaborationId);
-        console.log("[CALLBACK_DEBUG] Match notifications sent");
+        // Modified to only notify the requester, not the host
+        const [requesterUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId));
+          
+        const requesterChatId = parseInt(requesterUser.telegram_id);
+        
+        // Send a direct message to the requester
+        const matchMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""} just approved your collaboration request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly to coordinate your collaboration.`;
+        
+        // Create a keyboard with relevant actions
+        const matchKeyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: "💬 Chat with Host",
+                url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
+              },
+            ],
+            [
+              {
+                text: "🚀 Discover More Collabs",
+                web_app: { url: `${WEBAPP_URL}/discover` },
+              },
+            ],
+          ],
+        };
+        
+        await bot.sendMessage(requesterChatId, matchMessage, {
+          parse_mode: "HTML",
+          reply_markup: matchKeyboard,
+        });
+        
+        console.log("[CALLBACK_DEBUG] Match notification sent to requester");
       } catch (notifyError) {
         console.error(
-          "[CALLBACK_DEBUG] Error sending match notifications:",
+          "[CALLBACK_DEBUG] Error sending match notification to requester:",
           notifyError,
         );
         // Continue execution even if notification fails
       }
 
       // Update the message to show match success
-      responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""}. A notification has been sent to both of you with contact details.`;
+      responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""}. A notification has been sent to them about the match.`;
       
       updatedKeyboard = {
         inline_keyboard: [
@@ -1409,6 +1442,8 @@ export async function notifyNewCollabRequest(
     console.error("[Telegram Bot] Error sending collab request notification:", error);
   }
 }
+
+
 
 export async function notifyMatchCreated(
   hostUserId: string,
