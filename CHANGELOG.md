@@ -5,6 +5,19 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.6.3] - 2025-04-05
+
+### Enhanced
+- Enhanced match confirmation messages with company name, role, and collaboration type information
+- Simplified CTA buttons to "Chat with [first name]" and "My Matches" for improved usability
+- Added company information to match confirmation messages for clearer context
+
+### Technical Details
+- Updated match confirmation message format in Telegram notifications to include more detailed information
+- Fetched company data for requester user to display in match confirmation messages
+- Simplified button text for more intuitive user experience
+- Improved the formatting of confirmation messages with more contextual information
+
 ## [Version 1.6.2] - 2025-04-05
 
 ### Fixed

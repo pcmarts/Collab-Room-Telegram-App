@@ -1188,20 +1188,38 @@ async function handleSwipeCallback(
         // Continue execution even if notification fails
       }
 
-      // Update the message to show match success
-      responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""}. A notification has been sent to them about the match.`;
+      // Fetch the company information for the requester
+      const [requesterCompany] = await db
+        .select()
+        .from(companies)
+        .where(eq(companies.user_id, userId))
+        .catch(error => {
+          console.error("[CALLBACK_DEBUG] Error fetching requester company:", error);
+          return [null];
+        });
+
+      // Update the message to show match success with company and collab details
+      // Extract collaboration details for potential title
+      const collabDetails = typeof collaboration.details === 'string' 
+        ? JSON.parse(collaboration.details || '{}') 
+        : (collaboration.details || {});
+      
+      // Get title from details object if available
+      const collabTitle = collabDetails.title || collabDetails.name || '';
+      
+      responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${requesterCompany?.name || "Company"} for the "${collaboration.collab_type}" collaboration${collabTitle ? ` "${collabTitle}"` : ''}.\n\nA notification has been sent to them about the match.`;
       
       updatedKeyboard = {
         inline_keyboard: [
           [
             {
-              text: "💬 Chat With User",
+              text: `💬 Chat with ${requesterUser.first_name}`,
               url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
             },
           ],
           [
             {
-              text: "👥 View All Matches",
+              text: "My Matches",
               web_app: { url: `${WEBAPP_URL}/matches` },
             },
           ],
