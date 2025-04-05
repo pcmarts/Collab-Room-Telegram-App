@@ -512,7 +512,223 @@ Administrators can use additional bot commands:
 
 ## Enhanced Notification System
 
-The application includes an enhanced notification system for matches between users:
+The application includes an enhanced notification system for both collaboration requests and successful matches:
+
+### Collaboration Request Notifications
+
+When a user swipes right on a collaboration, a notification is sent to the collaboration host:
+
+```typescript
+export async function notifyNewCollabRequest(
+  hostUserId: string,
+  requestingUserId: string, 
+  collaborationId: string,
+  swipeId: string
+) {
+  try {
+    // Get all necessary data from database
+    const [hostUser] = await db.select().from(users).where(eq(users.id, hostUserId));
+    const [requestingUser] = await db.select().from(users).where(eq(users.id, requestingUserId));
+    const [collaboration] = await db.select().from(collaborations).where(eq(collaborations.id, collaborationId));
+    const [requestingCompany] = await db.select().from(companies).where(eq(companies.user_id, requestingUserId));
+    
+    // Get notification preferences
+    const [preferences] = await db.select()
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.user_id, hostUserId));
+    
+    // Check if user has disabled these notifications
+    if (preferences?.collab_requests_enabled === false) {
+      console.log(`Collaboration request notifications disabled for user ${hostUserId}`);
+      return;
+    }
+
+    // Create formatted HTML message with company hyperlink to Twitter
+    let companyLink = requestingCompany?.name || 'Unknown Company';
+    if (requestingCompany?.twitter_url) {
+      companyLink = `<a href="${requestingCompany.twitter_url}">${requestingCompany.name}</a>`;
+    }
+    
+    // Create shortened IDs for callback data (Telegram has 64-byte limit)
+    const shortCollabId = collaborationId.substring(0, 8);
+    const shortSwipeId = swipeId.substring(0, 8);
+    const shortRequesterId = requestingUserId.substring(0, 8);
+    
+    // Format message with all relevant information
+    const message = 
+      `👋 <b>New Collaboration Request!</b>\n\n` +
+      `${requestingUser.first_name} ${requestingUser.last_name || ''} from ${companyLink} ` +
+      `is interested in your <b>${collaboration.collab_type}</b> collaboration.\n\n` +
+      `<b>Role:</b> ${requestingCompany?.role_title || 'Not specified'}\n` +
+      `<b>Company:</b> ${requestingCompany?.name || 'Not specified'}`;
+    
+    // Create inline keyboard with View, Match, and Pass buttons
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "👁️ View",
+            web_app: { url: `${WEBAPP_URL}/discover` }
+          }
+        ],
+        [
+          {
+            text: "✅ Match",
+            callback_data: `match_${shortCollabId}_${shortSwipeId}_${shortRequesterId}`
+          },
+          {
+            text: "❌ Pass",
+            callback_data: `pass_${shortCollabId}_${shortSwipeId}_${shortRequesterId}`
+          }
+        ]
+      ]
+    };
+    
+    // Send notification to host
+    const chatId = parseInt(hostUser.telegram_id);
+    await sendDirectFormattedMessage(chatId, message, keyboard);
+    console.log(`Sent collaboration request notification to ${hostUser.first_name} for ${collaboration.collab_type}`);
+    
+  } catch (error) {
+    console.error('[Telegram Bot] Error sending collaboration request notification:', error);
+  }
+}
+```
+
+When users act on these notifications, their responses create appropriate database entries:
+
+```typescript
+// Handle callback queries for match and pass actions
+async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
+  if (!callbackQuery.data || !callbackQuery.from?.id) return;
+  
+  try {
+    // Extract data from callback
+    const [action, shortCollabId, shortSwipeId, shortRequesterId] = callbackQuery.data.split('_');
+    const adminTelegramId = callbackQuery.from.id.toString();
+    
+    // Get all required database records
+    const [hostUser] = await db.select().from(users).where(eq(users.telegram_id, adminTelegramId));
+    
+    // Find the full records based on shortened IDs
+    const [collaboration] = await db.select()
+      .from(collaborations)
+      .where(sql`LEFT(${collaborations.id}::text, 8) = ${shortCollabId}`);
+      
+    const [swipe] = await db.select()
+      .from(swipes)
+      .where(sql`LEFT(${swipes.id}::text, 8) = ${shortSwipeId}`);
+      
+    const [requester] = await db.select()
+      .from(users)
+      .where(sql`LEFT(${users.id}::text, 8) = ${shortRequesterId}`);
+
+    // Create response swipe in the database
+    const swipeDirection = action === 'match' ? 'right' : 'left';
+    await db.insert(swipes).values({
+      user_id: hostUser.id,
+      collaboration_id: collaboration.id,
+      direction: swipeDirection,
+      details: { source: 'telegram_notification' }
+    });
+
+    // If it's a match, notify the requester but not the host (who already knows)
+    if (action === 'match') {
+      await notifyMatchCreated(hostUser.id, requester.id, collaboration.id, true);
+    }
+    
+    // Update the original message to show the action taken
+    const actionText = action === 'match' ? 'Matched' : 'Passed';
+    const newMessage = `✅ <b>Action taken: ${actionText}</b>\n\nYou have ${actionText.toLowerCase()} with ${requester.first_name} ${requester.last_name || ''} on your ${collaboration.collab_type} collaboration.`;
+    
+    await bot.editMessageText(newMessage, {
+      chat_id: callbackQuery.message?.chat.id,
+      message_id: callbackQuery.message?.message_id,
+      parse_mode: 'HTML'
+    });
+    
+    // Send confirmation to the user
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: `You ${actionText.toLowerCase()} with ${requester.first_name}!`,
+      show_alert: false
+    });
+    
+  } catch (error) {
+    console.error('Error handling swipe callback:', error);
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: 'Error processing your action. Please try again.',
+      show_alert: true
+    });
+  }
+}
+```
+
+### Match Notifications
+
+When a match is created, formatted messages are sent to both users:
+
+```typescript
+export async function notifyMatchCreated(
+  hostUserId: string, 
+  requesterUserId: string, 
+  collaborationId: string,
+  skipHostNotification = false 
+) {
+  try {
+    // Get user and collaboration details
+    const [hostUser] = await db.select().from(users).where(eq(users.id, hostUserId));
+    const [requesterUser] = await db.select().from(users).where(eq(users.id, requesterUserId)); 
+    const [collaboration] = await db.select().from(collaborations).where(eq(collaborations.id, collaborationId));
+    
+    // Get company details
+    const [hostCompany] = await db.select().from(companies).where(eq(companies.user_id, hostUserId));
+    const [requesterCompany] = await db.select().from(companies).where(eq(companies.user_id, requesterUserId));
+    
+    // Convert telegram_id to integers for chat ID
+    const hostChatId = parseInt(hostUser.telegram_id);
+    const requesterChatId = parseInt(requesterUser.telegram_id);
+    
+    // Format the company names with hyperlinks to their Twitter profiles when available
+    let hostCompanyLink = hostCompany?.name || 'Unknown Company';
+    if (hostCompany?.twitter_url) {
+      hostCompanyLink = `<a href="${hostCompany.twitter_url}">${hostCompany.name}</a>`;
+    }
+    
+    let requesterCompanyLink = requesterCompany?.name || 'Unknown Company';
+    if (requesterCompany?.twitter_url) {
+      requesterCompanyLink = `<a href="${requesterCompany.twitter_url}">${requesterCompany.name}</a>`;
+    }
+    
+    // Simplified and enhanced messages with role titles and company hyperlinks
+    const hostMessage = `🎉 <b>New Match!</b>\n\n${requesterUser.first_name} ${requesterUser.last_name || ''} from ${requesterCompanyLink} (${requesterCompany?.role_title || 'Unknown Role'}) is a match for your <b>${collaboration.collab_type}</b> collaboration!`;
+    
+    const requesterMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ''} from ${hostCompanyLink} just matched with you for their <b>${collaboration.collab_type}</b> collaboration!`;
+    
+    // Create dynamic "Chat with [First Name]" buttons
+    const hostKeyboard = {
+      inline_keyboard: [
+        [{ text: `💬 Chat with ${requesterUser.first_name}`, url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}` }],
+        [{ text: "👥 My Matches", web_app: { url: `${WEBAPP_URL}/matches` } }]
+      ]
+    };
+    
+    const requesterKeyboard = {
+      inline_keyboard: [
+        [{ text: `💬 Chat with ${hostUser.first_name}`, url: `https://t.me/${hostUser.handle || hostUser.telegram_id}` }],
+        [{ text: "👥 My Matches", web_app: { url: `${WEBAPP_URL}/matches` } }]
+      ]
+    };
+    
+    // Send notifications with proper HTML formatting
+    if (!skipHostNotification) {
+      await sendDirectFormattedMessage(hostChatId, hostMessage, hostKeyboard);
+    }
+    await sendDirectFormattedMessage(requesterChatId, requesterMessage, requesterKeyboard);
+  } catch (error) {
+    console.error('[Telegram Bot] Error preparing match notifications:', error);
+  }
+}
+```
 
 ### HTML Formatting
 

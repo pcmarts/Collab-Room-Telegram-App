@@ -5,6 +5,41 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.6.5] - 2025-04-05
+
+### Added
+- Implemented comprehensive Telegram notification system for collaboration requests
+- Added interactive buttons in notifications for quick "Match" or "Pass" actions
+- Implemented system to respect user notification preferences by checking notification_preferences table
+
+### Enhanced
+- Designed notifications with Twitter hyperlinks for company names
+- Fixed Telegram API's 64-byte callback_data limitation by implementing shortened IDs
+- Added detailed error handling and logging for all notification operations
+- Enhanced notification message format with rich company and collaboration details
+
+### Technical Details
+- Created new `notifyNewCollabRequest` function in server/telegram.ts to handle sending formatted notifications
+- Modified `handleSwipeCallback` to process user responses to notification buttons
+- Implemented secure ID shortening system to stay within Telegram's callback_data limitations
+- Added notification preference check to respect user's collaboration request notification settings
+- Enhanced documentation to reflect the new notification system capabilities
+
+## [Version 1.6.4] - 2025-04-05
+
+### Enhanced
+- Enhanced matches interface with comprehensive social and company information
+- Added clickable social media links in match details screen (Twitter, LinkedIn, website)
+- Implemented Twitter follower count displays for both users and companies
+- Added blockchain networks and company tags displayed as badges
+- Integrated funding stage and token information in the match details
+
+### Technical Details
+- Updated Match interface in client to support additional fields for social media and company details
+- Enhanced server-side match data enrichment to include comprehensive user and company information
+- Implemented intelligent social link rendering with proper URL formatting and icon integration
+- Added conditional rendering for all fields to gracefully handle missing information
+
 ## [Version 1.6.3] - 2025-04-05
 
 ### Enhanced

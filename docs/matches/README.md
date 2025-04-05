@@ -8,8 +8,12 @@ The Matches page displays users who have matched with collaborations. Users can 
 
 - Display of match cards showing collaboration type, person, and company information
 - "Details" button to show comprehensive information about the collaboration and matched person
+- Detailed match screen with rich social media links and professional information
 - "Chat" button to initiate Telegram conversations with matched users
 - Status indicators for active/inactive matches
+- Twitter, LinkedIn, and website links with follower count displays
+- Blockchain networks and company tags displayed as visual badges
+- Funding stage and token information for relevant Web3 companies
 
 ## Technical Implementation
 
@@ -49,6 +53,24 @@ interface Match {
   companyDescription?: string;
   userDescription?: string;
   username?: string; // Telegram username for chat links
+  
+  // Additional user information
+  linkedinUrl?: string;
+  twitterUrl?: string;
+  twitterHandle?: string;
+  twitterFollowers?: string | number;
+  email?: string;
+  
+  // Additional company information
+  companyWebsite?: string;
+  companyLinkedinUrl?: string;
+  companyTwitterHandle?: string;
+  companyTwitterFollowers?: string | number;
+  fundingStage?: string;
+  hasToken?: boolean;
+  tokenTicker?: string;
+  blockchainNetworks?: string[];
+  companyTags?: string[];
 }
 ```
 
@@ -84,7 +106,19 @@ When a match is created through the discovery system, a Match Moment dialog is d
   - Triggered from `DiscoverPageNew.tsx` when matches are created
   - Responsive design works across screen sizes
 
-## Recent Fixes
+## Recent Enhancements
+
+**Version 1.6.4 (2025-04-05):**
+- Enhanced the match details interface with comprehensive social and company information
+- Added clickable social media links for both users and companies (Twitter, LinkedIn, website)
+- Implemented Twitter follower count displays and proper link formatting
+- Added blockchain networks and company tags displayed as visual badges
+- Integrated funding stage and token information in the match details dialog
+
+**Version 1.6.3 (2025-04-05):**
+- Enhanced match confirmation messages with company name, role, and collaboration type information
+- Simplified CTA buttons to "Chat with [first name]" and "My Matches" for improved usability
+- Added company information to match confirmation messages for clearer context
 
 **Version 1.6.1 (2025-04-04):**
 - Enhanced Match Moment UI with improved button icons and consistent styling
