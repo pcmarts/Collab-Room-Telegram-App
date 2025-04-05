@@ -14,6 +14,9 @@ import { sql } from 'drizzle-orm';
 import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, bot } from "./telegram";
 import { storage } from "./storage";
 
+// Store active SSE connections for application status updates
+const activeStatusConnections = new Map<string, Response>();
+
 // Define our session data structure
 interface ImpersonationSession extends Session {
   impersonating?: {
@@ -491,6 +494,13 @@ export async function registerRoutes(app: Express) {
       } catch (msgError) {
         console.error('Failed to send user approval notification:', msgError);
       }
+      
+      // Send real-time update to client via SSE if they have an active connection
+      sendApplicationStatusUpdate(
+        userId, 
+        'approved',
+        'Your application has been approved! You can now access all platform features.'
+      );
 
       return res.json({
         success: true,
@@ -1628,6 +1638,94 @@ export async function registerRoutes(app: Express) {
       return res.json({ error: 'Failed to fetch profile data' });
     }
   });
+  
+  // Application Status SSE endpoint - provides real-time application status updates
+  app.get("/api/application-status-updates/:userId", async (req: Request, res: Response) => {
+    console.log('============ DEBUG: Application Status SSE Connection ============');
+    console.log('Params:', req.params);
+    
+    try {
+      const { userId } = req.params;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+      }
+      
+      // Get Telegram user from request for authentication
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      // Verify the requested userId matches the authenticated user's ID
+      // This prevents users from accessing other users' status updates
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+      
+      if (!user || user.id !== userId) {
+        return res.status(403).json({ error: 'Forbidden - Cannot access this user status' });
+      }
+      
+      // Set headers for SSE
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      });
+      
+      // Send initial message
+      const initialStatus = user.is_approved ? 'approved' : 'processing';
+      res.write(`data: ${JSON.stringify({
+        status: initialStatus,
+        message: initialStatus === 'approved' 
+          ? 'Your application has been approved!' 
+          : 'Your application is currently being processed...',
+        timestamp: new Date().toISOString()
+      })}\n\n`);
+      
+      // Store client connection in map for later updates
+      activeStatusConnections.set(userId, res);
+      
+      // Handle client disconnect
+      req.on('close', () => {
+        console.log(`Client disconnected from status updates for user ${userId}`);
+        activeStatusConnections.delete(userId);
+      });
+      
+    } catch (error) {
+      console.error('Error establishing SSE connection:', error);
+      return res.status(500).json({ error: 'Failed to establish status update connection' });
+    }
+  });
+  
+  // Helper function to send status updates to connected clients
+  // This can be called from anywhere in the codebase
+  function sendApplicationStatusUpdate(userId: string, status: string, message?: string) {
+    const client = activeStatusConnections.get(userId);
+    if (client) {
+      client.write(`data: ${JSON.stringify({
+        status,
+        message: message || `Application status changed to: ${status}`,
+        timestamp: new Date().toISOString()
+      })}\n\n`);
+      
+      // If status is final (approved/rejected), close the connection
+      if (status === 'approved' || status === 'rejected') {
+        setTimeout(() => {
+          // Send one more message before closing
+          client.write(`data: ${JSON.stringify({
+            status: 'connection_closing',
+            message: 'Status updates complete, this connection will close.',
+            timestamp: new Date().toISOString()
+          })}\n\n`);
+          
+          // Remove from active connections map
+          activeStatusConnections.delete(userId);
+        }, 2000);
+      }
+    }
+  }
 
   // Events endpoint
   app.get("/api/events", async (req, res) => {
@@ -3504,3 +3602,6 @@ export async function registerRoutes(app: Express) {
 
   return httpServer;
 }
+
+// Export the sendApplicationStatusUpdate function so it can be used elsewhere
+export { sendApplicationStatusUpdate };

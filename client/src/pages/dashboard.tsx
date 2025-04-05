@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
-import { UserIcon, Users, Building, Star, Bell, Calendar, Plus, Settings } from 'lucide-react';
+import { UserIcon, Users, Building, Star, Bell, Calendar, Plus, Settings, Clock } from 'lucide-react';
 import { FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { NetworkStatus } from "@/components/NetworkStatus";
 import type { 
@@ -203,6 +203,37 @@ export default function Dashboard() {
             <span className="text-xs">My Company</span>
           </Button>
         </div>
+        
+        {/* Application Status Card */}
+        <Card className={`shadow-sm ${!user.is_approved ? 'border-yellow-300' : 'border-green-300'}`}>
+          <CardHeader className="pb-2 px-4 pt-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                {user.is_approved ? (
+                  <Star className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Clock className="h-4 w-4 text-yellow-500" />
+                )}
+                Application Status
+              </CardTitle>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 text-xs px-2"
+                onClick={() => setLocation('/application-status')}
+              >
+                View Details
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="px-4 pt-0 pb-3">
+            <p className="text-sm text-muted-foreground">
+              {user.is_approved 
+                ? 'Your application has been approved. You have full access to the platform.' 
+                : 'Your application is currently being processed. Check for real-time updates.'}
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Admin Panel Button - Only shown to admins */}
         {profile?.user?.is_admin && (

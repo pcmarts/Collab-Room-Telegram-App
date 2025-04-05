@@ -1,184 +1,232 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent } from '@/components/ui/card';
-import type { ProfileData } from '@/types/profile';
-import { format } from 'date-fns';
-import { useLocation } from 'wouter';
-import { Button } from '@/components/ui/button';
-import { FileCheck, Loader2, RefreshCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'wouter';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CheckCircle, Clock, AlertTriangle, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-export default function ApplicationStatus() {
-  const queryClient = useQueryClient();
-  const [_, setLocation] = useLocation();
-  const [countdown, setCountdown] = useState(30);
-  const [showReload, setShowReload] = useState(false);
-  const [processingState, setProcessingState] = useState('initializing');
+interface StatusUpdate {
+  status: string;
+  message: string;
+  timestamp: string;
+}
 
-  // Configure query with retries and immediate refetch
-  const { data: profile, isLoading, isError, refetch } = useQuery<ProfileData>({
-    queryKey: ['/api/profile'],
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    retry: 5,
-    retryDelay: 2000,
-    staleTime: 0,
-    gcTime: 0
-  });
-
-  // Effect to refetch data with exponential backoff strategy
-  useEffect(() => {
-    // Invalidate and refetch when component mounts
-    queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-    console.log('Fetching profile data...');
-
-    let attempts = 0;
-    const maxAttempts = 10; // Reduced from 30 to avoid excessive polling
-    let timeoutId: NodeJS.Timeout | null = null;
-
-    // Calculate delay with exponential backoff
-    const getBackoffDelay = (attempt: number) => {
-      // Start at 1s, double each time, cap at 30s: 1, 2, 4, 8, 16, 30, 30...
-      return Math.min(1000 * Math.pow(2, attempt), 30000);
-    };
-
-    // Update processing state message based on attempts
-    const updateProcessingState = (attempt: number) => {
-      if (attempt < 3) {
-        setProcessingState('initializing');
-      } else if (attempt < 6) {
-        setProcessingState('processing');
-      } else {
-        setProcessingState('finalizing');
-      }
-    };
-
-    // Function to check status with exponential backoff
-    const checkStatus = () => {
-      if (!profile?.user) {
-        console.log(`Checking profile status, attempt ${attempts + 1}`);
-        updateProcessingState(attempts);
-        refetch();
-        
-        attempts++;
-        setCountdown(maxAttempts - attempts);
-        
-        if (attempts >= maxAttempts) {
-          setShowReload(true);
-          console.log('Max attempts reached, showing reload option');
-        } else {
-          // Schedule next check with exponential backoff
-          const nextDelay = getBackoffDelay(attempts);
-          console.log(`Next check in ${nextDelay/1000} seconds`);
-          timeoutId = setTimeout(checkStatus, nextDelay);
-        }
-      } else {
-        console.log('Profile data found:', profile);
-        setShowReload(false);
-      }
-    };
-    
-    // Start the first check
-    checkStatus();
-    
-    // Cleanup timeout on unmount
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [queryClient, refetch, profile]);
-
-  const getProcessingMessage = () => {
-    switch (processingState) {
-      case 'initializing':
-        return 'Initializing your application...';
-      case 'processing':
-        return 'Processing your application data...';
-      case 'finalizing':
-        return 'Finalizing your application status...';
-      default:
-        return 'Loading your application status...';
-    }
+interface ProfileData {
+  user: {
+    id: string;
+    is_approved: boolean;
+    // include other user properties as needed
   };
+  company?: any;
+  preferences?: any;
+  marketingPreferences?: any;
+  conferencePreferences?: any;
+}
 
-  if (isLoading) {
+export default function ApplicationStatusPage() {
+  const { toast } = useToast();
+  const [statusUpdates, setStatusUpdates] = useState<StatusUpdate[]>([]);
+  const [connectionActive, setConnectionActive] = useState<boolean>(false);
+  
+  // Fetch current user profile to get the user ID
+  const { data: profile, isLoading: isLoadingProfile, error: profileError } = useQuery<ProfileData>({
+    queryKey: ['/api/profile'],
+    refetchOnWindowFocus: false,
+  });
+  
+  useEffect(() => {
+    if (!profile?.user?.id) return;
+    
+    const userId = profile.user.id;
+    let eventSource: EventSource | null = null;
+    
+    // Create SSE connection
+    try {
+      eventSource = new EventSource(`/api/application-status-updates/${userId}`);
+      
+      eventSource.onopen = () => {
+        console.log('SSE connection established');
+        setConnectionActive(true);
+      };
+      
+      // Handle status update events
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('Status update received:', data);
+        
+        // Add new status update to the list
+        setStatusUpdates(prev => [data, ...prev]);
+        
+        // Show toast notification for new updates
+        toast({
+          title: 'Application Status Update',
+          description: data.message,
+          variant: data.status === 'approved' ? 'default' : 'destructive',
+        });
+        
+        // If status is final or connection is closing, close the connection
+        if (data.status === 'connection_closing') {
+          eventSource?.close();
+          setConnectionActive(false);
+        }
+      };
+      
+      eventSource.onerror = (error) => {
+        console.error('SSE connection error:', error);
+        setConnectionActive(false);
+        eventSource?.close();
+      };
+    } catch (error) {
+      console.error('Failed to establish SSE connection:', error);
+      setConnectionActive(false);
+    }
+    
+    // Clean up on component unmount
+    return () => {
+      if (eventSource) {
+        console.log('Cleaning up SSE connection');
+        eventSource.close();
+        setConnectionActive(false);
+      }
+    };
+  }, [profile?.user?.id, toast]);
+  
+  // Get the current status from the latest update or the profile
+  const currentStatus = statusUpdates.length > 0 
+    ? statusUpdates[0].status 
+    : profile?.user?.is_approved 
+      ? 'approved' 
+      : 'processing';
+  
+  // Loading state
+  if (isLoadingProfile) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[100svh] bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">{getProcessingMessage()}</p>
-        <p className="text-sm text-muted-foreground mt-2">
-          Please wait {countdown} seconds while we process your application
-        </p>
-      </div>
-    );
-  }
-
-  if (isError || showReload) {
-    return (
-      <div className="p-4 text-center min-h-[100svh] flex flex-col items-center justify-center bg-background">
-        <h1 className="text-2xl font-bold mb-4">Still Processing Application</h1>
-        <p className="text-muted-foreground mb-4">
-          {isError 
-            ? "We're having trouble loading your application status."
-            : "We're still processing your application submission. Please try again."}
-        </p>
-        <Button 
-          onClick={() => {
-            setShowReload(false);
-            setCountdown(10); // Match the new maxAttempts value
-            setProcessingState('initializing');
-            refetch();
-          }}
-          className="flex items-center gap-2"
-        >
-          <RefreshCcw className="h-4 w-4" />
-          Try Again
-        </Button>
-      </div>
-    );
-  }
-
-  if (!profile?.user) {
-    return (
-      <div className="p-4 text-center min-h-[100svh] flex flex-col items-center justify-center bg-background">
-        <h1 className="text-2xl font-bold mb-4">Processing Application</h1>
-        <p className="text-muted-foreground mb-4">
-          {getProcessingMessage()}
-        </p>
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  const { user, company } = profile;
-  const applicationDate = user.applied_at ? format(new Date(user.applied_at), 'MMMM d, yyyy') : 'Unknown';
-
-  return (
-    <div className="min-h-[100svh] bg-background">
-      <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
-        <h1 className="text-lg font-semibold">Application Status</h1>
-      </div>
-
-      <div className="p-4">
+      <div className="container mx-auto p-4 max-w-3xl">
         <Card>
-          <CardContent className="p-6 text-center">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileCheck className="h-8 w-8 text-primary" />
-            </div>
-
-            <h2 className="text-xl font-semibold mb-2">Application Under Review</h2>
-            <p className="text-muted-foreground mb-6">
-              Thanks for applying to join CollabRoom! We're reviewing your application and will notify you through Telegram once it's approved.
-            </p>
-
-            <div className="text-sm text-left space-y-3 border-t pt-6">
-              <p><strong>Name:</strong> {user.first_name} {user.last_name}</p>
-              <p><strong>Company:</strong> {company?.name}</p>
-              <p><strong>Role:</strong> {company?.job_title}</p>
-              <p><strong>Telegram:</strong> @{user.handle}</p>
-              <p><strong>Applied:</strong> {applicationDate}</p>
-            </div>
+          <CardHeader>
+            <Skeleton className="h-8 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-1/2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-24 w-full mb-4" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-3/4" />
           </CardContent>
         </Card>
       </div>
+    );
+  }
+  
+  // Error state
+  if (profileError) {
+    return (
+      <div className="container mx-auto p-4 max-w-3xl">
+        <Card className="border-red-300">
+          <CardHeader>
+            <CardTitle className="text-red-500 flex items-center">
+              <AlertCircle className="mr-2" /> Error Loading Application Status
+            </CardTitle>
+            <CardDescription>
+              We couldn't load your application status. Please try again later.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-500">
+              If this problem persists, please contact support.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="container mx-auto p-4 max-w-3xl">
+      <Card className={`mb-6 ${
+        currentStatus === 'approved' ? 'border-green-300' : 
+        currentStatus === 'rejected' ? 'border-red-300' : 'border-yellow-300'
+      }`}>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            {currentStatus === 'approved' ? (
+              <><CheckCircle className="text-green-500 mr-2" /> Application Approved</>
+            ) : currentStatus === 'rejected' ? (
+              <><AlertTriangle className="text-red-500 mr-2" /> Application Rejected</>
+            ) : (
+              <><Clock className="text-yellow-500 mr-2" /> Application Processing</>
+            )}
+          </CardTitle>
+          <CardDescription>
+            {connectionActive ? 'Receiving real-time status updates...' : 'Status updates paused.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div className="bg-gray-50 p-4 rounded-md">
+              <h3 className="font-medium mb-2">Current Status</h3>
+              <p className="text-sm mb-1">
+                {statusUpdates.length > 0 ? statusUpdates[0].message : 
+                  profile?.user?.is_approved 
+                    ? 'Your application has been approved! You can now access all platform features.'
+                    : 'Your application is currently being processed...'}
+              </p>
+              <p className="text-xs text-gray-500">
+                Last updated: {statusUpdates.length > 0 
+                  ? new Date(statusUpdates[0].timestamp).toLocaleString()
+                  : 'Initial status'}
+              </p>
+            </div>
+            
+            {statusUpdates.length > 1 && (
+              <div>
+                <h3 className="font-medium mb-2">Update History</h3>
+                <div className="space-y-3">
+                  {statusUpdates.slice(1).map((update, index) => (
+                    <div key={index} className="border-l-2 pl-3 py-1 border-gray-300">
+                      <p className="text-sm">{update.message}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(update.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {currentStatus === 'approved' && (
+              <div className="bg-green-50 p-4 rounded-md">
+                <h3 className="font-medium text-green-700 mb-2">What's Next?</h3>
+                <p className="text-sm mb-3">
+                  Your application has been approved! You can now access all platform features:
+                </p>
+                <ul className="list-disc list-inside text-sm space-y-1 mb-3">
+                  <li>Create and manage collaborations</li>
+                  <li>Browse the marketplace for opportunities</li>
+                  <li>Apply to others' collaborations</li>
+                  <li>Set up your detailed preferences</li>
+                </ul>
+                <Button asChild className="mt-2">
+                  <Link href="/dashboard">Go to Dashboard</Link>
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+        {currentStatus !== 'approved' && (
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" asChild>
+              <Link href="/dashboard">Back to Dashboard</Link>
+            </Button>
+            <Button onClick={() => window.location.reload()}>Refresh Status</Button>
+          </CardFooter>
+        )}
+      </Card>
     </div>
   );
 }
