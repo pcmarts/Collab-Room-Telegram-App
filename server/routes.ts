@@ -2827,6 +2827,30 @@ export async function registerRoutes(app: Express) {
             // Determine if the current user is the host or requester
             const isHost = match.host_id === user.id;
             
+            // Get the relevant user and company based on who the current user is
+            const matchedUser = isHost ? requesterUser : hostUser;
+            const matchedCompany = isHost ? requesterCompany : hostCompany;
+
+            // Extract blockchainNetworks array from company details
+            let blockchainNetworks = [];
+            try {
+              if (matchedCompany?.details?.blockchain_networks) {
+                blockchainNetworks = matchedCompany.details.blockchain_networks;
+              }
+            } catch (error) {
+              console.error('Error parsing blockchainNetworks:', error);
+            }
+
+            // Extract companyTags array from company details
+            let companyTags = [];
+            try {
+              if (matchedCompany?.tags) {
+                companyTags = matchedCompany.tags;
+              }
+            } catch (error) {
+              console.error('Error parsing companyTags:', error);
+            }
+            
             // Construct match details
             return {
               id: match.id,
@@ -2862,7 +2886,25 @@ export async function registerRoutes(app: Express) {
                 `${hostUser?.first_name || ''} is a professional in the Web3 space.`,
                 
               // Add username for chat functionality  
-              username: isHost ? requesterUser?.handle : hostUser?.handle
+              username: isHost ? requesterUser?.handle : hostUser?.handle,
+              
+              // Additional user information
+              linkedinUrl: matchedUser?.linkedin_url || null,
+              twitterUrl: matchedUser?.twitter_url || null,
+              twitterHandle: matchedUser?.twitter_handle || null,
+              twitterFollowers: matchedUser?.twitter_followers || null,
+              email: matchedUser?.email || null,
+              
+              // Additional company information
+              companyWebsite: matchedCompany?.website || null,
+              companyLinkedinUrl: matchedCompany?.linkedin_url || null,
+              companyTwitterHandle: matchedCompany?.twitter_handle || null,
+              companyTwitterFollowers: matchedCompany?.twitter_followers || null,
+              fundingStage: matchedCompany?.funding_stage || null,
+              hasToken: matchedCompany?.has_token || false,
+              tokenTicker: matchedCompany?.token_ticker || null,
+              blockchainNetworks: blockchainNetworks,
+              companyTags: companyTags
             };
           } catch (error) {
             console.error(`Error enriching match ${match.id}:`, error);
@@ -2872,10 +2914,31 @@ export async function registerRoutes(app: Express) {
               status: match.status,
               collaborationType: 'Unknown',
               description: 'Unable to load full details',
+              details: {},
               matchedPerson: 'Unknown',
               companyName: 'Unknown Company',
               roleTitle: 'Unknown Role',
-              username: null
+              companyDescription: 'No company description available.',
+              userDescription: 'No user description available.',
+              username: null,
+              
+              // Additional user information
+              linkedinUrl: null,
+              twitterUrl: null,
+              twitterHandle: null,
+              twitterFollowers: null,
+              email: null,
+              
+              // Additional company information
+              companyWebsite: null,
+              companyLinkedinUrl: null,
+              companyTwitterHandle: null,
+              companyTwitterFollowers: null,
+              fundingStage: null,
+              hasToken: false,
+              tokenTicker: null,
+              blockchainNetworks: [],
+              companyTags: []
             };
           }
         }));
