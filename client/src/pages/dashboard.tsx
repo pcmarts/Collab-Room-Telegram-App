@@ -163,10 +163,15 @@ export default function Dashboard() {
     );
   }
 
-  // Redirect to application status if user is not approved
+  // User needs to be approved to access the dashboard
   if (!profile.user.is_approved) {
-    setLocation('/application-status');
-    return null;
+    // Show a pending status but don't redirect to application status
+    return (
+      <div className="p-4 text-center min-h-[100svh] flex flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold mb-4">Application Pending</h1>
+        <p className="text-muted-foreground mb-4">Your application is currently being processed.</p>
+      </div>
+    );
   }
 
   const { user } = profile;
@@ -204,37 +209,6 @@ export default function Dashboard() {
           </Button>
         </div>
         
-        {/* Application Status Card */}
-        <Card className={`shadow-sm ${!user.is_approved ? 'border-yellow-300' : 'border-green-300'}`}>
-          <CardHeader className="pb-2 px-4 pt-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm flex items-center gap-2">
-                {user.is_approved ? (
-                  <Star className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Clock className="h-4 w-4 text-yellow-500" />
-                )}
-                Application Status
-              </CardTitle>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-7 text-xs px-2"
-                onClick={() => setLocation('/application-status')}
-              >
-                View Details
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pt-0 pb-3">
-            <p className="text-sm text-muted-foreground">
-              {user.is_approved 
-                ? 'Your application has been approved. You have full access to the platform.' 
-                : 'Your application is currently being processed. Check for real-time updates.'}
-            </p>
-          </CardContent>
-        </Card>
-
         {/* Admin Panel Button - Only shown to admins */}
         {profile?.user?.is_admin && (
           <Button
