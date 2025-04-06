@@ -48,7 +48,16 @@ export default function Dashboard() {
   // Update state when profile loads
   useEffect(() => {
     if (profile?.notificationPreferences) {
-      setNotificationsEnabled(profile.notificationPreferences.notifications_enabled ?? true);
+      // Make sure we explicitly convert the value to boolean to handle 'f' and 't' PostgreSQL values properly
+      const notificationsEnabled = 
+        typeof profile.notificationPreferences.notifications_enabled === 'string'
+          ? profile.notificationPreferences.notifications_enabled === 't' 
+          : !!profile.notificationPreferences.notifications_enabled;
+      
+      console.log('Dashboard - DB notification setting:', profile.notificationPreferences.notifications_enabled);
+      console.log('Dashboard - Converted notification setting:', notificationsEnabled);
+      
+      setNotificationsEnabled(notificationsEnabled);
       setNotificationFrequency(profile.notificationPreferences.notification_frequency || 'Instant');
     }
   }, [profile]);

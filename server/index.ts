@@ -16,6 +16,9 @@ const PgSession = connectPgSimple(session);
 // Create Express application
 const app = express();
 
+// Disable etag generation completely to prevent 304 responses
+app.set('etag', false);
+
 // Set security headers manually since we can't use helmet directly
 app.use((req, res, next) => {
   // Skip if security headers are disabled (not recommended)
@@ -140,6 +143,19 @@ app.use((req, res, next) => {
 
 //Apply rate limiting to all API routes
 app.use('/api', apiLimiter);
+
+// Apply cache control headers to all API routes
+app.use('/api', (req, res, next) => {
+  // Disable caching for all API endpoints
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  
+  // Force a unique response by setting a dynamic Last-Modified header
+  res.setHeader('Last-Modified', new Date().toUTCString());
+  
+  next();
+});
 
 (async () => {
   log('Starting server initialization...');
