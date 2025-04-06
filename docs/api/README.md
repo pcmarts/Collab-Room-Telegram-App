@@ -306,6 +306,43 @@ Records a user's swipe action on a collaboration or a potential match.
 
 The `match` field is only included when both users have swiped right on each other's collaborations, creating a match. When a match is created, both users will also receive a notification through the Telegram bot.
 
+#### `GET /api/matches`
+
+Retrieves all matches for the current user with complete collaboration, user and company details in a single optimized database query. This endpoint uses advanced JOIN queries for significantly improved performance, reducing loading time especially for users with many matches.
+
+**Response:**
+```json
+[
+  {
+    "id": "match-id",
+    "matchDate": "April 5, 2025",
+    "status": "active",
+    "collaborationType": "Twitter Spaces Guest",
+    "description": "Looking for experts to discuss blockchain adoption",
+    "matchedPerson": "John Doe",
+    "companyName": "Blockchain Innovations",
+    "roleTitle": "Blockchain Developer",
+    "companyDescription": "A leading blockchain development company",
+    "userDescription": "Experienced blockchain developer",
+    "username": "johndoe",
+    "linkedinUrl": "https://linkedin.com/in/johndoe",
+    "twitterUrl": "https://twitter.com/johndoe",
+    "twitterHandle": "johndoe",
+    "twitterFollowers": "5000-10000",
+    "email": "john@example.com",
+    "companyWebsite": "https://example.com",
+    "companyLinkedinUrl": "https://linkedin.com/company/example",
+    "companyTwitterHandle": "examplecompany",
+    "companyTwitterFollowers": "10000-50000",
+    "fundingStage": "Series A",
+    "hasToken": true,
+    "tokenTicker": "EXP",
+    "blockchainNetworks": ["Ethereum", "Solana"],
+    "companyTags": ["DeFi", "Web3"]
+  }
+]
+```
+
 ### Notification Management
 
 #### `GET /api/notifications`
