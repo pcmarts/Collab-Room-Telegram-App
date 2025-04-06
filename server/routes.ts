@@ -1403,6 +1403,11 @@ export async function registerRoutes(app: Express) {
     console.log('============ DEBUG: Notification Toggle Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
+    
+    // Set cache control headers to prevent caching
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
 
     try {
       const { enabled } = req.body;
@@ -1636,10 +1641,16 @@ export async function registerRoutes(app: Express) {
     console.log('============ DEBUG: Profile Endpoint ============');
     console.log('Headers:', req.headers);
     
-    // Disable caching for this endpoint to ensure fresh data
+    // Disable caching and ETag generation for this endpoint to ensure fresh data
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    
+    // Disable ETag generation to prevent 304 Not Modified responses
+    res.setHeader('ETag', Date.now().toString());
+    
+    // Add a timestamp to force the browser to treat each response as unique
+    res.setHeader('Last-Modified', new Date().toUTCString());
 
     try {
       // Get user from impersonation session or Telegram data

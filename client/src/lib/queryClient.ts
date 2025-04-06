@@ -140,11 +140,22 @@ export async function apiRequest(
   }
 
   try {
-    const res = await fetch(url, {
+    // Add cache-busting parameter to URL for requests that need fresh data
+    let requestUrl = url;
+    
+    // Add timestamp to URLs that need to be cache-busted (especially for profile data)
+    if (url === '/api/profile' || url.includes('notification')) {
+      const cacheBuster = `_t=${Date.now()}`;
+      requestUrl = url.includes('?') ? `${url}&${cacheBuster}` : `${url}?${cacheBuster}`;
+      logger.debug('Added cache-busting timestamp to URL:', requestUrl);
+    }
+    
+    const res = await fetch(requestUrl, {
       method,
       headers,
       body: data ? JSON.stringify(data) : undefined,
       credentials: "include", // Ensure cookies are sent for session authentication
+      cache: 'no-cache' // Prevent caching of responses
     });
     
     if (res.ok) {
@@ -220,9 +231,21 @@ export const getQueryFn: <T>(options: {
     }
 
     try {
-      const res = await fetch(queryKey[0] as string, {
+      // Add cache-busting parameter to URL for requests that need fresh data
+      let url = queryKey[0] as string;
+      
+      // Add timestamp to URLs that need to be cache-busted (especially for profile data)
+      if (url === '/api/profile' || url.includes('notification')) {
+        const cacheBuster = `_t=${Date.now()}`;
+        url = url.includes('?') ? `${url}&${cacheBuster}` : `${url}?${cacheBuster}`;
+        logger.debug('Added cache-busting timestamp to URL:', url);
+      }
+      
+      const res = await fetch(url, {
         credentials: "include", // Ensure cookies are sent for session authentication
-        headers
+        headers,
+        // Add cache control to the fetch request options
+        cache: 'no-cache'
       });
       
       if (res.ok) {
