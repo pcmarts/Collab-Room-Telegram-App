@@ -1,6 +1,13 @@
 import TelegramBot from "node-telegram-bot-api";
 import { db } from "./db";
-import { users, collaborations, companies, notification_preferences, swipes, matches } from "@shared/schema";
+import {
+  users,
+  collaborations,
+  companies,
+  notification_preferences,
+  swipes,
+  matches,
+} from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { format } from "date-fns";
 import fs from "fs";
@@ -972,9 +979,7 @@ async function sendDirectFormattedMessage(
 /**
  * Callback handler for swipe actions from Telegram notifications
  */
-async function handleSwipeCallback(
-  callbackQuery: TelegramBot.CallbackQuery,
-) {
+async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
   const chatId = callbackQuery.message?.chat.id;
   if (!chatId || !callbackQuery.data) return;
 
@@ -1006,26 +1011,29 @@ async function handleSwipeCallback(
     const actionCode = parts[1]; // 'm' or 'p'
     const shortCollabId = parts[2]; // First 8 chars of collaboration ID
     const shortUserId = parts[3]; // First 8 chars of user ID
-    
+
     // Convert from shorthand action code to full action
-    const action = actionCode === 'm' ? 'match' : 'pass';
-    
+    const action = actionCode === "m" ? "match" : "pass";
+
     console.log("[CALLBACK_DEBUG] Parsed short IDs:", {
       actionCode,
       shortCollabId,
       shortUserId,
-      fullAction: action
+      fullAction: action,
     });
-    
+
     // Query the database to get the full IDs based on the shortened versions
     // Find collaboration ID that starts with the short ID
     const [collaboration] = await db
       .select()
       .from(collaborations)
-      .where(eq(collaborations.id, 
-        sql`(SELECT id FROM collaborations WHERE id::text LIKE ${shortCollabId + '%'} LIMIT 1)`
-      ));
-      
+      .where(
+        eq(
+          collaborations.id,
+          sql`(SELECT id FROM collaborations WHERE id::text LIKE ${shortCollabId + "%"} LIMIT 1)`,
+        ),
+      );
+
     if (!collaboration) {
       console.error(
         "[CALLBACK_DEBUG] Collaboration not found for short ID:",
@@ -1034,15 +1042,18 @@ async function handleSwipeCallback(
       await bot.sendMessage(chatId, "Error: Collaboration not found");
       return;
     }
-    
+
     // Find user ID that starts with the short ID
     const [matchedUser] = await db
       .select()
       .from(users)
-      .where(eq(users.id, 
-        sql`(SELECT id FROM users WHERE id::text LIKE ${shortUserId + '%'} LIMIT 1)`
-      ));
-      
+      .where(
+        eq(
+          users.id,
+          sql`(SELECT id FROM users WHERE id::text LIKE ${shortUserId + "%"} LIMIT 1)`,
+        ),
+      );
+
     if (!matchedUser) {
       console.error(
         "[CALLBACK_DEBUG] User not found for short ID:",
@@ -1051,7 +1062,7 @@ async function handleSwipeCallback(
       await bot.sendMessage(chatId, "Error: User not found");
       return;
     }
-    
+
     // Now we have the full IDs
     const collaborationId = collaboration.id;
     const userId = matchedUser.id;
@@ -1084,23 +1095,23 @@ async function handleSwipeCallback(
 
     // Check if the host owns the collaboration
     if (collaboration.creator_id !== hostUser.id) {
-      console.error(
-        "[CALLBACK_DEBUG] User is not the collaboration creator:",
-        { hostId: hostUser.id, creatorId: collaboration.creator_id },
-      );
+      console.error("[CALLBACK_DEBUG] User is not the collaboration creator:", {
+        hostId: hostUser.id,
+        creatorId: collaboration.creator_id,
+      });
       await bot.sendMessage(
         chatId,
         "Error: You don't have permission to perform this action",
       );
       return;
     }
-    
+
     // Get the requester user's details
     const [requesterUser] = await db
       .select()
       .from(users)
       .where(eq(users.id, userId));
-      
+
     if (!requesterUser) {
       console.error("[CALLBACK_DEBUG] Requester user not found:", userId);
       await bot.sendMessage(chatId, "Error: The other user was not found");
@@ -1109,7 +1120,7 @@ async function handleSwipeCallback(
 
     // Create the appropriate swipe based on the action
     const direction = action === "match" ? "right" : "left";
-    
+
     // Create a swipe record
     // Use db directly since we don't have access to storage here
     const [swipe] = await db
@@ -1150,12 +1161,12 @@ async function handleSwipeCallback(
           .select()
           .from(users)
           .where(eq(users.id, userId));
-          
+
         const requesterChatId = parseInt(requesterUser.telegram_id);
-        
+
         // Send a direct message to the requester
-        const matchMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""} just approved your collaboration request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly to coordinate your collaboration.`;
-        
+        const matchMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""} from ${hostCompanyName} just approved your collaboration request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly to coordinate your collaboration.`;
+
         // Create a keyboard with relevant actions
         const matchKeyboard = {
           inline_keyboard: [
@@ -1173,12 +1184,12 @@ async function handleSwipeCallback(
             ],
           ],
         };
-        
+
         await bot.sendMessage(requesterChatId, matchMessage, {
           parse_mode: "HTML",
           reply_markup: matchKeyboard,
         });
-        
+
         console.log("[CALLBACK_DEBUG] Match notification sent to requester");
       } catch (notifyError) {
         console.error(
@@ -1193,22 +1204,26 @@ async function handleSwipeCallback(
         .select()
         .from(companies)
         .where(eq(companies.user_id, userId))
-        .catch(error => {
-          console.error("[CALLBACK_DEBUG] Error fetching requester company:", error);
+        .catch((error) => {
+          console.error(
+            "[CALLBACK_DEBUG] Error fetching requester company:",
+            error,
+          );
           return [null];
         });
 
       // Update the message to show match success with company and collab details
       // Extract collaboration details for potential title
-      const collabDetails = typeof collaboration.details === 'string' 
-        ? JSON.parse(collaboration.details || '{}') 
-        : (collaboration.details || {});
-      
+      const collabDetails =
+        typeof collaboration.details === "string"
+          ? JSON.parse(collaboration.details || "{}")
+          : collaboration.details || {};
+
       // Get title from details object if available
-      const collabTitle = collabDetails.title || collabDetails.name || '';
-      
-      responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${requesterCompany?.name || "Company"} for the "${collaboration.collab_type}" collaboration${collabTitle ? ` "${collabTitle}"` : ''}.\n\nA notification has been sent to them about the match.`;
-      
+      const collabTitle = collabDetails.title || collabDetails.name || "";
+
+      responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${requesterCompany?.name || "Company"} for the "${collaboration.collab_type}" collaboration${collabTitle ? ` "${collabTitle}"` : ""}.\n\nA notification has been sent to them about the match.`;
+
       updatedKeyboard = {
         inline_keyboard: [
           [
@@ -1228,7 +1243,7 @@ async function handleSwipeCallback(
     } else {
       // For pass, just show a simple confirmation
       responseMessage = `❌ <b>Passed</b>\n\nYou've passed on ${requesterUser.first_name} ${requesterUser.last_name || ""}'s request.`;
-      
+
       updatedKeyboard = {
         inline_keyboard: [
           [
@@ -1258,10 +1273,7 @@ async function handleSwipeCallback(
         });
       }
     } catch (editError) {
-      console.error(
-        "[CALLBACK_DEBUG] Failed to update message:",
-        editError,
-      );
+      console.error("[CALLBACK_DEBUG] Failed to update message:", editError);
       // Send a new message as fallback
       await bot.sendMessage(chatId, responseMessage, {
         parse_mode: "HTML",
@@ -1276,7 +1288,10 @@ async function handleSwipeCallback(
         "Sorry, there was an error processing your action. Please try again using the app.",
       );
     } catch (sendError) {
-      console.error("[CALLBACK_DEBUG] Failed to send error message:", sendError);
+      console.error(
+        "[CALLBACK_DEBUG] Failed to send error message:",
+        sendError,
+      );
     }
   }
 }
@@ -1304,10 +1319,13 @@ export async function notifyNewCollabRequest(
       .select()
       .from(notification_preferences)
       .where(eq(notification_preferences.user_id, hostUserId));
-    
+
     // Skip if notifications are disabled
     if (notificationPrefs && !notificationPrefs.notifications_enabled) {
-      console.log("[Telegram Bot] Host has notifications disabled:", hostUserId);
+      console.log(
+        "[Telegram Bot] Host has notifications disabled:",
+        hostUserId,
+      );
       return;
     }
 
@@ -1354,10 +1372,9 @@ export async function notifyNewCollabRequest(
       .where(eq(companies.user_id, requesterUserId));
 
     if (!requesterCompany) {
-      console.error(
-        "[Telegram Bot] Could not find requester company data:",
-        { requesterUserId },
-      );
+      console.error("[Telegram Bot] Could not find requester company data:", {
+        requesterUserId,
+      });
       return;
     }
 
@@ -1372,14 +1389,14 @@ export async function notifyNewCollabRequest(
     }
 
     // Format company twitter URL if available
-    const twitterHandle = requesterCompany.twitter_handle 
-      ? requesterCompany.twitter_handle.replace('@', '')
+    const twitterHandle = requesterCompany.twitter_handle
+      ? requesterCompany.twitter_handle.replace("@", "")
       : null;
-    
-    const twitterUrl = twitterHandle 
+
+    const twitterUrl = twitterHandle
       ? `https://twitter.com/${twitterHandle}`
       : null;
-    
+
     // Format company name with Twitter hyperlink if available
     const companyNameFormatted = twitterUrl
       ? `<a href="${twitterUrl}">${requesterCompany.name}</a>`
@@ -1387,47 +1404,55 @@ export async function notifyNewCollabRequest(
 
     // Format the collaboration date if available
     let collabDate = "Any future date";
-    if (collaboration.date_type === 'specific_date' && collaboration.specific_date) {
+    if (
+      collaboration.date_type === "specific_date" &&
+      collaboration.specific_date
+    ) {
       collabDate = collaboration.specific_date;
     }
 
     // Format topics as a comma-separated string
-    const topicsText = collaboration.topics && collaboration.topics.length > 0
-      ? collaboration.topics.join(", ")
-      : "Not specified";
-    
+    const topicsText =
+      collaboration.topics && collaboration.topics.length > 0
+        ? collaboration.topics.join(", ")
+        : "Not specified";
+
     // Extract short description from details if available
     let shortDescription = "";
     if (collaboration.details) {
-      const details = typeof collaboration.details === "string"
-        ? JSON.parse(collaboration.details)
-        : collaboration.details;
-      
-      shortDescription = details.short_description || details.description || collaboration.description || "";
+      const details =
+        typeof collaboration.details === "string"
+          ? JSON.parse(collaboration.details)
+          : collaboration.details;
+
+      shortDescription =
+        details.short_description ||
+        details.description ||
+        collaboration.description ||
+        "";
     } else {
       shortDescription = collaboration.description || "";
     }
 
     // Build the message with HTML formatting
     const message =
-      `<b>New Collab Request</b>\n\n` +
-      `💼: ${companyNameFormatted}\n` +
-      `👤: ${requesterCompany.job_title}\n\n` +
-      `Your Collab: ${collaboration.collab_type} - ${shortDescription}\n` +
-      `Topic: ${topicsText}\n` +
-      `Date: ${collabDate}\n`;
+      `<b>New Collab Request</b>\n` +
+      `The <i>${requesterCompany.job_title}</i> from ${companyNameFormatted}\n` +
+      `Would like to collaborate on your collab <i>${collaboration.collab_type}</i> - <i>${shortDescription}</i>\n` +
+      `<b>Topic</b>:<i> ${topicsText}</i>\n` +
+      `🗓️: ${collabDate}\n\n`;
 
     // Create shortened IDs for callback data (Telegram has a 64-byte limit)
     // Generate shorter identifiers by taking first 8 chars of each UUID
     const shortCollabId = collaborationId.substring(0, 8);
     const shortUserId = requesterUserId.substring(0, 8);
-    
+
     // Create inline keyboard with two buttons on separate rows
     const keyboard = {
       inline_keyboard: [
         [
           {
-            text: "View",
+            text: "More Info",
             web_app: { url: `${WEBAPP_URL}/discover` },
           },
         ],
@@ -1457,11 +1482,12 @@ export async function notifyNewCollabRequest(
       );
     }
   } catch (error) {
-    console.error("[Telegram Bot] Error sending collab request notification:", error);
+    console.error(
+      "[Telegram Bot] Error sending collab request notification:",
+      error,
+    );
   }
 }
-
-
 
 export async function notifyMatchCreated(
   hostUserId: string,
