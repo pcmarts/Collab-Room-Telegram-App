@@ -47,42 +47,84 @@ export default function Dashboard() {
   
   // Update state when profile loads
   useEffect(() => {
+    console.log('Dashboard - Profile data received:', profile);
+    
     if (profile?.notificationPreferences) {
-      // Make sure we explicitly convert the value to boolean to handle 'f' and 't' PostgreSQL values properly
-      const notificationsEnabled = 
-        typeof profile.notificationPreferences.notifications_enabled === 'string'
-          ? profile.notificationPreferences.notifications_enabled === 't' 
-          : !!profile.notificationPreferences.notifications_enabled;
+      console.log('Dashboard - Raw notification preferences:', JSON.stringify(profile.notificationPreferences, null, 2));
       
-      console.log('Dashboard - DB notification setting:', profile.notificationPreferences.notifications_enabled);
-      console.log('Dashboard - Converted notification setting:', notificationsEnabled);
+      // Make sure we explicitly convert the value to boolean to handle PostgreSQL boolean values properly
+      // PostgreSQL can return 'f', 'false', false, or 0 for false values
+      // And 't', 'true', true, or 1 for true values
+      let notificationsEnabled = false;
+      
+      if (typeof profile.notificationPreferences.notifications_enabled === 'string') {
+        // Handle string values: 't', 'true', 'f', 'false'
+        const strValue = String(profile.notificationPreferences.notifications_enabled).toLowerCase();
+        notificationsEnabled = ['t', 'true'].includes(strValue);
+        console.log('Dashboard - String value detected:', profile.notificationPreferences.notifications_enabled);
+      } else if (typeof profile.notificationPreferences.notifications_enabled === 'boolean') {
+        // Handle boolean values: true, false
+        notificationsEnabled = profile.notificationPreferences.notifications_enabled;
+        console.log('Dashboard - Boolean value detected:', profile.notificationPreferences.notifications_enabled);
+      } else if (typeof profile.notificationPreferences.notifications_enabled === 'number') {
+        // Handle number values: 1, 0
+        notificationsEnabled = profile.notificationPreferences.notifications_enabled > 0;
+        console.log('Dashboard - Number value detected:', profile.notificationPreferences.notifications_enabled);
+      } else {
+        // Default behavior for null, undefined or other types
+        notificationsEnabled = false;
+        console.log('Dashboard - Unknown value type detected:', 
+          typeof profile.notificationPreferences.notifications_enabled, 
+          profile.notificationPreferences.notifications_enabled
+        );
+      }
+      
+      console.log('Dashboard - Final interpreted notification setting:', notificationsEnabled);
       
       setNotificationsEnabled(notificationsEnabled);
       setNotificationFrequency(profile.notificationPreferences.notification_frequency || 'Instant');
+    } else {
+      console.log('Dashboard - No notification preferences found in profile data');
     }
   }, [profile]);
 
   const handleNotificationSettingsChange = async (enabled: boolean) => {
+    console.log('Dashboard - Notification toggle button clicked with value:', enabled);
+    
+    // Update local state first for immediate UI feedback
     setNotificationsEnabled(enabled);
+    
     try {
       setIsSubmitting(true);
       
+      // Add a timestamp to ensure a unique request and prevent caching
+      const uniqueEndpoint = `/api/notification-toggle?_t=${Date.now()}`;
+      console.log('Dashboard - Making API request to:', uniqueEndpoint);
+      
       // Use the simplified notification toggle endpoint that only updates notification preferences
-      await apiRequest('/api/notification-toggle', 'POST', {
+      const response = await apiRequest(uniqueEndpoint, 'POST', {
         enabled
       });
       
+      console.log('Dashboard - Toggle API response:', response);
+      
       // Update the frequency state based on the toggle
-      setNotificationFrequency(enabled ? 'Instant' : 'Never');
+      const newFrequency = enabled ? 'Instant' : 'Daily';
+      setNotificationFrequency(newFrequency);
+      console.log('Dashboard - Set notification frequency to:', newFrequency);
       
       // Force refresh profile data to get the latest notification preferences
-      await refetch();
+      console.log('Dashboard - Refreshing profile data...');
+      const refreshedData = await refetch();
+      console.log('Dashboard - Refreshed profile data:', refreshedData);
 
       toast({
         title: "Success",
         description: enabled ? "Notifications have been enabled" : "Notifications have been disabled",
       });
     } catch (error) {
+      console.error('Dashboard - Error updating notification settings:', error);
+      
       // Revert local state if the API call fails
       setNotificationsEnabled(!enabled);
       

@@ -1408,9 +1408,14 @@ export async function registerRoutes(app: Express) {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    
+    // Force a unique response
+    res.setHeader('Last-Modified', new Date().toUTCString());
 
     try {
       const { enabled } = req.body;
+      
+      console.log('DEBUG: Notification toggle requested with enabled =', enabled, 'type =', typeof enabled);
       
       if (typeof enabled !== 'boolean') {
         return res.status(400).json({ error: 'Missing or invalid "enabled" parameter - must be a boolean' });
@@ -1431,6 +1436,9 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: 'User not found' });
       }
 
+      console.log('DEBUG: Updating notification preferences for user:', user.id);
+      console.log('DEBUG: Setting notifications_enabled to:', enabled);
+
       // Check if notification preferences exist for this user
       const existingNotificationPrefs = await db.select()
         .from(notification_preferences)
@@ -1442,26 +1450,35 @@ export async function registerRoutes(app: Express) {
       
       let result;
       if (existingNotificationPrefs.length > 0) {
+        console.log('DEBUG: Updating existing notification preferences');
         // Update existing notification preferences
         [result] = await db.update(notification_preferences)
           .set({ 
             notification_frequency,
-            notifications_enabled: enabled
+            notifications_enabled: enabled,
+            updated_at: new Date()
           })
           .where(eq(notification_preferences.user_id, user.id))
           .returning();
       } else {
+        console.log('DEBUG: Creating new notification preferences');
         // Create new notification preferences
         [result] = await db.insert(notification_preferences)
-          .values([{
+          .values({
             user_id: user.id,
             notifications_enabled: enabled,
-            notification_frequency
-          }])
+            notification_frequency,
+            created_at: new Date(),
+            updated_at: new Date()
+          })
           .returning();
       }
       
-      console.log('Updated notification preferences:', result);
+      console.log('DEBUG: Updated notification preferences:', result);
+      
+      // Verify that the result has the correct boolean value
+      console.log('DEBUG: Result notifications_enabled type:', typeof result.notifications_enabled);
+      console.log('DEBUG: Result notifications_enabled value:', result.notifications_enabled);
       
       return res.json({
         success: true,

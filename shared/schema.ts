@@ -293,7 +293,9 @@ export const notification_preferences = pgTable('notification_preferences', {
   user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   notifications_enabled: boolean('notifications_enabled').default(true),
   notification_frequency: text('notification_frequency', { enum: NOTIFICATION_FREQUENCIES }).notNull().default('Daily'),
-  created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  last_notified_at: timestamp('last_notified_at', { withTimezone: true })
 });
 
 // Marketing collaboration preferences
