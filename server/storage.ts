@@ -1237,24 +1237,37 @@ export class DatabaseStorage implements IStorage {
     // Check if notification preferences exist for this user
     const existingPrefs = await this.getUserNotificationPreferences(userId);
     
+    // Log the current state for debugging
+    console.log(`[updateUserNotificationPreferences] User ${userId} - Existing prefs:`, existingPrefs);
+    console.log(`[updateUserNotificationPreferences] Updating with:`, prefs);
+    
     if (existingPrefs) {
-      // Update existing preferences
+      // Update existing preferences with updated_at timestamp
       const [updatedPrefs] = await db
         .update(notification_preferences)
-        .set(prefs)
+        .set({
+          ...prefs,
+          updated_at: new Date()
+        })
         .where(eq(notification_preferences.id, existingPrefs.id))
         .returning();
+      
+      console.log(`[updateUserNotificationPreferences] Updated preferences:`, updatedPrefs);
       return updatedPrefs;
     } else {
-      // Create new preferences
+      // Create new preferences with both timestamps
       const [newPrefs] = await db
         .insert(notification_preferences)
         .values({
           user_id: userId,
           notifications_enabled: prefs.notifications_enabled !== undefined ? prefs.notifications_enabled : true,
-          notification_frequency: prefs.notification_frequency || 'Daily'
+          notification_frequency: prefs.notification_frequency || 'Daily',
+          created_at: new Date(),
+          updated_at: new Date()
         })
         .returning();
+      
+      console.log(`[updateUserNotificationPreferences] Created new preferences:`, newPrefs);
       return newPrefs;
     }
   }

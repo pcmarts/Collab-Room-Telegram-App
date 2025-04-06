@@ -62,6 +62,7 @@ export default function Dashboard() {
         const strValue = String(profile.notificationPreferences.notifications_enabled).toLowerCase();
         notificationsEnabled = ['t', 'true'].includes(strValue);
         console.log('Dashboard - String value detected:', profile.notificationPreferences.notifications_enabled);
+        console.log('Dashboard - Parsed string value to boolean:', notificationsEnabled);
       } else if (typeof profile.notificationPreferences.notifications_enabled === 'boolean') {
         // Handle boolean values: true, false
         notificationsEnabled = profile.notificationPreferences.notifications_enabled;
@@ -70,6 +71,7 @@ export default function Dashboard() {
         // Handle number values: 1, 0
         notificationsEnabled = profile.notificationPreferences.notifications_enabled > 0;
         console.log('Dashboard - Number value detected:', profile.notificationPreferences.notifications_enabled);
+        console.log('Dashboard - Parsed number value to boolean:', notificationsEnabled);
       } else {
         // Default behavior for null, undefined or other types
         notificationsEnabled = false;
@@ -81,8 +83,18 @@ export default function Dashboard() {
       
       console.log('Dashboard - Final interpreted notification setting:', notificationsEnabled);
       
-      setNotificationsEnabled(notificationsEnabled);
+      // Log the current state before setting it
+      console.log('Dashboard - Current notificationsEnabled state:', notificationsEnabled);
+      
+      // Force the value to be explicitly a boolean
+      const forcedBoolean = Boolean(notificationsEnabled);
+      console.log('Dashboard - Forced boolean value:', forcedBoolean);
+      
+      setNotificationsEnabled(forcedBoolean);
+      console.log('Dashboard - State updated to:', forcedBoolean);
+      
       setNotificationFrequency(profile.notificationPreferences.notification_frequency || 'Instant');
+      console.log('Dashboard - Notification frequency set to:', profile.notificationPreferences.notification_frequency || 'Instant');
     } else {
       console.log('Dashboard - No notification preferences found in profile data');
     }
@@ -90,9 +102,11 @@ export default function Dashboard() {
 
   const handleNotificationSettingsChange = async (enabled: boolean) => {
     console.log('Dashboard - Notification toggle button clicked with value:', enabled);
+    console.log('Dashboard - Notification toggle clicked with value type:', typeof enabled);
     
     // Update local state first for immediate UI feedback
     setNotificationsEnabled(enabled);
+    console.log('Dashboard - Local state updated to:', enabled);
     
     try {
       setIsSubmitting(true);
@@ -101,12 +115,22 @@ export default function Dashboard() {
       const uniqueEndpoint = `/api/notification-toggle?_t=${Date.now()}`;
       console.log('Dashboard - Making API request to:', uniqueEndpoint);
       
+      // Create the payload and log it for debugging
+      const payload = { enabled };
+      console.log('Dashboard - API request payload:', JSON.stringify(payload));
+      console.log('Dashboard - API request payload type:', typeof payload.enabled);
+      
       // Use the simplified notification toggle endpoint that only updates notification preferences
-      const response = await apiRequest(uniqueEndpoint, 'POST', {
-        enabled
-      });
+      const response = await apiRequest(uniqueEndpoint, 'POST', payload);
       
       console.log('Dashboard - Toggle API response:', response);
+      console.log('Dashboard - Response preferences:', response.preferences);
+      
+      // Check if the response has what we expect
+      if (response.preferences) {
+        console.log('Dashboard - Response notifications_enabled:', response.preferences.notifications_enabled);
+        console.log('Dashboard - Response notifications_enabled type:', typeof response.preferences.notifications_enabled);
+      }
       
       // Update the frequency state based on the toggle
       const newFrequency = enabled ? 'Instant' : 'Daily';

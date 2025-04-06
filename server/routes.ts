@@ -1403,14 +1403,19 @@ export async function registerRoutes(app: Express) {
     console.log('============ DEBUG: Notification Toggle Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
+    console.log('Request URL:', req.url);
+    console.log('Request Method:', req.method);
     
-    // Set cache control headers to prevent caching
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    // Set stronger cache control headers to prevent caching
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
+    res.setHeader('Expires', '-1');
+    res.setHeader('Surrogate-Control', 'no-store');
     
-    // Force a unique response
+    // Force a unique response with a timestamp in both headers
+    const timestamp = Date.now();
     res.setHeader('Last-Modified', new Date().toUTCString());
+    res.setHeader('X-Response-Time', timestamp.toString());
 
     try {
       const { enabled } = req.body;
@@ -1418,6 +1423,7 @@ export async function registerRoutes(app: Express) {
       console.log('DEBUG: Notification toggle requested with enabled =', enabled, 'type =', typeof enabled);
       
       if (typeof enabled !== 'boolean') {
+        console.log('ERROR: Invalid enabled parameter type:', typeof enabled, 'value:', enabled);
         return res.status(400).json({ error: 'Missing or invalid "enabled" parameter - must be a boolean' });
       }
 
@@ -1718,9 +1724,31 @@ export async function registerRoutes(app: Express) {
       const [notificationPrefs] = await db.select()
         .from(notification_preferences)
         .where(eq(notification_preferences.user_id, user.id))
-        .catch(() => [null]); // Catch error if table doesn't exist yet
+        .catch((error) => {
+          console.error('Error fetching notification preferences:', error);
+          return [null];
+        }); // Catch error if table doesn't exist yet
         
       console.log('DEBUG - Notification preferences from DB:', notificationPrefs);
+      
+      // Print additional debug info about notifications_enabled
+      if (notificationPrefs) {
+        console.log('DEBUG - notificationPrefs.notifications_enabled type:', typeof notificationPrefs.notifications_enabled);
+        console.log('DEBUG - notificationPrefs.notifications_enabled value:', notificationPrefs.notifications_enabled);
+        console.log('DEBUG - notificationPrefs.notification_frequency:', notificationPrefs.notification_frequency);
+        
+        // Check if Boolean() parsing would produce a different result
+        const boolValue = Boolean(notificationPrefs.notifications_enabled);
+        console.log('DEBUG - Boolean(notificationPrefs.notifications_enabled):', boolValue);
+        
+        // Check more specific boolean parsing
+        const isEnabled = typeof notificationPrefs.notifications_enabled === 'string' 
+          ? ['t', 'true'].includes(String(notificationPrefs.notifications_enabled).toLowerCase())
+          : Boolean(notificationPrefs.notifications_enabled);
+        console.log('DEBUG - Parsed boolean value with string check:', isEnabled);
+      } else {
+        console.log('DEBUG - No notification preferences found for user');
+      }
 
       return res.json({
         user,
