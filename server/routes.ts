@@ -918,12 +918,14 @@ export async function registerRoutes(app: Express) {
           let conferencePrefs;
           
           // 1. Handle Notification Preferences
+          const notifications_enabled = req.body.notifications_enabled === false ? false : true;
+          
           if (existingNotificationPrefs.length > 0) {
             // Update existing notification preferences
             [generalPrefs] = await tx.update(notification_preferences)
               .set({ 
                 notification_frequency,
-                notifications_enabled: true
+                notifications_enabled
               })
               .where(eq(notification_preferences.user_id, user.id))
               .returning();
@@ -933,7 +935,7 @@ export async function registerRoutes(app: Express) {
             [generalPrefs] = await tx.insert(notification_preferences)
               .values({
                 user_id: user.id,
-                notifications_enabled: true,
+                notifications_enabled,
                 notification_frequency
               })
               .returning();
@@ -1396,6 +1398,77 @@ export async function registerRoutes(app: Express) {
     }
   });
   
+  // Notification Toggle API endpoint - Simplified endpoint just for toggling notification status
+  app.post("/api/notification-toggle", async (req: TelegramRequest, res) => {
+    console.log('============ DEBUG: Notification Toggle Endpoint ============');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+
+    try {
+      const { enabled } = req.body;
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ error: 'Missing or invalid "enabled" parameter - must be a boolean' });
+      }
+
+      // Get user from Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Get user ID from telegram_id
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Check if notification preferences exist for this user
+      const existingNotificationPrefs = await db.select()
+        .from(notification_preferences)
+        .where(eq(notification_preferences.user_id, user.id));
+      
+      // Set appropriate notification frequency based on enabled state
+      // Use 'Instant' when enabled, 'Daily' when disabled (since 'Never' is not in the schema)
+      const notification_frequency = enabled ? 'Instant' : 'Daily';
+      
+      let result;
+      if (existingNotificationPrefs.length > 0) {
+        // Update existing notification preferences
+        [result] = await db.update(notification_preferences)
+          .set({ 
+            notification_frequency,
+            notifications_enabled: enabled
+          })
+          .where(eq(notification_preferences.user_id, user.id))
+          .returning();
+      } else {
+        // Create new notification preferences
+        [result] = await db.insert(notification_preferences)
+          .values([{
+            user_id: user.id,
+            notifications_enabled: enabled,
+            notification_frequency
+          }])
+          .returning();
+      }
+      
+      console.log('Updated notification preferences:', result);
+      
+      return res.json({
+        success: true,
+        preferences: result,
+        message: enabled ? 'Notifications enabled' : 'Notifications disabled'
+      });
+    } catch (error) {
+      console.error('Error updating notification status:', error);
+      return res.status(500).json({ error: 'Failed to update notification status' });
+    }
+  });
+
   // Conference Preferences API endpoint
   app.post("/api/conference-preferences", async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Conference Preferences Endpoint ============');
@@ -1627,6 +1700,15 @@ export async function registerRoutes(app: Express) {
           collabs_to_host: [],
           twitter_collabs: [],
           filtered_marketing_topics: []
+        },
+        // Include notification preferences in the response
+        notificationPreferences: notificationPrefs || {
+          id: '',
+          user_id: user.id,
+          notifications_enabled: true,
+          notification_frequency: 'Instant',
+          created_at: new Date(),
+          updated_at: new Date()
         },
         marketingPreferences,
         conferencePreferences

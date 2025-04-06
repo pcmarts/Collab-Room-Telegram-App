@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,55 +38,39 @@ export default function Dashboard() {
     queryKey: ['/api/profile']
   });
 
-  const [notificationsEnabled, setNotificationsEnabled] = useState(
-    profile?.notificationPreferences?.notifications_enabled ?? true
-  );
-  // Always use 'Instant' as default frequency
+  // Initial state - will be updated when profile loads
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [notificationFrequency, setNotificationFrequency] = useState('Instant');
+  
+  // Update state when profile loads
+  useEffect(() => {
+    if (profile?.notificationPreferences) {
+      setNotificationsEnabled(profile.notificationPreferences.notifications_enabled ?? true);
+      setNotificationFrequency(profile.notificationPreferences.notification_frequency || 'Instant');
+    }
+  }, [profile]);
 
   const handleNotificationSettingsChange = async (enabled: boolean) => {
     setNotificationsEnabled(enabled);
     try {
       setIsSubmitting(true);
       
-      const newFrequency = enabled ? 'Instant' : 'Never';
-      
-      // Update notification preferences
-      await apiRequest('/api/preferences', 'POST', {
-        // Notification preferences
-        notification_frequency: newFrequency,
-        notifications_enabled: enabled,
-        
-        // Include marketing preferences
-        collabs_to_discover: profile?.marketingPreferences?.collabs_to_discover || [],
-        collabs_to_host: profile?.marketingPreferences?.collabs_to_host || [],
-        filtered_marketing_topics: profile?.marketingPreferences?.filtered_marketing_topics || [],
-        twitter_collabs: profile?.marketingPreferences?.twitter_collabs || [],
-        
-        // Include conference preferences
-        coffee_match_enabled: profile?.conferencePreferences?.coffee_match_enabled || false,
-        coffee_match_company_sectors: profile?.conferencePreferences?.coffee_match_company_sectors || [],
-        coffee_match_company_followers: profile?.conferencePreferences?.coffee_match_company_followers || null,
-        coffee_match_user_followers: profile?.conferencePreferences?.coffee_match_user_followers || null,
-        coffee_match_funding_stages: profile?.conferencePreferences?.coffee_match_funding_stages || [],
-        coffee_match_token_status: profile?.conferencePreferences?.coffee_match_token_status || false,
-        coffee_match_filter_company_sectors_enabled: profile?.conferencePreferences?.coffee_match_filter_company_sectors_enabled || false,
-        coffee_match_filter_company_followers_enabled: profile?.conferencePreferences?.coffee_match_filter_company_followers_enabled || false,
-        coffee_match_filter_user_followers_enabled: profile?.conferencePreferences?.coffee_match_filter_user_followers_enabled || false,
-        coffee_match_filter_funding_stages_enabled: profile?.conferencePreferences?.coffee_match_filter_funding_stages_enabled || false,
-        coffee_match_filter_token_status_enabled: profile?.conferencePreferences?.coffee_match_filter_token_status_enabled || false
+      // Use the simplified notification toggle endpoint that only updates notification preferences
+      await apiRequest('/api/notification-toggle', 'POST', {
+        enabled
       });
       
-      // Update the local state if toggling on
-      if (enabled) {
-        setNotificationFrequency('Instant');
-      }
+      // Update the frequency state based on the toggle
+      setNotificationFrequency(enabled ? 'Instant' : 'Never');
 
       toast({
         title: "Success",
         description: enabled ? "Notifications have been enabled" : "Notifications have been disabled",
       });
     } catch (error) {
+      // Revert local state if the API call fails
+      setNotificationsEnabled(!enabled);
+      
       toast({
         variant: "destructive",
         title: "Error",
@@ -232,7 +216,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2">
                 {notificationsEnabled && (
                   <div className="h-7 text-xs px-2 text-primary">
-                    Instant
+                    {notificationFrequency}
                   </div>
                 )}
                 <Switch
