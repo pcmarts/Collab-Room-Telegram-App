@@ -1635,6 +1635,11 @@ export async function registerRoutes(app: Express) {
   app.get("/api/profile", async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Profile Endpoint ============');
     console.log('Headers:', req.headers);
+    
+    // Disable caching for this endpoint to ensure fresh data
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
 
     try {
       // Get user from impersonation session or Telegram data
@@ -1686,6 +1691,8 @@ export async function registerRoutes(app: Express) {
         .from(notification_preferences)
         .where(eq(notification_preferences.user_id, user.id))
         .catch(() => [null]); // Catch error if table doesn't exist yet
+        
+      console.log('DEBUG - Notification preferences from DB:', notificationPrefs);
 
       return res.json({
         user,

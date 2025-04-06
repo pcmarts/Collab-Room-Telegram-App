@@ -34,8 +34,11 @@ export default function Dashboard() {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: profile, isLoading } = useQuery<ProfileData>({
-    queryKey: ['/api/profile']
+  const { data: profile, isLoading, refetch } = useQuery<ProfileData>({
+    queryKey: ['/api/profile'],
+    // Use refetchOnMount and staleTime: 0 to ensure fresh data each time
+    staleTime: 0,
+    refetchOnMount: true
   });
 
   // Initial state - will be updated when profile loads
@@ -62,6 +65,9 @@ export default function Dashboard() {
       
       // Update the frequency state based on the toggle
       setNotificationFrequency(enabled ? 'Instant' : 'Never');
+      
+      // Force refresh profile data to get the latest notification preferences
+      await refetch();
 
       toast({
         title: "Success",
