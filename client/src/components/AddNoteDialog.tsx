@@ -63,12 +63,12 @@ export function AddNoteDialog({
   
   return (
     <Dialog open={isOpen} onOpenChange={handleCloseDialog}>
-      <DialogContent className="max-w-[95vw] w-[330px] sm:w-auto sm:max-w-md px-4 sm:px-6">
+      <DialogContent className="max-w-[95vw] w-[330px] sm:w-auto sm:max-w-md px-4 sm:px-6 dark:bg-background/95 border-muted/50 backdrop-blur-sm">
         {step === "initial" ? (
           <>
             <DialogHeader className="space-y-2">
-              <DialogTitle className="text-center text-lg">Add a note to your request</DialogTitle>
-              <DialogDescription className="text-center text-sm px-1">
+              <DialogTitle className="text-center text-lg font-semibold text-foreground">Add a note to your request</DialogTitle>
+              <DialogDescription className="text-center text-sm px-1 text-muted-foreground/90 dark:text-foreground/70">
                 Let {recipientName || "the collaboration host"} know why you're interested.
               </DialogDescription>
             </DialogHeader>
@@ -76,30 +76,30 @@ export function AddNoteDialog({
             <div className="flex flex-col space-y-3 py-3">
               <Button 
                 onClick={() => setStep("compose")} 
-                className="flex items-center justify-start px-3 py-4 h-auto bg-indigo-100 hover:bg-indigo-200"
+                className="flex items-center justify-start px-3 py-4 h-auto bg-primary/10 hover:bg-primary/15 dark:bg-primary/20 dark:hover:bg-primary/25"
                 type="button"
               >
-                <div className="mr-2 bg-indigo-500/20 p-1.5 rounded-full shrink-0">
-                  <Send className="h-4 w-4 text-indigo-600" />
+                <div className="mr-2 bg-primary/30 p-1.5 rounded-full shrink-0">
+                  <Send className="h-4 w-4 text-primary dark:text-primary-foreground" />
                 </div>
                 <div className="text-left truncate">
-                  <div className="font-medium text-indigo-700">Add a note</div>
-                  <div className="text-xs text-indigo-600/80 truncate">Personalize with a brief message</div>
+                  <div className="font-medium text-primary dark:text-primary-foreground">Add a note</div>
+                  <div className="text-xs text-primary/90 dark:text-primary-foreground/80 truncate">Personalize with a brief message</div>
                 </div>
               </Button>
               
               <Button 
                 variant="outline" 
                 onClick={handleJustSend}
-                className="flex items-center justify-start px-3 py-4 h-auto border-gray-300 hover:bg-gray-100"
+                className="flex items-center justify-start px-3 py-4 h-auto border-muted hover:bg-muted/30 dark:border-muted/50 dark:hover:bg-muted"
                 type="button"
               >
-                <div className="mr-2 bg-gray-200 p-1.5 rounded-full shrink-0">
-                  <Check className="h-4 w-4 text-gray-600" />
+                <div className="mr-2 bg-muted p-1.5 rounded-full shrink-0">
+                  <Check className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="text-left truncate">
-                  <div className="font-medium text-gray-700">Just send</div>
-                  <div className="text-xs text-gray-500 truncate">Send request without a note</div>
+                  <div className="font-medium text-foreground">Just send</div>
+                  <div className="text-xs text-muted-foreground truncate">Send request without a note</div>
                 </div>
               </Button>
             </div>
@@ -107,8 +107,8 @@ export function AddNoteDialog({
         ) : (
           <>
             <DialogHeader className="space-y-2">
-              <DialogTitle className="text-center text-lg">Write a note</DialogTitle>
-              <DialogDescription className="text-center text-sm px-1">
+              <DialogTitle className="text-center text-lg font-semibold text-foreground">Write a note</DialogTitle>
+              <DialogDescription className="text-center text-sm px-1 text-muted-foreground/90 dark:text-foreground/70">
                 Tell {recipientName || "the collaboration host"} why you're interested.
               </DialogDescription>
             </DialogHeader>
@@ -118,7 +118,7 @@ export function AddNoteDialog({
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Hi, I'm interested in this collaboration because..."
-                className="min-h-[100px] resize-none text-sm"
+                className="min-h-[100px] resize-none text-sm dark:bg-muted/30 dark:border-muted focus:border-primary/50 dark:focus:border-primary"
                 autoFocus
               />
             </div>
@@ -128,14 +128,14 @@ export function AddNoteDialog({
                 variant="outline" 
                 onClick={() => setStep("initial")}
                 size="sm"
-                className="text-sm"
+                className="text-sm dark:bg-background dark:hover:bg-muted/50 dark:border-muted/50"
               >
                 Back
               </Button>
               <Button 
                 onClick={handleSendWithNote} 
                 disabled={isNoteEmpty}
-                className="gap-1.5 text-sm"
+                className="gap-1.5 text-sm bg-primary hover:bg-primary/90"
                 size="sm"
               >
                 <Send className="h-3.5 w-3.5" />
