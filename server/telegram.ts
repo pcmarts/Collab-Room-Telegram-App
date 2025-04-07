@@ -1507,6 +1507,7 @@ export async function notifyMatchCreated(
   hostUserId: string,
   requesterUserId: string,
   collaborationId: string,
+  note?: string,
 ) {
   try {
     console.log("[Telegram Bot] Sending match notifications:", {
@@ -1663,8 +1664,15 @@ export async function notifyMatchCreated(
       ],
     };
 
-    // Prepare host notification with HTML formatting
-    const hostMessage = `🎉 <b>New Match!</b>\n\n${requesterUser.first_name} ${requesterUser.last_name || ""} ${requesterUser.handle ? `(<a href="https://t.me/${requesterUser.handle}">@${requesterUser.handle}</a>)` : ""}, the <b>${requesterCompany?.job_title || "professional"}</b> from ${requesterCompanyName} is a match for your <b>${collaboration.collab_type}</b> collaboration!\n\nDrop them a message and get started on your collab!`;
+    // Prepare host notification with HTML formatting and personalization note
+    let hostMessage = `🎉 <b>New Match!</b>\n\n${requesterUser.first_name} ${requesterUser.last_name || ""} ${requesterUser.handle ? `(<a href="https://t.me/${requesterUser.handle}">@${requesterUser.handle}</a>)` : ""}, the <b>${requesterCompany?.job_title || "professional"}</b> from ${requesterCompanyName} is a match for your <b>${collaboration.collab_type}</b> collaboration!`;
+    
+    // Add the personalization note if provided
+    if (note && note.trim()) {
+      hostMessage += `\n\n<b>💬 Their note:</b>\n"${note.trim()}"`;
+    }
+    
+    hostMessage += `\n\nDrop them a message and get started on your collab!`;
 
     // Prepare requester notification with HTML formatting
     const requesterMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""} ${hostUser.handle ? `(<a href="https://t.me/${hostUser.handle}">@${hostUser.handle}</a>)` : ""} from ${hostCompanyName} just approved your collab request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly with ${hostUser.first_name}`;
@@ -1726,7 +1734,12 @@ export async function notifyMatchCreated(
         if (!hostSuccess) {
           // Try sending plain message to host without HTML formatting
           console.log("[DEBUG] Trying fallback message to host...");
-          const plainHostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${requesterCompany?.name || "a company"} matched with your ${collaboration.collab_type} collaboration!`;
+          let plainHostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${requesterCompany?.name || "a company"} matched with your ${collaboration.collab_type} collaboration!`;
+          
+          // Add personalization note even to fallback message
+          if (note && note.trim()) {
+            plainHostMessage += `\n\n💬 Their note:\n"${note.trim()}"`;
+          }
 
           // Simplified fallback keyboard without callback data
           const fallbackHostKeyboard = {

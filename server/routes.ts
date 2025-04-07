@@ -3437,13 +3437,17 @@ export async function registerRoutes(app: Express) {
               requester_id: requesterId
             });
             
+            // Copy the note from the original swipe if available
+            const note = originalSwipe.note;
+            
             const match = await storage.createMatch({
               collaboration_id: actualCollaborationId,
               host_id: hostId,
               requester_id: requesterId,
               status: 'active',
               host_accepted: true,
-              requester_accepted: true
+              requester_accepted: true,
+              note: note
             });
             
             console.log(`Success: Created match record with ID: ${match.id}`);
@@ -3472,7 +3476,7 @@ export async function registerRoutes(app: Express) {
             try {
               // Use the enhanced notification function from telegram.ts
               console.log('Sending enhanced Telegram notifications via notifyMatchCreated function');
-              await notifyMatchCreated(hostId, requesterId, actualCollaborationId);
+              await notifyMatchCreated(hostId, requesterId, actualCollaborationId, note);
               console.log('Enhanced Telegram notifications sent to both users');
             } catch (telegramError) {
               console.error('Error sending Telegram notifications:', telegramError);
@@ -3602,13 +3606,17 @@ export async function registerRoutes(app: Express) {
                 requester_id: hostId // And the host of the other collaboration is the requester for this match
               });
               
+              // Get the note from the current swipe to include in the match
+              const note = swipe.note;
+              
               const match = await storage.createMatch({
                 collaboration_id: matchedCollaboration.collaboration_id,
                 host_id: user.id,
                 requester_id: hostId,
                 status: 'active',
                 host_accepted: true,
-                requester_accepted: true
+                requester_accepted: true,
+                note: note
               });
               
               console.log(`Success: Created match record with ID: ${match.id}`);
@@ -3651,7 +3659,7 @@ export async function registerRoutes(app: Express) {
                 // This provides properly formatted HTML messages with interactive buttons
                 // For potential matches, the user is the host of their collaboration,
                 // and the hostId is the requester for this match
-                await notifyMatchCreated(user.id, hostId, matchedCollaboration.collaboration_id);
+                await notifyMatchCreated(user.id, hostId, matchedCollaboration.collaboration_id, note);
                 console.log('Enhanced Telegram match notifications sent to both users');
               } catch (telegramError) {
                 console.error('Error sending Telegram match notifications:', telegramError);
