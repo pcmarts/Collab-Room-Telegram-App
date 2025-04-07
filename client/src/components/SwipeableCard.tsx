@@ -703,13 +703,6 @@ export function SwipeableCard({
           // Give the dialog time to fully close before executing the swipe
           setTimeout(() => {
             handleSwipe("right", "");
-            // Show toast notification
-            toast({
-              title: "Collaboration Request Sent",
-              description: "The host will be notified of your interest.",
-              variant: "default",
-              duration: 3000,
-            });
           }, 100);
         }}
         recipientName={data.creator_company_name}
