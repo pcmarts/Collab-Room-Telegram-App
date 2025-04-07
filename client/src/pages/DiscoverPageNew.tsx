@@ -18,7 +18,7 @@ import { useMatchContext } from "@/contexts/MatchContext";
 // Define props for CardStack component
 interface CardStackProps {
   cards: CardData[];
-  handleSwipe: (direction: "left" | "right") => Promise<void>;
+  handleSwipe: (direction: "left" | "right", note?: string) => Promise<void>;
   handleViewCardDetails: (card: CardData) => void;
   x: MotionValue<number>;
   rotate: MotionValue<number>;
@@ -608,9 +608,9 @@ export default function DiscoverPage() {
   // Using that function instead of duplicating code
 
   // Handle swipe actions
-  const handleSwipe = async (direction: "left" | "right"): Promise<void> => {
+  const handleSwipe = async (direction: "left" | "right", note?: string): Promise<void> => {
     try {
-      console.log(`[Discovery] Swipe action: ${direction}`);
+      console.log(`[Discovery] Swipe action: ${direction}${note ? ' with note' : ''}`);
       
       // Ensure we have cards to swipe
       if (cards.length === 0) {
@@ -676,10 +676,15 @@ export default function DiscoverPage() {
           }
         : {
             collaboration_id: card.id,
-            direction
+            direction,
+            note // Include note in the request if provided
           };
       
       console.log('[Discovery] Sending swipe data to server:', swipeData);
+      
+      if (note) {
+        console.log('[Discovery] Sending swipe with personalized note:', note);
+      }
       
       const swipeResult = await apiRequest('/api/swipes', 'POST', swipeData);
       console.log('[Discovery] Swipe recorded successfully:', swipeResult);

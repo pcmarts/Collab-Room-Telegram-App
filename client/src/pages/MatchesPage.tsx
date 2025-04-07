@@ -27,6 +27,7 @@ interface Match {
   companyDescription?: string;
   userDescription?: string;
   username?: string;     // Telegram username for chat links
+  note?: string;         // Personalized note from connection request
   
   // Additional user information
   linkedinUrl?: string;
@@ -185,6 +186,13 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
           <h3 className="font-medium">About the Collaboration</h3>
           <p className="text-sm mt-1">{match.description}</p>
         </div>
+        
+        {match.note && (
+          <div className="bg-primary/5 p-3 rounded-md border border-primary/10">
+            <h3 className="font-medium text-sm text-primary mb-1">Personalized Note</h3>
+            <p className="text-sm italic">{match.note}</p>
+          </div>
+        )}
         
         <div className="space-y-2">
           <h3 className="font-medium">About {match.matchedPerson}</h3>
