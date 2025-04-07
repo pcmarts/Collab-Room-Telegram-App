@@ -40,6 +40,7 @@ export function AddNoteDialog({
   }, [isOpen]);
   
   const handleSendWithNote = () => {
+    handleCloseDialog(); // Close dialog first
     onSendWithNote(note);
   };
   
@@ -51,6 +52,13 @@ export function AddNoteDialog({
     setNote("");
     setStep("initial");
     onClose();
+  };
+  
+  const handleJustSend = () => {
+    console.log("Just send button clicked - dialog closing");
+    handleCloseDialog(); // Close dialog first
+    console.log("Executing send without note action");
+    onSendWithoutNote();
   };
   
   return (
@@ -82,20 +90,16 @@ export function AddNoteDialog({
               
               <Button 
                 variant="outline" 
-                onClick={() => {
-                  // First close dialog, then send without note
-                  setNote("");
-                  onSendWithoutNote();
-                }}
-                className="flex items-center justify-start px-3 py-4 h-auto"
+                onClick={handleJustSend}
+                className="flex items-center justify-start px-3 py-4 h-auto border-gray-300 hover:bg-gray-100"
                 type="button"
               >
-                <div className="mr-2 bg-primary/10 p-1.5 rounded-full shrink-0">
-                  <Check className="h-4 w-4" />
+                <div className="mr-2 bg-gray-200 p-1.5 rounded-full shrink-0">
+                  <Check className="h-4 w-4 text-gray-600" />
                 </div>
                 <div className="text-left truncate">
-                  <div className="font-medium">Just send</div>
-                  <div className="text-xs text-muted-foreground truncate">Send request without a note</div>
+                  <div className="font-medium text-gray-700">Just send</div>
+                  <div className="text-xs text-gray-500 truncate">Send request without a note</div>
                 </div>
               </Button>
             </div>
