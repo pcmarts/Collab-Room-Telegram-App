@@ -498,6 +498,13 @@ export function SwipeableCard({
                 </span>
               </div>
               
+              {/* Display the note on the card if available */}
+              {data.note && (
+                <div className="bg-primary/5 p-2 rounded-md border border-primary/10 mb-1">
+                  <p className="text-xs italic">{data.note}</p>
+                </div>
+              )}
+              
               <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                 <User className="w-3 h-3" />
                 <span>
