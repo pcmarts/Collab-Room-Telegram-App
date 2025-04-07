@@ -40,14 +40,8 @@ export function AddNoteDialog({
   }, [isOpen]);
   
   const handleSendWithNote = () => {
-    // Attempt to blur any active element (dismiss keyboard on mobile)
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-    setTimeout(() => {
-      handleCloseDialog(); // Close dialog first
-      onSendWithNote(note);
-    }, 50); // Short delay to allow keyboard to dismiss
+    handleCloseDialog(); // Close dialog first
+    onSendWithNote(note);
   };
   
   // Only enable the send button when there's text in the note
@@ -62,20 +56,14 @@ export function AddNoteDialog({
   
   const handleJustSend = () => {
     console.log("Just send button clicked - dialog closing");
-    // Attempt to blur any active element (dismiss keyboard on mobile)
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-    setTimeout(() => {
-      handleCloseDialog(); // Close dialog first
-      console.log("Executing send without note action");
-      onSendWithoutNote();
-    }, 50); // Short delay to allow keyboard to dismiss
+    handleCloseDialog(); // Close dialog first
+    console.log("Executing send without note action");
+    onSendWithoutNote();
   };
   
   return (
     <Dialog open={isOpen} onOpenChange={handleCloseDialog}>
-      <DialogContent className="max-w-[95vw] w-[330px] sm:w-auto sm:max-w-md px-4 sm:px-6 mobile-dialog">
+      <DialogContent className="max-w-[95vw] w-[330px] sm:w-auto sm:max-w-md px-4 sm:px-6">
         {step === "initial" ? (
           <>
             <DialogHeader className="space-y-2">
@@ -125,35 +113,17 @@ export function AddNoteDialog({
               </DialogDescription>
             </DialogHeader>
             
-            <div className="py-2 relative">
+            <div className="py-3">
               <Textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Hi, I'm interested in this collaboration because..."
-                className="min-h-[60px] resize-none text-sm"
+                className="min-h-[100px] resize-none text-sm"
                 autoFocus
               />
-              
-              {/* Done button that appears when keyboard is showing */}
-              {note.length > 0 && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  className="absolute top-3 right-3 h-7 text-xs px-2 py-0 bg-gray-100 hover:bg-gray-200"
-                  onClick={() => {
-                    if (document.activeElement instanceof HTMLElement) {
-                      document.activeElement.blur();
-                    }
-                  }}
-                >
-                  Done
-                </Button>
-              )}
             </div>
             
-            {/* Fixed buttons for better mobile keyboard access */}
-            <div className="flex justify-between items-center space-x-2 sticky mt-2">
+            <DialogFooter className="flex justify-between space-x-2 pt-1">
               <Button 
                 variant="outline" 
                 onClick={() => setStep("initial")}
@@ -171,7 +141,7 @@ export function AddNoteDialog({
                 <Send className="h-3.5 w-3.5" />
                 Send
               </Button>
-            </div>
+            </DialogFooter>
           </>
         )}
       </DialogContent>

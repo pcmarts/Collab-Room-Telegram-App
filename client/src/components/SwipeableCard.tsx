@@ -83,12 +83,8 @@ export function SwipeableCard({
   // Define direct button click handler
   const handleButtonClick = async (direction: "left" | "right", note?: string) => {
     try {
-      console.log("Button clicked direction:", direction, "isPotentialMatch:", data.isPotentialMatch, "has note:", !!note);
-      
       // If it's a right swipe (request) and not a potential match, show the note dialog
       if (direction === "right" && !data.isPotentialMatch && !note) {
-        console.log("Showing note dialog");
-        // Force state update immediately
         setShowNoteDialog(true);
         return;
       }
