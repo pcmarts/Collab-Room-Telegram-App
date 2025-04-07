@@ -654,12 +654,20 @@ export function SwipeableCard({
         isOpen={showNoteDialog}
         onClose={() => setShowNoteDialog(false)}
         onSendWithNote={(note) => {
+          console.log("Sending request with note:", note);
           setShowNoteDialog(false);
-          handleButtonClick("right", note);
+          // Ensure we let the dialog close before submitting
+          setTimeout(() => {
+            handleButtonClick("right", note);
+          }, 50);
         }}
         onSendWithoutNote={() => {
+          console.log("Sending request without note");
           setShowNoteDialog(false);
-          handleButtonClick("right", "");
+          // Ensure we let the dialog close before submitting
+          setTimeout(() => {
+            handleButtonClick("right", "");
+          }, 50);
         }}
         recipientName={data.creator_company_name}
       />

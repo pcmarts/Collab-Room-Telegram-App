@@ -46,8 +46,15 @@ export function AddNoteDialog({
   // Only enable the send button when there's text in the note
   const isNoteEmpty = note.trim().length === 0;
   
+  const handleCloseDialog = () => {
+    // Ensure dialog state is reset on close
+    setNote("");
+    setStep("initial");
+    onClose();
+  };
+  
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleCloseDialog}>
       <DialogContent className="max-w-[95vw] w-[330px] sm:w-auto sm:max-w-md px-4 sm:px-6">
         {step === "initial" ? (
           <>
@@ -61,21 +68,27 @@ export function AddNoteDialog({
             <div className="flex flex-col space-y-3 py-3">
               <Button 
                 onClick={() => setStep("compose")} 
-                className="flex items-center justify-start px-3 py-4 h-auto"
+                className="flex items-center justify-start px-3 py-4 h-auto bg-indigo-100 hover:bg-indigo-200"
+                type="button"
               >
-                <div className="mr-2 bg-primary/10 p-1.5 rounded-full shrink-0">
-                  <Send className="h-4 w-4" />
+                <div className="mr-2 bg-indigo-500/20 p-1.5 rounded-full shrink-0">
+                  <Send className="h-4 w-4 text-indigo-600" />
                 </div>
                 <div className="text-left truncate">
-                  <div className="font-medium">Add a note</div>
-                  <div className="text-xs text-muted-foreground truncate">Personalize with a brief message</div>
+                  <div className="font-medium text-indigo-700">Add a note</div>
+                  <div className="text-xs text-indigo-600/80 truncate">Personalize with a brief message</div>
                 </div>
               </Button>
               
               <Button 
                 variant="outline" 
-                onClick={onSendWithoutNote}
+                onClick={() => {
+                  // First close dialog, then send without note
+                  setNote("");
+                  onSendWithoutNote();
+                }}
                 className="flex items-center justify-start px-3 py-4 h-auto"
+                type="button"
               >
                 <div className="mr-2 bg-primary/10 p-1.5 rounded-full shrink-0">
                   <Check className="h-4 w-4" />
