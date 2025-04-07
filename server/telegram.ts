@@ -1180,13 +1180,13 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
           inline_keyboard: [
             [
               {
-                text: "💬 Chat with Host",
+                text: `💬 Chat with ${hostUser.first_name}`,
                 url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
               },
             ],
             [
               {
-                text: "🚀 Discover More Collabs",
+                text: "🚀 Launch Collab Room",
                 web_app: { url: `${WEBAPP_URL}/discover` },
               },
             ],
@@ -1314,7 +1314,7 @@ export async function notifyNewCollabRequest(
   hostUserId: string,
   requesterUserId: string,
   collaborationId: string,
-  note?: string
+  note?: string,
 ) {
   try {
     console.log("[Telegram Bot] Sending collab request notification:", {
@@ -1397,6 +1397,13 @@ export async function notifyNewCollabRequest(
       return;
     }
 
+    // Format company website URL if available
+    const companyWebsite = requesterCompany.website
+      ? requesterCompany.website.startsWith("http")
+        ? requesterCompany.website
+        : `https://${requesterCompany.website}`
+      : null;
+      
     // Format company twitter URL if available
     const twitterHandle = requesterCompany.twitter_handle
       ? requesterCompany.twitter_handle.replace("@", "")
@@ -1406,10 +1413,13 @@ export async function notifyNewCollabRequest(
       ? `https://twitter.com/${twitterHandle}`
       : null;
 
-    // Format company name with Twitter hyperlink if available
-    const companyNameFormatted = twitterUrl
-      ? `<a href="${twitterUrl}">${requesterCompany.name}</a>`
-      : requesterCompany.name;
+    // Format company name with website hyperlink or Twitter hyperlink if available
+    // Prioritize website link, fall back to Twitter if no website
+    const companyNameFormatted = companyWebsite
+      ? `<a href="${companyWebsite}">${requesterCompany.name}</a>`
+      : twitterUrl
+        ? `<a href="${twitterUrl}">${requesterCompany.name}</a>`
+        : requesterCompany.name;
 
     // Format the collaboration date if available
     let collabDate = "Any future date";
@@ -1450,10 +1460,10 @@ export async function notifyNewCollabRequest(
       `Would like to collaborate on your collab <i>${collaboration.collab_type}</i> - <i>${shortDescription}</i>\n` +
       `<b>Topic</b>:<i> ${topicsText}</i>\n` +
       `🗓️: ${collabDate}\n\n`;
-      
+
     // Add the note if it exists
     if (note) {
-      message += `<b>Note from ${requesterUser.first_name}:</b>\n<i>${note}</i>\n\n`;
+      message += `<b>📝 Note from user:</b>\n<i>${note}</i>\n\n`;
     }
 
     // Create shortened IDs for callback data (Telegram has a 64-byte limit)
@@ -1619,20 +1629,20 @@ export async function notifyMatchCreated(
       inline_keyboard: [
         [
           {
-            text: "💬 Chat with Collaborator",
+            text: `💬 Chat with ${requesterUser.first_name}`,
             url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
           },
         ],
         // Remove the callback button that's causing issues
         [
           {
-            text: "🚀 Discover More Collabs",
+            text: "Launch Collab Room",
             web_app: { url: `${WEBAPP_URL}/discover` },
           },
         ],
         [
           {
-            text: "👥 View Matches",
+            text: "My Matches",
             web_app: { url: `${WEBAPP_URL}/matches` },
           },
         ],
@@ -1644,14 +1654,14 @@ export async function notifyMatchCreated(
       inline_keyboard: [
         [
           {
-            text: "💬 Chat with Host",
+            text: `💬 Chat with ${hostUser.first_name}`,
             url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
           },
         ],
         // Remove the callback button that's causing issues
         [
           {
-            text: "🚀 Discover More Collabs",
+            text: "🚀 Launch Collab Room",
             web_app: { url: `${WEBAPP_URL}/discover` },
           },
         ],
@@ -1666,12 +1676,12 @@ export async function notifyMatchCreated(
 
     // Prepare host notification with HTML formatting and personalization note
     let hostMessage = `🎉 <b>New Match!</b>\n\n${requesterUser.first_name} ${requesterUser.last_name || ""} ${requesterUser.handle ? `(<a href="https://t.me/${requesterUser.handle}">@${requesterUser.handle}</a>)` : ""}, the <b>${requesterCompany?.job_title || "professional"}</b> from ${requesterCompanyName} is a match for your <b>${collaboration.collab_type}</b> collaboration!`;
-    
+
     // Add the personalization note if provided
     if (note && note.trim()) {
       hostMessage += `\n\n<b>💬 Their note:</b>\n"${note.trim()}"`;
     }
-    
+
     hostMessage += `\n\nDrop them a message and get started on your collab!`;
 
     // Prepare requester notification with HTML formatting
@@ -1734,8 +1744,14 @@ export async function notifyMatchCreated(
         if (!hostSuccess) {
           // Try sending plain message to host without HTML formatting
           console.log("[DEBUG] Trying fallback message to host...");
-          let plainHostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${requesterCompany?.name || "a company"} matched with your ${collaboration.collab_type} collaboration!`;
-          
+          // Create a plain text reference to the company website
+          const requesterCompanyText = requesterCompany?.name || "a company";
+          const requesterCompanyWebsiteRef = requesterCompanyWebsite 
+            ? `${requesterCompanyText} (${requesterCompanyWebsite})` 
+            : requesterCompanyText;
+            
+          let plainHostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${requesterCompanyWebsiteRef} matched with your ${collaboration.collab_type} collaboration!`;
+
           // Add personalization note even to fallback message
           if (note && note.trim()) {
             plainHostMessage += `\n\n💬 Their note:\n"${note.trim()}"`;
@@ -1746,7 +1762,7 @@ export async function notifyMatchCreated(
             inline_keyboard: [
               [
                 {
-                  text: "Chat with Collaborator",
+                  text: `Chat with ${requesterUser.first_name}`,
                   url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
                 },
               ],
@@ -1778,14 +1794,20 @@ export async function notifyMatchCreated(
         if (!requesterSuccess) {
           // Try sending plain message to requester without HTML formatting
           console.log("[DEBUG] Trying fallback message to requester...");
-          const plainRequesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ""} from ${hostCompany?.name || "a company"} just approved your collab request for ${collaboration.collab_type}!`;
+          // Create a plain text reference to the host company website
+          const hostCompanyText = hostCompany?.name || "a company";
+          const hostCompanyWebsiteRef = hostCompanyWebsite 
+            ? `${hostCompanyText} (${hostCompanyWebsite})` 
+            : hostCompanyText;
+            
+          const plainRequesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ""} from ${hostCompanyWebsiteRef} just approved your collab request for ${collaboration.collab_type}!`;
 
           // Simplified fallback keyboard without callback data
           const fallbackRequesterKeyboard = {
             inline_keyboard: [
               [
                 {
-                  text: "Chat with Host",
+                  text: `Chat with ${hostUser.first_name}`,
                   url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
                 },
               ],
