@@ -560,7 +560,9 @@ export async function notifyNewCollabRequest(
       `${requestingUser.first_name} ${requestingUser.last_name || ''} from ${companyLink} ` +
       `is interested in your <b>${collaboration.collab_type}</b> collaboration.\n\n` +
       `<b>Role:</b> ${requestingCompany?.role_title || 'Not specified'}\n` +
-      `<b>Company:</b> ${requestingCompany?.name || 'Not specified'}`;
+      `<b>Company:</b> ${requestingCompany?.name || 'Not specified'}` +
+      // If the swipe has a personalized note, include it in the notification
+      `${swipe.note ? `\n\n<b>Personal Note:</b> "${swipe.note}"` : ''}`;
     
     // Create inline keyboard with View, Match, and Pass buttons
     const keyboard = {

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddNoteDialog } from "./AddNoteDialog";
+import { toast } from "@/hooks/use-toast";
 
 // Types
 interface SwipeableCardProps {
@@ -80,9 +81,6 @@ export function SwipeableCard({
     fullDetails: data.details
   });
   
-  // Import toast from use-toast
-  const { toast } = require("@/hooks/use-toast");
-
   // Define direct button click handler
   const handleButtonClick = async (direction: "left" | "right", note?: string) => {
     try {

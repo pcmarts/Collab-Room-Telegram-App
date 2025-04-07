@@ -144,3 +144,18 @@ When a match is created through the discovery system, a Match Moment dialog is d
 - Matches are only shown to authenticated users
 - Caching mechanisms help reduce server load
 - Proper error handling prevents information leakage
+## Personalized Notes Feature
+
+Version 1.7.0 enhanced the match system with personalized notes that persist throughout the collaboration lifecycle:
+
+- **Note Field in Match Data**: The match data structure now includes an optional note field from the original swipe
+- **Note Display in Match Details**: When viewing match details, any personalized note sent with the original request is displayed
+- **Consistent Formatting**: Notes are displayed with consistent styling across the application
+- **Data Persistence**: Notes are copied from swipes to matches to ensure they remain accessible
+
+### Technical Implementation
+
+- Modified the database schema to include note field in both swipes and matches tables
+- Enhanced match creation logic to preserve notes when creating matches from swipes
+- Updated the CollaborationDetailsDialog component to display notes when present
+- Implemented proper data validation to handle both defined and undefined note values

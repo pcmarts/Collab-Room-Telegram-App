@@ -381,3 +381,34 @@ interface MatchMomentProps {
   - Use MessageCircle for match-related actions
   - Use LuCopy (discovery icon) for discovery-related actions
 - Ensure all animations work properly on both desktop and mobile screens
+# Notification Confirmation Toasts
+
+## Overview
+
+Collab Room now provides clear visual feedback when collaboration requests are sent, enhancing user experience with confirmation toast notifications.
+
+## Features Added in v1.7.0
+
+- **Success Confirmation Toasts**: Toast notifications appear after successfully sending collaboration requests
+- **Context-Aware Messages**: Different toast messages for requests with and without personalized notes
+- **Consistent Visual Style**: Toasts match the application's design system
+- **Timed Dismissal**: Toasts automatically dismiss after 3 seconds
+
+## Implementation Details
+
+Toast notifications are implemented using the shadcn/ui toast component with consistent styling:
+
+```typescript
+toast({
+  title: "Collaboration Request Sent",
+  description: "The host will be notified of your interest.",
+  variant: "default",
+  duration: 3000,
+});
+```
+
+## User Experience Improvements
+
+- **Immediate Feedback**: Users receive instant visual confirmation that their action was successful
+- **Reduced Uncertainty**: Clear feedback eliminates confusion about whether a request was sent
+- **Enhanced Satisfaction**: Polished notifications contribute to an overall professional experience
