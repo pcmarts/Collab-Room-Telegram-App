@@ -286,7 +286,8 @@ export default function DiscoverPage() {
             twitter_followers: match.twitter_followers || '',
             company_twitter_followers: match.company_twitter_followers || '',
             swipe_created_at: match.created_at || match.swipe_created_at || new Date().toISOString(),
-            collaboration_id: match.collaboration_id || match.id
+            collaboration_id: match.collaboration_id || match.id,
+            note: match.note || '' // Include the personalized note from the swipe
           };
           
           // Log the constructed potentialMatchData for debugging

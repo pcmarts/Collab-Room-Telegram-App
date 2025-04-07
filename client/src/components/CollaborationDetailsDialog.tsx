@@ -52,6 +52,7 @@ interface CollaborationDetailsDialogProps {
       last_name?: string;
       company_name?: string;
       job_title?: string;
+      note?: string;
     };
     type?: string;
   };
@@ -113,6 +114,14 @@ export function CollaborationDetailsDialog({
                   {potentialMatchData.first_name} {potentialMatchData.last_name || ""}
                   {potentialMatchData.job_title && ` • ${potentialMatchData.job_title}`}
                 </span>
+              </div>
+            )}
+            
+            {/* Show personalized note if exists */}
+            {isPotentialMatch && potentialMatchData.note && (
+              <div className="mt-3 bg-primary/5 p-3 rounded-md border border-primary/10">
+                <h4 className="text-sm font-medium text-primary mb-1">Personalized Note</h4>
+                <p className="text-sm italic">{potentialMatchData.note}</p>
               </div>
             )}
             

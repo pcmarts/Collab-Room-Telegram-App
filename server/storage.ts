@@ -1056,7 +1056,8 @@ export class DatabaseStorage implements IStorage {
         company_twitter: match.company.twitter_handle,
         company_linkedin: match.company.linkedin_url,
         requester_company: match.company.name,
-        requester_role: match.company.job_title
+        requester_role: match.company.job_title,
+        note: match.swipe.note // Include the personalized note in potential matches
       }));
     } catch (error) {
       console.error("Error getting potential matches for host:", error);
@@ -1125,6 +1126,7 @@ export class DatabaseStorage implements IStorage {
           um.status AS match_status,
           um.created_at AS match_date,
           um.user_role,
+          um.note AS match_note,
           
           -- Collaboration details
           c.id AS collab_id,

@@ -3115,6 +3115,7 @@ export async function registerRoutes(app: Express) {
             twitterHandle: match.company_twitter_handle || null,
             twitterFollowers: match.other_user_twitter_followers || null,
             email: null, // We don't return email for privacy reasons
+            note: match.match_note || null, // Include the personalized note
             
             // Additional company information
             companyWebsite: match.company_website || null,
@@ -3149,6 +3150,7 @@ export async function registerRoutes(app: Express) {
             twitterHandle: null,
             twitterFollowers: null,
             email: null,
+            note: null, // Include empty note field in error case
             
             // Additional company information
             companyWebsite: null,
