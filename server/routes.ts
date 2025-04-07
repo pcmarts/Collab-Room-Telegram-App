@@ -215,6 +215,16 @@ export async function registerRoutes(app: Express) {
     try {
       console.log('============ DEBUG: Profile Endpoint ============');
       console.log('Headers:', req.headers);
+      
+      // Set strong cache control headers to prevent caching
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '-1');
+      res.setHeader('Surrogate-Control', 'no-store');
+      
+      // Force a unique response with a timestamp in header
+      res.setHeader('Last-Modified', new Date().toUTCString());
+      res.setHeader('X-Response-Time', Date.now().toString());
 
       const telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
@@ -238,15 +248,47 @@ export async function registerRoutes(app: Express) {
       const [company] = await db.select()
         .from(companies)
         .where(eq(companies.user_id, user.id));
+        
+      // Get notification preferences
+      const [notificationPreferences] = await db.select()
+        .from(notification_preferences)
+        .where(eq(notification_preferences.user_id, user.id));
+        
+      // Get marketing preferences
+      const [marketingPreferences] = await db.select()
+        .from(marketing_preferences)
+        .where(eq(marketing_preferences.user_id, user.id));
+        
+      // Get conference preferences
+      const [conferencePreferences] = await db.select()
+        .from(conference_preferences)
+        .where(eq(conference_preferences.user_id, user.id));
 
-      // Add impersonation information to the response
+      // Add all data to the response
       const response = {
         user,
         company,
+        // Include all preference objects with proper null handling
+        notificationPreferences: notificationPreferences || null,
+        marketingPreferences: marketingPreferences || null,
+        conferencePreferences: conferencePreferences || null,
+        // For backward compatibility
+        preferences: notificationPreferences || {},
         impersonating: req.session?.impersonating ? {
           originalUser: req.session.impersonating.originalUser
         } : null
       };
+      
+      // Log notification preference state for debugging
+      if (notificationPreferences) {
+        console.log('Notification Preferences Found:');
+        console.log('- Notifications Enabled:', notificationPreferences.notifications_enabled);
+        console.log('- Notification Frequency:', notificationPreferences.notification_frequency);
+        console.log('- Raw Value Type:', typeof notificationPreferences.notifications_enabled);
+        console.log('- Updated At:', notificationPreferences.updated_at);
+      } else {
+        console.log('No notification preferences found for user');
+      }
 
       return res.json(response);
     } catch (error) {
