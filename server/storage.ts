@@ -872,7 +872,15 @@ export class DatabaseStorage implements IStorage {
         collaboration_id: newSwipe.collaboration_id,
         host_id: hostId,
         requester_id: requesterId,
-        note: newSwipe.note || undefined // Copy the note from the swipe to the match, convert null to undefined
+        note: newSwipe.note // Directly copy the note from the swipe to the match
+      });
+      
+      // Log detailed info about note transfer
+      console.log("Note transfer details:", {
+        swipeId: newSwipe.id,
+        swipeNote: newSwipe.note,
+        matchId: match.id,
+        matchNote: match.note
       });
       
       console.log("Match created:", match);
