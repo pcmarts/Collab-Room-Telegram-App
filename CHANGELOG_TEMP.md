@@ -24,32 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced Telegram notification template to include the personalized note when available
 - Improved database integration to ensure notes persist through the entire collaboration lifecycle
 
-# Changelog
-
-All notable changes to the Collab Room project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Version 1.6.9] - 2025-04-07
-
-### Added
-- Implemented LinkedIn-style "Add a note to your invitation" feature for collaboration requests
-- Added dialog prompt when users request a collaboration, allowing personalized notes
-- Created AddNoteDialog component with both initial prompt and note composition states
-
-### Enhanced
-- Modified swipe creation system to include optional personalized notes
-- Updated Telegram notification messages to display personalized notes in collaboration requests
-- Enhanced match creation logic to preserve notes from swipes to matches for later reference
-
-### Technical Details
-- Added AddNoteDialog.tsx component with note composition interface
-- Updated SwipeableCard component to intercept right swipes and show note dialog first
-- Modified createSwipe and createMatch methods to handle the optional note field
-- Enhanced Telegram notification template to include the personalized note when available
-- Improved database integration to ensure notes persist through the entire collaboration lifecycle
-
 ## [Version 1.6.8] - 2025-04-07
 
 ### Fixed

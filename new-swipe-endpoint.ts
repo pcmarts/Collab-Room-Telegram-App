@@ -65,9 +65,9 @@ export async function handleSwipeRequest(req: TelegramRequest, res: Response) {
   console.log('Body:', JSON.stringify(req.body, null, 2));
   
   try {
-    const { collaboration_id, swipe_id, direction, is_potential_match, details } = req.body;
+    const { collaboration_id, swipe_id, direction, is_potential_match, details, note } = req.body;
     
-    console.log('Parsed request parameters:', { collaboration_id, swipe_id, direction, is_potential_match });
+    console.log('Parsed request parameters:', { collaboration_id, swipe_id, direction, is_potential_match, note });
     
     // Validate direction is either "left" or "right"
     if (direction !== 'left' && direction !== 'right') {
@@ -157,6 +157,7 @@ export async function handleSwipeRequest(req: TelegramRequest, res: Response) {
         user_id: user.id,
         collaboration_id: actualCollaborationId,
         direction,
+        note, // Include the optional note field
         details: details || {}
       });
       

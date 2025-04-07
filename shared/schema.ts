@@ -432,6 +432,7 @@ export const swipes = pgTable('swipes', {
   user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   collaboration_id: uuid('collaboration_id').notNull().references(() => collaborations.id, { onDelete: 'cascade' }),
   direction: text('direction').notNull(), // "left" or "right" (pass or request)
+  note: text('note'), // Store the personalized note for invitation
   details: jsonb('details'), // To store application details for backward compatibility
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
@@ -443,6 +444,7 @@ export const matches = pgTable('matches', {
   host_id: uuid('host_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   requester_id: uuid('requester_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   status: text('status').notNull().default('active'), // 'active', 'archived', 'completed', etc.
+  note: text('note'), // Store the personalized note copied from the swipe
   host_accepted: boolean('host_accepted').default(false),
   requester_accepted: boolean('requester_accepted').default(false),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),

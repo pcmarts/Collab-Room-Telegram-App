@@ -8,6 +8,7 @@ import {
   Globe, Linkedin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AddNoteDialog } from "./AddNoteDialog";
 
 // Types
 interface SwipeableCardProps {
@@ -38,7 +39,7 @@ interface SwipeableCardProps {
     };
     [key: string]: any;
   };
-  handleSwipe: (direction: "left" | "right") => Promise<void>;
+  handleSwipe: (direction: "left" | "right", note?: string) => Promise<void>;
   onInfoClick: () => void;
   zIndex: number;
   constrained: boolean;
@@ -63,6 +64,7 @@ export function SwipeableCard({
 }: SwipeableCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [exitX, setExitX] = useState(0);
+  const [showNoteDialog, setShowNoteDialog] = useState(false);
   
   // Debug information to console
   console.log("🔵🔵🔵 SWIPEABLE CARD DEBUG 🔵🔵🔵", {
@@ -79,10 +81,16 @@ export function SwipeableCard({
   });
   
   // Define direct button click handler
-  const handleButtonClick = async (direction: "left" | "right") => {
+  const handleButtonClick = async (direction: "left" | "right", note?: string) => {
     try {
+      // If it's a right swipe (request) and not a potential match, show the note dialog
+      if (direction === "right" && !data.isPotentialMatch && !note) {
+        setShowNoteDialog(true);
+        return;
+      }
+      
       setExitX(direction === 'right' ? 1000 : -1000);
-      await handleSwipe(direction);
+      await handleSwipe(direction, note);
     } catch (error) {
       console.error("Error handling button click:", error);
     }
@@ -98,6 +106,14 @@ export function SwipeableCard({
     // Consider it a swipe only if dragged more than 100px
     if (dragDistance > 100) {
       const direction = xOffset > 0 ? "right" : "left";
+      
+      // If it's a right swipe and not a potential match, show the note dialog instead of immediately swiping
+      if (direction === "right" && !data.isPotentialMatch) {
+        controls?.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
+        setShowNoteDialog(true);
+        return;
+      }
+      
       setExitX(xOffset > 0 ? 1000 : -1000);
       await handleSwipe(direction);
     } else if (dragDistance < 10) {
@@ -625,6 +641,21 @@ export function SwipeableCard({
           </Button>
         </div>
       </Card>
+      
+      {/* Add note dialog */}
+      <AddNoteDialog
+        isOpen={showNoteDialog}
+        onClose={() => setShowNoteDialog(false)}
+        onSendWithNote={(note) => {
+          setShowNoteDialog(false);
+          handleButtonClick("right", note);
+        }}
+        onSendWithoutNote={() => {
+          setShowNoteDialog(false);
+          handleButtonClick("right", "");
+        }}
+        recipientName={data.creator_company_name}
+      />
     </motion.div>
   );
 }

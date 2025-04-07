@@ -1164,6 +1164,14 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
 
         const requesterChatId = parseInt(requesterUser.telegram_id);
 
+        // Get host company information
+        const [hostCompany] = await db
+          .select()
+          .from(companies)
+          .where(eq(companies.user_id, hostUser.id));
+
+        const hostCompanyName = hostCompany?.name || "their company";
+
         // Send a direct message to the requester
         const matchMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""} from ${hostCompanyName} just approved your collaboration request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly to coordinate your collaboration.`;
 
@@ -1306,6 +1314,7 @@ export async function notifyNewCollabRequest(
   hostUserId: string,
   requesterUserId: string,
   collaborationId: string,
+  note?: string
 ) {
   try {
     console.log("[Telegram Bot] Sending collab request notification:", {
@@ -1435,12 +1444,17 @@ export async function notifyNewCollabRequest(
     }
 
     // Build the message with HTML formatting
-    const message =
+    let message =
       `<b>New Collab Request</b>\n` +
       `The <i>${requesterCompany.job_title}</i> from ${companyNameFormatted}\n` +
       `Would like to collaborate on your collab <i>${collaboration.collab_type}</i> - <i>${shortDescription}</i>\n` +
       `<b>Topic</b>:<i> ${topicsText}</i>\n` +
       `🗓️: ${collabDate}\n\n`;
+      
+    // Add the note if it exists
+    if (note) {
+      message += `<b>Note from ${requesterUser.first_name}:</b>\n<i>${note}</i>\n\n`;
+    }
 
     // Create shortened IDs for callback data (Telegram has a 64-byte limit)
     // Generate shorter identifiers by taking first 8 chars of each UUID
