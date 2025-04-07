@@ -2,6 +2,15 @@
 
 The Collab Room platform includes a notification system to keep users informed about important events such as matches, application updates, and collaboration status changes.
 
+## Version 1.6.8 Update: Fixed Notification Toggle Persistence
+
+As of Version 1.6.8, the notification persistence issues have been resolved with the following improvements:
+
+1. **Profile API Enhancement**: The `/api/profile` endpoint now includes notification preferences data
+2. **Cache Busting Implementation**: Strong cache control headers prevent stale data after preference changes
+3. **Improved State Synchronization**: Better handling of boolean values from PostgreSQL
+4. **Enhanced Debugging**: Added comprehensive logging of notification preference states
+
 ## Version 1.3.9 Update: Simplified Notification Settings
 
 As of Version 1.3.9, the notification handling has been simplified with the following changes:
@@ -27,11 +36,10 @@ The Dashboard component includes a simple notification toggle UI:
         Notifications
       </CardTitle>
       <div className="flex items-center gap-2">
-        {notificationsEnabled && (
-          <div className="h-7 text-xs px-2 text-primary">
-            Instant
+                  <div className="h-7 text-xs px-2 text-primary">
+            {notificationsEnabled ? 'Instant' : 'Never'}
           </div>
-        )}
+
         <Switch
           checked={notificationsEnabled}
           onCheckedChange={handleNotificationSettingsChange}
@@ -54,13 +62,10 @@ const handleNotificationSettingsChange = async (enabled: boolean) => {
     
     const newFrequency = enabled ? 'Instant' : 'Never';
     
-    // Update notification preferences
-    await apiRequest('/api/preferences', 'POST', {
-      // Notification preferences
-      notification_frequency: newFrequency,
-      notifications_enabled: enabled,
-      
-      // Include other preferences here...
+    // Update notification preferences using the dedicated notifications endpoint
+    await apiRequest('/api/preferences/notifications', 'POST', {
+      // Only send the enabled status - the API will automatically set the correct frequency
+      notifications_enabled: enabled
     });
     
     // Update the local state if toggling on

@@ -61,13 +61,13 @@ async function fixNotificationPreference() {
         const updatedPrefs = await db
           .update(notification_preferences)
           .set({
-            notification_frequency: 'Daily', // Using Daily instead of Never since NOTIFICATION_FREQUENCIES doesn't include Never
+            notification_frequency: 'Never', // When notifications are disabled, set frequency to Never
             updated_at: new Date()
           })
           .where(eq(notification_preferences.user_id, userToFix.id))
           .returning();
         
-        console.log('Updated notification frequency to "Daily" to match disabled status');
+        console.log('Updated notification frequency to "Never" to match disabled status');
         console.log('Updated preferences:', updatedPrefs[0]);
       } else {
         // Make sure enabled notifications have "Instant" frequency
@@ -111,7 +111,7 @@ async function fixNotificationPreference() {
     
     if (verifyPrefs) {
       // Verify the frequency matches the enabled status
-      const shouldHaveFrequency = verifyPrefs.notifications_enabled ? 'Instant' : 'Daily';
+      const shouldHaveFrequency = verifyPrefs.notifications_enabled ? 'Instant' : 'Never';
       
       if (verifyPrefs.notification_frequency !== shouldHaveFrequency) {
         console.error('WARNING: Frequency does not match enabled status!');

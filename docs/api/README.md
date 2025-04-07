@@ -367,7 +367,45 @@ Retrieves notifications for the current user.
 #### `PATCH /api/notifications/:id/read`
 
 Marks a notification as read.
+Marks a notification as read.
 
+**Request Body:** None required
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+#### `POST /api/preferences/notifications`
+
+Updates the notification preferences for the current user.
+
+**Request Body:**
+```json
+{
+  "notifications_enabled": true|false
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "preferences": {
+    "id": "preference-id",
+    "user_id": "user-id",
+    "notifications_enabled": true|false,
+    "notification_frequency": "Instant|Never",
+    "created_at": "2025-04-06T17:29:00Z",
+    "updated_at": "2025-04-06T17:29:00Z",
+    "last_notified_at": null
+  }
+}
+```
+
+**Note:** When `notifications_enabled` is set to `false`, the `notification_frequency` is automatically set to "Never". When `notifications_enabled` is set to `true`, the `notification_frequency` is automatically set to "Instant".
 ### Network Statistics
 
 #### `GET /api/network-stats`

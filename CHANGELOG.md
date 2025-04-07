@@ -5,6 +5,27 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.6.8] - 2025-04-07
+
+### Fixed
+- Fixed notification toggle functionality in dashboard
+- Resolved issue where notification preferences weren't persisting after page refresh
+- Implemented comprehensive cache-busting to ensure fresh data on every profile load
+
+### Enhanced
+- Improved Profile API endpoint to include notification preferences in response
+- Added detailed debugging logs for notification preference values
+- Enhanced API responses with stronger cache control headers
+
+### Technical Details
+- Updated server/routes.ts to include notification preferences in Profile API response
+- Added cache-control headers to prevent 304 responses when preferences change
+- Updated API documentation with dedicated notification preferences endpoint
+- Expanded frontend documentation with latest notification toggle implementation
+- Fixed preference state synchronization between API and UI components
+- Updated API documentation with dedicated notification preferences endpoint
+- Expanded frontend documentation with latest notification toggle implementation
+
 ## [Version 1.6.7] - 2025-04-06
 
 ### Added

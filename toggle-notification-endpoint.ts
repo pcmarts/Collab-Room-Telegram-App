@@ -58,7 +58,7 @@ async function toggleNotifications() {
         .update(notification_preferences)
         .set({
           notifications_enabled: shouldEnable,
-          notification_frequency: shouldEnable ? 'Instant' : 'Daily',
+          notification_frequency: shouldEnable ? 'Instant' : 'Never',
           updated_at: new Date()
         })
         .where(eq(notification_preferences.user_id, adminUser.id))
@@ -73,7 +73,7 @@ async function toggleNotifications() {
         .values({
           user_id: adminUser.id,
           notifications_enabled: shouldEnable,
-          notification_frequency: shouldEnable ? 'Instant' : 'Daily',
+          notification_frequency: shouldEnable ? 'Instant' : 'Never',
           updated_at: new Date()
         })
         .returning();
@@ -96,7 +96,7 @@ async function toggleNotifications() {
       console.error('WARNING: Verification failed - the database value does not match the expected value!');
     } else {
       // Check if frequency matches expected value based on enabled state
-      const expectedFrequency = shouldEnable ? 'Instant' : 'Daily';
+      const expectedFrequency = shouldEnable ? 'Instant' : 'Never';
       if (verifyPrefs.notification_frequency !== expectedFrequency) {
         console.error(`WARNING: Notification frequency check failed - expected ${expectedFrequency} but got ${verifyPrefs.notification_frequency}`);
       } else {
