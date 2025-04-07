@@ -80,6 +80,9 @@ export function SwipeableCard({
     fullDetails: data.details
   });
   
+  // Import toast from use-toast
+  const { toast } = require("@/hooks/use-toast");
+
   // Define direct button click handler
   const handleButtonClick = async (direction: "left" | "right", note?: string) => {
     try {
@@ -91,8 +94,26 @@ export function SwipeableCard({
       
       setExitX(direction === 'right' ? 1000 : -1000);
       await handleSwipe(direction, note);
+      
+      // Show toast notification for successful right swipe (collaboration request)
+      if (direction === "right") {
+        toast({
+          title: "Collaboration Request Sent",
+          description: "The host will be notified of your interest.",
+          variant: "default",
+          duration: 3000,
+        });
+      }
     } catch (error) {
       console.error("Error handling button click:", error);
+      
+      // Show error toast
+      toast({
+        title: "Request Failed",
+        description: "There was a problem sending your request. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
   };
   
@@ -116,6 +137,16 @@ export function SwipeableCard({
       
       setExitX(xOffset > 0 ? 1000 : -1000);
       await handleSwipe(direction);
+      
+      // Show toast notification for successful right swipe (collaboration request)
+      if (direction === "right") {
+        toast({
+          title: "Collaboration Request Sent",
+          description: "The host will be notified of your interest.",
+          variant: "default",
+          duration: 3000,
+        });
+      }
     } else if (dragDistance < 10) {
       // If dragged less than 10px, it's considered a click, do nothing to allow link clicks
       controls?.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
@@ -658,6 +689,13 @@ export function SwipeableCard({
           // Give the dialog time to fully close before executing the swipe
           setTimeout(() => {
             handleSwipe("right", note);
+            // Show toast notification 
+            toast({
+              title: "Collaboration Request Sent",
+              description: "A personalized note was included with your request.",
+              variant: "default",
+              duration: 3000,
+            });
           }, 100);
         }}
         onSendWithoutNote={() => {
@@ -665,6 +703,13 @@ export function SwipeableCard({
           // Give the dialog time to fully close before executing the swipe
           setTimeout(() => {
             handleSwipe("right", "");
+            // Show toast notification
+            toast({
+              title: "Collaboration Request Sent",
+              description: "The host will be notified of your interest.",
+              variant: "default",
+              duration: 3000,
+            });
           }, 100);
         }}
         recipientName={data.creator_company_name}
