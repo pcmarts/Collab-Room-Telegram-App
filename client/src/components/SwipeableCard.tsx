@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AddNoteDialog } from "./AddNoteDialog";
 import { toast } from "@/hooks/use-toast";
+import { triggerHapticFeedback, triggerSwipeHaptic } from "../lib/haptics";
 
 // Types
 interface SwipeableCardProps {
@@ -84,6 +85,9 @@ export function SwipeableCard({
   // Define direct button click handler
   const handleButtonClick = async (direction: "left" | "right", note?: string) => {
     try {
+      // Trigger haptic feedback for button press
+      triggerHapticFeedback('impact');
+      
       // If it's a right swipe (request) and not a potential match, show the note dialog
       if (direction === "right" && !data.isPotentialMatch && !note) {
         setShowNoteDialog(true);
@@ -92,6 +96,9 @@ export function SwipeableCard({
       
       setExitX(direction === 'right' ? 1000 : -1000);
       await handleSwipe(direction, note);
+      
+      // Trigger directional haptic feedback for swipe action
+      triggerSwipeHaptic(direction);
       
       // Show toast notification for successful right swipe (collaboration request)
       if (direction === "right") {
@@ -125,6 +132,9 @@ export function SwipeableCard({
     // Consider it a swipe only if dragged more than 100px
     if (dragDistance > 100) {
       const direction = xOffset > 0 ? "right" : "left";
+      
+      // Trigger haptic feedback for swipe action
+      triggerSwipeHaptic(direction);
       
       // If it's a right swipe and not a potential match, show the note dialog instead of immediately swiping
       if (direction === "right" && !data.isPotentialMatch) {
