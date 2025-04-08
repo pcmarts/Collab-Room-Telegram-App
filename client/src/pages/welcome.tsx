@@ -73,7 +73,7 @@ export default function Welcome() {
                 onClick={handleContinue}
                 className="flex-grow max-w-full"
               >
-                Apply
+                Next
               </GlowButton>
             </div>
           </CardContent>

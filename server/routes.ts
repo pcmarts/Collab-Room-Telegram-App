@@ -3107,7 +3107,6 @@ export async function registerRoutes(app: Express) {
             companyName: match.company_name || 'Unknown Company',
             roleTitle: match.role_title || 'Unknown Role',
             companyDescription: match.company_description || 'No company description available.',
-            userDescription: `${match.other_user_first_name || ''} is a professional in the Web3 space.`,
             username: match.other_user_handle,
             
             // Additional user information

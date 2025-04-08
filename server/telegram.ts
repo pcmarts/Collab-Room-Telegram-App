@@ -107,7 +107,7 @@ async function handleStart(msg: TelegramBot.Message) {
         ],
       };
       welcomeMessage =
-        "👋 Welcome to Collab Room!\n\nWe're excited that you're interested in joining our community of innovative collaborators. Click below to start your application.";
+        "👋 Welcome to Collab Room!\n\nThis is the fastest way to find and share marketing collabs with other Web3 brands—guest blogs, Twitter Collabs, AMAs, and more.\n\nYou’ll get filtered, relevant opportunities straight to your Telegram, and can push your own out to a verified network.\n\nClick below to start your application.";
     } else if (existingUser.is_approved) {
       keyboard = {
         inline_keyboard: [
@@ -119,7 +119,7 @@ async function handleStart(msg: TelegramBot.Message) {
           ],
           [
             {
-              text: "📣 Join Announcement Channel",
+              text: "📣 Announcements",
               url: "https://t.me/TheMarketingDAO",
             },
           ],
@@ -1171,24 +1171,24 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
           .where(eq(companies.user_id, hostUser.id));
 
         const hostCompanyName = hostCompany?.name || "their company";
-        
+
         // Format company website URL if available
         const hostCompanyWebsite = hostCompany?.website
           ? hostCompany.website.startsWith("http")
-              ? hostCompany.website
-              : `https://${hostCompany.website}`
+            ? hostCompany.website
+            : `https://${hostCompany.website}`
           : "";
-          
+
         // Create a safer HTML message with proper website handling
         let matchMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""}`;
-        
+
         // Add company info with website if available
         if (hostCompanyWebsite) {
           matchMessage += ` from <a href="${hostCompanyWebsite}">${hostCompany?.name || "a company"}</a>`;
         } else {
           matchMessage += ` from ${hostCompanyName}`;
         }
-        
+
         // Finish the message
         matchMessage += ` just approved your collaboration request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly to coordinate your collaboration.`;
 
@@ -1249,22 +1249,30 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
 
       // Generate a safe company name with or without website link
       let safeCompanyDisplay = "";
-      
+
       // Format company website if available
       let safeRequesterCompanyWebsite = "";
       if (requesterCompany?.website) {
-        safeRequesterCompanyWebsite = requesterCompany.website.startsWith("http")
+        safeRequesterCompanyWebsite = requesterCompany.website.startsWith(
+          "http",
+        )
           ? requesterCompany.website
           : `https://${requesterCompany.website}`;
       }
-      
+
       // Create company display format with conditional link
-      if (safeRequesterCompanyWebsite && safeRequesterCompanyWebsite.includes(".")) {
+      if (
+        safeRequesterCompanyWebsite &&
+        safeRequesterCompanyWebsite.includes(".")
+      ) {
         safeCompanyDisplay = `<a href="${safeRequesterCompanyWebsite}">${(requesterCompany?.name || "a company").replace(/[<>]/g, "")}</a>`;
       } else {
-        safeCompanyDisplay = (requesterCompany?.name || "a company").replace(/[<>]/g, "");
+        safeCompanyDisplay = (requesterCompany?.name || "a company").replace(
+          /[<>]/g,
+          "",
+        );
       }
-      
+
       // Create the response message with safe HTML
       responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${safeCompanyDisplay} for the "${collaboration.collab_type}" collaboration${collabTitle ? ` "${collabTitle}"` : ""}.\n\nA notification has been sent to them about the match.`;
 
@@ -1594,10 +1602,10 @@ export async function notifyMatchCreated(
       );
       return;
     }
-    
+
     // Extract collaboration details for more comprehensive notification
     let collabDetails = collaboration.details;
-    if (typeof collabDetails === 'string') {
+    if (typeof collabDetails === "string") {
       try {
         collabDetails = JSON.parse(collabDetails);
       } catch (e) {
@@ -1605,32 +1613,41 @@ export async function notifyMatchCreated(
         collabDetails = {};
       }
     }
-    
+
     // Format date information if available
     let dateInfo = "Flexible timing";
-    if (collaboration.date_type === "specific_date" && collaboration.specific_date) {
+    if (
+      collaboration.date_type === "specific_date" &&
+      collaboration.specific_date
+    ) {
       dateInfo = collaboration.specific_date;
     }
-    
+
     // Format topics as comma-separated list if available
-    const topicsText = 
+    const topicsText =
       collaboration.topics && collaboration.topics.length > 0
         ? collaboration.topics.join(", ")
         : "Not specified";
-        
+
     // Extract description if available with proper type safety
     let shortDescription = "";
-    
+
     // Use a type-safe approach with a fallback chain
-    if (collabDetails && typeof collabDetails === 'object') {
+    if (collabDetails && typeof collabDetails === "object") {
       // Access using index notation to avoid TypeScript errors
-      if ('short_description' in collabDetails && typeof collabDetails['short_description'] === 'string') {
-        shortDescription = collabDetails['short_description'];
-      } else if ('description' in collabDetails && typeof collabDetails['description'] === 'string') {
-        shortDescription = collabDetails['description'];
+      if (
+        "short_description" in collabDetails &&
+        typeof collabDetails["short_description"] === "string"
+      ) {
+        shortDescription = collabDetails["short_description"];
+      } else if (
+        "description" in collabDetails &&
+        typeof collabDetails["description"] === "string"
+      ) {
+        shortDescription = collabDetails["description"];
       }
     }
-    
+
     // Fallback to collaboration description if needed
     if (!shortDescription && collaboration.description) {
       shortDescription = collaboration.description;
@@ -1678,20 +1695,26 @@ export async function notifyMatchCreated(
       if (requesterCompany?.website && requesterCompany.website.trim()) {
         // Sanitize website URL: remove spaces, special characters, ensure proper format
         let websiteUrl = requesterCompany.website.trim();
-        
+
         // Add protocol if missing
         requesterCompanyWebsite = websiteUrl.startsWith("http")
           ? websiteUrl
           : `https://${websiteUrl}`;
-          
+
         // Basic URL validation
         if (!requesterCompanyWebsite.includes(".")) {
-          console.log("[WARNING] Invalid requester company website format:", websiteUrl);
+          console.log(
+            "[WARNING] Invalid requester company website format:",
+            websiteUrl,
+          );
           requesterCompanyWebsite = ""; // Reset if invalid
         }
       }
     } catch (error) {
-      console.error("[ERROR] Failed to process requester company website:", error);
+      console.error(
+        "[ERROR] Failed to process requester company website:",
+        error,
+      );
       requesterCompanyWebsite = "";
     }
 
@@ -1700,15 +1723,18 @@ export async function notifyMatchCreated(
       if (hostCompany?.website && hostCompany.website.trim()) {
         // Sanitize website URL: remove spaces, special characters, ensure proper format
         let websiteUrl = hostCompany.website.trim();
-        
+
         // Add protocol if missing
         hostCompanyWebsite = websiteUrl.startsWith("http")
           ? websiteUrl
           : `https://${websiteUrl}`;
-          
+
         // Basic URL validation
         if (!hostCompanyWebsite.includes(".")) {
-          console.log("[WARNING] Invalid host company website format:", websiteUrl);
+          console.log(
+            "[WARNING] Invalid host company website format:",
+            websiteUrl,
+          );
           hostCompanyWebsite = ""; // Reset if invalid
         }
       }
@@ -1777,28 +1803,27 @@ export async function notifyMatchCreated(
       ],
     };
 
-    
     // Prepare host notification with carefully formatted HTML
     let hostMessage = `🎉 <b>New Match!</b>\n\n`;
-    
+
     // Add user name with safe formatting
     hostMessage += `${requesterUser.first_name} ${requesterUser.last_name || ""}`;
-    
+
     // Add Telegram handle as link if available
     if (requesterUser.handle) {
       hostMessage += ` (<a href="https://t.me/${requesterUser.handle.replace(/[<>]/g, "")}">@${requesterUser.handle.replace(/[<>]/g, "")}</a>)`;
     }
-    
+
     // Add job title if available
     hostMessage += `, the <b>${(requesterCompany?.job_title || "professional").replace(/[<>]/g, "")}</b>`;
-    
+
     // Add company info - use a consistent format whether or not there's a valid website
     if (requesterCompanyWebsite) {
       hostMessage += ` from ${requesterCompanyName}`;
     } else {
       hostMessage += ` from ${(requesterCompany?.name || "a company").replace(/[<>]/g, "")}`;
     }
-    
+
     // Complete the match info
     hostMessage += ` is a match for your <b>${collaboration.collab_type}</b> collaboration!`;
 
@@ -1808,59 +1833,59 @@ export async function notifyMatchCreated(
       const sanitizedNote = note.trim().replace(/[<>]/g, "");
       hostMessage += `\n\n<b>💬 Their note:</b>\n"${sanitizedNote}"`;
     }
-    
+
     // Add collaboration details section
     hostMessage += `\n\n<b>🔍 Collaboration Details:</b>\n`;
-    
+
     // Add description if available
     if (shortDescription) {
       hostMessage += `• <b>Description:</b> ${shortDescription.replace(/[<>]/g, "")}\n`;
     }
-    
+
     // Add topics
     hostMessage += `• <b>Topics:</b> ${topicsText}\n`;
-    
+
     // Add date/timing
     hostMessage += `• <b>Timing:</b> ${dateInfo}\n`;
 
     // Add closing message
     hostMessage += `\n\nDrop them a message and get started on your collab!`;
-    
+
     // Prepare requester notification with carefully formatted HTML
     let requesterMessage = `🎉 <b>New Match!</b>\n\n`;
-    
+
     // Add user name with safe formatting
     requesterMessage += `${hostUser.first_name} ${hostUser.last_name || ""}`;
-    
+
     // Add Telegram handle as link if available
     if (hostUser.handle) {
       requesterMessage += ` (<a href="https://t.me/${hostUser.handle.replace(/[<>]/g, "")}">@${hostUser.handle.replace(/[<>]/g, "")}</a>)`;
     }
-    
+
     // Add company info - use a consistent format whether or not there's a valid website
     if (hostCompanyWebsite) {
       requesterMessage += ` from ${hostCompanyName}`;
     } else {
       requesterMessage += ` from ${(hostCompany?.name || "a company").replace(/[<>]/g, "")}`;
     }
-    
+
     // Add basic match notification
     requesterMessage += ` just approved your collab request for <b>${collaboration.collab_type}</b>!\n\n`;
-    
+
     // Add collaboration details section
     requesterMessage += `<b>🔍 Collaboration Details:</b>\n`;
-    
+
     // Add description if available
     if (shortDescription) {
       requesterMessage += `• <b>Description:</b> ${shortDescription.replace(/[<>]/g, "")}\n`;
     }
-    
+
     // Add topics
     requesterMessage += `• <b>Topics:</b> ${topicsText}\n`;
-    
+
     // Add date/timing
     requesterMessage += `• <b>Timing:</b> ${dateInfo}\n\n`;
-    
+
     // Complete the message
     requesterMessage += `You can now chat directly with ${hostUser.first_name} to get started!`;
 
@@ -1927,21 +1952,21 @@ export async function notifyMatchCreated(
           if (note && note.trim()) {
             plainHostMessage += `\n\n💬 Their note:\n"${note.trim()}"`;
           }
-          
+
           // Add collaboration details section in plain text
           plainHostMessage += `\n\nCollaboration Details:\n`;
-          
+
           // Add description if available
           if (shortDescription) {
             plainHostMessage += `• Description: ${shortDescription}\n`;
           }
-          
+
           // Add topics
           plainHostMessage += `• Topics: ${topicsText}\n`;
-          
+
           // Add date/timing
           plainHostMessage += `• Timing: ${dateInfo}\n\n`;
-          
+
           // Complete with a closing message
           plainHostMessage += `Drop them a message and get started on your collab!`;
 
@@ -1982,24 +2007,24 @@ export async function notifyMatchCreated(
         if (!requesterSuccess) {
           // Try sending plain message to requester without HTML formatting
           console.log("[DEBUG] Trying fallback message to requester...");
-          
+
           // Create a plain text message without HTML tags for fallback but include details
           let plainRequesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ""} from ${hostCompany?.name || "a company"} just approved your collab request for ${collaboration.collab_type}!\n\n`;
-          
+
           // Add collaboration details section in plain text
           plainRequesterMessage += `Collaboration Details:\n`;
-          
+
           // Add description if available
           if (shortDescription) {
             plainRequesterMessage += `• Description: ${shortDescription}\n`;
           }
-          
+
           // Add topics
           plainRequesterMessage += `• Topics: ${topicsText}\n`;
-          
+
           // Add date/timing
           plainRequesterMessage += `• Timing: ${dateInfo}\n\n`;
-          
+
           // Complete the message
           plainRequesterMessage += `You can now chat directly with ${hostUser.first_name} to get started!`;
 
