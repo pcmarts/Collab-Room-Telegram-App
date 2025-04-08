@@ -381,6 +381,91 @@ interface MatchMomentProps {
   - Use MessageCircle for match-related actions
   - Use LuCopy (discovery icon) for discovery-related actions
 - Ensure all animations work properly on both desktop and mobile screens
+# Haptic Feedback System
+
+## Overview
+
+The Collab Room application enhances mobile interaction with a sophisticated haptic feedback system that provides tactile responses to user actions, creating a more engaging and responsive experience in the Telegram WebApp environment.
+
+## Features Added in v1.7.2
+
+- **Tactile Swipe Feedback**: Different vibration patterns for accepting vs. passing on collaborations
+- **Button Press Vibrations**: Subtle haptic feedback when tapping action buttons
+- **Multi-sensory Confirmation**: Combined toast notifications with haptic feedback for a richer experience
+- **Environment-aware Implementation**: Graceful fallbacks when haptic feedback isn't available
+
+## Implementation Details
+
+Haptic feedback is implemented through a dedicated utility module that interfaces with the Telegram WebApp API:
+
+```typescript
+// client/src/lib/haptics.ts
+export const triggerHapticFeedback = (type: 'impact' | 'notification' | 'selection' = 'impact') => {
+  // Check if Telegram WebApp and HapticFeedback is available
+  if (!window.Telegram?.WebApp?.HapticFeedback) {
+    console.log('Haptic feedback not available in this environment');
+    return;
+  }
+
+  const haptic = window.Telegram.WebApp.HapticFeedback;
+
+  try {
+    switch (type) {
+      case 'impact':
+        haptic.impactOccurred('medium');
+        break;
+      case 'notification':
+        haptic.notificationOccurred('success');
+        break;
+      case 'selection':
+        haptic.selectionChanged();
+        break;
+      default:
+        haptic.impactOccurred('medium');
+    }
+  } catch (error) {
+    console.error('Error triggering haptic feedback:', error);
+  }
+};
+```
+
+### SwipeableCard Integration
+
+The SwipeableCard component integrates haptic feedback at key interaction points:
+
+```typescript
+// Button click handler with haptic feedback
+const handleButtonClick = async (direction: "left" | "right", note?: string) => {
+  try {
+    // Trigger haptic feedback for button press
+    triggerHapticFeedback('impact');
+    
+    // ... other code ...
+    
+    // Directional haptic feedback for swipe action
+    triggerSwipeHaptic(direction);
+    
+    // ... toast notifications ...
+  } catch (error) {
+    console.error("Error handling button click:", error);
+  }
+};
+```
+
+## User Experience Improvements
+
+- **Enhanced Mobile Experience**: Tactile feedback creates a more physical and satisfying interaction
+- **Improved Interaction Clarity**: Different feedback patterns help users intuitively understand different actions
+- **Multi-sensory Feedback**: Combined visual, auditory, and tactile feedback creates a richer experience
+- **Platform Integration**: Leverages native Telegram capabilities for a more integrated feel
+
+## Usage Guidelines
+
+- **Use Sparingly**: Reserve haptic feedback for meaningful interactions to prevent feedback fatigue
+- **Consistent Patterns**: Use consistent haptic patterns for similar actions (accept/reject, submit/cancel)
+- **Combine with Visual Feedback**: Always pair haptic feedback with visual cues for accessibility
+- **Implement Fallbacks**: Always check for API availability before attempting to trigger haptic feedback
+
 # Notification Confirmation Toasts
 
 ## Overview

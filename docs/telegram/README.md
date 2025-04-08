@@ -9,6 +9,11 @@ The application uses two main aspects of Telegram's platform:
 1. **Telegram Bot API**: For bot functionality and notifications
 2. **Telegram WebApp**: For embedding the web application in Telegram
 
+## Related Documentation
+
+- [Haptic Feedback Integration](./haptic-feedback.md): Details on implementing mobile vibration feedback through Telegram's WebApp API
+- [Notification Updates](./notificationUpdates.md): Information about the enhanced notification system
+
 ## Telegram Bot
 
 ### Bot Setup
@@ -482,6 +487,13 @@ interface TelegramWebApp {
     link_color?: string;
     button_color?: string;
     button_text_color?: string;
+  };
+  
+  // Haptic feedback methods
+  HapticFeedback?: {
+    impactOccurred: (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => void;
+    notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
+    selectionChanged: () => void;
   };
 }
 ```

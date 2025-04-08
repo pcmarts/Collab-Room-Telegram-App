@@ -702,14 +702,14 @@ export default function CreateCollaborationSteps({
     {
       id: "collab_type",
       title: "Collaboration Type",
-      description: "What type of collaboration are you looking for?",
+      description: "What type of collaboration are you looking to host?",
       render: () => (
         <FormField
           control={form.control}
           name="collab_type"
           render={({ field }) => (
             <FormItem className="space-y-1 pt-1">
-              <FormLabel className="mb-1 text-sm">What type of collaboration are you looking for?</FormLabel>
+              <FormLabel className="mb-1 text-sm">What type of collaboration are you looking to host?</FormLabel>
               <div className="flex flex-col gap-1">
                 {COLLAB_TYPES.map((type) => {
                   const isSelected = field.value === type;
@@ -1010,7 +1010,7 @@ export default function CreateCollaborationSteps({
     {
       id: "twitter_handle",
       title: "Twitter Handle",
-      description: "What's your Twitter/X handle?",
+      description: "What's the X profile hosting the collab?",
       render: () => (
         <FormField
           control={form.control}
@@ -1021,7 +1021,7 @@ export default function CreateCollaborationSteps({
             
             return (
               <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">What's your Twitter/X handle?</FormLabel>
+                <FormLabel className="mb-0 text-sm">What's the X profile hosting the collab?</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="https://x.com/username"
@@ -1047,7 +1047,7 @@ export default function CreateCollaborationSteps({
     {
       id: "twitter_followers",
       title: "Twitter Followers",
-      description: "How many followers do you have?",
+      description: "How many followers does the host profile have?",
       render: () => (
         <FormField
           control={form.control}
@@ -1058,7 +1058,7 @@ export default function CreateCollaborationSteps({
             
             return (
               <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">How many followers do you have?</FormLabel>
+                <FormLabel className="mb-0 text-sm">How many followers does the host profile have?</FormLabel>
                 <div className="grid grid-cols-2 gap-1">
                   {TWITTER_FOLLOWER_COUNTS.map((count) => {
                     const isSelected = currentValue === count;
@@ -1202,7 +1202,7 @@ export default function CreateCollaborationSteps({
     {
       id: "twitter_comarketing_handle",
       title: "Twitter Handle",
-      description: "What's your Twitter/X handle?",
+      description: "What's the X profile hosting the collab?",
       render: () => (
         <FormField
           control={form.control}
@@ -1217,7 +1217,7 @@ export default function CreateCollaborationSteps({
             
             return (
               <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">What's your Twitter/X handle?</FormLabel>
+                <FormLabel className="mb-0 text-sm">What's the X profile hosting the collab?</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="https://x.com/username"
@@ -1246,7 +1246,7 @@ export default function CreateCollaborationSteps({
     {
       id: "twitter_comarketing_followers",
       title: "Twitter Followers",
-      description: "How many followers do you have?",
+      description: "How many followers does the host profile have?",
       render: () => (
         <FormField
           control={form.control}
@@ -1257,7 +1257,7 @@ export default function CreateCollaborationSteps({
             
             return (
               <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">How many followers do you have?</FormLabel>
+                <FormLabel className="mb-0 text-sm">How many followers does the host profile have?</FormLabel>
                 <div className="grid grid-cols-2 gap-1">
                   {TWITTER_FOLLOWER_COUNTS.map((count) => {
                     const isSelected = currentValue === count;

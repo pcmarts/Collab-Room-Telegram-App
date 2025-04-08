@@ -5,6 +5,23 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.7.2] - 2025-04-08
+
+### Added
+- Implemented mobile-specific haptic feedback for improved user experience in the Telegram WebApp
+- Added tactile feedback to improve the swipe experience on touchscreen devices
+
+### Enhanced
+- Added distinctive haptic patterns: soft vibration for button presses, stronger vibration for swipes
+- Implemented different vibration patterns to differentiate between accept (right) and pass (left) swipes
+- Enhanced touch experience with tactile feedback aligned with visual and toast notifications
+
+### Technical Details
+- Created client/src/lib/haptics.ts utility module with reusable haptic feedback functions
+- Added Telegram WebApp HapticFeedback API integration with device-appropriate fallbacks
+- Implemented graceful degradation for non-mobile or non-Telegram environments
+- Added intelligent checks to prevent errors when haptic feedback isn't available
+
 ## [Version 1.7.1] - 2025-04-08
 
 ### Added
