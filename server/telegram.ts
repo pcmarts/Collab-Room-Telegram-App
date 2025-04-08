@@ -1594,6 +1594,47 @@ export async function notifyMatchCreated(
       );
       return;
     }
+    
+    // Extract collaboration details for more comprehensive notification
+    let collabDetails = collaboration.details;
+    if (typeof collabDetails === 'string') {
+      try {
+        collabDetails = JSON.parse(collabDetails);
+      } catch (e) {
+        console.error("[ERROR] Failed to parse collaboration details:", e);
+        collabDetails = {};
+      }
+    }
+    
+    // Format date information if available
+    let dateInfo = "Flexible timing";
+    if (collaboration.date_type === "specific_date" && collaboration.specific_date) {
+      dateInfo = collaboration.specific_date;
+    }
+    
+    // Format topics as comma-separated list if available
+    const topicsText = 
+      collaboration.topics && collaboration.topics.length > 0
+        ? collaboration.topics.join(", ")
+        : "Not specified";
+        
+    // Extract description if available with proper type safety
+    let shortDescription = "";
+    
+    // Use a type-safe approach with a fallback chain
+    if (collabDetails && typeof collabDetails === 'object') {
+      // Access using index notation to avoid TypeScript errors
+      if ('short_description' in collabDetails && typeof collabDetails['short_description'] === 'string') {
+        shortDescription = collabDetails['short_description'];
+      } else if ('description' in collabDetails && typeof collabDetails['description'] === 'string') {
+        shortDescription = collabDetails['description'];
+      }
+    }
+    
+    // Fallback to collaboration description if needed
+    if (!shortDescription && collaboration.description) {
+      shortDescription = collaboration.description;
+    }
 
     // Get company details for both users
     const [hostCompany] = await db
@@ -1736,6 +1777,7 @@ export async function notifyMatchCreated(
       ],
     };
 
+    
     // Prepare host notification with carefully formatted HTML
     let hostMessage = `🎉 <b>New Match!</b>\n\n`;
     
@@ -1766,9 +1808,24 @@ export async function notifyMatchCreated(
       const sanitizedNote = note.trim().replace(/[<>]/g, "");
       hostMessage += `\n\n<b>💬 Their note:</b>\n"${sanitizedNote}"`;
     }
+    
+    // Add collaboration details section
+    hostMessage += `\n\n<b>🔍 Collaboration Details:</b>\n`;
+    
+    // Add description if available
+    if (shortDescription) {
+      hostMessage += `• <b>Description:</b> ${shortDescription.replace(/[<>]/g, "")}\n`;
+    }
+    
+    // Add topics
+    hostMessage += `• <b>Topics:</b> ${topicsText}\n`;
+    
+    // Add date/timing
+    hostMessage += `• <b>Timing:</b> ${dateInfo}\n`;
 
+    // Add closing message
     hostMessage += `\n\nDrop them a message and get started on your collab!`;
-
+    
     // Prepare requester notification with carefully formatted HTML
     let requesterMessage = `🎉 <b>New Match!</b>\n\n`;
     
@@ -1787,8 +1844,25 @@ export async function notifyMatchCreated(
       requesterMessage += ` from ${(hostCompany?.name || "a company").replace(/[<>]/g, "")}`;
     }
     
+    // Add basic match notification
+    requesterMessage += ` just approved your collab request for <b>${collaboration.collab_type}</b>!\n\n`;
+    
+    // Add collaboration details section
+    requesterMessage += `<b>🔍 Collaboration Details:</b>\n`;
+    
+    // Add description if available
+    if (shortDescription) {
+      requesterMessage += `• <b>Description:</b> ${shortDescription.replace(/[<>]/g, "")}\n`;
+    }
+    
+    // Add topics
+    requesterMessage += `• <b>Topics:</b> ${topicsText}\n`;
+    
+    // Add date/timing
+    requesterMessage += `• <b>Timing:</b> ${dateInfo}\n\n`;
+    
     // Complete the message
-    requesterMessage += ` just approved your collab request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly with ${hostUser.first_name}`;
+    requesterMessage += `You can now chat directly with ${hostUser.first_name} to get started!`;
 
     console.log("[DEBUG] Formatted messages to send:");
     console.log(`Host message (to ${hostChatId}):\n${hostMessage}`);
@@ -1853,6 +1927,23 @@ export async function notifyMatchCreated(
           if (note && note.trim()) {
             plainHostMessage += `\n\n💬 Their note:\n"${note.trim()}"`;
           }
+          
+          // Add collaboration details section in plain text
+          plainHostMessage += `\n\nCollaboration Details:\n`;
+          
+          // Add description if available
+          if (shortDescription) {
+            plainHostMessage += `• Description: ${shortDescription}\n`;
+          }
+          
+          // Add topics
+          plainHostMessage += `• Topics: ${topicsText}\n`;
+          
+          // Add date/timing
+          plainHostMessage += `• Timing: ${dateInfo}\n\n`;
+          
+          // Complete with a closing message
+          plainHostMessage += `Drop them a message and get started on your collab!`;
 
           // Simplified fallback keyboard without callback data
           const fallbackHostKeyboard = {
@@ -1892,8 +1983,25 @@ export async function notifyMatchCreated(
           // Try sending plain message to requester without HTML formatting
           console.log("[DEBUG] Trying fallback message to requester...");
           
-          // Create a plain text message without HTML tags for fallback
-          let plainRequesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ""} from ${hostCompany?.name || "a company"} just approved your collab request for ${collaboration.collab_type}!`;
+          // Create a plain text message without HTML tags for fallback but include details
+          let plainRequesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ""} from ${hostCompany?.name || "a company"} just approved your collab request for ${collaboration.collab_type}!\n\n`;
+          
+          // Add collaboration details section in plain text
+          plainRequesterMessage += `Collaboration Details:\n`;
+          
+          // Add description if available
+          if (shortDescription) {
+            plainRequesterMessage += `• Description: ${shortDescription}\n`;
+          }
+          
+          // Add topics
+          plainRequesterMessage += `• Topics: ${topicsText}\n`;
+          
+          // Add date/timing
+          plainRequesterMessage += `• Timing: ${dateInfo}\n\n`;
+          
+          // Complete the message
+          plainRequesterMessage += `You can now chat directly with ${hostUser.first_name} to get started!`;
 
           // Simplified fallback keyboard without callback data
           const fallbackRequesterKeyboard = {
