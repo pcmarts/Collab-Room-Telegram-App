@@ -257,5 +257,6 @@ app.post("/api/admin/impersonate", checkAdminMiddleware, async (req: TelegramReq
 ## Related Documentation
 
 - [Security Implementation](./security.md) - Detailed documentation about security features and best practices
+- [Structured Logging System](./logging.md) - Comprehensive logging with environment-specific levels and security features
 - [API Documentation](../api/README.md) - API endpoints and usage
 - [Authentication Documentation](../auth/README.md) - Authentication system details

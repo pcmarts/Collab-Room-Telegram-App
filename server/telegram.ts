@@ -68,7 +68,7 @@ console.log(
   "Using token type:",
   process.env.NODE_ENV === "production" ? "Production" : "Development",
 );
-console.log("Token prefix:", BOT_TOKEN.substring(0, 10) + "...");
+console.log("Telegram Bot configured successfully");
 console.log("WebApp URL:", WEBAPP_URL);
 
 // Initialize bot with polling and minimal logging
@@ -1180,13 +1180,13 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
           inline_keyboard: [
             [
               {
-                text: "💬 Chat with Host",
+                text: `💬 Chat with ${hostUser.first_name}`,
                 url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
               },
             ],
             [
               {
-                text: "🚀 Discover More Collabs",
+                text: "🚀 Launch Collab Room",
                 web_app: { url: `${WEBAPP_URL}/discover` },
               },
             ],
@@ -1619,14 +1619,14 @@ export async function notifyMatchCreated(
       inline_keyboard: [
         [
           {
-            text: "💬 Chat with Collaborator",
+            text: `💬 Chat with ${requesterUser.first_name}`,
             url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
           },
         ],
         // Remove the callback button that's causing issues
         [
           {
-            text: "🚀 Discover More Collabs",
+            text: "🚀 Launch Collab Room",
             web_app: { url: `${WEBAPP_URL}/discover` },
           },
         ],
@@ -1644,14 +1644,14 @@ export async function notifyMatchCreated(
       inline_keyboard: [
         [
           {
-            text: "💬 Chat with Host",
+            text: `💬 Chat with ${hostUser.first_name}`,
             url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
           },
         ],
         // Remove the callback button that's causing issues
         [
           {
-            text: "🚀 Discover More Collabs",
+            text: "🚀 Launch Collab Room",
             web_app: { url: `${WEBAPP_URL}/discover` },
           },
         ],
@@ -1746,7 +1746,7 @@ export async function notifyMatchCreated(
             inline_keyboard: [
               [
                 {
-                  text: "Chat with Collaborator",
+                  text: `Chat with ${requesterUser.first_name}`,
                   url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
                 },
               ],
@@ -1785,7 +1785,7 @@ export async function notifyMatchCreated(
             inline_keyboard: [
               [
                 {
-                  text: "Chat with Host",
+                  text: `Chat with ${hostUser.first_name}`,
                   url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
                 },
               ],

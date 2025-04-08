@@ -10,6 +10,9 @@ This documentation is organized into the following sections:
 2. [Frontend](./frontend/README.md) - Documentation for the React frontend
    * [Notifications System](./frontend/notifications.md) - Details on the simplified notification system
 3. [Backend](./backend/README.md) - Documentation for the Express backend
+   * [Security Implementation](./backend/security.md) - Comprehensive security measures
+   * [Security Checklist](./backend/security-checklist.md) - Guidelines to maintain application security
+   * [Structured Logging System](./backend/logging.md) - Environment-aware logging with data protection
 4. [Database](./database/README.md) - Database schema and data models
 5. [API](./api/README.md) - API endpoints and usage
 6. [Telegram Integration](./telegram/README.md) - Integration with Telegram WebApp
@@ -20,7 +23,8 @@ This documentation is organized into the following sections:
 9. [Discovery System](./discovery/README.md) - How the collaboration discovery system works
    * [Swipe Filtering](./discovery/swipe-filtering.md) - Preventing duplicate cards in discovery
 10. [Matches System](./matches/README.md) - Details on the match display and interaction system
-11. [Changelog](../CHANGELOG.md) - History of changes to the application
+11. [Security Audit](./security-audit-report.md) - Comprehensive security audit findings and remediations
+12. [Changelog](../CHANGELOG.md) - History of changes to the application
 
 ## Quick Start
 

@@ -5,6 +5,47 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.7.4] - 2025-04-08
+
+### Added
+- Completed comprehensive security audit resulting in identification and remediation of 13 vulnerabilities
+- Created security documentation including security implementation guide and developer checklist
+- Added detailed security audit report with findings and remediations
+
+### Enhanced
+- Implemented proper rate limiting across all critical endpoints
+- Added secure HTTP headers including Content-Security-Policy
+- Enhanced cookie security with httpOnly, secure, and SameSite attributes
+- Improved environment variable handling with validation and secure defaults
+- Enhanced session management with PostgreSQL store for production
+- Improved Telegram authentication with proper cryptographic verification
+
+### Technical Details
+- Created server/middleware/rate-limiter.ts with endpoint-specific rate limits
+- Added security headers middleware in server/index.ts
+- Enhanced shared/config.ts with secure configuration validation
+- Added docs/backend/security.md, docs/backend/security-checklist.md, and docs/security-audit-report.md
+- Updated session configuration for enhanced security and proper storage
+- Added sanitization for all user inputs and error messages
+
+## [Version 1.7.3] - 2025-04-08
+
+### Added
+- Implemented comprehensive structured logging system with environment-specific log levels
+- Created a configurable LOG_LEVEL environment variable for fine-grained control over logging verbosity
+
+### Enhanced
+- Created server/utils/logger.ts with automatic redaction of sensitive data in logs
+- Implemented HTTP request logging middleware with context-aware logging levels
+- Enhanced error handling with detailed, production-safe error logging
+
+### Technical Details
+- Added LogLevel enum with ERROR, WARN, INFO, HTTP, and DEBUG levels following standard severity levels
+- Created requestLogger and errorLogger middleware for consistent HTTP request and error logging
+- Implemented automatic redaction of sensitive information for security (passwords, tokens, keys, etc.)
+- Added environment-specific formatting (one-line in production, multi-line in development)
+- Modified shared/config.ts to support the new LOG_LEVEL configuration option
+
 ## [Version 1.7.2] - 2025-04-08
 
 ### Added

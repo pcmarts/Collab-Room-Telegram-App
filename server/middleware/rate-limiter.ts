@@ -110,3 +110,10 @@ export const swipeLimiter = createRateLimiter({
   max: 60, // Limit each IP to 60 swipes per minute (1 per second)
   skipIfDevelopment: true
 });
+
+export const applicationLimiter = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // Very strict limit for collaboration applications (5 per minute)
+  message: 'Too many application attempts, please try again later',
+  skipIfDevelopment: true
+});

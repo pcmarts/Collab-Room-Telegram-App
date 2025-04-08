@@ -8,6 +8,8 @@ import { config } from "../shared/config";
 import { pool } from "./db";
 import connectPgSimple from 'connect-pg-simple';
 import { apiLimiter } from './middleware/rate-limiter';
+import { logger } from './utils/logger';
+import { requestLogger, errorLogger } from './middleware/logger-middleware';
 
 // Use PostgreSQL for session storage in production, memory store in development
 const MemoryStoreSession = MemoryStore(session);
@@ -29,13 +31,17 @@ app.use((req, res, next) => {
   // Content Security Policy
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org https://cdn.jsdelivr.net; " +
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' https://telegram.org https://cdn.jsdelivr.net; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-    "img-src 'self' data: https://telegram.org; " +
+    "img-src 'self' data: https://telegram.org https://*.telegram.org; " +
     "connect-src 'self' https://api.telegram.org; " +
     "font-src 'self' https://fonts.gstatic.com; " +
     "object-src 'none'; " +
-    "frame-ancestors 'self' https://telegram.org;"
+    "base-uri 'self'; " +
+    "form-action 'self'; " +
+    "frame-ancestors 'self' https://telegram.org https://*.telegram.org; " +
+    "upgrade-insecure-requests;"
   );
   
   // Basic security headers
@@ -43,7 +49,12 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), accelerometer=()');
+  
+  // Set strict transport security for HTTPS
+  if (config.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  }
   
   // Remove headers that might reveal too much information
   res.removeHeader('X-Powered-By');
@@ -64,13 +75,13 @@ if (config.NODE_ENV === 'production') {
     tableName: 'sessions',
     createTableIfMissing: true,
   });
-  log('Using PostgreSQL for session storage');
+  logger.info('Using PostgreSQL for session storage');
 } else {
   // Use memory store in development
   sessionStore = new MemoryStoreSession({
     checkPeriod: 86400000 // prune expired entries every 24h
   });
-  log('Using in-memory session storage (not suitable for production)');
+  logger.warn('Using in-memory session storage (not suitable for production)');
 }
 
 // Initialize session middleware early to ensure it's available for all routes
@@ -80,19 +91,21 @@ app.use(session({
   resave: false,
   saveUninitialized: false, // Set to false for GDPR compliance
   cookie: {
-    secure: config.NODE_ENV === 'production', // Only send cookies over HTTPS in production
+    secure: config.NODE_ENV === 'production', // Only enforce in production
     httpOnly: true, // Prevent JavaScript access to cookies
-    sameSite: 'lax', // Helps prevent CSRF attacks
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    sameSite: 'strict', // Stronger CSRF protection
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    path: '/', // Explicitly set path
+    domain: undefined // Let browser set the cookie domain automatically
   }
 }));
 
 // Initialize Telegram bot first
-log('=== Initializing Server ===');
+logger.info('=== Initializing Server ===');
 
 // Verify bot is working
 try {
-  log('Checking Telegram bot status...');
+  logger.info('Checking Telegram bot status...');
 
   if (!bot) {
     throw new Error('Telegram bot not initialized');
@@ -100,46 +113,19 @@ try {
 
   // Try to get bot info to verify token works
   bot.getMe().then((botInfo) => {
-    log('Telegram bot verified:', botInfo.username);
+    logger.info(`Telegram bot verified: ${botInfo.username}`);
   }).catch((error) => {
-    console.error('Failed to verify bot:', error);
+    logger.error('Failed to verify bot', { error });
     process.exit(1);
   });
 
 } catch (error) {
-  console.error('Critical error initializing Telegram bot:', error);
+  logger.error('Critical error initializing Telegram bot', { error });
   process.exit(1);
 }
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
-  });
-
-  next();
-});
+// Apply request logging middleware
+app.use(requestLogger);
 
 //Apply rate limiting to all API routes
 app.use('/api', apiLimiter);
@@ -158,11 +144,14 @@ app.use('/api', (req, res, next) => {
 });
 
 (async () => {
-  log('Starting server initialization...');
+  logger.info('Starting server initialization...');
 
   try {
     const server = await registerRoutes(app);
 
+    // Add our error logger middleware first
+    app.use(errorLogger);
+    
     // Enhanced error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
@@ -171,9 +160,6 @@ app.use('/api', (req, res, next) => {
       const message = config.NODE_ENV === 'production' && status === 500
         ? "Internal Server Error" 
         : err.message || "Internal Server Error";
-      
-      // Log the full error in any environment
-      console.error('Server error:', err);
       
       // Return a sanitized error response
       res.status(status).json({ 
@@ -199,11 +185,11 @@ app.use('/api', (req, res, next) => {
       host: "0.0.0.0",
       reusePort: true,
     }, () => {
-      log(`Server running on port ${port}`);
-      log('Server initialization completed');
+      logger.info(`Server running on port ${port}`);
+      logger.info('Server initialization completed');
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    logger.error('Failed to start server', { error });
     process.exit(1);
   }
 })();

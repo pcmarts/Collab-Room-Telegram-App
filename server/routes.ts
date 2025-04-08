@@ -13,6 +13,7 @@ import { eq, and, not, desc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, bot } from "./telegram";
 import { storage } from "./storage";
+import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -556,7 +557,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/onboarding", async (req: TelegramRequest, res) => {
+  app.post("/api/onboarding", authLimiter, async (req: TelegramRequest, res) => {
     try {
       const { 
         first_name, last_name, linkedin_url, email, twitter_url, twitter_followers,
@@ -757,7 +758,7 @@ export async function registerRoutes(app: Express) {
   });
 
   // Company information endpoint
-  app.post("/api/company", async (req: TelegramRequest, res) => {
+  app.post("/api/company", authLimiter, async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Company Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
@@ -875,7 +876,7 @@ export async function registerRoutes(app: Express) {
   });
 
   // Preferences endpoint
-  app.post("/api/preferences", async (req: TelegramRequest, res) => {
+  app.post("/api/preferences", authLimiter, async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Preferences Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
@@ -1103,7 +1104,7 @@ export async function registerRoutes(app: Express) {
   // Search collaborations endpoint - Removed duplicate
 
   // Apply to Collaboration endpoint
-  app.post("/api/collaborations/:id/apply", async (req: TelegramRequest, res: Response) => {
+  app.post("/api/collaborations/:id/apply", applicationLimiter, async (req: TelegramRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { message } = req.body;
@@ -1187,7 +1188,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/marketing-preferences", async (req: TelegramRequest, res) => {
+  app.post("/api/marketing-preferences", authLimiter, async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Marketing Preferences Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Raw Body:', req.body);
@@ -1441,7 +1442,7 @@ export async function registerRoutes(app: Express) {
   });
   
   // Notification Toggle API endpoint - Simplified endpoint just for toggling notification status
-  app.post("/api/notification-toggle", async (req: TelegramRequest, res) => {
+  app.post("/api/notification-toggle", authLimiter, async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Notification Toggle Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
@@ -1540,7 +1541,7 @@ export async function registerRoutes(app: Express) {
   });
 
   // Conference Preferences API endpoint
-  app.post("/api/conference-preferences", async (req: TelegramRequest, res) => {
+  app.post("/api/conference-preferences", authLimiter, async (req: TelegramRequest, res) => {
     console.log('============ DEBUG: Conference Preferences Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
@@ -2827,7 +2828,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/collaborations/:id/apply", async (req: TelegramRequest, res: Response) => {
+  app.post("/api/collaborations/:id/apply", applicationLimiter, async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Apply to Collaboration Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Params:', req.params);
@@ -3314,7 +3315,7 @@ export async function registerRoutes(app: Express) {
   });
 
   // Swipe API endpoint
-  app.post("/api/swipes", async (req: TelegramRequest, res: Response) => {
+  app.post("/api/swipes", swipeLimiter, async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Create Swipe Endpoint ============');
     console.log('Request timestamp:', new Date().toISOString());
     console.log('Headers:', JSON.stringify(req.headers, null, 2));

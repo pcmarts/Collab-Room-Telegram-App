@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import crypto from 'crypto';
 
 /**
  * Define the schema for configuration validation
@@ -15,7 +16,13 @@ const configSchema = z.object({
   
   // Security settings
   SESSION_SECRET: z.string().min(32, 'SESSION_SECRET should be at least 32 characters for security')
-                   .default('secure-session-secret-for-development-only-do-not-use-in-production'),
+                   .default(() => {
+                     if (process.env.NODE_ENV === 'production') {
+                       throw new Error('SESSION_SECRET must be provided in production');
+                     }
+                     // Generate random secret for development only
+                     return crypto.randomBytes(32).toString('hex');
+                   }),
   
   // Rate limiting settings (optional, with defaults)
   RATE_LIMIT_WINDOW_MS: z.coerce.number().positive().default(15 * 60 * 1000), // 15 minutes by default
@@ -23,6 +30,9 @@ const configSchema = z.object({
   
   // Security headers (optional, with defaults)
   ENABLE_SECURITY_HEADERS: z.coerce.boolean().default(true),
+  
+  // Logging settings (optional, with defaults)
+  LOG_LEVEL: z.coerce.number().min(0).max(4).optional(),
   
   // Authentication
   TELEGRAM_BOT_TOKEN: z.string().min(1, 'TELEGRAM_BOT_TOKEN is required').optional(),
@@ -59,6 +69,9 @@ function loadConfig(): Config {
     ENABLE_SECURITY_HEADERS: process.env.ENABLE_SECURITY_HEADERS,
     ALLOW_DEV_FALLBACKS: process.env.ALLOW_DEV_FALLBACKS,
     CORS_ALLOWED_ORIGINS: process.env.CORS_ALLOWED_ORIGINS,
+    
+    // Logging settings
+    LOG_LEVEL: process.env.LOG_LEVEL,
   };
 
   // Validate configuration
@@ -74,8 +87,8 @@ function loadConfig(): Config {
       const validated = configSchema.parse(prodConfig);
       
       // Do additional production checks
-      if (validated.SESSION_SECRET === 'secure-session-secret-for-development-only-do-not-use-in-production') {
-        throw new Error('Using default SESSION_SECRET in production is not allowed');
+      if (!process.env.SESSION_SECRET) {
+        throw new Error('SESSION_SECRET must be explicitly set in production environment');
       }
       
       return validated;
@@ -85,10 +98,11 @@ function loadConfig(): Config {
       const validated = configSchema.parse(config);
       
       // Show warnings for development defaults
-      if (validated.SESSION_SECRET === 'secure-session-secret-for-development-only-do-not-use-in-production') {
+      if (!process.env.SESSION_SECRET) {
         console.warn('==============================================================');
-        console.warn('⚠️ WARNING: Using default SESSION_SECRET for development.');
-        console.warn('    THIS SHOULD NEVER BE USED IN PRODUCTION');
+        console.warn('⚠️ WARNING: Using auto-generated SESSION_SECRET for development.');
+        console.warn('    For persistent sessions across server restarts,');
+        console.warn('    consider setting a fixed SESSION_SECRET in .env');
         console.warn('==============================================================');
       }
       

@@ -167,12 +167,92 @@ Key features:
 - Permissions-Policy to restrict browser features
 - Removal of X-Powered-By header to reduce information disclosure
 
-### 6. Secure Error Handling
+### 6. Structured Logging System
+
+Comprehensive logging system with environment-specific log levels:
+
+```typescript
+// server/utils/logger.ts
+export enum LogLevel {
+  ERROR = 0,
+  WARN = 1,
+  INFO = 2,
+  HTTP = 3,
+  DEBUG = 4,
+}
+
+function shouldLog(level: LogLevel): boolean {
+  // Use environment variable if set
+  if (typeof config.LOG_LEVEL === 'number') {
+    logLevel = config.LOG_LEVEL;
+  }
+  // Otherwise use sensible defaults by environment
+  else if (config.NODE_ENV === 'production') {
+    logLevel = LogLevel.WARN; // Only errors and warnings in production
+  } else if (config.NODE_ENV === 'test') {
+    logLevel = LogLevel.ERROR; // Only errors in test
+  } else {
+    logLevel = LogLevel.DEBUG; // All logs in development
+  }
+  
+  return level <= logLevel;
+}
+
+// Redact sensitive information from objects before logging
+function redactSensitive(data: any): any {
+  // Implementation that automatically removes sensitive information
+  // from logs such as passwords, tokens, API keys, etc.
+}
+
+export const logger = {
+  error: (message: string, meta?: any) => {
+    if (shouldLog(LogLevel.ERROR)) {
+      console.error(formatLog('ERROR', message, meta));
+    }
+  },
+  warn: (message: string, meta?: any) => { /* ... */ },
+  info: (message: string, meta?: any) => { /* ... */ },
+  http: (message: string, meta?: any) => { /* ... */ },
+  debug: (message: string, meta?: any) => { /* ... */ }
+};
+```
+
+Key features:
+- Five standard log levels (ERROR, WARN, INFO, HTTP, DEBUG)
+- Environment-specific default log levels
+- Configurable via LOG_LEVEL environment variable
+- Automatic redaction of sensitive information
+- Format adaptation based on environment (one-line for production, detailed for development)
+- Consistent timestamp and log level formatting
+
+### 7. Secure Error Handling
 
 Enhanced error handling with proper information sanitization:
 
 ```typescript
+// server/middleware/logger-middleware.ts
+export function errorLogger(err: any, req: Request, res: Response, next: NextFunction) {
+  // Log the error with appropriate context
+  logger.error('Request error', {
+    error: {
+      message: err.message,
+      stack: config.NODE_ENV !== 'production' ? err.stack : undefined,
+      name: err.name,
+      code: err.code
+    },
+    request: {
+      method: req.method,
+      url: req.url,
+      ip: req.ip || req.socket.remoteAddress
+    }
+  });
+  
+  // Pass to next error handler
+  next(err);
+}
+
 // server/index.ts
+app.use(errorLogger);
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const status = err.status || err.statusCode || 500;
   
@@ -180,9 +260,6 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const message = config.NODE_ENV === 'production' && status === 500
     ? "Internal Server Error" 
     : err.message || "Internal Server Error";
-  
-  // Log the full error in any environment
-  console.error('Server error:', err);
   
   // Return a sanitized error response
   res.status(status).json({ 
@@ -198,9 +275,10 @@ Key features:
 - Stack traces only in development
 - Consistent error response format
 - Proper HTTP status codes
-- Full logging for debugging
+- Structured error logging with context
+- Separation of logging from response generation
 
-### 7. Input Validation and Sanitization
+### 8. Input Validation and Sanitization
 
 Request body validation and sanitization:
 
@@ -257,3 +335,13 @@ For developers working on the application:
 4. **Authentication**: Always use the existing authentication system.
 5. **Database Access**: Use the ORM for database operations to ensure proper parameterization.
 6. **Development Mode**: Be aware of the security differences between development and production modes.
+
+## Security Maintenance
+
+To ensure the ongoing security of the application:
+
+1. Regularly review and update the [Security Checklist](./security-checklist.md)
+2. Conduct periodic security audits of the codebase
+3. Stay informed about security vulnerabilities in dependencies
+4. Implement and test security improvements regularly
+5. Document all security-related changes in the CHANGELOG.md file
