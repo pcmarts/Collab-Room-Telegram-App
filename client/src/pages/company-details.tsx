@@ -13,6 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 
+// Type helper to extract network strings from the const object
+type NetworkString = string;
+
 export default function CompanyDetails() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -168,10 +171,11 @@ export default function CompanyDetails() {
   };
 
   const clearCategorySelections = (category: string) => {
+    const networks = BLOCKCHAIN_NETWORK_CATEGORIES[category] as readonly string[];
     setFormData(prev => ({
       ...prev,
       blockchain_networks: prev.blockchain_networks.filter(network =>
-        !BLOCKCHAIN_NETWORK_CATEGORIES[category].includes(network)
+        !networks.includes(network)
       )
     }));
   };
@@ -246,9 +250,9 @@ export default function CompanyDetails() {
                       >
                         <div className="font-medium">{category}</div>
                         <div className="flex items-center gap-2">
-                          {formData.blockchain_networks.filter(network => networks.includes(network)).length > 0 && (
+                          {formData.blockchain_networks.filter(network => (networks as readonly string[]).includes(network)).length > 0 && (
                             <Badge variant="secondary" className="text-xs">
-                              {formData.blockchain_networks.filter(network => networks.includes(network)).length}
+                              {formData.blockchain_networks.filter(network => (networks as readonly string[]).includes(network)).length}
                             </Badge>
                           )}
                           {expandedCategories.includes(category) ?
@@ -260,7 +264,7 @@ export default function CompanyDetails() {
 
                       {expandedCategories.includes(category) && (
                         <CardContent className="pt-2">
-                          {formData.blockchain_networks.some(network => networks.includes(network)) && (
+                          {formData.blockchain_networks.some(network => (networks as readonly string[]).includes(network)) && (
                             <div className="flex justify-end mb-2">
                               <Button
                                 type="button"
@@ -274,7 +278,7 @@ export default function CompanyDetails() {
                           )}
 
                           <div className="grid grid-cols-1 gap-2">
-                            {networks.map((network) => (
+                            {(networks as readonly string[]).map((network) => (
                               <Button
                                 key={network}
                                 type="button"
@@ -299,20 +303,18 @@ export default function CompanyDetails() {
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg">
             <Button
               type="submit"
-              className="w-full relative bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-md hover:shadow-lg transition-all overflow-hidden glow-button"
+              className="w-full bg-primary text-white font-bold"
               disabled={isSubmitting}
+              style={{ color: "white" }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 opacity-30 blur-md animate-pulse"></div>
-              <span className="relative z-10">
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Application"
-                )}
-              </span>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Application"
+              )}
             </Button>
           </div>
         </form>

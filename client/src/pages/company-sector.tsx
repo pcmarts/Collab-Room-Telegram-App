@@ -11,6 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 
+// Type helper for tag strings
+type TagString = string;
+
 export default function CompanySector() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,10 +59,11 @@ export default function CompanySector() {
   };
 
   const clearCategorySelections = (category: string) => {
+    const tags = COMPANY_TAG_CATEGORIES[category] as readonly string[];
     setFormData(prev => ({
       ...prev,
       company_tags: prev.company_tags.filter(tag => 
-        !COMPANY_TAG_CATEGORIES[category].includes(tag)
+        !tags.includes(tag)
       )
     }));
   };
@@ -119,9 +123,9 @@ export default function CompanySector() {
                     <h3 className="font-medium">{category}</h3>
                     <div className="flex items-center gap-2">
                       {/* Category-specific selection count */}
-                      {formData.company_tags.filter(tag => tags.includes(tag)).length > 0 && (
+                      {formData.company_tags.filter(tag => (tags as readonly string[]).includes(tag)).length > 0 && (
                         <Badge variant="secondary" className="text-xs">
-                          {formData.company_tags.filter(tag => tags.includes(tag)).length}
+                          {formData.company_tags.filter(tag => (tags as readonly string[]).includes(tag)).length}
                         </Badge>
                       )}
                       {expandedCategories.includes(category) ? 
@@ -135,7 +139,7 @@ export default function CompanySector() {
                   {expandedCategories.includes(category) && (
                     <CardContent className="pt-2">
                       {/* Clear category button */}
-                      {formData.company_tags.some(tag => tags.includes(tag)) && (
+                      {formData.company_tags.some(tag => (tags as readonly string[]).includes(tag)) && (
                         <div className="flex justify-end mb-2">
                           <Button
                             type="button"
@@ -149,7 +153,7 @@ export default function CompanySector() {
                       )}
 
                       <div className="grid grid-cols-1 gap-2">
-                        {tags.map(tag => (
+                        {(tags as readonly string[]).map(tag => (
                           <Button
                             key={tag}
                             type="button"
@@ -172,8 +176,9 @@ export default function CompanySector() {
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg">
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-primary text-white font-bold"
               disabled={isSubmitting}
+              style={{ color: "white" }}
             >
               {isSubmitting ? (
                 <>

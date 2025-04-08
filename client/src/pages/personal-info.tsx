@@ -195,8 +195,9 @@ export default function PersonalInfo() {
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg">
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-primary text-white font-bold"
               disabled={isSubmitting}
+              style={{ color: "white" }} 
             >
               {isSubmitting ? (
                 <>
