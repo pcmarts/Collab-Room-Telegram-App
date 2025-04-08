@@ -76,15 +76,15 @@ export function AddNoteDialog({
             <div className="flex flex-col space-y-3 py-3">
               <Button 
                 onClick={() => setStep("compose")} 
-                className="flex items-center justify-start px-3 py-4 h-auto bg-primary/10 hover:bg-primary/15 dark:bg-zinc-800/90 dark:hover:bg-zinc-800"
+                className="flex items-center justify-start px-3 py-4 h-auto bg-white hover:bg-gray-50 dark:bg-zinc-800/90 dark:hover:bg-zinc-800"
                 type="button"
               >
-                <div className="mr-2 bg-primary/30 dark:bg-zinc-700 p-1.5 rounded-full shrink-0">
-                  <Send className="h-4 w-4 text-primary dark:text-white" />
+                <div className="mr-2 bg-gray-200 dark:bg-zinc-700 p-1.5 rounded-full shrink-0">
+                  <Send className="h-4 w-4 text-gray-700 dark:text-white" />
                 </div>
                 <div className="text-left truncate">
-                  <div className="font-medium text-primary dark:text-white">Add a note</div>
-                  <div className="text-xs text-primary/90 dark:text-gray-300 truncate">Personalize with a brief message</div>
+                  <div className="font-medium text-gray-800 dark:text-white">Add a note</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-300 truncate">Personalize with a brief message</div>
                 </div>
               </Button>
               
