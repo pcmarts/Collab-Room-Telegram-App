@@ -113,7 +113,7 @@ async function handleStart(msg: TelegramBot.Message) {
         inline_keyboard: [
           [
             {
-              text: "Launch Collab Room",
+              text: "🚀 Launch Collab Room",
               web_app: { url: `${WEBAPP_URL}/discover` },
             },
           ],
@@ -303,7 +303,7 @@ export async function notifyUserApproved(chatId: number) {
     inline_keyboard: [
       [
         {
-          text: "Launch Collab Room",
+          text: "🚀 Launch Collab Room",
           web_app: { url: `${WEBAPP_URL}/discover` },
         },
       ],
@@ -404,7 +404,7 @@ async function handleStatus(msg: TelegramBot.Message) {
         inline_keyboard: [
           [
             {
-              text: "Launch Collab Room",
+              text: "🚀 Launch Collab Room",
               web_app: { url: `${WEBAPP_URL}/discover` },
             },
           ],
@@ -1173,7 +1173,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
         const hostCompanyName = hostCompany?.name || "their company";
 
         // Send a direct message to the requester
-        const matchMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""} from ${hostCompanyName} just approved your collaboration request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly to coordinate your collaboration.`;
+        const matchMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""} from <a href="${hostCompanyWebsite}">${hostCompany?.name || "a company"}</a> just approved your collaboration request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly to coordinate your collaboration.`;
 
         // Create a keyboard with relevant actions
         const matchKeyboard = {
@@ -1230,7 +1230,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       // Get title from details object if available
       const collabTitle = collabDetails.title || collabDetails.name || "";
 
-      responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${requesterCompany?.name || "Company"} for the "${collaboration.collab_type}" collaboration${collabTitle ? ` "${collabTitle}"` : ""}.\n\nA notification has been sent to them about the match.`;
+      responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""} from <a href="${requesterCompanyWebsite}">${requesterCompany?.name || "a company"}</a> for the "${collaboration.collab_type}" collaboration${collabTitle ? ` "${collabTitle}"` : ""}.\n\nA notification has been sent to them about the match.`;
 
       updatedKeyboard = {
         inline_keyboard: [
@@ -1314,7 +1314,7 @@ export async function notifyNewCollabRequest(
   hostUserId: string,
   requesterUserId: string,
   collaborationId: string,
-  note?: string
+  note?: string,
 ) {
   try {
     console.log("[Telegram Bot] Sending collab request notification:", {
@@ -1450,10 +1450,10 @@ export async function notifyNewCollabRequest(
       `Would like to collaborate on your collab <i>${collaboration.collab_type}</i> - <i>${shortDescription}</i>\n` +
       `<b>Topic</b>:<i> ${topicsText}</i>\n` +
       `🗓️: ${collabDate}\n\n`;
-      
+
     // Add the note if it exists
     if (note) {
-      message += `<b>Note from ${requesterUser.first_name}:</b>\n<i>${note}</i>\n\n`;
+      message += `📝 <b>Note from user:</b>\n<i>${note}</i>\n\n`;
     }
 
     // Create shortened IDs for callback data (Telegram has a 64-byte limit)
@@ -1666,16 +1666,16 @@ export async function notifyMatchCreated(
 
     // Prepare host notification with HTML formatting and personalization note
     let hostMessage = `🎉 <b>New Match!</b>\n\n${requesterUser.first_name} ${requesterUser.last_name || ""} ${requesterUser.handle ? `(<a href="https://t.me/${requesterUser.handle}">@${requesterUser.handle}</a>)` : ""}, the <b>${requesterCompany?.job_title || "professional"}</b> from ${requesterCompanyName} is a match for your <b>${collaboration.collab_type}</b> collaboration!`;
-    
+
     // Add the personalization note if provided
     if (note && note.trim()) {
       hostMessage += `\n\n<b>💬 Their note:</b>\n"${note.trim()}"`;
     }
-    
+
     hostMessage += `\n\nDrop them a message and get started on your collab!`;
 
     // Prepare requester notification with HTML formatting
-    const requesterMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""} ${hostUser.handle ? `(<a href="https://t.me/${hostUser.handle}">@${hostUser.handle}</a>)` : ""} from ${hostCompanyName} just approved your collab request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly with ${hostUser.first_name}`;
+    const requesterMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""} ${hostUser.handle ? `(<a href="https://t.me/${hostUser.handle}">@${hostUser.handle}</a>)` : ""} from <a href="${hostCompanyWebsite}">${hostCompany?.name || "a company"}</a> just approved your collab request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly with ${hostUser.first_name}`;
 
     console.log("[DEBUG] Formatted messages to send:");
     console.log(`Host message (to ${hostChatId}):\n${hostMessage}`);
@@ -1735,7 +1735,7 @@ export async function notifyMatchCreated(
           // Try sending plain message to host without HTML formatting
           console.log("[DEBUG] Trying fallback message to host...");
           let plainHostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${requesterCompany?.name || "a company"} matched with your ${collaboration.collab_type} collaboration!`;
-          
+
           // Add personalization note even to fallback message
           if (note && note.trim()) {
             plainHostMessage += `\n\n💬 Their note:\n"${note.trim()}"`;
@@ -1778,7 +1778,7 @@ export async function notifyMatchCreated(
         if (!requesterSuccess) {
           // Try sending plain message to requester without HTML formatting
           console.log("[DEBUG] Trying fallback message to requester...");
-          const plainRequesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ""} from ${hostCompany?.name || "a company"} just approved your collab request for ${collaboration.collab_type}!`;
+          const plainRequesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ""} from <a href="${hostCompanyWebsite}">${hostCompany?.name || "a company"}</a> just approved your collab request for ${collaboration.collab_type}!`;
 
           // Simplified fallback keyboard without callback data
           const fallbackRequesterKeyboard = {
