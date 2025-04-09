@@ -146,6 +146,25 @@ async function handleStart(msg: TelegramBot.Message) {
       welcomeMessage = `👋 Welcome back to Collab Room!\n\nYour application is currently under review. Click below to check your application status or use /status command anytime.`;
     }
 
+    // First send a GIF animation for new users
+    if (!existingUser) {
+      try {
+        // Construct the full URL to the GIF using the webapp domain
+        const gifUrl = `${WEBAPP_URL}/static/images/welcome.gif`;
+        
+        // Send the welcome GIF animation
+        await bot.sendAnimation(
+          chatId,
+          gifUrl,
+          { caption: "Find your next collaboration..." }
+        );
+      } catch (gifError) {
+        console.error("Failed to send welcome GIF:", gifError);
+        // Continue with text message even if GIF fails
+      }
+    }
+
+    // Then send the text welcome message with buttons
     await bot.sendMessage(
       chatId,
       welcomeMessage,
