@@ -309,7 +309,7 @@ export default function CompanyDetails() {
               // Important: these inline styles ensure visibility in Telegram mobile browser
               style={{ 
                 color: "white", 
-                backgroundColor: "rgb(var(--primary))",
+                backgroundColor: "#4034B9",
                 boxShadow: "none",
                 border: "1px solid rgba(255,255,255,0.1)"
               }}
