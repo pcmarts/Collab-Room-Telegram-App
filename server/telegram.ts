@@ -146,21 +146,18 @@ async function handleStart(msg: TelegramBot.Message) {
       welcomeMessage = `👋 Welcome back to Collab Room!\n\nYour application is currently under review. Click below to check your application status or use /status command anytime.`;
     }
 
-    // First send a GIF animation for new users
+    // First send a teaser message for new users
     if (!existingUser) {
       try {
-        // Construct the full URL to the GIF using the webapp domain
-        const gifUrl = `${WEBAPP_URL}/static/images/welcome.gif`;
-        
-        // Send the welcome GIF animation
-        await bot.sendAnimation(
+        // Send a simple teaser message before the main welcome message
+        await bot.sendMessage(
           chatId,
-          gifUrl,
-          { caption: "Find your next collaboration..." }
+          "📱 <b>Find your next collaboration...</b>",
+          { parse_mode: "HTML" }
         );
-      } catch (gifError) {
-        console.error("Failed to send welcome GIF:", gifError);
-        // Continue with text message even if GIF fails
+      } catch (teaserError) {
+        console.error("Failed to send teaser message:", teaserError);
+        // Continue with main message even if teaser fails
       }
     }
 
