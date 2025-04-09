@@ -5,6 +5,28 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.7.6] - 2025-04-09
+
+### Fixed
+- Fixed blockchain networks filtering to correctly use company data instead of cached collaboration data
+- Fixed company tags/sectors filtering to use up-to-date company data
+- Fixed company Twitter followers filtering to use accurate company follower counts
+- Fixed funding stages filtering to use current company funding stage data
+- Fixed token status filtering to use current company token status
+- Fixed user Twitter followers filtering to use current user data
+
+### Enhanced
+- Implemented join-based filtering system to ensure all filters use the most up-to-date data
+- Improved filter logic to pull company-related fields directly from the companies table
+- Added detailed logging for all filtering operations
+- Enhanced error detection with additional safety checks
+
+### Technical Details
+- Updated `searchCollaborationsPaginated` in server/storage.ts to use table joins for all filtering operations
+- Modified database query structure to use a three-table join (collaborations → users → companies)
+- Created new documentation in docs/discovery/join-based-filter-fix.md explaining the implementation
+- Maintained backwards compatibility with existing frontend code
+
 ## [Version 1.7.5] - 2025-04-09
 
 ### Fixed

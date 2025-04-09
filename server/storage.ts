@@ -256,7 +256,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async searchCollaborationsPaginated(userId: string, filters: CollaborationFilters): Promise<PaginatedCollaborations> {
-    console.log('============ DEBUG: Search Collaborations Paginated ============');
+    console.log('============ DEBUG: Search Collaborations Paginated (Join-Based) ============');
     console.log('Filters:', filters);
     console.log('User ID:', userId);
     
@@ -290,13 +290,29 @@ export class DatabaseStorage implements IStorage {
     const excludeIds = allIds.filter((id, index) => allIds.indexOf(id) === index);
     console.log(`Total IDs to exclude: ${excludeIds.length} (${userCollaborationIds.length} own + ${swipedCollaborationIds.length} swiped + ${filters.excludeIds?.length || 0} additional)`);
     
-    // Build the base query - we'll handle all exclusions together 
+    // Build the base query with joins to users and companies
+    // The relationship is: collaborations.creator_id -> users.id -> companies.user_id
     let query = db
-      .select()
+      .select({
+        collaboration: collaborations,
+        company: companies,
+        user: users
+      })
       .from(collaborations)
+      .innerJoin(
+        users,
+        eq(collaborations.creator_id, users.id)
+      )
+      .innerJoin(
+        companies,
+        eq(users.id, companies.user_id)
+      )
       .where(
         eq(collaborations.status, 'active')
       );
+    
+    // Log to verify the join structure
+    console.log('Using join structure: collaborations -> users -> companies');
     
     // First, exclude any collaborations that were previously swiped
     if (excludeIds.length > 0) {
@@ -317,7 +333,7 @@ export class DatabaseStorage implements IStorage {
     // Apply filters based on user preferences
     // These only apply if the corresponding filter is enabled
 
-    // 1. Collaboration Types Filter
+    // 1. Collaboration Types Filter (from collaborations table)
     if (marketingPrefs?.discovery_filter_collab_types_enabled && 
         marketingPrefs?.collabs_to_discover && 
         marketingPrefs.collabs_to_discover.length > 0) {
@@ -328,7 +344,7 @@ export class DatabaseStorage implements IStorage {
       query = query.where(inArray(collaborations.collab_type, marketingPrefs.collabs_to_discover));
     }
     
-    // 2. Topics Filter
+    // 2. Topics Filter (from collaborations table)
     if (marketingPrefs?.discovery_filter_topics_enabled && 
         marketingPrefs?.filtered_marketing_topics && 
         marketingPrefs.filtered_marketing_topics.length > 0) {
@@ -344,74 +360,79 @@ export class DatabaseStorage implements IStorage {
       query = query.where(sql`${collaborations.topics} && ${topicsPgArray}::text[]`);
     }
     
-    // 3. Company Tags/Sectors Filter
+    // 3. Company Tags/Sectors Filter (from companies table)
     if (marketingPrefs?.discovery_filter_company_sectors_enabled && 
         marketingPrefs?.company_tags && 
         marketingPrefs.company_tags.length > 0) {
       
-      console.log(`Filtering by company tags/sectors: ${marketingPrefs.company_tags.join(', ')}`);
+      console.log(`Filtering by company tags/sectors from COMPANIES table: ${marketingPrefs.company_tags.join(', ')}`);
       
       // Convert to PostgreSQL array format
       const tagsPgArray = '{' + marketingPrefs.company_tags.join(',') + '}';
       console.log(`Converting company tags to PostgreSQL array format: ${tagsPgArray}`);
       
-      // Filter for collaborations where the host company's tags match ANY of selected tags (OR logic)
-      query = query.where(sql`${collaborations.company_tags} && ${tagsPgArray}::text[]`);
+      // Filter based on the companies table (joined data) rather than duplicated data
+      query = query.where(sql`${companies.tags} && ${tagsPgArray}::text[]`);
     }
     
-    // 4. User Twitter Follower Count Filter
+    // 4. User Twitter Follower Count Filter (from users table)
     if (marketingPrefs?.discovery_filter_user_followers_enabled && 
         marketingPrefs?.twitter_followers) {
       
-      console.log(`Filtering by min user Twitter followers: ${marketingPrefs.twitter_followers}`);
-      query = query.where(sql`${collaborations.twitter_followers} >= ${marketingPrefs.twitter_followers}`);
+      console.log(`Filtering by min user Twitter followers from USERS table: ${marketingPrefs.twitter_followers}`);
+      // Use the users table for user twitter followers
+      query = query.where(sql`${users.twitter_followers} >= ${marketingPrefs.twitter_followers}`);
     }
     
-    // 5. Company Twitter Follower Count Filter
+    // 5. Company Twitter Follower Count Filter (from companies table)
     if (marketingPrefs?.discovery_filter_company_followers_enabled && 
         marketingPrefs?.company_twitter_followers) {
       
-      console.log(`Filtering by min company Twitter followers: ${marketingPrefs.company_twitter_followers}`);
-      query = query.where(sql`${collaborations.company_twitter_followers} >= ${marketingPrefs.company_twitter_followers}`);
+      console.log(`Filtering by min company Twitter followers from COMPANIES table: ${marketingPrefs.company_twitter_followers}`);
+      // Use the companies table instead of the duplicated data in collaborations
+      query = query.where(sql`${companies.twitter_followers} >= ${marketingPrefs.company_twitter_followers}`);
     }
     
-    // 6. Funding Stages Filter
+    // 6. Funding Stages Filter (from companies table)
     if (marketingPrefs?.discovery_filter_funding_stages_enabled && 
         marketingPrefs?.funding_stage) {
       
       // Convert comma-separated string to array
       const fundingStages = marketingPrefs.funding_stage.split(',');
-      console.log(`Filtering by funding stages: ${fundingStages.join(', ')}`);
+      console.log(`Filtering by funding stages from COMPANIES table: ${fundingStages.join(', ')}`);
       
       // Convert to PostgreSQL array format
       const fundingStagesPgArray = '{' + fundingStages.join(',') + '}';
       console.log(`Converting funding stages to PostgreSQL array format: ${fundingStagesPgArray}`);
       
-      // Filter for collaborations where funding stage matches any selected funding stage
-      // Using = ANY() operator since this is a single value field (not an array)
-      // This implements OR logic between selected funding stages
-      query = query.where(sql`${collaborations.funding_stage} = ANY(${fundingStagesPgArray}::text[])`);
+      // Use the companies table for funding stage data
+      query = query.where(sql`${companies.funding_stage} = ANY(${fundingStagesPgArray}::text[])`);
     }
     
-    // 7. Token Status Filter (only filter if enabled)
+    // 7. Token Status Filter (from companies table)
     if (marketingPrefs?.discovery_filter_token_status_enabled) {
-      console.log(`Filtering by token status: ${marketingPrefs.company_has_token}`);
-      query = query.where(sql`${collaborations.company_has_token} = ${marketingPrefs.company_has_token}`);
+      console.log(`Filtering by token status from COMPANIES table: ${marketingPrefs.company_has_token}`);
+      // Use the companies table for token status
+      query = query.where(sql`${companies.has_token} = ${marketingPrefs.company_has_token}`);
     }
     
-    // 8. Blockchain Networks Filter
+    // 8. Blockchain Networks Filter (from companies table)
     if (marketingPrefs?.discovery_filter_blockchain_networks_enabled && 
         marketingPrefs?.company_blockchain_networks && 
         marketingPrefs.company_blockchain_networks.length > 0) {
       
-      console.log(`Filtering by blockchain networks: ${marketingPrefs.company_blockchain_networks.join(', ')}`);
+      console.log(`Filtering by blockchain networks from COMPANIES table: ${marketingPrefs.company_blockchain_networks.join(', ')}`);
       
       // Convert to PostgreSQL array format
       const networksPgArray = '{' + marketingPrefs.company_blockchain_networks.join(',') + '}';
       console.log(`Converting blockchain networks to PostgreSQL array format: ${networksPgArray}`);
       
-      // Filter for collaborations that match ANY selected blockchain networks (OR logic)
-      query = query.where(sql`${collaborations.company_blockchain_networks} && ${networksPgArray}::text[]`);
+      // Use the companies table for blockchain networks data
+      // This is the key change to fix the blockchain networks filter issue
+      query = query.where(sql`${companies.blockchain_networks} && ${networksPgArray}::text[]`);
+      
+      // Add debug logging to verify the filter is being applied correctly
+      console.log(`Applied blockchain networks filter using companies.blockchain_networks`);
     }
     
     // Apply cursor-based pagination if a cursor is provided
@@ -441,12 +462,16 @@ export class DatabaseStorage implements IStorage {
     }
     
     // Add additional debug logging
-    console.log('Final filter query constructed, executing and returning results');
+    console.log('Final joined filter query constructed, executing and returning results');
     
-    // Get the raw collaborations first, with limit + 1 to determine if there are more
-    const rawCollaborations = await query
+    // Get the collaborations with joined data, with limit + 1 to determine if there are more
+    const rawResults = await query
       .orderBy(desc(collaborations.created_at))
       .limit(limit + 1);
+      
+    // Map the joined results back to just the collaborations
+    // This ensures backward compatibility with existing frontend code
+    const rawCollaborations = rawResults.map(result => result.collaboration);
     
     // Determine if there are more collaborations
     const hasMore = rawCollaborations.length > limit;
