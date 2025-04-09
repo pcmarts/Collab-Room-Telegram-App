@@ -145,11 +145,14 @@ Each card type implements specialized UI elements based on its content type:
 
 Enhanced buttons with animated glow effects for important call-to-action elements. Used for primary actions throughout the application.
 
-### Implementation
+### Implementation (v1.7.5 Update)
 
-Two implementations exist:
-1. Standard glow buttons in `client/src/components/GlowButton.tsx`
-2. Inline glow effects in specific pages like `company-details.tsx` for the Submit Application button
+In version 1.7.5, the button implementation was updated for Telegram mobile browser compatibility:
+
+1. Standard glow buttons in `client/src/components/GlowButton.tsx` (for most parts of the application)
+2. Modified buttons with explicit styling in the application form (personal-info.tsx, company-details.tsx, company-sector.tsx)
+
+The glow effects have been removed from form buttons and replaced with explicit styling to ensure visibility in Telegram mobile browser.
 
 ### Standard Glow Button
 
@@ -163,12 +166,23 @@ interface GlowButtonProps {
 }
 ```
 
-### Inline Glow Effect Example
+### Telegram Mobile Compatible Button (v1.7.5)
 
 ```jsx
-<Button className="relative overflow-hidden glow-button">
-  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 opacity-30 blur-md animate-pulse"></div>
-  <span className="relative z-10">Submit Application</span>
+<Button
+  type="submit"
+  className="w-full font-bold"
+  variant="default"
+  disabled={isSubmitting}
+  // Important: these inline styles ensure visibility in Telegram mobile browser
+  style={{ 
+    color: "white", 
+    backgroundColor: "#4034B9",
+    boxShadow: "none",
+    border: "1px solid rgba(255,255,255,0.1)"
+  }}
+>
+  Submit Application
 </Button>
 ```
 
@@ -176,7 +190,11 @@ interface GlowButtonProps {
 
 ### Scrollable Container Pattern
 
-All onboarding pages use a consistent pattern for enabling scrolling while maintaining fixed positioning for headers and buttons:
+All onboarding pages use a consistent pattern for enabling scrolling while maintaining fixed positioning for headers and buttons.
+
+#### Updated in v1.7.5
+
+The form buttons in the onboarding flow have been updated with explicit styling for Telegram mobile browser compatibility:
 
 ```jsx
 <div className="min-h-screen bg-background">
@@ -188,8 +206,20 @@ All onboarding pages use a consistent pattern for enabling scrolling while maint
     </form>
   </div>
   
-  <div className="fixed bottom-0 left-0 right-0 p-4 bg-black">
-    <Button className="w-full">Continue</Button>
+  <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg">
+    <Button 
+      type="submit"
+      className="w-full font-bold"
+      variant="default"
+      style={{ 
+        color: "white", 
+        backgroundColor: "#4034B9",
+        boxShadow: "none",
+        border: "1px solid rgba(255,255,255,0.1)"
+      }}
+    >
+      Continue
+    </Button>
   </div>
 </div>
 ```
@@ -198,6 +228,8 @@ Key features:
 - Fixed-height scrollable container with `calc(100vh - 120px)` to account for header
 - Bottom-fixed button container with consistent styling and positioning
 - Padding at the bottom of content (`pb-32`) to ensure nothing is hidden behind the button
+- Explicit button styling to ensure visibility in Telegram mobile browser
+- Consistent brand color (#4034B9) for all form buttons
 
 ## Consistent State Components
 
@@ -349,9 +381,10 @@ interface MatchMomentProps {
 ### Glow Buttons
 
 - Reserve for primary call-to-action buttons
-- Use the standard GlowButton component for consistent styling across the app
-- For special emphasis (like final submission buttons), use the inline glow effect
-- Ensure sufficient contrast between the button text and the glow effect
+- Use the standard GlowButton component for consistent styling across most of the app
+- For form buttons in Telegram mobile browser, use the explicit styling approach with brand color (#4034B9)
+- Ensure buttons are visible with sufficient contrast in both light and dark modes
+- Avoid glow effects in Telegram mobile browser forms where they can cause visibility issues
 
 ### Scrollable Containers
 

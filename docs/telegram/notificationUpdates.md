@@ -4,6 +4,12 @@
 
 The Collab Room has enhanced the Telegram notification system with personalized notes for collaboration requests. When users send a collaboration request, they can now include a customized note that appears directly in the Telegram notification sent to the host.
 
+## Features Added in v1.7.5
+
+- **Enhanced HTML Formatting in Notifications**: Fixed issues with HTML formatting when company names contain website links
+- **Improved Notification Content**: Added more comprehensive collaboration details in notifications
+- **HTML Escaping**: Properly handled special HTML characters to ensure notifications display correctly
+
 ## Features Added in v1.7.0
 
 - **Personalized Notes in Telegram Notifications**: When a user sends a collaboration request with a note, the note is now included in the Telegram notification sent to the host.
@@ -19,6 +25,22 @@ When a user includes a personalized note with their collaboration request, the T
 
 ```
 <b>Personal Note:</b> "User's personalized message here"
+```
+
+### HTML Formatting and Safety (v1.7.5)
+
+Notifications now properly handle company URLs and special HTML characters:
+
+- Company URLs are properly formatted as HTML links with escaping
+- Special characters like <, >, &, etc. are properly escaped in HTML content
+- Comprehensive collaboration details (topic, description, date) are included with proper formatting
+
+Example:
+```
+New collaboration request for <b>DeFi Treasury Management</b>
+<b>From:</b> John Doe at <a href="https://example.com">Example Company</a>
+<b>Description:</b> Seeking partners for treasury optimization and yield generation
+<b>Date:</b> April 2025
 ```
 
 ### Plain Text Fallback
