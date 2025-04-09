@@ -146,22 +146,6 @@ async function handleStart(msg: TelegramBot.Message) {
       welcomeMessage = `👋 Welcome back to Collab Room!\n\nYour application is currently under review. Click below to check your application status or use /status command anytime.`;
     }
 
-    // First send a teaser message for new users
-    if (!existingUser) {
-      try {
-        // Send a simple teaser message before the main welcome message
-        await bot.sendMessage(
-          chatId,
-          "📱 <b>Find your next collaboration...</b>",
-          { parse_mode: "HTML" }
-        );
-      } catch (teaserError) {
-        console.error("Failed to send teaser message:", teaserError);
-        // Continue with main message even if teaser fails
-      }
-    }
-
-    // Then send the text welcome message with buttons
     await bot.sendMessage(
       chatId,
       welcomeMessage,
