@@ -945,8 +945,14 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.podcast_link"
           render={({ field }) => {
-            // Ensure field value is always a string
-            const displayValue = Array.isArray(field.value) ? "" : (typeof field.value === 'string' ? field.value : "");
+            // Get the current value directly from details.podcast_link
+            // Reset field value if it's not a string to prevent field bleeding
+            if (field.value && typeof field.value !== 'string') {
+              // Reset to empty string if value is not a string (preventing data from other fields)
+              form.setValue("details.podcast_link", "");
+            }
+            
+            const displayValue = typeof field.value === 'string' ? field.value : "";
             
             return (
               <FormItem className="space-y-1 pt-0">
@@ -1690,8 +1696,16 @@ export default function CreateCollaborationSteps({
           control={form.control}
           name="details.newsletter_url"
           render={({ field }) => {
-            // Ensure field value is always a string
-            const displayValue = typeof field.value === 'string' ? field.value : "";
+            // Get the current value directly from details.newsletter_url
+            // Reset field value if it's not a string to prevent field bleeding
+            if (field.value && typeof field.value !== 'string') {
+              // Reset to empty string if value is not a string (preventing data from other fields)
+              form.setValue("details.newsletter_url", "");
+            }
+            
+            // Only use value if it's actually a URL-like string and not a subscriber count range
+            const isAudienceRange = AUDIENCE_SIZE_RANGES.includes(field.value as any);
+            const displayValue = (typeof field.value === 'string' && !isAudienceRange) ? field.value : "";
             
             return (
               <FormItem className="space-y-1 pt-0">
