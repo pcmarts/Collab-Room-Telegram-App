@@ -294,6 +294,19 @@ export default function CreateCollaborationSteps({
         form.setValue("description", "");
       }
       
+      // Special handling for podcast link field to prevent bleeding from description
+      if (currentStepId === "podcast_short_description" && nextStepId === "podcast_link") {
+        console.log("Clearing podcast link field to prevent data bleeding");
+        form.setValue("details.podcast_link", "");
+      }
+      
+      // Special handling for newsletter URL field to prevent bleeding from description or subscriber count
+      if ((currentStepId === "newsletter_short_description" || currentStepId === "newsletter_subscribers") 
+          && nextStepId === "newsletter_url") {
+        console.log("Clearing newsletter URL field to prevent data bleeding");
+        form.setValue("details.newsletter_url", "");
+      }
+      
       // Move to the next step
       setCurrentStep(currentStep + 1);
     }
@@ -940,40 +953,58 @@ export default function CreateCollaborationSteps({
       id: "podcast_link",
       title: "Podcast Link",
       description: "Link to your podcast",
-      render: () => (
-        <FormField
-          control={form.control}
-          name="details.podcast_link"
-          render={({ field }) => {
-            // Get the current value directly from details.podcast_link
-            // Reset field value if it's not a string to prevent field bleeding
-            if (field.value && typeof field.value !== 'string') {
-              // Reset to empty string if value is not a string (preventing data from other fields)
-              form.setValue("details.podcast_link", "");
-            }
-            
-            const displayValue = typeof field.value === 'string' ? field.value : "";
-            
-            return (
-              <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">Link to your podcast</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="https://your-podcast-url.com"
-                    className="h-8 text-xs"
-                    value={displayValue}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                    name={field.name}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
-      ),
+      render: () => {
+        // Force reset the podcast link field value to prevent bleeding
+        // This is important to ensure the previous description doesn't show up here
+        const currentDetails = form.getValues("details");
+        if (currentDetails?.podcast_link && 
+            typeof currentDetails.podcast_link === 'string' && 
+            currentDetails.podcast_link.trim() !== "" && 
+            currentDetails.podcast_link.indexOf(" ") > -1) {
+          // If the current value has spaces, it's likely the description that was copied over
+          console.log("Resetting podcast link that appears to be a description:", currentDetails.podcast_link);
+          form.setValue("details.podcast_link", "");
+        }
+        
+        return (
+          <FormField
+            control={form.control}
+            name="details.podcast_link"
+            render={({ field }) => {
+              // Get a completely fresh value for the link field
+              const podcastLinkValue = form.getValues("details.podcast_link");
+              
+              // Only accept string values that look like URLs (no spaces)
+              let displayValue = "";
+              if (typeof podcastLinkValue === 'string' && 
+                  (podcastLinkValue === "" || podcastLinkValue.indexOf(" ") === -1)) {
+                displayValue = podcastLinkValue;
+              }
+              
+              return (
+                <FormItem className="space-y-1 pt-0">
+                  <FormLabel className="mb-0 text-sm">Link to your podcast</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="https://your-podcast-url.com"
+                      className="h-8 text-xs"
+                      value={displayValue}
+                      onChange={(e) => {
+                        // Ensure only valid URL characters are saved
+                        field.onChange(e.target.value);
+                      }}
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                      name={field.name}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
+        );
+      },
       shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
     },
     {
