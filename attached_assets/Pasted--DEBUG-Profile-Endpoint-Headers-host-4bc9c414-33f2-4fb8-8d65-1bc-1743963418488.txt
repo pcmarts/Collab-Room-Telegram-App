@@ -1,0 +1,112 @@
+
+
+
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3A43e9R9HU3CMkihNizVby73XmCFgxv3zi.Kew1f0Ee%2BA8sh%2F0ipTfHJwT6Gyz%2FHPx71UH2hg47160',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/dashboard',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkjt6LZS&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743962045&signature=cu0cHI9ibkihVgjtaQj8zDBG3MHp7AZpOU8Asukhdcx5d7bw4Dp9QOhRIffSDfJGWmZ1_GYvM3eTYRCcUVErCA&hash=f5918432c3254bf2d70a7cfab7e438a84066c8807561f8bc1f05fa010594f596',
+  'x-telegram-user-id': '1211030693'
+}
+6:15:26 PM [express] GET /api/profile 200 in 42ms :: {"user":{"id":"b4093f49-f0c3-4bae-a294-35fb87c4…
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3A43e9R9HU3CMkihNizVby73XmCFgxv3zi.Kew1f0Ee%2BA8sh%2F0ipTfHJwT6Gyz%2FHPx71UH2hg47160',
+  'if-none-match': 'W/"651-u8sCvzyNqGbKB82nG1Ki0Kwx0+c"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/dashboard',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+6:15:28 PM [express] GET /api/profile 304 in 33ms :: {"user":{"id":"b4093f49-f0c3-4bae-a294-35fb87c4…
+============ DEBUG: User Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3A43e9R9HU3CMkihNizVby73XmCFgxv3zi.Kew1f0Ee%2BA8sh%2F0ipTfHJwT6Gyz%2FHPx71UH2hg47160',
+  'if-modified-since': 'Sun, 06 Apr 2025 18:15:13 GMT',
+  'if-none-match': 'W/"0-1743963313476"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/dashboard',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.0.68',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkjt6LZS&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743962045&signature=cu0cHI9ibkihVgjtaQj8zDBG3MHp7AZpOU8Asukhdcx5d7bw4Dp9QOhRIffSDfJGWmZ1_GYvM3eTYRCcUVErCA&hash=f5918432c3254bf2d70a7cfab7e438a84066c8807561f8bc1f05fa010594f596',
+  'x-telegram-user-id': '1211030693'
+}
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3A43e9R9HU3CMkihNizVby73XmCFgxv3zi.Kew1f0Ee%2BA8sh%2F0ipTfHJwT6Gyz%2FHPx71UH2hg47160',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/dashboard',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.0.68',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkjt6LZS&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743962045&signature=cu0cHI9ibkihVgjtaQj8zDBG3MHp7AZpOU8Asukhdcx5d7bw4Dp9QOhRIffSDfJGWmZ1_GYvM3eTYRCcUVErCA&hash=f5918432c3254bf2d70a7cfab7e438a84066c8807561f8bc1f05fa010594f596',
+  'x-telegram-user-id': '1211030693'
+}
+Fetching matches with details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Fetching complete match details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 enriched matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 matches in 17ms
+6:15:28 PM [express] GET /api/matches 200 in 36ms :: []
+6:15:28 PM [express] GET /api/profile 200 in 35ms :: {"user":{"id":"b4093f49-f0c3-4bae-a294-35fb87c4…
+6:15:28 PM [express] GET /api/network-stats 304 in 50ms :: {"users":3,"collaborations":9,"matches":0}

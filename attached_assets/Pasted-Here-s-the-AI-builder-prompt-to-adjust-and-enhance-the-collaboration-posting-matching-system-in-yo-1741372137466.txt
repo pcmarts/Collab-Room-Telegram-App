@@ -1,0 +1,164 @@
+Here’s the AI builder prompt to adjust and enhance the collaboration posting & matching system in your Telegram app:
+
+⸻
+
+AI Builder Prompt: Enhancing Collaboration Matching in Collab Room
+
+Overview
+
+We need to refine how users post collaborations and find matching opportunities. The current system is too simple and lacks the necessary details to make accurate matches. We will be adding structured data inputs for different types of collaborations and customizable filters for both collaboration creators and seekers.
+
+⸻
+
+1️⃣ Posting a Collaboration
+
+Users must provide specific details depending on the type of collaboration they are posting. Implement structured forms for each of the following:
+
+Podcast Guest Appearance
+	•	Podcast Name
+	•	Short Description
+	•	Link to Podcast (Spotify, YouTube, etc.)
+
+Twitter Spaces Guest
+	•	Twitter Handle of Host
+	•	Space Topic (Predefined Web3 Topic List)
+	•	Host’s Follower Count (Options: 0-1K, 1K-10K, 10K-100K, 100K-500K, 500K+)
+
+Live Stream Guest Appearance
+	•	Title of the Live Stream
+	•	Short Description
+	•	Date Selection:
+	•	Option 1: Any Future Date
+	•	Option 2: Specific Date Selection
+	•	Link to a Previous Stream
+	•	Expected Audience Size
+	•	Topics (Predefined Web3 Topic List)
+
+Report & Research Feature
+	•	Research Topic (Predefined Web3 Topic List)
+	•	Research Target Audience
+	•	Estimated Release Date
+
+Newsletter Feature
+	•	Newsletter Name
+	•	Topics (Predefined Web3 Topic List)
+	•	Audience Reach Estimate
+	•	Short Newsletter Description
+
+Blog Post Feature
+	•	Blog Post Topic
+	•	Link to Blog
+	•	Estimated Release Date
+
+Co-Marketing on Twitter
+	•	Type of Collaboration (See Twitter Collab Types Below)
+	•	Host’s Twitter Follower Count (Same Ranges as Above)
+
+⸻
+
+2️⃣ Matching Criteria for Collaboration Creators
+
+When creating a collaboration, users should be able to set filtering criteria for who can apply:
+
+Podcast Guest Appearance
+	•	Company Sector
+	•	Company Twitter Followers
+	•	User Twitter Followers
+
+Twitter Spaces Guest
+	•	Company Sector
+	•	Company Twitter Followers
+	•	User Twitter Followers
+
+Live Stream Guest Appearance
+	•	Company Sector
+
+Report & Research Feature
+	•	Company Sector
+	•	Company Funding Stage
+	•	Does the company have a live token? (Yes/No)
+
+Newsletter Feature
+	•	Company Sector
+
+Co-Marketing on Twitter
+	•	Company Sector
+	•	Company Twitter Followers
+
+Blog Post Feature
+	•	Company Sector
+
+⸻
+
+3️⃣ Matching Criteria for Collaboration Seekers
+
+Users searching for collaborations will filter based on the following:
+
+Podcast Guest Appearances
+	•	No filters required
+
+Twitter Spaces Guest
+	•	Host’s Twitter Followers
+	•	Topics (Predefined Web3 Topic List)
+
+Live Stream Guest Appearance
+	•	Topics (Predefined Web3 Topic List)
+	•	Expected Audience Size
+	•	Company Criteria
+
+Report & Research Feature
+	•	Topics (Predefined Web3 Topic List)
+
+Newsletter Feature
+	•	Topics (Predefined Web3 Topic List)
+
+Co-Marketing on Twitter
+	•	Type of Collaboration (Predefined Twitter Collab List)
+	•	Company Sector
+	•	Company Twitter Followers
+
+Blog Post Feature
+	•	Company Sector
+
+⸻
+
+4️⃣ Twitter-Specific Collaboration Types
+
+For Co-Marketing on Twitter, users can choose one of the following types:
+	•	Thread Collab – Co-write or share a thread
+	•	Joint Campaign – Co-branded promo
+	•	Giveaway – Engagement-driven contest
+	•	Twitter Space Co-Host – Live discussion
+	•	Retweet & Boost – Cross-promotion
+	•	Sponsored Tweet – Paid promo
+	•	Poll/Q&A – Interactive engagement
+	•	AMA – Ask Me Anything session
+	•	Shoutout – One party promotes the other
+	•	Tweet Swap – Both parties post about each other
+	•	Meme/Viral Collab – Humor-driven marketing
+	•	Twitter List Collab – Increase visibility
+	•	Exclusive Announcement – Break a partner’s news
+
+⸻
+
+5️⃣ Matching & Notification System
+
+Once a collaboration is posted, the system will:
+	•	Instantly match against current users who fit the criteria.
+	•	Notify matching users based on their set notification frequency (Instant, Daily, Weekly).
+	•	When new users join, they are matched with existing opportunities and notified:
+	•	“There are X new opportunities that match your preferences. Would you like to review them?”
+
+⸻
+
+Next Steps for AI Builder
+
+✅ Implement structured collaboration posting forms with required fields
+✅ Allow users to set precise matching criteria
+✅ Enable a filtering system for users seeking collaborations
+✅ Ensure instant & batch notifications for new matches
+✅ Integrate Twitter-specific collaboration types into Co-Marketing on Twitter
+
+⸻
+
+🚀 This will create a robust, detailed, and highly relevant collaboration matching system in Telegram, ensuring that users only see opportunities that fit their interests!

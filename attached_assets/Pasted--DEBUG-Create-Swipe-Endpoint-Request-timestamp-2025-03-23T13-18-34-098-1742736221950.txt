@@ -1,0 +1,101 @@
+
+
+
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-03-23T13:18:34.098Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "content-length": "97",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3AE_KzcEfZBIedNTnUvJbe_WJXCa1X_4hG.x6wLUKzuKjLeKNQ9XX%2FqOKjpRMIZcU9%2F4kqNar5QtRw",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "62.28.7.213, 10.82.3.39",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAGl3C5IAAAAAKXcLki0Kfyb&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1742727166&signature=aUgKo4ODYt-wXDrvxyAEys9sRvtQWDkmVynshCTzOSU7cLiE72vHkT4uBhier6xhEk5QeLyDJiu1w3wz16hgBw&hash=6e7963f07dc7a63012e8fba5bf4838848ac5697a34029ffe3e3b3d5fef53da80"
+}
+Body: {
+  "swipe_id": "77d9fb87-c301-43ad-aa6d-06bc398d7ecb",
+  "direction": "right",
+  "is_potential_match": true
+}
+Parsed request parameters: {
+  collaboration_id: undefined,
+  swipe_id: '77d9fb87-c301-43ad-aa6d-06bc398d7ecb',
+  direction: 'right',
+  is_potential_match: true
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+Authentication success: Found Telegram ID: 1211030693
+User details: first_name=Paul, last_name=Martin, username=thisispaulm
+Looking up user by Telegram ID: 1211030693...
+Database success: Found user b4093f49-f0c3-4bae-a294-35fb87c493eb (Paul Martin)
+Processing potential match with swipe ID: 77d9fb87-c301-43ad-aa6d-06bc398d7ecb
+Found original swipe with collaboration ID: ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5
+Original swipe was from user ID: 82d56100-836d-48a5-859a-6d7140b22c80
+Success: Created swipe record with ID: 189dbfd6-2a37-4428-917a-398b7f24ade9
+Details: right swipe for collaboration ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5 by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+MATCH CREATED! Both users swiped right.
+Collaboration details for notification: {
+  id: 'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5',
+  creator_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  collab_type: 'Blog Post Feature'
+}
+Match roles: {
+  current_user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  collaboration_creator_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  original_swiper_id: '82d56100-836d-48a5-859a-6d7140b22c80',
+  is_user_the_host: true,
+  other_user_id: '82d56100-836d-48a5-859a-6d7140b22c80'
+}
+Created match notifications: {
+  hostNotification: {
+    id: '76e71452-bbb6-45df-b5b6-fe181487110f',
+    user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+    collaboration_id: 'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5',
+    application_id: null,
+    type: 'match',
+    content: 'Jim Testing matched with your Blog Post Feature collaboration!',
+    is_read: false,
+    is_sent: false,
+    created_at: 2025-03-23T13:18:34.220Z
+  },
+  requesterNotification: {
+    id: '945bbe80-4cdd-4e66-94b1-374e706fcdd1',
+    user_id: '82d56100-836d-48a5-859a-6d7140b22c80',
+    collaboration_id: 'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5',
+    application_id: null,
+    type: 'match',
+    content: "You matched with Paul Martin's Blog Post Feature collaboration!",
+    is_read: false,
+    is_sent: false,
+    created_at: 2025-03-23T13:18:34.235Z
+  }
+}
+Sending Telegram notification to host: {
+  host_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  host_telegram_id: '1211030693',
+  host_chat_id: 1211030693
+}
+Sending Telegram notification to requester: {
+  requester_id: '82d56100-836d-48a5-859a-6d7140b22c80',
+  requester_telegram_id: '7892486659',
+  requester_chat_id: 7892486659
+}
+Telegram notifications sent to both users
+1:18:34 PM [express] POST /api/swipes 201 in 613ms :: {"swipe":{"id":"189dbfd6-2a37-4428-917a-398b7f…

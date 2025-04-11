@@ -1,0 +1,191 @@
+
+
+
+
+
+
+
+
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AmQVokaIKh8TKfpqypzccWkYcPkHiFfFu.pVBId8Wkfr5v%2FlB1rWr%2B3lJ9qBA%2BdHudQLDJrVlAngc',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.4.51',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVbUtIMG&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743532891&signature=L1hkjhOWR-H7N2NpszRrnjqJGPZXFYLJb0JSgfJhehoKsuQ52remNr4arbVtXUI4WC5x8DJwoiesSp2pmqK-CQ&hash=adf1b4ab3a820942c3b70b38d4b46ba24e5069e72ec10f6891eec83806b07a31'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+6:42:02 PM [express] GET /api/profile 200 in 85ms :: {"user":{"id":"a8364e70-de01-4b7d-b7f8-52f6f186…
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AmQVokaIKh8TKfpqypzccWkYcPkHiFfFu.pVBId8Wkfr5v%2FlB1rWr%2B3lJ9qBA%2BdHudQLDJrVlAngc',
+  'if-none-match': 'W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.0.68',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVbUtIMG&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743532891&signature=L1hkjhOWR-H7N2NpszRrnjqJGPZXFYLJb0JSgfJhehoKsuQ52remNr4arbVtXUI4WC5x8DJwoiesSp2pmqK-CQ&hash=adf1b4ab3a820942c3b70b38d4b46ba24e5069e72ec10f6891eec83806b07a31'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AmQVokaIKh8TKfpqypzccWkYcPkHiFfFu.pVBId8Wkfr5v%2FlB1rWr%2B3lJ9qBA%2BdHudQLDJrVlAngc',
+  'if-none-match': 'W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.4.51',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVbUtIMG&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743532891&signature=L1hkjhOWR-H7N2NpszRrnjqJGPZXFYLJb0JSgfJhehoKsuQ52remNr4arbVtXUI4WC5x8DJwoiesSp2pmqK-CQ&hash=adf1b4ab3a820942c3b70b38d4b46ba24e5069e72ec10f6891eec83806b07a31'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AmQVokaIKh8TKfpqypzccWkYcPkHiFfFu.pVBId8Wkfr5v%2FlB1rWr%2B3lJ9qBA%2BdHudQLDJrVlAngc',
+  'if-none-match': 'W/"64b-Ixn3r8eJoygdjNaH3zRfMiMdBrU"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.4.51',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+No Telegram init data found in request headers
+Available headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "if-none-match": "W/\"64b-Ixn3r8eJoygdjNaH3zRfMiMdBrU\"",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.4.51",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": ""
+}
+⚠️ No Telegram data found in request
+6:42:03 PM [express] GET /api/profile 401 in 2ms :: {"error":"Unauthorized"}
+6:42:03 PM [express] POST /api/collaborations/search 200 in 9ms
+Found 0 swipes for user a8364e70-de01-4b7d-b7f8-52f6f186391d
+6:42:03 PM [express] GET /api/user-swipes 304 in 34ms :: []
+Found 0 potential matches for user a8364e70-de01-4b7d-b7f8-52f6f186391d
+6:42:04 PM [express] GET /api/potential-matches 304 in 128ms :: []
+6:42:04 PM [express] POST /api/collaborations/search 200 in 4ms
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AmQVokaIKh8TKfpqypzccWkYcPkHiFfFu.pVBId8Wkfr5v%2FlB1rWr%2B3lJ9qBA%2BdHudQLDJrVlAngc',
+  'if-none-match': 'W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.4.51',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVbUtIMG&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743532891&signature=L1hkjhOWR-H7N2NpszRrnjqJGPZXFYLJb0JSgfJhehoKsuQ52remNr4arbVtXUI4WC5x8DJwoiesSp2pmqK-CQ&hash=adf1b4ab3a820942c3b70b38d4b46ba24e5069e72ec10f6891eec83806b07a31'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Found 0 potential matches for user a8364e70-de01-4b7d-b7f8-52f6f186391d
+6:42:05 PM [express] GET /api/potential-matches 304 in 62ms :: []
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AmQVokaIKh8TKfpqypzccWkYcPkHiFfFu.pVBId8Wkfr5v%2FlB1rWr%2B3lJ9qBA%2BdHudQLDJrVlAngc',
+  'if-none-match': 'W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.4.51',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVbUtIMG&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743532891&signature=L1hkjhOWR-H7N2NpszRrnjqJGPZXFYLJb0JSgfJhehoKsuQ52remNr4arbVtXUI4WC5x8DJwoiesSp2pmqK-CQ&hash=adf1b4ab3a820942c3b70b38d4b46ba24e5069e72ec10f6891eec83806b07a31'
+}
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Found 0 swipes for user a8364e70-de01-4b7d-b7f8-52f6f186391d
+6:42:05 PM [express] GET /api/user-swipes 304 in 31ms :: []
+6:42:05 PM [express] POST /api/collaborations/search 200 in 3ms

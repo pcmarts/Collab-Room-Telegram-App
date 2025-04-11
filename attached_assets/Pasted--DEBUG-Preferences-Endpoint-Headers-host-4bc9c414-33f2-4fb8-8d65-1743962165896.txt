@@ -1,0 +1,107 @@
+
+
+
+============ DEBUG: Preferences Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '623',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AM0PPtFu9fB003H4FraRSqy_JUnwAJY9g.Mi6qJcFjXw7NTz0eanz0DdU6DgbmYbz1WLHIBb2yh4M',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/dashboard',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.4.51',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAEDym1WAwAAAAPKbVYzQ0vU&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1743962020&signature=_cKP-5tnMODH28_0vHGJqJA0o-aDHW0TdJSnfbLG5N3yALlMTkSPr5XmLsb8Fe20IPMYa_NjKoEkJCVVzOyLCw&hash=941f2c610cd0961a255f30ab96d3a1071924fa911378b0176f5c4adec4e3bb31',
+  'x-telegram-user-id': '7892486659'
+}
+Body: {
+  notification_frequency: 'Instant',
+  notifications_enabled: true,
+  collabs_to_discover: [],
+  collabs_to_host: [],
+  filtered_marketing_topics: [],
+  twitter_collabs: [],
+  coffee_match_enabled: false,
+  coffee_match_company_sectors: [],
+  coffee_match_company_followers: null,
+  coffee_match_user_followers: null,
+  coffee_match_funding_stages: [],
+  coffee_match_token_status: false,
+  coffee_match_filter_company_sectors_enabled: false,
+  coffee_match_filter_company_followers_enabled: false,
+  coffee_match_filter_user_followers_enabled: false,
+  coffee_match_filter_funding_stages_enabled: false,
+  coffee_match_filter_token_status_enabled: false
+}
+Updated notification preferences: {
+  id: 'be4f9d51-397b-4464-900d-ef192cf74651',
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  notifications_enabled: true,
+  notification_frequency: 'Instant',
+  created_at: 2025-03-25T07:12:56.125Z
+}
+Updated marketing preferences: {
+  id: '78559b83-51fc-4cf7-9d24-ef4bde30a3ce',
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  collabs_to_discover: [],
+  collabs_to_host: [],
+  twitter_collabs: [],
+  filtered_marketing_topics: [],
+  twitter_followers: null,
+  company_twitter_followers: null,
+  funding_stage: null,
+  company_has_token: null,
+  company_token_ticker: null,
+  company_blockchain_networks: null,
+  company_tags: null,
+  discovery_filter_enabled: true,
+  discovery_filter_collab_types_enabled: true,
+  discovery_filter_topics_enabled: false,
+  discovery_filter_company_followers_enabled: false,
+  discovery_filter_user_followers_enabled: false,
+  discovery_filter_funding_stages_enabled: false,
+  discovery_filter_token_status_enabled: false,
+  discovery_filter_company_sectors_enabled: false,
+  discovery_filter_blockchain_networks_enabled: false,
+  created_at: 2025-03-25T07:12:56.125Z
+}
+Updated conference preferences: {
+  id: '56327d52-3cc5-4056-94ec-50e7a04e4250',
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  coffee_match_enabled: false,
+  twitter_followers: null,
+  company_twitter_followers: null,
+  funding_stage: null,
+  company_has_token: false,
+  company_token_ticker: null,
+  company_blockchain_networks: null,
+  company_tags: null,
+  coffee_match_company_sectors: [],
+  coffee_match_company_followers: null,
+  coffee_match_user_followers: null,
+  coffee_match_funding_stages: [],
+  coffee_match_token_status: false,
+  filtered_conference_sectors: null,
+  coffee_match_filter_company_sectors_enabled: false,
+  coffee_match_filter_company_followers_enabled: false,
+  coffee_match_filter_user_followers_enabled: false,
+  coffee_match_filter_funding_stages_enabled: false,
+  coffee_match_filter_token_status_enabled: false,
+  coffee_match_filter_blockchain_networks_enabled: false,
+  created_at: 2025-03-25T07:12:56.125Z
+}
+5:55:24 PM [express] POST /api/preferences 200 in 166ms :: {"success":true,"preferences":{"id":"be4f…

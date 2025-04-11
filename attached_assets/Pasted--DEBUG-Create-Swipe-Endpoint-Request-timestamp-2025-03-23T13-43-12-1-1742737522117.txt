@@ -1,0 +1,390 @@
+
+
+
+
+
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-03-23T13:43:12.166Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "content-length": "78",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3AYgapEqH0iq0Lok5X4B4Vs8B1NmmEjb-p.CIWnbzlfiqeWq78G64SgFokbhRopBI9gvDABbHWofpA",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "62.28.7.213, 10.82.10.10",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAEDym1WAwAAAAPKbVaP90qi&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1742737368&signature=XDHDEcdKAwqiYsEibObWWSu1UAGyYA30G4UdP_5TawfGUaRMVvlvj4ldNC_62s_wZp-kkSLbmEKX__tV7koGDg&hash=1e337552d2e5ed61268d28e70c4ee2a55aa2c3c31fd387d82db6b95ada303ba1"
+}
+Body: {
+  "collaboration_id": "81f35dd4-fae2-4872-a10b-a8cb8af32360",
+  "direction": "left"
+}
+Parsed request parameters: {
+  collaboration_id: '81f35dd4-fae2-4872-a10b-a8cb8af32360',
+  swipe_id: undefined,
+  direction: 'left',
+  is_potential_match: undefined
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Authentication success: Found Telegram ID: 7892486659
+User details: first_name=Jim, last_name=Testing, username=jimtesting
+Looking up user by Telegram ID: 7892486659...
+Database success: Found user 82d56100-836d-48a5-859a-6d7140b22c80 (Jim Testing)
+Creating swipe for collaboration: 81f35dd4-fae2-4872-a10b-a8cb8af32360
+Collaboration verification success: Found type: Twitter Spaces Guest, status: active
+Creating swipe record with parameters: {
+  user_id: '82d56100-836d-48a5-859a-6d7140b22c80',
+  collaboration_id: '81f35dd4-fae2-4872-a10b-a8cb8af32360',
+  direction: 'left'
+}
+Success: Created swipe record with ID: f4687193-f6e1-4de3-a09a-0117ac66e11c
+Details: left swipe for collaboration 81f35dd4-fae2-4872-a10b-a8cb8af32360 by user 82d56100-836d-48a5-859a-6d7140b22c80
+Timestamp: Sun Mar 23 2025 13:43:12 GMT+0000 (Coordinated Universal Time)
+1:43:12 PM [express] POST /api/swipes 201 in 124ms :: {"id":"f4687193-f6e1-4de3-a09a-0117ac66e11c","…
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-03-23T13:43:14.000Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "content-length": "79",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3AYgapEqH0iq0Lok5X4B4Vs8B1NmmEjb-p.CIWnbzlfiqeWq78G64SgFokbhRopBI9gvDABbHWofpA",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "62.28.7.213, 10.82.10.10",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAEDym1WAwAAAAPKbVaP90qi&user=%7B%22id%22%3A7892486659%2C%22first_name%22%3A%22Jim%22%2C%22last_name%22%3A%22Testing%22%2C%22username%22%3A%22jimtesting%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fqk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg%22%7D&auth_date=1742737368&signature=XDHDEcdKAwqiYsEibObWWSu1UAGyYA30G4UdP_5TawfGUaRMVvlvj4ldNC_62s_wZp-kkSLbmEKX__tV7koGDg&hash=1e337552d2e5ed61268d28e70c4ee2a55aa2c3c31fd387d82db6b95ada303ba1"
+}
+Body: {
+  "collaboration_id": "ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5",
+  "direction": "right"
+}
+Parsed request parameters: {
+  collaboration_id: 'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5',
+  swipe_id: undefined,
+  direction: 'right',
+  is_potential_match: undefined
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":7892486659,"first_name":"Jim","last_name":"Testing","username":"jimtesting","language_code":"en","allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/qk9RC1kK5xP6HJvq_s-dXwpyww26Tty2Di2u3U4us9rK-8iK--2gR1hgOFjq5vIq.svg"}
+Authentication success: Found Telegram ID: 7892486659
+User details: first_name=Jim, last_name=Testing, username=jimtesting
+Looking up user by Telegram ID: 7892486659...
+Database success: Found user 82d56100-836d-48a5-859a-6d7140b22c80 (Jim Testing)
+Creating swipe for collaboration: ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5
+Collaboration verification success: Found type: Blog Post Feature, status: active
+Creating swipe record with parameters: {
+  user_id: '82d56100-836d-48a5-859a-6d7140b22c80',
+  collaboration_id: 'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5',
+  direction: 'right'
+}
+Success: Created swipe record with ID: 4928a633-4903-4bfd-9e99-bc1795752018
+Details: right swipe for collaboration ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5 by user 82d56100-836d-48a5-859a-6d7140b22c80
+Timestamp: Sun Mar 23 2025 13:43:14 GMT+0000 (Coordinated Universal Time)
+Checking if host (b4093f49-f0c3-4bae-a294-35fb87c493eb) has swiped right on any of user's (82d56100-836d-48a5-859a-6d7140b22c80) collaborations
+Found 2 collaborations for user 82d56100-836d-48a5-859a-6d7140b22c80
+Found 0 right swipes from host for user's collaborations
+1:43:14 PM [express] POST /api/swipes 201 in 107ms :: {"id":"4928a633-4903-4bfd-9e99-bc1795752018","…
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3Aj9KDDv6e6x39YcSoGcsOljm23BYNNBLS.h%2FYy9HAQL9XEjI5gCOSRfKTrJFRu1Y%2FT7j8xJ1fDNes',
+  'if-none-match': 'W/"321-ZZ2EVbdISH6zgxVU4zjngoHwgOo"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '62.28.7.213, 10.82.4.42',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+No Telegram init data found in request headers
+Available headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "if-none-match": "W/\"321-ZZ2EVbdISH6zgxVU4zjngoHwgOo\"",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "62.28.7.213, 10.82.4.42",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": ""
+}
+Using development fallback for Telegram data
+1:43:26 PM [express] GET /api/profile 304 in 85ms :: {"user":{"id":"c046d235-351f-4ee7-9ff3-fb19a944…
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3Aj9KDDv6e6x39YcSoGcsOljm23BYNNBLS.h%2FYy9HAQL9XEjI5gCOSRfKTrJFRu1Y%2FT7j8xJ1fDNes',
+  'if-none-match': 'W/"321-ZZ2EVbdISH6zgxVU4zjngoHwgOo"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '62.28.7.213, 10.82.4.42',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+No Telegram init data found in request headers
+Available headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "if-none-match": "W/\"321-ZZ2EVbdISH6zgxVU4zjngoHwgOo\"",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "62.28.7.213, 10.82.4.42",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": ""
+}
+Using development fallback for Telegram data
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3Aj9KDDv6e6x39YcSoGcsOljm23BYNNBLS.h%2FYy9HAQL9XEjI5gCOSRfKTrJFRu1Y%2FT7j8xJ1fDNes',
+  'if-none-match': 'W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '62.28.7.213, 10.82.10.10',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg3yfci&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1742737401&signature=_IDChXj41OL7jARQUsuDJWIHZyRje1KW_gCLolnCSx49FcZoneWXFp2p64bDBGuxDUmanJfZXewzLKonQESCAA&hash=2c9fe8cc14150f3220e6324dca653773b86f19b049d217a23fe1fad26bb04045'
+}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+============ DEBUG: Search Collaborations Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3Aj9KDDv6e6x39YcSoGcsOljm23BYNNBLS.h%2FYy9HAQL9XEjI5gCOSRfKTrJFRu1Y%2FT7j8xJ1fDNes',
+  'if-none-match': 'W/"8a9-YWscpi1eqWUmpYoaq6DQiwhBRnk"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '62.28.7.213, 10.82.3.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg3yfci&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1742737401&signature=_IDChXj41OL7jARQUsuDJWIHZyRje1KW_gCLolnCSx49FcZoneWXFp2p64bDBGuxDUmanJfZXewzLKonQESCAA&hash=2c9fe8cc14150f3220e6324dca653773b86f19b049d217a23fe1fad26bb04045'
+}
+Query: {}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+1:43:27 PM [express] GET /api/profile 304 in 33ms :: {"user":{"id":"c046d235-351f-4ee7-9ff3-fb19a944…
+Found 1 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+1:43:27 PM [express] GET /api/potential-matches 200 in 122ms :: [{"id":"4928a633-4903-4bfd-9e99-bc17…
+Found 2 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 2 (2 own + 0 swiped)
+Excluding 2 total collaborations from results
+1:43:27 PM [express] GET /api/collaborations/search 304 in 137ms :: [{"id":"6ea91c25-aefc-4599-bd26-…
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-03-23T13:43:34.420Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "content-length": "97",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3Aj9KDDv6e6x39YcSoGcsOljm23BYNNBLS.h%2FYy9HAQL9XEjI5gCOSRfKTrJFRu1Y%2FT7j8xJ1fDNes",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "62.28.7.213, 10.82.4.42",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAGl3C5IAAAAAKXcLkg3yfci&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1742737401&signature=_IDChXj41OL7jARQUsuDJWIHZyRje1KW_gCLolnCSx49FcZoneWXFp2p64bDBGuxDUmanJfZXewzLKonQESCAA&hash=2c9fe8cc14150f3220e6324dca653773b86f19b049d217a23fe1fad26bb04045"
+}
+Body: {
+  "swipe_id": "4928a633-4903-4bfd-9e99-bc1795752018",
+  "direction": "right",
+  "is_potential_match": true
+}
+Parsed request parameters: {
+  collaboration_id: undefined,
+  swipe_id: '4928a633-4903-4bfd-9e99-bc1795752018',
+  direction: 'right',
+  is_potential_match: true
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+Authentication success: Found Telegram ID: 1211030693
+User details: first_name=Paul, last_name=Martin, username=thisispaulm
+Looking up user by Telegram ID: 1211030693...
+Database success: Found user b4093f49-f0c3-4bae-a294-35fb87c493eb (Paul Martin)
+Processing potential match with swipe ID: 4928a633-4903-4bfd-9e99-bc1795752018
+Found original swipe with collaboration ID: ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5
+Original swipe was from user ID: 82d56100-836d-48a5-859a-6d7140b22c80
+Success: Created swipe record with ID: 528e1604-7b71-4cf4-bfe9-468fbe9390db
+Details: right swipe for collaboration ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5 by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+MATCH CREATED! Both users swiped right.
+Collaboration details for notification: {
+  id: 'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5',
+  creator_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  collab_type: 'Blog Post Feature'
+}
+Match roles: {
+  current_user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  collaboration_creator_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  original_swiper_id: '82d56100-836d-48a5-859a-6d7140b22c80',
+  is_user_the_host: true,
+  other_user_id: '82d56100-836d-48a5-859a-6d7140b22c80'
+}
+Creating match record with parameters: {
+  collaboration_id: 'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5',
+  host_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  requester_id: '82d56100-836d-48a5-859a-6d7140b22c80'
+}
+Error creating match: error: column "collaboration_id" of relation "matches" does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:61:18)
+    at async DatabaseStorage.createMatch (/home/runner/workspace/server/storage.ts:559:26)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:2949:27) {
+  length: 136,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '30',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_target.c',
+  line: '1066',
+  routine: 'checkInsertTargets'
+}
+Error processing potential match: error: column "collaboration_id" of relation "matches" does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:61:18)
+    at async DatabaseStorage.createMatch (/home/runner/workspace/server/storage.ts:559:26)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:2949:27) {
+  length: 136,
+  severity: 'ERROR',
+  code: '42703',
+  detail: undefined,
+  hint: undefined,
+  position: '30',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_target.c',
+  line: '1066',
+  routine: 'checkInsertTargets'
+}
+Stack trace: error: column "collaboration_id" of relation "matches" does not exist
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-serverless/session.ts:61:18)
+    at async DatabaseStorage.createMatch (/home/runner/workspace/server/storage.ts:559:26)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:2949:27)
+1:43:34 PM [express] POST /api/swipes 500 in 86ms :: {"error":"Failed to process potential match"}

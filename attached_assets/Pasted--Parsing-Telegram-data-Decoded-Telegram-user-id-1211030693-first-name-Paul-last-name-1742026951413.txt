@@ -1,0 +1,103 @@
+}
+Parsing Telegram data
+Decoded Telegram user: {
+  id: 1211030693,
+  first_name: 'Paul',
+  last_name: 'Martin',
+  username: 'thisispaulm',
+  language_code: 'en',
+  is_premium: true,
+  allows_write_to_pm: true,
+  photo_url: 'https://t.me/i/userpic/320/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg'
+}
+Created/Updated user: {
+  id: '8261dc0d-0923-475a-a083-ec240387d6b8',
+  telegram_id: '1211030693',
+  first_name: 'Paul',
+  last_name: 'Martin',
+  handle: 'thisispaulm',
+  linkedin_url: 'https://linkedin.com/company/test',
+  email: 'paul@paul.com',
+  referral_code: null,
+  twitter_url: 'https://x.com/paul',
+  twitter_followers: '500K+',
+  is_approved: false,
+  is_admin: false,
+  applied_at: 2025-03-15T08:20:16.000Z,
+  created_at: 2025-03-15T08:20:16.532Z
+}
+Created company: {
+  id: '786cf149-ce17-4d6b-a1bc-e67792b056ea',
+  user_id: '8261dc0d-0923-475a-a083-ec240387d6b8',
+  name: 'Test',
+  short_description: null,
+  long_description: null,
+  website: 'https://www.test.com',
+  job_title: 'Test',
+  twitter_handle: 'test',
+  twitter_followers: null,
+  linkedin_url: null,
+  funding_stage: 'Series A',
+  has_token: true,
+  token_ticker: 'Bdxn',
+  blockchain_networks: [ 'Bitcoin' ],
+  tags: [ 'Gaming' ],
+  created_at: 2025-03-15T08:20:16.532Z
+}
+Created notification preferences: {
+  id: '2955ea2f-62ef-4e9c-830d-7d6a2c49e162',
+  user_id: '8261dc0d-0923-475a-a083-ec240387d6b8',
+  notifications_enabled: true,
+  notification_frequency: 'Daily',
+  created_at: 2025-03-15T08:20:16.532Z
+}
+Created marketing preferences: {
+  id: 'e688a603-f798-4287-b9b2-d5cff1c4cfb7',
+  user_id: '8261dc0d-0923-475a-a083-ec240387d6b8',
+  collabs_to_discover: [],
+  collabs_to_host: [],
+  twitter_collabs: null,
+  filtered_marketing_topics: [],
+  twitter_followers: null,
+  company_twitter_followers: null,
+  funding_stage: null,
+  company_has_token: false,
+  company_token_ticker: null,
+  company_blockchain_networks: null,
+  company_tags: null,
+  discovery_filter_enabled: false,
+  discovery_filter_topics_enabled: false,
+  discovery_filter_company_followers_enabled: false,
+  discovery_filter_user_followers_enabled: false,
+  discovery_filter_funding_stages_enabled: false,
+  discovery_filter_token_status_enabled: false,
+  discovery_filter_company_sectors_enabled: false,
+  discovery_filter_blockchain_networks_enabled: false,
+  created_at: 2025-03-15T08:20:16.532Z
+}
+Created conference preferences: {
+  id: 'eaf6e76e-451a-4a05-b568-18fb4cbf930f',
+  user_id: '8261dc0d-0923-475a-a083-ec240387d6b8',
+  coffee_match_enabled: false,
+  twitter_followers: null,
+  company_twitter_followers: null,
+  funding_stage: null,
+  company_has_token: false,
+  company_token_ticker: null,
+  company_blockchain_networks: null,
+  company_tags: null,
+  coffee_match_company_sectors: null,
+  coffee_match_company_followers: null,
+  coffee_match_user_followers: null,
+  coffee_match_funding_stages: null,
+  coffee_match_token_status: false,
+  filtered_conference_sectors: null,
+  coffee_match_filter_company_sectors_enabled: false,
+  coffee_match_filter_company_followers_enabled: false,
+  coffee_match_filter_user_followers_enabled: false,
+  coffee_match_filter_funding_stages_enabled: false,
+  coffee_match_filter_token_status_enabled: false,
+  coffee_match_filter_blockchain_networks_enabled: false,
+  created_at: 2025-03-15T08:20:16.532Z
+}
+Application confirmation message sent successfully

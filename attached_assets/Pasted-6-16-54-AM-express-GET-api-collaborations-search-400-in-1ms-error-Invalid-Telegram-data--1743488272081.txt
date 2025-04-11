@@ -1,0 +1,534 @@
+6:16:54 AM [express] GET /api/collaborations/search 400 in 1ms :: {"error":"Invalid Telegram data"}
+============ DEBUG: Search Collaborations Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Replit/1.0.14 Chrome/124.0.6367.119 Electron/30.0.3 Safari/537.36',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB',
+  cookie: 'connect.sid=s%3A4sgS8nRd_weLQ6pE8hyLunAzR4OW7kiA.S%2F%2F4c%2Fi8En%2FbgW11Gv3s2Yl8KRBuzwPMQviVyFci2iE',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-ch-ua': '"Not-A.Brand";v="99", "Chromium";v="124"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"macOS"',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.0.68',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+Query: {}
+No Telegram init data found in request headers
+Available headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Replit/1.0.14 Chrome/124.0.6367.119 Electron/30.0.3 Safari/537.36",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-ch-ua": "\"Not-A.Brand\";v=\"99\", \"Chromium\";v=\"124\"",
+  "sec-ch-ua-mobile": "?0",
+  "sec-ch-ua-platform": "\"macOS\"",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.0.68",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": ""
+}
+⚠️ No Telegram data found in request
+No Telegram user found
+6:16:54 AM [express] GET /api/collaborations/search 400 in 2ms :: {"error":"Invalid Telegram data"}
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AlNtIXcBwmJBCGUbPG0ZAF8thPcF_292_.f5zypXm8YJlOX9y7Q4XYsiXcjkAHWS9ga7IzECLJ4aQ',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.3.135',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkikg_21&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743488227&signature=QYkeQjpWchlhcVHigeXwKhuoTeE0fIZm_mo-fg966CPjCKOgy5PFX7YI6oS7KRrGxosIh3abW4gxZIDEg17ADw&hash=00607d92876c1074fcc00301fb4a1e9f56c85cffb84d67d9fbb0ad3663e8b50a'
+}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+6:17:11 AM [express] GET /api/profile 200 in 167ms :: {"user":{"id":"b4093f49-f0c3-4bae-a294-35fb87c…
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AlNtIXcBwmJBCGUbPG0ZAF8thPcF_292_.f5zypXm8YJlOX9y7Q4XYsiXcjkAHWS9ga7IzECLJ4aQ',
+  'if-none-match': 'W/"651-u8sCvzyNqGbKB82nG1Ki0Kwx0+c"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.3.135',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+No Telegram init data found in request headers
+Available headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "if-none-match": "W/\"651-u8sCvzyNqGbKB82nG1Ki0Kwx0+c\"",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.3.135",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": ""
+}
+⚠️ No Telegram data found in request
+6:17:12 AM [express] GET /api/profile 401 in 1ms :: {"error":"Unauthorized"}
+============ DEBUG: User Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AlNtIXcBwmJBCGUbPG0ZAF8thPcF_292_.f5zypXm8YJlOX9y7Q4XYsiXcjkAHWS9ga7IzECLJ4aQ',
+  'if-modified-since': 'Tue, 01 Apr 2025 06:08:02 GMT',
+  'if-none-match': 'W/"0-1743487682522"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.4.51',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkikg_21&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743488227&signature=QYkeQjpWchlhcVHigeXwKhuoTeE0fIZm_mo-fg966CPjCKOgy5PFX7YI6oS7KRrGxosIh3abW4gxZIDEg17ADw&hash=00607d92876c1074fcc00301fb4a1e9f56c85cffb84d67d9fbb0ad3663e8b50a'
+}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AlNtIXcBwmJBCGUbPG0ZAF8thPcF_292_.f5zypXm8YJlOX9y7Q4XYsiXcjkAHWS9ga7IzECLJ4aQ',
+  'if-none-match': 'W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkikg_21&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743488227&signature=QYkeQjpWchlhcVHigeXwKhuoTeE0fIZm_mo-fg966CPjCKOgy5PFX7YI6oS7KRrGxosIh3abW4gxZIDEg17ADw&hash=00607d92876c1074fcc00301fb4a1e9f56c85cffb84d67d9fbb0ad3663e8b50a'
+}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AlNtIXcBwmJBCGUbPG0ZAF8thPcF_292_.f5zypXm8YJlOX9y7Q4XYsiXcjkAHWS9ga7IzECLJ4aQ',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkikg_21&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743488227&signature=QYkeQjpWchlhcVHigeXwKhuoTeE0fIZm_mo-fg966CPjCKOgy5PFX7YI6oS7KRrGxosIh3abW4gxZIDEg17ADw&hash=00607d92876c1074fcc00301fb4a1e9f56c85cffb84d67d9fbb0ad3663e8b50a'
+}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+============ DEBUG: Search Collaborations Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AlNtIXcBwmJBCGUbPG0ZAF8thPcF_292_.f5zypXm8YJlOX9y7Q4XYsiXcjkAHWS9ga7IzECLJ4aQ',
+  'if-none-match': 'W/"1191-oUp3c7wWwZNY40QQp9XrW72TuCo"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.0.68',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkikg_21&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743488227&signature=QYkeQjpWchlhcVHigeXwKhuoTeE0fIZm_mo-fg966CPjCKOgy5PFX7YI6oS7KRrGxosIh3abW4gxZIDEg17ADw&hash=00607d92876c1074fcc00301fb4a1e9f56c85cffb84d67d9fbb0ad3663e8b50a'
+}
+Query: {}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+Found Telegram user: 1211030693
+Found 0 matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+6:17:12 AM [express] GET /api/matches 200 in 83ms :: []
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Calling searchCollaborations with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true
+}
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+6:17:12 AM [express] GET /api/user-swipes 200 in 114ms :: []
+Found 0 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 6 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 6 (6 own + 0 swiped)
+Excluding 6 total collaborations from results
+Excluding user's own collaborations (creator_id filtering)
+Final filter query constructed, executing and returning results
+Found 0 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+6:17:12 AM [express] GET /api/potential-matches 304 in 158ms :: []
+Found company data for collaboration 65b91a00-318b-44b1-976d-8a63d7789c9a: {
+  id: '80385436-4926-40b3-b07c-b009c3e08a90',
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  name: 'ZK Sync',
+  short_description: 'zkSync is a Layer 2 scaling solution for Ethereum using zero-knowledge rollups to offer faster, cheaper transactions without compromising security.',
+  long_description: 'zkSync is a Layer 2 scaling protocol built on Ethereum, using zero-knowledge (ZK) rollups to process thousands of transactions off-chain while maintaining the security and decentralization of Ethereum. Developed by Matter Labs, zkSync enables fast, low-cost transactions, supports smart contracts, and aims to make crypto payments scalable for mass adoption. Its roadmap includes zkSync Era (with EVM compatibility) and a move toward full zkStack modularity.',
+  website: 'https://www.zksync.com',
+  job_title: 'VP Growth',
+  twitter_handle: 'zksync',
+  twitter_followers: '500K+',
+  linkedin_url: 'https://linkedin.com/company/zksync',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: 'ZK',
+  blockchain_networks: [ 'Bitcoin', 'Ethereum', 'Binance Smart Chain (BSC)' ],
+  tags: [ 'L2 & Scaling Solutions', 'Identity & Privacy' ],
+  created_at: 2025-03-25T07:12:56.125Z
+}
+Found company data for collaboration e1d8af65-5fd9-4585-be3a-f65d9ad7c565: {
+  id: '80385436-4926-40b3-b07c-b009c3e08a90',
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  name: 'ZK Sync',
+  short_description: 'zkSync is a Layer 2 scaling solution for Ethereum using zero-knowledge rollups to offer faster, cheaper transactions without compromising security.',
+  long_description: 'zkSync is a Layer 2 scaling protocol built on Ethereum, using zero-knowledge (ZK) rollups to process thousands of transactions off-chain while maintaining the security and decentralization of Ethereum. Developed by Matter Labs, zkSync enables fast, low-cost transactions, supports smart contracts, and aims to make crypto payments scalable for mass adoption. Its roadmap includes zkSync Era (with EVM compatibility) and a move toward full zkStack modularity.',
+  website: 'https://www.zksync.com',
+  job_title: 'VP Growth',
+  twitter_handle: 'zksync',
+  twitter_followers: '500K+',
+  linkedin_url: 'https://linkedin.com/company/zksync',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: 'ZK',
+  blockchain_networks: [ 'Bitcoin', 'Ethereum', 'Binance Smart Chain (BSC)' ],
+  tags: [ 'L2 & Scaling Solutions', 'Identity & Privacy' ],
+  created_at: 2025-03-25T07:12:56.125Z
+}
+Found 2 collaborations
+6:17:12 AM [express] GET /api/collaborations/search 304 in 204ms :: [{"id":"65b91a00-318b-44b1-976d-…
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-04-01T06:17:14.393Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "content-length": "78",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3AlNtIXcBwmJBCGUbPG0ZAF8thPcF_292_.f5zypXm8YJlOX9y7Q4XYsiXcjkAHWS9ga7IzECLJ4aQ",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.3.135",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAGl3C5IAAAAAKXcLkikg_21&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743488227&signature=QYkeQjpWchlhcVHigeXwKhuoTeE0fIZm_mo-fg966CPjCKOgy5PFX7YI6oS7KRrGxosIh3abW4gxZIDEg17ADw&hash=00607d92876c1074fcc00301fb4a1e9f56c85cffb84d67d9fbb0ad3663e8b50a"
+}
+Body: {
+  "collaboration_id": "65b91a00-318b-44b1-976d-8a63d7789c9a",
+  "direction": "left"
+}
+Parsed request parameters: {
+  collaboration_id: '65b91a00-318b-44b1-976d-8a63d7789c9a',
+  swipe_id: undefined,
+  direction: 'left',
+  is_potential_match: undefined
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+Authentication success: Found Telegram ID: 1211030693
+User details: first_name=Paul, last_name=Martin, username=thisispaulm
+Looking up user by Telegram ID: 1211030693...
+Database success: Found user b4093f49-f0c3-4bae-a294-35fb87c493eb (Paul Martin)
+Creating swipe for collaboration: 65b91a00-318b-44b1-976d-8a63d7789c9a
+Collaboration verification success: Found type: Co-Marketing on Twitter, status: active
+Creating swipe record with parameters: {
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  collaboration_id: '65b91a00-318b-44b1-976d-8a63d7789c9a',
+  direction: 'left'
+}
+Creating swipe with data: {
+  "user_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "collaboration_id": "65b91a00-318b-44b1-976d-8a63d7789c9a",
+  "direction": "left"
+}
+Swipe created: {
+  "id": "9a2e8be2-f85e-4f04-bca2-c699973fb4ef",
+  "user_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "collaboration_id": "65b91a00-318b-44b1-976d-8a63d7789c9a",
+  "direction": "left",
+  "details": {},
+  "created_at": "2025-04-01T06:17:14.440Z"
+}
+Success: Created swipe record with ID: 9a2e8be2-f85e-4f04-bca2-c699973fb4ef
+Details: left swipe for collaboration 65b91a00-318b-44b1-976d-8a63d7789c9a by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Timestamp: Tue Apr 01 2025 06:17:14 GMT+0000 (Coordinated Universal Time)
+6:17:14 AM [express] POST /api/swipes 201 in 67ms :: {"id":"9a2e8be2-f85e-4f04-bca2-c699973fb4ef","u…
+============ DEBUG: Search Collaborations Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AlNtIXcBwmJBCGUbPG0ZAF8thPcF_292_.f5zypXm8YJlOX9y7Q4XYsiXcjkAHWS9ga7IzECLJ4aQ',
+  'if-none-match': 'W/"1191-oUp3c7wWwZNY40QQp9XrW72TuCo"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.3.135',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkikg_21&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743488227&signature=QYkeQjpWchlhcVHigeXwKhuoTeE0fIZm_mo-fg966CPjCKOgy5PFX7YI6oS7KRrGxosIh3abW4gxZIDEg17ADw&hash=00607d92876c1074fcc00301fb4a1e9f56c85cffb84d67d9fbb0ad3663e8b50a'
+}
+Query: {}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+Found Telegram user: 1211030693
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AlNtIXcBwmJBCGUbPG0ZAF8thPcF_292_.f5zypXm8YJlOX9y7Q4XYsiXcjkAHWS9ga7IzECLJ4aQ',
+  'if-none-match': 'W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkikg_21&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743488227&signature=QYkeQjpWchlhcVHigeXwKhuoTeE0fIZm_mo-fg966CPjCKOgy5PFX7YI6oS7KRrGxosIh3abW4gxZIDEg17ADw&hash=00607d92876c1074fcc00301fb4a1e9f56c85cffb84d67d9fbb0ad3663e8b50a'
+}
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Calling searchCollaborations with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true
+}
+Found 1 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 6 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 7 (6 own + 1 swiped)
+Excluding 7 total collaborations from results
+Excluding user's own collaborations (creator_id filtering)
+Final filter query constructed, executing and returning results
+Found 0 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+6:17:16 AM [express] GET /api/potential-matches 304 in 74ms :: []
+Found company data for collaboration 65b91a00-318b-44b1-976d-8a63d7789c9a: {
+  id: '80385436-4926-40b3-b07c-b009c3e08a90',
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  name: 'ZK Sync',
+  short_description: 'zkSync is a Layer 2 scaling solution for Ethereum using zero-knowledge rollups to offer faster, cheaper transactions without compromising security.',
+  long_description: 'zkSync is a Layer 2 scaling protocol built on Ethereum, using zero-knowledge (ZK) rollups to process thousands of transactions off-chain while maintaining the security and decentralization of Ethereum. Developed by Matter Labs, zkSync enables fast, low-cost transactions, supports smart contracts, and aims to make crypto payments scalable for mass adoption. Its roadmap includes zkSync Era (with EVM compatibility) and a move toward full zkStack modularity.',
+  website: 'https://www.zksync.com',
+  job_title: 'VP Growth',
+  twitter_handle: 'zksync',
+  twitter_followers: '500K+',
+  linkedin_url: 'https://linkedin.com/company/zksync',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: 'ZK',
+  blockchain_networks: [ 'Bitcoin', 'Ethereum', 'Binance Smart Chain (BSC)' ],
+  tags: [ 'L2 & Scaling Solutions', 'Identity & Privacy' ],
+  created_at: 2025-03-25T07:12:56.125Z
+}
+Found company data for collaboration e1d8af65-5fd9-4585-be3a-f65d9ad7c565: {
+  id: '80385436-4926-40b3-b07c-b009c3e08a90',
+  user_id: 'a8364e70-de01-4b7d-b7f8-52f6f186391d',
+  name: 'ZK Sync',
+  short_description: 'zkSync is a Layer 2 scaling solution for Ethereum using zero-knowledge rollups to offer faster, cheaper transactions without compromising security.',
+  long_description: 'zkSync is a Layer 2 scaling protocol built on Ethereum, using zero-knowledge (ZK) rollups to process thousands of transactions off-chain while maintaining the security and decentralization of Ethereum. Developed by Matter Labs, zkSync enables fast, low-cost transactions, supports smart contracts, and aims to make crypto payments scalable for mass adoption. Its roadmap includes zkSync Era (with EVM compatibility) and a move toward full zkStack modularity.',
+  website: 'https://www.zksync.com',
+  job_title: 'VP Growth',
+  twitter_handle: 'zksync',
+  twitter_followers: '500K+',
+  linkedin_url: 'https://linkedin.com/company/zksync',
+  funding_stage: 'Series B+',
+  has_token: true,
+  token_ticker: 'ZK',
+  blockchain_networks: [ 'Bitcoin', 'Ethereum', 'Binance Smart Chain (BSC)' ],
+  tags: [ 'L2 & Scaling Solutions', 'Identity & Privacy' ],
+  created_at: 2025-03-25T07:12:56.125Z
+}
+Found 2 collaborations
+6:17:16 AM [express] GET /api/collaborations/search 304 in 109ms :: [{"id":"65b91a00-318b-44b1-976d-…
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-04-01T06:17:18.474Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "content-length": "78",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3AlNtIXcBwmJBCGUbPG0ZAF8thPcF_292_.f5zypXm8YJlOX9y7Q4XYsiXcjkAHWS9ga7IzECLJ4aQ",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.3.135",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAGl3C5IAAAAAKXcLkikg_21&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1743488227&signature=QYkeQjpWchlhcVHigeXwKhuoTeE0fIZm_mo-fg966CPjCKOgy5PFX7YI6oS7KRrGxosIh3abW4gxZIDEg17ADw&hash=00607d92876c1074fcc00301fb4a1e9f56c85cffb84d67d9fbb0ad3663e8b50a"
+}
+Body: {
+  "collaboration_id": "65b91a00-318b-44b1-976d-8a63d7789c9a",
+  "direction": "left"
+}
+Parsed request parameters: {
+  collaboration_id: '65b91a00-318b-44b1-976d-8a63d7789c9a',
+  swipe_id: undefined,
+  direction: 'left',
+  is_potential_match: undefined
+}
+Attempting to extract telegram user data from request...
+Parsed Telegram user data: {"id":1211030693,"first_name":"Paul","last_name":"Martin","username":"thisispaulm","language_code":"en","is_premium":true,"allows_write_to_pm":true,"photo_url":"https:\/\/t.me\/i\/userpic\/320\/HNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg"}
+Authentication success: Found Telegram ID: 1211030693
+User details: first_name=Paul, last_name=Martin, username=thisispaulm
+Looking up user by Telegram ID: 1211030693...
+Database success: Found user b4093f49-f0c3-4bae-a294-35fb87c493eb (Paul Martin)
+Creating swipe for collaboration: 65b91a00-318b-44b1-976d-8a63d7789c9a
+Collaboration verification success: Found type: Co-Marketing on Twitter, status: active
+Creating swipe record with parameters: {
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  collaboration_id: '65b91a00-318b-44b1-976d-8a63d7789c9a',
+  direction: 'left'
+}
+Creating swipe with data: {
+  "user_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "collaboration_id": "65b91a00-318b-44b1-976d-8a63d7789c9a",
+  "direction": "left"
+}
+Swipe created: {
+  "id": "d302edac-5f8b-43ef-8e87-165ea0d1ef78",
+  "user_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "collaboration_id": "65b91a00-318b-44b1-976d-8a63d7789c9a",
+  "direction": "left",
+  "details": {},
+  "created_at": "2025-04-01T06:17:18.519Z"
+}
+Success: Created swipe record with ID: d302edac-5f8b-43ef-8e87-165ea0d1ef78
+Details: left swipe for collaboration 65b91a00-318b-44b1-976d-8a63d7789c9a by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Timestamp: Tue Apr 01 2025 06:17:18 GMT+0000 (Coordinated Universal Time)
+6:17:18 AM [express] POST /api/swipes 201 in 56ms :: {"id":"d302edac-5f8b-43ef-8e87-165ea0d1ef78","u…
