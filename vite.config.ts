@@ -26,6 +26,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "client", "src"),
       "@shared": path.resolve(__dirname, "shared"),
+      "./icons/database-backup.js": path.resolve(__dirname, "client/src/components/icons/DatabaseBackup.tsx"),
     },
   },
   root: path.resolve(__dirname, "client"),
