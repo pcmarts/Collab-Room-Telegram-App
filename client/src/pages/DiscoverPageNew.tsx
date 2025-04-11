@@ -322,6 +322,48 @@ export default function DiscoverPage() {
     staleTime: 60 * 1000 // 1 minute
   });
   
+  // Helper function to validate card data and filter out incomplete cards
+  const validateCardData = (cards: CardData[]): CardData[] => {
+    if (!cards || !Array.isArray(cards)) return [];
+    
+    console.log('[Discovery] Validating card data, original count:', cards.length);
+    
+    // Filter out cards with missing essential data
+    const validCards = cards.filter(card => {
+      // Required fields for a valid card
+      const hasValidId = !!card.id;
+      const hasValidTitle = !!card.title && card.title !== "Collaboration";
+      const hasValidCompany = !!card.creator_company_name && card.creator_company_name !== "Company";
+      const hasValidType = !!card.collab_type && card.collab_type !== "Collaboration";
+      
+      // Potential matches can have a slightly different structure
+      if (card.isPotentialMatch) {
+        const hasPotentialMatchData = !!card.potentialMatchData;
+        return hasValidId && hasPotentialMatchData;
+      }
+      
+      // All other cards need company name, title, and collab type
+      const isValid = hasValidId && hasValidTitle && hasValidCompany && hasValidType;
+      
+      if (!isValid) {
+        console.log('[Discovery] Filtering out incomplete card:', {
+          id: card.id,
+          hasValidTitle,
+          hasValidCompany, 
+          hasValidType,
+          title: card.title,
+          company: card.creator_company_name,
+          type: card.collab_type
+        });
+      }
+      
+      return isValid;
+    });
+    
+    console.log('[Discovery] Validation complete, removed:', cards.length - validCards.length);
+    return validCards;
+  };
+
   // Function to AGGRESSIVELY ENSURE we're not showing already swiped cards
   const fetchNextBatch = async () => {
     // Prevent fetching if already in progress or if no more cards are available
@@ -413,8 +455,12 @@ export default function DiscoverPage() {
       // Update state with new cards and pagination info
       if (response.items.length > 0) {
         console.log('[Discovery] Adding items to cards:', JSON.stringify(response.items));
+        
+        // Filter out incomplete card data before adding to the state
+        const validItems = validateCardData(response.items);
+        
         setCards(prevCards => {
-          const newCards = [...prevCards, ...response.items];
+          const newCards = [...prevCards, ...validItems];
           console.log('[Discovery] New cards state will have', newCards.length, 'cards');
           return newCards;
         });
@@ -463,7 +509,10 @@ export default function DiscoverPage() {
         // Combine potential matches with initial batch of regular cards
         if (potentialMatches && potentialMatches.length > 0) {
           console.log(`[Discovery] Adding ${potentialMatches.length} potential matches to card stack`);
-          setCards(prevCards => [...potentialMatches, ...prevCards]);
+          // Apply validation to potential matches too
+          const validPotentialMatches = validateCardData(potentialMatches);
+          console.log(`[Discovery] After validation, using ${validPotentialMatches.length} potential matches`);
+          setCards(prevCards => [...validPotentialMatches, ...prevCards]);
         } else {
           console.log('[Discovery] No potential matches available');
         }
