@@ -5,6 +5,24 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.7.7] - 2025-04-10
+
+### Fixed
+- Fixed data bleeding issue in podcast guest appearance form where description text appeared in podcast link field
+- Fixed data bleeding issue in newsletter form where subscriber count appeared in newsletter URL field
+- Improved form field validation to prevent cross-field value contamination
+
+### Enhanced
+- Added space detection to prevent description text showing in URL input fields
+- Enhanced field type checking to ensure URL fields only contain URL-like values
+- Implemented explicit field clearing between form steps to maintain data integrity
+
+### Technical Details
+- Updated create-collaboration-steps.tsx with improved field validation logic
+- Enhanced nextStep method to explicitly clear URL fields when transitioning from description fields
+- Implemented type-checking for URL fields to ensure appropriate values
+- Added documentation on form field data isolation in docs/frontend/form-field-isolation.md
+
 ## [Version 1.7.6] - 2025-04-09
 
 ### Fixed
