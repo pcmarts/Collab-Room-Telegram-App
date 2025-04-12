@@ -71,6 +71,11 @@ body.scrollable-page {
   bottom: auto !important;
   left: auto !important;
   right: auto !important;
+  transition: none !important;
+  text-shadow: none !important;
+  outline: none !important;
+  transform: none !important;
+  filter: none !important;
 }
 
 /* Telegram fixed container fix */

@@ -31,6 +31,11 @@ export function initTelegramButtonFix(): void {
           button.style.setProperty('box-shadow', 'none', 'important');
           button.style.setProperty('border', '1px solid rgba(255,255,255,0.1)', 'important');
           button.style.setProperty('pointer-events', 'auto', 'important');
+          button.style.setProperty('filter', 'none', 'important');
+          button.style.setProperty('outline', 'none', 'important');
+          button.style.setProperty('text-shadow', 'none', 'important');
+          button.style.setProperty('transition', 'none', 'important');
+          button.style.setProperty('transform', 'none', 'important');
         }
       });
 

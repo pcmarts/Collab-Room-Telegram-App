@@ -30,7 +30,10 @@ export function TelegramButton({
       className={`w-full text-center py-2 px-4 rounded font-bold telegram-button ${className}`}
       style={{
         cursor: disabled ? "not-allowed" : "pointer",
-        filter: disabled ? "grayscale(50%)" : "none"
+        filter: "none",
+        boxShadow: "none",
+        outline: "none",
+        textShadow: "none"
       }}
       {...props}
     >
