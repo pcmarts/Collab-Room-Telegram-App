@@ -82,12 +82,24 @@ function loadConfig(): Config {
 
   // Validate configuration
   try {
-    // Force diagnostic output of the LOG_LEVEL (temporary)
-    console.log("=== DIAGNOSTIC OUTPUT ===");
-    console.log(`Environment LOG_LEVEL raw value: '${process.env.LOG_LEVEL}'`);
-    console.log(`Environment LOG_LEVEL type: ${typeof process.env.LOG_LEVEL}`);
-    console.log(`Environment LOG_LEVEL parsed: ${parseInt(process.env.LOG_LEVEL || '999')}`);
-    console.log("=== END DIAGNOSTIC ===");
+    // Check if we're running in silent mode via command line override
+    try {
+      const args = process.argv.slice(2);
+      const silentModeFlag = args.find(arg => 
+        arg === '--silent' || 
+        arg === '--quiet' || 
+        arg === '--log-level=0' ||
+        arg === '-s'
+      );
+      
+      // If silent mode flag is detected, force ERROR level logging
+      if (silentModeFlag) {
+        console.log("=== SILENT MODE ACTIVATED VIA COMMAND LINE ===");
+        process.env.LOG_LEVEL = '0';
+      }
+    } catch (err) {
+      // Ignore errors from command line parsing
+    }
     
     // In production, we enforce stricter validation
     if (process.env.NODE_ENV === 'production') {

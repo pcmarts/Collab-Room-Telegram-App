@@ -21,6 +21,9 @@ fi
 export LOG_LEVEL=0
 echo "- Exported LOG_LEVEL=0 to environment"
 
-# 3. Run with direct environment variable override
-echo "- Starting server in silent mode"
-LOG_LEVEL=0 npm run dev
+# 3. Run with direct environment variable and command line flag
+echo "- Starting server in silent mode with multiple fallbacks"
+LOG_LEVEL=0 npm run dev -- --silent
+
+# Note: We use both the environment variable and the command line flag
+# to ensure the silent mode is activated in all possible ways
