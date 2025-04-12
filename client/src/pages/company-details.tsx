@@ -197,7 +197,7 @@ export default function CompanyDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4">
       <OnboardingHeader
         title="Token Information"
         subtitle=""
@@ -206,8 +206,8 @@ export default function CompanyDetails() {
         backUrl="/company-sector"
       />
 
-      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
-        <form onSubmit={handleSubmit} className="space-y-4 pb-32">
+      <div className="max-w-md mx-auto space-y-8 w-full">
+        <div className="space-y-4 pb-32">
           <div className="space-y-2">
             <div className="flex items-center justify-between border rounded-lg p-4">
               <Label htmlFor="has_token" className="text-sm font-medium">
@@ -314,19 +314,20 @@ export default function CompanyDetails() {
               </div>
             </>
           )}
-
-          {/* Floating Save Button */}
-          <TelegramFixedButtonContainer>
-            <TelegramButton
-              type="submit"
-              isLoading={isSubmitting}
-              loadingText="Submitting..."
-              text="Submit Application"
-              disabled={isSubmitting}
-            />
-          </TelegramFixedButtonContainer>
-        </form>
+        </div>
       </div>
+
+      {/* Button container directly at the root level - outside any form or scrollable container */}
+      <TelegramFixedButtonContainer>
+        <TelegramButton
+          type="button"
+          onClick={handleSubmit}
+          isLoading={isSubmitting}
+          loadingText="Submitting..."
+          text="Submit Application"
+          disabled={isSubmitting}
+        />
+      </TelegramFixedButtonContainer>
     </div>
   );
 }
