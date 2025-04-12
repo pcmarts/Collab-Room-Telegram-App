@@ -697,6 +697,93 @@ export default function DiscoveryFilters() {
                   )}
                 </Card>
                 
+                {/* Filter: Chain */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Network className="h-5 w-5 text-primary" />
+                        <CardTitle className="text-xl">Chain</CardTitle>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch 
+                          checked={filtersEnabled.blockchainNetworks}
+                          onCheckedChange={() => toggleFilter('blockchainNetworks')}
+                        />
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => toggleFilterExpansion('blockchainNetworks')}
+                        >
+                          {filtersExpanded.blockchainNetworks ? <ChevronUp /> : <ChevronDown />}
+                        </Button>
+                      </div>
+                    </div>
+                    <CardDescription>
+                      Filter by blockchain networks
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  {filtersExpanded.blockchainNetworks && (
+                    <CardContent>
+                      <FormField
+                        control={form.control}
+                        name="blockchainNetworks"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="space-y-4">
+                              {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
+                                <div key={category} className="space-y-2">
+                                  <div 
+                                    className="flex items-center gap-2 cursor-pointer" 
+                                    onClick={() => toggleCategory(category)}
+                                  >
+                                    <Badge variant="outline" className="py-1">
+                                      {expandedCategories.includes(category) ? 
+                                        <ChevronUp className="h-3 w-3 mr-1" /> : 
+                                        <ChevronDown className="h-3 w-3 mr-1" />
+                                      }
+                                      {category}
+                                    </Badge>
+                                  </div>
+                                  
+                                  {expandedCategories.includes(category) && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-4">
+                                      {networks.map((network) => (
+                                        <FormItem 
+                                          key={network} 
+                                          className="flex flex-row items-start space-x-3 space-y-0"
+                                        >
+                                          <FormControl>
+                                            <Checkbox
+                                              disabled={!filtersEnabled.blockchainNetworks}
+                                              checked={field.value?.includes(network)}
+                                              onCheckedChange={(checked) => {
+                                                const updatedValue = checked
+                                                  ? [...field.value, network]
+                                                  : field.value?.filter((value) => value !== network);
+                                                field.onChange(updatedValue);
+                                              }}
+                                            />
+                                          </FormControl>
+                                          <FormLabel className="font-normal">
+                                            {network}
+                                          </FormLabel>
+                                        </FormItem>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </CardContent>
+                  )}
+                </Card>
+                
                 {/* Filter: Company Followers */}
                 <Card>
                   <CardHeader className="pb-3">
@@ -921,93 +1008,6 @@ export default function DiscoveryFilters() {
                             <FormLabel className="font-normal">
                               Only show companies with a token
                             </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-                
-                {/* Filter: Blockchain Networks */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Network className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-xl">Blockchain Networks</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={filtersEnabled.blockchainNetworks}
-                          onCheckedChange={() => toggleFilter('blockchainNetworks')}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => toggleFilterExpansion('blockchainNetworks')}
-                        >
-                          {filtersExpanded.blockchainNetworks ? <ChevronUp /> : <ChevronDown />}
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Filter by blockchain networks
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  {filtersExpanded.blockchainNetworks && (
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="blockchainNetworks"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="space-y-4">
-                              {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
-                                <div key={category} className="space-y-2">
-                                  <div 
-                                    className="flex items-center gap-2 cursor-pointer" 
-                                    onClick={() => toggleCategory(category)}
-                                  >
-                                    <Badge variant="outline" className="py-1">
-                                      {expandedCategories.includes(category) ? 
-                                        <ChevronUp className="h-3 w-3 mr-1" /> : 
-                                        <ChevronDown className="h-3 w-3 mr-1" />
-                                      }
-                                      {category}
-                                    </Badge>
-                                  </div>
-                                  
-                                  {expandedCategories.includes(category) && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-4">
-                                      {networks.map((network) => (
-                                        <FormItem 
-                                          key={network} 
-                                          className="flex flex-row items-start space-x-3 space-y-0"
-                                        >
-                                          <FormControl>
-                                            <Checkbox
-                                              disabled={!filtersEnabled.blockchainNetworks}
-                                              checked={field.value?.includes(network)}
-                                              onCheckedChange={(checked) => {
-                                                const updatedValue = checked
-                                                  ? [...field.value, network]
-                                                  : field.value?.filter((value) => value !== network);
-                                                field.onChange(updatedValue);
-                                              }}
-                                            />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">
-                                            {network}
-                                          </FormLabel>
-                                        </FormItem>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
                           </FormItem>
                         )}
                       />
