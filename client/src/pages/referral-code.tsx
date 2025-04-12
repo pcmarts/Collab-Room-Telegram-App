@@ -106,12 +106,6 @@ export default function ReferralCodeForm() {
       sessionStorage.removeItem('companyFormData');
       sessionStorage.removeItem('referralCode');
 
-      toast({
-        title: "Application Submitted!",
-        description: "We'll review your application and notify you through Telegram.",
-        duration: 5000
-      });
-
       // Wait for profile to be available
       setProcessingMessage('Finalizing your application...');
       console.log('Waiting for profile data to be available...');
