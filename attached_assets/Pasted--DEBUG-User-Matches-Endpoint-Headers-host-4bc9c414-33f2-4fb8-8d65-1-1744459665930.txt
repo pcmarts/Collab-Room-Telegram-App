@@ -1,0 +1,190 @@
+============ DEBUG: User Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/matches',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.1.156',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkilDi6z&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458927&signature=KuZsK0qh7muqML4dQnxcQoYP8vT3efSlYViynKtfPBZ2yyCR29p1eldjOCRWLMxQ5n1YcBUX10PxMSFmxBeACw&hash=b59d54ee330f7ffe1f2fe0d4ebb91923529b106d570fe109a334f592adc97328'
+}
+Fetching matches with details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Fetching complete match details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 enriched matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 matches in 20ms
+[2025-04-12T12:02:12.316Z] [HTTP] GET /api/matches 200 in 36ms
+Getting applications (swipes) by user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T12:02:13.401Z] [HTTP] GET /api/collaborations/my 200 in 2108ms
+[2025-04-12T12:02:13.420Z] [HTTP] GET /api/my-applications 200 in 2133ms
+[2025-04-12T12:07:12.136Z] [HTTP] GET / 200 in 8ms
+[2025-04-12T12:07:12.330Z] [INFO] GET /@react-refresh 304 in 0ms
+{
+  "method": "GET",
+  "url": "/@react-refresh",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T12:07:12.874Z] [HTTP] GET /src/main.tsx 200 in 1ms
+[2025-04-12T12:07:12.894Z] [HTTP] GET /@vite/client 200 in 14ms
+[2025-04-12T12:07:13.023Z] [HTTP] GET /src/App.tsx 200 in 1ms
+[2025-04-12T12:07:13.024Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/react_jsx-dev-runtime.js 200 in 0ms
+[2025-04-12T12:07:13.071Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/react-dom_client.js 200 in 0ms
+[2025-04-12T12:07:13.229Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js 200 in 4ms
+[2025-04-12T12:07:13.416Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WOOG5QLI.js 200 in 1ms
+[2025-04-12T12:07:13.464Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/react.js 200 in 0ms
+[2025-04-12T12:07:13.568Z] [HTTP] GET /src/index.css 200 in 1ms
+[2025-04-12T12:07:13.569Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js 200 in 0ms
+[2025-04-12T12:07:13.579Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js 200 in 0ms
+[2025-04-12T12:07:13.615Z] [HTTP] GET /src/pages/DiscoverPageNew.tsx 200 in 1ms
+[2025-04-12T12:07:13.686Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-QCHXOAYK.js 200 in 1ms
+[2025-04-12T12:07:13.737Z] [HTTP] GET /src/components/ui/toaster.tsx 200 in 0ms
+[2025-04-12T12:07:13.817Z] [HTTP] GET /src/components/ui/bottom-navigation.tsx 200 in 1ms
+[2025-04-12T12:07:13.891Z] [HTTP] GET /src/lib/queryClient.ts 200 in 0ms
+[2025-04-12T12:07:13.972Z] [HTTP] GET /src/components/MobileCheck.tsx 200 in 1ms
+[2025-04-12T12:07:14.023Z] [HTTP] GET /src/components/admin/ImpersonationBanner.tsx 200 in 1ms
+[2025-04-12T12:07:14.062Z] [HTTP] GET /src/components/LoadingScreen.tsx 200 in 0ms
+[2025-04-12T12:07:14.133Z] [HTTP] GET /src/contexts/MatchContext.tsx 200 in 1ms
+[2025-04-12T12:07:14.177Z] [HTTP] GET /src/pages/welcome.tsx 200 in 1ms
+[2025-04-12T12:07:14.184Z] [HTTP] GET /src/pages/auth-test.tsx 200 in 1ms
+[2025-04-12T12:07:14.187Z] [HTTP] GET /src/pages/MatchesPage.tsx 200 in 1ms
+[2025-04-12T12:07:14.231Z] [HTTP] GET /src/pages/dashboard.tsx 200 in 0ms
+[2025-04-12T12:07:14.283Z] [HTTP] GET /src/pages/personal-info.tsx 200 in 0ms
+[2025-04-12T12:07:14.300Z] [HTTP] GET /src/pages/company-sector.tsx 200 in 0ms
+[2025-04-12T12:07:14.337Z] [HTTP] GET /src/pages/company-basics.tsx 200 in 0ms
+[2025-04-12T12:07:14.340Z] [HTTP] GET /src/pages/company-details.tsx 200 in 1ms
+[2025-04-12T12:07:14.407Z] [HTTP] GET /src/pages/application-status.tsx 200 in 1ms
+[2025-04-12T12:07:14.445Z] [HTTP] GET /src/pages/application-form.tsx 200 in 1ms
+[2025-04-12T12:07:14.455Z] [HTTP] GET /src/pages/company-info.tsx 200 in 0ms
+[2025-04-12T12:07:14.506Z] [HTTP] GET /src/pages/admin/dashboard.tsx 200 in 1ms
+[2025-04-12T12:07:14.522Z] [HTTP] GET /src/pages/profile-overview.tsx 200 in 1ms
+[2025-04-12T12:07:14.534Z] [HTTP] GET /src/pages/admin/users.tsx 200 in 0ms
+[2025-04-12T12:07:14.594Z] [HTTP] GET /src/pages/discovery-filters.tsx 200 in 1ms
+[2025-04-12T12:07:14.607Z] [HTTP] GET /src/pages/marketing-collabs-new.tsx 200 in 2ms
+[2025-04-12T12:07:14.616Z] [HTTP] GET /src/pages/not-found.tsx 200 in 0ms
+[2025-04-12T12:07:14.656Z] [HTTP] GET /src/pages/create-collaboration.tsx 200 in 1ms
+[2025-04-12T12:07:14.712Z] [HTTP] GET /src/pages/create-collaboration-steps.tsx 200 in 3ms
+[2025-04-12T12:07:14.713Z] [HTTP] GET /src/pages/apply.tsx 200 in 1ms
+[2025-04-12T12:07:14.777Z] [HTTP] GET /src/pages/my-collaborations.tsx 200 in 1ms
+[2025-04-12T12:07:14.810Z] [HTTP] GET /src/pages/admin/applications.tsx 200 in 1ms
+[2025-04-12T12:07:14.868Z] [HTTP] GET /src/pages/filters/dashboard.tsx 200 in 1ms
+[2025-04-12T12:07:14.913Z] [HTTP] GET /src/pages/filters/collab-types.tsx 200 in 0ms
+[2025-04-12T12:07:14.957Z] [HTTP] GET /src/pages/filters/topics.tsx 200 in 0ms
+[2025-04-12T12:07:14.960Z] [HTTP] GET /src/pages/filters/company-sectors.tsx 200 in 1ms
+[2025-04-12T12:07:14.973Z] [HTTP] GET /src/pages/filters/company-followers.tsx 200 in 0ms
+[2025-04-12T12:07:15.019Z] [HTTP] GET /src/pages/filters/user-followers.tsx 200 in 1ms
+[2025-04-12T12:07:15.078Z] [HTTP] GET /src/pages/filters/funding-stages.tsx 200 in 1ms
+[2025-04-12T12:07:15.119Z] [HTTP] GET /src/pages/filters/blockchain-networks.tsx 200 in 1ms
+[2025-04-12T12:07:15.120Z] [HTTP] GET /src/pages/filters/token-status.tsx 200 in 1ms
+[2025-04-12T12:07:15.134Z] [INFO] GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs 304 in 0ms
+{
+  "method": "GET",
+  "url": "/@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T12:07:15.173Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-KBTYAULA.js 200 in 0ms
+[2025-04-12T12:07:15.175Z] [HTTP] GET /src/components/ui/toast.tsx 200 in 1ms
+[2025-04-12T12:07:15.257Z] [HTTP] GET /src/hooks/use-toast.ts 200 in 1ms
+[2025-04-12T12:07:15.280Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/lucide-react.js 200 in 3ms
+[2025-04-12T12:07:15.284Z] [HTTP] GET /src/lib/utils.ts 200 in 1ms
+[2025-04-12T12:07:15.285Z] [HTTP] GET /src/components/ui/badge.tsx 200 in 0ms
+[2025-04-12T12:07:15.326Z] [HTTP] GET /src/components/icons/DiscoveryIcon.tsx 200 in 1ms
+[2025-04-12T12:07:15.328Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js 200 in 1ms
+[2025-04-12T12:07:15.411Z] [HTTP] GET /src/components/ui/button.tsx 200 in 1ms
+[2025-04-12T12:07:15.444Z] [HTTP] GET /src/components/MatchMoment.tsx 200 in 0ms
+[2025-04-12T12:07:15.445Z] [HTTP] GET /src/components/ui/glow-button.tsx 200 in 0ms
+[2025-04-12T12:07:15.504Z] [HTTP] GET /src/components/AuthenticationError.tsx 200 in 0ms
+[2025-04-12T12:07:15.562Z] [HTTP] GET /src/components/CollaborationDetailsDialog.tsx 200 in 0ms
+[2025-04-12T12:07:15.568Z] [HTTP] GET /src/components/SwipeableCard.tsx 200 in 3ms
+[2025-04-12T12:07:15.600Z] [HTTP] GET /src/components/ui/input.tsx 200 in 0ms
+[2025-04-12T12:07:15.601Z] [HTTP] GET /src/components/ui/progress.tsx 200 in 0ms
+[2025-04-12T12:07:15.615Z] [HTTP] GET /src/components/ui/label.tsx 200 in 0ms
+[2025-04-12T12:07:15.671Z] [HTTP] GET /src/components/GlowButton.tsx 200 in 0ms
+[2025-04-12T12:07:15.726Z] [HTTP] GET /src/components/ui/card.tsx 200 in 0ms
+[2025-04-12T12:07:15.765Z] [HTTP] GET /src/components/ui/text-loop.tsx 200 in 1ms
+[2025-04-12T12:07:15.766Z] [HTTP] GET /src/components/AuthTest.tsx 200 in 1ms
+[2025-04-12T12:07:15.773Z] [HTTP] GET /src/components/ui/skeleton.tsx 200 in 1ms
+[2025-04-12T12:07:15.774Z] [HTTP] GET /@fs/home/runner/workspace/shared/schema.ts 200 in 0ms
+[2025-04-12T12:07:15.831Z] [HTTP] GET /src/components/ui/dialog.tsx 200 in 0ms
+[2025-04-12T12:07:15.874Z] [HTTP] GET /src/lib/collab-utils.tsx 200 in 1ms
+[2025-04-12T12:07:15.917Z] [HTTP] GET /src/components/ui/select.tsx 200 in 1ms
+[2025-04-12T12:07:15.920Z] [HTTP] GET /src/components/layout/OnboardingHeader.tsx 200 in 0ms
+[2025-04-12T12:07:15.923Z] [HTTP] GET /src/components/ui/switch.tsx 200 in 0ms
+[2025-04-12T12:07:15.962Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/react-icons_fa.js 200 in 4ms
+[2025-04-12T12:07:15.987Z] [HTTP] GET /src/components/NetworkStatus.tsx 200 in 0ms
+[2025-04-12T12:07:16.025Z] [HTTP] GET /src/components/ui/textarea.tsx 200 in 1ms
+[2025-04-12T12:07:16.083Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@hookform_resolvers_zod.js 200 in 0ms
+[2025-04-12T12:07:16.084Z] [HTTP] GET /src/components/layout/PageHeader.tsx 200 in 0ms
+[2025-04-12T12:07:16.085Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/react-hook-form.js 200 in 0ms
+[2025-04-12T12:07:16.189Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/zod.js 200 in 0ms
+[2025-04-12T12:07:16.235Z] [HTTP] GET /src/components/ui/form.tsx 200 in 0ms
+[2025-04-12T12:07:16.236Z] [HTTP] GET /src/components/ui/checkbox.tsx 200 in 0ms
+[2025-04-12T12:07:16.240Z] [HTTP] GET /src/components/ui/radio-group.tsx 200 in 0ms
+[2025-04-12T12:07:16.241Z] [HTTP] GET /src/hooks/use-mobile.tsx 200 in 0ms
+[2025-04-12T12:07:16.242Z] [HTTP] GET /src/components/ui/separator.tsx 200 in 0ms
+[2025-04-12T12:07:16.334Z] [HTTP] GET /src/components/ui/tabs.tsx 200 in 0ms
+[2025-04-12T12:07:16.394Z] [HTTP] GET /src/components/ui/alert-dialog.tsx 200 in 0ms
+[2025-04-12T12:07:16.422Z] [HTTP] GET /src/pages/filters/FilterSaveButton.tsx 200 in 1ms
+[2025-04-12T12:07:16.423Z] [HTTP] GET /src/components/ui/accordion.tsx 200 in 1ms
+[2025-04-12T12:07:16.439Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-toast.js 200 in 1ms
+[2025-04-12T12:07:16.439Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/class-variance-authority.js 200 in 0ms
+[2025-04-12T12:07:16.486Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/clsx.js 200 in 0ms
+[2025-04-12T12:07:16.550Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/tailwind-merge.js 200 in 0ms
+[2025-04-12T12:07:16.588Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-slot.js 200 in 0ms
+[2025-04-12T12:07:16.591Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/react-icons_lu.js 200 in 2ms
+[2025-04-12T12:07:16.595Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-progress.js 200 in 0ms
+[2025-04-12T12:07:16.597Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-label.js 200 in 0ms
+[2025-04-12T12:07:16.639Z] [INFO] GET /src/lib/haptics.ts 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/lib/haptics.ts",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T12:07:16.708Z] [HTTP] GET /src/components/AddNoteDialog.tsx 200 in 1ms
+[2025-04-12T12:07:16.733Z] [HTTP] GET /src/components/ui/glow-effect.tsx 200 in 0ms
+[2025-04-12T12:07:16.756Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/drizzle-zod.js 200 in 0ms
+[2025-04-12T12:07:16.756Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/drizzle-orm_pg-core.js 200 in 0ms
+[2025-04-12T12:07:16.845Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dialog.js 200 in 1ms
+[2025-04-12T12:07:16.864Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js 200 in 1ms
+[2025-04-12T12:07:16.901Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-switch.js 200 in 0ms
+[2025-04-12T12:07:16.913Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-646EMIOS.js 200 in 0ms
+[2025-04-12T12:07:16.933Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YABUFNLM.js 200 in 0ms
+[2025-04-12T12:07:17.011Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-HK4EEVDT.js 200 in 0ms
+[2025-04-12T12:07:17.033Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-checkbox.js 200 in 1ms
+[2025-04-12T12:07:17.036Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-radio-group.js 200 in 1ms
+[2025-04-12T12:07:17.047Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-separator.js 200 in 0ms
+[2025-04-12T12:07:17.065Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js 200 in 0ms
+[2025-04-12T12:07:17.099Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-alert-dialog.js 200 in 0ms
+[2025-04-12T12:07:17.198Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WWMHCPRN.js 200 in 0ms
+[2025-04-12T12:07:17.200Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-accordion.js 200 in 1ms
+[2025-04-12T12:07:17.200Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MRB2OOEX.js 200 in 0ms
+[2025-04-12T12:07:17.201Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-HHXI44QP.js 200 in 0ms
+[2025-04-12T12:07:17.218Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RUNWM7OT.js 200 in 0ms
+[2025-04-12T12:07:17.250Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-6J5IXUBZ.js 200 in 0ms
+[2025-04-12T12:07:17.344Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RLTE5R7I.js 200 in 1ms
+[2025-04-12T12:07:17.354Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-UACHJROW.js 200 in 1ms
+[2025-04-12T12:07:17.357Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2ETYM66E.js 200 in 3ms
+[2025-04-12T12:07:17.358Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-K4NQNT5Q.js 200 in 1ms
+[2025-04-12T12:07:17.371Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OG7QUCTN.js 200 in 1ms
+[2025-04-12T12:07:17.414Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XXYU4X4D.js 200 in 0ms
+[2025-04-12T12:07:17.519Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-7CT7VLT2.js 200 in 0ms
+[2025-04-12T12:07:17.520Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-SGSAFNPX.js 200 in 0ms
+[2025-04-12T12:07:17.531Z] [HTTP] GET /@fs/home/runner/workspace/node_modules/.vite/deps/chunk-IKTTC65D.js 200 in 0ms
