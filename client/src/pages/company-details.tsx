@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
+import { applyButtonFix } from "@/App";
 
 // Type helper to extract network strings from the const object
 type NetworkString = string;
@@ -47,6 +48,20 @@ export default function CompanyDetails() {
       }
     }
   }, [profileData]);
+  
+  // Apply button fix when component mounts and after any render
+  useEffect(() => {
+    // Apply immediately on mount
+    applyButtonFix();
+    
+    // Set up interval to keep applying the fix
+    const fixInterval = setInterval(() => {
+      applyButtonFix();
+    }, 300);
+    
+    // Cleanup on unmount
+    return () => clearInterval(fixInterval);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
