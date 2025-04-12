@@ -367,12 +367,17 @@ export default function DiscoverPage() {
   // Function to AGGRESSIVELY ENSURE we're not showing already swiped cards
   const fetchNextBatch = async () => {
     // Prevent fetching if already in progress or if no more cards are available
-    if (isFetchingNextBatchRef.current || !hasMore) {
-      console.log('[Discovery] Skipping fetchNextBatch - already fetching or no more cards');
+    if (isFetchingNextBatchRef.current) {
+      console.log('[Discovery] Skipping fetchNextBatch - already fetching');
       return;
     }
     
-    // If we already have more than 10 cards, don't fetch more yet
+    if (!hasMore && cards.length > 0) {
+      console.log('[Discovery] Skipping fetchNextBatch - no more cards available');
+      return;
+    }
+    
+    // If we already have more than 10 cards, don't fetch more yet (but allow initial fetch)
     if (cards.length > 10) {
       console.log('[Discovery] Skipping fetchNextBatch - already have enough cards cached');
       return;
@@ -429,7 +434,6 @@ export default function DiscoverPage() {
       console.log('[Discovery] Making collaboration search request with params:', {
         url: `/api/collaborations/search?${params.toString()}`,
         excludeIdsCount: uniqueExclusionIds.length,
-        excludeIds: uniqueExclusionIds, // Log the actual IDs for debugging
         telegramAvailable: !!window.Telegram?.WebApp,
         sessionAuth: !!document.cookie.includes('connect.sid') // Check if we have a session cookie
       });
@@ -443,33 +447,43 @@ export default function DiscoverPage() {
       console.log('[Discovery] Received collaboration search response:', {
         success: !!response,
         status: 'success',
-        itemCount: response?.items?.length || 0
-      });
-      
-      console.log('[Discovery] Fetched batch response:', {
-        itemCount: response.items.length,
-        hasMore: response.hasMore,
-        nextCursor: response.nextCursor || 'none'
+        itemCount: response?.items?.length || 0,
+        hasMore: response?.hasMore || false
       });
       
       // Update state with new cards and pagination info
-      if (response.items.length > 0) {
-        console.log('[Discovery] Adding items to cards:', JSON.stringify(response.items));
+      if (response && response.items && response.items.length > 0) {
+        console.log('[Discovery] Adding items to cards:', response.items.length, 'items');
         
         // Filter out incomplete card data before adding to the state
         const validItems = validateCardData(response.items);
+        console.log('[Discovery] Validated items:', validItems.length, 'valid items');
         
+        // Important: Force a state update with the new cards
         setCards(prevCards => {
           const newCards = [...prevCards, ...validItems];
-          console.log('[Discovery] New cards state will have', newCards.length, 'cards');
+          console.log('[Discovery] New cards state will have', newCards.length, 'total cards');
           return newCards;
         });
+        
+        // Update pagination state
         setNextCursor(response.nextCursor);
         setHasMore(response.hasMore);
+        
+        // Only set all cards viewed if we have no more cards AND current batch is empty
+        if (!response.hasMore && response.items.length === 0) {
+          setAllCardsViewed(true);
+        }
       } else {
-        // No more cards available
-        console.log('[Discovery] No items in response, setting allCardsViewed=true');
-        setAllCardsViewed(true);
+        // No cards in the response
+        console.log('[Discovery] No items in response', response);
+        
+        // Only set allCardsViewed=true if we have no cards at all
+        if (cards.length === 0) {
+          console.log('[Discovery] No cards available after fetch, setting allCardsViewed=true');
+          setAllCardsViewed(true);
+        }
+        
         setHasMore(false);
       }
     } catch (error) {
@@ -484,6 +498,14 @@ export default function DiscoverPage() {
     } finally {
       setLoadingMore(false);
       isFetchingNextBatchRef.current = false;
+      
+      // Additional logging to verify loading state
+      console.log('[Discovery] Completed fetchNextBatch, current state:', {
+        cardCount: cards.length,
+        loadingMore: false,
+        hasMore,
+        authError
+      });
     }
   };
   
@@ -494,24 +516,47 @@ export default function DiscoverPage() {
       setIsLoading(true);
       
       try {
-        // Reset card state
+        // Reset card state for a clean start
         setCards([]);
         setAllCardsViewed(false);
         setNextCursor(undefined);
         setHasMore(true);
         
-        // Log the discovered preferences filters to help diagnose
-        console.log('[Discovery] Current discovery preferences:', {
-          telegram: window.Telegram?.WebApp ? 'Available' : 'Not Available',
-          initData: window.Telegram?.WebApp?.initData ? 'Present' : 'Missing'
+        // Verify authentication before attempting to load cards
+        // This is critical for the Telegram WebApp authentication flow
+        const telegramAvailable = !!window.Telegram?.WebApp;
+        const initDataAvailable = telegramAvailable && !!window.Telegram.WebApp.initData;
+        
+        console.log('[Discovery] Initial load with authentication status:', {
+          telegram: telegramAvailable ? 'Available' : 'Not Available',
+          initData: initDataAvailable ? 'Present' : 'Missing',
+          authError
         });
         
-        // Combine potential matches with initial batch of regular cards
+        // If we don't have Telegram authentication, show error
+        if (!telegramAvailable || !initDataAvailable) {
+          console.error('[Discovery] Cannot load cards - Telegram authentication required');
+          setAuthError(true);
+          setIsLoading(false);
+          return; // Exit early - we can't load without authentication
+        }
+        
+        // Initialize Telegram WebApp
+        try {
+          window.Telegram.WebApp.ready();
+          window.Telegram.WebApp.expand();
+        } catch (e) {
+          console.error('[Discovery] Error initializing Telegram WebApp:', e);
+        }
+        
+        // Add potential matches to card stack if available
         if (potentialMatches && potentialMatches.length > 0) {
           console.log(`[Discovery] Adding ${potentialMatches.length} potential matches to card stack`);
           // Apply validation to potential matches too
           const validPotentialMatches = validateCardData(potentialMatches);
           console.log(`[Discovery] After validation, using ${validPotentialMatches.length} potential matches`);
+          
+          // Important: use function form to ensure we get latest state
           setCards(prevCards => [...validPotentialMatches, ...prevCards]);
         } else {
           console.log('[Discovery] No potential matches available');
@@ -520,6 +565,18 @@ export default function DiscoverPage() {
         // Always fetch first batch of regular cards, regardless of potential matches
         console.log('[Discovery] Initiating fetch of regular collaboration cards');
         await fetchNextBatch();
+        
+        // Verify cards were loaded
+        console.log('[Discovery] Initial card load complete, current cards:', cards.length);
+        
+        // If we have no cards after initialization, try one more fetch
+        if (cards.length === 0) {
+          console.log('[Discovery] No cards after initial load, trying one more fetch');
+          // Short timeout to allow state updates to process
+          setTimeout(() => {
+            fetchNextBatch();
+          }, 300);
+        }
       } catch (error) {
         console.error('[Discovery] Error initializing cards:', error);
       } finally {
