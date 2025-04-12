@@ -101,11 +101,16 @@ app.use(session({
 }));
 
 // Initialize Telegram bot first
-logger.info('=== Initializing Server ===');
+// Only log startup info if LOG_LEVEL >= 2 (INFO level or higher)
+if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
+  logger.info('=== Initializing Server ===');
+}
 
 // Verify bot is working
 try {
-  logger.info('Checking Telegram bot status...');
+  if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
+    logger.info('Checking Telegram bot status...');
+  }
 
   if (!bot) {
     throw new Error('Telegram bot not initialized');
@@ -113,7 +118,9 @@ try {
 
   // Try to get bot info to verify token works
   bot.getMe().then((botInfo) => {
-    logger.info(`Telegram bot verified: ${botInfo.username}`);
+    if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
+      logger.info(`Telegram bot verified: ${botInfo.username}`);
+    }
   }).catch((error) => {
     logger.error('Failed to verify bot', { error });
     process.exit(1);

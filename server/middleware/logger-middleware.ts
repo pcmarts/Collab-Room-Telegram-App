@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger';
+import { logger, LogLevel } from '../utils/logger';
 import { config } from '../../shared/config';
 
 /**
@@ -10,11 +10,31 @@ import { config } from '../../shared/config';
  * - Uses appropriate log levels based on status code
  * - Automatically redacts sensitive information
  * - Production-optimized with minimal output
+ * - Respects LOG_LEVEL setting for silent mode
  */
 export function requestLogger(req: Request, res: Response, next: NextFunction) {
   // Skip logging for health check routes in production
   if (config.NODE_ENV === 'production' && req.path === '/health') {
     return next();
+  }
+  
+  // Skip logging in silent mode (LOG_LEVEL=0) for all non-error requests
+  // This creates a truly silent mode when LOG_LEVEL=0
+  if (config.LOG_LEVEL === 0 && !req.path.includes('/api/')) {
+    return next();
+  }
+  
+  // Skip static file request logging in non-debug mode
+  if (config.LOG_LEVEL !== 4) {
+    const staticFileExts = ['.js', '.css', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.woff', '.woff2', '.ttf', '.eot'];
+    const isStaticFile = staticFileExts.some(ext => req.path.endsWith(ext));
+    const isSourceMapFile = req.path.endsWith('.map');
+    const isHotUpdate = req.path.includes('hot-update');
+    const isViteInternal = req.path.startsWith('/@');
+    
+    if (isStaticFile || isSourceMapFile || isHotUpdate || isViteInternal) {
+      return next();
+    }
   }
   
   // Record start time
@@ -43,18 +63,18 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
       ip: req.ip || req.socket.remoteAddress
     };
     
-    // Log based on status code
+    // Log based on status code - respecting log level setting
     if (res.statusCode >= 500) {
-      // Server errors - use error level
+      // Server errors - use error level - always logged
       logger.error(`${req.method} ${req.path} ${res.statusCode} in ${responseTime}ms`, requestData);
     } else if (res.statusCode >= 400) {
-      // Client errors - use warning level
+      // Client errors - use warning level - only logged if LOG_LEVEL >= 1
       logger.warn(`${req.method} ${req.path} ${res.statusCode} in ${responseTime}ms`, requestData);
-    } else if (res.statusCode >= 300) {
-      // Redirects - use info level
+    } else if (res.statusCode >= 300 && config.LOG_LEVEL >= 2) {
+      // Redirects - use info level - only logged if LOG_LEVEL >= 2
       logger.info(`${req.method} ${req.path} ${res.statusCode} in ${responseTime}ms`, requestData);
-    } else {
-      // Normal requests - use http level
+    } else if (config.LOG_LEVEL >= 3) {
+      // Normal requests - use http level - only logged if LOG_LEVEL >= 3
       logger.http(`${req.method} ${req.path} ${res.statusCode} in ${responseTime}ms`);
     }
     
