@@ -19,9 +19,26 @@ function shouldLog(level: LogLevel): boolean {
   // Default log levels by environment
   let logLevel: LogLevel;
   
-  // Use environment variable if set
-  if (typeof config.LOG_LEVEL === 'number') {
+  // Extra safeguard to ensure the LOG_LEVEL from .env takes precedence
+  // This directly reads from process.env first instead of using config
+  const envLogLevel = process.env.LOG_LEVEL !== undefined ? parseInt(process.env.LOG_LEVEL, 10) : undefined;
+  
+  // First check if we have a direct environment variable
+  if (typeof envLogLevel === 'number' && !isNaN(envLogLevel) && envLogLevel >= 0 && envLogLevel <= 4) {
+    logLevel = envLogLevel;
+    // Force a console output to show what's being used (will only show once during startup)
+    if (!global.hasShownLogLevel) {
+      console.log(`[LOGGER] Using LOG_LEVEL=${logLevel} from direct environment variable`);
+      global.hasShownLogLevel = true;
+    }
+  }
+  // Then check config (which also reads from process.env but might have transformations)
+  else if (typeof config.LOG_LEVEL === 'number') {
     logLevel = config.LOG_LEVEL;
+    if (!global.hasShownLogLevel) {
+      console.log(`[LOGGER] Using LOG_LEVEL=${logLevel} from config`);
+      global.hasShownLogLevel = true;
+    }
   }
   // Otherwise use sensible defaults by environment
   else if (config.NODE_ENV === 'production') {
@@ -33,6 +50,11 @@ function shouldLog(level: LogLevel): boolean {
   }
   
   return level <= logLevel;
+}
+
+// Add type definition to make TypeScript happy
+declare global {
+  var hasShownLogLevel: boolean;
 }
 
 /**

@@ -18,9 +18,32 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
     return next();
   }
   
-  // Skip logging in silent mode (LOG_LEVEL=0) for all non-error requests
+  // Skip ALL logging in silent mode (LOG_LEVEL=0) except for actual errors
   // This creates a truly silent mode when LOG_LEVEL=0
-  if (config.LOG_LEVEL === 0 && !req.path.includes('/api/')) {
+  if (config.LOG_LEVEL === 0) {
+    // Record start time for error tracking only
+    const errorTrackingStart = Date.now();
+    
+    // Add response interceptor only to catch errors
+    const originalEnd = res.end;
+    res.end = function(chunk?: any, encoding?: any, callback?: any): any {
+      res.end = originalEnd;
+      const result = res.end(chunk, encoding, callback);
+      
+      // Only log server errors (500+)
+      if (res.statusCode >= 500) {
+        const responseTime = Date.now() - errorTrackingStart;
+        logger.error(`${req.method} ${req.path} ${res.statusCode} in ${responseTime}ms`, {
+          method: req.method,
+          url: req.url,
+          status: res.statusCode,
+          responseTime: `${responseTime}ms`,
+          ip: req.ip || req.socket.remoteAddress
+        });
+      }
+      
+      return result;
+    };
     return next();
   }
   

@@ -32,7 +32,7 @@ const configSchema = z.object({
   ENABLE_SECURITY_HEADERS: z.coerce.boolean().default(true),
   
   // Logging settings (optional, with defaults)
-  LOG_LEVEL: z.coerce.number().min(0).max(4).optional(),
+  LOG_LEVEL: z.coerce.number().min(0).max(4).default(2),
   
   // Authentication
   TELEGRAM_BOT_TOKEN: z.string().min(1, 'TELEGRAM_BOT_TOKEN is required').optional(),
