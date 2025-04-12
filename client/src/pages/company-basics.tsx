@@ -105,7 +105,7 @@ export default function CompanyBasics() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/90">
       <OnboardingHeader
         title="Company Basics"
         subtitle=""
@@ -114,104 +114,107 @@ export default function CompanyBasics() {
         backUrl="/personal-info"
       />
 
-      <div className="max-w-md mx-auto space-y-8 w-full">
-        <div className="space-y-4 pb-32">
-          <div>
-            <Label htmlFor="company_name">Company Name *</Label>
-            <Input
-              id="company_name"
-              name="company_name"
-              value={formData.company_name}
-              onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-              required
-            />
-          </div>
+      {/* Scrollable container */}
+      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
+        <div className="max-w-md mx-auto space-y-8 w-full">
+          <div className="space-y-4 pb-32">
+            <div>
+              <Label htmlFor="company_name">Company Name *</Label>
+              <Input
+                id="company_name"
+                name="company_name"
+                value={formData.company_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                required
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="job_title">Your Job Title / Role *</Label>
-            <Input
-              id="job_title"
-              name="job_title"
-              value={formData.job_title}
-              onChange={(e) => setFormData(prev => ({ ...prev, job_title: e.target.value }))}
-              required
-            />
-          </div>
+            <div>
+              <Label htmlFor="job_title">Your Job Title / Role *</Label>
+              <Input
+                id="job_title"
+                name="job_title"
+                value={formData.job_title}
+                onChange={(e) => setFormData(prev => ({ ...prev, job_title: e.target.value }))}
+                required
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="website">Company Website *</Label>
-            <Input
-              id="website"
-              name="website"
-              type="url"
-              value={formData.website}
-              onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-              required
-            />
-          </div>
+            <div>
+              <Label htmlFor="website">Company Website *</Label>
+              <Input
+                id="website"
+                name="website"
+                type="url"
+                value={formData.website}
+                onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+                required
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="twitter_url">Company Twitter *</Label>
-            <Input
-              id="twitter_url"
-              name="twitter_url"
-              type="url"
-              value={formData.twitter_url}
-              onChange={(e) => setFormData(prev => ({ ...prev, twitter_url: e.target.value }))}
-              required
-            />
-          </div>
+            <div>
+              <Label htmlFor="twitter_url">Company Twitter *</Label>
+              <Input
+                id="twitter_url"
+                name="twitter_url"
+                type="url"
+                value={formData.twitter_url}
+                onChange={(e) => setFormData(prev => ({ ...prev, twitter_url: e.target.value }))}
+                required
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="twitter_followers">Company Twitter Follower Count *</Label>
-            <Select
-              value={formData.twitter_followers}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, twitter_followers: value }))}
-              required
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select follower count" />
-              </SelectTrigger>
-              <SelectContent>
-                {TWITTER_FOLLOWER_COUNTS.map(count => (
-                  <SelectItem key={count} value={count}>
-                    {count}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <div>
+              <Label htmlFor="twitter_followers">Company Twitter Follower Count *</Label>
+              <Select
+                value={formData.twitter_followers}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, twitter_followers: value }))}
+                required
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select follower count" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TWITTER_FOLLOWER_COUNTS.map(count => (
+                    <SelectItem key={count} value={count}>
+                      {count}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <Label htmlFor="linkedin_url">Company LinkedIn *</Label>
-            <Input
-              id="linkedin_url"
-              name="linkedin_url"
-              type="url"
-              value={formData.linkedin_url}
-              onChange={(e) => setFormData(prev => ({ ...prev, linkedin_url: e.target.value }))}
-              required
-            />
-          </div>
+            <div>
+              <Label htmlFor="linkedin_url">Company LinkedIn *</Label>
+              <Input
+                id="linkedin_url"
+                name="linkedin_url"
+                type="url"
+                value={formData.linkedin_url}
+                onChange={(e) => setFormData(prev => ({ ...prev, linkedin_url: e.target.value }))}
+                required
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="funding_stage">Company Funding Stage *</Label>
-            <Select
-              value={formData.funding_stage}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, funding_stage: value }))}
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select funding stage" />
-              </SelectTrigger>
-              <SelectContent>
-                {FUNDING_STAGES.map(stage => (
-                  <SelectItem key={stage} value={stage}>
-                    {stage}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div>
+              <Label htmlFor="funding_stage">Company Funding Stage *</Label>
+              <Select
+                value={formData.funding_stage}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, funding_stage: value }))}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select funding stage" />
+                </SelectTrigger>
+                <SelectContent>
+                  {FUNDING_STAGES.map(stage => (
+                    <SelectItem key={stage} value={stage}>
+                      {stage}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>

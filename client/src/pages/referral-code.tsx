@@ -144,60 +144,62 @@ export default function ReferralCodeForm() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="flex items-center justify-between mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => setLocation('/company-info')}
-            className="flex items-center"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </div>
-
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary/50"></div>
-          <div className="w-3 h-3 rounded-full bg-primary"></div>
-        </div>
-
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Referral Code</h1>
-          <p className="text-muted-foreground mt-2">Enter your referral code if you have one</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 pb-24">
-          <div>
-            <Label htmlFor="referral-code">Referral Code (Optional)</Label>
-            <Input
-              id="referral-code"
-              value={referralCode}
-              onChange={(e) => setReferralCode(e.target.value)}
-              placeholder="Enter your referral code"
-            />
+    <div className="min-h-screen bg-background">
+      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 80px)" }}>
+        <div className="max-w-md mx-auto space-y-6">
+          <div className="flex items-center justify-between mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => setLocation('/company-info')}
+              className="flex items-center"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
           </div>
 
-          {/* Processing message */}
-          {processingMessage && (
-            <div className="text-center text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
-              {processingMessage}
-            </div>
-          )}
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+            <div className="w-3 h-3 rounded-full bg-primary/50"></div>
+            <div className="w-3 h-3 rounded-full bg-primary"></div>
+          </div>
 
-          {/* Floating Save Button */}
-          <TelegramFixedButtonContainer>
-            <TelegramButton
-              type="submit"
-              isLoading={isSubmitting}
-              loadingText="Submitting..."
-              text="Submit Application"
-              disabled={isSubmitting}
-            />
-          </TelegramFixedButtonContainer>
-        </form>
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold">Referral Code</h1>
+            <p className="text-muted-foreground mt-2">Enter your referral code if you have one</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4 pb-24">
+            <div>
+              <Label htmlFor="referral-code">Referral Code (Optional)</Label>
+              <Input
+                id="referral-code"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                placeholder="Enter your referral code"
+              />
+            </div>
+
+            {/* Processing message */}
+            {processingMessage && (
+              <div className="text-center text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                {processingMessage}
+              </div>
+            )}
+
+            {/* Floating Save Button */}
+            <TelegramFixedButtonContainer>
+              <TelegramButton
+                type="submit"
+                isLoading={isSubmitting}
+                loadingText="Submitting..."
+                text="Submit Application"
+                disabled={isSubmitting}
+              />
+            </TelegramFixedButtonContainer>
+          </form>
+        </div>
       </div>
     </div>
   );

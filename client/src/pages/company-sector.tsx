@@ -100,7 +100,7 @@ export default function CompanySector() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/90">
       <OnboardingHeader
         title="Company Sector"
         subtitle=""
@@ -109,81 +109,84 @@ export default function CompanySector() {
         backUrl="/company-basics"
       />
 
-      <div className="max-w-md mx-auto space-y-8 w-full">
-        <div className="space-y-4 pb-32">
-          {/* Display total selections count if any */}
-          {formData.company_tags.length > 0 && (
-            <div className="flex justify-between items-center mb-4">
-              <Badge variant="secondary" className="text-xs">
-                {formData.company_tags.length} {formData.company_tags.length === 1 ? 'sector' : 'sectors'} selected
-              </Badge>
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setFormData({ company_tags: [] })}
-              >
-                Clear all
-              </Button>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-              <Card key={category} className="border rounded-lg overflow-hidden">
-                <div 
-                  className="flex justify-between items-center p-4 cursor-pointer hover:bg-accent"
-                  onClick={() => toggleCategory(category)}
+      {/* Scrollable container */}
+      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
+        <div className="max-w-md mx-auto space-y-8 w-full">
+          <div className="space-y-4 pb-32">
+            {/* Display total selections count if any */}
+            {formData.company_tags.length > 0 && (
+              <div className="flex justify-between items-center mb-4">
+                <Badge variant="secondary" className="text-xs">
+                  {formData.company_tags.length} {formData.company_tags.length === 1 ? 'sector' : 'sectors'} selected
+                </Badge>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setFormData({ company_tags: [] })}
                 >
-                  <h3 className="font-medium">{category}</h3>
-                  <div className="flex items-center gap-2">
-                    {/* Category-specific selection count */}
-                    {formData.company_tags.filter(tag => (tags as readonly string[]).includes(tag)).length > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {formData.company_tags.filter(tag => (tags as readonly string[]).includes(tag)).length}
-                      </Badge>
-                    )}
-                    {expandedCategories.includes(category) ? 
-                      <ChevronUp className="h-4 w-4" /> : 
-                      <ChevronDown className="h-4 w-4" />
-                    }
-                  </div>
-                </div>
+                  Clear all
+                </Button>
+              </div>
+            )}
 
-                {/* Category content */}
-                {expandedCategories.includes(category) && (
-                  <CardContent className="pt-2">
-                    {/* Clear category button */}
-                    {formData.company_tags.some(tag => (tags as readonly string[]).includes(tag)) && (
-                      <div className="flex justify-end mb-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => clearCategorySelections(category)}
-                        >
-                          Clear
-                        </Button>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 gap-2">
-                      {(tags as readonly string[]).map(tag => (
-                        <Button
-                          key={tag}
-                          type="button"
-                          variant={formData.company_tags.includes(tag) ? "default" : "outline"}
-                          className="h-auto py-2 px-3 justify-start text-left font-normal w-full"
-                          onClick={() => toggleTag(tag)}
-                        >
-                          {tag}
-                        </Button>
-                      ))}
+            <div className="space-y-4">
+              {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+                <Card key={category} className="border rounded-lg overflow-hidden">
+                  <div 
+                    className="flex justify-between items-center p-4 cursor-pointer hover:bg-accent"
+                    onClick={() => toggleCategory(category)}
+                  >
+                    <h3 className="font-medium">{category}</h3>
+                    <div className="flex items-center gap-2">
+                      {/* Category-specific selection count */}
+                      {formData.company_tags.filter(tag => (tags as readonly string[]).includes(tag)).length > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          {formData.company_tags.filter(tag => (tags as readonly string[]).includes(tag)).length}
+                        </Badge>
+                      )}
+                      {expandedCategories.includes(category) ? 
+                        <ChevronUp className="h-4 w-4" /> : 
+                        <ChevronDown className="h-4 w-4" />
+                      }
                     </div>
-                  </CardContent>
-                )}
-              </Card>
-            ))}
+                  </div>
+
+                  {/* Category content */}
+                  {expandedCategories.includes(category) && (
+                    <CardContent className="pt-2">
+                      {/* Clear category button */}
+                      {formData.company_tags.some(tag => (tags as readonly string[]).includes(tag)) && (
+                        <div className="flex justify-end mb-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => clearCategorySelections(category)}
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 gap-2">
+                        {(tags as readonly string[]).map(tag => (
+                          <Button
+                            key={tag}
+                            type="button"
+                            variant={formData.company_tags.includes(tag) ? "default" : "outline"}
+                            className="h-auto py-2 px-3 justify-start text-left font-normal w-full"
+                            onClick={() => toggleTag(tag)}
+                          >
+                            {tag}
+                          </Button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </div>

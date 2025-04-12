@@ -226,7 +226,7 @@ export default function CompanyDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/90">
       <OnboardingHeader
         title="Token Information"
         subtitle=""
@@ -235,157 +235,160 @@ export default function CompanyDetails() {
         backUrl="/company-sector"
       />
 
-      <div className="max-w-md mx-auto space-y-8 w-full">
-        <div className="space-y-4 pb-32">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between border rounded-lg p-4">
-              <Label htmlFor="has_token" className="text-sm font-medium">
-                Does your company have a token?
-              </Label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">No</span>
-                <Switch
-                  id="has_token"
-                  checked={formData.has_token}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({ ...prev, has_token: checked }))
-                  }
-                />
-                <span className="text-sm text-muted-foreground">Yes</span>
+      {/* Scrollable container */}
+      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
+        <div className="max-w-md mx-auto space-y-8 w-full">
+          <div className="space-y-4 pb-32">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between border rounded-lg p-4">
+                <Label htmlFor="has_token" className="text-sm font-medium">
+                  Does your company have a token?
+                </Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">No</span>
+                  <Switch
+                    id="has_token"
+                    checked={formData.has_token}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({ ...prev, has_token: checked }))
+                    }
+                  />
+                  <span className="text-sm text-muted-foreground">Yes</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {formData.has_token && (
-            <>
-              <div>
-                <Label htmlFor="token_ticker">Token Ticker *</Label>
-                <Input
-                  id="token_ticker"
-                  value={formData.token_ticker}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      token_ticker: e.target.value,
-                    }))
-                  }
-                  required={formData.has_token}
-                />
-              </div>
-
-              <div className="space-y-4">
+            {formData.has_token && (
+              <>
                 <div>
-                  <Label>Blockchain Networks *</Label>
-                  {formData.blockchain_networks.length > 0 && (
-                    <div className="flex items-center justify-between mt-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {formData.blockchain_networks.length}{" "}
-                        {formData.blockchain_networks.length === 1
-                          ? "network"
-                          : "networks"}{" "}
-                        selected
-                      </Badge>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            blockchain_networks: [],
-                          }))
-                        }
-                      >
-                        Clear all
-                      </Button>
-                    </div>
-                  )}
+                  <Label htmlFor="token_ticker">Token Ticker *</Label>
+                  <Input
+                    id="token_ticker"
+                    value={formData.token_ticker}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        token_ticker: e.target.value,
+                      }))
+                    }
+                    required={formData.has_token}
+                  />
                 </div>
 
-                <div className="space-y-3">
-                  {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(
-                    ([category, networks]) => (
-                      <Card
-                        key={category}
-                        className="border rounded-lg overflow-hidden"
-                      >
-                        <div
-                          className="flex justify-between items-center p-4 cursor-pointer hover:bg-accent"
-                          onClick={() => toggleCategory(category)}
+                <div className="space-y-4">
+                  <div>
+                    <Label>Blockchain Networks *</Label>
+                    {formData.blockchain_networks.length > 0 && (
+                      <div className="flex items-center justify-between mt-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {formData.blockchain_networks.length}{" "}
+                          {formData.blockchain_networks.length === 1
+                            ? "network"
+                            : "networks"}{" "}
+                          selected
+                        </Badge>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              blockchain_networks: [],
+                            }))
+                          }
                         >
-                          <div className="font-medium">{category}</div>
-                          <div className="flex items-center gap-2">
-                            {formData.blockchain_networks.filter((network) =>
-                              (networks as readonly string[]).includes(network),
-                            ).length > 0 && (
-                              <Badge variant="secondary" className="text-xs">
-                                {
-                                  formData.blockchain_networks.filter(
-                                    (network) =>
-                                      (networks as readonly string[]).includes(
-                                        network,
-                                      ),
-                                  ).length
-                                }
-                              </Badge>
-                            )}
-                            {expandedCategories.includes(category) ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
-                          </div>
-                        </div>
+                          Clear all
+                        </Button>
+                      </div>
+                    )}
+                  </div>
 
-                        {expandedCategories.includes(category) && (
-                          <CardContent className="pt-2">
-                            {formData.blockchain_networks.some((network) =>
-                              (networks as readonly string[]).includes(network),
-                            ) && (
-                              <div className="flex justify-end mb-2">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    clearCategorySelections(category)
+                  <div className="space-y-3">
+                    {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(
+                      ([category, networks]) => (
+                        <Card
+                          key={category}
+                          className="border rounded-lg overflow-hidden"
+                        >
+                          <div
+                            className="flex justify-between items-center p-4 cursor-pointer hover:bg-accent"
+                            onClick={() => toggleCategory(category)}
+                          >
+                            <div className="font-medium">{category}</div>
+                            <div className="flex items-center gap-2">
+                              {formData.blockchain_networks.filter((network) =>
+                                (networks as readonly string[]).includes(network),
+                              ).length > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {
+                                    formData.blockchain_networks.filter(
+                                      (network) =>
+                                        (networks as readonly string[]).includes(
+                                          network,
+                                        ),
+                                    ).length
                                   }
-                                >
-                                  Clear
-                                </Button>
-                              </div>
-                            )}
-
-                            <div className="grid grid-cols-1 gap-2">
-                              {(networks as readonly string[]).map(
-                                (network) => (
-                                  <Button
-                                    key={network}
-                                    type="button"
-                                    variant={
-                                      formData.blockchain_networks.includes(
-                                        network,
-                                      )
-                                        ? "default"
-                                        : "outline"
-                                    }
-                                    className="h-auto py-2 px-3 justify-start text-left font-normal"
-                                    onClick={() => toggleNetwork(network)}
-                                  >
-                                    {network}
-                                  </Button>
-                                ),
+                                </Badge>
+                              )}
+                              {expandedCategories.includes(category) ? (
+                                <ChevronUp className="h-4 w-4" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4" />
                               )}
                             </div>
-                          </CardContent>
-                        )}
-                      </Card>
-                    ),
-                  )}
+                          </div>
+
+                          {expandedCategories.includes(category) && (
+                            <CardContent className="pt-2">
+                              {formData.blockchain_networks.some((network) =>
+                                (networks as readonly string[]).includes(network),
+                              ) && (
+                                <div className="flex justify-end mb-2">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                      clearCategorySelections(category)
+                                    }
+                                  >
+                                    Clear
+                                  </Button>
+                                </div>
+                              )}
+
+                              <div className="grid grid-cols-1 gap-2">
+                                {(networks as readonly string[]).map(
+                                  (network) => (
+                                    <Button
+                                      key={network}
+                                      type="button"
+                                      variant={
+                                        formData.blockchain_networks.includes(
+                                          network,
+                                        )
+                                          ? "default"
+                                          : "outline"
+                                      }
+                                      className="h-auto py-2 px-3 justify-start text-left font-normal"
+                                      onClick={() => toggleNetwork(network)}
+                                    >
+                                      {network}
+                                    </Button>
+                                  ),
+                                )}
+                              </div>
+                            </CardContent>
+                          )}
+                        </Card>
+                      ),
+                    )}
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 

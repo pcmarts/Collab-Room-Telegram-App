@@ -99,7 +99,7 @@ export default function PersonalInfo() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/90">
       <OnboardingHeader
         title="Tell Us About Yourself"
         subtitle=""
@@ -108,102 +108,105 @@ export default function PersonalInfo() {
         backUrl="/welcome"
       />
 
-      <div className="max-w-md mx-auto space-y-8 w-full">
-        <div className="space-y-4 pb-32">
-          {/* Name fields in a grid */}
-          <div className="grid grid-cols-2 gap-4">
+      {/* Scrollable container */}
+      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
+        <div className="max-w-md mx-auto space-y-8 w-full">
+          <div className="space-y-4 pb-32">
+            {/* Name fields in a grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="first_name">First Name *</Label>
+                <Input
+                  id="first_name"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="last_name">Last Name *</Label>
+                <Input
+                  id="last_name"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            </div>
+
             <div>
-              <Label htmlFor="first_name">First Name *</Label>
+              <Label htmlFor="linkedin_url">LinkedIn URL *</Label>
               <Input
-                id="first_name"
-                name="first_name"
-                value={formData.first_name}
+                id="linkedin_url"
+                name="linkedin_url"
+                type="url"
+                value={formData.linkedin_url}
                 onChange={handleInputChange}
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="last_name">Last Name *</Label>
+              <Label htmlFor="email">Company Email Address *</Label>
               <Input
-                id="last_name"
-                name="last_name"
-                value={formData.last_name}
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
                 onChange={handleInputChange}
                 required
               />
             </div>
-          </div>
 
-          <div>
-            <Label htmlFor="linkedin_url">LinkedIn URL *</Label>
-            <Input
-              id="linkedin_url"
-              name="linkedin_url"
-              type="url"
-              value={formData.linkedin_url}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
+            <div>
+              <Label htmlFor="twitter_url">My Personal Twitter URL</Label>
+              <Input
+                id="twitter_url"
+                name="twitter_url"
+                type="url"
+                value={formData.twitter_url}
+                onChange={handleInputChange}
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="email">Company Email Address *</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
+            <div>
+              <Label htmlFor="twitter_followers">My Twitter Follower Count</Label>
+              <Select
+                value={formData.twitter_followers}
+                onValueChange={(value) => {
+                  const newFormData = {
+                    ...formData,
+                    twitter_followers: value
+                  };
+                  setFormData(newFormData);
+                  sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select follower count" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                    <SelectItem key={count} value={count}>
+                      {count}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <Label htmlFor="twitter_url">My Personal Twitter URL</Label>
-            <Input
-              id="twitter_url"
-              name="twitter_url"
-              type="url"
-              value={formData.twitter_url}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="twitter_followers">My Twitter Follower Count</Label>
-            <Select
-              value={formData.twitter_followers}
-              onValueChange={(value) => {
-                const newFormData = {
-                  ...formData,
-                  twitter_followers: value
-                };
-                setFormData(newFormData);
-                sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select follower count" />
-              </SelectTrigger>
-              <SelectContent>
-                {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                  <SelectItem key={count} value={count}>
-                    {count}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="telegram_username">My Telegram Username</Label>
-            <Input
-              id="telegram_username"
-              value={`@${telegramUsername}`}
-              disabled
-              className="bg-muted"
-            />
+            <div>
+              <Label htmlFor="telegram_username">My Telegram Username</Label>
+              <Input
+                id="telegram_username"
+                value={`@${telegramUsername}`}
+                disabled
+                className="bg-muted"
+              />
+            </div>
           </div>
         </div>
       </div>
