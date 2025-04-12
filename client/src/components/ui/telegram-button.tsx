@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -19,33 +19,44 @@ export function TelegramButton({
   ...props
 }: TelegramButtonProps) {
   return (
-    <Button
-      className={`w-full font-bold ${className}`}
-      variant="default"
-      // Important: these inline styles ensure visibility in Telegram mobile browser
+    <button
+      className={`w-full font-bold py-3 px-4 rounded-md ${className}`}
+      type={props.type || "button"}
+      disabled={props.disabled}
+      onClick={props.onClick}
+      // Extremely explicit inline styles to force visibility in Telegram mobile
       style={{ 
         color: "white", 
         backgroundColor: "#4034B9",
-        boxShadow: "none",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         border: "1px solid rgba(255,255,255,0.1)",
         position: "relative",
-        zIndex: 999,
-        // Extra visibility insurance
+        zIndex: 9999,
+        fontWeight: "bold",
+        fontSize: "16px",
+        height: "48px",
+        margin: "0",
+        cursor: "pointer",
+        // Super aggressive visibility settings
         opacity: 1,
         visibility: "visible",
-        display: "flex"
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        WebkitAppearance: "none",
+        MozAppearance: "none",
+        appearance: "none"
       }}
-      {...props}
     >
       {isLoading ? (
         <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" style={{ display: "inline-block" }} />
           {loadingText}
         </>
       ) : (
         text
       )}
-    </Button>
+    </button>
   );
 }
 
@@ -57,18 +68,36 @@ export function TelegramFixedButtonContainer({
 }: {
   children: React.ReactNode;
 }) {
+  // Use effect to ensure body has enough padding at the bottom
+  useEffect(() => {
+    // Add padding to body to account for fixed button
+    document.body.style.paddingBottom = "80px";
+    
+    return () => {
+      // Cleanup
+      document.body.style.paddingBottom = "";
+    };
+  }, []);
+  
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg"
+      className="telegram-button-container"
       style={{
-        zIndex: 999,
+        zIndex: 9999,
         visibility: "visible",
         opacity: 1,
-        // Additional positioning safeguards
         position: "fixed",
         bottom: 0,
+        left: 0,
+        right: 0,
+        width: "100%",
+        padding: "16px",
+        backgroundColor: "#000000",
+        borderTop: "1px solid rgba(255,255,255,0.1)",
+        boxShadow: "0 -2px 10px rgba(0,0,0,0.2)",
         display: "block",
-        width: "100%"
+        transform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)"
       }}
     >
       {children}
