@@ -165,6 +165,9 @@ function App() {
       // Expand to full screen
       window.Telegram.WebApp.expand();
     }
+    
+    // Initialize Telegram button visibility fix
+    initTelegramButtonFix();
 
     // Prefetch critical data
     const prefetchData = async () => {
