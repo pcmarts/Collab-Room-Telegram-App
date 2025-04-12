@@ -21,7 +21,7 @@ import CompanySector from "@/pages/company-sector";
 import CompanyDetails from "@/pages/company-details";
 import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
-import ApplicationForm from "@/pages/application-form";
+
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
 import DiscoveryFilters from "@/pages/discovery-filters";
 // Conference coffee feature removed
@@ -56,7 +56,6 @@ const APPLICATION_ROUTES = [
   '/company-sector',
   '/company-details',
   '/application-status',
-  '/application-form',
   '/company-info',
   '/profile-overview',
   '/discovery-filters',
@@ -87,7 +86,7 @@ function Router() {
           <Route path="/company-sector" component={CompanySector} />
           <Route path="/company-details" component={CompanyDetails} />
           <Route path="/application-status" component={ApplicationStatus} />
-          <Route path="/application-form" component={ApplicationForm} />
+
           <Route path="/apply/:id">
             {(params) => <Apply id={params.id} />}
           </Route>
