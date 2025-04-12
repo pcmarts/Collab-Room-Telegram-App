@@ -21,7 +21,16 @@ function shouldLog(level: LogLevel): boolean {
   
   // Extra safeguard to ensure the LOG_LEVEL from .env takes precedence
   // This directly reads from process.env first instead of using config
-  const envLogLevel = process.env.LOG_LEVEL !== undefined ? parseInt(process.env.LOG_LEVEL, 10) : undefined;
+  let envLogLevel;
+  
+  // Special handling for '0' to make sure it's not interpreted incorrectly
+  if (process.env.LOG_LEVEL === '0') {
+    envLogLevel = 0;
+  } else if (process.env.LOG_LEVEL !== undefined) {
+    envLogLevel = parseInt(process.env.LOG_LEVEL, 10);
+  } else {
+    envLogLevel = undefined;
+  }
   
   // First check if we have a direct environment variable
   if (typeof envLogLevel === 'number' && !isNaN(envLogLevel) && envLogLevel >= 0 && envLogLevel <= 4) {
