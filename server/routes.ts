@@ -14,6 +14,7 @@ import { sql } from 'drizzle-orm';
 import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, bot } from "./telegram";
 import { storage } from "./storage";
 import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
+import { logger } from './utils/logger';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -88,7 +89,7 @@ function getTelegramUserFromRequest(req: TelegramReq) {
         // Parse Telegram data
         const decodedInitData = new URLSearchParams(initData);
         const userJson = decodedInitData.get('user') || '{}';
-        console.log('Parsed Telegram user data:', userJson);
+        logger.debug('Parsed Telegram user data:', userJson);
         const telegramUser = JSON.parse(userJson);
         
         if (telegramUser.id) {
@@ -102,7 +103,7 @@ function getTelegramUserFromRequest(req: TelegramReq) {
           return telegramUser;
         }
       } catch (parseError) {
-        console.error('Error parsing Telegram init data:', parseError);
+        logger.error('Error parsing Telegram init data:', parseError);
         // Continue to try the next authentication method
       }
     }
@@ -110,7 +111,7 @@ function getTelegramUserFromRequest(req: TelegramReq) {
     // STEP 2: Check for direct Telegram user ID in header (fallback mechanism)
     const telegramUserId = req.headers['x-telegram-user-id'] as string;
     if (telegramUserId) {
-      console.log('Using Telegram user ID from headers:', telegramUserId);
+      logger.debug('Using Telegram user ID from headers:', telegramUserId);
       
       // Create a minimal Telegram user object with just the ID
       // This is enough for authentication purposes
@@ -130,18 +131,22 @@ function getTelegramUserFromRequest(req: TelegramReq) {
     }
 
     // If we got here, we couldn't find Telegram user data
-    console.log('No Telegram init data or user ID found in request headers');
+    logger.debug('No Telegram init data or user ID found in request headers');
     // Log full headers for debugging (but sanitize any sensitive info)
     const safeHeaders = { ...req.headers };
     delete safeHeaders.cookie; // Remove cookies for security
     delete safeHeaders.authorization; // Remove auth tokens
-    console.log('Available headers:', JSON.stringify(safeHeaders, null, 2));
+    logger.debug('Available headers:', safeHeaders);
     
-    console.warn('⚠️ No Telegram data found in request');
+    logger.warn('⚠️ No Telegram data found in request');
     return null;
   } catch (error) {
-    console.error('Error in getTelegramUserFromRequest:', error);
-    console.error(error instanceof Error ? error.stack : String(error));
+    logger.error('Error in getTelegramUserFromRequest:', error);
+    if (error instanceof Error && error.stack) {
+      logger.error(error.stack);
+    } else {
+      logger.error(String(error));
+    }
     return null;
   }
 }
@@ -152,7 +157,7 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
     // Get Telegram user from request
     const telegramUser = getTelegramUserFromRequest(req);
     if (!telegramUser) {
-      console.log('Admin check failed: No Telegram user found');
+      logger.warn('Admin check failed: No Telegram user found');
       res.status(401);
       return res.json({ error: "Unauthorized - Not logged in" });
     }
@@ -163,14 +168,14 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
       .where(eq(users.telegram_id, telegramUser.id.toString()));
     
     if (!user) {
-      console.log('Admin check failed: User not found in database');
+      logger.warn('Admin check failed: User not found in database');
       res.status(401);
       return res.json({ error: "Unauthorized - User not found" });
     }
     
     // Check if user is admin
     if (!user.is_admin) {
-      console.log('Admin check failed: User is not an admin');
+      logger.warn('Admin check failed: User is not an admin');
       res.status(403);
       return res.json({ error: "Forbidden - Admin access required" });
     }
@@ -178,7 +183,7 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
     // Admin check passed, continue
     next();
   } catch (error) {
-    console.error("Error in admin middleware:", error);
+    logger.error("Error in admin middleware:", error);
     res.status(500);
     return res.json({ error: "Internal server error" });
   }
@@ -214,8 +219,8 @@ export async function registerRoutes(app: Express) {
   // Profile API endpoint
   app.get("/api/profile", async (req: TelegramRequest, res: Response) => {
     try {
-      console.log('============ DEBUG: Profile Endpoint ============');
-      console.log('Headers:', req.headers);
+      logger.debug('============ DEBUG: Profile Endpoint ============');
+      logger.debug('Headers:', req.headers);
       
       // Set strong cache control headers to prevent caching
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
@@ -282,13 +287,13 @@ export async function registerRoutes(app: Express) {
       
       // Log notification preference state for debugging
       if (notificationPreferences) {
-        console.log('Notification Preferences Found:');
-        console.log('- Notifications Enabled:', notificationPreferences.notifications_enabled);
-        console.log('- Notification Frequency:', notificationPreferences.notification_frequency);
-        console.log('- Raw Value Type:', typeof notificationPreferences.notifications_enabled);
-        console.log('- Updated At:', notificationPreferences.updated_at);
+        logger.debug('Notification Preferences Found:');
+        logger.debug('- Notifications Enabled:', notificationPreferences.notifications_enabled);
+        logger.debug('- Notification Frequency:', notificationPreferences.notification_frequency);
+        logger.debug('- Raw Value Type:', typeof notificationPreferences.notifications_enabled);
+        logger.debug('- Updated At:', notificationPreferences.updated_at);
       } else {
-        console.log('No notification preferences found for user');
+        logger.debug('No notification preferences found for user');
       }
 
       return res.json(response);
