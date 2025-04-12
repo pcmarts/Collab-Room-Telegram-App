@@ -149,7 +149,12 @@ export default function CompanyDetails() {
       sessionStorage.removeItem('companyDetailsData');
       sessionStorage.removeItem('referralCode');
 
-      // Direct navigation to application status page
+      toast({
+        title: "Application Submitted!",
+        description: "We'll review your application and notify you through Telegram.",
+        duration: 2000
+      });
+
       setLocation('/application-status');
 
     } catch (error) {
