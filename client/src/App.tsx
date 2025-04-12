@@ -166,7 +166,28 @@ function App() {
     }
     
     // Initialize Telegram button visibility fix
-    initTelegramButtonFix();
+    const cleanupButtonFix = initTelegramButtonFix();
+    
+    // Run an immediate button fix for faster response
+    const buttons = document.querySelectorAll('.telegram-button');
+    const containers = document.querySelectorAll('.telegram-fixed-container');
+    
+    buttons.forEach(button => {
+      if (button instanceof HTMLElement) {
+        button.style.setProperty('opacity', '1', 'important');
+        button.style.setProperty('visibility', 'visible', 'important');
+        button.style.setProperty('display', 'flex', 'important');
+        button.style.setProperty('background-color', '#4034B9', 'important');
+      }
+    });
+    
+    containers.forEach(container => {
+      if (container instanceof HTMLElement) {
+        container.style.setProperty('opacity', '1', 'important');
+        container.style.setProperty('visibility', 'visible', 'important');
+        container.style.setProperty('display', 'block', 'important');
+      }
+    });
 
     // Prefetch critical data
     const prefetchData = async () => {
@@ -191,6 +212,13 @@ function App() {
     };
 
     prefetchData();
+    
+    // Cleanup function for useEffect
+    return () => {
+      if (typeof cleanupButtonFix === 'function') {
+        cleanupButtonFix();
+      }
+    };
   }, []);
 
   return (
