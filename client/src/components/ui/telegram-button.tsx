@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -9,8 +9,8 @@ interface TelegramButtonProps extends ButtonProps {
 }
 
 /**
- * Special button component with explicit styling to ensure visibility in Telegram mobile browser
- * Uses pure HTML button with !important CSS classes to force visibility
+ * Special button component with ultra-aggressive styling to ensure visibility 
+ * in Telegram mobile browser under all circumstances
  */
 export function TelegramButton({
   isLoading = false,
@@ -22,29 +22,95 @@ export function TelegramButton({
   onClick,
   ...props
 }: TelegramButtonProps) {
+  // Reference to the button element
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  
+  // Function to force button styles
+  const forceButtonStyles = () => {
+    if (buttonRef.current) {
+      const styles = {
+        'opacity': '1',
+        'visibility': 'visible',
+        'display': 'flex',
+        'position': 'relative',
+        'z-index': '99999',
+        'color': 'white',
+        'background-color': '#4034B9',
+        'cursor': disabled ? 'not-allowed' : 'pointer',
+        'box-shadow': 'none',
+        'border': 'none',
+        'border-radius': '6px',
+        'pointer-events': 'auto',
+        'filter': 'none',
+        'outline': 'none',
+        'text-shadow': 'none',
+        'transition': 'none',
+        'transform': 'none',
+        'height': '48px',
+        'min-height': '48px',
+        'width': '100%',
+        'font-size': '16px',
+        'font-weight': 'bold',
+        'justify-content': 'center',
+        'align-items': 'center',
+        'margin': '0',
+        'padding': '10px 16px'
+      };
+      
+      // Apply each style with !important
+      Object.entries(styles).forEach(([property, value]) => {
+        buttonRef.current?.style.setProperty(property, value, 'important');
+      });
+    }
+  };
+  
+  // Apply styles on mount and with an interval
+  useEffect(() => {
+    // Apply immediately
+    forceButtonStyles();
+    
+    // Set interval to keep applying
+    const interval = setInterval(forceButtonStyles, 100);
+    
+    // Clean up on unmount
+    return () => clearInterval(interval);
+  }, [disabled]);
+  
   return (
     <button
+      ref={buttonRef}
       type={type as "button" | "submit" | "reset"}
       disabled={disabled}
       onClick={onClick}
       className={`w-full text-center py-3 px-4 rounded font-bold telegram-button ${className}`}
       style={{
+        // Initial inline styles - will be reinforced by the useEffect
         cursor: disabled ? "not-allowed" : "pointer",
         filter: "none",
         boxShadow: "none",
         outline: "none",
         textShadow: "none",
-        background: "#4034B9",
+        backgroundColor: "#4034B9",
         color: "white",
         border: "none",
         fontSize: "16px",
         fontWeight: "bold",
         height: "48px",
+        minHeight: "48px",
         opacity: "1",
         visibility: "visible",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        position: "relative",
+        zIndex: "99999",
+        width: "100%",
+        margin: "0",
+        padding: "10px 16px",
+        borderRadius: "6px",
+        pointerEvents: "auto",
+        transform: "none",
+        transition: "none"
       }}
       {...props}
     >
@@ -61,30 +127,82 @@ export function TelegramButton({
 }
 
 /**
- * Container for fixed bottom buttons with enhanced visibility in Telegram
- * Uses !important CSS class to force visibility
+ * Ultra-aggressive container for fixed bottom buttons with enhanced visibility in Telegram
+ * Uses ref-based direct style application to force visibility
  */
 export function TelegramFixedButtonContainer({
   children
 }: {
   children: React.ReactNode;
 }) {
+  // Reference to the container element
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Function to force container styles
+  const forceContainerStyles = () => {
+    if (containerRef.current) {
+      const styles = {
+        'opacity': '1',
+        'visibility': 'visible',
+        'display': 'block',
+        'position': 'fixed',
+        'bottom': '0',
+        'left': '0',
+        'right': '0',
+        'z-index': '99999',
+        'width': '100%',
+        'background-color': 'black',
+        'pointer-events': 'auto',
+        'padding': '16px',
+        'border-top': '1px solid rgba(255,255,255,0.1)',
+        'box-shadow': '0 -4px 10px rgba(0,0,0,0.2)',
+        'transform': 'translateZ(0)',
+        '-webkit-transform': 'translateZ(0)',
+        'min-height': '80px'
+      };
+      
+      // Apply each style with !important
+      Object.entries(styles).forEach(([property, value]) => {
+        containerRef.current?.style.setProperty(property, value, 'important');
+      });
+    }
+  };
+  
+  // Apply styles on mount and with an interval
+  useEffect(() => {
+    // Apply immediately
+    forceContainerStyles();
+    
+    // Set interval to keep applying
+    const interval = setInterval(forceContainerStyles, 100);
+    
+    // Clean up on unmount
+    return () => clearInterval(interval);
+  }, []);
+  
   return (
     <div 
+      ref={containerRef}
       className="telegram-fixed-container"
       style={{
+        // Initial inline styles - will be reinforced by the useEffect
         position: "fixed",
         bottom: "0",
         left: "0",
         right: "0",
-        zIndex: "9999",
+        zIndex: "99999",
         padding: "16px",
-        background: "black",
+        backgroundColor: "black",
         borderTop: "1px solid rgba(255,255,255,0.1)",
         opacity: "1",
         visibility: "visible",
         display: "block",
-        width: "100%"
+        width: "100%",
+        minHeight: "80px",
+        pointerEvents: "auto",
+        boxShadow: "0 -4px 10px rgba(0,0,0,0.2)",
+        transform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)"
       }}
     >
       {children}
