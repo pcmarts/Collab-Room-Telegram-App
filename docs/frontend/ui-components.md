@@ -192,6 +192,43 @@ interface GlowButtonProps {
 
 All onboarding pages use a consistent pattern for enabling scrolling while maintaining fixed positioning for headers and buttons.
 
+#### Updated in v1.7.8
+
+In version 1.7.8, all signup pages were updated with consistent scrollable containers to ensure full content accessibility on small devices. The updated pattern uses TelegramFixedButtonContainer for consistent button positioning:
+
+```jsx
+<div className="min-h-screen bg-gradient-to-b from-background to-background/90">
+  <OnboardingHeader
+    title="Page Title"
+    subtitle=""
+    step={0}
+    totalSteps={0}
+    backUrl="/previous-page"
+  />
+
+  {/* Scrollable container */}
+  <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
+    <div className="max-w-md mx-auto space-y-8 w-full">
+      <div className="space-y-4 pb-32">
+        {/* Form content */}
+      </div>
+    </div>
+  </div>
+  
+  {/* Button container directly at the root level */}
+  <TelegramFixedButtonContainer>
+    <TelegramButton
+      type="button"
+      onClick={handleNext}
+      isLoading={isSubmitting}
+      loadingText="Saving..."
+      text="Continue"
+      disabled={isSubmitting}
+    />
+  </TelegramFixedButtonContainer>
+</div>
+```
+
 #### Updated in v1.7.5
 
 The form buttons in the onboarding flow have been updated with explicit styling for Telegram mobile browser compatibility:
@@ -230,6 +267,7 @@ Key features:
 - Padding at the bottom of content (`pb-32`) to ensure nothing is hidden behind the button
 - Explicit button styling to ensure visibility in Telegram mobile browser
 - Consistent brand color (#4034B9) for all form buttons
+- Specialized TelegramButton and TelegramFixedButtonContainer components for Telegram WebApp
 
 ## Consistent State Components
 
@@ -391,6 +429,9 @@ interface MatchMomentProps {
 - Apply to all pages with variable content length
 - Ensure the header and button areas remain fixed while content scrolls
 - Use standard padding and spacing to maintain consistent appearance
+- For signup flow pages, implement the v1.7.8 pattern with `overflow-y-auto` and calculated height
+- Maintain proper spacing with `pb-32` to prevent content from being obscured by fixed buttons
+- Use TelegramFixedButtonContainer for consistent button positioning across all signup pages
 
 ### State-Consistent Layouts
 

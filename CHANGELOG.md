@@ -5,6 +5,24 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.7.8] - 2025-04-12
+
+### Fixed
+- Fixed scrolling issues on signup pages for users with small devices
+- Implemented scrollable containers on all onboarding forms to ensure full form accessibility
+- Resolved problems with content being hidden below the viewport on smaller screens
+
+### Enhanced
+- Added consistent scroll behavior across all signup steps (personal-info, company-basics, company-sector, company-details, referral-code)
+- Improved mobile usability with responsive scrollable areas in the application flow
+- Maintained fixed position of submit buttons while allowing form content to scroll
+
+### Technical Details
+- Implemented overflow-y-auto with calculated height (calc(100vh - 120px)) for consistent scrolling experience
+- Maintained pb-32 padding for content to ensure visibility when scrolling to bottom
+- Kept TelegramFixedButtonContainer positioned at the bottom for consistent button access
+- Updated all signup flow pages to follow the same scrolling pattern and layout structure
+
 ## [Version 1.7.7] - 2025-04-10
 
 ### Fixed
