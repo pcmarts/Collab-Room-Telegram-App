@@ -244,7 +244,7 @@ export async function registerRoutes(app: Express) {
         .where(eq(users.telegram_id, telegramUser.id.toString()));
 
       if (!user) {
-        console.log('User not found with telegram ID:', telegramUser.id);
+        logger.debug('User not found with telegram ID:', telegramUser.id);
         // No auto-creation of users - require proper onboarding
         res.status(404);
         return res.json({ error: "User not found" });
@@ -298,7 +298,7 @@ export async function registerRoutes(app: Express) {
 
       return res.json(response);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      logger.error('Error fetching profile:', error);
       res.status(500);
       return res.json({ error: "Internal server error" });
     }
@@ -417,7 +417,7 @@ export async function registerRoutes(app: Express) {
   app.post("/api/admin/impersonate", checkAdminMiddleware, async (req: TelegramRequest, res: Response) => {
     try {
       const { telegram_id } = req.body;
-      console.log('Impersonation request for telegram_id:', telegram_id);
+      logger.debug('Impersonation request for telegram_id:', telegram_id);
       
       if (!telegram_id) {
         res.status(400);
@@ -434,13 +434,13 @@ export async function registerRoutes(app: Express) {
         return res.json({ error: "User not found" });
       }
 
-      console.log('Found user to impersonate:', userToImpersonate);
+      logger.debug('Found user to impersonate:', userToImpersonate);
 
       // Get original admin user for later reference  
       const adminUser = getTelegramUserFromRequest(req);
       
       if (!req.session) {
-        console.error('No session object found');
+        logger.error('No session object found');
         res.status(500);
         return res.json({ error: "Session not initialized" });
       }
@@ -459,12 +459,12 @@ export async function registerRoutes(app: Express) {
       // Save session explicitly
       req.session.save((err) => {
         if (err) {
-          console.error('Error saving session:', err);
+          logger.error('Error saving session:', err);
           res.status(500);
           return res.json({ error: "Failed to save session" });
         }
 
-        console.log('Impersonation session saved successfully');
+        logger.debug('Impersonation session saved successfully');
         return res.json({
           success: true,
           message: "Impersonation started", 
@@ -473,7 +473,7 @@ export async function registerRoutes(app: Express) {
       });
 
     } catch (error) {
-      console.error("Error starting impersonation:", error);
+      logger.error("Error starting impersonation:", error);
       res.status(500);
       return res.json({ error: "Failed to start impersonation" });
     }
@@ -492,19 +492,19 @@ export async function registerRoutes(app: Express) {
       // Save session explicitly
       req.session.save((err) => {
         if (err) {
-          console.error('Error saving session:', err);
+          logger.error('Error saving session:', err);
           res.status(500);
           return res.json({ error: "Failed to save session" });
         }
 
-        console.log('Impersonation session cleared successfully');
+        logger.debug('Impersonation session cleared successfully');
         return res.json({
           success: true,
           message: "Impersonation ended"
         });
       });
     } catch (error) {
-      console.error("Error ending impersonation:", error);
+      logger.error("Error ending impersonation:", error);
       res.status(500); 
       return res.json({ error: "Failed to end impersonation" });
     }
@@ -581,7 +581,7 @@ export async function registerRoutes(app: Express) {
       
       // Production environments still require valid Telegram data
       if (!telegramUser) {
-        console.error('No Telegram user data found and not in development mode');
+        logger.error('No Telegram user data found and not in development mode');
         res.status(400);
         return res.json({ error: 'Invalid Telegram data' });
       }
@@ -619,7 +619,7 @@ export async function registerRoutes(app: Express) {
           const handle = telegramUser.username || `user_${telegramUser.id.toString().substring(0, 8)}`;
           
           // Log what we're using to help with debugging
-          console.log(`Creating user with Telegram ID: ${telegramUser.id} and handle: ${handle}`);
+          logger.debug(`Creating user with Telegram ID: ${telegramUser.id} and handle: ${handle}`);
           
           [user] = await tx
             .insert(users)
