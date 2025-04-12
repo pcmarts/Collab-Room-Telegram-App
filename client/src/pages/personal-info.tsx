@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +9,7 @@ import { useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TWITTER_FOLLOWER_COUNTS } from "../../../shared/schema";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
+import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
 
 export default function PersonalInfo() {
   const { toast } = useToast();
@@ -192,30 +192,15 @@ export default function PersonalInfo() {
           </div>
 
           {/* Floating Save Button */}
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg">
-            <Button
+          <TelegramFixedButtonContainer>
+            <TelegramButton
               type="submit"
-              className="w-full font-bold"
-              variant="default"
+              isLoading={isSubmitting}
+              loadingText="Saving..."
+              text="Continue to Company Info"
               disabled={isSubmitting}
-              // Important: these inline styles ensure visibility in Telegram mobile browser
-              style={{ 
-                color: "white", 
-                backgroundColor: "#4034B9",
-                boxShadow: "none",
-                border: "1px solid rgba(255,255,255,0.1)"
-              }} 
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Continue to Company Info"
-              )}
-            </Button>
-          </div>
+            />
+          </TelegramFixedButtonContainer>
         </form>
       </div>
     </div>

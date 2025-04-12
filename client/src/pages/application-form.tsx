@@ -9,6 +9,7 @@ import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
+import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
 
 export default function ApplicationForm() {
   const { toast } = useToast();

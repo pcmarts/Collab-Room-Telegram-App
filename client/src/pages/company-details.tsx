@@ -12,6 +12,7 @@ import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
+import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
 
 // Type helper to extract network strings from the const object
 type NetworkString = string;
@@ -300,30 +301,15 @@ export default function CompanyDetails() {
           )}
 
           {/* Floating Save Button */}
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg">
-            <Button
+          <TelegramFixedButtonContainer>
+            <TelegramButton
               type="submit"
-              className="w-full font-bold"
-              variant="default"
+              isLoading={isSubmitting}
+              loadingText="Submitting..."
+              text="Submit Application"
               disabled={isSubmitting}
-              // Important: these inline styles ensure visibility in Telegram mobile browser
-              style={{ 
-                color: "white", 
-                backgroundColor: "#4034B9",
-                boxShadow: "none",
-                border: "1px solid rgba(255,255,255,0.1)"
-              }}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
-                  Submitting...
-                </>
-              ) : (
-                "Submit Application"
-              )}
-            </Button>
-          </div>
+            />
+          </TelegramFixedButtonContainer>
         </form>
       </div>
     </div>
