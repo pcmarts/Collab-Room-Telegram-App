@@ -190,11 +190,19 @@ export default function ApplicationForm() {
           </div>
           
           {/* Floating Save Button */}
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border shadow-lg">
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg">
             <Button
               type="submit"
-              className="w-full"
+              className="w-full font-bold"
+              variant="default"
               disabled={isSubmitting}
+              // Important: these inline styles ensure visibility in Telegram mobile browser
+              style={{ 
+                color: "white", 
+                backgroundColor: "#4034B9",
+                boxShadow: "none",
+                border: "1px solid rgba(255,255,255,0.1)"
+              }}
             >
               {isSubmitting ? (
                 <>

@@ -38,7 +38,7 @@ export default function CompanyBasics() {
         company_name: profileData.company.name || '',
         job_title: profileData.company.job_title || '',
         website: profileData.company.website || 'https://www.',
-        twitter_url: profileData.company.twitter_url || 'https://x.com/',
+        twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : 'https://x.com/',
         linkedin_url: profileData.company.linkedin_url || 'https://linkedin.com/company/',
         funding_stage: profileData.company.funding_stage || '',
         twitter_followers: profileData.company.twitter_followers || ''
