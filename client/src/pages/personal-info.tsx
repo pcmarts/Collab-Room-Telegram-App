@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TWITTER_FOLLOWER_COUNTS } from "../../../shared/schema";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
+import { applyButtonFix } from "@/App";
 
 export default function PersonalInfo() {
   const { toast } = useToast();
@@ -50,6 +51,20 @@ export default function PersonalInfo() {
       }
     }
   }, [profileData]);
+
+  // Apply button fix when component mounts and after any render
+  useEffect(() => {
+    // Apply immediately on mount
+    applyButtonFix();
+    
+    // Set up interval to keep applying the fix
+    const fixInterval = setInterval(() => {
+      applyButtonFix();
+    }, 500);
+    
+    // Cleanup on unmount
+    return () => clearInterval(fixInterval);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

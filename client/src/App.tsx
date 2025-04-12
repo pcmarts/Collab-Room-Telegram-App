@@ -152,6 +152,59 @@ function Router() {
   );
 }
 
+// Global button fix function that can be called from anywhere
+export const applyButtonFix = () => {
+  // Apply fixes to all buttons with telegram-button class
+  const buttons = document.querySelectorAll('.telegram-button');
+  const containers = document.querySelectorAll('.telegram-fixed-container');
+  
+  buttons.forEach(button => {
+    if (button instanceof HTMLElement) {
+      button.style.setProperty('opacity', '1', 'important');
+      button.style.setProperty('visibility', 'visible', 'important');
+      button.style.setProperty('display', 'flex', 'important');
+      button.style.setProperty('background-color', '#4034B9', 'important');
+      button.style.setProperty('color', 'white', 'important');
+      button.style.setProperty('border', 'none', 'important');
+      button.style.setProperty('height', '48px', 'important');
+      button.style.setProperty('min-height', '48px', 'important');
+      button.style.setProperty('z-index', '9999', 'important');
+      button.style.setProperty('position', 'relative', 'important');
+      button.style.setProperty('font-weight', 'bold', 'important');
+      button.style.setProperty('font-size', '16px', 'important');
+      button.style.setProperty('text-shadow', 'none', 'important');
+      button.style.setProperty('filter', 'none', 'important');
+      button.style.setProperty('outline', 'none', 'important');
+      button.style.setProperty('pointer-events', 'auto', 'important');
+      button.style.setProperty('justify-content', 'center', 'important');
+      button.style.setProperty('align-items', 'center', 'important');
+      button.classList.add('telegram-button-visible');
+    }
+  });
+  
+  containers.forEach(container => {
+    if (container instanceof HTMLElement) {
+      container.style.setProperty('opacity', '1', 'important');
+      container.style.setProperty('visibility', 'visible', 'important');
+      container.style.setProperty('display', 'block', 'important');
+      container.style.setProperty('position', 'fixed', 'important');
+      container.style.setProperty('bottom', '0', 'important');
+      container.style.setProperty('left', '0', 'important');
+      container.style.setProperty('right', '0', 'important');
+      container.style.setProperty('width', '100%', 'important');
+      container.style.setProperty('padding', '16px', 'important');
+      container.style.setProperty('background-color', 'black', 'important');
+      container.style.setProperty('border-top', '1px solid rgba(255,255,255,0.1)', 'important');
+      container.style.setProperty('z-index', '9999', 'important');
+      container.style.setProperty('pointer-events', 'auto', 'important');
+      container.classList.add('telegram-container-visible');
+    }
+  });
+
+  // Also add a class to the body for easier targeting
+  document.body.classList.add('telegram-webapp-loaded');
+};
+
 function App() {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -168,26 +221,11 @@ function App() {
     // Initialize Telegram button visibility fix
     const cleanupButtonFix = initTelegramButtonFix();
     
-    // Run an immediate button fix for faster response
-    const buttons = document.querySelectorAll('.telegram-button');
-    const containers = document.querySelectorAll('.telegram-fixed-container');
+    // Apply immediate fix
+    applyButtonFix();
     
-    buttons.forEach(button => {
-      if (button instanceof HTMLElement) {
-        button.style.setProperty('opacity', '1', 'important');
-        button.style.setProperty('visibility', 'visible', 'important');
-        button.style.setProperty('display', 'flex', 'important');
-        button.style.setProperty('background-color', '#4034B9', 'important');
-      }
-    });
-    
-    containers.forEach(container => {
-      if (container instanceof HTMLElement) {
-        container.style.setProperty('opacity', '1', 'important');
-        container.style.setProperty('visibility', 'visible', 'important');
-        container.style.setProperty('display', 'block', 'important');
-      }
-    });
+    // Set up an interval to periodically reapply button fixes
+    const fixInterval = setInterval(applyButtonFix, 500);
 
     // Prefetch critical data
     const prefetchData = async () => {
@@ -218,6 +256,7 @@ function App() {
       if (typeof cleanupButtonFix === 'function') {
         cleanupButtonFix();
       }
+      clearInterval(fixInterval);
     };
   }, []);
 
