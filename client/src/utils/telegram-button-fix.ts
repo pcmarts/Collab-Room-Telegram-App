@@ -74,7 +74,7 @@ export function initTelegramButtonFix(): void {
     });
 
     // Re-apply every 500ms to be super safe
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       const telegramButtons = document.querySelectorAll('.telegram-button');
       const telegramContainers = document.querySelectorAll('.telegram-fixed-container');
       
@@ -82,6 +82,8 @@ export function initTelegramButtonFix(): void {
         if (button instanceof HTMLElement) {
           button.style.setProperty('opacity', '1', 'important');
           button.style.setProperty('visibility', 'visible', 'important');
+          button.style.setProperty('display', 'flex', 'important');
+          button.style.setProperty('background-color', '#4034B9', 'important');
         }
       });
 
@@ -89,8 +91,17 @@ export function initTelegramButtonFix(): void {
         if (container instanceof HTMLElement) {
           container.style.setProperty('opacity', '1', 'important');
           container.style.setProperty('visibility', 'visible', 'important');
+          container.style.setProperty('display', 'block', 'important');
+          container.style.setProperty('position', 'fixed', 'important');
+          container.style.setProperty('bottom', '0', 'important');
         }
       });
     }, 500);
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      clearInterval(intervalId);
+      observer.disconnect();
+    };
   });
 }
