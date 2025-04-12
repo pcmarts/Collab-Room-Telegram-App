@@ -70,10 +70,10 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
     } else if (res.statusCode >= 400) {
       // Client errors - use warning level - only logged if LOG_LEVEL >= 1
       logger.warn(`${req.method} ${req.path} ${res.statusCode} in ${responseTime}ms`, requestData);
-    } else if (res.statusCode >= 300 && config.LOG_LEVEL >= 2) {
+    } else if (res.statusCode >= 300) {
       // Redirects - use info level - only logged if LOG_LEVEL >= 2
       logger.info(`${req.method} ${req.path} ${res.statusCode} in ${responseTime}ms`, requestData);
-    } else if (config.LOG_LEVEL >= 3) {
+    } else {
       // Normal requests - use http level - only logged if LOG_LEVEL >= 3
       logger.http(`${req.method} ${req.path} ${res.statusCode} in ${responseTime}ms`);
     }

@@ -62,14 +62,20 @@ function logAdminMessage(
 const domain = process.env.REPLIT_DOMAINS.split(",")[0];
 const WEBAPP_URL = `https://${domain}`;
 
-console.log("=== Telegram Bot Configuration ===");
-console.log("Environment:", process.env.NODE_ENV);
-console.log(
-  "Using token type:",
-  process.env.NODE_ENV === "production" ? "Production" : "Development",
-);
-console.log("Telegram Bot configured successfully");
-console.log("WebApp URL:", WEBAPP_URL);
+// Import config to respect LOG_LEVEL setting
+import { config } from "../shared/config";
+
+// Only log if LOG_LEVEL permits INFO logs or higher
+if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
+  console.log("=== Telegram Bot Configuration ===");
+  console.log("Environment:", process.env.NODE_ENV);
+  console.log(
+    "Using token type:",
+    process.env.NODE_ENV === "production" ? "Production" : "Development",
+  );
+  console.log("Telegram Bot configured successfully");
+  console.log("WebApp URL:", WEBAPP_URL);
+}
 
 // Initialize bot with polling and minimal logging
 export const bot = new TelegramBot(BOT_TOKEN, {

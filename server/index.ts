@@ -75,13 +75,19 @@ if (config.NODE_ENV === 'production') {
     tableName: 'sessions',
     createTableIfMissing: true,
   });
-  logger.info('Using PostgreSQL for session storage');
+  // Only log if LOG_LEVEL >= 2 (INFO level or higher)
+  if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
+    logger.info('Using PostgreSQL for session storage');
+  }
 } else {
   // Use memory store in development
   sessionStore = new MemoryStoreSession({
     checkPeriod: 86400000 // prune expired entries every 24h
   });
-  logger.warn('Using in-memory session storage (not suitable for production)');
+  // Only log if LOG_LEVEL >= 1 (WARN level or higher)
+  if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 1) {
+    logger.warn('Using in-memory session storage (not suitable for production)');
+  }
 }
 
 // Initialize session middleware early to ensure it's available for all routes
@@ -151,7 +157,10 @@ app.use('/api', (req, res, next) => {
 });
 
 (async () => {
-  logger.info('Starting server initialization...');
+  // Only log startup info if LOG_LEVEL >= 2 (INFO level or higher)
+  if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
+    logger.info('Starting server initialization...');
+  }
 
   try {
     const server = await registerRoutes(app);
@@ -192,8 +201,11 @@ app.use('/api', (req, res, next) => {
       host: "0.0.0.0",
       reusePort: true,
     }, () => {
-      logger.info(`Server running on port ${port}`);
-      logger.info('Server initialization completed');
+      // Only log server startup info if LOG_LEVEL >= 2 (INFO level or higher)
+      if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
+        logger.info(`Server running on port ${port}`);
+        logger.info('Server initialization completed');
+      }
     });
   } catch (error) {
     logger.error('Failed to start server', { error });
