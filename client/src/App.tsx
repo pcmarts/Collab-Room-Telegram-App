@@ -21,7 +21,7 @@ import CompanySector from "@/pages/company-sector";
 import CompanyDetails from "@/pages/company-details";
 import CompanyInfo from "@/pages/company-info";
 import ApplicationStatus from "@/pages/application-status";
-// Removed unused ApplicationForm import
+import ApplicationForm from "@/pages/application-form";
 import MarketingCollabsNew from "@/pages/marketing-collabs-new";
 import DiscoveryFilters from "@/pages/discovery-filters";
 // Conference coffee feature removed
@@ -87,7 +87,7 @@ function Router() {
           <Route path="/company-sector" component={CompanySector} />
           <Route path="/company-details" component={CompanyDetails} />
           <Route path="/application-status" component={ApplicationStatus} />
-          {/* Removed unused application-form route */}
+          <Route path="/application-form" component={ApplicationForm} />
           <Route path="/apply/:id">
             {(params) => <Apply id={params.id} />}
           </Route>
