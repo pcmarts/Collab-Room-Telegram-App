@@ -29,6 +29,9 @@ The system uses five standard log levels, following industry conventions:
 The logging level can be configured using the `LOG_LEVEL` environment variable:
 
 ```
+# Silent mode (errors only)
+LOG_LEVEL=0
+
 # Only log errors and warnings (production recommended)
 LOG_LEVEL=1
 
@@ -40,6 +43,23 @@ If not explicitly set, the system uses sensible defaults based on the current en
 - Production: WARN (1)
 - Test: ERROR (0)
 - Development: DEBUG (4)
+
+### Quick Switching Between Log Levels
+
+For convenience, you can use the toggle-logging.js script to quickly change log levels:
+
+```bash
+# Set to silent mode (ERROR only)
+node toggle-logging.js 0
+
+# Set to production mode (WARN + ERROR)
+node toggle-logging.js 1
+
+# Set to full verbose mode (all logs)
+node toggle-logging.js 4
+```
+
+After changing the log level, you'll need to restart the server for the changes to take effect.
 
 ## Core Components
 
