@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { TextLoop } from "@/components/ui/text-loop";
-import { GlowButton } from "@/components/GlowButton";
+import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
 import { 
   COLLAB_TYPES,
   TWITTER_COLLAB_TYPES
@@ -56,7 +56,7 @@ export default function Welcome() {
         </div>
 
         <Card className="border border-primary/20">
-          <CardContent className="pt-6 space-y-6">
+          <CardContent className="pt-6 space-y-6 pb-16">
             <div>
               <Label htmlFor="referral_code" className="text-base">Have a Referral Code?</Label>
               <Input
@@ -67,16 +67,16 @@ export default function Welcome() {
                 className="mt-2"
               />
             </div>
-
-            <div className="w-full flex justify-center">
-              <GlowButton
-                onClick={handleContinue}
-                className="flex-grow max-w-full"
-              >
-                Next
-              </GlowButton>
-            </div>
           </CardContent>
+          
+          {/* Use fixed container for better mobile visibility */}
+          <TelegramFixedButtonContainer>
+            <TelegramButton
+              type="button"
+              onClick={handleContinue}
+              text="Next"
+            />
+          </TelegramFixedButtonContainer>
         </Card>
       </div>
     </div>
