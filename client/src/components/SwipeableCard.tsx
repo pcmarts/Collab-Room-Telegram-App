@@ -106,7 +106,7 @@ export function SwipeableCard({
           title: "Collaboration Request Sent",
           description: "The host will be notified of your interest.",
           variant: "default",
-          duration: 3000,
+          duration: 1000,
         });
       }
     } catch (error) {
@@ -152,7 +152,7 @@ export function SwipeableCard({
           title: "Collaboration Request Sent",
           description: "The host will be notified of your interest.",
           variant: "default",
-          duration: 3000,
+          duration: 1000,
         });
       }
     } else if (dragDistance < 10) {
@@ -716,7 +716,7 @@ export function SwipeableCard({
               title: "Collaboration Request Sent",
               description: "The host will be notified of your interest.",
               variant: "default",
-              duration: 3000,
+              duration: 1000,
             });
           }, 100);
         }}
