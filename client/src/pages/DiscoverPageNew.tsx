@@ -517,7 +517,7 @@ export default function DiscoverPage() {
           console.log('[Discovery] No potential matches available');
         }
         
-        // Fetch first batch of regular cards
+        // Always fetch first batch of regular cards, regardless of potential matches
         console.log('[Discovery] Initiating fetch of regular collaboration cards');
         await fetchNextBatch();
       } catch (error) {
@@ -527,8 +527,9 @@ export default function DiscoverPage() {
       }
     };
     
+    // Always run on initial mount to ensure cards are loaded immediately
     initializeCards();
-  }, [potentialMatches]);
+  }, []);
   
 
   
