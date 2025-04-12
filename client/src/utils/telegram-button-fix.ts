@@ -23,19 +23,24 @@ export function initTelegramButtonFix(): void {
           // Force button to be visible
           button.style.setProperty('opacity', '1', 'important');
           button.style.setProperty('visibility', 'visible', 'important');
-          button.style.setProperty('display', 'inline-flex', 'important');
+          button.style.setProperty('display', 'flex', 'important');
           button.style.setProperty('position', 'relative', 'important');
           button.style.setProperty('z-index', '9999', 'important');
           button.style.setProperty('color', 'white', 'important');
           button.style.setProperty('background-color', '#4034B9', 'important');
           button.style.setProperty('box-shadow', 'none', 'important');
-          button.style.setProperty('border', '1px solid rgba(255,255,255,0.1)', 'important');
+          button.style.setProperty('border', 'none', 'important');
           button.style.setProperty('pointer-events', 'auto', 'important');
           button.style.setProperty('filter', 'none', 'important');
           button.style.setProperty('outline', 'none', 'important');
           button.style.setProperty('text-shadow', 'none', 'important');
           button.style.setProperty('transition', 'none', 'important');
           button.style.setProperty('transform', 'none', 'important');
+          button.style.setProperty('height', '48px', 'important');
+          button.style.setProperty('font-size', '16px', 'important');
+          button.style.setProperty('font-weight', 'bold', 'important');
+          button.style.setProperty('justify-content', 'center', 'important');
+          button.style.setProperty('align-items', 'center', 'important');
         }
       });
 
@@ -54,6 +59,8 @@ export function initTelegramButtonFix(): void {
           container.style.setProperty('width', '100%', 'important');
           container.style.setProperty('background-color', 'black', 'important');
           container.style.setProperty('pointer-events', 'auto', 'important');
+          container.style.setProperty('padding', '16px', 'important');
+          container.style.setProperty('border-top', '1px solid rgba(255,255,255,0.1)', 'important');
         }
       });
     });

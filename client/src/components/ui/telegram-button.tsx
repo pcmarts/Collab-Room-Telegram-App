@@ -27,13 +27,24 @@ export function TelegramButton({
       type={type as "button" | "submit" | "reset"}
       disabled={disabled}
       onClick={onClick}
-      className={`w-full text-center py-2 px-4 rounded font-bold telegram-button ${className}`}
+      className={`w-full text-center py-3 px-4 rounded font-bold telegram-button ${className}`}
       style={{
         cursor: disabled ? "not-allowed" : "pointer",
         filter: "none",
         boxShadow: "none",
         outline: "none",
-        textShadow: "none"
+        textShadow: "none",
+        background: "#4034B9",
+        color: "white",
+        border: "none",
+        fontSize: "16px",
+        fontWeight: "bold",
+        height: "48px",
+        opacity: "1",
+        visibility: "visible",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center"
       }}
       {...props}
     >
@@ -59,7 +70,23 @@ export function TelegramFixedButtonContainer({
   children: React.ReactNode;
 }) {
   return (
-    <div className="telegram-fixed-container">
+    <div 
+      className="telegram-fixed-container"
+      style={{
+        position: "fixed",
+        bottom: "0",
+        left: "0",
+        right: "0",
+        zIndex: "9999",
+        padding: "16px",
+        background: "black",
+        borderTop: "1px solid rgba(255,255,255,0.1)",
+        opacity: "1",
+        visibility: "visible",
+        display: "block",
+        width: "100%"
+      }}
+    >
       {children}
     </div>
   );

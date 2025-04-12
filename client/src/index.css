@@ -55,15 +55,16 @@ body.scrollable-page {
   color: white !important;
   background-color: #4034B9 !important;
   box-shadow: none !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
+  border: none !important;
   position: relative !important;
   z-index: 9999 !important;
   opacity: 1 !important;
   visibility: visible !important;
-  display: inline-flex !important;
+  display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  min-height: 44px !important;
+  height: 48px !important;
+  min-height: 48px !important;
   font-size: 16px !important;
   font-weight: bold !important;
   pointer-events: auto !important;
@@ -76,6 +77,10 @@ body.scrollable-page {
   outline: none !important;
   transform: none !important;
   filter: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 10px 16px !important;
+  border-radius: 6px !important;
 }
 
 /* Telegram fixed container fix */
@@ -93,6 +98,10 @@ body.scrollable-page {
   background-color: black !important;
   border-top: 1px solid rgba(255,255,255,0.1) !important;
   pointer-events: auto !important;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.2) !important;
+  min-height: 80px !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
 }
 
 /* Fix for scrolling content in forms */
@@ -100,7 +109,7 @@ body.scrollable-page {
   max-height: calc(100vh - 240px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 120px; /* Add padding to prevent content being hidden by fixed buttons */
+  padding-bottom: 140px; /* Add padding to prevent content being hidden by fixed buttons */
 }
 
 /* Special override for discovery filters page */
