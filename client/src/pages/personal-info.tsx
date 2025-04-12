@@ -99,7 +99,7 @@ export default function PersonalInfo() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4">
       <OnboardingHeader
         title="Tell Us About Yourself"
         subtitle=""
@@ -108,8 +108,8 @@ export default function PersonalInfo() {
         backUrl="/welcome"
       />
 
-      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-32">
+      <div className="max-w-md mx-auto space-y-8 w-full">
+        <div className="space-y-4 pb-32">
           {/* Name fields in a grid */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -205,19 +205,20 @@ export default function PersonalInfo() {
               className="bg-muted"
             />
           </div>
-
-          {/* Floating Save Button */}
-          <TelegramFixedButtonContainer>
-            <TelegramButton
-              type="submit"
-              isLoading={isSubmitting}
-              loadingText="Saving..."
-              text="Continue to Company Info"
-              disabled={isSubmitting}
-            />
-          </TelegramFixedButtonContainer>
-        </form>
+        </div>
       </div>
+      
+      {/* Button container directly at the root level */}
+      <TelegramFixedButtonContainer>
+        <TelegramButton
+          type="button"
+          onClick={(e) => { e.preventDefault(); handleNext(); }}
+          isLoading={isSubmitting}
+          loadingText="Saving..."
+          text="Continue to Company Info"
+          disabled={isSubmitting}
+        />
+      </TelegramFixedButtonContainer>
     </div>
   );
 }

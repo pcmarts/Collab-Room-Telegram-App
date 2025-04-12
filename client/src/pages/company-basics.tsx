@@ -105,7 +105,7 @@ export default function CompanyBasics() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4">
       <OnboardingHeader
         title="Company Basics"
         subtitle=""
@@ -114,8 +114,8 @@ export default function CompanyBasics() {
         backUrl="/personal-info"
       />
 
-      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
-        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4 pb-32">
+      <div className="max-w-md mx-auto space-y-8 w-full">
+        <div className="space-y-4 pb-32">
           <div>
             <Label htmlFor="company_name">Company Name *</Label>
             <Input
@@ -213,19 +213,20 @@ export default function CompanyBasics() {
               </SelectContent>
             </Select>
           </div>
-
-          {/* Floating Save Button */}
-          <TelegramFixedButtonContainer>
-            <TelegramButton
-              type="submit"
-              isLoading={isSubmitting}
-              loadingText="Saving..."
-              text="Continue to Company Sector"
-              disabled={isSubmitting}
-            />
-          </TelegramFixedButtonContainer>
-        </form>
+        </div>
       </div>
+      
+      {/* Button container directly at the root level */}
+      <TelegramFixedButtonContainer>
+        <TelegramButton
+          type="button"
+          onClick={handleNext}
+          isLoading={isSubmitting}
+          loadingText="Saving..."
+          text="Continue to Company Sector"
+          disabled={isSubmitting}
+        />
+      </TelegramFixedButtonContainer>
     </div>
   );
 }
