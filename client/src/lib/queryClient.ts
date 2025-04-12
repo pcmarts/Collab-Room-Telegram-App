@@ -137,47 +137,17 @@ export const getQueryFn: <T>(options: {
     // Add Telegram initData to headers if available
     const headers: Record<string, string> = {};
     
-    // Check if session authentication is available (stored in localStorage)
-    const sessionAuthStatus = localStorage.getItem('sessionAuthEstablished');
-    const hasEstablishedSession = sessionAuthStatus === 'true';
-    
     // Try to wait for Telegram initData (with a short timeout)
     const hasTelegramData = await waitForTelegramInitData();
     
-    // Check for and add Telegram WebApp authentication
+    // Check for and add Telegram WebApp authentication - this is our primary authentication method
     if (hasTelegramData && window.Telegram?.WebApp?.initData) {
       headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
       logger.info('Telegram initData found and added to query request headers');
-      
-      // If we successfully got Telegram initData, mark that we have established a session
-      localStorage.setItem('sessionAuthEstablished', 'true');
-      localStorage.setItem('lastSessionTime', Date.now().toString());
     } else {
-      // Check if we've established a session before
-      if (hasEstablishedSession) {
-        logger.info('No current Telegram initData but session is established');
-        // Check if session is still likely to be valid (less than 24 hours old)
-        const lastSessionTime = parseInt(localStorage.getItem('lastSessionTime') || '0', 10);
-        const SESSION_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
-        
-        if (Date.now() - lastSessionTime < SESSION_MAX_AGE) {
-          logger.debug('Using established session - last session within timeframe');
-        } else {
-          logger.warn('Session may have expired - attempting request but may fail');
-        }
-      } else {
-        logger.warn('No Telegram initData available in query after retry attempts and no established session');
-      }
-      
-      logger.debug('Continuing with request using session authentication');
-    }
-    
-    // Add the cached Telegram User ID as a fallback authentication mechanism
-    // This allows the server to identify the user even when session cookies change
-    const cachedUserId = localStorage.getItem('telegram_user_id');
-    if (cachedUserId) {
-      headers['x-telegram-user-id'] = cachedUserId;
-      logger.debug('Added cached Telegram user ID to query headers:', cachedUserId);
+      // If we couldn't get Telegram initData, authentication will likely fail
+      logger.error('No Telegram initData available - authentication will likely fail');
+      logger.debug('This app should be opened from Telegram to function correctly');
     }
 
     try {
@@ -197,31 +167,16 @@ export const getQueryFn: <T>(options: {
         // Add cache control to the fetch request options
         cache: 'no-cache'
       });
-      
-      if (res.ok) {
-        // If request succeeds, we know we have a working session
-        localStorage.setItem('sessionAuthEstablished', 'true');
-        localStorage.setItem('lastSessionTime', Date.now().toString());
-      }
 
       if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-        // Session might have expired if we get a 401
-        if (hasEstablishedSession) {
-          logger.warn('Session authentication failed - clearing session status');
-          localStorage.removeItem('sessionAuthEstablished');
-        }
         return null;
       }
 
       await throwIfResNotOk(res);
       return await res.json();
     } catch (error) {
-      // If we get an authentication error and had a supposedly valid session,
-      // our session might have expired or been invalidated
-      if (error && (error as Error).name === 'AuthenticationError' && hasEstablishedSession) {
-        logger.warn('Session authentication failed in query - clearing session status');
-        localStorage.removeItem('sessionAuthEstablished');
-      }
+      // Simply log and rethrow the error
+      logger.error('Query request failed:', error);
       throw error;
     }
   };

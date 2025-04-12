@@ -561,18 +561,22 @@ export default function DiscoverPage() {
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         
-        // Check if initData is available
+        // Check if initData is available - this is critical for authentication
         const initDataAvailable = !!window.Telegram.WebApp.initData;
         console.log(`[Auth] Telegram initData is ${initDataAvailable ? 'available' : 'missing'} after initialization`);
         
         if (!initDataAvailable) {
-          console.warn('[Auth] Telegram WebApp initData is missing after initialization');
+          console.error('[Auth] Telegram WebApp initData is missing after initialization');
+          // Set auth error immediately if no initData - this app requires Telegram initData
+          setAuthError(true);
         }
       } catch (e) {
         console.error('[Auth] Error initializing Telegram WebApp:', e);
+        setAuthError(true);
       }
     } else {
-      console.warn('[Auth] Telegram WebApp is not available - this app should be opened from Telegram');
+      console.error('[Auth] Telegram WebApp is not available - this app must be opened from Telegram');
+      setAuthError(true);
     }
   }, []);
   
@@ -627,31 +631,36 @@ export default function DiscoverPage() {
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         
-        // Check if init data is available after refresh
+        // Check if init data is available after refresh - this is critical
         const initDataAvailable = !!window.Telegram.WebApp.initData;
         console.log(`[Auth] After refresh, Telegram initData is ${initDataAvailable ? 'available' : 'missing'}`);
         
         if (!initDataAvailable) {
-          console.warn('[Auth] Telegram WebApp initData still missing after refresh');
-          // Try a direct window reload as a last resort if we're in a real browser
+          console.error('[Auth] Telegram WebApp initData still missing after refresh');
+          // Set auth error again since we need initData
+          setAuthError(true);
+          
+          // Try a direct window reload as a last resort
           if (typeof window !== 'undefined' && window.location && typeof window.location.reload === 'function') {
             console.log('[Auth] Attempting to reload the page to reinitialize Telegram WebApp');
             setTimeout(() => window.location.reload(), 500);
             return;
           }
+        } else {
+          // If initData is available, invalidate all queries to trigger refetching
+          queryClient.invalidateQueries();
+          
+          // Attempt to reload the cards
+          handleRefresh();
         }
       } catch (e) {
         console.error('[Auth] Error refreshing Telegram WebApp:', e);
+        setAuthError(true);
       }
     } else {
-      console.warn('[Auth] Telegram WebApp is not available - this app needs to be opened from Telegram');
+      console.error('[Auth] Telegram WebApp is not available - this app must be opened from Telegram');
+      setAuthError(true);
     }
-    
-    // Invalidate all queries to trigger refetching
-    queryClient.invalidateQueries();
-    
-    // Attempt to reload the cards
-    handleRefresh();
   };
   
   // Helper function already defined above with better variable name (fetchNextBatch)
