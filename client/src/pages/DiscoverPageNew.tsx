@@ -124,9 +124,12 @@ export default function DiscoverPage() {
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(true);
   
-  // Refs
+  // Refs for tracking state across renders
+  const cardsRef = useRef<CardData[]>([]);
   const swipeHistoryRef = useRef<SwipeHistoryItem[]>([]);
   const isFetchingNextBatchRef = useRef(false);
+  const initialLoadCompletedRef = useRef(false);
+  const lastFetchTimeRef = useRef<number>(0);
   
   // Get access to the match context
   const { setNewMatchCreated } = useMatchContext();
@@ -513,10 +516,17 @@ export default function DiscoverPage() {
   useEffect(() => {
     // Initialize the card stack with potential matches and regular cards
     const initializeCards = async () => {
+      // Set loading state to show spinner
       setIsLoading(true);
       
+      // Mark that we're performing the initial load
+      initialLoadCompletedRef.current = false;
+      
+      // Update the last fetch time to prevent duplicate fetches
+      lastFetchTimeRef.current = Date.now();
+      
       try {
-        // Reset card state for a clean start
+        // Reset card state completely for a clean start
         setCards([]);
         setAllCardsViewed(false);
         setNextCursor(undefined);
@@ -549,34 +559,89 @@ export default function DiscoverPage() {
           console.error('[Discovery] Error initializing Telegram WebApp:', e);
         }
         
+        // First fetch user swipes directly to ensure we have the most up-to-date exclusion list
+        let serverSwipedIds: string[] = [];
+        try {
+          const latestSwipes = await apiRequest('/api/user-swipes') as any[];
+          if (latestSwipes && latestSwipes.length > 0) {
+            serverSwipedIds = latestSwipes.map(swipe => swipe.collaboration_id);
+            console.log(`[Discovery] Initial load: Server reports ${serverSwipedIds.length} swipes`);
+          } else {
+            console.log('[Discovery] Initial load: Server returned no swipes');
+          }
+        } catch (e) {
+          console.warn('[Discovery] Initial load: Failed to fetch swipes from server:', e);
+        }
+        
         // Add potential matches to card stack if available
         if (potentialMatches && potentialMatches.length > 0) {
           console.log(`[Discovery] Adding ${potentialMatches.length} potential matches to card stack`);
+          
           // Apply validation to potential matches too
           const validPotentialMatches = validateCardData(potentialMatches);
           console.log(`[Discovery] After validation, using ${validPotentialMatches.length} potential matches`);
           
           // Important: use function form to ensure we get latest state
-          setCards(prevCards => [...validPotentialMatches, ...prevCards]);
+          setCards(validPotentialMatches);
+          
+          // Update our ref as well for synchronization purposes
+          cardsRef.current = validPotentialMatches;
         } else {
           console.log('[Discovery] No potential matches available');
         }
         
-        // Always fetch first batch of regular cards, regardless of potential matches
-        console.log('[Discovery] Initiating fetch of regular collaboration cards');
-        await fetchNextBatch();
+        // Create a params object for the API request
+        const params = new URLSearchParams();
+        params.append('limit', '10');
         
-        // Verify cards were loaded
-        console.log('[Discovery] Initial card load complete, current cards:', cards.length);
+        // Fetch collaborations directly without waiting for fetchNextBatch
+        console.log('[Discovery] Initial load: Directly fetching collaborations');
         
-        // If we have no cards after initialization, try one more fetch
-        if (cards.length === 0) {
-          console.log('[Discovery] No cards after initial load, trying one more fetch');
-          // Short timeout to allow state updates to process
-          setTimeout(() => {
-            fetchNextBatch();
-          }, 300);
+        const response = await apiRequest(`/api/collaborations/search?${params.toString()}`, 'POST', {
+          excludeIds: serverSwipedIds
+        }) as PaginatedResponse;
+        
+        if (response && response.items && response.items.length > 0) {
+          console.log(`[Discovery] Initial load: Received ${response.items.length} collaborations`);
+          
+          // Filter out incomplete card data before adding to the state
+          const validItems = validateCardData(response.items);
+          console.log(`[Discovery] Initial load: After validation, have ${validItems.length} valid collaborations`);
+          
+          // Combine existing cards (potential matches) with new cards
+          setCards(prevCards => {
+            const newCards = [...prevCards, ...validItems];
+            console.log(`[Discovery] Initial load: Setting cards state with ${newCards.length} total cards`);
+            
+            // Update our ref immediately for synchronization
+            cardsRef.current = newCards;
+            
+            return newCards;
+          });
+          
+          // Update pagination state
+          setNextCursor(response.nextCursor);
+          setHasMore(response.hasMore);
+        } else {
+          console.log('[Discovery] Initial load: No regular collaborations found');
+          if (cardsRef.current.length === 0) {
+            console.log('[Discovery] Initial load: No cards available at all, setting allCardsViewed=true');
+            setAllCardsViewed(true);
+          }
         }
+        
+        // Mark initial load as complete
+        initialLoadCompletedRef.current = true;
+        
+        // Check if we need to fetch more cards after a short delay
+        // This ensures the component has fully rendered with the initial cards
+        setTimeout(() => {
+          // If we have fewer than 3 cards and there are more to fetch, get more
+          if (cardsRef.current.length < 3 && hasMore) {
+            console.log('[Discovery] Initial load: Not enough cards, fetching more...');
+            fetchNextBatch();
+          }
+        }, 500);
       } catch (error) {
         console.error('[Discovery] Error initializing cards:', error);
       } finally {
@@ -604,10 +669,24 @@ export default function DiscoverPage() {
     }
   }, [cards.length, hasMore, loadingMore, isLoading]);
   
-  // Update the swipe history ref whenever the state changes
+  // Update the refs whenever the state changes
   useEffect(() => {
+    // Update swipe history ref to always have the latest value
     swipeHistoryRef.current = swipeHistory;
   }, [swipeHistory]);
+
+  // Keep cardsRef in sync with actual cards state
+  useEffect(() => {
+    // Update cardsRef to always have the latest value
+    cardsRef.current = cards;
+    
+    // Log the current cards state for debugging
+    console.log('[Discovery] Cards state changed:', {
+      cardsLength: cards.length,
+      hasData: cards.length > 0,
+      firstCardId: cards[0]?.id || 'none',
+    });
+  }, [cards]);
   
   // Initialize Telegram WebApp when component mounts
   useEffect(() => {
@@ -670,6 +749,43 @@ export default function DiscoverPage() {
     return () => {
       window.removeEventListener('error', errorHandler);
       window.removeEventListener('unhandledrejection', rejectionHandler);
+    };
+  }, []);
+  
+  // Add a focus/visibility listener to ensure cards load when user revisits the page
+  useEffect(() => {
+    // Function to handle when the page becomes visible again
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('[Discovery] Page visibility changed to visible');
+        
+        // Only reload if we have no cards or it's been more than 30 seconds
+        const now = Date.now();
+        const timeSinceLastFetch = now - lastFetchTimeRef.current;
+        const shouldRefresh = 
+          cardsRef.current.length === 0 || 
+          timeSinceLastFetch > 30000; // 30 seconds
+        
+        if (shouldRefresh) {
+          console.log('[Discovery] Refreshing cards on page revisit');
+          lastFetchTimeRef.current = now;
+          handleRefresh();
+        } else {
+          console.log('[Discovery] No need to refresh, recent fetch or cards exist');
+        }
+      }
+    };
+    
+    // Add the visibility change listener
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Also handle browser focus events for some browsers
+    window.addEventListener('focus', handleVisibilityChange);
+    
+    // Clean up
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
     };
   }, []);
   
