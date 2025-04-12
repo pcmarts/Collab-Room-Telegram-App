@@ -32,7 +32,13 @@ const configSchema = z.object({
   ENABLE_SECURITY_HEADERS: z.coerce.boolean().default(true),
   
   // Logging settings (optional, with defaults)
-  LOG_LEVEL: z.coerce.number().min(0).max(4).default(2),
+  // Force coercion to ensure string "0" is properly converted to number 0
+  LOG_LEVEL: z.coerce.number().min(0).max(4).default(2)
+    .transform(val => {
+      // Add additional safeguard to ensure "0" is properly processed
+      if (process.env.LOG_LEVEL === "0") return 0;
+      return val;
+    }),
   
   // Authentication
   TELEGRAM_BOT_TOKEN: z.string().min(1, 'TELEGRAM_BOT_TOKEN is required').optional(),
@@ -76,6 +82,13 @@ function loadConfig(): Config {
 
   // Validate configuration
   try {
+    // Force diagnostic output of the LOG_LEVEL (temporary)
+    console.log("=== DIAGNOSTIC OUTPUT ===");
+    console.log(`Environment LOG_LEVEL raw value: '${process.env.LOG_LEVEL}'`);
+    console.log(`Environment LOG_LEVEL type: ${typeof process.env.LOG_LEVEL}`);
+    console.log(`Environment LOG_LEVEL parsed: ${parseInt(process.env.LOG_LEVEL || '999')}`);
+    console.log("=== END DIAGNOSTIC ===");
+    
     // In production, we enforce stricter validation
     if (process.env.NODE_ENV === 'production') {
       // Override defaults that should not be used in production
@@ -89,6 +102,12 @@ function loadConfig(): Config {
       // Do additional production checks
       if (!process.env.SESSION_SECRET) {
         throw new Error('SESSION_SECRET must be explicitly set in production environment');
+      }
+      
+      // Force a log level override if needed
+      if (process.env.LOG_LEVEL === "0") {
+        validated.LOG_LEVEL = 0;
+        console.log("FORCED LOG_LEVEL to 0 in config");
       }
       
       return validated;
@@ -112,6 +131,12 @@ function loadConfig(): Config {
         console.warn('    This allows bypassing authentication and security measures');
         console.warn('    and should NEVER be used in production.');
         console.warn('==============================================================');
+      }
+      
+      // Force a log level override if needed
+      if (process.env.LOG_LEVEL === "0") {
+        validated.LOG_LEVEL = 0;
+        console.log("FORCED LOG_LEVEL to 0 in config");
       }
       
       return validated;

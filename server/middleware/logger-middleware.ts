@@ -48,14 +48,34 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
   }
   
   // Skip static file request logging in non-debug mode
+  // For LOG_LEVEL=0 or LOG_LEVEL=1, completely disable all static file and development resource logging
+  // For LOG_LEVEL=2 and LOG_LEVEL=3, filter out most development resources
+  // For LOG_LEVEL=4, log everything (debug mode)
   if (config.LOG_LEVEL !== 4) {
+    // Base set of static files to filter
     const staticFileExts = ['.js', '.css', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.woff', '.woff2', '.ttf', '.eot'];
     const isStaticFile = staticFileExts.some(ext => req.path.endsWith(ext));
     const isSourceMapFile = req.path.endsWith('.map');
     const isHotUpdate = req.path.includes('hot-update');
     const isViteInternal = req.path.startsWith('/@');
     
-    if (isStaticFile || isSourceMapFile || isHotUpdate || isViteInternal) {
+    // Add additional filters for Vite development and source files in silent mode
+    const isViteDevResource = req.path.includes('node_modules') || 
+                             req.path.includes('__vite') || 
+                             req.path.includes('src/') || 
+                             req.path.includes('client/') || 
+                             req.path.includes('@fs');
+    
+    // Apply comprehensive filters in silent mode
+    if (config.LOG_LEVEL <= 1) {
+      // Skip almost all logs in silent mode except API logs
+      const isAPIRequest = req.path.startsWith('/api/');
+      if (!isAPIRequest) {
+        return next();
+      }
+    }
+    // In other non-debug modes, at least filter dev resources
+    else if (isStaticFile || isSourceMapFile || isHotUpdate || isViteInternal || isViteDevResource) {
       return next();
     }
   }

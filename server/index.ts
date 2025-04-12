@@ -189,7 +189,40 @@ app.use('/api', (req, res, next) => {
     });
 
     if (app.get("env") === "development") {
+      // In silent mode (LOG_LEVEL=0), we need to suppress Vite's output
+      // This is a workaround since Vite's logger isn't directly configurable from here
+      const originalConsoleLog = console.log;
+      const originalConsoleInfo = console.info;
+      
+      // Apply console output filtering in silent mode
+      if (config.LOG_LEVEL === 0) {
+        // Only filter INFO and lower logs that often come from Vite
+        console.log = function(...args) {
+          // Only allow through error logs in silent mode
+          if (args.length > 0 && typeof args[0] === 'string') {
+            const msg = args[0];
+            // Let through specific error messages
+            if (msg.includes('ERROR') || msg.includes('failed') || msg.includes('error')) {
+              originalConsoleLog.apply(console, args);
+            }
+          }
+        };
+        
+        console.info = function(...args) {
+          // Completely suppress INFO logs in silent mode
+        };
+        
+        // Log once that we're in silent mode to help with debugging
+        originalConsoleLog("[SILENT MODE] Most Vite logs suppressed due to LOG_LEVEL=0");
+      }
+      
       await setupVite(app, server);
+      
+      // Restore console functions
+      if (config.LOG_LEVEL === 0) {
+        console.log = originalConsoleLog;
+        console.info = originalConsoleInfo;
+      }
     } else {
       serveStatic(app);
     }

@@ -57,11 +57,20 @@ try {
 
 // Update LOG_LEVEL in .env file
 if (envContent.includes('LOG_LEVEL=')) {
-  // Replace existing LOG_LEVEL
-  envContent = envContent.replace(/LOG_LEVEL=\d/, `LOG_LEVEL=${level}`);
+  // Replace existing LOG_LEVEL - match any digit or whitespace
+  envContent = envContent.replace(/LOG_LEVEL=[\d\s]+/, `LOG_LEVEL=${level}`);
 } else {
   // Add LOG_LEVEL if not present
   envContent += `\nLOG_LEVEL=${level}\n`;
+}
+
+// Verify the change was applied correctly
+console.log(`Checking updated .env content: LOG_LEVEL=${level} should be present`);
+if (!envContent.includes(`LOG_LEVEL=${level}`)) {
+  console.error('Failed to update LOG_LEVEL correctly in .env file');
+  console.error('Current content has:');
+  console.error(envContent.split('\n').find(line => line.includes('LOG_LEVEL=')));
+  process.exit(1);
 }
 
 // Write updated .env file
