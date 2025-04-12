@@ -151,6 +151,9 @@ export default function DiscoverPage() {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   
+  // Track previous location to detect navigation
+  const prevLocationRef = useRef<string>('');
+  
   // Motion values for card animations
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 0, 200], [-10, 0, 10]);
@@ -512,146 +515,26 @@ export default function DiscoverPage() {
     }
   };
   
-  // Initial load of cards and potential matches
+  // We do NOT use this for initial loads - the location change effect handles that
   useEffect(() => {
-    // Initialize the card stack with potential matches and regular cards
-    const initializeCards = async () => {
-      // Set loading state to show spinner
-      setIsLoading(true);
-      
-      // Mark that we're performing the initial load
-      initialLoadCompletedRef.current = false;
-      
-      // Update the last fetch time to prevent duplicate fetches
-      lastFetchTimeRef.current = Date.now();
-      
-      try {
-        // Reset card state completely for a clean start
-        setCards([]);
-        setAllCardsViewed(false);
-        setNextCursor(undefined);
-        setHasMore(true);
-        
-        // Verify authentication before attempting to load cards
-        // This is critical for the Telegram WebApp authentication flow
-        const telegramAvailable = !!window.Telegram?.WebApp;
-        const initDataAvailable = telegramAvailable && !!window.Telegram.WebApp.initData;
-        
-        console.log('[Discovery] Initial load with authentication status:', {
-          telegram: telegramAvailable ? 'Available' : 'Not Available',
-          initData: initDataAvailable ? 'Present' : 'Missing',
-          authError
-        });
-        
-        // If we don't have Telegram authentication, show error
-        if (!telegramAvailable || !initDataAvailable) {
-          console.error('[Discovery] Cannot load cards - Telegram authentication required');
-          setAuthError(true);
-          setIsLoading(false);
-          return; // Exit early - we can't load without authentication
-        }
-        
-        // Initialize Telegram WebApp
-        try {
-          window.Telegram.WebApp.ready();
-          window.Telegram.WebApp.expand();
-        } catch (e) {
-          console.error('[Discovery] Error initializing Telegram WebApp:', e);
-        }
-        
-        // First fetch user swipes directly to ensure we have the most up-to-date exclusion list
-        let serverSwipedIds: string[] = [];
-        try {
-          const latestSwipes = await apiRequest('/api/user-swipes') as any[];
-          if (latestSwipes && latestSwipes.length > 0) {
-            serverSwipedIds = latestSwipes.map(swipe => swipe.collaboration_id);
-            console.log(`[Discovery] Initial load: Server reports ${serverSwipedIds.length} swipes`);
-          } else {
-            console.log('[Discovery] Initial load: Server returned no swipes');
-          }
-        } catch (e) {
-          console.warn('[Discovery] Initial load: Failed to fetch swipes from server:', e);
-        }
-        
-        // Add potential matches to card stack if available
-        if (potentialMatches && potentialMatches.length > 0) {
-          console.log(`[Discovery] Adding ${potentialMatches.length} potential matches to card stack`);
-          
-          // Apply validation to potential matches too
-          const validPotentialMatches = validateCardData(potentialMatches);
-          console.log(`[Discovery] After validation, using ${validPotentialMatches.length} potential matches`);
-          
-          // Important: use function form to ensure we get latest state
-          setCards(validPotentialMatches);
-          
-          // Update our ref as well for synchronization purposes
-          cardsRef.current = validPotentialMatches;
-        } else {
-          console.log('[Discovery] No potential matches available');
-        }
-        
-        // Create a params object for the API request
-        const params = new URLSearchParams();
-        params.append('limit', '10');
-        
-        // Fetch collaborations directly without waiting for fetchNextBatch
-        console.log('[Discovery] Initial load: Directly fetching collaborations');
-        
-        const response = await apiRequest(`/api/collaborations/search?${params.toString()}`, 'POST', {
-          excludeIds: serverSwipedIds
-        }) as PaginatedResponse;
-        
-        if (response && response.items && response.items.length > 0) {
-          console.log(`[Discovery] Initial load: Received ${response.items.length} collaborations`);
-          
-          // Filter out incomplete card data before adding to the state
-          const validItems = validateCardData(response.items);
-          console.log(`[Discovery] Initial load: After validation, have ${validItems.length} valid collaborations`);
-          
-          // Combine existing cards (potential matches) with new cards
-          setCards(prevCards => {
-            const newCards = [...prevCards, ...validItems];
-            console.log(`[Discovery] Initial load: Setting cards state with ${newCards.length} total cards`);
-            
-            // Update our ref immediately for synchronization
-            cardsRef.current = newCards;
-            
-            return newCards;
-          });
-          
-          // Update pagination state
-          setNextCursor(response.nextCursor);
-          setHasMore(response.hasMore);
-        } else {
-          console.log('[Discovery] Initial load: No regular collaborations found');
-          if (cardsRef.current.length === 0) {
-            console.log('[Discovery] Initial load: No cards available at all, setting allCardsViewed=true');
-            setAllCardsViewed(true);
-          }
-        }
-        
-        // Mark initial load as complete
-        initialLoadCompletedRef.current = true;
-        
-        // Check if we need to fetch more cards after a short delay
-        // This ensures the component has fully rendered with the initial cards
-        setTimeout(() => {
-          // If we have fewer than 3 cards and there are more to fetch, get more
-          if (cardsRef.current.length < 3 && hasMore) {
-            console.log('[Discovery] Initial load: Not enough cards, fetching more...');
-            fetchNextBatch();
-          }
-        }, 500);
-      } catch (error) {
-        console.error('[Discovery] Error initializing cards:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // Logging only on component mount to help with debugging
+    console.log('[Discovery] Component mounted with route:', {
+      location,
+      windowLocation: window.location.pathname,
+      telegramAvailable: !!window?.Telegram?.WebApp,
+      telegramInitData: !!window?.Telegram?.WebApp?.initData
+    });
     
-    // Always run on initial mount to ensure cards are loaded immediately
-    initializeCards();
-  }, []);
+    // Initial setup of refs
+    initialLoadCompletedRef.current = false;
+    prevLocationRef.current = location;
+    lastFetchTimeRef.current = Date.now();
+    
+    // Return cleanup function
+    return () => {
+      console.log('[Discovery] Component unmounting, cleaning up');
+    };
+  }, []); // Empty dependency array - only runs once on mount
   
 
   
@@ -688,13 +571,17 @@ export default function DiscoverPage() {
     });
   }, [cards]);
   
-  // Initialize Telegram WebApp when component mounts
+  // Initialize Telegram WebApp when component mounts - this is a critical initialization for the app
   useEffect(() => {
+    console.log('[Auth] Component mounted, checking for Telegram WebApp...');
+    
     // Check if we need to initialize Telegram WebApp
-    if (window.Telegram?.WebApp) {
+    if (window?.Telegram?.WebApp) {
       try {
         // Signal that the WebApp is ready
-        console.log('[Auth] Initializing Telegram WebApp');
+        console.log('[Auth] Telegram WebApp object found, initializing...');
+        
+        // Initialize the WebApp - this is critical for auth
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         
@@ -702,10 +589,25 @@ export default function DiscoverPage() {
         const initDataAvailable = !!window.Telegram.WebApp.initData;
         console.log(`[Auth] Telegram initData is ${initDataAvailable ? 'available' : 'missing'} after initialization`);
         
+        // Log the user's session info for debugging
+        console.log('[Auth] Session information:', {
+          telegramVersion: window.Telegram.WebApp.version,
+          hasCookie: document.cookie.includes('connect.sid'),
+          location: window.location.pathname,
+          referrer: document.referrer,
+          clientTime: new Date().toISOString()
+        });
+        
         if (!initDataAvailable) {
-          console.error('[Auth] Telegram WebApp initData is missing after initialization');
+          console.error('[Auth] Telegram WebApp initData is missing - authentication will fail');
           // Set auth error immediately if no initData - this app requires Telegram initData
           setAuthError(true);
+          
+          // Attempt to trigger re-initialization from Telegram
+          if (typeof window !== 'undefined' && window.location && typeof window.location.reload === 'function') {
+            console.log('[Auth] Will attempt to reload the page to reinitialize Telegram WebApp in 2 seconds');
+            setTimeout(() => window.location.reload(), 2000);
+          }
         }
       } catch (e) {
         console.error('[Auth] Error initializing Telegram WebApp:', e);
@@ -714,6 +616,9 @@ export default function DiscoverPage() {
     } else {
       console.error('[Auth] Telegram WebApp is not available - this app must be opened from Telegram');
       setAuthError(true);
+      
+      // When testing in Replit webview, we need to show a helpful error
+      console.log('[Auth] If testing in Replit webview, you need to use Telegram WebApp integration');
     }
   }, []);
   
@@ -752,6 +657,60 @@ export default function DiscoverPage() {
     };
   }, []);
   
+  // Handle navigation to Discover page - specific effect to track location changes
+  useEffect(() => {
+    // Check if we're on the discover page
+    const isOnDiscoverPage = location === '/discover';
+    
+    // Check if this is a navigation TO the Discover page from somewhere else
+    const isNavigationToDiscoverPage = prevLocationRef.current !== '/discover' && isOnDiscoverPage;
+    
+    // Store the new location for future comparison
+    const oldLocation = prevLocationRef.current;
+    prevLocationRef.current = location;
+    
+    console.log('[Discovery] Location change detected:', {
+      current: location,
+      previous: oldLocation,
+      isOnDiscoverPage,
+      isNavigationToDiscoverPage,
+      cardsCount: cardsRef.current.length,
+      cardIds: cardsRef.current.map(c => c.id).slice(0, 3) // First 3 card IDs for debugging
+    });
+    
+    // Skip remaining logic if we're not on the discover page
+    if (!isOnDiscoverPage) {
+      return;
+    }
+    
+    // ALWAYS force a refresh when navigating to the Discover page
+    // This is the key fix for the navigation issue
+    if (isNavigationToDiscoverPage) {
+      console.log('[Discovery] Navigation to Discover page detected, forcing data refresh');
+      const now = Date.now();
+      lastFetchTimeRef.current = now;
+      
+      // This delay is critical - it gives the component time to fully mount
+      // before we try to refresh the data
+      setTimeout(() => {
+        // Force a complete reload of all data
+        console.log('[Discovery] Executing forced refresh after navigation');
+        setCards([]); // Clear cards first for clean state
+        handleRefresh();
+      }, 200);
+    } 
+    // If we're already on the Discover page but have no cards, also refresh
+    else if (cardsRef.current.length === 0) {
+      console.log('[Discovery] Already on Discover page but no cards, refreshing data');
+      const now = Date.now();
+      lastFetchTimeRef.current = now;
+      
+      setTimeout(() => {
+        handleRefresh();
+      }, 100);
+    }
+  }, [location]);
+
   // Add a focus/visibility listener to ensure cards load when user revisits the page
   useEffect(() => {
     // Function to handle when the page becomes visible again
@@ -759,19 +718,22 @@ export default function DiscoverPage() {
       if (document.visibilityState === 'visible') {
         console.log('[Discovery] Page visibility changed to visible');
         
-        // Only reload if we have no cards or it's been more than 30 seconds
-        const now = Date.now();
-        const timeSinceLastFetch = now - lastFetchTimeRef.current;
-        const shouldRefresh = 
-          cardsRef.current.length === 0 || 
-          timeSinceLastFetch > 30000; // 30 seconds
-        
-        if (shouldRefresh) {
-          console.log('[Discovery] Refreshing cards on page revisit');
-          lastFetchTimeRef.current = now;
-          handleRefresh();
-        } else {
-          console.log('[Discovery] No need to refresh, recent fetch or cards exist');
+        // Only refresh if we're on the Discover page
+        if (window.location.pathname === '/discover') {
+          // Only reload if we have no cards or it's been more than 30 seconds
+          const now = Date.now();
+          const timeSinceLastFetch = now - lastFetchTimeRef.current;
+          const shouldRefresh = 
+            cardsRef.current.length === 0 || 
+            timeSinceLastFetch > 30000; // 30 seconds
+          
+          if (shouldRefresh) {
+            console.log('[Discovery] Refreshing cards on page revisit');
+            lastFetchTimeRef.current = now;
+            handleRefresh();
+          } else {
+            console.log('[Discovery] No need to refresh, recent fetch or cards exist');
+          }
         }
       }
     };

@@ -1,0 +1,1616 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[2025-04-12T11:51:07.246Z] [HTTP] GET / 200 in 2ms
+[2025-04-12T11:51:07.447Z] [INFO] GET /@react-refresh 304 in 1ms
+{
+  "method": "GET",
+  "url": "/@react-refresh",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:07.925Z] [INFO] GET /@vite/client 304 in 1ms
+{
+  "method": "GET",
+  "url": "/@vite/client",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:07.933Z] [HTTP] GET /src/main.tsx 200 in 1ms
+[2025-04-12T11:51:08.092Z] [HTTP] GET /src/App.tsx 200 in 0ms
+[2025-04-12T11:51:08.094Z] [INFO] GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs 304 in 0ms
+{
+  "method": "GET",
+  "url": "/@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.139Z] [HTTP] GET /src/index.css 200 in 0ms
+[2025-04-12T11:51:08.546Z] [INFO] GET /src/lib/queryClient.ts 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/lib/queryClient.ts",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.547Z] [INFO] GET /src/components/ui/toaster.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/toaster.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.548Z] [INFO] GET /src/components/ui/bottom-navigation.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/bottom-navigation.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.694Z] [INFO] GET /src/components/admin/ImpersonationBanner.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/admin/ImpersonationBanner.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.698Z] [INFO] GET /src/pages/dashboard.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/dashboard.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.701Z] [INFO] GET /src/pages/DiscoverPageNew.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/DiscoverPageNew.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.746Z] [INFO] GET /src/contexts/MatchContext.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/contexts/MatchContext.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.845Z] [INFO] GET /src/pages/MatchesPage.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/MatchesPage.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.848Z] [INFO] GET /src/pages/auth-test.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/auth-test.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.854Z] [INFO] GET /src/pages/welcome.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/welcome.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:08.910Z] [INFO] GET /src/pages/personal-info.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/personal-info.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.008Z] [INFO] GET /src/pages/company-basics.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/pages/company-basics.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.009Z] [INFO] GET /src/pages/company-sector.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/pages/company-sector.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.010Z] [INFO] GET /src/pages/company-details.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/pages/company-details.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.028Z] [INFO] GET /src/components/LoadingScreen.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/LoadingScreen.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.031Z] [INFO] GET /src/components/MobileCheck.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/MobileCheck.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.058Z] [INFO] GET /src/pages/company-info.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/pages/company-info.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.159Z] [INFO] GET /src/pages/application-status.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/application-status.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.161Z] [INFO] GET /src/pages/application-form.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/pages/application-form.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.161Z] [INFO] GET /src/pages/profile-overview.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/profile-overview.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.180Z] [INFO] GET /src/pages/discovery-filters.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/pages/discovery-filters.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.183Z] [INFO] GET /src/pages/admin/dashboard.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/admin/dashboard.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.210Z] [INFO] GET /src/pages/admin/users.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/pages/admin/users.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.312Z] [INFO] GET /src/pages/marketing-collabs-new.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/marketing-collabs-new.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.316Z] [INFO] GET /src/pages/create-collaboration.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/create-collaboration.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.316Z] [INFO] GET /src/pages/apply.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/apply.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.326Z] [INFO] GET /src/pages/not-found.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/not-found.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.332Z] [INFO] GET /src/pages/my-collaborations.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/my-collaborations.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.360Z] [INFO] GET /src/pages/filters/dashboard.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/filters/dashboard.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.466Z] [INFO] GET /src/pages/admin/applications.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/admin/applications.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.468Z] [INFO] GET /src/pages/filters/topics.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/filters/topics.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.469Z] [INFO] GET /src/pages/filters/collab-types.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/filters/collab-types.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.470Z] [INFO] GET /src/pages/create-collaboration-steps.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/create-collaboration-steps.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.486Z] [INFO] GET /src/pages/filters/company-sectors.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/filters/company-sectors.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.535Z] [INFO] GET /src/pages/filters/company-followers.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/filters/company-followers.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.616Z] [INFO] GET /src/pages/filters/user-followers.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/filters/user-followers.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.626Z] [INFO] GET /src/pages/filters/funding-stages.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/filters/funding-stages.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.627Z] [INFO] GET /src/pages/filters/token-status.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/filters/token-status.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.627Z] [INFO] GET /src/pages/filters/blockchain-networks.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/filters/blockchain-networks.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.636Z] [INFO] GET /src/hooks/use-toast.ts 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/hooks/use-toast.ts",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.681Z] [INFO] GET /src/components/ui/toast.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/toast.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.767Z] [INFO] GET /src/lib/utils.ts 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/lib/utils.ts",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.775Z] [INFO] GET /src/components/icons/DiscoveryIcon.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/icons/DiscoveryIcon.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.778Z] [INFO] GET /src/components/ui/button.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/button.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.779Z] [INFO] GET /src/components/ui/badge.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/badge.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.786Z] [INFO] GET /src/components/ui/switch.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/switch.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.831Z] [INFO] GET /src/components/NetworkStatus.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/NetworkStatus.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.930Z] [INFO] GET /src/components/ui/card.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/card.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.931Z] [INFO] GET /src/components/ui/glow-button.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/glow-button.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.932Z] [INFO] GET /src/components/SwipeableCard.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/SwipeableCard.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.933Z] [INFO] GET /src/components/MatchMoment.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/MatchMoment.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.937Z] [INFO] GET /src/components/CollaborationDetailsDialog.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/CollaborationDetailsDialog.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:09.977Z] [INFO] GET /src/components/AuthenticationError.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/AuthenticationError.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.079Z] [INFO] GET /src/components/AuthTest.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/AuthTest.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.081Z] [INFO] GET /src/components/ui/skeleton.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/skeleton.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.087Z] [INFO] GET /src/lib/collab-utils.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/lib/collab-utils.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.087Z] [INFO] GET /src/components/GlowButton.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/GlowButton.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.089Z] [INFO] GET /src/components/ui/input.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/input.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.137Z] [INFO] GET /src/components/ui/dialog.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/dialog.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.231Z] [INFO] GET /src/components/ui/label.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/label.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.232Z] [INFO] GET /src/components/ui/text-loop.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/text-loop.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.239Z] [INFO] GET /src/components/ui/select.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/select.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.240Z] [INFO] GET /@fs/home/runner/workspace/shared/schema.ts 304 in 0ms
+{
+  "method": "GET",
+  "url": "/@fs/home/runner/workspace/shared/schema.ts",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.241Z] [INFO] GET /src/components/layout/OnboardingHeader.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/layout/OnboardingHeader.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.283Z] [INFO] GET /src/components/ui/progress.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/progress.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.382Z] [INFO] GET /src/components/ui/textarea.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/textarea.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.383Z] [INFO] GET /src/components/layout/PageHeader.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/layout/PageHeader.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.389Z] [INFO] GET /src/components/ui/form.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/form.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.390Z] [INFO] GET /src/components/ui/checkbox.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/checkbox.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.393Z] [INFO] GET /src/components/ui/tabs.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/tabs.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.443Z] [INFO] GET /src/components/ui/separator.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/separator.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.545Z] [INFO] GET /src/components/ui/radio-group.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/radio-group.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.546Z] [INFO] GET /src/components/ui/alert-dialog.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/alert-dialog.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.548Z] [INFO] GET /src/hooks/use-mobile.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/hooks/use-mobile.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.549Z] [INFO] GET /src/components/ui/accordion.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/accordion.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.549Z] [INFO] GET /src/pages/filters/FilterSaveButton.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/pages/filters/FilterSaveButton.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.590Z] [INFO] GET /src/lib/haptics.ts 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/lib/haptics.ts",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.695Z] [INFO] GET /src/components/ui/glow-effect.tsx 304 in 1ms
+{
+  "method": "GET",
+  "url": "/src/components/ui/glow-effect.tsx",
+  "status": 304,
+  "responseTime": "1ms",
+  "ip": "172.31.128.19"
+}
+[2025-04-12T11:51:10.695Z] [INFO] GET /src/components/AddNoteDialog.tsx 304 in 0ms
+{
+  "method": "GET",
+  "url": "/src/components/AddNoteDialog.tsx",
+  "status": 304,
+  "responseTime": "0ms",
+  "ip": "172.31.128.19"
+}
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Notification Preferences Found:
+- Notifications Enabled: true
+- Notification Frequency: Instant
+- Raw Value Type: boolean
+- Updated At: 2025-04-07T12:16:53.000Z
+[2025-04-12T11:51:11.123Z] [HTTP] GET /api/profile 200 in 154ms
+============ DEBUG: Profile Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.6.181',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.10.195',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+============ DEBUG: User Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  'if-modified-since': 'Sat, 12 Apr 2025 11:48:07 GMT',
+  'if-none-match': 'W/"0-1744458487296"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.1.156',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Fetching matches with details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Fetching complete match details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Notification Preferences Found:
+- Notifications Enabled: true
+- Notification Frequency: Instant
+- Raw Value Type: boolean
+- Updated At: 2025-04-07T12:16:53.000Z
+[2025-04-12T11:51:12.409Z] [HTTP] GET /api/profile 200 in 97ms
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:12.410Z] [HTTP] GET /api/user-swipes 200 in 93ms
+Found 0 enriched matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 matches in 21ms
+[2025-04-12T11:51:12.413Z] [HTTP] GET /api/matches 200 in 93ms
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:12.426Z] [HTTP] GET /api/user-swipes 200 in 112ms
+Found 0 existing matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:12.503Z] [HTTP] GET /api/potential-matches 200 in 184ms
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '17',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Query: { limit: '10' }
+Body: { excludeIds: [] }
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 0 additional IDs from body: []
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Join-Based) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: []
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Found 0 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 7 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 7 (7 own + 0 swiped + 0 additional)
+Using join structure: collaborations -> users -> companies
+Excluding 7 total collaborations from results
+Excluded IDs for debugging: [
+  '41b8355d-8da6-4845-85f6-491d1fe10f8a',
+  '4fa70efd-7c73-4cd1-99af-ce7d4d67fc28',
+  '1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9',
+  '2dd0f45d-28c3-4568-873d-ee0855be2a8d',
+  '51221906-fef5-4908-8c94-5b90e44f4ff7',
+  '81f35dd4-fae2-4872-a10b-a8cb8af32360',
+  'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5'
+]
+Excluding user's own collaborations (creator_id filtering)
+Final joined filter query constructed, executing and returning results
+Returning 3 collaborations with hasMore=false
+Found 3 collaborations, hasMore: false
+[2025-04-12T11:51:12.715Z] [HTTP] POST /api/collaborations/search 200 in 123ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:13.456Z] [HTTP] GET /api/user-swipes 200 in 43ms
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '17',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Query: { limit: '10' }
+Body: { excludeIds: [] }
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 0 additional IDs from body: []
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Join-Based) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: []
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Found 0 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 7 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 7 (7 own + 0 swiped + 0 additional)
+Using join structure: collaborations -> users -> companies
+Excluding 7 total collaborations from results
+Excluded IDs for debugging: [
+  '41b8355d-8da6-4845-85f6-491d1fe10f8a',
+  '4fa70efd-7c73-4cd1-99af-ce7d4d67fc28',
+  '1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9',
+  '2dd0f45d-28c3-4568-873d-ee0855be2a8d',
+  '51221906-fef5-4908-8c94-5b90e44f4ff7',
+  '81f35dd4-fae2-4872-a10b-a8cb8af32360',
+  'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5'
+]
+Excluding user's own collaborations (creator_id filtering)
+Final joined filter query constructed, executing and returning results
+Returning 3 collaborations with hasMore=false
+Found 3 collaborations, hasMore: false
+[2025-04-12T11:51:13.754Z] [HTTP] POST /api/collaborations/search 200 in 140ms
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Getting applications (swipes) by user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:15.840Z] [HTTP] GET /api/my-applications 200 in 51ms
+[2025-04-12T11:51:15.842Z] [HTTP] GET /api/collaborations/my 200 in 54ms
+Found 0 existing matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:15.888Z] [HTTP] GET /api/potential-matches 200 in 105ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/my-collaborations',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:16.106Z] [HTTP] GET /api/user-swipes 200 in 31ms
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/my-collaborations',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Found 0 existing matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:16.340Z] [HTTP] GET /api/potential-matches 200 in 75ms
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '17',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/my-collaborations',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Query: { limit: '10' }
+Body: { excludeIds: [] }
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 0 additional IDs from body: []
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Join-Based) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: []
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Found 0 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 7 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 7 (7 own + 0 swiped + 0 additional)
+Using join structure: collaborations -> users -> companies
+Excluding 7 total collaborations from results
+Excluded IDs for debugging: [
+  '41b8355d-8da6-4845-85f6-491d1fe10f8a',
+  '4fa70efd-7c73-4cd1-99af-ce7d4d67fc28',
+  '1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9',
+  '2dd0f45d-28c3-4568-873d-ee0855be2a8d',
+  '51221906-fef5-4908-8c94-5b90e44f4ff7',
+  '81f35dd4-fae2-4872-a10b-a8cb8af32360',
+  'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5'
+]
+Excluding user's own collaborations (creator_id filtering)
+Final joined filter query constructed, executing and returning results
+Returning 3 collaborations with hasMore=false
+Found 3 collaborations, hasMore: false
+[2025-04-12T11:51:16.594Z] [HTTP] POST /api/collaborations/search 200 in 96ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.6.181',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:17.409Z] [HTTP] GET /api/user-swipes 200 in 40ms
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:17.410Z] [HTTP] GET /api/user-swipes 200 in 42ms
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '17',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.6.181',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Query: { limit: '10' }
+Body: { excludeIds: [] }
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 0 additional IDs from body: []
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Join-Based) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: []
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Found 0 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 7 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 7 (7 own + 0 swiped + 0 additional)
+Using join structure: collaborations -> users -> companies
+Excluding 7 total collaborations from results
+Excluded IDs for debugging: [
+  '41b8355d-8da6-4845-85f6-491d1fe10f8a',
+  '4fa70efd-7c73-4cd1-99af-ce7d4d67fc28',
+  '1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9',
+  '2dd0f45d-28c3-4568-873d-ee0855be2a8d',
+  '51221906-fef5-4908-8c94-5b90e44f4ff7',
+  '81f35dd4-fae2-4872-a10b-a8cb8af32360',
+  'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5'
+]
+Excluding user's own collaborations (creator_id filtering)
+Final joined filter query constructed, executing and returning results
+Returning 3 collaborations with hasMore=false
+Found 3 collaborations, hasMore: false
+[2025-04-12T11:51:17.697Z] [HTTP] POST /api/collaborations/search 200 in 130ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:18.417Z] [HTTP] GET /api/user-swipes 200 in 43ms
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '17',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Query: { limit: '10' }
+Body: { excludeIds: [] }
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 0 additional IDs from body: []
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Join-Based) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: []
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Found 0 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 7 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 7 (7 own + 0 swiped + 0 additional)
+Using join structure: collaborations -> users -> companies
+Excluding 7 total collaborations from results
+Excluded IDs for debugging: [
+  '41b8355d-8da6-4845-85f6-491d1fe10f8a',
+  '4fa70efd-7c73-4cd1-99af-ce7d4d67fc28',
+  '1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9',
+  '2dd0f45d-28c3-4568-873d-ee0855be2a8d',
+  '51221906-fef5-4908-8c94-5b90e44f4ff7',
+  '81f35dd4-fae2-4872-a10b-a8cb8af32360',
+  'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5'
+]
+Excluding user's own collaborations (creator_id filtering)
+Final joined filter query constructed, executing and returning results
+Returning 3 collaborations with hasMore=false
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.6.181',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Found 3 collaborations, hasMore: false
+[2025-04-12T11:51:18.707Z] [HTTP] POST /api/collaborations/search 200 in 131ms
+Found 0 existing matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:18.772Z] [HTTP] GET /api/potential-matches 200 in 83ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:18.969Z] [HTTP] GET /api/user-swipes 200 in 34ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:19.166Z] [HTTP] GET /api/user-swipes 200 in 34ms
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Found 0 existing matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 0 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-12T11:51:19.409Z] [HTTP] GET /api/potential-matches 200 in 84ms
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '17',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AtRLxgNzVP6txRPr0OvxTBk34YUsM4agd.eIadpbJL4D9rQr1etxxJwWXIgU1s5nVBHWUUSrvLLvY',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.78.171, 10.82.5.39',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkg9XEr8&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744458666&signature=3g6f_s-F0QJgDAO6M8J980FShHoLhqnI4Z569r0HStUwuYf8PgB7V5jipZvXZVtz1OHdpaUWfFCgGOS69JeSAg&hash=0bb4e1932ae38ec102222049404471ea2be940c2c35bd37b17c0f817ef427456'
+}
+Query: { limit: '10' }
+Body: { excludeIds: [] }
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 0 additional IDs from body: []
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Join-Based) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: []
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Found 0 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 7 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 7 (7 own + 0 swiped + 0 additional)
+Using join structure: collaborations -> users -> companies
+Excluding 7 total collaborations from results
+Excluded IDs for debugging: [
+  '41b8355d-8da6-4845-85f6-491d1fe10f8a',
+  '4fa70efd-7c73-4cd1-99af-ce7d4d67fc28',
+  '1fc8f7ac-d2f7-4fc0-8346-b0c4449fc5a9',
+  '2dd0f45d-28c3-4568-873d-ee0855be2a8d',
+  '51221906-fef5-4908-8c94-5b90e44f4ff7',
+  '81f35dd4-fae2-4872-a10b-a8cb8af32360',
+  'ddac0ac6-f79a-4ccd-a3c0-0eff52f1b8f5'
+]
+Excluding user's own collaborations (creator_id filtering)
+Final joined filter query constructed, executing and returning results
+Returning 3 collaborations with hasMore=false
+Found 3 collaborations, hasMore: false
+[2025-04-12T11:51:19.672Z] [HTTP] POST /api/collaborations/search 200 in 108ms
