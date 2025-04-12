@@ -10,30 +10,27 @@ interface TelegramButtonProps extends ButtonProps {
 
 /**
  * Special button component with explicit styling to ensure visibility in Telegram mobile browser
+ * Uses pure HTML button with !important CSS classes to force visibility
  */
 export function TelegramButton({
   isLoading = false,
   loadingText = "Loading...",
   text,
   className = "",
+  type = "button",
+  disabled = false,
+  onClick,
   ...props
 }: TelegramButtonProps) {
   return (
-    <Button
-      className={`w-full font-bold ${className}`}
-      variant="default"
-      // Important: these inline styles ensure visibility in Telegram mobile browser
-      style={{ 
-        color: "white", 
-        backgroundColor: "#4034B9",
-        boxShadow: "none",
-        border: "1px solid rgba(255,255,255,0.1)",
-        position: "relative",
-        zIndex: 999,
-        // Extra visibility insurance
-        opacity: 1,
-        visibility: "visible",
-        display: "flex"
+    <button
+      type={type as "button" | "submit" | "reset"}
+      disabled={disabled}
+      onClick={onClick}
+      className={`w-full text-center py-2 px-4 rounded font-bold telegram-button ${className}`}
+      style={{
+        cursor: disabled ? "not-allowed" : "pointer",
+        filter: disabled ? "grayscale(50%)" : "none"
       }}
       {...props}
     >
@@ -45,12 +42,13 @@ export function TelegramButton({
       ) : (
         text
       )}
-    </Button>
+    </button>
   );
 }
 
 /**
  * Container for fixed bottom buttons with enhanced visibility in Telegram
+ * Uses !important CSS class to force visibility
  */
 export function TelegramFixedButtonContainer({
   children
@@ -58,19 +56,7 @@ export function TelegramFixedButtonContainer({
   children: React.ReactNode;
 }) {
   return (
-    <div 
-      className="fixed bottom-0 left-0 right-0 p-4 bg-black border-t border-border shadow-lg"
-      style={{
-        zIndex: 999,
-        visibility: "visible",
-        opacity: 1,
-        // Additional positioning safeguards
-        position: "fixed",
-        bottom: 0,
-        display: "block",
-        width: "100%"
-      }}
-    >
+    <div className="telegram-fixed-container">
       {children}
     </div>
   );

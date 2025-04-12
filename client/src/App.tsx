@@ -8,6 +8,7 @@ import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { MatchProvider } from "@/contexts/MatchContext";
+import { initTelegramButtonFix } from "./utils/telegram-button-fix";
 import AuthTest from "@/components/AuthTest";
 import Dashboard from "@/pages/dashboard";
 import DiscoverPage from "@/pages/DiscoverPageNew";
