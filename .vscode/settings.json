@@ -3,12 +3,14 @@
     {
       "name": "Collab Room Database",
       "driver": "PostgreSQL",
-      "server": "${env:PGHOST}",
-      "port": "${env:PGPORT}",
-      "database": "${env:PGDATABASE}",
-      "username": "${env:PGUSER}",
+      "server": "ep-rough-river-a6f62dgj.us-west-2.aws.neon.tech",
+      "port": 5432,
+      "database": "neondb",
+      "username": "neondb_owner",
       "password": "${env:PGPASSWORD}",
-      "connectionTimeout": 30
+      "askForPassword": true,
+      "connectionTimeout": 30,
+      "ssl": true
     }
   ],
   "workbench.colorCustomizations": {

@@ -1,0 +1,77 @@
+{
+  "tables": {
+    "users": {
+      "columns": [
+        {"name": "id", "type": "uuid", "isPrimary": true},
+        {"name": "telegram_id", "type": "text", "isUnique": true},
+        {"name": "first_name", "type": "text"},
+        {"name": "last_name", "type": "text", "isNullable": true},
+        {"name": "handle", "type": "text"},
+        {"name": "linkedin_url", "type": "text", "isNullable": true},
+        {"name": "email", "type": "text", "isNullable": true},
+        {"name": "referral_code", "type": "text", "isNullable": true},
+        {"name": "twitter_url", "type": "text", "isNullable": true},
+        {"name": "twitter_followers", "type": "text", "isNullable": true},
+        {"name": "is_approved", "type": "boolean", "defaultValue": false},
+        {"name": "is_admin", "type": "boolean", "defaultValue": false},
+        {"name": "applied_at", "type": "timestamp", "defaultValue": "NOW()"},
+        {"name": "created_at", "type": "timestamp", "defaultValue": "NOW()"}
+      ]
+    },
+    "companies": {
+      "columns": [
+        {"name": "id", "type": "uuid", "isPrimary": true},
+        {"name": "user_id", "type": "uuid", "references": {"table": "users", "column": "id"}},
+        {"name": "name", "type": "text"},
+        {"name": "short_description", "type": "text", "isNullable": true},
+        {"name": "long_description", "type": "text", "isNullable": true},
+        {"name": "website", "type": "text"},
+        {"name": "job_title", "type": "text"},
+        {"name": "twitter_handle", "type": "text", "isNullable": true},
+        {"name": "twitter_followers", "type": "text", "isNullable": true},
+        {"name": "linkedin_url", "type": "text", "isNullable": true},
+        {"name": "funding_stage", "type": "text"},
+        {"name": "has_token", "type": "boolean", "defaultValue": false},
+        {"name": "token_ticker", "type": "text", "isNullable": true},
+        {"name": "blockchain_networks", "type": "text[]", "isNullable": true},
+        {"name": "tags", "type": "text[]", "isNullable": true},
+        {"name": "created_at", "type": "timestamp", "defaultValue": "NOW()"}
+      ]
+    },
+    "collaborations": {
+      "columns": [
+        {"name": "id", "type": "uuid", "isPrimary": true},
+        {"name": "creator_id", "type": "uuid", "references": {"table": "users", "column": "id"}},
+        {"name": "type", "type": "text"},
+        {"name": "description", "type": "text", "isNullable": true},
+        {"name": "status", "type": "text", "defaultValue": "active"},
+        {"name": "details", "type": "jsonb", "isNullable": true},
+        {"name": "created_at", "type": "timestamp", "defaultValue": "NOW()"},
+        {"name": "updated_at", "type": "timestamp", "defaultValue": "NOW()"}
+      ]
+    },
+    "swipes": {
+      "columns": [
+        {"name": "id", "type": "uuid", "isPrimary": true},
+        {"name": "user_id", "type": "uuid", "references": {"table": "users", "column": "id"}},
+        {"name": "collaboration_id", "type": "uuid", "references": {"table": "collaborations", "column": "id"}},
+        {"name": "direction", "type": "text"},
+        {"name": "note", "type": "text", "isNullable": true},
+        {"name": "details", "type": "jsonb", "isNullable": true},
+        {"name": "created_at", "type": "timestamp", "defaultValue": "NOW()"}
+      ]
+    },
+    "matches": {
+      "columns": [
+        {"name": "id", "type": "uuid", "isPrimary": true},
+        {"name": "user_id", "type": "uuid", "references": {"table": "users", "column": "id"}},
+        {"name": "collaboration_id", "type": "uuid", "references": {"table": "collaborations", "column": "id"}},
+        {"name": "creator_id", "type": "uuid", "references": {"table": "users", "column": "id"}},
+        {"name": "note", "type": "text", "isNullable": true},
+        {"name": "status", "type": "text", "defaultValue": "pending"},
+        {"name": "created_at", "type": "timestamp", "defaultValue": "NOW()"},
+        {"name": "updated_at", "type": "timestamp", "defaultValue": "NOW()"}
+      ]
+    }
+  }
+}
