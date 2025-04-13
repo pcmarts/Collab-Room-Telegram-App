@@ -12,6 +12,7 @@ import { users } from "../../shared/schema"; // For user lookup
 import { eq } from 'drizzle-orm'; // For user lookup
 import { logger } from '../utils/logger';
 import { getTelegramUserFromRequest } from "../utils/auth.utils";
+import { storage } from "../storage"; // Import storage interface
 
 const swipeMatchRouter = Router();
 
@@ -30,7 +31,12 @@ swipeMatchRouter.post("/swipes", swipeLimiter, async (req: Request, res: Respons
       return res.status(400).json({ error: 'Invalid direction' });
     }
 
-    const swipeData = { collaboration_id, direction, note }; // Pass note here
+    const swipeData = { 
+      collaboration_id,
+      direction,
+      note,
+      user_id: userId // Include user_id to satisfy type requirements
+    };
     const newSwipe = await createSwipe(userId, swipeData);
 
     // Check if a match was potentially created (service/storage layer handles the notification)
@@ -84,6 +90,20 @@ swipeMatchRouter.get("/matches/potential", async (req: Request, res: Response) =
   } catch (error) {
     logger.error('Error in GET /matches/potential route:', error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/potential-matches
+swipeMatchRouter.get("/potential-matches", async (req: Request, res: Response) => {
+  const userId = req.userId;
+  if (!userId) return res.status(500).json({ error: 'User ID not found after auth' });
+  try {
+    const potentialMatches = await getPotentialMatchesForHost(userId);
+    logger.debug(`Returning ${potentialMatches.length} potential matches for user ${userId}`);
+    return res.json(potentialMatches);
+  } catch (error) {
+    logger.error('Error in GET /potential-matches route:', error);
+    return res.status(500).json({ error: 'Failed to fetch potential matches' });
   }
 });
 

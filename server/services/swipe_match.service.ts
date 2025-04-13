@@ -10,12 +10,13 @@ import { notifyMatchCreated } from "../telegram"; // Potentially needed if match
 
 // --- Swipe Logic ---
 
-export async function createSwipe(swiperUserId: string, swipeData: Omit<InsertSwipe, 'swiper_user_id' | 'created_at'>): Promise<Swipe> {
+export async function createSwipe(swiperUserId: string, swipeData: Omit<InsertSwipe, 'created_at'>): Promise<Swipe> {
   logger.debug('Creating swipe:', { swiperUserId, swipeData });
   try {
+    // Make sure the user_id is set to swiperUserId 
     const fullSwipeData: InsertSwipe = {
       ...swipeData,
-      swiper_user_id: swiperUserId,
+      user_id: swiperUserId, // Use user_id instead of swiper_user_id
       created_at: new Date()
     };
     // Delegate to storage, which handles match checking
