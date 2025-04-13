@@ -7,16 +7,30 @@ This directory contains configuration files for VSCode and Cursor to help you wo
 The `settings.json` file contains a database connection configuration for Cursor that connects to your PostgreSQL database. Here's how to use it:
 
 1. Make sure you have the SQLTools extension installed in Cursor.
-2. When opening the connection for the first time, you'll be prompted for the database password.
-3. If you need to update connection details, edit the `sqltools.connections` section in `settings.json`.
+2. In Cursor, access the SQLTools sidebar (typically a database icon in the sidebar).
+3. Look for "Collab Room Database" in the connections list and connect to it.
+4. When opening the connection for the first time, you'll be prompted for the database password.
+5. If you need to update connection details, edit the `sqltools.connections` section in `settings.json`.
 
-## Database Schema
+## Database Schema Exploration
 
-The `db-schema.json` file provides Cursor with information about the database schema structure. This helps with:
+There are two files to help you understand and work with the database schema:
 
-- Autocomplete suggestions when writing SQL queries
-- Understanding table relationships
-- Visualizing the database structure
+1. **db-schema.json**: This file provides Cursor with information about the database schema structure. This helps with:
+   - Autocomplete suggestions when writing SQL queries
+   - Understanding table relationships
+   - Visualizing the database structure
+
+2. **explore-schema.sql**: This is a SQL file with various queries to explore the database schema:
+   - List all tables with column counts
+   - View table structures (column names, types, constraints)
+   - Check foreign key relationships
+   - See sample data (commented out by default)
+   
+   To use this file:
+   1. Open it in Cursor
+   2. Connect to the database
+   3. Execute individual queries by selecting them and using the SQLTools "Run Selected Query" command
 
 ## Common Issues and Solutions
 
