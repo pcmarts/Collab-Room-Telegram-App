@@ -1,5 +1,4 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { bot } from "./telegram";
 import session from 'express-session';
@@ -10,6 +9,17 @@ import connectPgSimple from 'connect-pg-simple';
 import { apiLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
 import { requestLogger, errorLogger } from './middleware/logger-middleware';
+import { createServer } from "http";
+import { authenticateMiddleware } from "./middleware/authenticate";
+
+// Import new routers
+import statsRouter from './routes/stats.routes';
+import profileRouter from './routes/profile.routes';
+import preferencesRouter from './routes/preferences.routes';
+import collaborationRouter from './routes/collaboration.routes';
+import swipeMatchRouter from './routes/swipe_match.routes';
+import adminRouter from './routes/admin.routes';
+import sseRouter from './routes/sse.routes';
 
 // Use PostgreSQL for session storage in production, memory store in development
 const MemoryStoreSession = MemoryStore(session);
@@ -140,8 +150,24 @@ try {
 // Apply request logging middleware
 app.use(requestLogger);
 
-//Apply rate limiting to all API routes
-app.use('/api', apiLimiter);
+// --- Public API Routes (No Auth Required) ---
+// Apply general rate limiting
+app.use('/api', apiLimiter); 
+// Mount public routers BEFORE authentication middleware
+app.use('/api', statsRouter); 
+// Add any other public routes here
+
+// --- Authenticated API Routes --- 
+// Apply authentication middleware AFTER public routes
+app.use('/api', authenticateMiddleware); 
+
+// Mount remaining domain-specific routers (now expect req.userId)
+app.use('/api', profileRouter);
+app.use('/api', preferencesRouter);
+app.use('/api', collaborationRouter);
+app.use('/api', swipeMatchRouter);
+app.use('/api/admin', adminRouter); // Admin router already applies admin check
+app.use('/api', sseRouter);
 
 // Apply cache control headers to all API routes
 app.use('/api', (req, res, next) => {
@@ -163,7 +189,9 @@ app.use('/api', (req, res, next) => {
   }
 
   try {
-    const server = await registerRoutes(app);
+    // Create the HTTP server directly here
+    const server = createServer(app);
+    logger.info('HTTP Server created in index.ts.');
 
     // Add our error logger middleware first
     app.use(errorLogger);
@@ -189,40 +217,8 @@ app.use('/api', (req, res, next) => {
     });
 
     if (app.get("env") === "development") {
-      // In silent mode (LOG_LEVEL=0), we need to suppress Vite's output
-      // This is a workaround since Vite's logger isn't directly configurable from here
-      const originalConsoleLog = console.log;
-      const originalConsoleInfo = console.info;
-      
-      // Apply console output filtering in silent mode
-      if (config.LOG_LEVEL === 0) {
-        // Only filter INFO and lower logs that often come from Vite
-        console.log = function(...args) {
-          // Only allow through error logs in silent mode
-          if (args.length > 0 && typeof args[0] === 'string') {
-            const msg = args[0];
-            // Let through specific error messages
-            if (msg.includes('ERROR') || msg.includes('failed') || msg.includes('error')) {
-              originalConsoleLog.apply(console, args);
-            }
-          }
-        };
-        
-        console.info = function(...args) {
-          // Completely suppress INFO logs in silent mode
-        };
-        
-        // Log once that we're in silent mode to help with debugging
-        originalConsoleLog("[SILENT MODE] Most Vite logs suppressed due to LOG_LEVEL=0");
-      }
-      
-      await setupVite(app, server);
-      
-      // Restore console functions
-      if (config.LOG_LEVEL === 0) {
-        console.log = originalConsoleLog;
-        console.info = originalConsoleInfo;
-      }
+      // Setup Vite Dev Server
+      await setupVite(app, server); 
     } else {
       serveStatic(app);
     }
