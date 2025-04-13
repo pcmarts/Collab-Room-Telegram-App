@@ -68,26 +68,49 @@ export async function getUserProfile(userId: string, session: any): Promise<any>
  */
 export async function upsertUserCompany(userId: string, companyData: Omit<InsertCompany, 'user_id'>): Promise<Company> {
   try {
+    // Get existing company for the user
     const [existingCompany] = await db.select().from(companies).where(eq(companies.user_id, userId));
+
+    // Filter out any undefined or null values to ensure we don't override with null
+    const cleanedCompanyData: Record<string, any> = {};
+    for (const [key, value] of Object.entries(companyData)) {
+      if (value !== undefined && value !== null) {
+        cleanedCompanyData[key] = value;
+      }
+    }
+
+    logger.debug('Cleaned company data:', { cleanedData: cleanedCompanyData });
 
     let company: Company;
 
     if (existingCompany) {
       logger.debug('Updating existing company for user:', { userId });
+      
+      // Ensure we're not including invalid columns in the update
       [company] = await db.update(companies)
-        .set(companyData)
+        .set({
+          ...cleanedCompanyData,
+          updated_at: new Date() // Always update the timestamp
+        })
         .where(eq(companies.user_id, userId))
         .returning();
     } else {
       logger.debug('Creating new company for user:', { userId });
+      
+      // Make sure we include user_id when creating a new company
       [company] = await db.insert(companies)
-        .values({ ...companyData, user_id: userId })
+        .values({
+          ...cleanedCompanyData,
+          user_id: userId,
+          created_at: new Date()
+        })
         .returning();
     }
 
     if (!company) {
       throw new Error("Failed to save company information.");
     }
+    
     logger.debug('Company upsert successful:', { companyId: company.id });
     return company;
   } catch (error) {

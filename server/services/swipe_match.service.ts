@@ -56,7 +56,7 @@ export async function getMatchById(matchId: string, userId: string): Promise<Mat
   try {
     const match = await storage.getMatchById(matchId);
     // Optional: Add authorization check - ensure the userId is part of the match
-    if (match && match.host_user_id !== userId && match.requester_user_id !== userId) {
+    if (match && match.host_id !== userId && match.requester_id !== userId) {
        logger.warn('User attempted to fetch match they are not part of', { userId, matchId });
        throw new Error("Unauthorized to view this match");
     }
@@ -75,7 +75,7 @@ export async function updateMatchStatus(matchId: string, userId: string, status:
     if (!match) {
       throw new Error("Match not found");
     }
-    if (match.host_user_id !== userId && match.requester_user_id !== userId) {
+    if (match.host_id !== userId && match.requester_id !== userId) {
       logger.warn('User attempted to update match status they are not part of', { userId, matchId });
       throw new Error("Unauthorized to update this match");
     }
