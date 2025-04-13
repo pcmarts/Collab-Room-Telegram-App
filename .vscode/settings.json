@@ -1,0 +1,22 @@
+{
+  "sqltools.connections": [
+    {
+      "name": "Collab Room Database",
+      "driver": "PostgreSQL",
+      "server": "${env:PGHOST}",
+      "port": "${env:PGPORT}",
+      "database": "${env:PGDATABASE}",
+      "username": "${env:PGUSER}",
+      "password": "${env:PGPASSWORD}",
+      "connectionTimeout": 30
+    }
+  ],
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#333333",
+    "titleBar.activeBackground": "#444444",
+    "titleBar.activeForeground": "#e7e7e7"
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
+  }
+}
