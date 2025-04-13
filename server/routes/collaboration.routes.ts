@@ -41,9 +41,28 @@ collaborationRouter.post("/collaborations/search", async (req: Request, res: Res
   const userId = req.userId;
   if (!userId) return res.status(500).json({ error: 'User ID not found after auth' });
   try {
-    const filters = req.body;
+    // Include excludeIds from body for filtering out already swiped collaborations
+    const filters = {
+      ...req.body,
+      excludeIds: req.body.excludeIds || []
+    };
+    
+    // Log the request for debugging
+    logger.debug('Discovery search request:', { 
+      userId, 
+      excludeIdsCount: filters.excludeIds.length,
+      limit: filters.limit || 10,
+      cursor: filters.cursor
+    });
+    
     const results = await searchCollaborationsPaginated(userId, filters);
-    return res.json(results);
+    
+    // Return paginated response format expected by client
+    return res.json({
+      items: results.items,
+      hasMore: results.hasMore,
+      nextCursor: results.nextCursor
+    });
   } catch (error) {
     logger.error('Error in POST /collaborations/search route:', error);
     return res.status(500).json({ error: 'Internal server error' });

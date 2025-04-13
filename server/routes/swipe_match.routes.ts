@@ -44,6 +44,21 @@ swipeMatchRouter.post("/swipes", swipeLimiter, async (req: Request, res: Respons
   }
 });
 
+// GET /api/user-swipes
+swipeMatchRouter.get("/user-swipes", async (req: Request, res: Response) => {
+  const userId = req.userId;
+  if (!userId) return res.status(500).json({ error: 'User ID not found after auth' });
+  try {
+    // Use the storage interface to get user swipes
+    const swipes = await storage.getUserSwipes(userId);
+    logger.debug(`Returning ${swipes.length} swipes for user ${userId}`);
+    return res.json(swipes);
+  } catch (error) {
+    logger.error('Error in GET /user-swipes route:', error);
+    return res.status(500).json({ error: 'Failed to fetch user swipes' });
+  }
+});
+
 // --- Match Routes --- 
 
 // GET /api/matches
