@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Script to clean up specific tables in the PostgreSQL database
-# This script will remove all data from collab_notifications, matches and swipes tables
+# This script will remove all data from collab_notifications, matches, swipes, and sessions tables
 
-echo "Clearing tables: collab_notifications, matches, swipes"
+echo "Clearing tables: collab_notifications, matches, swipes, sessions"
 
 # Execute the SQL queries
 psql $DATABASE_URL << EOF
@@ -14,6 +14,7 @@ SET session_replication_role = 'replica';
 DELETE FROM collab_notifications;
 DELETE FROM matches;
 DELETE FROM swipes;
+DELETE FROM sessions;
 
 -- Re-enable triggers
 SET session_replication_role = 'origin';
@@ -22,6 +23,7 @@ SET session_replication_role = 'origin';
 SELECT 'collab_notifications count: ' || COUNT(*) FROM collab_notifications;
 SELECT 'matches count: ' || COUNT(*) FROM matches;
 SELECT 'swipes count: ' || COUNT(*) FROM swipes;
+SELECT 'sessions count: ' || COUNT(*) FROM sessions;
 EOF
 
 echo "Tables cleared successfully."

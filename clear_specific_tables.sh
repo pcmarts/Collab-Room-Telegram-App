@@ -3,10 +3,10 @@
 # Script to clean up specific tables in the PostgreSQL database
 # Usage: ./clear_specific_tables.sh [table1] [table2] ...
 # Example: ./clear_specific_tables.sh collab_notifications matches
-# If no tables are specified, it will clear all three tables: collab_notifications, matches, swipes
+# If no tables are specified, it will clear all four tables: collab_notifications, matches, swipes, sessions
 
 # Default tables to clear
-tables=("collab_notifications" "matches" "swipes")
+tables=("collab_notifications" "matches" "swipes" "sessions")
 
 # If tables are provided as arguments, use those instead
 if [ $# -gt 0 ]; then
