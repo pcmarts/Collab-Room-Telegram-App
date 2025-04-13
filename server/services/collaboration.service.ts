@@ -1,6 +1,6 @@
 import { db } from "../db";
 import {
-  users, collaborations, collabApplications, // Import table directly
+  users, collaborations, /* collabApplications removed - table doesn't exist */
   type User, type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication
 } from "../../shared/schema";
@@ -115,15 +115,10 @@ export async function updateCollaborationStatus(collaborationId: string, userId:
 export async function applyToCollaboration(collaborationId: string, applicantUserId: string, note?: string): Promise<CollabApplication> {
   logger.debug('Applying to collaboration:', { collaborationId, applicantUserId });
   try {
-    // Basic validation or check if already applied?
-    const existingApplications = await db.select()
-        .from(collabApplications) // Use direct table name
-        .where(and(
-            eq(collabApplications.collaboration_id, collaborationId), // Use direct table name
-            eq(collabApplications.applicant_id, applicantUserId)
-        ));
-
-    if (existingApplications.length > 0) {
+    // Since collabApplications no longer exists, check with storage layer instead
+    const existingApplications = await storage.checkExistingApplication(collaborationId, applicantUserId);
+    
+    if (existingApplications && existingApplications.length > 0) {
         throw new Error("You have already applied to this collaboration.");
     }
     
@@ -138,8 +133,7 @@ export async function applyToCollaboration(collaborationId: string, applicantUse
       collaboration_id: collaborationId,
       applicant_id: applicantUserId,
       status: 'pending',
-      note: note || null,
-      // Assuming 'details' is not required or handled by DB default/storage layer
+      details: note ? { note } : {} // Store note in details JSON field
     };
     
     // Delegate to storage layer method

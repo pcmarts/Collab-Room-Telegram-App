@@ -1,6 +1,6 @@
 import { db } from "../db";
 import {
-  users, companies, collabApplications,
+  users, companies, /* collabApplications removed - table doesn't exist */
   type User, type CollabApplication
 } from "../../shared/schema";
 import { eq, desc, sql } from 'drizzle-orm';
@@ -96,33 +96,9 @@ export async function approveUser(userId: string): Promise<User | undefined> {
 export async function getAllApplications(): Promise<any[]> { // Use a more specific type if possible
   logger.debug('Fetching all applications (admin)');
   try {
-    // Fetch applications and join with user/company data for context
-    const allApplications = await db
-      .select({
-        application: collabApplications,
-        user: {
-          id: users.id,
-          firstName: users.first_name,
-          lastName: users.last_name,
-          handle: users.handle,
-          email: users.email,
-          isAdmin: users.is_admin,
-          isApproved: users.is_approved,
-          createdAt: users.created_at
-        },
-        company: {
-          name: companies.name,
-          website: companies.website,
-          jobTitle: companies.job_title
-        }
-      })
-      .from(collabApplications)
-      .leftJoin(users, eq(collabApplications.applicant_id, users.id))
-      .leftJoin(companies, eq(users.id, companies.user_id))
-      .orderBy(desc(collabApplications.created_at)); 
-      
-      logger.debug(`Found ${allApplications.length} applications`);
-      return allApplications;
+    // Since collabApplications table no longer exists, we'll use storage layer instead
+    // This should be updated to use the swipes table or another appropriate mechanism
+    return await storage.getAllApplications();
       
   } catch (error) {
     logger.error('Error fetching all applications in service:', { error });
