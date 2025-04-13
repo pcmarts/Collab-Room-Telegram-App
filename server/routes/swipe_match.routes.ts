@@ -85,10 +85,10 @@ function transformMatchData(rawMatch: any) {
     description: rawMatch.collab_description,
     details: rawMatch.collab_details || {},
     matchedPerson: `${rawMatch.other_user_first_name} ${rawMatch.other_user_last_name || ''}`.trim(),
-    companyName: rawMatch.company_name,
-    roleTitle: rawMatch.role_title,
-    companyDescription: rawMatch.company_description,
-    userDescription: rawMatch.user_description,
+    companyName: rawMatch.company_name || 'Unknown Company',
+    roleTitle: rawMatch.role_title || 'Team Member',
+    companyDescription: rawMatch.company_description || '',
+    userDescription: '', // not available in current schema
     username: rawMatch.other_user_handle,
     note: rawMatch.match_note,
     
@@ -97,7 +97,6 @@ function transformMatchData(rawMatch: any) {
     twitterUrl: rawMatch.other_user_twitter_url,
     twitterHandle: rawMatch.other_user_handle,
     twitterFollowers: rawMatch.other_user_twitter_followers,
-    email: rawMatch.email,
     
     // Company info
     companyWebsite: rawMatch.company_website,

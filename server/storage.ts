@@ -1174,11 +1174,9 @@ export class DatabaseStorage implements IStorage {
           ou.first_name AS other_user_first_name,
           ou.last_name AS other_user_last_name,
           ou.handle AS other_user_handle,
-          ou.description AS user_description,
           ou.twitter_followers AS other_user_twitter_followers,
           ou.twitter_url AS other_user_twitter_url,
           ou.linkedin_url AS other_user_linkedin_url,
-          ou.email AS email,
           
           -- Other user's company details
           comp.id AS company_id,
