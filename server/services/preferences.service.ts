@@ -7,6 +7,23 @@ import {
 } from "../../shared/schema";
 import { eq } from 'drizzle-orm';
 import { logger } from '../utils/logger';
+import { storage } from "../storage"; // For getUserMarketingPreferences
+
+/**
+ * Gets the marketing preferences for a user.
+ * @param userId - The user's ID.
+ * @returns The user's marketing preferences, or undefined if not found.
+ */
+export async function getUserMarketingPreferences(userId: string): Promise<MarketingPreferences | undefined> {
+  try {
+    logger.debug('Getting marketing preferences for user:', userId);
+    const preferences = await storage.getUserMarketingPreferences(userId);
+    return preferences;
+  } catch (error) {
+    logger.error('Error getting marketing preferences:', { userId, error });
+    throw new Error(`Failed to get marketing preferences: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
 
 interface PreferenceUpdateData {
   // Notification Prefs
