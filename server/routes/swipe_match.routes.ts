@@ -67,13 +67,67 @@ swipeMatchRouter.get("/user-swipes", async (req: Request, res: Response) => {
 
 // --- Match Routes --- 
 
+// Function to transform the raw DB match data into the expected client format
+function transformMatchData(rawMatch: any) {
+  // Format date for display
+  const matchDate = new Date(rawMatch.match_date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  // Return transformed match object with properly named fields
+  return {
+    id: rawMatch.match_id,
+    matchDate: matchDate,
+    status: rawMatch.match_status || 'active',
+    collaborationType: rawMatch.collab_type,
+    description: rawMatch.collab_description,
+    details: rawMatch.collab_details || {},
+    matchedPerson: `${rawMatch.other_user_first_name} ${rawMatch.other_user_last_name || ''}`.trim(),
+    companyName: rawMatch.company_name,
+    roleTitle: rawMatch.role_title,
+    companyDescription: rawMatch.company_description,
+    userDescription: rawMatch.user_description,
+    username: rawMatch.other_user_handle,
+    note: rawMatch.match_note,
+    
+    // Social links
+    linkedinUrl: rawMatch.other_user_linkedin_url,
+    twitterUrl: rawMatch.other_user_twitter_url,
+    twitterHandle: rawMatch.other_user_handle,
+    twitterFollowers: rawMatch.other_user_twitter_followers,
+    email: rawMatch.email,
+    
+    // Company info
+    companyWebsite: rawMatch.company_website,
+    companyLinkedinUrl: rawMatch.company_linkedin_url,
+    companyTwitterHandle: rawMatch.company_twitter_handle,
+    companyTwitterFollowers: rawMatch.company_twitter_followers,
+    fundingStage: rawMatch.funding_stage,
+    hasToken: rawMatch.has_token,
+    tokenTicker: rawMatch.token_ticker,
+    blockchainNetworks: Array.isArray(rawMatch.blockchain_networks) 
+      ? rawMatch.blockchain_networks 
+      : (rawMatch.blockchain_networks ? String(rawMatch.blockchain_networks).replace(/{|}/g, '').split(',') : []),
+    companyTags: Array.isArray(rawMatch.company_tags) 
+      ? rawMatch.company_tags 
+      : (rawMatch.company_tags ? String(rawMatch.company_tags).replace(/{|}/g, '').split(',') : [])
+  };
+}
+
 // GET /api/matches
 swipeMatchRouter.get("/matches", async (req: Request, res: Response) => {
   const userId = req.userId;
   if (!userId) return res.status(500).json({ error: 'User ID not found after auth' });
   try {
-    const matches = await getUserMatchesWithDetails(userId);
-    return res.json(matches);
+    const rawMatches = await getUserMatchesWithDetails(userId);
+    
+    // Transform the raw data to match the client's expected format
+    const transformedMatches = rawMatches.map(transformMatchData);
+    
+    logger.debug(`Returning ${transformedMatches.length} transformed matches for user ${userId}`);
+    return res.json(transformedMatches);
   } catch (error) {
     logger.error('Error in GET /matches route:', error);
     return res.status(500).json({ error: 'Internal server error' });
