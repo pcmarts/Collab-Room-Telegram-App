@@ -32,28 +32,57 @@ profileRouter.get("/profile", async (req: Request, res: Response) => {
  */
 profileRouter.post("/company", authLimiter, async (req: Request, res: Response) => {
   const userId = req.userId; // Use userId from global middleware
-  if (!userId) return res.status(500).json({ error: 'User ID not found after auth' });
+  if (!userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
   try {
-    // REMOVE user lookup by telegramId here
-    // Basic validation (can be enhanced with Zod later)
-    const { company_name, job_title, website, funding_stage } = req.body;
-    if (!company_name || !job_title || !website || !funding_stage) {
-      return res.status(400).json({ error: 'Missing required company fields' });
+    // Map requested field names to db schema names
+    const {
+      company_name, // These come from the frontend
+      job_title,
+      website,
+      funding_stage,
+      ...otherFields
+    } = req.body;
+    
+    // Create a properly shaped companyData object
+    const companyData = {
+      name: company_name, // Map to the actual field name in the schema
+      job_title,
+      website,
+      funding_stage,
+      ...otherFields
+    };
+    
+    // Basic validation for required fields
+    if (!companyData.name || !companyData.job_title || !companyData.website || !companyData.funding_stage) {
+      return res.status(400).json({ 
+        error: 'Missing required company fields', 
+        message: 'Company name, job title, website, and funding stage are required.'
+      });
     }
 
-    // Assuming companyData includes all fields from the schema except user_id
-    const companyData = req.body;
+    // Call the service function to handle the company update
     const company = await upsertUserCompany(userId, companyData);
 
     return res.json({
       success: true,
       company,
-      message: 'Company information saved successfully' // Adjusted message based on upsert logic
+      message: 'Company information saved successfully'
     });
 
   } catch (error) {
-    // Service layer should have logged the error
-    return res.status(500).json({ error: error instanceof Error ? error.message : "Failed to save company information" });
+    // Log error details
+    logger.error('Error in company update route:', { 
+      userId, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    });
+    
+    // Return appropriate error response
+    return res.status(500).json({ 
+      error: error instanceof Error ? error.message : "Failed to save company information" 
+    });
   }
 });
 

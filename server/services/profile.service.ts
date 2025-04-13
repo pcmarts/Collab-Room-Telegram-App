@@ -68,14 +68,36 @@ export async function getUserProfile(userId: string, session: any): Promise<any>
  */
 export async function upsertUserCompany(userId: string, companyData: Omit<InsertCompany, 'user_id'>): Promise<Company> {
   try {
+    // Validate input
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+    
+    if (!companyData) {
+      throw new Error("Company data is required");
+    }
+    
+    // Validate required fields
+    const { name, job_title, website, funding_stage } = companyData;
+    if (!name || !job_title || !website || !funding_stage) {
+      throw new Error("Name, job title, website, and funding stage are required fields");
+    }
+
     // Get existing company for the user
     const [existingCompany] = await db.select().from(companies).where(eq(companies.user_id, userId));
 
-    // Filter out any undefined or null values to ensure we don't override with null
+    // Create a clean copy of allowed fields
+    const allowedFields = [
+      'name', 'short_description', 'long_description', 'website', 'job_title',
+      'twitter_handle', 'twitter_followers', 'linkedin_url', 'funding_stage',
+      'has_token', 'token_ticker', 'blockchain_networks', 'tags'
+    ];
+    
     const cleanedCompanyData: Record<string, any> = {};
-    for (const [key, value] of Object.entries(companyData)) {
-      if (value !== undefined && value !== null) {
-        cleanedCompanyData[key] = value;
+    for (const field of allowedFields) {
+      if (field in companyData && companyData[field as keyof typeof companyData] !== undefined && 
+          companyData[field as keyof typeof companyData] !== null) {
+        cleanedCompanyData[field] = companyData[field as keyof typeof companyData];
       }
     }
 
@@ -86,36 +108,35 @@ export async function upsertUserCompany(userId: string, companyData: Omit<Insert
     if (existingCompany) {
       logger.debug('Updating existing company for user:', { userId });
       
-      // Ensure we're not including invalid columns in the update
+      // Update existing company
       [company] = await db.update(companies)
-        .set({
-          ...cleanedCompanyData,
-          updated_at: new Date() // Always update the timestamp
-        })
+        .set(cleanedCompanyData)
         .where(eq(companies.user_id, userId))
         .returning();
     } else {
       logger.debug('Creating new company for user:', { userId });
       
-      // Make sure we include user_id when creating a new company
+      // Create new company with required fields
       [company] = await db.insert(companies)
         .values({
           ...cleanedCompanyData,
-          user_id: userId,
-          created_at: new Date()
+          user_id: userId
         })
         .returning();
     }
 
     if (!company) {
-      throw new Error("Failed to save company information.");
+      throw new Error("Failed to save company information");
     }
     
     logger.debug('Company upsert successful:', { companyId: company.id });
     return company;
   } catch (error) {
-    logger.error('Error upserting company in service:', { userId, error });
-    throw error; // Re-throw for the route handler
+    logger.error('Error upserting company in service:', { 
+      userId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    throw new Error("Failed to save company information: " + (error instanceof Error ? error.message : 'Unknown error'));
   }
 }
 
@@ -128,22 +149,42 @@ export async function upsertUserCompany(userId: string, companyData: Omit<Insert
  * @throws Error if validation fails or DB error occurs.
  */
 export async function handleOnboarding(telegramUser: TelegramUser, onboardingData: any): Promise<{ user: User, isProfileUpdate: boolean }> {
-  const {
-    first_name, last_name, linkedin_url, email, twitter_url, twitter_followers,
-    referral_code,
-    company_name, company_website, twitter_handle, job_title,
-    funding_stage, has_token, token_ticker, blockchain_networks, tags,
-    company_linkedin_url, company_twitter_followers,
-    collabs_to_host, notification_frequency, filtered_marketing_topics,
-    // Assume other preference fields might be here too
-  } = onboardingData;
-
-  // Basic validation
-  if (!first_name) {
-    throw new Error('First name is required');
-  }
-
   try {
+    if (!telegramUser || !telegramUser.id) {
+      throw new Error('Invalid Telegram user data');
+    }
+    
+    // Extract user fields with safe defaults
+    const {
+      first_name = telegramUser.first_name, 
+      last_name = telegramUser.last_name, 
+      linkedin_url, 
+      email, 
+      twitter_url, 
+      twitter_followers,
+      referral_code,
+      company_name, 
+      company_website, 
+      twitter_handle, 
+      job_title,
+      funding_stage, 
+      has_token, 
+      token_ticker, 
+      blockchain_networks = [], 
+      tags = [],
+      company_linkedin_url, 
+      company_twitter_followers,
+      collabs_to_host = [], 
+      notification_frequency = 'Daily', 
+      filtered_marketing_topics = [],
+    } = onboardingData || {};
+
+    // Basic validation
+    if (!first_name) {
+      throw new Error('First name is required');
+    }
+
+    // Check for existing user
     const [existingUser] = await db.select().from(users).where(eq(users.telegram_id, telegramUser.id.toString()));
     const isProfileUpdate = !!existingUser;
 
@@ -155,32 +196,40 @@ export async function handleOnboarding(telegramUser: TelegramUser, onboardingDat
       // 1. Upsert User
       if (isProfileUpdate) {
         logger.debug('Updating user during onboarding:', { userId: existingUser.id });
-        [user] = await tx.update(users).set({
+        const updateData: any = {
           first_name,
-          last_name,
-          linkedin_url,
-          email,
-          twitter_url,
-          twitter_followers,
-          referral_code,
-          updated_at: new Date(),
-        }).where(eq(users.id, existingUser.id)).returning();
+          last_name: last_name || null,
+          // Only include fields that are provided
+          ...(linkedin_url ? { linkedin_url } : {}),
+          ...(email ? { email } : {}),
+          ...(twitter_url ? { twitter_url } : {}),
+          ...(twitter_followers ? { twitter_followers } : {}),
+          ...(referral_code ? { referral_code } : {})
+        };
+        
+        [user] = await tx.update(users)
+          .set(updateData)
+          .where(eq(users.id, existingUser.id))
+          .returning();
       } else {
         const handle = telegramUser.username || `user_${telegramUser.id.toString().substring(0, 8)}`;
         logger.debug('Creating new user during onboarding:', { telegramUserId: telegramUser.id, handle });
-        [user] = await tx.insert(users).values({
-          telegram_id: telegramUser.id.toString(),
-          handle,
-          first_name,
-          last_name,
-          linkedin_url,
-          email,
-          twitter_url,
-          twitter_followers,
-          referral_code,
-          applied_at: new Date(),
-          // is_approved defaults to false
-        }).returning();
+        
+        [user] = await tx.insert(users)
+          .values({
+            telegram_id: telegramUser.id.toString(),
+            handle,
+            first_name,
+            last_name: last_name || null,
+            linkedin_url: linkedin_url || null,
+            email: email || null,
+            twitter_url: twitter_url || null,
+            twitter_followers: twitter_followers || null,
+            referral_code: referral_code || null,
+            applied_at: new Date(),
+            is_approved: false // Default
+          })
+          .returning();
       }
 
       if (!user) {
@@ -190,59 +239,64 @@ export async function handleOnboarding(telegramUser: TelegramUser, onboardingDat
       // 2. Create Company and Preferences *only* if it's a new user
       if (!isProfileUpdate) {
         logger.debug('Creating initial company and preferences for new user:', { userId: user.id });
+        
         if (!company_name || !job_title || !company_website || !funding_stage) {
           throw new Error('Missing required company fields for new user during onboarding');
         }
 
         // Create Company
-        await tx.insert(companies).values({
-          user_id: user.id,
-          name: company_name,
-          job_title,
-          website: company_website,
-          twitter_handle,
-          twitter_followers: company_twitter_followers,
-          linkedin_url: company_linkedin_url,
-          funding_stage,
-          has_token: Boolean(has_token),
-          token_ticker: has_token ? token_ticker : null,
-          blockchain_networks: has_token ? blockchain_networks : [],
-          tags: tags || []
-        });
+        await tx.insert(companies)
+          .values({
+            user_id: user.id,
+            name: company_name,
+            job_title,
+            website: company_website,
+            twitter_handle: twitter_handle || null,
+            twitter_followers: company_twitter_followers || null,
+            linkedin_url: company_linkedin_url || null,
+            funding_stage,
+            has_token: Boolean(has_token),
+            token_ticker: has_token ? token_ticker : null,
+            blockchain_networks: has_token ? blockchain_networks : [],
+            tags: tags || []
+          });
 
         // Create Notification Preferences
-        await tx.insert(notification_preferences).values({
-          user_id: user.id,
-          notifications_enabled: true,
-          notification_frequency: notification_frequency || 'Daily'
-        });
+        await tx.insert(notification_preferences)
+          .values({
+            user_id: user.id,
+            notifications_enabled: true,
+            notification_frequency: notification_frequency || 'Daily'
+          });
 
         // Create Marketing Preferences (with defaults)
-        await tx.insert(marketing_preferences).values({
-          user_id: user.id,
-          collabs_to_discover: [
-             'Co-Marketing on Twitter', 'Podcast Guest Appearance', 'Twitter Spaces Guest',
-             'Live Stream Guest Appearance', 'Report & Research Feature', 'Newsletter Feature',
-             'Blog Post Feature', 'Thread Collab', 'Joint Campaign', 'Giveaway',
-             'Retweet & Boost', 'Sponsored Tweet', 'Poll/Q&A', 'Shoutout',
-             'Tweet Swap', 'Meme/Viral Collab', 'Twitter List Collab', 'Exclusive Announcement'
-          ],
-          collabs_to_host: collabs_to_host || [],
-          filtered_marketing_topics: filtered_marketing_topics || [],
-          matchingEnabled: true, // Default
-          filter_company_sectors_enabled: true, // Default
-          filter_company_followers_enabled: true, // Default
-          filter_user_followers_enabled: true, // Default
-          filter_funding_stages_enabled: true, // Default
-          filter_token_status_enabled: true // Default
-        });
+        await tx.insert(marketing_preferences)
+          .values({
+            user_id: user.id,
+            collabs_to_discover: [
+               'Co-Marketing on Twitter', 'Podcast Guest Appearance', 'Twitter Spaces Guest',
+               'Live Stream Guest Appearance', 'Report & Research Feature', 'Newsletter Feature',
+               'Blog Post Feature', 'Thread Collab', 'Joint Campaign', 'Giveaway',
+               'Retweet & Boost', 'Sponsored Tweet', 'Poll/Q&A', 'Shoutout',
+               'Tweet Swap', 'Meme/Viral Collab', 'Twitter List Collab', 'Exclusive Announcement'
+            ],
+            collabs_to_host: collabs_to_host || [],
+            filtered_marketing_topics: filtered_marketing_topics || [],
+            matchingEnabled: true, // Default
+            filter_company_sectors_enabled: true, // Default
+            filter_company_followers_enabled: true, // Default
+            filter_user_followers_enabled: true, // Default
+            filter_funding_stages_enabled: true, // Default
+            filter_token_status_enabled: true // Default
+          });
 
         // Create Conference Preferences (with defaults)
-        await tx.insert(conference_preferences).values({
-          user_id: user.id,
-          coffee_match_enabled: false // Default
-          // Add other coffee match defaults if needed
-        });
+        await tx.insert(conference_preferences)
+          .values({
+            user_id: user.id,
+            coffee_match_enabled: false // Default
+          });
+          
         logger.debug('Initial preferences created for user:', { userId: user.id });
       }
 
@@ -276,7 +330,10 @@ export async function handleOnboarding(telegramUser: TelegramUser, onboardingDat
     return { user: result.user, isProfileUpdate };
 
   } catch (error) {
-    logger.error('Error in onboarding service:', { telegramUserId: telegramUser.id, error });
+    logger.error('Error in onboarding service:', { 
+      telegramUserId: telegramUser?.id || 'unknown',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
     throw error; // Re-throw for the route handler
   }
 } 
