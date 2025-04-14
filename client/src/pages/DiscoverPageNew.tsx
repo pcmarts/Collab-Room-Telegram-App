@@ -680,15 +680,12 @@ export default function DiscoverPage() {
     };
   }, []);
   
-  // Handle navigation to Discover page - specific effect to track location changes
+  // Navigation auto-refresh has been disabled per user request
   useEffect(() => {
     // Check if we're on the discover page
     const isOnDiscoverPage = location === '/discover';
     
-    // Check if this is a navigation TO the Discover page from somewhere else
-    const isNavigationToDiscoverPage = prevLocationRef.current !== '/discover' && isOnDiscoverPage;
-    
-    // Store the new location for future comparison
+    // Store the new location for future comparison (keeping this for future reference)
     const oldLocation = prevLocationRef.current;
     prevLocationRef.current = location;
     
@@ -696,42 +693,13 @@ export default function DiscoverPage() {
       current: location,
       previous: oldLocation,
       isOnDiscoverPage,
-      isNavigationToDiscoverPage,
       cardsCount: cardsRef.current.length,
-      cardIds: cardsRef.current.map(c => c.id).slice(0, 3) // First 3 card IDs for debugging
+      autoRefreshDisabled: true // Flag indicating auto-refresh is disabled
     });
     
-    // Skip remaining logic if we're not on the discover page
-    if (!isOnDiscoverPage) {
-      return;
-    }
+    // No automatic refreshes on navigation as per user request
+    console.log('[Discovery] Auto-refresh on navigation has been disabled');
     
-    // ALWAYS force a refresh when navigating to the Discover page
-    // This is the key fix for the navigation issue
-    if (isNavigationToDiscoverPage) {
-      console.log('[Discovery] Navigation to Discover page detected, forcing data refresh');
-      const now = Date.now();
-      lastFetchTimeRef.current = now;
-      
-      // This delay is critical - it gives the component time to fully mount
-      // before we try to refresh the data
-      setTimeout(() => {
-        // Force a complete reload of all data
-        console.log('[Discovery] Executing forced refresh after navigation');
-        setCards([]); // Clear cards first for clean state
-        handleRefresh();
-      }, 200);
-    } 
-    // If we're already on the Discover page but have no cards, also refresh
-    else if (cardsRef.current.length === 0) {
-      console.log('[Discovery] Already on Discover page but no cards, refreshing data');
-      const now = Date.now();
-      lastFetchTimeRef.current = now;
-      
-      setTimeout(() => {
-        handleRefresh();
-      }, 100);
-    }
   }, [location]);
 
   // Auto-refresh disabled per user request to prevent authentication issues

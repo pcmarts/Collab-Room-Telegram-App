@@ -15,11 +15,10 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
   const [isAttemptingReconnect, setIsAttemptingReconnect] = useState(false);
   const [attemptCount, setAttemptCount] = useState(0);
   
+  // Auto-retry on mount has been disabled per user request
   useEffect(() => {
-    // Auto-retry once on component mount
-    if (attemptCount === 0) {
-      handleReconnect();
-    }
+    // No auto-reconnect to prevent authentication loops
+    console.log('[Auth] Auto-reconnect on mount has been disabled');
   }, []);
 
   const handleReconnect = () => {
