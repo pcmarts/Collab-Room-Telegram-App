@@ -191,7 +191,12 @@ export default function DiscoverPage() {
         throw err;
       }
     },
-    staleTime: 60 * 1000, // 1 minute - balance between freshness and performance
+    staleTime: Infinity, // Never consider data stale to prevent auto-refresh
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    retry: false,
   });
   
   // Extract all swiped card IDs (combining client-side, server-side and localStorage)
@@ -349,7 +354,12 @@ export default function DiscoverPage() {
         return [];
       }
     },
-    staleTime: 60 * 1000 // 1 minute
+    staleTime: Infinity, // Never consider data stale to prevent auto-refresh
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    retry: false
   });
   
   // Helper function to validate card data and filter out incomplete cards
