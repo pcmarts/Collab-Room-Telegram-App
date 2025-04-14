@@ -35,8 +35,10 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, x, rotate, opaci
   // Log current cards state
   console.log('[CardStack] Rendering with', cards.length, 'cards');
   
+  // Handle empty state - don't render anything if there are no cards
   if (cards.length === 0) {
     console.log('[CardStack] No cards to render');
+    return null;
   }
   
   return (
