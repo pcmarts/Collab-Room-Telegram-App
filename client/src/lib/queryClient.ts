@@ -187,18 +187,15 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity, // Disable auto-refresh completely
+      staleTime: 0, // Reduce staleTime to ensure fresh data is always fetched
       retry: false,
-      retryOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnMount: false
     },
     mutations: {
       retry: false,
-      // Don't auto-invalidate profile queries on success
-      // onSuccess: () => {
-      //   queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-      // }
+      onSuccess: () => {
+        // Force a refetch of profile data whenever any mutation succeeds
+        queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+      }
     },
   },
 });

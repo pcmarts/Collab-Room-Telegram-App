@@ -171,7 +171,6 @@ export default function DiscoverPage() {
   );
   
   // Get user swipe history to prevent showing already swiped cards
-  // Disabled auto-refresh by setting very high staleTime
   const { data: serverSwipeHistory } = useQuery({
     queryKey: ['/api/user-swipes'],
     queryFn: async () => {
@@ -192,9 +191,7 @@ export default function DiscoverPage() {
         throw err;
       }
     },
-    staleTime: Infinity, // Disable auto-refresh completely
-    refetchOnWindowFocus: false,
-    refetchOnMount: false
+    staleTime: 60 * 1000, // 1 minute - balance between freshness and performance
   });
   
   // Extract all swiped card IDs (combining client-side, server-side and localStorage)
@@ -235,7 +232,6 @@ export default function DiscoverPage() {
   }, [swipeHistory, serverSwipeHistory]);
   
   // Fetch potential matches (users who swiped right on your collaborations)
-  // Disabled auto-refresh by setting very high staleTime
   const { data: potentialMatches, isLoading: isPotentialMatchesLoading } = useQuery({
     queryKey: ['/api/potential-matches'],
     queryFn: async () => {
@@ -353,9 +349,7 @@ export default function DiscoverPage() {
         return [];
       }
     },
-    staleTime: Infinity, // Disable auto-refresh completely
-    refetchOnWindowFocus: false,
-    refetchOnMount: false
+    staleTime: 60 * 1000 // 1 minute
   });
   
   // Helper function to validate card data and filter out incomplete cards
@@ -568,15 +562,15 @@ export default function DiscoverPage() {
   
 
   
-  // Auto-fetch for low card count has been disabled per user request
+  // Auto-fetch more cards when we're running low
   useEffect(() => {
-    // This effect previously contained code to auto-fetch more cards when count was low
-    // This has been disabled because it was causing authentication issues
-    console.log('[Discovery] Auto-fetch for low card count has been disabled');
-    
-    // Only update the empty state flag if needed
+    const shouldFetchMore = cards.length > 0 && cards.length < 5 && hasMore && !loadingMore && !isLoading;
     const emptyNoMore = cards.length === 0 && !hasMore && !loadingMore && !isLoading;
-    if (emptyNoMore) {
+    
+    if (shouldFetchMore) {
+      console.log('[Discovery] Card count below threshold, fetching more cards...');
+      fetchNextBatch();
+    } else if (emptyNoMore) {
       console.log('[Discovery] No more cards available to fetch');
       setAllCardsViewed(true);
     }
