@@ -24,36 +24,22 @@ const logger = {
   }
 };
 
-// Helper function to wait for Telegram initialization (shared between API functions)
-const waitForTelegramInitData = async (maxAttempts = 3, delay = 500): Promise<boolean> => {
-  let attempts = 0;
-  
-  while (attempts < maxAttempts) {
-    // Check if Telegram WebApp is available and has initData
-    if (window.Telegram?.WebApp?.initData) {
-      // Telegram initData is available, this is our primary authentication method
-      logger.debug('Telegram WebApp initData is available');
-      return true;
-    }
-    
-    // If Telegram is available but no initData, try to initialize it
-    if (window.Telegram?.WebApp) {
-      try {
-        logger.debug(`Attempt ${attempts + 1}: Initializing Telegram WebApp`);
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-      } catch (e) {
-        logger.error('Error initializing Telegram WebApp:', e);
-      }
-    } else {
-      logger.error('Telegram WebApp is not available - this app must be opened from Telegram');
-    }
-    
-    // Wait before next attempt
-    await new Promise(resolve => setTimeout(resolve, delay));
-    attempts++;
+// Helper function to check for Telegram initialization - NO AUTOMATIC RETRY
+// This has been modified to prevent authentication refresh loops
+const waitForTelegramInitData = async (): Promise<boolean> => {
+  // Only check if Telegram WebApp is already initialized with initData
+  // Do not attempt to initialize it automatically
+  if (window.Telegram?.WebApp?.initData) {
+    // Telegram initData is available, this is our primary authentication method
+    logger.debug('Telegram WebApp initData is available');
+    return true;
   }
   
+  // Log the missing authentication but don't attempt to fix it automatically
+  logger.error('No Telegram initData available - authentication will fail');
+  logger.error('This app must be opened from Telegram to function correctly');
+  
+  // Return false to indicate that we don't have Telegram data
   return false;
 };
 
@@ -187,15 +173,15 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 0, // Reduce staleTime to ensure fresh data is always fetched
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      staleTime: Infinity, // Changed to Infinity to prevent all auto-refresh
       retry: false,
+      enabled: true, // Queries will run when initialized but not refresh
     },
     mutations: {
       retry: false,
-      onSuccess: () => {
-        // Force a refetch of profile data whenever any mutation succeeds
-        queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-      }
+      // Removed the onSuccess handler that was invalidating profile data queries
     },
   },
 });

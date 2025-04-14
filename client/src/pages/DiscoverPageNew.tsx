@@ -636,11 +636,9 @@ export default function DiscoverPage() {
           // Set auth error immediately if no initData - this app requires Telegram initData
           setAuthError(true);
           
-          // Attempt to trigger re-initialization from Telegram
-          if (typeof window !== 'undefined' && window.location && typeof window.location.reload === 'function') {
-            console.log('[Auth] Will attempt to reload the page to reinitialize Telegram WebApp in 2 seconds');
-            setTimeout(() => window.location.reload(), 2000);
-          }
+          // DISABLED: No auto-reload anymore to prevent authentication loops
+          console.log('[Auth] Auto-reload on missing Telegram initData has been disabled');
+          // User will need to manually reload using the button if needed
         }
       } catch (e) {
         console.error('[Auth] Error initializing Telegram WebApp:', e);
