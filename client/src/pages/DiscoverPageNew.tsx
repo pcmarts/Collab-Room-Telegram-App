@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, useMotionValue, useSpring, useTransform, MotionValue } from "framer-motion";
-import { Loader2, Filter, SearchX, RefreshCw } from "lucide-react";
+import { Loader2, Filter, SearchX, RefreshCw, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -1143,11 +1143,11 @@ export default function DiscoverPage() {
               
               <Button 
                 variant="outline" 
-                onClick={handleRefresh}
+                onClick={() => setLocation('/create-collaboration')}
                 className="flex items-center gap-2"
               >
-                <RefreshCw className="h-4 w-4" />
-                Refresh
+                <Plus className="h-4 w-4" />
+                Create a Collab
               </Button>
             </div>
           </div>
