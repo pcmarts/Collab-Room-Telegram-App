@@ -148,6 +148,36 @@ collaborationRouter.patch("/collaborations/:id/status", authLimiter, async (req:
   }
 });
 
+// DELETE /api/collaborations/:id
+collaborationRouter.delete("/collaborations/:id", authLimiter, async (req: Request, res: Response) => {
+  const userId = req.userId;
+  if (!userId) return res.status(500).json({ error: 'User ID not found after auth' });
+  const collaborationId = req.params.id;
+  try {
+    // First, verify that the user owns this collaboration
+    const [existingCollab] = await db.select({ creator_id: collaborations.creator_id })
+                                     .from(collaborations)
+                                     .where(eq(collaborations.id, collaborationId));
+
+    if (!existingCollab) {
+      return res.status(404).json({ error: "Collaboration not found" });
+    }
+    if (existingCollab.creator_id !== userId) {
+      return res.status(403).json({ error: "Unauthorized to delete this collaboration" });
+    }
+    
+    // Delete the collaboration directly with SQL query
+    await db.delete(collaborations)
+            .where(eq(collaborations.id, collaborationId));
+            
+    logger.info(`Collaboration ${collaborationId} deleted by user ${userId}`);
+    return res.status(200).json({ message: "Collaboration deleted successfully" });
+  } catch (error) {
+    logger.error('Error in DELETE /collaborations/:id route:', error);
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to delete collaboration' });
+  }
+});
+
 // --- Application Routes --- 
 
 // GET /api/applications/my
