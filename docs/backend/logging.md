@@ -230,3 +230,19 @@ Errors are automatically logged by the errorLogger middleware, including:
 3. **Avoid Sensitive Data**: Never explicitly log sensitive information (passwords, tokens)
 4. **Be Concise**: Keep log messages clear and to the point
 5. **Use Structured Data**: Pass objects instead of concatenating strings
+
+## Use Cases and Success Stories
+
+### Bug Fix: Empty Cards in Discovery View
+
+**Problem**: Users reported seeing empty cards labeled only "Company" in the Discovery view.
+
+**Debugging Approach**:
+1. Enabled DEBUG level logging using `node toggle-logging.js 4`
+2. Added additional client-side logging in the Discovery page component 
+3. Traced the flow of potential match data from server response to UI rendering
+
+**Solution**:
+The DEBUG level logs revealed that potential matches returned from the API sometimes had incomplete data. We added validation to filter out invalid potential matches before displaying them.
+
+**Documentation**: For complete details on this fix, see [Empty Cards Fix](../debug/empty-cards-fix.md)

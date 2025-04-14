@@ -41,11 +41,13 @@ Potential matches use a comprehensive multi-layered filtering approach to ensure
    - Merges state-based and localStorage-based exclusion lists for redundancy
    - Performs additional safety filter before rendering cards
 
-4. **Comprehensive duplicate prevention:** The combination of server and client filtering with improved data field validation ensures users never see potential matches they've already swiped on or matched with:
+4. **Comprehensive duplicate prevention and validation:** The combination of server and client filtering with improved data field validation ensures users never see potential matches they've already swiped on or matched with:
    - Quadruple-layered protection against repeat cards
    - Enhanced console logging to track and debug any filtering issues
    - Immediate tracking of collaboration IDs, swipe IDs, and match IDs
-   - Consistent field mapping with proper validation of potentially missing fields
+   - Improved validation of card data to prevent incomplete or empty cards from displaying
+   - **NEW in v1.5.3:** Strict validation of potential match data to prevent displaying cards with missing required fields
+   - **NEW in v1.5.3:** Additional filtering layer to eliminate invalid potential matches in both refresh and initial load flows
    - **NEW in v1.5.2:** Completely eliminates duplicate matches by checking existing matches table before showing potential match cards
 
 ## Enhanced Data Structure
