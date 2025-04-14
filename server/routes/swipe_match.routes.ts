@@ -153,7 +153,48 @@ swipeMatchRouter.get("/potential-matches", async (req: Request, res: Response) =
   try {
     const potentialMatches = await getPotentialMatchesForHost(userId);
     logger.debug(`Returning ${potentialMatches.length} potential matches for user ${userId}`);
-    return res.json(potentialMatches);
+    
+    // Transform the data to make it compatible with the client's expected format
+    const transformedMatches = potentialMatches.map(match => ({
+      id: match.id,
+      swipe_id: match.swipe_id,
+      user_id: match.user_id,
+      collaboration_id: match.collaboration_id,
+      collaboration_type: match.collaboration_type,
+      collaboration_description: match.collaboration_description,
+      collaboration_topics: match.collaboration_topics || [],
+      swipe_direction: match.swipe_direction,
+      swipe_created_at: match.swipe_created_at,
+      
+      // Convert to camelCase for client compatibility 
+      first_name: match.user_first_name,
+      last_name: match.user_last_name,
+      twitter_followers: match.user_twitter_followers,
+      company_name: match.company_name,
+      job_title: match.company_job_title,
+      
+      // Additional fields needed by client
+      description: match.collaboration_description,
+      topics: match.collaboration_topics || [],
+      collab_type: match.collaboration_type,
+      requester_company: match.company_name,
+      requester_role: match.company_job_title,
+      requester_first_name: match.user_first_name,
+      requester_last_name: match.user_last_name,
+      
+      // Company details
+      company_description: match.company_description,
+      company_website: match.company_website,
+      company_twitter: match.company_twitter,
+      company_linkedin: match.company_linkedin,
+      company_twitter_followers: match.company_twitter_followers,
+      
+      // Note if available
+      note: match.note
+    }));
+    
+    logger.debug(`Transformed ${transformedMatches.length} potential matches for client response`);
+    return res.json(transformedMatches);
   } catch (error) {
     logger.error('Error in GET /potential-matches route:', error);
     return res.status(500).json({ error: 'Failed to fetch potential matches' });

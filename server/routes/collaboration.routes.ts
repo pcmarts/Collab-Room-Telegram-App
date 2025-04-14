@@ -12,8 +12,8 @@ import {
 } from "../services/collaboration.service";
 import { applicationLimiter, authLimiter } from "../middleware/rate-limiter";
 import { db } from "../db"; // For user lookup
-import { users } from "../../shared/schema"; // For user lookup
-import { eq } from 'drizzle-orm'; // For user lookup
+import { users, collaborations } from "../../shared/schema"; // Import schema tables
+import { eq } from 'drizzle-orm'; // For database queries
 import { logger } from '../utils/logger';
 import { createCollaborationSchema, collabApplicationSchema } from "../../shared/schema"; // Import Zod schemas for validation
 import { z } from 'zod';
