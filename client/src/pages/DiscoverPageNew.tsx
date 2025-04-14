@@ -615,7 +615,6 @@ export default function DiscoverPage() {
         
         // Log the user's session info for debugging
         console.log('[Auth] Session information:', {
-          telegramVersion: window.Telegram.WebApp.version,
           hasCookie: document.cookie.includes('connect.sid'),
           location: window.location.pathname,
           referrer: document.referrer,
@@ -735,44 +734,18 @@ export default function DiscoverPage() {
     }
   }, [location]);
 
-  // Add a focus/visibility listener to ensure cards load when user revisits the page
+  // Auto-refresh disabled per user request to prevent authentication issues
+  // This effect previously contained code that would auto-refresh content
+  // when the page became visible again, which was causing problems for users
+  // who couldn't authenticate with Telegram.
   useEffect(() => {
-    // Function to handle when the page becomes visible again
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('[Discovery] Page visibility changed to visible');
-        
-        // Only refresh if we're on the Discover page
-        if (window.location.pathname === '/discover') {
-          // Only reload if we have no cards or it's been more than 30 seconds
-          const now = Date.now();
-          const timeSinceLastFetch = now - lastFetchTimeRef.current;
-          const shouldRefresh = 
-            cardsRef.current.length === 0 || 
-            timeSinceLastFetch > 30000; // 30 seconds
-          
-          if (shouldRefresh) {
-            console.log('[Discovery] Refreshing cards on page revisit');
-            lastFetchTimeRef.current = now;
-            handleRefresh();
-          } else {
-            console.log('[Discovery] No need to refresh, recent fetch or cards exist');
-          }
-        }
-      }
-    };
+    // Auto-refresh functionality has been disabled
+    console.log('[Discovery] Auto-refresh on visibility/focus change has been disabled');
     
-    // Add the visibility change listener
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // No event listeners added for visibilitychange or focus
     
-    // Also handle browser focus events for some browsers
-    window.addEventListener('focus', handleVisibilityChange);
-    
-    // Clean up
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleVisibilityChange);
-    };
+    // No clean up needed
+    return () => {};
   }, []);
   
   // Handle authentication retry
