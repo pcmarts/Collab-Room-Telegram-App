@@ -5,6 +5,25 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.7.9] - 2025-04-14
+
+### Fixed
+- Fixed authentication refresh loop issues when opening the app outside of Telegram
+- Disabled all automatic refresh mechanisms that triggered authentication errors
+- Removed automatic page reload that caused repeated auth attempts on the Discover page
+
+### Enhanced
+- Improved authentication error handling with more informative error messages
+- Implemented global React Query configuration updates to prevent auto-refresh loops
+- Disabled background Telegram WebApp re-initialization to prevent unnecessary auth attempts
+
+### Technical Details
+- Modified queryClient.ts to use staleTime: Infinity to prevent automatic query refreshes
+- Completely rewrote waitForTelegramInitData to eliminate automatic retries
+- Disabled React Query's refetch on mount, focus, reconnect, and interval refresh behaviors
+- Removed automatic page reload on Telegram initData availability check
+- Disabled onSuccess handlers that were triggering profile data refreshes
+
 ## [Version 1.7.8] - 2025-04-12
 
 ### Fixed
