@@ -184,10 +184,8 @@ export default function DiscoverPage() {
         // Check if this is an authentication error
         if (err && (
           (err as Error).name === 'AuthenticationError' || 
-          ((err as Error).message && (err as Error).message.includes('Unauthorized')) ||
-          (err as any).status === 401
+          ((err as Error).message && (err as Error).message.includes('Unauthorized'))
         )) {
-          console.log('[Auth] Setting authError=true due to authentication error in user swipes');
           setAuthError(true);
         }
         throw err;
@@ -349,10 +347,8 @@ export default function DiscoverPage() {
         // Check if this is an authentication error
         if (err && (
           (err as Error).name === 'AuthenticationError' || 
-          ((err as Error).message && (err as Error).message.includes('Unauthorized')) ||
-          (err as any).status === 401
+          ((err as Error).message && (err as Error).message.includes('Unauthorized'))
         )) {
-          console.log('[Auth] Setting authError=true due to authentication error in potential matches');
           setAuthError(true);
         }
         return [];
@@ -1005,7 +1001,6 @@ export default function DiscoverPage() {
   
   // Render authentication error state
   if (authError) {
-    console.log('[Auth] Rendering authentication error UI');
     return (
       <div className="flex flex-col h-full">
         <div className="p-4 border-b flex items-center">
