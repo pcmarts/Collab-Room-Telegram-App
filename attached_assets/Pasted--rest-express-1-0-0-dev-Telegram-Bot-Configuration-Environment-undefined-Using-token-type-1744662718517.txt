@@ -1,0 +1,259 @@
+
+> rest-express@1.0.0 dev
+=== Telegram Bot Configuration ===
+Environment: undefined
+Using token type: Development
+Telegram Bot configured successfully
+WebApp URL: https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev
+Telegram bot initialization completed
+[LOGGER] Using LOG_LEVEL=2 from config
+[2025-04-14T20:31:29.899Z] [WARN] Using in-memory session storage (not suitable for production)
+[2025-04-14T20:31:29.900Z] [INFO] === Initializing Server ===
+[2025-04-14T20:31:29.900Z] [INFO] Checking Telegram bot status...
+[2025-04-14T20:31:29.900Z] [INFO] Starting server initialization...
+[2025-04-14T20:31:30.942Z] [INFO] Server running on port 5000
+[2025-04-14T20:31:30.942Z] [INFO] Server initialization completed
+[2025-04-14T20:31:31.204Z] [INFO] Telegram bot verified: collabroom_test_bot
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AKwvuuyjl8R8WUz1JeNWrWgaJPI-MRWgg.rwItlhFoRrM9gT6UhLDevMrz1aQTWGkhCnQLMPUT7q8',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '194.88.96.29, 10.82.1.156',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkjwvVXa&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744662692&signature=CyDkC7EiW6Qy1KE9YPB9l6mauGttiDB8s6z5naf_nVn6Lusgh2qlJ6F7AQBRFD7N-1uMs2Pso44TjPTfA6eSAw&hash=0aad819b22030f0ebd2a3343de9004582905f4d2523099446031ce6552dc775d'
+}
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AKwvuuyjl8R8WUz1JeNWrWgaJPI-MRWgg.rwItlhFoRrM9gT6UhLDevMrz1aQTWGkhCnQLMPUT7q8',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '194.88.96.29, 10.82.10.195',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkjwvVXa&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744662692&signature=CyDkC7EiW6Qy1KE9YPB9l6mauGttiDB8s6z5naf_nVn6Lusgh2qlJ6F7AQBRFD7N-1uMs2Pso44TjPTfA6eSAw&hash=0aad819b22030f0ebd2a3343de9004582905f4d2523099446031ce6552dc775d'
+}
+============ DEBUG: User Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AKwvuuyjl8R8WUz1JeNWrWgaJPI-MRWgg.rwItlhFoRrM9gT6UhLDevMrz1aQTWGkhCnQLMPUT7q8',
+  'if-modified-since': 'Mon, 14 Apr 2025 19:48:13 GMT',
+  'if-none-match': 'W/"1-1744660093062"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '194.88.96.29, 10.82.3.123',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkjwvVXa&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744662692&signature=CyDkC7EiW6Qy1KE9YPB9l6mauGttiDB8s6z5naf_nVn6Lusgh2qlJ6F7AQBRFD7N-1uMs2Pso44TjPTfA6eSAw&hash=0aad819b22030f0ebd2a3343de9004582905f4d2523099446031ce6552dc775d'
+}
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Fetching matches with details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Fetching complete match details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 1 enriched matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 1 matches in 19ms
+Found 1 existing matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Filtering out already matched collaboration with ID: b82d25de-4a89-41b4-b803-053569d9d58f
+Filtering out already matched collaboration with ID: b82d25de-4a89-41b4-b803-053569d9d58f
+Filtering out already matched collaboration with ID: b82d25de-4a89-41b4-b803-053569d9d58f
+Found 1 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AKwvuuyjl8R8WUz1JeNWrWgaJPI-MRWgg.rwItlhFoRrM9gT6UhLDevMrz1aQTWGkhCnQLMPUT7q8',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '194.88.96.29, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkjwvVXa&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744662692&signature=CyDkC7EiW6Qy1KE9YPB9l6mauGttiDB8s6z5naf_nVn6Lusgh2qlJ6F7AQBRFD7N-1uMs2Pso44TjPTfA6eSAw&hash=0aad819b22030f0ebd2a3343de9004582905f4d2523099446031ce6552dc775d'
+}
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AKwvuuyjl8R8WUz1JeNWrWgaJPI-MRWgg.rwItlhFoRrM9gT6UhLDevMrz1aQTWGkhCnQLMPUT7q8',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '194.88.96.29, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkjwvVXa&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744662692&signature=CyDkC7EiW6Qy1KE9YPB9l6mauGttiDB8s6z5naf_nVn6Lusgh2qlJ6F7AQBRFD7N-1uMs2Pso44TjPTfA6eSAw&hash=0aad819b22030f0ebd2a3343de9004582905f4d2523099446031ce6552dc775d'
+}
+Found 0 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AKwvuuyjl8R8WUz1JeNWrWgaJPI-MRWgg.rwItlhFoRrM9gT6UhLDevMrz1aQTWGkhCnQLMPUT7q8',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '194.88.96.29, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkjwvVXa&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744662692&signature=CyDkC7EiW6Qy1KE9YPB9l6mauGttiDB8s6z5naf_nVn6Lusgh2qlJ6F7AQBRFD7N-1uMs2Pso44TjPTfA6eSAw&hash=0aad819b22030f0ebd2a3343de9004582905f4d2523099446031ce6552dc775d'
+}
+Found 1 existing matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Filtering out already matched collaboration with ID: b82d25de-4a89-41b4-b803-053569d9d58f
+Filtering out already matched collaboration with ID: b82d25de-4a89-41b4-b803-053569d9d58f
+Filtering out already matched collaboration with ID: b82d25de-4a89-41b4-b803-053569d9d58f
+Found 1 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+  'content-length': '17',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AKwvuuyjl8R8WUz1JeNWrWgaJPI-MRWgg.rwItlhFoRrM9gT6UhLDevMrz1aQTWGkhCnQLMPUT7q8',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '194.88.96.29, 10.82.9.110',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkjwvVXa&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1744662692&signature=CyDkC7EiW6Qy1KE9YPB9l6mauGttiDB8s6z5naf_nVn6Lusgh2qlJ6F7AQBRFD7N-1uMs2Pso44TjPTfA6eSAw&hash=0aad819b22030f0ebd2a3343de9004582905f4d2523099446031ce6552dc775d'
+}
+Query: { limit: '10' }
+Body: { excludeIds: [] }
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 0 additional IDs from body: []
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Join-Based) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: []
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Found 0 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 2 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 2 (2 own + 0 swiped + 0 additional)
+Using join structure: collaborations -> users -> companies
+Excluding 2 total collaborations from results
+Excluded IDs for debugging: [
+  'b82d25de-4a89-41b4-b803-053569d9d58f',
+  '5b9187b9-bad5-4750-96ba-a21bdb929bae'
+]
+Excluding user's own collaborations (creator_id filtering)
+Filtering by blockchain networks from COMPANIES table: Optimism
+Converting blockchain networks to PostgreSQL array format: {Optimism}
+Applied blockchain networks filter using companies.blockchain_networks
+Final joined filter query constructed, executing and returning results
+Returning 0 collaborations with hasMore=false
+Found 0 collaborations, hasMore: false
