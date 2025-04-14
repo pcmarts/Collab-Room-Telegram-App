@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Info, X, Check, Sparkles, Twitter, Calendar, Mic, Users, 
   Link, FileText, FileSearch, Mail, Radio, Star, Building, User,
-  Globe, Linkedin
+  Globe, Linkedin, Video, Monitor, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddNoteDialog } from "./AddNoteDialog";
