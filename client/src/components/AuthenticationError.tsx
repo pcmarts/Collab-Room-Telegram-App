@@ -87,24 +87,12 @@ export const AuthenticationError: React.FC<AuthenticationErrorProps> = ({
       </p>
       
       <div className="flex flex-col gap-2 w-full max-w-xs">
-        <Button 
-          onClick={handleReconnect}
-          className="flex items-center gap-2"
-          disabled={isAttemptingReconnect}
-        >
-          {isAttemptingReconnect ? (
-            <RotateCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
-          )}
-          {isAttemptingReconnect ? "Reconnecting..." : "Reconnect"}
-        </Button>
+        {/* Reconnect button has been removed per user request */}
         
         <Button 
           onClick={handleFullReload}
-          variant="outline"
+          variant="default"
           className="mt-2"
-          disabled={isAttemptingReconnect}
         >
           Reload Page
         </Button>

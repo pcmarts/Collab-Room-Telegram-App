@@ -1,0 +1,133 @@
+}
+[2025-04-14T21:12:59.625Z] [WARN] ⚠️ No Telegram data found in request
+No Telegram user ID found
+[2025-04-14T21:12:59.625Z] [WARN] GET /api/potential-matches 401 in 0ms
+{
+  "method": "GET",
+  "url": "/api/potential-matches",
+  "status": 401,
+  "responseTime": "0ms",
+  "ip": "172.31.128.70"
+}
+[2025-04-14T21:13:04.440Z] [WARN] ⚠️ No Telegram data found in request
+[2025-04-14T21:13:04.440Z] [WARN] GET /api/profile 401 in 0ms
+{
+  "method": "GET",
+  "url": "/api/profile?_t=1744665184335",
+  "status": 401,
+  "responseTime": "0ms",
+  "ip": "172.31.128.70"
+}
+[2025-04-14T21:13:05.600Z] [WARN] ⚠️ No Telegram data found in request
+[2025-04-14T21:13:05.601Z] [WARN] GET /api/profile 401 in 1ms
+{
+  "method": "GET",
+  "url": "/api/profile",
+  "status": 401,
+  "responseTime": "1ms",
+  "ip": "172.31.128.70"
+}
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Replit/1.0.14 Chrome/124.0.6367.119 Electron/30.0.3 Safari/537.36',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB',
+  'cache-control': 'max-age=0',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-ch-ua': '"Not-A.Brand";v="99", "Chromium";v="124"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"macOS"',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.181',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+[2025-04-14T21:13:07.107Z] [WARN] ⚠️ No Telegram data found in request
+No Telegram user ID found
+[2025-04-14T21:13:07.108Z] [WARN] GET /api/user-swipes 401 in 1ms
+{
+  "method": "GET",
+  "url": "/api/user-swipes",
+  "status": 401,
+  "responseTime": "1ms",
+  "ip": "172.31.128.70"
+}
+============ DEBUG: User Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Replit/1.0.14 Chrome/124.0.6367.119 Electron/30.0.3 Safari/537.36',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB',
+  'cache-control': 'max-age=0',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-ch-ua': '"Not-A.Brand";v="99", "Chromium";v="124"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"macOS"',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.1.156',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+[2025-04-14T21:13:07.113Z] [WARN] ⚠️ No Telegram data found in request
+No Telegram user found
+[2025-04-14T21:13:07.113Z] [WARN] GET /api/matches 401 in 0ms
+{
+  "method": "GET",
+  "url": "/api/matches",
+  "status": 401,
+  "responseTime": "0ms",
+  "ip": "172.31.128.70"
+}
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Replit/1.0.14 Chrome/124.0.6367.119 Electron/30.0.3 Safari/537.36',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB',
+  'cache-control': 'max-age=0',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-ch-ua': '"Not-A.Brand";v="99", "Chromium";v="124"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"macOS"',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.0.86',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+[2025-04-14T21:13:07.114Z] [WARN] ⚠️ No Telegram data found in request
+No Telegram user ID found
+[2025-04-14T21:13:07.115Z] [WARN] GET /api/potential-matches 401 in 0ms
+{
+  "method": "GET",
+  "url": "/api/potential-matches",
+  "status": 401,
+  "responseTime": "0ms",
+  "ip": "172.31.128.70"

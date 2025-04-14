@@ -209,6 +209,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('[App] Initializing app with disabled auto-refresh');
+    
     // Initialize Telegram WebApp
     if (window.Telegram?.WebApp) {
       // Tell Telegram web app that we're ready
@@ -221,42 +223,28 @@ function App() {
     // Initialize Telegram button visibility fix
     const cleanupButtonFix = initTelegramButtonFix();
     
-    // Apply immediate fix
+    // Apply button fix once, but don't set up intervals
+    // This prevents constant background activity that could trigger re-renders
     applyButtonFix();
     
-    // Set up an interval to periodically reapply button fixes
-    const fixInterval = setInterval(applyButtonFix, 500);
+    // Disable the interval-based button fix
+    // const fixInterval = setInterval(applyButtonFix, 500); // <-- DISABLED
 
-    // Prefetch critical data
-    const prefetchData = async () => {
-      try {
-        // Prefetch profile data
-        await queryClient.prefetchQuery({
-          queryKey: ['/api/profile'],
-          // Let the default queryFn from the query client handle this
-          // which will automatically include the Telegram headers
-        });
-
-        // Allow minimum time for loading screen visibility
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Mark loading as complete
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error prefetching data:', error);
-        // Even if prefetching fails, we should still show the app
-        setIsLoading(false);
-      }
-    };
-
-    prefetchData();
+    // Skip prefetching data to prevent authentication prompts
+    // This allows the app to start without requiring authentication immediately
+    console.log('[App] Auto data prefetching has been disabled to prevent authentication issues');
+    
+    // Just complete loading after a minimal delay
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
     
     // Cleanup function for useEffect
     return () => {
       if (typeof cleanupButtonFix === 'function') {
         cleanupButtonFix();
       }
-      clearInterval(fixInterval);
+      // clearInterval(fixInterval); // <-- No interval to clear
     };
   }, []);
 

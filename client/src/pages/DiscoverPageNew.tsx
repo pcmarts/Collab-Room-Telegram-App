@@ -716,52 +716,17 @@ export default function DiscoverPage() {
     return () => {};
   }, []);
   
-  // Handle authentication retry
+  // Authentication retry functionality disabled per user request
   const handleAuthRetry = () => {
-    setAuthError(false);
+    console.log('[Auth] Auth retry functionality has been disabled');
     
-    // Reset loading state
-    setIsLoading(false);
-    
-    // If Telegram WebApp is available, try to refresh it
-    if (window.Telegram?.WebApp) {
-      try {
-        console.log('[Auth] Attempting to refresh Telegram WebApp');
-        
-        // Ensure Telegram WebApp is fully initialized
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-        
-        // Check if init data is available after refresh - this is critical
-        const initDataAvailable = !!window.Telegram.WebApp.initData;
-        console.log(`[Auth] After refresh, Telegram initData is ${initDataAvailable ? 'available' : 'missing'}`);
-        
-        if (!initDataAvailable) {
-          console.error('[Auth] Telegram WebApp initData still missing after refresh');
-          // Set auth error again since we need initData
-          setAuthError(true);
-          
-          // Try a direct window reload as a last resort
-          if (typeof window !== 'undefined' && window.location && typeof window.location.reload === 'function') {
-            console.log('[Auth] Attempting to reload the page to reinitialize Telegram WebApp');
-            setTimeout(() => window.location.reload(), 500);
-            return;
-          }
-        } else {
-          // If initData is available, invalidate all queries to trigger refetching
-          queryClient.invalidateQueries();
-          
-          // Attempt to reload the cards
-          handleRefresh();
-        }
-      } catch (e) {
-        console.error('[Auth] Error refreshing Telegram WebApp:', e);
-        setAuthError(true);
-      }
-    } else {
-      console.error('[Auth] Telegram WebApp is not available - this app must be opened from Telegram');
-      setAuthError(true);
+    // Simply reload the page instead of trying to automatically refresh authentication
+    if (typeof window !== 'undefined' && window.location && typeof window.location.reload === 'function') {
+      window.location.reload();
     }
+    
+    // No auto-retry attempts, just keep showing the error state
+    // This prevents endless authentication loops
   };
   
   // Helper function already defined above with better variable name (fetchNextBatch)
