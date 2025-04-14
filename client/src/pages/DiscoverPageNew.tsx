@@ -271,7 +271,7 @@ export default function DiscoverPage() {
         console.log(`[Discovery] After filtering, ${filteredMatches.length} potential matches remain`);
         
         // Transform the potential matches data to match CardData structure
-        return filteredMatches.map((match: any) => {
+        const transformedMatches = filteredMatches.map((match: any) => {
           // Debug the structure of incoming potential matches
           console.log('[Discovery] Processing potential match data:', {
             hasMatchData: !!match.potentialMatchData,
@@ -315,6 +315,28 @@ export default function DiscoverPage() {
             requester_role: match.requester_role || match.job_title || '',
           };
         });
+        
+        // Validate transformed matches to ensure they have required fields
+        const validMatches = transformedMatches.filter(match => {
+          const isValid = match.id && 
+                   match.potentialMatchData && 
+                   match.potentialMatchData.company_name && 
+                   match.potentialMatchData.user_id;
+                   
+          if (!isValid) {
+            console.log('[Discovery] Filtering out invalid potential match:', {
+              id: match.id,
+              hasPotentialMatchData: !!match.potentialMatchData,
+              companyName: match.potentialMatchData?.company_name,
+              userId: match.potentialMatchData?.user_id
+            });
+          }
+          
+          return isValid;
+        });
+        
+        console.log(`[Discovery] After validation, ${validMatches.length} of ${transformedMatches.length} potential matches remain`);
+        return validMatches;
       } catch (err) {
         console.error('[Discovery] Potential matches fetch error:', err);
         // Check if this is an authentication error
@@ -991,9 +1013,29 @@ export default function DiscoverPage() {
             isPotentialMatch: true,
             collab_type: match.collab_type || 'Collaboration',
             creator_company_name: match.potentialMatchData?.company_name || '',
+            potentialMatchData: match.potentialMatchData || null,
           }));
           
-          setCards(formattedMatches);
+          // Validate potential matches before setting cards
+          const validMatches = formattedMatches.filter(match => {
+            // Make sure we have valid potentialMatchData with required fields
+            return match.id && 
+                  match.potentialMatchData && 
+                  match.potentialMatchData.company_name && 
+                  match.potentialMatchData.user_id;
+          });
+          
+          console.log(`[Discovery] Filtered potential matches: ${formattedMatches.length} -> ${validMatches.length} valid matches`);
+          
+          if (validMatches.length > 0) {
+            setCards(validMatches);
+          } else {
+            // If no valid potential matches, make sure we clear cards array
+            setCards([]);
+          }
+        } else {
+          // No potential matches found, ensure cards array is empty
+          setCards([]);
         }
         
         // Fetch fresh batch of regular collaborations
