@@ -221,7 +221,9 @@ export function SwipeableCard({
                   ? 'bg-amber-500/5'
                   : data.collab_type === 'Newsletter Feature'
                     ? 'bg-indigo-500/5'
-                    : 'bg-primary/5'
+                    : data.collab_type === 'Live Stream Guest Appearance'
+                      ? 'bg-red-500/5'
+                      : 'bg-primary/5'
         }`}>
           <div className="flex justify-between items-start">
             <div>
@@ -252,6 +254,11 @@ export function SwipeableCard({
                 ) : data.collab_type === 'Newsletter Feature' ? (
                   <Badge variant="outline" className="text-xs bg-indigo-500/10 border-indigo-500/20 text-indigo-700">
                     <Mail className="w-3 h-3 mr-1" />
+                    {data.collab_type}
+                  </Badge>
+                ) : data.collab_type === 'Live Stream Guest Appearance' ? (
+                  <Badge variant="outline" className="text-xs bg-red-500/10 border-red-500/20 text-red-700">
+                    <Video className="w-3 h-3 mr-1" />
                     {data.collab_type}
                   </Badge>
                 ) : (
@@ -513,6 +520,66 @@ export function SwipeableCard({
                     }}
                   >
                     {data.details.newsletter_url}
+                  </a>
+                </div>
+              )}
+              
+              {/* Show date if available */}
+              {(data.date || data.specific_date || data.details?.date) && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{data.date || data.specific_date || data.details?.date}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Live Stream Guest Appearance */}
+          {data.collab_type === 'Live Stream Guest Appearance' && (
+            <div className="flex flex-col space-y-2 p-3 bg-red-500/5 rounded-md border border-red-500/10 mb-3">
+              {data.details?.title && (
+                <div className="flex items-center space-x-1.5">
+                  <Video className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-medium text-red-700">
+                    {data.details.title}
+                  </span>
+                </div>
+              )}
+              
+              {data.details?.date_selection && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Calendar className="w-3 h-3 inline mr-1" />
+                  <span>
+                    {data.details.date_selection === 'specific_date' 
+                      ? 'Specific date: ' + (data.details.specific_date || 'TBD')
+                      : 'Flexible date'}
+                  </span>
+                </div>
+              )}
+              
+              {data.details?.expected_audience_size && (
+                <p className="text-xs text-muted-foreground">
+                  <Users className="w-3 h-3 inline mr-1" />
+                  <span className="font-medium">Expected audience:</span> {data.details.expected_audience_size}
+                </p>
+              )}
+              
+              {data.details?.previous_stream_link && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Link className="w-3 h-3" />
+                  <a 
+                    href={data.details.previous_stream_link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Prevent the card from being swiped when clicking the link
+                      e.preventDefault();
+                      window.open(data.details.previous_stream_link, '_blank');
+                    }}
+                  >
+                    Previous stream
                   </a>
                 </div>
               )}
