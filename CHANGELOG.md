@@ -5,22 +5,6 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - YYYY-MM-DD
-
-### Changed
-- **Refactored Monolithic `server/routes.ts`:** Extracted all API route definitions and business logic into domain-specific modules within `server/routes/` and `server/services/` (e.g., `profile`, `collaboration`, `admin`, `preferences`, `swipe_match`, `stats`, `sse`). This significantly improves maintainability, readability, and separation of concerns.
-- **Centralized Authentication:** Implemented global `authenticateMiddleware` in `server/middleware/authenticate.ts` to handle user lookup based on Telegram data and attach `userId` to requests, removing redundant logic from individual routers.
-- **Centralized Type Definitions:** Created `server/types/express.d.ts` to augment Express `Request` and `SessionData` types globally, removing local `TelegramRequest` definitions from routers.
-- **Simplified Server Setup:** Moved HTTP server creation directly into `server/index.ts` and removed the now-redundant `server/routes.ts` file.
-
-### Fixed
-- Addressed various linter errors related to missing type definitions by installing `@types/node`, `@types/express`, `@types/express-session`, `@types/connect-pg-simple`.
-
-### Internal
-- Created new service files (`admin.service.ts`, `collaboration.service.ts`, `preferences.service.ts`, `profile.service.ts`, `sse.service.ts`, `stats.service.ts`, `swipe_match.service.ts`) to encapsulate domain logic.
-- Created new route files (`admin.routes.ts`, `collaboration.routes.ts`, `preferences.routes.ts`, `profile.routes.ts`, `sse.routes.ts`, `stats.routes.ts`, `swipe_match.routes.ts`) for modular routing.
-- Created utility/middleware files (`auth.utils.ts`, `admin.middleware.ts`, `authenticate.ts`).
-
 ## [Version 1.7.8] - 2025-04-12
 
 ### Fixed

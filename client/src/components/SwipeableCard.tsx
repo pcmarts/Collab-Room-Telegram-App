@@ -547,29 +547,29 @@ export function SwipeableCard({
               <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                 <User className="w-3 h-3" />
                 <span>
-                  {data.potentialMatchData.firstName} 
-                  {data.potentialMatchData.lastName ? ` ${data.potentialMatchData.lastName}` : ''} 
-                  {data.potentialMatchData.jobTitle ? ` • ${data.potentialMatchData.jobTitle}` : ''}
+                  {data.potentialMatchData.first_name} 
+                  {data.potentialMatchData.last_name ? ` ${data.potentialMatchData.last_name}` : ''} 
+                  {data.potentialMatchData.job_title ? ` • ${data.potentialMatchData.job_title}` : ''}
                 </span>
               </div>
               
               <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                 <Building className="w-3 h-3" />
-                <span className="font-medium">{data.potentialMatchData.companyName}</span>
+                <span className="font-medium">{data.potentialMatchData.company_name}</span>
               </div>
               
               {/* Company description */}
-              {data.potentialMatchData.companyDescription && (
+              {data.potentialMatchData.company_description && (
                 <div className="text-xs italic text-muted-foreground">
-                  "{data.potentialMatchData.companyDescription}"
+                  "{data.potentialMatchData.company_description}"
                 </div>
               )}
               
               {/* Company links */}
               <div className="flex flex-wrap gap-2">
-                {data.potentialMatchData.companyWebsite && (
+                {data.potentialMatchData.company_website && (
                   <a
-                    href={data.potentialMatchData.companyWebsite}
+                    href={data.potentialMatchData.company_website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 pointer-events-auto relative z-50"
@@ -583,9 +583,9 @@ export function SwipeableCard({
                   </a>
                 )}
                 
-                {data.potentialMatchData.companyTwitter && (
+                {data.potentialMatchData.company_twitter && (
                   <a
-                    href={`https://twitter.com/${data.potentialMatchData.companyTwitter}`}
+                    href={`https://twitter.com/${data.potentialMatchData.company_twitter}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 pointer-events-auto relative z-50"
@@ -595,13 +595,13 @@ export function SwipeableCard({
                     }}
                   >
                     <Twitter className="h-3 w-3 mr-0.5 text-[#1DA1F2]" />
-                    @{data.potentialMatchData.companyTwitter}
+                    @{data.potentialMatchData.company_twitter}
                   </a>
                 )}
                 
-                {data.potentialMatchData.companyLinkedin && (
+                {data.potentialMatchData.company_linkedin && (
                   <a
-                    href={data.potentialMatchData.companyLinkedin}
+                    href={data.potentialMatchData.company_linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 pointer-events-auto relative z-50"

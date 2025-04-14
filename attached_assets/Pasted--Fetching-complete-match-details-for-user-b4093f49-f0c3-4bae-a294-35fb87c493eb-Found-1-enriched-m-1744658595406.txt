@@ -1,0 +1,62 @@
+
+
+
+
+Fetching complete match details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 1 enriched matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 1 existing matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Filtering out already swiped potential match with swipe ID: 518b2d13-5b80-4462-a966-282e94f2c664
+Filtering out already matched collaboration with ID: b82d25de-4a89-41b4-b803-053569d9d58f
+Filtering out already matched collaboration with ID: b82d25de-4a89-41b4-b803-053569d9d58f
+Found 1 existing matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Filtering out already swiped potential match with swipe ID: 518b2d13-5b80-4462-a966-282e94f2c664
+Filtering out already matched collaboration with ID: b82d25de-4a89-41b4-b803-053569d9d58f
+Filtering out already matched collaboration with ID: b82d25de-4a89-41b4-b803-053569d9d58f
+============ DEBUG: Search Collaborations Paginated (Join-Based) ============
+Filters: {
+  excludeIds: [
+    '5b9187b9-bad5-4750-96ba-a21bdb929bae',
+    'b82d25de-4a89-41b4-b803-053569d9d58f'
+  ]
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Found 3 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 2 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 2 (2 own + 3 swiped + 2 additional)
+Using join structure: collaborations -> users -> companies
+Excluding 2 total collaborations from results
+Excluded IDs for debugging: [
+  'b82d25de-4a89-41b4-b803-053569d9d58f',
+  '5b9187b9-bad5-4750-96ba-a21bdb929bae'
+]
+Excluding user's own collaborations (creator_id filtering)
+Filtering by blockchain networks from COMPANIES table: Optimism
+Converting blockchain networks to PostgreSQL array format: {Optimism}
+Applied blockchain networks filter using companies.blockchain_networks
+Final joined filter query constructed, executing and returning results
+Returning 0 collaborations with hasMore=false
+============ DEBUG: Search Collaborations Paginated (Join-Based) ============
+Filters: {
+  excludeIds: [
+    '5b9187b9-bad5-4750-96ba-a21bdb929bae',
+    'b82d25de-4a89-41b4-b803-053569d9d58f'
+  ]
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Found 3 previous swipes by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 2 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total IDs to exclude: 2 (2 own + 3 swiped + 2 additional)
+Using join structure: collaborations -> users -> companies
+Excluding 2 total collaborations from results
+Excluded IDs for debugging: [
+  'b82d25de-4a89-41b4-b803-053569d9d58f',
+  '5b9187b9-bad5-4750-96ba-a21bdb929bae'
+]
+Excluding user's own collaborations (creator_id filtering)
+Filtering by blockchain networks from COMPANIES table: Optimism
+Converting blockchain networks to PostgreSQL array format: {Optimism}
+Applied blockchain networks filter using companies.blockchain_networks
+Final joined filter query constructed, executing and returning results
+Returning 0 collaborations with hasMore=false

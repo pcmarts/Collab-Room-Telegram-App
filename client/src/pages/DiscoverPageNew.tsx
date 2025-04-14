@@ -280,20 +280,19 @@ export default function DiscoverPage() {
           
           // Construct the proper potentialMatchData object
           const potentialMatchData = {
-            // Convert snake_case to camelCase for client-side compatibility
-            userId: match.user_id || match.requester_id || '',
-            firstName: match.first_name || match.requester_first_name || '',
-            lastName: match.last_name || match.requester_last_name || '',
-            companyName: match.company_name || match.requester_company || '',
-            companyDescription: match.company_description || match.short_description || match.description || '',
-            companyWebsite: match.company_website || match.website || '',
-            companyTwitter: match.company_twitter || match.twitter_handle || '',
-            companyLinkedin: match.company_linkedin || match.linkedin || '',
-            jobTitle: match.job_title || match.requester_role || '',
-            twitterFollowers: match.twitter_followers || '',
-            companyTwitterFollowers: match.company_twitter_followers || '',
-            swipeCreatedAt: match.created_at || match.swipe_created_at || new Date().toISOString(),
-            collaborationId: match.collaboration_id || match.id,
+            user_id: match.user_id || match.requester_id || '',
+            first_name: match.first_name || match.requester_first_name || '',
+            last_name: match.last_name || match.requester_last_name || '',
+            company_name: match.company_name || match.requester_company || '',
+            company_description: match.company_description || match.short_description || match.description || '',
+            company_website: match.company_website || match.website || '',
+            company_twitter: match.company_twitter || match.twitter_handle || '',
+            company_linkedin: match.company_linkedin || match.linkedin || '',
+            job_title: match.job_title || match.requester_role || '',
+            twitter_followers: match.twitter_followers || '',
+            company_twitter_followers: match.company_twitter_followers || '',
+            swipe_created_at: match.created_at || match.swipe_created_at || new Date().toISOString(),
+            collaboration_id: match.collaboration_id || match.id,
             note: match.note || '' // Include the personalized note from the swipe
           };
           
