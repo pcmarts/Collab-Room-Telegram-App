@@ -926,13 +926,6 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       <div className="min-h-[100svh] bg-background">
         <PageHeader 
           title="My Collabs" 
-          action={
-            <GlowButton 
-              onClick={() => setLocation('/create-collaboration-steps')}
-            >
-              Create New
-            </GlowButton>
-          }
         />
         
         <div className="container mx-auto py-4 px-4">
@@ -941,6 +934,14 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             renderSkeletons()
           ) : collaborations && collaborations.length > 0 ? (
             <div>
+              <div className="mb-4 flex justify-center">
+                <GlowButton 
+                  onClick={() => setLocation('/create-collaboration-steps')}
+                  className="w-full max-w-md"
+                >
+                  Create New Collab
+                </GlowButton>
+              </div>
               {collaborations.map(collab => renderCollaborationCard(collab))}
             </div>
           ) : (
