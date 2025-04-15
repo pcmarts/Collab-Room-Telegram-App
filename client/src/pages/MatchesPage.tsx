@@ -35,6 +35,7 @@ interface Match {
   collaborationType: string;
   description: string;
   details: any;
+  user_role: string; // 'host' or 'requester' - indicates if the user created the collaboration (host) or matched with it (requester)
   matchedPerson: string;
   companyName: string;
   roleTitle: string;
@@ -246,12 +247,25 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     );
   };
 
-  // For collaboration details, the host is the company that created the collaboration,
-  // not the current user's company (which is stored in match.companyName)
-  // In the case of matches, we're looking at someone else's collaboration, not our own
+  // For collaboration details, we need to determine the host company
+  let hostName, hostWebsite;
+
+  // Each match has a host_id and a requester_id in the database.
+  // For matches, we need to figure out if the collaboration was created by the current match party
+  if (match.user_role === 'host') {
+    // If the current user is the host, it means they created this collaboration
+    hostName = "Your Company"; // Since the current user created it
+    hostWebsite = match.companyWebsite; // Use current user's company website
+  } else {
+    // If the current user is the requester, the host is the other person
+    hostName = match.companyName; // The other person's company name
+    hostWebsite = match.companyWebsite; // The other person's company website
+  }
+
+  // Use any host information from the details if available (for backward compatibility)
   const companyData = {
-    name: match.details?.host_company || match.details?.company_name || match.companyName,
-    website: match.details?.company_website || match.companyWebsite
+    name: match.details?.host_company || match.details?.company_name || hostName,
+    website: match.details?.company_website || hostWebsite
   };
 
   // Render different details based on collaboration type

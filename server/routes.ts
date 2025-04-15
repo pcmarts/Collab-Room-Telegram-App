@@ -3107,6 +3107,9 @@ export async function registerRoutes(app: Express) {
             description: match.collab_description || '',
             details: match.collab_details || {},
             
+            // Collaboration role information (host = created the collab, requester = swiped on it)
+            user_role: match.user_role || 'requester',
+            
             // User information
             matchedPerson: `${match.other_user_first_name || ''} ${match.other_user_last_name || ''}`.trim(),
             companyName: match.company_name || 'Unknown Company',
@@ -3142,6 +3145,7 @@ export async function registerRoutes(app: Express) {
             collaborationType: match.collab_type || 'Unknown',
             description: 'Unable to load full details',
             details: match.collab_details || {},
+            user_role: match.user_role || 'requester', // Add user_role to the error case too
             matchedPerson: 'Unknown',
             companyName: 'Unknown Company',
             roleTitle: 'Unknown Role',
