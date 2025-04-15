@@ -164,10 +164,14 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     // Add remaining fields that weren't handled specially
     Object.entries(details).forEach(([key, value]) => {
       // Skip keys we've already processed or don't want to show
-      const skipKeys = ['id', 'created_at', 'updated_at', 'title', 'podcast_name',
-                        'livestream_title', 'specific_date', 'date_selection',
-                        'previous_stream_link', 'previous_webinar_link', 'podcast_link',
-                        'streaming_link', 'expected_audience_size', 'estimated_reach'];
+      const skipKeys = [
+        'id', 'created_at', 'updated_at', 'title', 'podcast_name',
+        'livestream_title', 'specific_date', 'date_selection',
+        'previous_stream_link', 'previous_webinar_link', 'podcast_link',
+        'streaming_link', 'expected_audience_size', 'estimated_reach',
+        // Skip blog-specific fields that we're manually handling
+        'blog_name', 'blog_link', 'est_readers', 'topics'
+      ];
       
       if (!skipKeys.includes(key) && value) {
         // Format the key for display
@@ -286,6 +290,68 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
               <p className="text-sm">{match.description}</p>
             </div>
           )}
+          
+          {/* Blog-specific topics/tags displayed as pills in a cleaner format */}
+          {match.details && match.details.topics && Array.isArray(match.details.topics) && match.details.topics.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-2">Topics</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {match.details.topics.map((topic, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {topic}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Blog Link if available */}
+          {match.details && match.details.blog_link && (
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-1">Blog Link</h4>
+              <a 
+                href={match.details.blog_link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline flex items-center"
+              >
+                {match.details.blog_link}
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor"
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="ml-1 h-3 w-3"
+                >
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+            </div>
+          )}
+          
+          {/* Blog Name & Est. Readers */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            {match.details && match.details.blog_name && (
+              <div>
+                <h4 className="text-sm font-medium mb-1">Blog Name</h4>
+                <p className="text-sm">{match.details.blog_name}</p>
+              </div>
+            )}
+            
+            {match.details && match.details.est_readers && (
+              <div>
+                <h4 className="text-sm font-medium mb-1">Est. Readers</h4>
+                <p className="text-sm">{match.details.est_readers}</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Render any remaining details */}
           {renderDetailsFields(match.details, companyData)}
         </div>
       );
@@ -374,19 +440,28 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     <div className="space-y-6">
       {/* Header Section with Match Summary */}
       <div className="pb-4 border-b">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-bold">{match.companyName}</h2>
-          <Badge variant="outline" className="text-primary bg-primary/5 border-primary/10">
-            {match.collaborationType}
-          </Badge>
-        </div>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {match.matchedPerson}, {match.roleTitle}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Matched on {match.matchDate}
-          </p>
+        <div className="flex flex-col mb-2">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-xl font-bold">{match.companyName}</h2>
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">
+                {match.matchedPerson}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {match.roleTitle}
+              </p>
+            </div>
+            <div className="flex flex-col items-end">
+              <Badge variant="outline" className="text-primary bg-primary/5 border-primary/10 mb-1 whitespace-nowrap">
+                {match.collaborationType}
+              </Badge>
+              <p className="text-xs text-muted-foreground">
+                Matched on {match.matchDate}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -788,20 +863,23 @@ export default function MatchesPage() {
                       <CardTitle className="text-lg">
                         {match.companyName}
                       </CardTitle>
-                      <CardDescription>
-                        {match.matchedPerson}, {match.roleTitle}
+                      <CardDescription className="mb-1">
+                        {match.matchedPerson}
                       </CardDescription>
+                      <p className="text-xs text-muted-foreground">
+                        {match.roleTitle}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         Matched on {match.matchDate}
                       </p>
                     </div>
-                    <div className="flex items-center">
-                      <div className="mr-2">
+                    <div className="flex items-center shrink-0">
+                      <div className="mr-1.5">
                         {getCollabTypeIcon(match.collaborationType)}
                       </div>
                       <Badge
                         variant="outline"
-                        className="text-muted-foreground bg-transparent"
+                        className="text-muted-foreground bg-transparent whitespace-nowrap"
                       >
                         {match.collaborationType}
                       </Badge>
