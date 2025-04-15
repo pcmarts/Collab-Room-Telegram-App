@@ -247,7 +247,12 @@ export function CollaborationDetailsDialog({
               {/* Collaboration Type */}
               <div className="mb-3">
                 <h4 className="text-sm font-medium">Type</h4>
-                <p className="text-sm">{collabType}</p>
+                <p className="text-sm">
+                  {collabType}
+                  {collabType?.includes('Co-Marketing on Twitter') && details?.twittercomarketing_type && 
+                    <>, {details.twittercomarketing_type}</>
+                  }
+                </p>
               </div>
               
               {/* Collaboration Description */}
@@ -350,10 +355,19 @@ export function CollaborationDetailsDialog({
                     </div>
                   )}
                   
-                  {details?.twittercomarketing_type && (
+                  {/* We're already showing this at the top for Twitter co-marketing */}
+                  {details?.twittercomarketing_type && !collabType?.includes('Co-Marketing on Twitter') && (
                     <div className="flex items-center gap-1 text-xs">
                       <Tag className="h-3 w-3 text-muted-foreground" />
                       <span>Twitter engagement type: {details.twittercomarketing_type}</span>
+                    </div>
+                  )}
+                  
+                  {/* Additional Twitter date info */}
+                  {details?.collaboration_date && (
+                    <div className="flex items-center gap-1 text-xs">
+                      <Calendar className="h-3 w-3 text-muted-foreground" />
+                      <span>Collaboration date: {details.collaboration_date}</span>
                     </div>
                   )}
                 </div>
@@ -392,15 +406,25 @@ export function CollaborationDetailsDialog({
                   !['host_twitter_handle', 'host_follower_count', 'twittercomarketing_type', 
                     'podcast_name', 'podcast_episodes', 'podcast_duration', 
                     'date_selection', 'specific_date', 'date', 'expected_audience_size', 
-                    'previous_stream_link'].includes(key) && 
+                    'previous_stream_link', 'collaboration_date'].includes(key) && 
                   value && typeof value !== 'object'
                 )
-                .map(([key, value]) => (
-                  <div className="mb-2" key={key}>
-                    <h4 className="text-sm font-medium">{key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</h4>
-                    <p className="text-sm text-muted-foreground">{String(value)}</p>
-                  </div>
-                ))
+                .map(([key, value]) => {
+                  // Check if this is a date-related field
+                  const isDateField = key.toLowerCase().includes('date') || 
+                                    key.toLowerCase().includes('time') || 
+                                    key.toLowerCase().includes('when');
+                  
+                  return (
+                    <div className="mb-2" key={key}>
+                      <h4 className="text-sm font-medium flex items-center gap-1">
+                        {isDateField && <Calendar className="h-3.5 w-3.5" />}
+                        {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">{String(value)}</p>
+                    </div>
+                  );
+                })
               }
             </Card>
             
