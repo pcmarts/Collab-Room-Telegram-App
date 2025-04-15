@@ -8,7 +8,7 @@ import {
   swipes,
   matches,
 } from "@shared/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, inArray } from "drizzle-orm";
 import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
@@ -114,26 +114,18 @@ export async function setupBotCommands() {
     
     console.log(`[BOT_SETUP] Found ${adminUsers.length} admin users`);
     
-    // For each admin user, set their specific command scope
-    for (const admin of adminUsers) {
-      if (!admin.telegram_id) {
-        console.warn(`[BOT_SETUP] Admin ${admin.id} has no Telegram ID, skipping`);
-        continue;
-      }
+    // Use a better approach for admin commands - set them for chat administrators
+    try {
+      // Set admin commands for all chat administrators
+      const adminScope = {
+        type: 'chat_administrators'
+      };
       
-      try {
-        // Create a chat scope for this specific admin
-        const adminScope = {
-          type: 'chat',
-          chat_id: parseInt(admin.telegram_id)
-        };
-        
-        // Set admin-specific commands
-        await bot.setMyCommands(adminCommands, { scope: adminScope });
-        console.log(`[BOT_SETUP] Set admin commands for ${admin.first_name} (${admin.telegram_id})`);
-      } catch (error) {
-        console.error(`[BOT_SETUP] Failed to set commands for admin ${admin.telegram_id}:`, error);
-      }
+      // Set admin-specific commands
+      await bot.setMyCommands(adminCommands, { scope: adminScope });
+      console.log(`[BOT_SETUP] Set admin commands for all chat administrators`);
+    } catch (error) {
+      console.error(`[BOT_SETUP] Failed to set commands for chat administrators:`, error);
     }
     
     return true;
@@ -655,40 +647,50 @@ export async function broadcastMessageToUsers(
     // This fetches all user handles and company names in a single database query
     console.log("[BROADCAST] Fetching user details with a batched query");
     
-    // Extract all user IDs to look up
-    const userIds = eligibleUsers.map(user => user.id);
+    // Instead of using individual queries for each user, we'll fetch all users
+    // and all companies in two separate batched queries, then join them in memory
     
-    // Get all user details in a single query with JOIN
-    const userDetailsQuery = await db
+    // Get all user handles in a single query
+    console.log("[BROADCAST] Fetching all user handles in a batch query");
+    const userHandlesQuery = await db
       .select({
         id: users.id,
-        handle: users.handle,
+        handle: users.handle
+      })
+      .from(users);
+      
+    // Get all company names in a single query  
+    console.log("[BROADCAST] Fetching all company names in a batch query");
+    const companyNamesQuery = await db
+      .select({
+        user_id: companies.user_id,
         company_name: companies.name
       })
-      .from(users)
-      .leftJoin(companies, eq(users.id, companies.user_id))
-      .where(inArray(users.id, userIds));
-      
-    console.log(`[BROADCAST] Successfully fetched details for ${userDetailsQuery.length} users with JOIN query`);
+      .from(companies);
     
-    // Create a map for easy lookup
-    const userDetailsMap = {};
-    userDetailsQuery.forEach(detail => {
-      userDetailsMap[detail.id] = {
-        handle: detail.handle || "",
-        company_name: detail.company_name || ""
-      };
+    console.log(`[BROADCAST] Successfully fetched ${userHandlesQuery.length} user handles and ${companyNamesQuery.length} company names`);
+    
+    // Create maps for efficient lookups
+    const userHandlesMap = {};
+    userHandlesQuery.forEach(user => {
+      userHandlesMap[user.id] = user.handle || "";
     });
     
+    const companyNamesMap = {};
+    companyNamesQuery.forEach(company => {
+      companyNamesMap[company.user_id] = company.company_name || "";
+    });
+      
     // Merge user details with eligible users
     const usersWithDetails = eligibleUsers.map(user => {
-      const details = userDetailsMap[user.id] || { handle: "", company_name: "" };
       return {
         ...user,
-        handle: details.handle,
-        company_name: details.company_name
+        handle: userHandlesMap[user.id] || "",
+        company_name: companyNamesMap[user.id] || ""
       };
     });
+    
+    console.log(`[BROADCAST] Successfully merged details for ${usersWithDetails.length} users`);
     
     // Send message to each eligible user
     for (const user of usersWithDetails) {
