@@ -9,6 +9,7 @@ import { useLocation } from 'wouter';
 import { UserIcon, Users, Building, Star, Bell, Calendar, Plus, Settings, Clock } from 'lucide-react';
 import { FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { NetworkStatus } from "@/components/NetworkStatus";
+import { PageHeader } from "../components/PageHeader";
 import type { 
   User as UserType, 
   Company, 
@@ -248,10 +249,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-[100svh] bg-background">
-      {/* Welcome Section */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-3">
-        <h1 className="text-2xl font-bold p-2">Welcome, {user.first_name}!</h1>
-      </div>
+      {/* Welcome Section with standardized PageHeader */}
+      <PageHeader 
+        title={`Welcome, ${user.first_name}!`}
+      />
 
       <div className="p-4 space-y-4 pb-safe">
         {/* Profile Actions */}
