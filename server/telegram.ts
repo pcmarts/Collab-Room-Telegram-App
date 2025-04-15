@@ -170,12 +170,12 @@ bot.on("message", async (msg) => {
       // This is intentional so the admin can see the HTML tags they entered
       const confirmationMessage = 
         "📣 <b>Broadcast Preview</b>\n\n" +
-        "This is how your message will look to users (HTML tags will be properly rendered):\n\n" +
+        "This is how your message will appear (with HTML formatting applied and <b>link previews disabled</b>):\n\n" +
         "----- <b>Preview</b> -----\n" +
         `📣 <b>Admin Announcement</b>\n\n${msg.text}\n` +
         "---------------------\n\n" +
-        "<i>Note: When sent to users, all HTML formatting like &lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, and " +
-        "&lt;a href=\"https://example.com\"&gt;links&lt;/a&gt; will be properly rendered.</i>\n\n" +
+        "<i>Note: All HTML formatting such as &lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, and " +
+        "&lt;a href=\"https://example.com\"&gt;links&lt;/a&gt; will render correctly, but link previews will be disabled.</i>\n\n" +
         "Do you want to send this message to all approved users with notifications enabled?";
       
       // Create keyboard with confirm/cancel buttons
@@ -739,7 +739,7 @@ Message content: ${finalPersonalizedMessage}`);
         // Send message with HTML formatting and inline keyboard
         await bot.sendMessage(userChatId, finalPersonalizedMessage, {
           parse_mode: "HTML",
-          disable_web_page_preview: false, // Allow links to show previews
+          disable_web_page_preview: true, // Disable link previews as requested
           reply_markup: launchKeyboard
         });
         
