@@ -472,6 +472,13 @@ async function handleBroadcast(msg: TelegramBot.Message) {
       "• <i>Italic text</i> using _italic_ or <i>italic</i>\n" +
       "• <u>Underlined text</u> using <u>underlined</u>\n" +
       "• Links like <a href=\"https://example.com\">this</a>\n\n" +
+      "<i>You can also use these personalization placeholders:</i>\n" +
+      "• {first_name} - User's first name\n" + 
+      "• {last_name} - User's last name\n" +
+      "• {full_name} - User's full name\n" +
+      "• {handle} - User's Telegram handle with @ symbol\n" +
+      "• {company} - User's company name\n\n" +
+      "Example: \"GM {handle}! How's everything at {company}?\"\n\n" +
       "Send your message now, or type /cancel to abort.",
       { parse_mode: "HTML" }
     );
@@ -578,8 +585,41 @@ export async function broadcastMessageToUsers(
     const formattedMessage = 
       `📣 <b>Admin Announcement</b>\n\n${message}`;
     
+    // Get additional user data needed for personalization
+    // We need to fetch user data including handles and company info
+    const usersWithDetails = await Promise.all(
+      eligibleUsers.map(async (user) => {
+        try {
+          // Get user's company information
+          const [company] = await db
+            .select()
+            .from(companies)
+            .where(eq(companies.user_id, user.id));
+          
+          // Get user's full profile including handle
+          const [fullUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, user.id));
+            
+          return {
+            ...user,
+            handle: fullUser?.handle || "",
+            company_name: company?.name || ""
+          };
+        } catch (error) {
+          console.error(`[BROADCAST] Error fetching details for user ${user.id}:`, error);
+          return {
+            ...user,
+            handle: "",
+            company_name: ""
+          };
+        }
+      })
+    );
+    
     // Send message to each eligible user
-    for (const user of eligibleUsers) {
+    for (const user of usersWithDetails) {
       try {
         if (!user.telegram_id) {
           console.error(`[BROADCAST] User ${user.id} has no Telegram ID`);
@@ -590,8 +630,32 @@ export async function broadcastMessageToUsers(
         // Parse Telegram ID as integer (Telegram API expects numeric IDs)
         const userChatId = parseInt(user.telegram_id);
         
+        // Replace placeholders with user-specific data
+        let personalizedMessage = message;
+        
+        // Replace first_name placeholder
+        personalizedMessage = personalizedMessage.replace(/\{first_name\}/g, user.first_name || "");
+        
+        // Replace last_name placeholder
+        personalizedMessage = personalizedMessage.replace(/\{last_name\}/g, user.last_name || "");
+        
+        // Replace full_name placeholder
+        const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+        personalizedMessage = personalizedMessage.replace(/\{full_name\}/g, fullName);
+        
+        // Replace handle placeholder with @ symbol
+        const formattedHandle = user.handle ? `@${user.handle.replace(/^@/, '')}` : "";
+        personalizedMessage = personalizedMessage.replace(/\{handle\}/g, formattedHandle);
+        
+        // Replace company placeholder
+        personalizedMessage = personalizedMessage.replace(/\{company\}/g, user.company_name || "");
+        
+        // Format the final message with the header
+        const finalPersonalizedMessage = 
+          `📣 <b>Admin Announcement</b>\n\n${personalizedMessage}`;
+        
         // Send message with HTML formatting
-        await bot.sendMessage(userChatId, formattedMessage, {
+        await bot.sendMessage(userChatId, finalPersonalizedMessage, {
           parse_mode: "HTML",
           disable_web_page_preview: false // Allow links to show previews
         });
