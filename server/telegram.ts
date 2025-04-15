@@ -159,20 +159,23 @@ bot.on("message", async (msg) => {
     try {
       console.log("[BROADCAST] Received message from admin for broadcast:", msg.text);
       
-      // Update state with the message
+      // Store the original message with HTML tags intact
       adminBroadcastState.set(telegramId, {
         state: "awaiting_confirmation",
         message: msg.text,
         timestamp: Date.now()
       });
       
-      // Create confirmation message with preview
+      // For the preview, we use the raw message text (HTML tags will display as plain text in preview)
+      // This is intentional so the admin can see the HTML tags they entered
       const confirmationMessage = 
         "📣 <b>Broadcast Preview</b>\n\n" +
-        "This is how your message will look to users:\n\n" +
+        "This is how your message will look to users (HTML tags will be properly rendered):\n\n" +
         "----- <b>Preview</b> -----\n" +
         `📣 <b>Admin Announcement</b>\n\n${msg.text}\n` +
         "---------------------\n\n" +
+        "<i>Note: When sent to users, all HTML formatting like &lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, and " +
+        "&lt;a href=\"https://example.com\"&gt;links&lt;/a&gt; will be properly rendered.</i>\n\n" +
         "Do you want to send this message to all approved users with notifications enabled?";
       
       // Create keyboard with confirm/cancel buttons
@@ -530,10 +533,11 @@ async function handleBroadcast(msg: TelegramBot.Message) {
       "📣 <b>Broadcast Message</b>\n\n" +
       "Please send the message you want to broadcast to all active, approved users with notifications enabled.\n\n" +
       "<i>Your message can include:</i>\n" +
-      "• <b>Bold text</b> using *bold* or <b>bold</b>\n" +
-      "• <i>Italic text</i> using _italic_ or <i>italic</i>\n" +
-      "• <u>Underlined text</u> using <u>underlined</u>\n" +
-      "• Links like <a href=\"https://example.com\">this</a>\n\n" +
+      "• <b>Bold text</b> using &lt;b&gt;text&lt;/b&gt;\n" +
+      "• <i>Italic text</i> using &lt;i&gt;text&lt;/i&gt;\n" +
+      "• <u>Underlined text</u> using &lt;u&gt;text&lt;/u&gt;\n" +
+      "• Links like &lt;a href=\"https://example.com\"&gt;this&lt;/a&gt;\n\n" +
+      "<i>IMPORTANT: For HTML tags to work, use the exact format shown above (including quotes around URLs).</i>\n\n" +
       "<i>You can also use these personalization placeholders:</i>\n" +
       "• {first_name} - User's first name\n" + 
       "• {last_name} - User's last name\n" +
