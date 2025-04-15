@@ -70,50 +70,157 @@ interface MatchDetailProps {
 function MatchDetail({ match, onBack }: MatchDetailProps) {
   let detailsSection;
 
+  // Helper function to format common field types
+  const formatFieldValue = (key: string, value: any) => {
+    // Format date fields to be more user-friendly
+    if (key.includes('date') && typeof value === 'string') {
+      if (value === 'any_future_date') {
+        return 'Any date in the future';
+      } else if (value.includes('_')) {
+        return value.replace(/_/g, ' ');
+      }
+      return value;
+    }
+    return String(value);
+  };
+
+  // Define a type for our field structure
+  interface DetailField {
+    key: string;
+    value: string;
+    isLink?: boolean;
+    linkUrl?: string;
+  }
+
   // Helper function to render details from the details object
-  const renderDetailsFields = (details: any) => {
+  const renderDetailsFields = (details: any, companyData?: any) => {
     if (!details) return null;
+    
+    // Extract important values first
+    const host = companyData?.name;
+    const hostWebsite = companyData?.website;
+    
+    // Special handling for the livestream/podcast links
+    const streamLink = details.previous_stream_link || details.previous_webinar_link || 
+                        details.podcast_link || details.streaming_link;
+    
+    // Combine date fields into a single entry
+    let dateInfo: DetailField | null = null;
+    if (details.specific_date && details.date_selection) {
+      // If we have both specific date and date selection, use specific date if it's specific
+      dateInfo = details.specific_date !== 'TBD' ? 
+                 { key: 'Date', value: details.specific_date } : 
+                 { key: 'Date', value: formatFieldValue('date_selection', details.date_selection) };
+    } else if (details.specific_date) {
+      dateInfo = { key: 'Date', value: formatFieldValue('specific_date', details.specific_date) };
+    } else if (details.date_selection) {
+      dateInfo = { key: 'Date', value: formatFieldValue('date_selection', details.date_selection) };
+    }
+
+    // Create a custom ordered list of fields to display
+    const customFields: DetailField[] = [];
+    
+    // Add host if available
+    if (host) {
+      customFields.push({
+        key: 'Host',
+        value: host,
+        isLink: !!hostWebsite,
+        linkUrl: hostWebsite
+      });
+    }
+    
+    // Add title if available (podcast name, livestream title, etc.)
+    if (details.title || details.podcast_name || details.livestream_title) {
+      customFields.push({
+        key: 'Title',
+        value: String(details.title || details.podcast_name || details.livestream_title)
+      });
+    }
+    
+    // Add date if available
+    if (dateInfo) {
+      customFields.push(dateInfo);
+    }
+    
+    // Add stream/podcast link if available
+    if (streamLink) {
+      customFields.push({
+        key: details.podcast_link ? 'Podcast Link' : 'Previous Stream',
+        value: 'View',
+        isLink: true,
+        linkUrl: streamLink
+      });
+    }
+    
+    // Add audience size if available
+    if (details.expected_audience_size || details.estimated_reach) {
+      customFields.push({
+        key: 'Audience Size',
+        value: String(details.expected_audience_size || details.estimated_reach)
+      });
+    }
+    
+    // Add remaining fields that weren't handled specially
+    Object.entries(details).forEach(([key, value]) => {
+      // Skip keys we've already processed or don't want to show
+      const skipKeys = ['id', 'created_at', 'updated_at', 'title', 'podcast_name',
+                        'livestream_title', 'specific_date', 'date_selection',
+                        'previous_stream_link', 'previous_webinar_link', 'podcast_link',
+                        'streaming_link', 'expected_audience_size', 'estimated_reach'];
+      
+      if (!skipKeys.includes(key) && value) {
+        // Format the key for display
+        const formattedKey = key
+          .replace(/_/g, " ")
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+        
+        customFields.push({
+          key: formattedKey,
+          value: formatFieldValue(key, value)
+        });
+      }
+    });
 
     return (
       <div className="grid grid-cols-1 gap-3">
-        {Object.entries(details).map(([key, value]) => {
-          // Skip rendering certain keys that are already displayed elsewhere
-          if (["id", "created_at", "updated_at"].includes(key)) return null;
-
-          // Format the key for display
-          const formattedKey = key
-            .replace(/_/g, " ")
-            .split(" ")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
-          
-          // Check if the value is a long string like a URL
-          const isLongValue = typeof value === 'string' && (value.length > 30 || value.includes('http'));
-          
-          return isLongValue ? (
-            // For long values, stack the label and value vertically
-            <div key={key} className="space-y-1 border-b border-muted pb-2">
-              <span className="text-sm font-medium">
-                {formattedKey}:
-              </span>
-              <span className="text-sm block break-words">
-                {String(value).startsWith('http') ? (
-                  <a href={String(value)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                    {String(value)}
-                  </a>
-                ) : String(value)}
-              </span>
-            </div>
-          ) : (
-            // For shorter values, use horizontal layout
-            <div key={key} className="flex justify-between border-b border-muted pb-2">
-              <span className="text-sm font-medium">
-                {formattedKey}:
-              </span>
-              <span className="text-sm text-right">{String(value)}</span>
-            </div>
-          );
-        })}
+        {customFields.map((field, index) => (
+          <div key={index} className="border-b border-muted pb-2">
+            <span className="text-sm font-medium block mb-1">
+              {field.key}:
+            </span>
+            <span className="text-sm block">
+              {field.isLink && field.linkUrl ? (
+                <a 
+                  href={field.linkUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-primary hover:underline inline-flex items-center"
+                >
+                  {field.value}
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="ml-1 h-4 w-4"
+                  >
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                </a>
+              ) : (
+                field.value
+              )}
+            </span>
+          </div>
+        ))}
       </div>
     );
   };
@@ -139,6 +246,12 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     );
   };
 
+  // Create a company data object for the host company
+  const companyData = {
+    name: match.companyName,
+    website: match.companyWebsite
+  };
+
   // Render different details based on collaboration type
   switch (match.collaborationType) {
     case "Podcast Guest Appearance":
@@ -150,7 +263,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
               <p className="text-sm">{match.description}</p>
             </div>
           )}
-          {renderDetailsFields(match.details)}
+          {renderDetailsFields(match.details, companyData)}
         </div>
       );
       break;
@@ -163,7 +276,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
               <p className="text-sm">{match.description}</p>
             </div>
           )}
-          {renderDetailsFields(match.details)}
+          {renderDetailsFields(match.details, companyData)}
         </div>
       );
       break;
@@ -176,7 +289,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
               <p className="text-sm">{match.description}</p>
             </div>
           )}
-          {renderDetailsFields(match.details)}
+          {renderDetailsFields(match.details, companyData)}
         </div>
       );
       break;
@@ -189,7 +302,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
               <p className="text-sm">{match.description}</p>
             </div>
           )}
-          {renderDetailsFields(match.details)}
+          {renderDetailsFields(match.details, companyData)}
         </div>
       );
       break;
@@ -202,7 +315,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
               <p className="text-sm">{match.description}</p>
             </div>
           )}
-          {renderDetailsFields(match.details)}
+          {renderDetailsFields(match.details, companyData)}
         </div>
       );
       break;
@@ -215,7 +328,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
               <p className="text-sm">{match.description}</p>
             </div>
           )}
-          {renderDetailsFields(match.details)}
+          {renderDetailsFields(match.details, companyData)}
         </div>
       );
       break;
@@ -228,7 +341,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
               <p className="text-sm">{match.description}</p>
             </div>
           )}
-          {renderDetailsFields(match.details)}
+          {renderDetailsFields(match.details, companyData)}
         </div>
       );
       break;
@@ -242,7 +355,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
               <p className="text-sm">{match.description}</p>
             </div>
           )}
-          {match.details && renderDetailsFields(match.details)}
+          {match.details && renderDetailsFields(match.details, companyData)}
         </div>
       );
   }
