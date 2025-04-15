@@ -83,6 +83,75 @@ export const bot = new TelegramBot(BOT_TOKEN, {
   webHook: false,
 });
 
+// Add message handler for processing all incoming messages
+bot.on("message", async (msg) => {
+  // Skip command messages as they're handled by onText handlers
+  if (msg.text?.startsWith("/")) return;
+  
+  const chatId = msg.chat.id;
+  const telegramId = msg.from?.id.toString();
+  
+  if (!telegramId) return;
+  
+  // Check if this is an admin in broadcast flow
+  const broadcastState = adminBroadcastState.get(telegramId);
+  if (broadcastState && broadcastState.state === "awaiting_message" && msg.text) {
+    try {
+      console.log("[BROADCAST] Received message from admin for broadcast:", msg.text);
+      
+      // Update state with the message
+      adminBroadcastState.set(telegramId, {
+        state: "awaiting_confirmation",
+        message: msg.text,
+        timestamp: Date.now()
+      });
+      
+      // Create confirmation message with preview
+      const confirmationMessage = 
+        "📣 <b>Broadcast Preview</b>\n\n" +
+        "This is how your message will look to users:\n\n" +
+        "----- <b>Preview</b> -----\n" +
+        `📣 <b>Admin Announcement</b>\n\n${msg.text}\n` +
+        "---------------------\n\n" +
+        "Do you want to send this message to all approved users with notifications enabled?";
+      
+      // Create keyboard with confirm/cancel buttons
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: "✅ Send Message", callback_data: "broadcast_confirm" },
+            { text: "❌ Cancel", callback_data: "broadcast_cancel" }
+          ]
+        ]
+      };
+      
+      // Send confirmation message with buttons
+      await bot.sendMessage(chatId, confirmationMessage, {
+        parse_mode: "HTML",
+        reply_markup: keyboard
+      });
+      
+      logAdminMessage(
+        telegramId,
+        "BROADCAST_PREVIEW",
+        "Admin provided message for broadcast and is awaiting confirmation",
+        msg.text.substring(0, 50) + (msg.text.length > 50 ? "..." : "")
+      );
+    } catch (error) {
+      console.error("[BROADCAST] Error processing admin broadcast message:", error);
+      
+      // Reset state
+      adminBroadcastState.delete(telegramId);
+      
+      await bot.sendMessage(
+        chatId,
+        "❌ <b>Error</b>\n\nThere was an error processing your broadcast message. Please try again with /broadcast.",
+        { parse_mode: "HTML" }
+      );
+    }
+  }
+});
+
 // Register command handlers first
 async function handleStart(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
@@ -349,6 +418,7 @@ bot
   .setMyCommands([
     { command: "start", description: "Start the application process" },
     { command: "status", description: "Check your application status" },
+    { command: "broadcast", description: "Admin only: Send message to all users" },
   ])
   .catch((error) => {
     console.error("Failed to register commands:", error);
@@ -356,6 +426,225 @@ bot
 
 // Register command handlers
 bot.onText(/\/start/, handleStart);
+
+// Admin command to broadcast a message to all users
+async function handleBroadcast(msg: TelegramBot.Message) {
+  const chatId = msg.chat.id;
+  const telegramId = msg.from?.id.toString();
+
+  console.log("=== Handling /broadcast command ===");
+  console.log("Chat ID:", chatId);
+  console.log("Telegram ID:", telegramId);
+
+  try {
+    if (!telegramId) {
+      throw new Error("No Telegram ID found in message");
+    }
+
+    // Check if user is an admin
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.telegram_id, telegramId));
+
+    if (!user || !user.is_admin) {
+      console.log("[BROADCAST] Rejected: User not an admin:", telegramId);
+      await bot.sendMessage(
+        chatId,
+        "Sorry, this command is only available to administrators."
+      );
+      return;
+    }
+
+    // Set the state to "awaiting message" for this admin
+    adminBroadcastState.set(telegramId, { 
+      state: "awaiting_message", 
+      timestamp: Date.now() 
+    });
+
+    // Send instructions
+    await bot.sendMessage(
+      chatId,
+      "📣 <b>Broadcast Message</b>\n\n" +
+      "Please send the message you want to broadcast to all active, approved users with notifications enabled.\n\n" +
+      "<i>Your message can include:</i>\n" +
+      "• <b>Bold text</b> using *bold* or <b>bold</b>\n" +
+      "• <i>Italic text</i> using _italic_ or <i>italic</i>\n" +
+      "• <u>Underlined text</u> using <u>underlined</u>\n" +
+      "• Links like <a href=\"https://example.com\">this</a>\n\n" +
+      "Send your message now, or type /cancel to abort.",
+      { parse_mode: "HTML" }
+    );
+
+    logAdminMessage(
+      telegramId,
+      "BROADCAST_INITIATED",
+      "Admin initiated broadcast message flow",
+      "All users with notifications enabled"
+    );
+  } catch (error) {
+    console.error("Error handling broadcast command:", error);
+    await bot.sendMessage(
+      chatId,
+      "Sorry, something went wrong. Please try again later."
+    );
+  }
+}
+
+// Register broadcast command handler
+bot.onText(/\/broadcast/, handleBroadcast);
+
+// Cancel command handler
+bot.onText(/\/cancel/, async (msg) => {
+  const chatId = msg.chat.id;
+  const telegramId = msg.from?.id.toString();
+  
+  if (!telegramId) return;
+  
+  // Check if this user has an active broadcast state
+  if (adminBroadcastState.has(telegramId)) {
+    adminBroadcastState.delete(telegramId);
+    await bot.sendMessage(chatId, "✅ Broadcast cancelled.");
+    
+    logAdminMessage(
+      telegramId,
+      "BROADCAST_CANCELLED",
+      "Admin cancelled broadcast message flow"
+    );
+  }
+});
+
+// Initialize broadcast state storage
+// Maps telegramId to broadcast state
+const adminBroadcastState = new Map<string, {
+  state: "awaiting_message" | "awaiting_confirmation" | "sending"; 
+  message?: string;
+  timestamp: number;
+}>();
+
+// Function to broadcast a message to all active users with notifications enabled
+export async function broadcastMessageToUsers(
+  message: string,
+  senderTelegramId: string,
+  chatId: number
+) {
+  try {
+    console.log("[BROADCAST] Starting message broadcast process");
+    
+    // Update admin state to sending
+    adminBroadcastState.set(senderTelegramId, {
+      state: "sending",
+      message,
+      timestamp: Date.now()
+    });
+    
+    // Let admin know the process has started
+    await bot.sendMessage(
+      chatId,
+      "📤 <b>Broadcast process started</b>\n\nSending your message to all eligible users...",
+      { parse_mode: "HTML" }
+    );
+    
+    // Get all users that are:
+    // 1. Approved
+    // 2. Have notifications enabled in their preferences
+    const usersWithJoinedPreferences = await db
+      .select({
+        id: users.id,
+        telegram_id: users.telegram_id,
+        first_name: users.first_name,
+        last_name: users.last_name,
+        notifications_enabled: notification_preferences.notifications_enabled
+      })
+      .from(users)
+      .leftJoin(
+        notification_preferences,
+        eq(users.id, notification_preferences.user_id)
+      )
+      .where(eq(users.is_approved, true));
+    
+    // Filter users with notifications enabled
+    const eligibleUsers = usersWithJoinedPreferences.filter(user => 
+      user.notifications_enabled === true
+    );
+    
+    console.log(`[BROADCAST] Found ${eligibleUsers.length} eligible users out of ${usersWithJoinedPreferences.length} total approved users`);
+    
+    let successCount = 0;
+    let failCount = 0;
+    const failedIds: string[] = [];
+    
+    // Add broadcast header to the message
+    const formattedMessage = 
+      `📣 <b>Admin Announcement</b>\n\n${message}`;
+    
+    // Send message to each eligible user
+    for (const user of eligibleUsers) {
+      try {
+        if (!user.telegram_id) {
+          console.error(`[BROADCAST] User ${user.id} has no Telegram ID`);
+          failCount++;
+          continue;
+        }
+        
+        // Parse Telegram ID as integer (Telegram API expects numeric IDs)
+        const userChatId = parseInt(user.telegram_id);
+        
+        // Send message with HTML formatting
+        await bot.sendMessage(userChatId, formattedMessage, {
+          parse_mode: "HTML",
+          disable_web_page_preview: false // Allow links to show previews
+        });
+        
+        console.log(`[BROADCAST] Message sent to user ${user.first_name} ${user.last_name || ""} (${user.telegram_id})`);
+        successCount++;
+        
+        // Add a small delay between messages to avoid hitting Telegram API limits
+        await new Promise(resolve => setTimeout(resolve, 50));
+      } catch (error) {
+        console.error(`[BROADCAST] Failed to send to user ${user.telegram_id}:`, error);
+        failCount++;
+        failedIds.push(user.telegram_id);
+      }
+    }
+    
+    // Remove admin from broadcast state
+    adminBroadcastState.delete(senderTelegramId);
+    
+    // Send summary back to admin
+    const summaryMessage = 
+      `✅ <b>Broadcast completed</b>\n\n` +
+      `Message sent to ${successCount} user${successCount !== 1 ? 's' : ''}\n` +
+      `Failed: ${failCount} user${failCount !== 1 ? 's' : ''}` +
+      (failCount > 0 ? `\n\nSome users may have blocked the bot or have invalid Telegram IDs.` : '');
+    
+    await bot.sendMessage(chatId, summaryMessage, { parse_mode: "HTML" });
+    
+    // Log the broadcast action
+    logAdminMessage(
+      senderTelegramId,
+      "BROADCAST_COMPLETED",
+      `Message sent to ${successCount} users, failed for ${failCount} users`,
+      `${successCount} users with notifications enabled`
+    );
+    
+    return { successCount, failCount, failedIds };
+  } catch (error) {
+    console.error("[BROADCAST] Error in broadcast process:", error);
+    
+    // Remove admin from broadcast state
+    adminBroadcastState.delete(senderTelegramId);
+    
+    // Notify admin of the error
+    await bot.sendMessage(
+      chatId,
+      "❌ <b>Broadcast Error</b>\n\nThere was an error while sending your broadcast message. Please try again later.",
+      { parse_mode: "HTML" }
+    );
+    
+    throw error;
+  }
+}
 
 async function handleStatus(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
@@ -480,6 +769,14 @@ bot.on("callback_query", async (callbackQuery) => {
     else if (callbackQuery.data?.startsWith("swipe_")) {
       await handleSwipeCallback(callbackQuery);
     }
+    // Handle broadcast confirmation
+    else if (callbackQuery.data === "broadcast_confirm") {
+      await handleBroadcastConfirm(callbackQuery);
+    }
+    // Handle broadcast cancellation
+    else if (callbackQuery.data === "broadcast_cancel") {
+      await handleBroadcastCancel(callbackQuery);
+    }
   } catch (error) {
     console.error("Error handling callback query:", error);
     await bot.sendMessage(
@@ -488,6 +785,123 @@ bot.on("callback_query", async (callbackQuery) => {
     );
   }
 });
+
+// Handle broadcast confirmation
+async function handleBroadcastConfirm(callbackQuery: TelegramBot.CallbackQuery) {
+  const chatId = callbackQuery.message?.chat.id;
+  const telegramId = callbackQuery.from?.id.toString();
+  
+  if (!chatId || !telegramId) {
+    console.error("[BROADCAST] Missing chat ID or telegram ID in confirmation callback");
+    return;
+  }
+  
+  try {
+    // Acknowledge the callback
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Processing your broadcast request...",
+      show_alert: false
+    });
+    
+    // Check if the user has a broadcast state and a message
+    const broadcastState = adminBroadcastState.get(telegramId);
+    if (!broadcastState || broadcastState.state !== "awaiting_confirmation" || !broadcastState.message) {
+      console.error("[BROADCAST] Invalid state in confirmation callback:", broadcastState);
+      await bot.sendMessage(chatId, "❌ Error: No broadcast message found. Please start over with /broadcast");
+      adminBroadcastState.delete(telegramId);
+      return;
+    }
+    
+    // Get the message from the state
+    const message = broadcastState.message;
+    
+    // Update the message to show that broadcast is confirmed and starting
+    if (callbackQuery.message?.message_id) {
+      try {
+        await bot.editMessageText(
+          "✅ <b>Broadcast Confirmed</b>\n\nYour message is being sent to users now. Please wait for the broadcast to complete...",
+          {
+            chat_id: chatId,
+            message_id: callbackQuery.message.message_id,
+            parse_mode: "HTML"
+          }
+        );
+      } catch (editError) {
+        console.error("[BROADCAST] Error updating confirmation message:", editError);
+        // Continue with the broadcast even if the UI update fails
+      }
+    }
+    
+    // Start the broadcast process
+    await broadcastMessageToUsers(message, telegramId, chatId);
+  } catch (error) {
+    console.error("[BROADCAST] Error in broadcast confirmation:", error);
+    
+    // Clean up state
+    adminBroadcastState.delete(telegramId);
+    
+    await bot.sendMessage(
+      chatId,
+      "❌ <b>Broadcast Error</b>\n\nThere was an error processing your broadcast. Please try again with /broadcast.",
+      { parse_mode: "HTML" }
+    );
+  }
+}
+
+// Handle broadcast cancellation
+async function handleBroadcastCancel(callbackQuery: TelegramBot.CallbackQuery) {
+  const chatId = callbackQuery.message?.chat.id;
+  const telegramId = callbackQuery.from?.id.toString();
+  
+  if (!chatId || !telegramId) return;
+  
+  try {
+    // Acknowledge the callback
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Broadcast cancelled",
+      show_alert: false
+    });
+    
+    // Clean up state
+    adminBroadcastState.delete(telegramId);
+    
+    // Update the message to show cancellation
+    if (callbackQuery.message?.message_id) {
+      try {
+        await bot.editMessageText(
+          "❌ <b>Broadcast Cancelled</b>\n\nYour broadcast message was not sent. Use /broadcast to start again if needed.",
+          {
+            chat_id: chatId,
+            message_id: callbackQuery.message.message_id,
+            parse_mode: "HTML"
+          }
+        );
+      } catch (editError) {
+        console.error("[BROADCAST] Error updating cancellation message:", editError);
+        // Send new message if edit fails
+        await bot.sendMessage(
+          chatId,
+          "❌ <b>Broadcast Cancelled</b>\n\nYour broadcast message was not sent. Use /broadcast to start again if needed.",
+          { parse_mode: "HTML" }
+        );
+      }
+    }
+    
+    logAdminMessage(
+      telegramId,
+      "BROADCAST_CANCELLED",
+      "Admin cancelled broadcast at confirmation step"
+    );
+  } catch (error) {
+    console.error("[BROADCAST] Error handling broadcast cancellation:", error);
+    // Try to send a fallback message
+    await bot.sendMessage(
+      chatId,
+      "❌ Broadcast cancelled.",
+      { parse_mode: "HTML" }
+    );
+  }
+}
 
 // Handler for match info callbacks
 // Handle user approval callbacks from admin notifications
