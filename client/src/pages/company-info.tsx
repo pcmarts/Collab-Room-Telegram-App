@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ChevronDown, ChevronUp, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { PageHeader } from "../components/PageHeader";
 import { Switch } from "@/components/ui/switch";
 import { FUNDING_STAGES, BLOCKCHAIN_NETWORK_CATEGORIES, COMPANY_TAG_CATEGORIES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -199,10 +199,10 @@ export default function CompanyInfoForm() {
 
   return (
     <div className="min-h-[100svh] bg-background">
-      <PageHeader
+      <PageHeader 
         title="My Company"
-        subtitle="Manage your company details"
         backUrl="/dashboard"
+        showBackButton={true}
       />
 
       <div className="p-4 space-y-6">
