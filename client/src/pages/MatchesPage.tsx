@@ -185,13 +185,13 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     });
 
     return (
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-2">
         {customFields.map((field, index) => (
-          <div key={index} className="border-b border-muted pb-2">
-            <span className="text-sm font-medium block mb-1">
+          <div key={index} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0">
+            <span className="text-sm font-medium">
               {field.key}:
             </span>
-            <span className="text-sm block">
+            <span className="text-sm text-right">
               {field.isLink && field.linkUrl ? (
                 <a 
                   href={field.linkUrl} 
@@ -208,7 +208,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
                     strokeWidth="2" 
                     strokeLinecap="round" 
                     strokeLinejoin="round" 
-                    className="ml-1 h-4 w-4"
+                    className="ml-1 h-3 w-3"
                   >
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                     <polyline points="15 3 21 3 21 9"></polyline>
@@ -266,8 +266,8 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
   switch (match.collaborationType) {
     case "Podcast Guest Appearance":
       detailsSection = (
-        <div className="space-y-4 mt-4">
-          <h3 className="font-medium">Podcast Details</h3>
+        <div>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Podcast Details</h3>
           {match.description && (
             <div className="bg-muted/30 p-3 rounded-md mb-3">
               <p className="text-sm">{match.description}</p>
@@ -279,8 +279,8 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       break;
     case "Blog Post Feature":
       detailsSection = (
-        <div className="space-y-4 mt-4">
-          <h3 className="font-medium">Blog Details</h3>
+        <div>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Blog Details</h3>
           {match.description && (
             <div className="bg-muted/30 p-3 rounded-md mb-3">
               <p className="text-sm">{match.description}</p>
@@ -292,8 +292,8 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       break;
     case "Twitter Spaces Guest":
       detailsSection = (
-        <div className="space-y-4 mt-4">
-          <h3 className="font-medium">Twitter Space Details</h3>
+        <div>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Twitter Space Details</h3>
           {match.description && (
             <div className="bg-muted/30 p-3 rounded-md mb-3">
               <p className="text-sm">{match.description}</p>
@@ -305,8 +305,8 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       break;
     case "Newsletter Feature":
       detailsSection = (
-        <div className="space-y-4 mt-4">
-          <h3 className="font-medium">Newsletter Details</h3>
+        <div>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Newsletter Details</h3>
           {match.description && (
             <div className="bg-muted/30 p-3 rounded-md mb-3">
               <p className="text-sm">{match.description}</p>
@@ -318,8 +318,8 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       break;
     case "Live Stream Guest Appearance":
       detailsSection = (
-        <div className="space-y-4 mt-4">
-          <h3 className="font-medium">Live Stream Details</h3>
+        <div>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Live Stream Details</h3>
           {match.description && (
             <div className="bg-muted/30 p-3 rounded-md mb-3">
               <p className="text-sm">{match.description}</p>
@@ -331,8 +331,8 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       break;
     case "Report & Research Feature":
       detailsSection = (
-        <div className="space-y-4 mt-4">
-          <h3 className="font-medium">Research Report Details</h3>
+        <div>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Research Report Details</h3>
           {match.description && (
             <div className="bg-muted/30 p-3 rounded-md mb-3">
               <p className="text-sm">{match.description}</p>
@@ -344,8 +344,8 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       break;
     case "Co-Marketing on Twitter":
       detailsSection = (
-        <div className="space-y-4 mt-4">
-          <h3 className="font-medium">Twitter Co-Marketing Details</h3>
+        <div>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Twitter Co-Marketing Details</h3>
           {match.description && (
             <div className="bg-muted/30 p-3 rounded-md mb-3">
               <p className="text-sm">{match.description}</p>
@@ -358,8 +358,8 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     // Add cases for other collaboration types as needed
     default:
       detailsSection = (
-        <div className="space-y-4 mt-4">
-          <h3 className="font-medium">Collaboration Details</h3>
+        <div>
+          <h3 className="font-semibold text-base mb-3 pb-2 border-b">Collaboration Details</h3>
           {match.description && (
             <div className="bg-muted/30 p-3 rounded-md mb-3">
               <p className="text-sm">{match.description}</p>
@@ -372,245 +372,251 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      {/* Header Section with Match Summary */}
+      <div className="pb-4 border-b">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="text-xl font-bold">{match.companyName}</h2>
+          <Badge variant="outline" className="text-primary bg-primary/5 border-primary/10">
+            {match.collaborationType}
+          </Badge>
+        </div>
+        <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             {match.matchedPerson}, {match.roleTitle}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground">
             Matched on {match.matchDate}
           </p>
         </div>
-        <Badge
-          variant="outline"
-          className="text-muted-foreground bg-transparent"
-        >
-          {match.collaborationType}
-        </Badge>
       </div>
 
-      <div className="space-y-4">
-             {match.note && (
-          <div className="bg-primary/5 p-3 rounded-md border border-primary/10">
-            <h3 className="font-medium text-sm text-primary mb-1">
-              Personalized Note
-            </h3>
-            <p className="text-sm italic">{match.note}</p>
+      {/* Personalized Note - If Present */}
+      {match.note && (
+        <div className="mb-4 bg-primary/5 p-3 rounded-md border border-primary/10">
+          <h3 className="font-medium text-sm text-primary mb-1">
+            Personalized Note
+          </h3>
+          <p className="text-sm italic">{match.note}</p>
+        </div>
+      )}
+
+      <div className="grid gap-6">
+        {/* About Person Section */}
+        <div className="p-4 bg-muted/10 rounded-lg border border-border/50">
+          <h3 className="font-semibold text-base mb-2">About {match.matchedPerson}</h3>
+          <div className="space-y-2">
+            <p className="text-sm">{match.userDescription}</p>
+            <p className="text-xs text-muted-foreground">
+              {match.roleTitle} at {match.companyName}
+            </p>
+
+            {/* User Social Links */}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {renderSocialLink(
+                match.twitterHandle ||
+                  (match.twitterHandle &&
+                    `https://twitter.com/${match.twitterHandle}`),
+                match.twitterHandle ? `@${match.twitterHandle}` : "Twitter",
+                <svg
+                  className="w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+                </svg>,
+              )}
+
+              {renderSocialLink(
+                match.linkedinUrl,
+                "LinkedIn",
+                <svg
+                  className="w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                  <rect x="2" y="9" width="4" height="12"></rect>
+                  <circle cx="4" cy="4" r="2"></circle>
+                </svg>,
+              )}
+
+              {renderSocialLink(
+                match.email && `mailto:${match.email}`,
+                match.email || "",
+                <svg
+                  className="w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>,
+              )}
+
+              {renderSocialLink(
+                match.username && `https://t.me/${match.username}`,
+                `@${match.username || ""}`,
+                <svg
+                  className="w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path
+                    d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.968.193 1.798.919 2.286 1.61.516 3.275 1.009 4.654 1.472.846 1.467 1.618 2.92 2.286 4.48.613.141 1.026-.367 1.294-.653.343-.322.685-.777.273-1.344-1.103-1.56-3.105-4.015-3.516-4.769 2.686-1.702 5.573-3.493 8.139-5.191 1.231-.607 2.223 1.038.483 1.653-3.537 1.119-7.905 4.27-9.109 5.868 2.512.662 4.428 1.289 6.563 1.846.958.237 1.656-.515 1.832-1.15.059-.307.126-.875-.191-1.344-1.218-1.686-3.704-4.91-4.144-5.766 2.239-.756 4.649-1.572 6.979-2.358 2.003-.656 4.157-1.498 5.428-1.873.146-.519.092-1.084-.267-1.544z"
+                    fill="currentColor"
+                  ></path>
+                </svg>,
+              )}
+            </div>
           </div>
-        )}
+        </div>
 
-        <div className="space-y-2">
-          <h3 className="font-medium">About {match.matchedPerson}</h3>
-          <p className="text-sm">{match.userDescription}</p>
-          <p className="text-xs text-muted-foreground">
-            {match.roleTitle} at {match.companyName}
-          </p>
+        {/* About Company Section */}
+        <div className="p-4 bg-muted/10 rounded-lg border border-border/50">
+          <h3 className="font-semibold text-base mb-2">About {match.companyName}</h3>
+          <div className="space-y-2">
+            <p className="text-sm">{match.companyDescription}</p>
 
-          {/* User Social Links */}
-          <div className="flex flex-wrap mt-2">
-            {renderSocialLink(
-              match.twitterHandle ||
-                (match.twitterHandle &&
-                  `https://twitter.com/${match.twitterHandle}`),
-              match.twitterHandle ? `@${match.twitterHandle}` : "Twitter",
-              <svg
-                className="w-4 h-4"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
-              </svg>,
+            {/* Company Social Links */}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {renderSocialLink(
+                match.companyWebsite,
+                "Website",
+                <svg
+                  className="w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>,
+              )}
+
+              {renderSocialLink(
+                match.companyTwitterHandle &&
+                  `https://twitter.com/${match.companyTwitterHandle}`,
+                match.companyTwitterHandle
+                  ? `@${match.companyTwitterHandle}`
+                  : "Twitter",
+                <svg
+                  className="w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+                </svg>,
+              )}
+
+              {renderSocialLink(
+                match.companyLinkedinUrl,
+                "LinkedIn",
+                <svg
+                  className="w-4 h-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                  <rect x="2" y="9" width="4" height="12"></rect>
+                  <circle cx="4" cy="4" r="2"></circle>
+                </svg>,
+              )}
+            </div>
+
+            {/* Additional Company Information */}
+            <div className="grid grid-cols-2 gap-x-4 mt-3">
+              {match.fundingStage && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-medium">Funding:</span>
+                  <span className="text-sm">{match.fundingStage}</span>
+                </div>
+              )}
+
+              {match.hasToken && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-medium">Token:</span>
+                  <span className="text-sm">{match.tokenTicker || "Yes"}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Blockchain Networks */}
+            {match.blockchainNetworks && match.blockchainNetworks.length > 0 && (
+              <div className="mt-3">
+                <div className="flex items-center mb-1">
+                  <span className="text-xs font-medium mr-2">Blockchain Networks:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {match.blockchainNetworks.map((network, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {network}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
 
-            {renderSocialLink(
-              match.linkedinUrl,
-              "LinkedIn",
-              <svg
-                className="w-4 h-4"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                <rect x="2" y="9" width="4" height="12"></rect>
-                <circle cx="4" cy="4" r="2"></circle>
-              </svg>,
-            )}
-
-            {renderSocialLink(
-              match.email && `mailto:${match.email}`,
-              match.email || "",
-              <svg
-                className="w-4 h-4"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-              </svg>,
-            )}
-
-            {renderSocialLink(
-              match.username && `https://t.me/${match.username}`,
-              `@${match.username || ""}`,
-              <svg
-                className="w-4 h-4"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path
-                  d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.968.193 1.798.919 2.286 1.61.516 3.275 1.009 4.654 1.472.846 1.467 1.618 2.92 2.286 4.48.613.141 1.026-.367 1.294-.653.343-.322.685-.777.273-1.344-1.103-1.56-3.105-4.015-3.516-4.769 2.686-1.702 5.573-3.493 8.139-5.191 1.231-.607 2.223 1.038.483 1.653-3.537 1.119-7.905 4.27-9.109 5.868 2.512.662 4.428 1.289 6.563 1.846.958.237 1.656-.515 1.832-1.15.059-.307.126-.875-.191-1.344-1.218-1.686-3.704-4.91-4.144-5.766 2.239-.756 4.649-1.572 6.979-2.358 2.003-.656 4.157-1.498 5.428-1.873.146-.519.092-1.084-.267-1.544z"
-                  fill="currentColor"
-                ></path>
-              </svg>,
+            {/* Company Tags */}
+            {match.companyTags && match.companyTags.length > 0 && (
+              <div className="mt-3">
+                <div className="flex items-center mb-1">
+                  <span className="text-xs font-medium mr-2">Tags:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {match.companyTags.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <h3 className="font-medium">About {match.companyName}</h3>
-          <p className="text-sm">{match.companyDescription}</p>
-
-          {/* Company Social Links */}
-          <div className="flex flex-wrap mt-2">
-            {renderSocialLink(
-              match.companyWebsite,
-              "Website",
-              <svg
-                className="w-4 h-4"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" y1="12" x2="22" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-              </svg>,
-            )}
-
-            {renderSocialLink(
-              match.companyTwitterHandle &&
-                `https://twitter.com/${match.companyTwitterHandle}`,
-              match.companyTwitterHandle
-                ? `@${match.companyTwitterHandle}`
-                : "Twitter",
-              <svg
-                className="w-4 h-4"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
-              </svg>,
-            )}
-
-
-            {renderSocialLink(
-              match.companyLinkedinUrl,
-              "LinkedIn",
-              <svg
-                className="w-4 h-4"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                <rect x="2" y="9" width="4" height="12"></rect>
-                <circle cx="4" cy="4" r="2"></circle>
-              </svg>,
-            )}
-          </div>
-
-          {/* Additional Company Information */}
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {match.fundingStage && (
-              <div className="col-span-1">
-                <span className="text-xs text-muted-foreground">
-                  Funding Stage:
-                </span>
-                <p className="text-sm font-medium">{match.fundingStage}</p>
-              </div>
-            )}
-
-            {match.hasToken && (
-              <div className="col-span-1">
-                <span className="text-xs text-muted-foreground">Token:</span>
-                <p className="text-sm font-medium">
-                  {match.tokenTicker || "Yes"}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Blockchain Networks */}
-          {match.blockchainNetworks && match.blockchainNetworks.length > 0 && (
-            <div className="mt-2">
-              <span className="text-xs text-muted-foreground block mb-1">
-                Blockchain Networks:
-              </span>
-              <div className="flex flex-wrap gap-1">
-                {match.blockchainNetworks.map((network, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {network}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Company Tags */}
-          {match.companyTags && match.companyTags.length > 0 && (
-            <div className="mt-2">
-              <span className="text-xs text-muted-foreground block mb-1">
-                Company Tags:
-              </span>
-              <div className="flex flex-wrap gap-1">
-                {match.companyTags.map((tag, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
+        {/* Collaboration Details Section */}
+        <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
+          {detailsSection}
         </div>
-
-        {detailsSection}
       </div>
 
-      <div className="flex justify-between">
+      {/* Action Buttons */}
+      <div className="flex justify-between pt-2 border-t">
         <Button variant="outline" onClick={onBack}>
           Back to Matches
         </Button>
