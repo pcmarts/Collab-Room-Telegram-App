@@ -83,6 +83,66 @@ export const bot = new TelegramBot(BOT_TOKEN, {
   webHook: false,
 });
 
+/**
+ * Sets up bot commands based on user roles
+ * Regular users only see basic commands
+ * Admin users see additional commands including broadcast
+ */
+export async function setupBotCommands() {
+  try {
+    // Regular commands for all users
+    const regularCommands = [
+      { command: "start", description: "Start using Collab Room" },
+      { command: "status", description: "Check your application status" },
+    ];
+    
+    // Admin commands include broadcast functionality
+    const adminCommands = [
+      ...regularCommands,
+      { command: "broadcast", description: "Send message to all users" }
+    ];
+    
+    // Set regular commands as the default for all users
+    await bot.setMyCommands(regularCommands);
+    console.log("[BOT_SETUP] Set regular commands as default for all users");
+    
+    // Get all admin users from the database
+    const adminUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.is_admin, true));
+    
+    console.log(`[BOT_SETUP] Found ${adminUsers.length} admin users`);
+    
+    // For each admin user, set their specific command scope
+    for (const admin of adminUsers) {
+      if (!admin.telegram_id) {
+        console.warn(`[BOT_SETUP] Admin ${admin.id} has no Telegram ID, skipping`);
+        continue;
+      }
+      
+      try {
+        // Create a chat scope for this specific admin
+        const adminScope = {
+          type: 'chat',
+          chat_id: parseInt(admin.telegram_id)
+        };
+        
+        // Set admin-specific commands
+        await bot.setMyCommands(adminCommands, { scope: adminScope });
+        console.log(`[BOT_SETUP] Set admin commands for ${admin.first_name} (${admin.telegram_id})`);
+      } catch (error) {
+        console.error(`[BOT_SETUP] Failed to set commands for admin ${admin.telegram_id}:`, error);
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("[BOT_SETUP] Error setting up bot commands:", error);
+    return false;
+  }
+}
+
 // Add message handler for processing all incoming messages
 bot.on("message", async (msg) => {
   // Skip command messages as they're handled by onText handlers
@@ -413,15 +473,17 @@ export async function notifyUserApproved(chatId: number) {
   }
 }
 
-// Set up commands silently
-bot
-  .setMyCommands([
-    { command: "start", description: "Start the application process" },
-    { command: "status", description: "Check your application status" },
-    { command: "broadcast", description: "Admin only: Send message to all users" },
-  ])
-  .catch((error) => {
-    console.error("Failed to register commands:", error);
+// Initialize commands based on user roles
+setupBotCommands()
+  .then(success => {
+    if (success) {
+      console.log("Bot commands set up successfully");
+    } else {
+      console.error("Failed to set up bot commands");
+    }
+  })
+  .catch(error => {
+    console.error("Error setting up bot commands:", error);
   });
 
 // Register command handlers
