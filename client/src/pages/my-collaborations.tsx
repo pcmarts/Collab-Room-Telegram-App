@@ -934,10 +934,10 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             renderSkeletons()
           ) : collaborations && collaborations.length > 0 ? (
             <div>
-              <div className="mb-4 flex justify-center">
+              <div className="my-8 py-4 flex justify-center">
                 <GlowButton 
                   onClick={() => setLocation('/create-collaboration-steps')}
-                  className="w-full max-w-md"
+                  className="w-full max-w-md py-6"
                 >
                   Create New Collab
                 </GlowButton>
