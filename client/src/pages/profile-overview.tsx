@@ -17,7 +17,7 @@ import type {
 } from "@shared/schema";
 import { TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { PageHeader } from "../components/PageHeader";
 
 interface ProfileData {
   user: User;
@@ -210,6 +210,7 @@ export default function ProfileOverview() {
       <PageHeader
         title="My Profile"
         backUrl="/dashboard"
+        showBackButton={true}
       />
 
       <div className="p-4 space-y-6">
