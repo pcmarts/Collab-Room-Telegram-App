@@ -3105,7 +3105,7 @@ export async function registerRoutes(app: Express) {
             status: match.match_status,
             collaborationType: match.collab_type || 'Unknown',
             description: match.collab_description || '',
-            details: {}, // Empty details since we don't use this anymore
+            details: match.collab_details || {},
             
             // User information
             matchedPerson: `${match.other_user_first_name || ''} ${match.other_user_last_name || ''}`.trim(),
@@ -3141,7 +3141,7 @@ export async function registerRoutes(app: Express) {
             status: match.match_status || 'Unknown',
             collaborationType: match.collab_type || 'Unknown',
             description: 'Unable to load full details',
-            details: {},
+            details: match.collab_details || {},
             matchedPerson: 'Unknown',
             companyName: 'Unknown Company',
             roleTitle: 'Unknown Role',

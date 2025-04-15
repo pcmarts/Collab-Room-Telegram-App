@@ -1167,6 +1167,7 @@ export class DatabaseStorage implements IStorage {
           c.description AS collab_description,
           c.topics AS collab_topics,
           c.status AS collab_status,
+          c.details AS collab_details,
           
           -- Other user details
           ou.id AS other_user_id,
