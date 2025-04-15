@@ -549,7 +549,7 @@ export default function DiscoverPage() {
     }
   };
   
-  // We do NOT use this for initial loads - the location change effect handles that
+  // Handle initial data loading on component mount
   useEffect(() => {
     // Logging only on component mount to help with debugging
     console.log('[Discovery] Component mounted with route:', {
@@ -564,9 +564,19 @@ export default function DiscoverPage() {
     prevLocationRef.current = location;
     lastFetchTimeRef.current = Date.now();
     
+    // Wait a short time for Telegram authentication to initialize
+    // This allows the Telegram SDK to properly initialize
+    const initialLoadTimer = setTimeout(() => {
+      console.log('[Discovery] Initial data load triggered with authentication check');
+      
+      // Use the same loading mechanism as refresh for consistency
+      handleRefresh();
+    }, 300); // Short delay to ensure authentication is ready
+    
     // Return cleanup function
     return () => {
       console.log('[Discovery] Component unmounting, cleaning up');
+      clearTimeout(initialLoadTimer);
     };
   }, []); // Empty dependency array - only runs once on mount
   
