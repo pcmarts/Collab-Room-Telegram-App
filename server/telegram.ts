@@ -651,38 +651,44 @@ export async function broadcastMessageToUsers(
     const formattedMessage = 
       `📣 <b>Admin Announcement</b>\n\n${message}`;
     
-    // Get additional user data needed for personalization
-    // We need to fetch user data including handles and company info
-    const usersWithDetails = await Promise.all(
-      eligibleUsers.map(async (user) => {
-        try {
-          // Get user's company information
-          const [company] = await db
-            .select()
-            .from(companies)
-            .where(eq(companies.user_id, user.id));
-          
-          // Get user's full profile including handle
-          const [fullUser] = await db
-            .select()
-            .from(users)
-            .where(eq(users.id, user.id));
-            
-          return {
-            ...user,
-            handle: fullUser?.handle || "",
-            company_name: company?.name || ""
-          };
-        } catch (error) {
-          console.error(`[BROADCAST] Error fetching details for user ${user.id}:`, error);
-          return {
-            ...user,
-            handle: "",
-            company_name: ""
-          };
-        }
+    // Get additional user data needed for personalization using an efficient JOIN query
+    // This fetches all user handles and company names in a single database query
+    console.log("[BROADCAST] Fetching user details with a batched query");
+    
+    // Extract all user IDs to look up
+    const userIds = eligibleUsers.map(user => user.id);
+    
+    // Get all user details in a single query with JOIN
+    const userDetailsQuery = await db
+      .select({
+        id: users.id,
+        handle: users.handle,
+        company_name: companies.name
       })
-    );
+      .from(users)
+      .leftJoin(companies, eq(users.id, companies.user_id))
+      .where(inArray(users.id, userIds));
+      
+    console.log(`[BROADCAST] Successfully fetched details for ${userDetailsQuery.length} users with JOIN query`);
+    
+    // Create a map for easy lookup
+    const userDetailsMap = {};
+    userDetailsQuery.forEach(detail => {
+      userDetailsMap[detail.id] = {
+        handle: detail.handle || "",
+        company_name: detail.company_name || ""
+      };
+    });
+    
+    // Merge user details with eligible users
+    const usersWithDetails = eligibleUsers.map(user => {
+      const details = userDetailsMap[user.id] || { handle: "", company_name: "" };
+      return {
+        ...user,
+        handle: details.handle,
+        company_name: details.company_name
+      };
+    });
     
     // Send message to each eligible user
     for (const user of usersWithDetails) {
