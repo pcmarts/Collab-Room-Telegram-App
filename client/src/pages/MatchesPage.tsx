@@ -75,7 +75,7 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     if (!details) return null;
 
     return (
-      <div className="grid grid-cols-1 gap-2">
+      <div className="grid grid-cols-1 gap-3">
         {Object.entries(details).map(([key, value]) => {
           // Skip rendering certain keys that are already displayed elsewhere
           if (["id", "created_at", "updated_at"].includes(key)) return null;
@@ -86,13 +86,31 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
             .split(" ")
             .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
             .join(" ");
-
-          return (
-            <div key={key} className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
+          
+          // Check if the value is a long string like a URL
+          const isLongValue = typeof value === 'string' && (value.length > 30 || value.includes('http'));
+          
+          return isLongValue ? (
+            // For long values, stack the label and value vertically
+            <div key={key} className="space-y-1 border-b border-muted pb-2">
+              <span className="text-sm font-medium">
                 {formattedKey}:
               </span>
-              <span className="text-sm font-medium">{String(value)}</span>
+              <span className="text-sm block break-words">
+                {String(value).startsWith('http') ? (
+                  <a href={String(value)} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    {String(value)}
+                  </a>
+                ) : String(value)}
+              </span>
+            </div>
+          ) : (
+            // For shorter values, use horizontal layout
+            <div key={key} className="flex justify-between border-b border-muted pb-2">
+              <span className="text-sm font-medium">
+                {formattedKey}:
+              </span>
+              <span className="text-sm text-right">{String(value)}</span>
             </div>
           );
         })}
@@ -127,6 +145,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       detailsSection = (
         <div className="space-y-4 mt-4">
           <h3 className="font-medium">Podcast Details</h3>
+          {match.description && (
+            <div className="bg-muted/30 p-3 rounded-md mb-3">
+              <p className="text-sm">{match.description}</p>
+            </div>
+          )}
           {renderDetailsFields(match.details)}
         </div>
       );
@@ -135,6 +158,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       detailsSection = (
         <div className="space-y-4 mt-4">
           <h3 className="font-medium">Blog Details</h3>
+          {match.description && (
+            <div className="bg-muted/30 p-3 rounded-md mb-3">
+              <p className="text-sm">{match.description}</p>
+            </div>
+          )}
           {renderDetailsFields(match.details)}
         </div>
       );
@@ -143,6 +171,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       detailsSection = (
         <div className="space-y-4 mt-4">
           <h3 className="font-medium">Twitter Space Details</h3>
+          {match.description && (
+            <div className="bg-muted/30 p-3 rounded-md mb-3">
+              <p className="text-sm">{match.description}</p>
+            </div>
+          )}
           {renderDetailsFields(match.details)}
         </div>
       );
@@ -151,6 +184,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       detailsSection = (
         <div className="space-y-4 mt-4">
           <h3 className="font-medium">Newsletter Details</h3>
+          {match.description && (
+            <div className="bg-muted/30 p-3 rounded-md mb-3">
+              <p className="text-sm">{match.description}</p>
+            </div>
+          )}
           {renderDetailsFields(match.details)}
         </div>
       );
@@ -159,6 +197,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       detailsSection = (
         <div className="space-y-4 mt-4">
           <h3 className="font-medium">Live Stream Details</h3>
+          {match.description && (
+            <div className="bg-muted/30 p-3 rounded-md mb-3">
+              <p className="text-sm">{match.description}</p>
+            </div>
+          )}
           {renderDetailsFields(match.details)}
         </div>
       );
@@ -167,6 +210,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       detailsSection = (
         <div className="space-y-4 mt-4">
           <h3 className="font-medium">Research Report Details</h3>
+          {match.description && (
+            <div className="bg-muted/30 p-3 rounded-md mb-3">
+              <p className="text-sm">{match.description}</p>
+            </div>
+          )}
           {renderDetailsFields(match.details)}
         </div>
       );
@@ -175,6 +223,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       detailsSection = (
         <div className="space-y-4 mt-4">
           <h3 className="font-medium">Twitter Co-Marketing Details</h3>
+          {match.description && (
+            <div className="bg-muted/30 p-3 rounded-md mb-3">
+              <p className="text-sm">{match.description}</p>
+            </div>
+          )}
           {renderDetailsFields(match.details)}
         </div>
       );
@@ -184,7 +237,11 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
       detailsSection = (
         <div className="space-y-4 mt-4">
           <h3 className="font-medium">Collaboration Details</h3>
-          <p className="text-sm">{match.description}</p>
+          {match.description && (
+            <div className="bg-muted/30 p-3 rounded-md mb-3">
+              <p className="text-sm">{match.description}</p>
+            </div>
+          )}
           {match.details && renderDetailsFields(match.details)}
         </div>
       );
