@@ -5,6 +5,19 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.8.1] - 2025-04-15
+
+### Fixed
+- Fixed database timeout issues in admin broadcast functionality when sending to large user lists
+- Resolved command visibility issues for admin users in Telegram bot interface
+- Enhanced batch data processing for improved scalability in notifications
+
+### Technical Details
+- Replaced individual database queries with efficient batch operations in broadcast system
+- Optimized user detail retrieval using separate batched queries instead of JOIN operations
+- Fixed Telegram bot command scopes to properly show admin commands to authorized users only
+- Added comprehensive logging for better tracking of broadcast message processing
+
 ## [Version 1.8.0] - 2025-04-15
 
 ### Enhanced

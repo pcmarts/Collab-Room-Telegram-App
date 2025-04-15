@@ -114,18 +114,26 @@ export async function setupBotCommands() {
     
     console.log(`[BOT_SETUP] Found ${adminUsers.length} admin users`);
     
-    // Use a better approach for admin commands - set them for chat administrators
-    try {
-      // Set admin commands for all chat administrators
-      const adminScope = {
-        type: 'chat_administrators'
-      };
+    // Set admin commands for each admin user instead of using chat_administrators scope
+    for (const admin of adminUsers) {
+      if (!admin.telegram_id) {
+        console.warn(`[BOT_SETUP] Admin ${admin.id} has no Telegram ID, skipping`);
+        continue;
+      }
       
-      // Set admin-specific commands
-      await bot.setMyCommands(adminCommands, { scope: adminScope });
-      console.log(`[BOT_SETUP] Set admin commands for all chat administrators`);
-    } catch (error) {
-      console.error(`[BOT_SETUP] Failed to set commands for chat administrators:`, error);
+      try {
+        // Create a chat scope for this specific admin user
+        const adminScope = {
+          type: 'chat',
+          chat_id: parseInt(admin.telegram_id)
+        };
+        
+        // Set admin-specific commands
+        await bot.setMyCommands(adminCommands, { scope: adminScope });
+        console.log(`[BOT_SETUP] Set admin commands for ${admin.first_name} (${admin.telegram_id})`);
+      } catch (error) {
+        console.error(`[BOT_SETUP] Failed to set commands for admin ${admin.telegram_id}:`, error);
+      }
     }
     
     return true;
@@ -643,12 +651,10 @@ export async function broadcastMessageToUsers(
     const formattedMessage = 
       `📣 <b>Admin Announcement</b>\n\n${message}`;
     
-    // Get additional user data needed for personalization using an efficient JOIN query
-    // This fetches all user handles and company names in a single database query
-    console.log("[BROADCAST] Fetching user details with a batched query");
-    
-    // Instead of using individual queries for each user, we'll fetch all users
+    // Use a more efficient batch approach to avoid connection timeouts
+    // Instead of using JOIN queries which can timeout, we'll fetch all users
     // and all companies in two separate batched queries, then join them in memory
+    console.log("[BROADCAST] Fetching user details with a batched query approach");
     
     // Get all user handles in a single query
     console.log("[BROADCAST] Fetching all user handles in a batch query");

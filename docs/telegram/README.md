@@ -48,16 +48,25 @@ The bot responds to several commands:
 The broadcast command is only available to administrator users and is hidden from regular users:
 
 ```typescript
-// Administrative commands are registered with a different menu visibility
-bot.setMyCommands([
-  { command: 'broadcast', description: 'Send a message to all users' },
-  // Other admin commands...
-], {
-  scope: { type: 'chat_administrators' }
-});
+// Administrative commands are registered with a different menu visibility for each admin user
+const adminUsers = await db.select().from(users).where(eq(users.is_admin, true));
+
+for (const admin of adminUsers) {
+  if (!admin.telegram_id) continue;
+  
+  await bot.setMyCommands([
+    { command: 'broadcast', description: 'Send a message to all users' },
+    // Other admin commands...
+  ], {
+    scope: { 
+      type: 'chat', 
+      chat_id: parseInt(admin.telegram_id) 
+    }
+  });
+}
 ```
 
-This command enables admins to send HTML-formatted messages with personalization placeholders to all users who have notifications enabled. See [Notification Updates](./notificationUpdates.md) for more details on the broadcast system.
+This command enables admins to send HTML-formatted messages with personalization placeholders to all users who have notifications enabled. The system is designed to handle large user lists efficiently by using batched database queries and memory-efficient data processing. See [Notification Updates](./notificationUpdates.md) for more details on the broadcast system.
 
 ```typescript
 async function handleStart(msg: TelegramBot.Message) {

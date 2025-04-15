@@ -4,18 +4,21 @@
 
 The Collab Room has enhanced the Telegram notification system with multiple improvements, including personalized notes for collaboration requests and an improved admin broadcast system. This document details all notification-related enhancements.
 
-## Admin Broadcast System (v1.8.0)
+## Admin Broadcast System (v1.8.0 and v1.8.1)
 
 The admin broadcast feature allows administrators to send formatted announcements to all approved users who have notifications enabled.
 
 ### Features
 
-- **Disabled Link Previews**: All broadcast messages have link previews disabled to maintain clean message appearance
-- **Enhanced HTML Formatting**: Support for bold text, italics, and hyperlinks in broadcast messages
-- **Personalization Placeholders**: Dynamic replacement of placeholders like {handle} and {company} with user-specific information
-- **Interactive Button**: Each broadcast includes a "Launch Collab Room" button to direct users to the app
-- **Improved Error Handling**: Enhanced validation and error trapping for HTML parsing issues
-- **Debug Logging**: Comprehensive logging system to assist with troubleshooting message broadcasts
+- **Disabled Link Previews**: All broadcast messages have link previews disabled to maintain clean message appearance (v1.8.0)
+- **Enhanced HTML Formatting**: Support for bold text, italics, and hyperlinks in broadcast messages (v1.8.0)
+- **Personalization Placeholders**: Dynamic replacement of placeholders like {handle} and {company} with user-specific information (v1.8.0)
+- **Interactive Button**: Each broadcast includes a "Launch Collab Room" button to direct users to the app (v1.8.0)
+- **Improved Error Handling**: Enhanced validation and error trapping for HTML parsing issues (v1.8.0)
+- **Debug Logging**: Comprehensive logging system to assist with troubleshooting message broadcasts (v1.8.0)
+- **Optimized Performance**: Efficient batch operations for database queries to prevent timeouts with large user lists (v1.8.1)
+- **Proper Admin Command Scope**: Improved command visibility to ensure admin commands appear only to authorized users (v1.8.1)
+- **Enhanced Scalability**: Memory-efficient data processing for large broadcasts using batch processing (v1.8.1)
 
 ### Example Broadcast Message
 
@@ -49,6 +52,15 @@ The broadcast system uses a multi-step process with state tracking:
 3. **Message Preview**: System shows how message will appear with placeholders filled
 4. **Confirmation**: Admin confirms or cancels the broadcast
 5. **Execution**: System sends personalized messages to all eligible users
+
+#### Data Retrieval Optimization (v1.8.1)
+
+The broadcast feature was optimized in v1.8.1 to handle large user lists:
+
+1. **Efficient Batch Queries**: Instead of a JOIN operation, separate queries fetch user and company data
+2. **Memory-Efficient Processing**: Data is processed in-memory using Map objects for efficient lookup
+3. **Proper User Filtering**: Only users with notifications enabled receive messages
+4. **Request Rate Limiting**: Small delay between messages prevents hitting Telegram API limits
 
 #### Personalization Placeholders
 
