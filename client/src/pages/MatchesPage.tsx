@@ -26,6 +26,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { getCollabTypeIcon } from "@/lib/collab-utils";
 import { useMatchContext } from "@/contexts/MatchContext";
 import { useLocation } from "wouter";
+import { PageHeader } from "../components/PageHeader";
 
 // Define Match type for API response
 interface Match {
@@ -805,7 +806,7 @@ export default function MatchesPage() {
   if (isLoading) {
     return (
       <div className="page-scrollable pb-20">
-        <h1 className="text-2xl font-bold p-6">My Matches</h1>
+        <PageHeader title="My Matches" />
         <div className="px-4 space-y-4">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
@@ -834,7 +835,7 @@ export default function MatchesPage() {
   if (error) {
     return (
       <div className="page-scrollable pb-20">
-        <h1 className="text-2xl font-bold p-6">My Matches</h1>
+        <PageHeader title="My Matches" />
         <Card className="p-6 m-4 text-center">
           <p className="text-muted-foreground mb-4">Error loading matches</p>
           <p className="text-sm text-destructive mb-4">
@@ -850,7 +851,7 @@ export default function MatchesPage() {
 
   return (
     <div className="page-scrollable pb-20">
-      <h1 className="text-2xl font-bold p-6">My Matches</h1>
+      <PageHeader title="My Matches" />
 
       <div className="px-4">
         {matches && Array.isArray(matches) && matches.length > 0 ? (

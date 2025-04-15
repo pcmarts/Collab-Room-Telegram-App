@@ -3,6 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { PageHeader } from "../components/PageHeader";
 
 // Interface for component props
 interface MyCollaborationsProps {
@@ -48,7 +49,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileCheck } from "@/components/MobileCheck";
-import { PageHeader } from "@/components/layout/PageHeader";
+// We're using PageHeader imported at the top of the file
 import {
   AlertDialog,
   AlertDialogAction,
@@ -918,17 +919,21 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     </div>
   );
   
+  // Use the PageHeader component
+
   return (
     <MobileCheck>
       <div className="min-h-[100svh] bg-background">
-        <div className="flex justify-between items-center p-6">
-          <h1 className="text-2xl font-bold">My Collabs</h1>
-          <GlowButton 
-            onClick={() => setLocation('/create-collaboration-steps')}
-          >
-            Create New
-          </GlowButton>
-        </div>
+        <PageHeader 
+          title="My Collabs" 
+          action={
+            <GlowButton 
+              onClick={() => setLocation('/create-collaboration-steps')}
+            >
+              Create New
+            </GlowButton>
+          }
+        />
         
         <div className="container mx-auto py-4 px-4">
           
