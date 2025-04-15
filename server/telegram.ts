@@ -410,7 +410,7 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
           message,
           {
             parse_mode: "HTML",
-            disable_web_page_preview: false, // Allow website previews
+            disable_web_page_preview: false, // Keep website previews for admin notifications
             reply_markup: keyboard,
           },
         );
@@ -1418,7 +1418,7 @@ async function handleMatchInfoCallback(
       await bot.sendMessage(chatId, infoMessage, {
         parse_mode: "HTML",
         reply_markup: keyboard,
-        disable_web_page_preview: false,
+        disable_web_page_preview: true, // Disable link previews as requested
       });
     }
   } catch (error) {
@@ -1500,7 +1500,7 @@ async function sendDirectFormattedMessage(
     const messageOptions: TelegramBot.SendMessageOptions = {
       parse_mode: hasHtmlTags ? "HTML" : undefined, // Only set HTML mode when tags are present
       reply_markup: keyboard,
-      disable_web_page_preview: false,
+      disable_web_page_preview: true, // Disable link previews as requested
     };
 
     console.log(
