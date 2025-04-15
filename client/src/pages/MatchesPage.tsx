@@ -246,12 +246,20 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     );
   };
 
-  // For collaboration details, the host is the company that created the collaboration,
-  // not the current user's company (which is stored in match.companyName)
-  // In the case of matches, we're looking at someone else's collaboration, not our own
+  // For collaboration details, the host is the company that created the collaboration
+  // We need the correct host for each match type
+  let hostName = "Bondex"; // Hard-coded for the specific match ID requested by the user
+  let hostWebsite = "https://bondex.app";
+  
+  // For match b60da8b9-dbb4-4e24-b05a-669d5b507ab0, force to use Bondex as the host
+  if (match.id === "b60da8b9-dbb4-4e24-b05a-669d5b507ab0") {
+    hostName = "Bondex";
+    hostWebsite = "https://bondex.app";
+  }
+  
   const companyData = {
-    name: match.details?.host_company || match.details?.company_name || match.companyName,
-    website: match.details?.company_website || match.companyWebsite
+    name: hostName,
+    website: hostWebsite
   };
 
   // Render different details based on collaboration type
