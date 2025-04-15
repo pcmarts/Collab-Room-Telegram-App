@@ -5,6 +5,17 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.8.2] - 2025-04-15
+
+### Fixed
+- Fixed blank discovery page issue when the app is first loaded in Telegram WebApp
+- Improved authentication timing during initial data loading in discovery interface
+
+### Technical Details
+- Added delayed initialization to ensure Telegram authentication completes before data fetching begins
+- Standardized data loading approach between initial page load and refresh button action
+- Enhanced error handling for authentication state detection and recovery
+
 ## [Version 1.8.1] - 2025-04-15
 
 ### Fixed

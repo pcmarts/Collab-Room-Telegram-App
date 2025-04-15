@@ -10,6 +10,7 @@ The discovery system is responsible for helping users find relevant collaboratio
 
 - [Swipe Filtering System](./swipe-filtering.md) - Detailed explanation of how the system prevents duplicate cards
 - [Potential Matches](./potential-matches.md) - Documentation for the potential matches feature
+- [Authentication Timing Fix](./authentication-timing-fix.md) - Fix for blank discovery page on initial load
 
 ## Key Features
 
@@ -142,6 +143,8 @@ When a match is created through the discovery system, a match moment dialog is d
 - **Version 1.5.2**: Enhanced match filtering to prevent duplicate matches
 - **Version 1.5.3**: Improved UI consistency across all states and enhanced navigation
 - **Version 1.6.1**: Enhanced match moment UI with improved button icons and user name display
+- **Version 1.7.9**: Disabled automatic refresh mechanisms to prevent authentication loops
+- **Version 1.8.2**: Fixed blank discovery page by improving initial authentication timing
 
 ## Related Documentation
 
