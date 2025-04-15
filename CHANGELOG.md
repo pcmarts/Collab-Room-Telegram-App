@@ -5,6 +5,19 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.8.0] - 2025-04-15
+
+### Enhanced
+- Enhanced admin broadcast message system to disable link previews in all messages
+- Improved HTML formatting support in broadcast messages while maintaining clean message appearance
+- Added detailed logging for broadcast messages to assist with troubleshooting
+
+### Technical Details
+- Modified server/telegram.ts to set disable_web_page_preview to true for all broadcast messages
+- Updated preview messages to inform admins about disabled link previews
+- Enhanced error handling for HTML parsing issues in broadcast messages
+- Maintained hyperlink functionality without showing link previews
+
 ## [Version 1.7.9] - 2025-04-14
 
 ### Fixed
