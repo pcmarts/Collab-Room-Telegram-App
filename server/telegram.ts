@@ -654,10 +654,23 @@ export async function broadcastMessageToUsers(
         const finalPersonalizedMessage = 
           `📣 <b>Admin Announcement</b>\n\n${personalizedMessage}`;
         
-        // Send message with HTML formatting
+        // Create inline keyboard with "Launch Collab Room" button
+        const launchKeyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: "🚀 Launch Collab Room",
+                web_app: { url: `${WEBAPP_URL}/discover` }
+              }
+            ]
+          ]
+        };
+        
+        // Send message with HTML formatting and inline keyboard
         await bot.sendMessage(userChatId, finalPersonalizedMessage, {
           parse_mode: "HTML",
-          disable_web_page_preview: false // Allow links to show previews
+          disable_web_page_preview: false, // Allow links to show previews
+          reply_markup: launchKeyboard
         });
         
         console.log(`[BROADCAST] Message sent to user ${user.first_name} ${user.last_name || ""} (${user.telegram_id})`);
