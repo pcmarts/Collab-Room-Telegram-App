@@ -5,6 +5,18 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.8.4] - 2025-04-15
+
+### Enhanced
+- Improved Twitter engagement types display in CollaborationDetailsDialog to show multiple types correctly
+- Added colon after "Co-Marketing on Twitter" for better readability
+- Enhanced collaboration details formatting for a cleaner, more consistent user experience
+
+### Technical Details
+- Modified client/src/components/CollaborationDetailsDialog.tsx to properly handle array and string data formats
+- Implemented join method to display multiple Twitter engagement types with proper comma separation
+- Added consistent formatting with appropriate spacing and punctuation for improved information hierarchy
+
 ## [Version 1.8.3] - 2025-04-15
 
 ### Fixed
