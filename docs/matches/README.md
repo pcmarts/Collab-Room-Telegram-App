@@ -57,14 +57,14 @@ interface Match {
   // Additional user information
   linkedinUrl?: string;
   twitterUrl?: string;
-  twitterHandle?: string;
+  twitterHandle?: string; // User's personal Twitter handle, extracted from twitterUrl
   twitterFollowers?: string | number;
   email?: string;
   
   // Additional company information
   companyWebsite?: string;
   companyLinkedinUrl?: string;
-  companyTwitterHandle?: string;
+  companyTwitterHandle?: string; // Company's Twitter handle, distinct from user's handle
   companyTwitterFollowers?: string | number;
   fundingStage?: string;
   hasToken?: boolean;
@@ -73,6 +73,8 @@ interface Match {
   companyTags?: string[];
 }
 ```
+
+For details on the Twitter handle extraction implementation, see [Twitter Handle Fix](./twitter-handle-fix.md)
 
 ## Real-time Updates with MatchContext
 
@@ -107,6 +109,12 @@ When a match is created through the discovery system, a Match Moment dialog is d
   - Responsive design works across screen sizes
 
 ## Recent Enhancements
+
+**Version 1.8.3 (2025-04-15):**
+- Fixed Twitter handle display in match details view to show user's personal Twitter handle instead of company Twitter handle
+- Improved Twitter handle extraction from Twitter URLs to ensure correct display of user social media information
+- Enhanced separation between user and company social information for better clarity
+- Updated the matches API endpoint to correctly process user Twitter data
 
 **Version 1.6.4 (2025-04-05):**
 - Enhanced the match details interface with comprehensive social and company information
