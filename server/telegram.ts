@@ -720,6 +720,10 @@ export async function broadcastMessageToUsers(
         const finalPersonalizedMessage = 
           `📣 <b>Admin Announcement</b>\n\n${personalizedMessage}`;
         
+        // Log the actual message being sent for debugging purposes
+        console.log(`[BROADCAST] Sending message to user ${user.id} with parse_mode HTML: 
+Message content: ${finalPersonalizedMessage}`);
+        
         // Create inline keyboard with "Launch Collab Room" button
         const launchKeyboard = {
           inline_keyboard: [
