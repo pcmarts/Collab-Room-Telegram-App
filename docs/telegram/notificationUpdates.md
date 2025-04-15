@@ -1,8 +1,92 @@
-# Personalized Collaboration Request Notifications
+# Telegram Notification System Updates
 
 ## Overview
 
-The Collab Room has enhanced the Telegram notification system with personalized notes for collaboration requests. When users send a collaboration request, they can now include a customized note that appears directly in the Telegram notification sent to the host.
+The Collab Room has enhanced the Telegram notification system with multiple improvements, including personalized notes for collaboration requests and an improved admin broadcast system. This document details all notification-related enhancements.
+
+## Admin Broadcast System (v1.8.0)
+
+The admin broadcast feature allows administrators to send formatted announcements to all approved users who have notifications enabled.
+
+### Features
+
+- **Disabled Link Previews**: All broadcast messages have link previews disabled to maintain clean message appearance
+- **Enhanced HTML Formatting**: Support for bold text, italics, and hyperlinks in broadcast messages
+- **Personalization Placeholders**: Dynamic replacement of placeholders like {handle} and {company} with user-specific information
+- **Interactive Button**: Each broadcast includes a "Launch Collab Room" button to direct users to the app
+- **Improved Error Handling**: Enhanced validation and error trapping for HTML parsing issues
+- **Debug Logging**: Comprehensive logging system to assist with troubleshooting message broadcasts
+
+### Example Broadcast Message
+
+```
+📣 <b>Admin Announcement</b>
+
+Hey @UserHandle 
+
+6x <b>Collabs</b> are now live in the <b>Collab Room</b>:
+
+🔥 <a href='https://x.com/zerion'>Zerion</a> - Blog Feature
+🔥 <a href='https://x.com/re'>RE</a> - X Giveaway/Retweet Campaign
+🔥 <a href='https://x.com/t3rn_io'>T3RN</a> - X Spaces
+🔥 <a href='https://x.com/bondexapp'>Bondex</a> - Report Feature & X Spaces
+
+If you haven't already, definitely go ahead and <b>add your first collab</b> up for CompanyName. It's only day 1 and we're still in Beta so please share any feedback to @thisispaulm.
+```
+
+### Admin Command Access
+
+- The `/broadcast` command is exclusively available to admin users
+- The command is hidden from regular users' command menu
+- Additional security checks verify admin status before allowing broadcast execution
+
+### Implementation Details
+
+The broadcast system uses a multi-step process with state tracking:
+
+1. **Command Initiation**: Admin starts with `/broadcast` command
+2. **Message Composition**: Admin composes HTML-formatted message with placeholders
+3. **Message Preview**: System shows how message will appear with placeholders filled
+4. **Confirmation**: Admin confirms or cancels the broadcast
+5. **Execution**: System sends personalized messages to all eligible users
+
+#### Personalization Placeholders
+
+The broadcast system supports these dynamic placeholders:
+
+| Placeholder | Replaced With | Example |
+|-------------|---------------|---------|
+| `{first_name}` | User's first name | "John" |
+| `{last_name}` | User's last name | "Smith" |
+| `{full_name}` | User's full name | "John Smith" |
+| `{handle}` | User's Telegram handle with @ | "@johnsmith" |
+| `{company}` | User's company name | "Acme Corp" |
+
+#### Message Formatting
+
+```typescript
+// Format the message with personalization
+let personalizedMessage = message;
+personalizedMessage = personalizedMessage.replace(/\{first_name\}/g, user.first_name || "");
+personalizedMessage = personalizedMessage.replace(/\{last_name\}/g, user.last_name || "");
+personalizedMessage = personalizedMessage.replace(/\{handle\}/g, formattedHandle);
+personalizedMessage = personalizedMessage.replace(/\{company\}/g, user.company_name || "");
+
+// Create final message with header
+const finalPersonalizedMessage = 
+  `📣 <b>Admin Announcement</b>\n\n${personalizedMessage}`;
+
+// Send with disabled link previews
+await bot.sendMessage(userChatId, finalPersonalizedMessage, {
+  parse_mode: "HTML",
+  disable_web_page_preview: true, // Disable link previews for clean appearance
+  reply_markup: launchKeyboard
+});
+```
+
+## Personalized Collaboration Request Notifications
+
+When users send a collaboration request, they can now include a customized note that appears directly in the Telegram notification sent to the host.
 
 ## Features Added in v1.7.5
 

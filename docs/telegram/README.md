@@ -41,6 +41,23 @@ The bot responds to several commands:
 
 1. **`/start`**: Introduces the user to the platform and provides a link to the WebApp
 2. **`/status`**: Shows the user's current status on the platform
+3. **`/broadcast`** (Admin Only): Allows administrators to send formatted messages to all approved users
+
+### Admin Broadcast Command
+
+The broadcast command is only available to administrator users and is hidden from regular users:
+
+```typescript
+// Administrative commands are registered with a different menu visibility
+bot.setMyCommands([
+  { command: 'broadcast', description: 'Send a message to all users' },
+  // Other admin commands...
+], {
+  scope: { type: 'chat_administrators' }
+});
+```
+
+This command enables admins to send HTML-formatted messages with personalization placeholders to all users who have notifications enabled. See [Notification Updates](./notificationUpdates.md) for more details on the broadcast system.
 
 ```typescript
 async function handleStart(msg: TelegramBot.Message) {
