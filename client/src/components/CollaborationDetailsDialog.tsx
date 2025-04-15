@@ -248,9 +248,23 @@ export function CollaborationDetailsDialog({
               <div className="mb-3">
                 <h4 className="text-sm font-medium">Type</h4>
                 <p className="text-sm">
-                  {collabType}
-                  {collabType?.includes('Co-Marketing on Twitter') && details?.twittercomarketing_type && 
-                    <>, {details.twittercomarketing_type}</>
+                  {collabType?.includes('Co-Marketing on Twitter')
+                    ? (
+                        <>
+                          Co-Marketing on Twitter:
+                          {details?.twittercomarketing_type && (
+                            <span className="ml-1">
+                              {typeof details.twittercomarketing_type === 'string' 
+                                ? details.twittercomarketing_type
+                                : Array.isArray(details.twittercomarketing_type) 
+                                  ? details.twittercomarketing_type.join(', ') 
+                                  : String(details.twittercomarketing_type)
+                              }
+                            </span>
+                          )}
+                        </>
+                      )
+                    : collabType
                   }
                 </p>
               </div>
@@ -359,7 +373,13 @@ export function CollaborationDetailsDialog({
                   {details?.twittercomarketing_type && !collabType?.includes('Co-Marketing on Twitter') && (
                     <div className="flex items-center gap-1 text-xs">
                       <Tag className="h-3 w-3 text-muted-foreground" />
-                      <span>Twitter engagement type: {details.twittercomarketing_type}</span>
+                      <span>Twitter engagement type: {
+                        typeof details.twittercomarketing_type === 'string' 
+                          ? details.twittercomarketing_type
+                          : Array.isArray(details.twittercomarketing_type)
+                            ? details.twittercomarketing_type.join(', ')
+                            : String(details.twittercomarketing_type)
+                      }</span>
                     </div>
                   )}
                   
