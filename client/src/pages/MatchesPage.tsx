@@ -246,10 +246,12 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     );
   };
 
-  // Create a company data object for the host company
+  // For collaboration details, the host is the company that created the collaboration,
+  // not the current user's company (which is stored in match.companyName)
+  // In the case of matches, we're looking at someone else's collaboration, not our own
   const companyData = {
-    name: match.companyName,
-    website: match.companyWebsite
+    name: match.details?.host_company || match.details?.company_name || match.companyName,
+    website: match.details?.company_website || match.companyWebsite
   };
 
   // Render different details based on collaboration type
