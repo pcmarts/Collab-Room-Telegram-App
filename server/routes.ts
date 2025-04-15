@@ -3117,7 +3117,8 @@ export async function registerRoutes(app: Express) {
             // Additional user information
             linkedinUrl: match.other_user_linkedin_url || null,
             twitterUrl: match.other_user_twitter_url || null,
-            twitterHandle: match.company_twitter_handle || null,
+            // Extract Twitter handle from URL or use null if not available
+            twitterHandle: match.other_user_twitter_url ? match.other_user_twitter_url.split('/').pop() : null,
             twitterFollowers: match.other_user_twitter_followers || null,
             email: null, // We don't return email for privacy reasons
             note: match.match_note || null, // Include the personalized note
@@ -3152,7 +3153,7 @@ export async function registerRoutes(app: Express) {
             // Additional user information
             linkedinUrl: null,
             twitterUrl: null,
-            twitterHandle: null,
+            twitterHandle: null, // Correctly handle null case for Twitter handle
             twitterFollowers: null,
             email: null,
             note: null, // Include empty note field in error case
