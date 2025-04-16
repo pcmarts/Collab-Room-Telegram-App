@@ -950,14 +950,14 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               {/* Top CTA Button */}
               <GlowButton 
                 onClick={() => setLocation('/create-collaboration-steps')}
-                className="w-full max-w-xs py-3 mx-auto mb-6"
+                className="w-full max-w-xs py-3 mx-auto mb-8"
               >
                 Create Your First Collab
               </GlowButton>
               
               {/* How Collaborations Work Section */}
-              <div className="mb-5">
-                <h3 className="text-base font-medium mb-3">How Collaborations Work</h3>
+              <div className="mb-5 text-left">
+                <h3 className="text-base font-medium mb-3 pl-2">How Collaborations Work</h3>
                 
                 <div className="flex flex-col gap-3">
                   {/* Step 1 */}
@@ -995,7 +995,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       <div className="absolute right-0 w-3 h-3 bg-primary rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left">
-                      <h4 className="font-medium text-sm">Approve Partners</h4>
+                      <h4 className="font-medium text-sm">Approve Collab Requests</h4>
                       <p className="text-xs text-muted-foreground">
                         Select the right collaborators for your vision.
                       </p>
