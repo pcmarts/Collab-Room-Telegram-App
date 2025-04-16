@@ -5,6 +5,15 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.8.8] - 2025-04-16
+
+### Fixed
+- Fixed SwipeableCard button functionality issues (Skip and Request buttons now work properly)
+- Enhanced event handling for touch and click events on card components
+- Improved UI elements on Discovery page
+- Changed Filter button to include text instead of just an icon for better usability
+- Modified bottom panel to only show Refresh button when no cards are available
+
 ## [Version 1.8.7] - 2025-04-16
 
 ### Enhanced
