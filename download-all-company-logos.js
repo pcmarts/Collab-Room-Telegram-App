@@ -10,7 +10,7 @@
  * npx tsx download-all-company-logos.js
  */
 
-import { db } from './server/db.js';
+import { pool } from './server/db.js';
 import { downloadAndSaveImage } from './server/utils/image-downloader.js';
 
 // Main function to process all companies
@@ -35,7 +35,7 @@ async function downloadAllCompanyLogos() {
         ctd.profile_image_url IS NOT NULL
     `;
     
-    const { rows: results } = await db.query(query);
+    const { rows: results } = await pool.query(query);
     
     if (!results || results.length === 0) {
       console.log('No companies with Twitter profile images found.');
@@ -88,7 +88,7 @@ async function downloadAllCompanyLogos() {
           RETURNING id, name, logo_url
         `;
         
-        const { rows: updateResult } = await db.query(updateQuery, [downloadResult.publicPath, company.company_id]);
+        const { rows: updateResult } = await pool.query(updateQuery, [downloadResult.publicPath, company.company_id]);
         
         if (!updateResult || updateResult.length === 0) {
           throw new Error('Failed to update company record');
