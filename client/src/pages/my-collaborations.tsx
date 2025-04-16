@@ -946,10 +946,10 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               {collaborations.map(collab => renderCollaborationCard(collab))}
             </div>
           ) : (
-            <div className="text-center pt-6 pb-8 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
+            <div className="text-center pt-4 pb-8 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
               {/* How Collaborations Work Section */}
               <div className="mb-5 text-left mt-0">
-                <h3 className="text-base font-medium mb-3 pl-2">How Collaborations Work</h3>
+                <h3 className="text-base font-medium mb-2 pl-2">How Collaborations Work</h3>
                 
                 <div className="flex flex-col gap-3">
                   {/* Step 1 */}
@@ -997,12 +997,19 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               </div>
               
               {/* Privacy Section */}
-              <div className="mb-3 flex flex-col items-center">
-                <div className="inline-flex items-center gap-1 border border-muted-foreground/20 rounded-lg px-3 py-1 bg-background">
-                  <span className="text-primary"><Lock size={14} /></span>
-                  <p className="text-xs">
-                    <strong>Privacy first.</strong> Contact details shared only upon successful match. Passed collaborators won't be notified.
-                  </p>
+              <div className="mb-4 flex flex-col items-center">
+                <div className="inline-flex items-start gap-2 border border-muted-foreground/20 rounded-lg overflow-hidden">
+                  <div className="bg-yellow-500/85 w-12 h-full min-h-[4rem] flex items-center justify-center relative">
+                    <span className="text-white"><Lock size={18} /></span>
+                    <div className="absolute right-0 w-3 h-3 bg-yellow-500/85 rotate-45 translate-x-1/2"></div>
+                  </div>
+                  <div className="p-3 text-left">
+                    <p className="text-xs flex flex-col gap-1">
+                      <strong>Privacy first.</strong>
+                      <span>Contact details shared only upon successful match.</span>
+                      <span>Anyone you passed on won't be notified.</span>
+                    </p>
+                  </div>
                 </div>
               </div>
               
