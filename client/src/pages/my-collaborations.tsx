@@ -955,9 +955,6 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 Create Your First Collab
               </GlowButton>
               
-              {/* Header */}
-              <h2 className="text-xl font-semibold mb-4">Start Your First Collaboration</h2>
-              
               {/* How Collaborations Work Section */}
               <div className="mb-5">
                 <h3 className="text-base font-medium mb-3">How Collaborations Work</h3>
