@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { LetterAvatar } from "@/components/ui/letter-avatar";
 import AddNoteDialog from "./AddNoteDialog";
 
 export interface SwipeableCardProps {
@@ -177,164 +178,20 @@ export default function SwipeableCard({
             <div className="flex items-center gap-3">
               {/* Company Logo */}
               {!data.isPotentialMatch && (
-                // Special case for XBorg
-                (data.creator_company_name?.toLowerCase().includes('xborg')) ? (
-                  <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40 bg-background">
-                    <img 
-                      src="https://pbs.twimg.com/profile_images/1701203495284518912/Ujc9Oow6_400x400.jpg"
-                      alt="XBorg" 
-                      className="h-full w-full object-contain"
-                      onLoad={() => console.log("[SwipeableCard] XBorg logo loaded directly")}
-                      onError={(e) => console.error("[SwipeableCard] XBorg direct logo failed to load", e)}
-                    />
-                  </div>
-                ) : // Regular case for other companies
-                (data.company_data?.logo_url || data.creator_company_logo_url) ? (
-                  <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40 bg-background">
-                    <img 
-                      src={
-                        // First priority: use company_data.logo_url if available
-                        data.company_data?.logo_url ? 
-                          // Apply Twitter CDN image optimization if it's a Twitter URL
-                          (data.company_data.logo_url.includes('pbs.twimg.com') ? 
-                            data.company_data.logo_url.replace('_normal', '_400x400') : 
-                            data.company_data.logo_url
-                          ) : 
-                          // Second priority: fall back to creator_company_logo_url
-                          ((data.creator_company_logo_url?.replace('_normal', '_400x400')) || '')
-                      } 
-                      alt={data.creator_company_name || "Company"} 
-                      className="h-full w-full object-contain"
-                      onLoad={() => {
-                        console.log(`[SwipeableCard] Logo loaded successfully for ${data.creator_company_name || "Company"}`);
-                      }}
-                      onError={(e) => {
-                        console.log(`[SwipeableCard] Logo error for ${data.creator_company_name || "Company"}`);
-                        console.log(`[DEBUG] Full data object:`, JSON.stringify({
-                          id: data.id,
-                          company_name: data.creator_company_name,
-                          company_data_logo: data.company_data?.logo_url,
-                          creator_company_logo: data.creator_company_logo_url,
-                        }, null, 2));
-                        
-                        // Get the source that failed
-                        const target = e.target as HTMLImageElement;
-                        const failedUrl = target.src;
-                        console.log(`Failed URL: ${failedUrl}`);
-                        
-                        // Attempt different fallbacks in sequence
-                        
-                        // Fallback 1: If we tried an optimized Twitter URL, try the original
-                        if (failedUrl.includes('_400x400')) {
-                          const originalUrl = failedUrl.replace('_400x400', '');
-                          console.log(`[SwipeableCard] Trying fallback to original URL: ${originalUrl}`);
-                          target.src = originalUrl;
-                          return;
-                        }
-                        
-                        // Fallback 2: If we used company_data.logo_url, try creator_company_logo_url
-                        if (data.company_data?.logo_url && data.creator_company_logo_url && 
-                            failedUrl === data.company_data.logo_url) {
-                          console.log(`[SwipeableCard] Trying creator_company_logo_url: ${data.creator_company_logo_url}`);
-                          target.src = data.creator_company_logo_url;
-                          return;
-                        }
-                        
-                        // Fallback 3: For XBorg specifically, use the known logo URL
-                        if (data.creator_company_name?.toLowerCase().includes('xborg')) {
-                          const xborgLogo = "https://pbs.twimg.com/profile_images/1701203495284518912/Ujc9Oow6.jpg";
-                          console.log(`[SwipeableCard] Using hardcoded XBorg logo: ${xborgLogo}`);
-                          target.src = xborgLogo;
-                        }
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 bg-primary/10 flex items-center justify-center">
-                    <Building className="h-4 w-4 text-primary/70" />
-                  </div>
-                )
+                <LetterAvatar 
+                  name={data.creator_company_name || "Company"} 
+                  size="sm"
+                  className="flex-shrink-0"
+                />
               )}
               
               {/* Potential Match Company Logo */}
               {data.isPotentialMatch && (
-                // Special case for XBorg
-                (data.potentialMatchData?.company_name?.toLowerCase().includes('xborg')) ? (
-                  <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40 bg-background">
-                    <img 
-                      src="https://pbs.twimg.com/profile_images/1701203495284518912/Ujc9Oow6_400x400.jpg"
-                      alt="XBorg" 
-                      className="h-full w-full object-contain"
-                      onLoad={() => console.log("[SwipeableCard] XBorg potential match logo loaded directly")}
-                      onError={(e) => console.error("[SwipeableCard] XBorg direct logo failed to load for potential match", e)}
-                    />
-                  </div>
-                ) : // Regular case for other companies
-                (data.company_data?.logo_url || data.potentialMatchData?.company_logo_url) ? (
-                  <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40 bg-background">
-                    <img 
-                      src={
-                        // First priority: use company_data.logo_url if available
-                        data.company_data?.logo_url ? 
-                          // Apply Twitter CDN image optimization if it's a Twitter URL
-                          (data.company_data.logo_url.includes('pbs.twimg.com') ? 
-                            data.company_data.logo_url.replace('_normal', '_400x400') : 
-                            data.company_data.logo_url
-                          ) : 
-                          // Second priority: fall back to potentialMatchData.company_logo_url
-                          ((data.potentialMatchData?.company_logo_url?.replace('_normal', '_400x400')) || '')
-                      } 
-                      alt={data.potentialMatchData?.company_name || 'Company'} 
-                      className="h-full w-full object-contain"
-                      onLoad={() => {
-                        console.log(`[SwipeableCard] Potential match logo loaded for ${data.potentialMatchData?.company_name || "Company"}`);
-                      }}
-                      onError={(e) => {
-                        console.log(`[SwipeableCard] Potential match logo error for ${data.potentialMatchData?.company_name || "Company"}`);
-                        console.log(`[DEBUG] Potential match data object:`, JSON.stringify({
-                          id: data.id,
-                          potential_company_name: data.potentialMatchData?.company_name,
-                          company_data_logo: data.company_data?.logo_url,
-                          potential_company_logo: data.potentialMatchData?.company_logo_url
-                        }, null, 2));
-                        
-                        // Get the source that failed
-                        const target = e.target as HTMLImageElement;
-                        const failedUrl = target.src;
-                        console.log(`Failed URL: ${failedUrl}`);
-                        
-                        // Attempt different fallbacks in sequence
-                        
-                        // Fallback 1: If we tried an optimized Twitter URL, try the original
-                        if (failedUrl.includes('_400x400')) {
-                          const originalUrl = failedUrl.replace('_400x400', '');
-                          console.log(`[SwipeableCard] Trying fallback to original URL: ${originalUrl}`);
-                          target.src = originalUrl;
-                          return;
-                        }
-                        
-                        // Fallback 2: If we used company_data.logo_url, try potentialMatchData.company_logo_url
-                        if (data.company_data?.logo_url && data.potentialMatchData?.company_logo_url && 
-                            failedUrl === data.company_data.logo_url) {
-                          console.log(`[SwipeableCard] Trying potentialMatchData.company_logo_url: ${data.potentialMatchData.company_logo_url}`);
-                          target.src = data.potentialMatchData.company_logo_url;
-                          return;
-                        }
-                        
-                        // Fallback 3: For XBorg specifically, use the known logo URL
-                        if (data.potentialMatchData?.company_name?.toLowerCase().includes('xborg')) {
-                          const xborgLogo = "https://pbs.twimg.com/profile_images/1701203495284518912/Ujc9Oow6.jpg";
-                          console.log(`[SwipeableCard] Using hardcoded XBorg logo: ${xborgLogo}`);
-                          target.src = xborgLogo;
-                        }
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 bg-rose-500/10 flex items-center justify-center">
-                    <Building className="h-4 w-4 text-rose-500/70" />
-                  </div>
-                )
+                <LetterAvatar 
+                  name={data.potentialMatchData?.company_name || "Company"}
+                  size="sm"
+                  className="flex-shrink-0"
+                />
               )}
               
               {/* Company Name and Type */}
