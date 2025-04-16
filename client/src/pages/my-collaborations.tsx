@@ -947,10 +947,8 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             </div>
           ) : (
             <div className="text-center pt-4 pb-8 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
-              {/* How Collaborations Work Section */}
+              {/* Collaboration Steps Section */}
               <div className="mb-5 text-left mt-0">
-                <h3 className="text-base font-medium mb-2 pl-2">How Collaborations Work</h3>
-                
                 <div className="flex flex-col gap-3">
                   {/* Step 1 */}
                   <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
