@@ -950,7 +950,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               {/* Collaboration Steps Section */}
               <div className="mb-4 text-left">
                 <h3 className="text-base font-medium mb-2 pl-2">How Collaborations Work</h3>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {/* Step 1 */}
                   <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
                     <div className="bg-primary/85 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
@@ -995,7 +995,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               {/* Bottom CTA Button */}
               <Button 
                 onClick={() => setLocation('/create-collaboration-steps')}
-                className="w-full max-w-xs py-3 mx-auto mb-4 bg-primary text-primary-foreground hover:bg-primary/90"
+                className="w-full max-w-xs py-3 mx-auto mb-6 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Create Your First Collab
               </Button>
@@ -1006,7 +1006,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   <div className="bg-yellow-500/85 flex-shrink-0 w-14 flex items-center justify-center">
                     <span className="text-white"><Lock size={18} /></span>
                   </div>
-                  <div className="p-3 text-left">
+                  <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
                     <p className="text-xs flex flex-col gap-1">
                       <strong>PRIVACY FIRST</strong>
                       <span className="text-muted-foreground">Contact details shared only upon successful match. Anyone you passed on won't be notified.</span>
