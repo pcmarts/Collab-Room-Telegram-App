@@ -545,14 +545,41 @@ export class DatabaseStorage implements IStorage {
           .where(eq(companies.user_id, collab.creator_id));
         
         if (company) {
+          // Try to get Twitter profile data for the company
+          let logoUrl = null;
+          try {
+            // Check if company has a logo_url field
+            if ("logo_url" in company && company.logo_url) {
+              console.log(`Found logo_url for company ${company.id} (${company.name}): ${company.logo_url}`);
+              logoUrl = company.logo_url;
+            } else {
+              // If not, try to get it from Twitter data
+              const [twitterData] = await db
+                .select()
+                .from(company_twitter_data)
+                .where(eq(company_twitter_data.company_id, company.id));
+              
+              if (twitterData && twitterData.profile_image_url) {
+                console.log(`Found Twitter profile image for company ${company.id} (${company.name}): ${twitterData.profile_image_url}`);
+                logoUrl = twitterData.profile_image_url;
+              } else {
+                console.log(`No logo or Twitter profile image found for company ${company.id} (${company.name})`);
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching logo for company ${company.id}:`, error);
+          }
+
           // Add all company data to the collaboration object
           return {
             ...collab,
             creator_company_name: company.name,
+            creator_company_logo_url: logoUrl, // Set logo URL directly on collaboration
             // Add all company information
             company_data: {
               id: company.id,
               name: company.name,
+              logo_url: logoUrl, // Include logo URL in company_data
               short_description: company.short_description,
               long_description: company.long_description,
               website: company.website,
