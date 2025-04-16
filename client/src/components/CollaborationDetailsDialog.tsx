@@ -108,137 +108,10 @@ export function CollaborationDetailsDialog({
         
         <ScrollArea className="max-h-[70vh]">
           <div className="space-y-4 p-4">
-            {/* Company info section */}
+            {/* Collaboration details section - NOW FIRST */}
             <Card className="p-4 bg-card/50 border shadow-sm">
               <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Building className="h-5 w-5 text-muted-foreground" />
-                {companyName}
-              </h3>
-              
-              {isPotentialMatch && potentialMatchData.first_name && (
-                <div className="flex items-center mt-1 text-sm text-primary">
-                  <Users className="h-4 w-4 mr-1" />
-                  <span>
-                    {potentialMatchData.first_name} {potentialMatchData.last_name || ""}
-                    {potentialMatchData.job_title && ` • ${potentialMatchData.job_title}`}
-                  </span>
-                </div>
-              )}
-              
-              {/* Show personalized note if exists */}
-              {isPotentialMatch && potentialMatchData.note && (
-                <div className="mt-3 bg-primary/5 p-3 rounded-md border border-primary/10">
-                  <h4 className="text-sm font-medium text-primary mb-1">Personalized Note</h4>
-                  <p className="text-sm italic">{potentialMatchData.note}</p>
-                </div>
-              )}
-              
-              {companyData.short_description && (
-                <p className="text-sm mt-2 text-muted-foreground">
-                  {companyData.short_description}
-                </p>
-              )}
-              
-              <div className="grid grid-cols-2 gap-2 mt-3">
-                {companyData.website && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Globe className="h-3 w-3 text-muted-foreground" />
-                    <a 
-                      href={companyData.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Don't prevent default so the link works normally
-                      }}
-                    >
-                      {companyData.website.replace(/https?:\/\/(www\.)?/, "")}
-                    </a>
-                  </div>
-                )}
-                
-                {companyData.twitter_handle && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Twitter className="h-3 w-3 text-muted-foreground" />
-                    <a 
-                      href={companyData.twitter_handle.startsWith("http") 
-                        ? companyData.twitter_handle 
-                        : `https://twitter.com/${companyData.twitter_handle.replace('@', '')}`}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Don't prevent default so the link works normally
-                      }}
-                    >
-                      {companyData.twitter_handle.replace(/https?:\/\/(www\.)?twitter\.com\//, "@")}
-                    </a>
-                  </div>
-                )}
-                
-                {companyData.linkedin_url && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Linkedin className="h-3 w-3 text-muted-foreground" />
-                    <a 
-                      href={companyData.linkedin_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Don't prevent default so the link works normally
-                      }}
-                    >
-                      LinkedIn
-                    </a>
-                  </div>
-                )}
-                
-                {companyData.funding_stage && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <DollarSign className="h-3 w-3 text-muted-foreground" />
-                    <span>{companyData.funding_stage}</span>
-                  </div>
-                )}
-                
-                {companyData.job_title && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Briefcase className="h-3 w-3 text-muted-foreground" />
-                    <span className="truncate" title={companyData.job_title}>
-                      {companyData.job_title}
-                    </span>
-                  </div>
-                )}
-
-                {companyData.has_token && companyData.token_ticker && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Coins className="h-3 w-3 text-muted-foreground" />
-                    <span>${companyData.token_ticker}</span>
-                  </div>
-                )}
-                
-                {companyData.blockchain_networks && companyData.blockchain_networks.length > 0 && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Layers className="h-3 w-3 text-muted-foreground" />
-                    <span>Chain: {companyData.blockchain_networks.join(', ')}</span>
-                  </div>
-                )}
-                
-                {companyData.tags && companyData.tags.length > 0 && (
-                  <div className="col-span-2 flex items-center gap-1 text-xs mt-1">
-                    <Tag className="h-3 w-3 text-muted-foreground" />
-                    <span>Sector: {companyData.tags.join(', ')}</span>
-                  </div>
-                )}
-              </div>
-            </Card>
-            
-            {/* Collaboration details section - NEW */}
-            <Card className="p-4 bg-card/50 border shadow-sm">
-              <h3 className="text-lg font-semibold flex items-center gap-2 text-primary">
-                <Info className="h-5 w-5" />
+                <Info className="h-5 w-5 text-muted-foreground" />
                 Collaboration Details
               </h3>
               
@@ -448,12 +321,132 @@ export function CollaborationDetailsDialog({
               }
             </Card>
             
-            {/* Close button */}
-            <div className="pt-2 pb-4">
-              <Button onClick={onClose} className="w-full">
-                Close
-              </Button>
-            </div>
+            {/* Company info section - MOVED SECOND */}
+            <Card className="p-4 bg-card/50 border shadow-sm">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Building className="h-5 w-5 text-muted-foreground" />
+                {companyName}
+              </h3>
+              
+              {isPotentialMatch && potentialMatchData.first_name && (
+                <div className="flex items-center mt-1 text-sm text-primary">
+                  <Users className="h-4 w-4 mr-1" />
+                  <span>
+                    {potentialMatchData.first_name} {potentialMatchData.last_name || ""}
+                    {potentialMatchData.job_title && ` • ${potentialMatchData.job_title}`}
+                  </span>
+                </div>
+              )}
+              
+              {/* Show personalized note if exists */}
+              {isPotentialMatch && potentialMatchData.note && (
+                <div className="mt-3 bg-primary/5 p-3 rounded-md border border-primary/10">
+                  <h4 className="text-sm font-medium text-primary mb-1">Personalized Note</h4>
+                  <p className="text-sm italic">{potentialMatchData.note}</p>
+                </div>
+              )}
+              
+              {companyData.short_description && (
+                <p className="text-sm mt-2 text-muted-foreground">
+                  {companyData.short_description}
+                </p>
+              )}
+              
+              <div className="grid grid-cols-2 gap-2 mt-3">
+                {companyData.website && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Globe className="h-3 w-3 text-muted-foreground" />
+                    <a 
+                      href={companyData.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Don't prevent default so the link works normally
+                      }}
+                    >
+                      {companyData.website.replace(/https?:\/\/(www\.)?/, "")}
+                    </a>
+                  </div>
+                )}
+                
+                {companyData.twitter_handle && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Twitter className="h-3 w-3 text-muted-foreground" />
+                    <a 
+                      href={companyData.twitter_handle.startsWith("http") 
+                        ? companyData.twitter_handle 
+                        : `https://twitter.com/${companyData.twitter_handle.replace('@', '')}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Don't prevent default so the link works normally
+                      }}
+                    >
+                      {companyData.twitter_handle.replace(/https?:\/\/(www\.)?twitter\.com\//, "@")}
+                    </a>
+                  </div>
+                )}
+                
+                {companyData.linkedin_url && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Linkedin className="h-3 w-3 text-muted-foreground" />
+                    <a 
+                      href={companyData.linkedin_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Don't prevent default so the link works normally
+                      }}
+                    >
+                      LinkedIn
+                    </a>
+                  </div>
+                )}
+                
+                {companyData.funding_stage && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <DollarSign className="h-3 w-3 text-muted-foreground" />
+                    <span>{companyData.funding_stage}</span>
+                  </div>
+                )}
+                
+                {companyData.job_title && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Briefcase className="h-3 w-3 text-muted-foreground" />
+                    <span className="truncate" title={companyData.job_title}>
+                      {companyData.job_title}
+                    </span>
+                  </div>
+                )}
+
+                {companyData.has_token && companyData.token_ticker && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Coins className="h-3 w-3 text-muted-foreground" />
+                    <span>${companyData.token_ticker}</span>
+                  </div>
+                )}
+                
+                {companyData.blockchain_networks && companyData.blockchain_networks.length > 0 && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Layers className="h-3 w-3 text-muted-foreground" />
+                    <span>Chain: {companyData.blockchain_networks.join(', ')}</span>
+                  </div>
+                )}
+                
+                {companyData.tags && companyData.tags.length > 0 && (
+                  <div className="col-span-2 flex items-center gap-1 text-xs mt-1">
+                    <Tag className="h-3 w-3 text-muted-foreground" />
+                    <span>Sector: {companyData.tags.join(', ')}</span>
+                  </div>
+                )}
+              </div>
+            </Card>
           </div>
         </ScrollArea>
       </DialogContent>
