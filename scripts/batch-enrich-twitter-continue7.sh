@@ -1,6 +1,6 @@
 #!/bin/bash
-# Final batch script to continue enriching companies with Twitter data
-# Usage: bash scripts/batch-enrich-twitter-continue5.sh
+# Final batch script to complete Twitter data enrichment
+# Usage: bash scripts/batch-enrich-twitter-continue7.sh
 
 # Check if we have the Twitter API key
 if [ -z "$X_RAPIDAPI_KEY" ]; then
@@ -12,12 +12,6 @@ fi
 # Format: "COMPANY_ID:TWITTER_HANDLE"
 COMPANIES=(
   # Process remaining companies
-  "0500695a-e314-40f6-bbd2-4dc368dca173:node_narrative"
-  "efae1cba-7d45-4bbd-867e-879be810c131:poapxyz"
-  "c8ef6647-9765-4c56-8dc5-6657cb5d73b6:therzlt"
-  "831958c9-dfa9-431a-a670-f6c241101be5:re"
-  "cb90798e-e059-4d4b-800b-56aadbc55159:rumorsdatingapp"
-  "81f14c6b-818d-42e6-83ff-a34e5ef38070:_spacecoin"
   "b0304dc1-6261-4355-9ec6-b1a9392a07d9:surge_dao"
   "e8bbd76f-44bc-4e5d-af4e-fc0d9d88d19a:tpan____"
   "56b65a68-332b-4cfd-ba6d-8a65b247dbad:trepa_io"
@@ -34,7 +28,7 @@ success=0
 failed=0
 
 # Create log file
-log_file="twitter-enrichment-continue5-$(date +%Y%m%d-%H%M%S).log"
+log_file="twitter-enrichment-complete-$(date +%Y%m%d-%H%M%S).log"
 echo "Twitter Enrichment Log - $(date)" > $log_file
 echo "====================================" >> $log_file
 
