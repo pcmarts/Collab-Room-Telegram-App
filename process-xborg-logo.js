@@ -8,31 +8,24 @@
  * npx tsx process-xborg-logo.js
  */
 
-import { db } from './server/db.js';
+import { db, companies, companyTwitterData } from './server/db.js';
+import { eq, sql, ilike } from 'drizzle-orm';
 import { downloadAndSaveImage } from './server/utils/image-downloader.js';
 
 async function processXBorgLogo() {
   try {
     console.log('Looking up XBorg company...');
     
-    // Find the XBorg company
-    const query = `
-      SELECT 
-        c.id AS company_id, 
-        c.name AS company_name,
-        c.logo_url,
-        ctd.profile_image_url 
-      FROM 
-        companies c
-      LEFT JOIN 
-        company_twitter_data ctd 
-      ON 
-        c.id = ctd.company_id
-      WHERE 
-        c.name ILIKE '%XBorg%'
-    `;
-    
-    const results = await db.execute(query);
+    // Find the XBorg company using Drizzle ORM
+    const results = await db.select({
+        company_id: companies.id,
+        company_name: companies.name,
+        logo_url: companies.logo_url,
+        profile_image_url: companyTwitterData.profile_image_url
+      })
+      .from(companies)
+      .leftJoin(companyTwitterData, eq(companies.id, companyTwitterData.company_id))
+      .where(ilike(companies.name, '%XBorg%'));
     
     if (!results || results.length === 0) {
       console.log('XBorg company not found.');
@@ -58,15 +51,15 @@ async function processXBorgLogo() {
     console.log(`Successfully downloaded logo to: ${downloadResult.localPath}`);
     console.log(`Public URL: ${downloadResult.publicPath}`);
     
-    // Update the company record
-    const updateQuery = `
-      UPDATE companies 
-      SET logo_url = $1
-      WHERE id = $2
-      RETURNING id, name, logo_url
-    `;
-    
-    const updateResult = await db.execute(updateQuery, [downloadResult.publicPath, company.company_id]);
+    // Update the company record using Drizzle ORM
+    const updateResult = await db.update(companies)
+      .set({ logo_url: downloadResult.publicPath })
+      .where(eq(companies.id, company.company_id))
+      .returning({ 
+        id: companies.id, 
+        name: companies.name, 
+        logo_url: companies.logo_url 
+      });
     
     if (!updateResult || updateResult.length === 0) {
       console.error('Failed to update company record');
@@ -88,17 +81,16 @@ async function processXBorgLogo() {
 }
 
 // Run the function if this script is executed directly
-if (require.main === module) {
-  (async () => {
-    try {
-      const result = await processXBorgLogo();
-      console.log('Result:', result);
-      process.exit(0);
-    } catch (error) {
-      console.error('Script execution failed:', error);
-      process.exit(1);
-    }
-  })();
-}
+// For ES modules, just run immediately
+(async () => {
+  try {
+    const result = await processXBorgLogo();
+    console.log('Result:', result);
+    process.exit(0);
+  } catch (error) {
+    console.error('Script execution failed:', error);
+    process.exit(1);
+  }
+})();
 
 export { processXBorgLogo };

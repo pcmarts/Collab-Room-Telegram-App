@@ -146,16 +146,15 @@ async function downloadAllCompanyLogos() {
 }
 
 // Run the function if this script is executed directly
-if (require.main === module) {
-  (async () => {
-    try {
-      await downloadAllCompanyLogos();
-      process.exit(0);
-    } catch (error) {
-      console.error('Script execution failed:', error);
-      process.exit(1);
-    }
-  })();
-}
+// For ES modules, just run immediately
+(async () => {
+  try {
+    await downloadAllCompanyLogos();
+    process.exit(0);
+  } catch (error) {
+    console.error('Script execution failed:', error);
+    process.exit(1);
+  }
+})();
 
 export { downloadAllCompanyLogos };
