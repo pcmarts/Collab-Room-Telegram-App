@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved UI elements on Discovery page
 - Changed Filter button to include text instead of just an icon for better usability
 - Modified bottom panel to only show Refresh button when no cards are available
+- Fixed critical deployment issue by correcting SQL function imports from @neondatabase/serverless to drizzle-orm
 
 ## [Version 1.8.7] - 2025-04-16
 

@@ -15,7 +15,7 @@ import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, n
 import { storage } from "./storage";
 import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
-import twitterRoutes from './routes/twitter-routes.js';
+import twitterRoutes from './routes/twitter-routes-simplified.js';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
