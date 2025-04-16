@@ -120,7 +120,7 @@ export default function SwipeableCard({
 
   return (
     <motion.div 
-      className="w-full h-full absolute inset-0 touch-none"
+      className="w-full h-full absolute inset-0"
       style={{ 
         zIndex: zIndex || 1,
         x,
@@ -557,8 +557,11 @@ export default function SwipeableCard({
             <Button
               variant="outline"
               size="sm"
-              className="mt-1 w-full text-xs"
-              onClick={viewDetailsHandler}
+              className="mt-1 w-full text-xs pointer-events-auto relative z-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                viewDetailsHandler();
+              }}
             >
               View Full Details
             </Button>
