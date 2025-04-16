@@ -94,6 +94,7 @@ export async function getTwitterProfile(username) {
       location: legacy.location,
       url: legacy.entities?.url?.urls?.[0]?.expanded_url || legacy.url,
       createdAt: legacy.created_at,
+      restId: userData.rest_id || null, // Include the Twitter rest_id for API integrations
       rawData: data
     };
     
@@ -122,6 +123,7 @@ export async function testTwitterApi(username = 'Bondexapp') {
       const details = {
         'Username          ': profile.username,
         'Name              ': profile.name,
+        'Twitter Rest ID   ': profile.restId || 'N/A',
         'Verified          ': profile.verified ? 'Yes' : 'No',
         'Business Account  ': profile.isBusinessAccount ? 'Yes' : 'No',
         'Business Category ': profile.businessCategory || 'N/A',

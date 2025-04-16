@@ -80,7 +80,8 @@ fetch(`https://twitter241.p.rapidapi.com/user?username=${username}`, options)
       profileImageUrl: profileImageUrl,
       verified: userData.is_blue_verified || legacy.verified || false,
       isBusinessAccount: userData.professional?.professional_type === 'Business',
-      businessCategory: userData.professional?.category?.[0]?.name || null
+      businessCategory: userData.professional?.category?.[0]?.name || null,
+      restId: userData.rest_id || null // Include the Twitter rest_id
     };
     
     console.log('Twitter API test successful! Profile details:');

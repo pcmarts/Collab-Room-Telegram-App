@@ -74,9 +74,10 @@ async function storeTwitterData(companyId, profile) {
         location, 
         website_url, 
         created_at, 
+        rest_id,
         raw_data
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
       )
       ON CONFLICT (company_id) DO UPDATE SET
         username = EXCLUDED.username,
@@ -92,6 +93,7 @@ async function storeTwitterData(companyId, profile) {
         business_category = EXCLUDED.business_category,
         location = EXCLUDED.location,
         website_url = EXCLUDED.website_url,
+        rest_id = EXCLUDED.rest_id,
         created_at = EXCLUDED.created_at,
         raw_data = EXCLUDED.raw_data,
         updated_at = NOW()
@@ -114,6 +116,7 @@ async function storeTwitterData(companyId, profile) {
       profile.location,
       profile.url,
       new Date(), // current timestamp
+      profile.restId, // Twitter API rest_id for account
       JSON.stringify(profile.rawData)
     ];
     
