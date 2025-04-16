@@ -61,10 +61,12 @@ async function updateCompanyWithTwitterData(client, companyId, twitterData) {
     updateCount++;
     
     // Only update short_description if it's empty or null
+    let descriptionUpdated = false;
     if (!company.short_description) {
       updates.push(`short_description = $${updateCount}`);
       updateValues.push(twitterData.bio);
       updateCount++;
+      descriptionUpdated = true;
     }
     
     // Skip if no updates to make
@@ -95,13 +97,13 @@ async function updateCompanyWithTwitterData(client, companyId, twitterData) {
     
     console.log(`Successfully updated company: ${updatedCompany.name} (${companyId})`);
     console.log(`- Logo URL: ${updatedCompany.logo_url}`);
-    console.log(`- Short description: ${updatedCompany.short_description ? 'Updated' : 'Not updated (already had value)'}`);
+    console.log(`- Short description: ${descriptionUpdated ? 'Updated' : 'Not updated (already had value)'}`);
     
     return { 
       success: true, 
       changes: updates.length,
       logoUpdated: true,
-      descriptionUpdated: updates.length > 1
+      descriptionUpdated: descriptionUpdated
     };
   } catch (error) {
     console.error(`Error updating company ${companyId}:`, error);
