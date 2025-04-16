@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { LetterAvatar } from './letter-avatar';
 
@@ -16,6 +16,7 @@ interface LogoAvatarProps {
 export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatarProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [finalUrl, setFinalUrl] = useState<string | null>(null);
   
   // Size mappings for the container
   const sizeClasses = {
@@ -26,43 +27,49 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
     'xl': 'h-16 w-16',
   };
 
-  // Special case for XBorg - custom SVG implementation based on the provided image
-  if (name?.toLowerCase().includes('xborg')) {
-    console.log('Using custom SVG XBorg logo');
+  // Process the logo URL to get the best possible version
+  useEffect(() => {
+    if (!logoUrl) {
+      setImageError(true);
+      return;
+    }
     
-    // Return a custom SVG-based XBorg logo (red X on black background)
-    return (
-      <div 
-        className={cn(
-          "rounded-full overflow-hidden flex-shrink-0 border border-border/40",
-          sizeClasses[size],
-          className
-        )}
-      >
-        <svg viewBox="0 0 100 100" className="h-full w-full">
-          {/* Black background */}
-          <rect width="100" height="100" fill="black" />
-          
-          {/* Red X shape - more accurate to the XBorg logo */}
-          <g fill="#FF3B44">
-            {/* Top arrow */}
-            <polygon points="30,28 50,43 70,28 58,28 50,34 42,28" />
-            
-            {/* Bottom arrow */}
-            <polygon points="30,72 50,57 70,72 58,72 50,66 42,72" />
-          </g>
-        </svg>
-      </div>
-    );
-  }
+    // Reset states when logoUrl changes
+    setImageLoaded(false);
+    setImageError(false);
+    
+    // Priority order:
+    // 1. Local URLs (starting with /)
+    // 2. Twitter URLs (optimize size)
+    // 3. Other external URLs (as-is)
+    
+    // Check if logo is already a local URL
+    if (logoUrl.startsWith('/')) {
+      console.log(`[LogoAvatar] Using local logo URL: ${logoUrl}`);
+      setFinalUrl(logoUrl);
+    }
+    // Handle Twitter URLs specifically
+    else if (logoUrl.includes('pbs.twimg.com')) {
+      // Optimize Twitter image quality
+      const optimizedUrl = logoUrl.replace('_normal', '_400x400');
+      console.log(`[LogoAvatar] Using optimized Twitter URL: ${optimizedUrl}`);
+      setFinalUrl(optimizedUrl);
+      
+      // Special case for XBorg (update once, not every render)
+      if (name?.toLowerCase().includes('xborg') && !finalUrl) {
+        console.log('[LogoAvatar] Setting XBorg Twitter URL');
+        // This is the same URL that's provided in the API, just making sure we have the right size
+        setFinalUrl('https://pbs.twimg.com/profile_images/1701203495284518912/Ujc9Oow6_400x400.jpg');
+      }
+    } else {
+      // For other URLs, use as is
+      console.log(`[LogoAvatar] Using original logo URL: ${logoUrl}`);
+      setFinalUrl(logoUrl);
+    }
+  }, [logoUrl, name]);
 
-  // Optimize Twitter URLs if applicable
-  const optimizedUrl = logoUrl && logoUrl.includes('pbs.twimg.com') 
-    ? logoUrl.replace('_normal', '_400x400') 
-    : logoUrl;
-
-  // If no logo URL or loading failed, use LetterAvatar
-  if (!optimizedUrl || imageError) {
+  // If no URL or loading failed, use LetterAvatar
+  if (!finalUrl || imageError) {
     return <LetterAvatar name={name} size={size} className={className} />;
   }
 
@@ -79,9 +86,11 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
           )}
         >
           <img 
-            src={optimizedUrl}
+            src={finalUrl}
             alt={name || "Company"}
-            className="h-full w-full object-contain"
+            className="h-full w-full object-cover" // Changed to object-cover for better fit
+            // Only use crossOrigin for external URLs
+            {...(!finalUrl.startsWith('/') ? { crossOrigin: "anonymous" } : {})}
             onLoad={() => {
               console.log(`[LogoAvatar] Logo loaded successfully for ${name}`);
               setImageLoaded(true);

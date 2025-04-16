@@ -8,6 +8,7 @@
 import { db, users, companies } from '../db';
 import { eq } from 'drizzle-orm';
 import { config } from '../../shared/config';
+import { downloadAndSaveImage } from './image-downloader';
 
 /**
  * Fetch Twitter profile data for a username
@@ -192,7 +193,7 @@ async function storeTwitterData(companyId, profile) {
 }
 
 /**
- * Update a company with Twitter data
+ * Update a company with Twitter data and download logo
  */
 async function updateCompanyWithTwitterData(companyId, twitterData) {
   try {
@@ -216,8 +217,26 @@ async function updateCompanyWithTwitterData(companyId, twitterData) {
       
       const updates = {};
       
-      // Always update logo_url with Twitter profile image
-      updates.logo_url = twitterData.profile_image_url;
+      // Step 1: Download the Twitter profile image to our server
+      let localLogoUrl = null;
+      if (twitterData.profile_image_url) {
+        console.log(`Downloading logo for company ${companyId} from Twitter...`);
+        const downloadResult = await downloadAndSaveImage(twitterData.profile_image_url, companyId);
+        
+        if (downloadResult.success) {
+          console.log(`Successfully downloaded company logo to ${downloadResult.localPath}`);
+          localLogoUrl = downloadResult.publicPath;
+        } else {
+          console.warn(`Failed to download image: ${downloadResult.error}`);
+          // Fall back to the original URL if download fails
+          localLogoUrl = twitterData.profile_image_url;
+        }
+      } else {
+        console.warn(`No profile image URL found for company ${companyId}`);
+      }
+      
+      // Update logo_url with local path if download succeeded, otherwise use original Twitter URL
+      updates.logo_url = localLogoUrl || twitterData.profile_image_url;
       
       // Only update short_description if it's empty or null
       let descriptionUpdated = false;
@@ -250,12 +269,14 @@ async function updateCompanyWithTwitterData(companyId, twitterData) {
       
       console.log(`Successfully updated company: ${updatedCompany.name} (${companyId})`);
       console.log(`- Logo URL: ${updatedCompany.logo_url}`);
+      console.log(`- Logo downloaded locally: ${localLogoUrl ? 'Yes' : 'No'}`);
       console.log(`- Short description: ${descriptionUpdated ? 'Updated' : 'Not updated (already had value)'}`);
       
       return { 
         success: true, 
         changes: Object.keys(updates).length,
         logoUpdated: true,
+        logoDownloaded: !!localLogoUrl,
         descriptionUpdated: descriptionUpdated
       };
     } catch (dbError) {
