@@ -953,9 +953,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 <div className="flex flex-col gap-4">
                   {/* Step 1 */}
                   <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                    <div className="bg-primary/85 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
+                    <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
                       <span className="font-bold text-xl text-primary-foreground">1</span>
-                      <div className="absolute right-0 w-3 h-3 bg-primary/85 rotate-45 translate-x-1/2"></div>
+                      <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
                       <h4 className="font-medium text-sm">Create Your Collab</h4>
@@ -967,9 +967,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   
                   {/* Step 2 */}
                   <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                    <div className="bg-primary/85 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
+                    <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
                       <span className="font-bold text-xl text-primary-foreground">2</span>
-                      <div className="absolute right-0 w-3 h-3 bg-primary/85 rotate-45 translate-x-1/2"></div>
+                      <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left flex items-center h-full min-h-[4rem] w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
                       <h4 className="font-medium text-sm">Your Collab is Live</h4>
@@ -978,9 +978,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   
                   {/* Step 3 */}
                   <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                    <div className="bg-primary/85 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
+                    <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
                       <span className="font-bold text-xl text-primary-foreground">3</span>
-                      <div className="absolute right-0 w-3 h-3 bg-primary/85 rotate-45 translate-x-1/2"></div>
+                      <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
                       <h4 className="font-medium text-sm">Approve or Pass Collab Requests</h4>
@@ -1003,7 +1003,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               {/* Privacy Section */}
               <div className="flex flex-col items-center">
                 <div className="flex items-stretch border border-muted-foreground/10 rounded-lg overflow-hidden">
-                  <div className="bg-yellow-500/85 flex-shrink-0 w-14 flex items-center justify-center">
+                  <div className="bg-yellow-500/65 flex-shrink-0 w-14 flex items-center justify-center">
                     <span className="text-white"><Lock size={18} /></span>
                   </div>
                   <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
