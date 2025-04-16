@@ -1,98 +1,73 @@
 /**
- * Twitter API Utilities
+ * Twitter API utilities for fetching profile data using RapidAPI Twitter241 endpoint
  * 
- * This module provides functions to interact with the Twitter API via RapidAPI.
+ * This module provides functions to fetch Twitter profile data which is used to
+ * enrich company information in the application.
  */
 
-import https from 'https';
-import { logger } from './logger.js';
+import fetch from 'node-fetch';
 
 /**
- * Fetches Twitter user information using the Twitter241 RapidAPI
- * @param {string} username - Twitter handle with or without @ symbol
- * @returns {Promise<Object>} - Parsed user data
+ * @typedef {Object} TwitterProfile
+ * @property {string} username - Twitter handle without @ symbol
+ * @property {string} name - Display name
+ * @property {string} bio - Twitter bio/description
+ * @property {number} followers - Number of followers
+ * @property {number} following - Number of accounts following
+ * @property {number} tweets - Total number of tweets
+ * @property {string} profileImageUrl - Profile image URL (full-sized)
+ * @property {string} bannerImageUrl - Profile banner/header image
+ * @property {boolean} verified - If account is verified
+ * @property {boolean} isBusinessAccount - If it's a business account
+ * @property {string} businessCategory - Category of the business
+ * @property {string} location - User's location
+ * @property {string} url - Website link from profile
+ * @property {string} createdAt - When the Twitter account was created
+ * @property {Object} rawData - The complete raw response for future reference
  */
-async function fetchTwitterUserInfo(username) {
-  // Get API key from environment variable
-  const apiKey = process.env.X_RAPIDAPI_KEY;
-  
-  if (!apiKey) {
-    throw new Error('X_RAPIDAPI_KEY environment variable is not set');
-  }
-  
-  return new Promise((resolve, reject) => {
-    // Remove @ if present at the beginning
-    const cleanUsername = username.startsWith('@') ? username.substring(1) : username;
+
+/**
+ * Fetches Twitter profile data using the RapidAPI Twitter241 endpoint
+ * 
+ * @param {string} username - Twitter handle without @ symbol
+ * @returns {Promise<TwitterProfile|null>} Twitter profile data or null if not found
+ */
+export async function getTwitterProfile(username) {
+  try {
+    // Clean the username (remove @ if present)
+    username = username.replace(/^@/, '');
+    
+    console.log(`Fetching Twitter profile for @${username}`);
     
     const options = {
       method: 'GET',
-      hostname: 'twitter241.p.rapidapi.com',
-      port: null,
-      path: `/user?username=${encodeURIComponent(cleanUsername)}`,
       headers: {
-        'x-rapidapi-key': apiKey,
-        'x-rapidapi-host': 'twitter241.p.rapidapi.com'
+        'X-RapidAPI-Key': process.env.X_RAPIDAPI_KEY,
+        'X-RapidAPI-Host': 'twitter241.p.rapidapi.com'
       }
     };
     
-    logger.debug(`Making Twitter API request for username: ${cleanUsername}`);
+    const response = await fetch(`https://twitter241.p.rapidapi.com/user?username=${username}`, options);
     
-    const req = https.request(options, function (res) {
-      const chunks = [];
-
-      res.on('data', function (chunk) {
-        chunks.push(chunk);
-      });
-
-      res.on('end', function () {
-        const body = Buffer.concat(chunks);
-        try {
-          const parsedData = JSON.parse(body.toString());
-          if (res.statusCode >= 400) {
-            logger.error(`Twitter API error: ${res.statusCode} - ${JSON.stringify(parsedData)}`);
-            reject(new Error(`Twitter API error: ${res.statusCode}`));
-            return;
-          }
-          
-          logger.debug(`Successfully received Twitter profile data for: ${cleanUsername}`);
-          resolve(parsedData);
-        } catch (error) {
-          logger.error(`Error parsing Twitter API response: ${error.message}`);
-          reject(error);
-        }
-      });
-    });
-
-    req.on('error', function (error) {
-      logger.error(`Twitter API request error: ${error.message}`);
-      reject(error);
-    });
-
-    req.end();
-  });
-}
-
-/**
- * Get essential Twitter profile data for a given username
- * @param {string} username - Twitter handle with or without @ symbol
- * @returns {Promise<Object>} - Essential profile data or null if error
- */
-async function getTwitterProfile(username) {
-  try {
-    const userData = await fetchTwitterUserInfo(username);
-    
-    // Check if we have valid data structure
-    if (!userData?.result?.data?.user?.result) {
-      logger.error(`Invalid or unexpected Twitter API response format for ${username}`);
+    if (!response.ok) {
+      console.error(`Twitter API error: ${response.status} ${response.statusText}`);
       return null;
     }
     
-    const user = userData.result.data.user.result;
-    const legacy = user.legacy;
+    const data = await response.json();
     
-    // Extract only the necessary data we need
-    return {
-      username: legacy.screen_name,
+    // Check for errors in the response
+    if (data.errors || !data.data || !data.data.user) {
+      console.error('Twitter API returned an error or no user data', data.errors || 'No user data');
+      return null;
+    }
+    
+    const { data: { user } } = data;
+    const legacy = user.legacy || {};
+    
+    // Transform the response into our TwitterProfile structure
+    const profile = {
+      username: username,
       name: legacy.name,
       bio: legacy.description,
       followers: legacy.followers_count,
@@ -106,16 +81,67 @@ async function getTwitterProfile(username) {
       location: legacy.location,
       url: legacy.entities?.url?.urls?.[0]?.expanded_url || legacy.url,
       createdAt: legacy.created_at,
-      // Raw data for any additional processing
-      rawData: userData
+      rawData: data
     };
+    
+    console.log(`Successfully fetched profile for @${username}`);
+    return profile;
   } catch (error) {
-    logger.error(`Failed to get Twitter profile for ${username}: ${error.message}`);
+    console.error(`Error fetching Twitter profile for @${username}:`, error);
     return null;
   }
 }
 
-export {
-  fetchTwitterUserInfo,
-  getTwitterProfile
-};
+/**
+ * Simple test function to verify the Twitter API is working
+ * 
+ * @param {string} username - Twitter handle to test with
+ */
+export async function testTwitterApi(username = 'Bondexapp') {
+  try {
+    console.log(`Testing Twitter API with @${username}`);
+    const profile = await getTwitterProfile(username);
+    
+    if (profile) {
+      console.log('Twitter API test successful. Profile details:');
+      
+      // Print formatted profile information
+      const details = {
+        'Username          ': profile.username,
+        'Name              ': profile.name,
+        'Verified          ': profile.verified ? 'Yes' : 'No',
+        'Business Account  ': profile.isBusinessAccount ? 'Yes' : 'No',
+        'Business Category ': profile.businessCategory || 'N/A',
+        'Bio               ': profile.bio,
+        'Location          ': profile.location || 'N/A',
+        'Website           ': profile.url || 'N/A',
+        'Created At        ': profile.createdAt,
+        'Followers         ': profile.followers.toLocaleString(),
+        'Following         ': profile.following.toLocaleString(),
+        'Tweets            ': profile.tweets.toLocaleString(),
+        'profileImageUrl   ': profile.profileImageUrl,
+        'bannerImageUrl    ': profile.bannerImageUrl || 'N/A'
+      };
+      
+      for (const [key, value] of Object.entries(details)) {
+        console.log(`${key}: ${value}`);
+      }
+      
+      return true;
+    } else {
+      console.error('Twitter API test failed: No profile returned');
+      return false;
+    }
+  } catch (error) {
+    console.error('Twitter API test failed with error:', error);
+    return false;
+  }
+}
+
+// If this file is run directly, execute the test
+if (require.main === module) {
+  const testUsername = process.argv[2] || 'Bondexapp';
+  testTwitterApi(testUsername).then(success => {
+    process.exit(success ? 0 : 1);
+  });
+}

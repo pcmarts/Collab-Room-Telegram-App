@@ -131,8 +131,8 @@ async function main() {
     console.error('Enrichment script failed:', error);
     throw error;
   } finally {
-    // Close the connection
-    await sql.end();
+    // No need to explicitly close the connection with neon serverless
+    console.log('Connection will close automatically');
   }
 }
 
