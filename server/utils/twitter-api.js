@@ -5,8 +5,8 @@
  * enrich company information in the application.
  */
 
-// Using built-in fetch API from Node.js 18+
-// No need to import fetch as it's globally available in Node.js 18+
+import axios from 'axios';
+import { config } from '../../shared/config';
 
 /**
  * @typedef {Object} TwitterProfile
@@ -24,6 +24,7 @@
  * @property {string} location - User's location
  * @property {string} url - Website link from profile
  * @property {string} createdAt - When the Twitter account was created
+ * @property {string} restId - Twitter API unique ID
  * @property {Object} rawData - The complete raw response for future reference
  */
 
@@ -42,20 +43,16 @@ export async function getTwitterProfile(username) {
     
     const options = {
       method: 'GET',
+      url: `https://twitter241.p.rapidapi.com/user`,
+      params: { username },
       headers: {
-        'X-RapidAPI-Key': process.env.X_RAPIDAPI_KEY,
+        'X-RapidAPI-Key': config.X_RAPIDAPI_KEY,
         'X-RapidAPI-Host': 'twitter241.p.rapidapi.com'
       }
     };
     
-    const response = await fetch(`https://twitter241.p.rapidapi.com/user?username=${username}`, options);
-    
-    if (!response.ok) {
-      console.error(`Twitter API error: ${response.status} ${response.statusText}`);
-      return null;
-    }
-    
-    const data = await response.json();
+    const response = await axios.request(options);
+    const data = response.data;
     
     // Check for errors in the response
     if (data.errors) {
@@ -152,12 +149,4 @@ export async function testTwitterApi(username = 'Bondexapp') {
     console.error('Twitter API test failed with error:', error);
     return false;
   }
-}
-
-// If this file is run directly, execute the test
-if (require.main === module) {
-  const testUsername = process.argv[2] || 'Bondexapp';
-  testTwitterApi(testUsername).then(success => {
-    process.exit(success ? 0 : 1);
-  });
 }

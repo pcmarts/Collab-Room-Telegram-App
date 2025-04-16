@@ -7,15 +7,8 @@
 
 import { db, users, companies } from '../db';
 import { eq } from 'drizzle-orm';
-
-// API request options
-const getApiOptions = () => ({
-  method: 'GET',
-  headers: {
-    'X-RapidAPI-Key': process.env.X_RAPIDAPI_KEY,
-    'X-RapidAPI-Host': 'twitter241.p.rapidapi.com'
-  }
-});
+import axios from 'axios';
+import { config } from '../../shared/config';
 
 /**
  * Fetch Twitter profile data for a username
@@ -27,15 +20,18 @@ async function fetchTwitterProfile(username) {
     
     console.log(`Fetching Twitter profile for @${username}...`);
     
-    // Make the API request
-    const options = getApiOptions();
-    const response = await fetch(`https://twitter241.p.rapidapi.com/user?username=${username}`, options);
+    const options = {
+      method: 'GET',
+      url: `https://twitter241.p.rapidapi.com/user`,
+      params: { username },
+      headers: {
+        'X-RapidAPI-Key': config.X_RAPIDAPI_KEY,
+        'X-RapidAPI-Host': 'twitter241.p.rapidapi.com'
+      }
+    };
     
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const data = await response.json();
+    const response = await axios.request(options);
+    const data = response.data;
     
     // Check for errors in the response
     if (data.errors) {
