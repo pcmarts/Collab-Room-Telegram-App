@@ -26,40 +26,32 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
     'xl': 'h-16 w-16',
   };
 
-  // Special case for XBorg
+  // Special case for XBorg - custom SVG implementation based on the provided image
   if (name?.toLowerCase().includes('xborg')) {
-    // Use a direct image URL from a reliable CDN
-    // Different CDN options to try - we'll use Imgur which has good CORS support
-    // Original URL was: https://pbs.twimg.com/profile_images/1701203495284518912/Ujc9Oow6_400x400.jpg
-    const xborgLogoUrl = "https://i.imgur.com/PFGqlxf.jpg"; // Imgur hosted XBorg logo
-    console.log('Using Imgur hosted XBorg logo');
-
+    console.log('Using custom SVG XBorg logo');
+    
+    // Return a custom SVG-based XBorg logo (red X on black background)
     return (
       <div 
         className={cn(
-          "rounded-full overflow-hidden flex-shrink-0 border border-border/40 bg-background",
+          "rounded-full overflow-hidden flex-shrink-0 border border-border/40",
           sizeClasses[size],
           className
         )}
       >
-        <img 
-          src={xborgLogoUrl}
-          alt="XBorg"
-          className="h-full w-full object-contain"
-          onError={(e) => {
-            console.error('Imgur XBorg logo failed to load, falling back to text avatar');
-            // If this image fails too, render a letter avatar with XBorg's color scheme
-            const target = e.target as HTMLImageElement;
-            if (target) {
-              target.style.display = 'none';
-              const parent = target.parentElement;
-              if (parent) {
-                parent.classList.add('bg-[#1D9BF0]', 'flex', 'items-center', 'justify-center', 'font-bold', 'text-white');
-                parent.textContent = 'X';
-              }
-            }
-          }}
-        />
+        <svg viewBox="0 0 100 100" className="h-full w-full">
+          {/* Black background */}
+          <rect width="100" height="100" fill="black" />
+          
+          {/* Red X shape - more accurate to the XBorg logo */}
+          <g fill="#FF3B44">
+            {/* Top arrow */}
+            <polygon points="30,28 50,43 70,28 58,28 50,34 42,28" />
+            
+            {/* Bottom arrow */}
+            <polygon points="30,72 50,57 70,72 58,72 50,66 42,72" />
+          </g>
+        </svg>
       </div>
     );
   }
