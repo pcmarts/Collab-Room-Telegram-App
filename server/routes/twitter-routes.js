@@ -8,7 +8,7 @@
 
 import express from 'express';
 import { getTwitterProfile } from '../utils/twitter-api.js';
-import { sql } from '@neondatabase/serverless';
+import { sql } from 'drizzle-orm';
 
 const router = express.Router();
 

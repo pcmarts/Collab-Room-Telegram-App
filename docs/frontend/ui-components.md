@@ -519,7 +519,7 @@ export const triggerHapticFeedback = (type: 'impact' | 'notification' | 'selecti
 
 ### SwipeableCard Integration
 
-The SwipeableCard component integrates haptic feedback at key interaction points:
+The SwipeableCard component integrates haptic feedback at key interaction points and provides proper event handling for button interactions:
 
 ```typescript
 // Button click handler with haptic feedback
@@ -537,6 +537,18 @@ const handleButtonClick = async (direction: "left" | "right", note?: string) => 
   } catch (error) {
     console.error("Error handling button click:", error);
   }
+};
+
+// Enhanced button click handling with proper event propagation
+const onButtonClick = (e: React.MouseEvent, direction: "left" | "right") => {
+  // Stop event propagation to prevent parent elements from capturing clicks
+  e.stopPropagation();
+  // Prevent default browser behavior
+  e.preventDefault();
+  // Log button interaction for debugging
+  console.log(`[SwipeableCard] ${direction === "left" ? "Skip" : "Request"} button clicked`);
+  // Call the main handler
+  handleButtonClick(direction);
 };
 ```
 

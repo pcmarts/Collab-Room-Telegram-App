@@ -12,6 +12,7 @@ The discovery system is responsible for helping users find relevant collaboratio
 - [Potential Matches](./potential-matches.md) - Documentation for the potential matches feature
 - [Authentication Timing Fix](./authentication-timing-fix.md) - Fix for blank discovery page on initial load
 - [Twitter Engagement Display](./twitter-engagement-display.md) - Improved display of Twitter engagement types in collaboration details
+- [UI Improvements](./ui-improvements.md) - Documentation of SwipeableCard button fixes and Discovery page UI enhancements
 
 ## Key Features
 
@@ -147,6 +148,7 @@ When a match is created through the discovery system, a match moment dialog is d
 - **Version 1.7.9**: Disabled automatic refresh mechanisms to prevent authentication loops
 - **Version 1.8.2**: Fixed blank discovery page by improving initial authentication timing
 - **Version 1.8.4**: Improved Twitter engagement types display in collaboration details with proper formatting
+- **Version 1.8.8**: Enhanced SwipeableCard component with improved button functionality, updated Filter button to include text label, and modified bottom panel to only show Refresh button when no cards are available
 
 ## Related Documentation
 

@@ -7,7 +7,7 @@
  * npx tsx scripts/enrich-company-twitter-data.js
  */
 
-import { sql } from '@neondatabase/serverless';
+import { sql } from 'drizzle-orm';
 import { getTwitterProfile } from '../server/utils/twitter-api.js';
 
 // Validate that we have a proper Twitter handle

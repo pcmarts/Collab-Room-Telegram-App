@@ -6,7 +6,7 @@
  * npx tsx scripts/test-company-twitter-enrichment.js COMPANY_ID
  */
 
-import { sql } from '@neondatabase/serverless';
+import { sql } from 'drizzle-orm';
 import { getTwitterProfile } from '../server/utils/twitter-api.js';
 
 // Get the company ID from the command line

@@ -6,7 +6,7 @@
  */
 
 // Import required packages
-import { sql } from '@neondatabase/serverless';
+import { sql } from 'drizzle-orm';
 import dotenv from 'dotenv';
 
 // Load environment variables
