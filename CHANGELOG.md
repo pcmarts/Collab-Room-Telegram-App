@@ -5,6 +5,19 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.8.6] - 2025-04-16
+
+### Fixed
+- Fixed Twitter API integration by replacing problematic undici dependency with native fetch API
+- Enhanced deployment compatibility by using standard approaches for API requests
+- Improved company enrichment process with Twitter profile data (logo and description)
+
+### Technical Details
+- Removed undici dependency from Twitter API implementation in server/utils/twitter-api.js
+- Updated configuration to use X_RAPIDAPI_KEY for Twitter API access
+- Created optimized implementation for company profile enrichment with Twitter data
+- Successfully tested the improved enrichment system on existing company profiles
+
 ## [Version 1.8.5] - 2025-04-16
 
 ### Enhanced
