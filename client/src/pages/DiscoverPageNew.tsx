@@ -871,6 +871,13 @@ export default function DiscoverPage() {
     setCardDialogOpen(true);
   };
   
+  // Handle view details button click (navigates to detailed view)
+  const handleDetailsClick = (id: string) => {
+    console.log(`[Discovery] Navigating to details for collaboration: ${id}`);
+    // Use wouter's location setter to navigate to details page
+    setLocation(`/collaborations/${id}`);
+  };
+  
   // SIMPLIFIED SERVER-SIDE APPROACH to refresh discover feed 
   const handleRefresh = async () => {
     try {
