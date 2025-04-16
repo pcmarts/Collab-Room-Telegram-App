@@ -1001,7 +1001,6 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
                   <div className="bg-yellow-500/85 w-12 h-full min-h-[4rem] flex items-center justify-center relative">
                     <span className="text-white"><Lock size={18} /></span>
-                    <div className="absolute right-0 w-3 h-3 bg-yellow-500/85 rotate-45 translate-x-1/2"></div>
                   </div>
                   <div className="p-3 text-left">
                     <p className="text-xs flex flex-col gap-1">
