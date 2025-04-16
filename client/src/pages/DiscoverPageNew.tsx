@@ -7,7 +7,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 // Use relative imports for our custom components
 import { GlowButton } from "../components/ui/glow-button";
-import { SwipeableCard } from "../components/SwipeableCard";
+import SwipeableCard from "../components/SwipeableCard";
 import { MatchMoment } from "../components/MatchMoment";
 import { CollaborationDetailsDialog } from "../components/CollaborationDetailsDialog";
 import { AuthenticationError } from "../components/AuthenticationError";

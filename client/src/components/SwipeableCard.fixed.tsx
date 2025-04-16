@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { CollaborationDetails } from "@shared/schema";
 import AddNoteDialog from "./AddNoteDialog";
 
 export interface SwipeableCardProps {

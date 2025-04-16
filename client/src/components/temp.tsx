@@ -1,91 +1,196 @@
-import React, { useState } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
-import {
-  Calendar,
-  Check,
-  Info,
-  Link,
-  Mail,
-  Mic,
-  Twitter,
-  Users,
-  Video,
-  X,
-  FileText,
-  FileSearch,
-  Building,
-  Sparkles,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState, useRef } from "react";
+import { motion, useMotionValue, MotionValue, useTransform, AnimationControls } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import AddNoteDialog from "./AddNoteDialog";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Info, X, Check, Sparkles, Twitter, Calendar, Mic, Users, 
+  Link, FileText, FileSearch, Mail, Radio, Star, Building, User,
+  Globe, Linkedin, Video, Monitor, Clock
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AddNoteDialog } from "./AddNoteDialog";
+import { toast } from "@/hooks/use-toast";
+import { triggerHapticFeedback, triggerSwipeHaptic } from "../lib/haptics";
 
-export interface SwipeableCardProps {
+// Types
+interface SwipeableCardProps {
   data: {
     id: string;
-    creator_company_name?: string;
-    creator_company_logo_url?: string;
-    creator_id?: string;
-    title?: string;
-    collab_type?: string;
+    collab_type: string;
     description?: string;
+    details?: any;
+    topics?: string[];
+    creator_company_name?: string;
+    creator_company_logo_url?: string; // Added company logo URL
     date?: string;
     specific_date?: string;
     isPotentialMatch?: boolean;
-    isActive?: boolean;
-    details?: Record<string, any>;
     potentialMatchData?: {
-      id?: string;
-      company_name?: string;
-      company_logo_url?: string;
+      user_id: string;
+      first_name: string;
+      last_name?: string;
+      company_name: string;
       company_description?: string;
-      industry?: string;
+      company_website?: string;
+      company_twitter?: string;
+      company_linkedin?: string;
+      company_logo_url?: string; // Added company logo URL for potential match
+      job_title?: string;
+      twitter_followers?: string;
+      company_twitter_followers?: string;
+      swipe_created_at?: string;
+      collaboration_id: string;
     };
+    [key: string]: any;
   };
-  onSwipe: (direction: "left" | "right", note?: string) => void;
-  onInfoClick?: () => void;
-  handleDetailsClick?: (id: string) => void;
+  handleSwipe: (direction: "left" | "right", note?: string) => Promise<void>;
+  onInfoClick: () => void;
+  zIndex: number;
+  constrained: boolean;
+  setConstrained?: (constrained: boolean) => void;
+  x?: MotionValue<number>;
+  controls?: AnimationControls;
+  opacity?: MotionValue<number>;
+  rotate?: MotionValue<number>;
 }
 
-export default function SwipeableCard({
+export function SwipeableCard({
   data,
-  onSwipe,
+  handleSwipe,
   onInfoClick,
-  handleDetailsClick,
+  zIndex = 1,
+  constrained = true,
+  setConstrained,
+  x,
+  controls,
+  opacity,
+  rotate
 }: SwipeableCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [exitX, setExitX] = useState(0);
   const [showNoteDialog, setShowNoteDialog] = useState(false);
-  const x = useMotionValue(0);
-  const dragConstraintsRef = React.useRef(null);
-
-  const handleSwipe = (direction: "left" | "right", note?: string) => {
-    onSwipe(direction, note);
+  
+  // Debug information to console
+  console.log("🔵🔵🔵 SWIPEABLE CARD DEBUG 🔵🔵🔵", {
+    id: data.id,
+    collab_type: data.collab_type,
+    isTwitterCoMarketing: data.collab_type?.toLowerCase().includes('twitter') && 
+                          data.collab_type?.toLowerCase().includes('co-marketing'),
+    twitterDetails: data.details?.host_twitter_handle ? {
+      handle: data.details.host_twitter_handle,
+      followers: data.details.host_follower_count,
+      twitterType: data.details.twittercomarketing_type
+    } : 'No Twitter details',
+    fullDetails: data.details
+  });
+  
+  // Define direct button click handler
+  const handleButtonClick = async (direction: "left" | "right", note?: string) => {
+    try {
+      // Trigger haptic feedback for button press
+      triggerHapticFeedback('impact');
+      
+      // If it's a right swipe (request) and not a potential match, show the note dialog
+      if (direction === "right" && !data.isPotentialMatch && !note) {
+        setShowNoteDialog(true);
+        return;
+      }
+      
+      setExitX(direction === 'right' ? 1000 : -1000);
+      await handleSwipe(direction, note);
+      
+      // Trigger directional haptic feedback for swipe action
+      triggerSwipeHaptic(direction);
+      
+      // Show toast notification for successful right swipe (collaboration request)
+      if (direction === "right") {
+        toast({
+          title: "Collaboration Request Sent",
+          description: "The host will be notified of your interest.",
+          variant: "default",
+          duration: 1000,
+        });
+      }
+    } catch (error) {
+      console.error("Error handling button click:", error);
+      
+      // Show error toast
+      toast({
+        title: "Request Failed",
+        description: "There was a problem sending your request. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
-
-  const handleButtonClick = (direction: "left" | "right") => {
-    if (direction === "right") {
-      setShowNoteDialog(true);
+  
+  // Define swipe handlers with a click threshold
+  const handleDragEnd = async (e: any, info: any) => {
+    if (!constrained) return;
+    
+    const xOffset = info.offset.x;
+    const dragDistance = Math.abs(info.offset.x);
+    
+    // Consider it a swipe only if dragged more than 100px
+    if (dragDistance > 100) {
+      const direction = xOffset > 0 ? "right" : "left";
+      
+      // Trigger haptic feedback for swipe action
+      triggerSwipeHaptic(direction);
+      
+      // If it's a right swipe and not a potential match, show the note dialog instead of immediately swiping
+      if (direction === "right" && !data.isPotentialMatch) {
+        controls?.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
+        setShowNoteDialog(true);
+        return;
+      }
+      
+      setExitX(xOffset > 0 ? 1000 : -1000);
+      await handleSwipe(direction);
+      
+      // Show toast notification for successful right swipe (collaboration request)
+      if (direction === "right") {
+        toast({
+          title: "Collaboration Request Sent",
+          description: "The host will be notified of your interest.",
+          variant: "default",
+          duration: 1000,
+        });
+      }
+    } else if (dragDistance < 10) {
+      // If dragged less than 10px, it's considered a click, do nothing to allow link clicks
+      controls?.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
     } else {
-      handleSwipe(direction);
+      // Reset position if not swiped far enough but more than click threshold
+      controls?.start({ x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
     }
   };
-
-  const viewDetailsHandler = () => {
-    if (handleDetailsClick && data.id) {
-      handleDetailsClick(data.id);
-    }
-  };
-
+  
   return (
-    <div className="w-full h-full relative touch-none">
+    <motion.div
+      ref={cardRef}
+      style={{ 
+        x: x,
+        rotate: rotate,
+        zIndex,
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        top: 0,
+        left: 0
+      }}
+      drag={constrained ? "x" : false}
+      dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+      dragElastic={0.7}
+      dragTransition={{ power: 0.2, timeConstant: 400 }}
+      dragMomentum={true}
+      dragSnapToOrigin={false}
+      // Using drag configuration instead of dragThreshold property
+      onDragStart={() => setConstrained && setConstrained(false)}
+      onDragEnd={(e, info) => handleDragEnd(e, info)}
+      whileDrag={{ scale: 1.05 }}
+      animate={controls}
+    >
       <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl isolate">
         {/* Overlay effects for swipe direction */}
         <motion.div 
@@ -129,7 +234,7 @@ export default function SwipeableCard({
                 data.creator_company_logo_url ? (
                   <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40">
                     <img 
-                      src={(data.creator_company_logo_url?.replace('_normal', '_400x400')) || ''} 
+                      src={data.creator_company_logo_url?.replace('_normal', '_400x400') || ''} 
                       alt={data.creator_company_name || "Company"} 
                       className="h-full w-full object-cover"
                       onError={(e) => {
@@ -213,7 +318,6 @@ export default function SwipeableCard({
                 ) : (
                   <p className="text-sm text-muted-foreground line-clamp-1">{data.collab_type || "Collaboration"}</p>
                 )}
-                </div>
               </div>
             </div>
             <Button 
@@ -433,35 +537,52 @@ export default function SwipeableCard({
           )}
           
           {/* Newsletter Feature */}
-          {data.collab_type === 'Newsletter Feature' && (
+          {data.collab_type === 'Newsletter Feature' && data.details?.newsletter_name && (
             <div className="flex flex-col space-y-2 p-3 bg-indigo-500/5 rounded-md border border-indigo-500/10 mb-3">
-              {data.details?.newsletter_name && (
-                <div className="flex items-center space-x-1.5">
-                  <Mail className="w-4 h-4 text-indigo-600" />
-                  <span className="text-sm font-medium text-indigo-700">
-                    {data.details.newsletter_name}
-                  </span>
+              <div className="flex items-center space-x-1.5">
+                <Mail className="w-4 h-4 text-indigo-600" />
+                <span className="text-sm font-medium text-indigo-700">
+                  {data.details.newsletter_name}
+                </span>
+              </div>
+              
+              {data.details?.total_subscribers && (
+                <p className="text-xs text-muted-foreground">
+                  <Users className="w-3 h-3 inline mr-1" />
+                  <span className="font-medium">{data.details.total_subscribers}</span> subscribers
+                </p>
+              )}
+              
+              {data.details?.audience_reach && (
+                <p className="text-xs text-muted-foreground">
+                  <Radio className="w-3 h-3 inline mr-1" />
+                  <span className="font-medium">Reach:</span> {data.details.audience_reach}
+                </p>
+              )}
+              
+              {data.details?.newsletter_url && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Link className="w-3 h-3" />
+                  <a 
+                    href={data.details.newsletter_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
+                  >
+                    {data.details.newsletter_url}
+                  </a>
                 </div>
               )}
               
-              {data.details?.newsletter_subscribers && (
-                <p className="text-xs text-muted-foreground">
-                  <Users className="w-3 h-3 inline mr-1" />
-                  <span className="font-medium">{data.details.newsletter_subscribers}</span> subscribers
-                </p>
-              )}
-              
-              {data.details?.newsletter_topic && (
-                <p className="text-xs">
-                  <span className="font-medium">Topic:</span> {data.details.newsletter_topic}
-                </p>
-              )}
-              
               {/* Show date if available */}
-              {(data.date || data.specific_date || data.details?.newsletter_date) && (
+              {(data.date || data.specific_date || data.details?.date) && (
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
                   <Calendar className="w-3 h-3" />
-                  <span>{data.date || data.specific_date || data.details?.newsletter_date}</span>
+                  <span>{data.date || data.specific_date || data.details?.date}</span>
                 </div>
               )}
             </div>
@@ -470,74 +591,212 @@ export default function SwipeableCard({
           {/* Live Stream Guest Appearance */}
           {data.collab_type === 'Live Stream Guest Appearance' && (
             <div className="flex flex-col space-y-2 p-3 bg-red-500/5 rounded-md border border-red-500/10 mb-3">
-              {data.details?.livestream_platform && (
+              {data.details?.title && (
                 <div className="flex items-center space-x-1.5">
-                  <Video className="w-4 h-4 text-red-600" />
+                  <Video className="w-4 h-4 text-red-500" />
                   <span className="text-sm font-medium text-red-700">
-                    Platform: {data.details.livestream_platform}
+                    {data.details.title}
                   </span>
                 </div>
               )}
               
-              {data.details?.host_name && (
-                <p className="text-xs">
-                  <span className="font-medium">Host:</span> {data.details.host_name}
+              {data.details?.date_selection && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Calendar className="w-3 h-3 inline mr-1" />
+                  <span>
+                    {data.details.date_selection === 'specific_date' 
+                      ? 'Specific date: ' + (data.details.specific_date || 'TBD')
+                      : 'Flexible date'}
+                  </span>
+                </div>
+              )}
+              
+              {data.details?.expected_audience_size && (
+                <p className="text-xs text-muted-foreground">
+                  <Users className="w-3 h-3 inline mr-1" />
+                  <span className="font-medium">Expected audience:</span> {data.details.expected_audience_size}
                 </p>
               )}
               
-              {data.details?.estimated_audience && (
-                <p className="text-xs text-muted-foreground">
-                  <Users className="w-3 h-3 inline mr-1" />
-                  <span className="font-medium">{data.details.estimated_audience}</span> estimated viewers
-                </p>
+              {data.details?.previous_stream_link && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Link className="w-3 h-3" />
+                  <a 
+                    href={data.details.previous_stream_link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Prevent the card from being swiped when clicking the link
+                      e.preventDefault();
+                      window.open(data.details.previous_stream_link, '_blank');
+                    }}
+                  >
+                    Previous stream
+                  </a>
+                </div>
               )}
               
               {/* Show date if available */}
-              {(data.date || data.specific_date || data.details?.livestream_date) && (
+              {(data.date || data.specific_date || data.details?.date) && (
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
                   <Calendar className="w-3 h-3" />
-                  <span>{data.date || data.specific_date || data.details?.livestream_date}</span>
+                  <span>{data.date || data.specific_date || data.details?.date}</span>
                 </div>
               )}
             </div>
           )}
           
-          {/* Collaboration Description */}
-          <div className="mb-3">
-            <div className="mb-2">
-              <h3 className="font-bold text-sm">
-                {data.title || (data.isPotentialMatch ? "Potential Collaboration" : "Collaboration Details")}
-              </h3>
+          {/* Potential Match Information */}
+          {data.isPotentialMatch && data.potentialMatchData && (
+            <div className="flex flex-col space-y-2 p-3 bg-rose-500/5 rounded-md border border-rose-500/10 mb-3">
+              <div className="flex items-center space-x-1.5">
+                <Star className="w-4 h-4 text-rose-600" />
+                <span className="text-sm font-medium text-rose-700">
+                  Potential Match
+                </span>
+              </div>
+              
+              {/* Display the note on the card if available */}
+              {data.note && (
+                <div className="bg-primary/5 p-2 rounded-md border border-primary/10 mb-1">
+                  <p className="text-xs italic">{data.note}</p>
+                </div>
+              )}
+              
+              <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                <User className="w-3 h-3" />
+                <span>
+                  {data.potentialMatchData.first_name} 
+                  {data.potentialMatchData.last_name ? ` ${data.potentialMatchData.last_name}` : ''} 
+                  {data.potentialMatchData.job_title ? ` • ${data.potentialMatchData.job_title}` : ''}
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                <Building className="w-3 h-3" />
+                <span className="font-medium">{data.potentialMatchData.company_name}</span>
+              </div>
+              
+              {/* Company description */}
+              {data.potentialMatchData.company_description && (
+                <div className="text-xs italic text-muted-foreground">
+                  "{data.potentialMatchData.company_description}"
+                </div>
+              )}
+              
+              {/* Company links */}
+              <div className="flex flex-wrap gap-2">
+                {data.potentialMatchData.company_website && (
+                  <a
+                    href={data.potentialMatchData.company_website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
+                  >
+                    <Globe className="h-3 w-3 mr-0.5" />
+                    Website
+                  </a>
+                )}
+                
+                {data.potentialMatchData.company_twitter && (
+                  <a
+                    href={`https://twitter.com/${data.potentialMatchData.company_twitter}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
+                  >
+                    <Twitter className="h-3 w-3 mr-0.5 text-[#1DA1F2]" />
+                    @{data.potentialMatchData.company_twitter}
+                  </a>
+                )}
+                
+                {data.potentialMatchData.company_linkedin && (
+                  <a
+                    href={data.potentialMatchData.company_linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 pointer-events-auto relative z-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Don't prevent default so the link works normally
+                    }}
+                  >
+                    <Linkedin className="h-3 w-3 mr-0.5 text-blue-700" />
+                    LinkedIn
+                  </a>
+                )}
+              </div>
+              
+              {data.potentialMatchData.twitter_followers && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Twitter className="w-3 h-3 text-[#1DA1F2]" />
+                  <span><span className="font-medium">{data.potentialMatchData.twitter_followers}</span> followers</span>
+                </div>
+              )}
+              
+              {data.potentialMatchData.company_twitter_followers && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Twitter className="w-3 h-3 text-[#1DA1F2]" />
+                  <span><span className="font-medium">{data.potentialMatchData.company_twitter_followers}</span> company followers</span>
+                </div>
+              )}
+              
+              {data.potentialMatchData.swipe_created_at && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+                  <Calendar className="w-3 h-3" />
+                  <span>Swiped {new Date(data.potentialMatchData.swipe_created_at).toLocaleDateString()}</span>
+                </div>
+              )}
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
-              {data.description || "No description available."}
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-1 w-full text-xs"
-              onClick={viewDetailsHandler}
-            >
-              View Full Details
-            </Button>
-          </div>
+          )}
+          
+          <p className="text-sm mb-3 line-clamp-4">{data.description}</p>
+          
+          {/* Topics/tags */}
+          {data.topics && data.topics.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-3">
+              {data.topics.slice(0, 3).map((topic: string, i: number) => (
+                <Badge key={i} variant="secondary" className="text-xs">
+                  {topic}
+                </Badge>
+              ))}
+              {data.topics.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{data.topics.length - 3} more
+                </Badge>
+              )}
+            </div>
+          )}
         </div>
         
-        {/* Action buttons */}
-        <div className="p-3 border-t flex justify-between items-center gap-3">
+        {/* Card footer with action buttons */}
+        <div className="px-4 py-3 border-t bg-card/50 flex justify-between items-center gap-2 relative z-30">
           <Button 
-            size="default"
-            variant="outline"
-            className="flex-1 bg-transparent border-red-500/20 text-red-500 hover:bg-red-500/5"
+            variant="outline" 
+            size="sm" 
+            className="w-full border-red-200 hover:bg-red-50 hover:text-red-600 relative z-50"
             onClick={() => handleButtonClick("left")}
           >
             <X className="h-4 w-4 mr-1" />
-            Skip
+            Pass
           </Button>
+          
           <Button 
-            size="default"
-            variant={data.isPotentialMatch ? "secondary" : "default"}
-            className={`flex-1 ${data.isPotentialMatch ? 'bg-primary/10 text-primary hover:bg-primary/20' : ''}`}
+            variant={data.isPotentialMatch ? "default" : "outline"} 
+            size="sm" 
+            className={`w-full ${data.isPotentialMatch 
+              ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-md' 
+              : 'border-green-200 hover:bg-green-50 hover:text-green-600'} relative z-50`}
             onClick={() => handleButtonClick("right")}
           >
             {data.isPotentialMatch ? (
@@ -559,9 +818,31 @@ export default function SwipeableCard({
           // Give the dialog time to fully close before executing the swipe
           setTimeout(() => {
             handleSwipe("right", note);
-          }, 300);
+            // Show toast notification 
+            toast({
+              title: "Collaboration Request Sent",
+              description: "A personalized note was included with your request.",
+              variant: "default",
+              duration: 3000,
+            });
+          }, 100);
         }}
+        onSendWithoutNote={() => {
+          console.log("Sending request without note from SwipeableCard");
+          // Give the dialog time to fully close before executing the swipe
+          setTimeout(() => {
+            handleSwipe("right", "");
+            // Show toast notification
+            toast({
+              title: "Collaboration Request Sent",
+              description: "The host will be notified of your interest.",
+              variant: "default",
+              duration: 1000,
+            });
+          }, 100);
+        }}
+        recipientName={data.creator_company_name}
       />
-    </div>
+    </motion.div>
   );
 }
