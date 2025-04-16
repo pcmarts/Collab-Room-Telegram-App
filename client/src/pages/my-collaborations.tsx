@@ -947,16 +947,8 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             </div>
           ) : (
             <div className="text-center py-8 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
-              {/* Top CTA Button */}
-              <Button 
-                onClick={() => setLocation('/create-collaboration-steps')}
-                className="w-full max-w-xs py-3 mx-auto mb-8 bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Create Your First Collab
-              </Button>
-              
               {/* How Collaborations Work Section */}
-              <div className="mb-5 text-left">
+              <div className="mb-5 text-left mt-2">
                 <h3 className="text-base font-medium mb-3 pl-2">How Collaborations Work</h3>
                 
                 <div className="flex flex-col gap-3">
@@ -1009,7 +1001,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 <div className="inline-flex items-center gap-1 border border-muted-foreground/20 rounded-lg px-3 py-1 bg-background">
                   <span className="text-primary"><Lock size={14} /></span>
                   <p className="text-xs">
-                    <strong>Privacy is our priority.</strong> Contact details shared only on match.
+                    <strong>Privacy first.</strong> Contact details shared only on match.
                   </p>
                 </div>
               </div>
@@ -1017,7 +1009,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               {/* Network Stats */}
               <div className="mb-5">
                 <p className="text-xs text-muted-foreground">
-                  Join the blockchain companies finding valuable partnerships on The Collab Room.
+                  Join 100+ companies finding valuable partnerships on The Collab Room.
                 </p>
               </div>
               
