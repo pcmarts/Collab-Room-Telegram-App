@@ -5,7 +5,6 @@
  * enrich company information in the application.
  */
 
-import axios from 'axios';
 import { config } from '../../shared/config';
 
 /**
@@ -43,16 +42,21 @@ export async function getTwitterProfile(username) {
     
     const options = {
       method: 'GET',
-      url: `https://twitter241.p.rapidapi.com/user`,
-      params: { username },
       headers: {
         'X-RapidAPI-Key': config.X_RAPIDAPI_KEY,
         'X-RapidAPI-Host': 'twitter241.p.rapidapi.com'
       }
     };
     
-    const response = await axios.request(options);
-    const data = response.data;
+    const url = `https://twitter241.p.rapidapi.com/user?username=${encodeURIComponent(username)}`;
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      console.error(`Twitter API error: ${response.status} ${response.statusText}`);
+      return null;
+    }
+    
+    const data = await response.json();
     
     // Check for errors in the response
     if (data.errors) {
