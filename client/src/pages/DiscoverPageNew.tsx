@@ -873,11 +873,17 @@ export default function DiscoverPage() {
     setCardDialogOpen(true);
   };
   
-  // Handle view details button click (navigates to detailed view)
+  // Handle view details button click (opens details dialog)
   const handleDetailsClick = (id: string) => {
-    console.log(`[Discovery] Navigating to details for collaboration: ${id}`);
-    // Use wouter's location setter to navigate to details page
-    setLocation(`/collaborations/${id}`);
+    console.log(`[Discovery] Opening details dialog for collaboration: ${id}`);
+    // Find the matching card data
+    const card = cards.find(card => card.id === id);
+    if (card) {
+      // Use the existing card details dialog
+      handleViewCardDetails(card);
+    } else {
+      console.error(`[Discovery] Could not find card data for ID: ${id}`);
+    }
   };
   
   // SIMPLIFIED SERVER-SIDE APPROACH to refresh discover feed 
