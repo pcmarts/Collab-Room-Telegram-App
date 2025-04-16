@@ -4,128 +4,191 @@
  * in the company_twitter_data table.
  * 
  * Run with:
- * npm run tsx scripts/enrich-company-twitter-data.js
+ * npx tsx scripts/enrich-company-twitter-data.js
  */
 
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { neon } from '@neondatabase/serverless';
-import { companies, company_twitter_data } from '../shared/schema.js';
-import { eq, isNull, and, isNotNull } from 'drizzle-orm';
+import { sql } from '@neondatabase/serverless';
 import { getTwitterProfile } from '../server/utils/twitter-api.js';
 
-async function main() {
-  console.log('Starting Company Twitter data enrichment...');
+// Validate that we have a proper Twitter handle
+function isValidTwitterHandle(handle) {
+  if (!handle) return false;
   
-  if (!process.env.X_RAPIDAPI_KEY) {
-    console.error('Error: X_RAPIDAPI_KEY environment variable is not set');
-    process.exit(1);
-  }
+  // Remove @ symbol if present
+  handle = handle.replace(/^@/, '');
+  
+  // Twitter handles must be between 1-15 characters and can only contain
+  // alphanumeric characters and underscores
+  return handle.length > 0 && 
+         handle.length <= 15 && 
+         /^[A-Za-z0-9_]+$/.test(handle);
+}
 
-  // Create database connection
-  const sql = neon(process.env.DATABASE_URL);
-  const db = drizzle(sql);
-
+/**
+ * Get all companies that have Twitter handles but no associated Twitter data
+ * @returns {Promise<Array>} Array of company records
+ */
+async function getCompaniesWithTwitterHandles() {
   try {
-    // 1. Find all companies with Twitter handles but no Twitter data
-    const companiesNeedingTwitterData = await db
-      .select({
-        id: companies.id,
-        name: companies.name,
-        twitter_handle: companies.twitter_handle,
-      })
-      .from(companies)
-      .leftJoin(
-        company_twitter_data,
-        eq(companies.id, company_twitter_data.company_id)
+    const query = `
+      SELECT c.id, c.twitter_handle
+      FROM companies c
+      LEFT JOIN company_twitter_data ctd ON c.id = ctd.company_id
+      WHERE c.twitter_handle IS NOT NULL
+        AND c.twitter_handle != ''
+        AND ctd.id IS NULL
+      LIMIT 10;
+    `;
+    
+    const result = await sql.unsafe(query);
+    return result.rows || [];
+  } catch (error) {
+    console.error('Error finding companies with Twitter handles:', error);
+    return [];
+  }
+}
+
+/**
+ * Stores Twitter profile data in the company_twitter_data table
+ * 
+ * @param {string} companyId - The company ID
+ * @param {Object} profile - Twitter profile data
+ * @returns {Promise<boolean>} Success status
+ */
+async function storeTwitterData(companyId, profile) {
+  try {
+    const query = `
+      INSERT INTO company_twitter_data (
+        company_id, 
+        username, 
+        name, 
+        bio, 
+        followers, 
+        following, 
+        tweets, 
+        profile_image_url, 
+        banner_image_url, 
+        verified, 
+        is_business_account, 
+        business_category, 
+        location, 
+        website_url, 
+        created_at, 
+        raw_data
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
       )
-      .where(
-        and(
-          isNotNull(companies.twitter_handle),
-          isNull(company_twitter_data.id)
-        )
-      );
-
-    console.log(`Found ${companiesNeedingTwitterData.length} companies needing Twitter data...`);
-
-    // 2. For each company, fetch Twitter data and store it
-    for (const company of companiesNeedingTwitterData) {
-      try {
-        if (!company.twitter_handle) {
-          console.log(`Skipping company ${company.name} - no Twitter handle`);
-          continue;
-        }
-
-        console.log(`Processing company: ${company.name}, Twitter: @${company.twitter_handle}`);
-        
-        // Clean the handle
-        const handle = company.twitter_handle.replace(/^@/, '');
-        
-        // Fetch the Twitter profile
-        const twitterProfile = await getTwitterProfile(handle);
-        
-        if (!twitterProfile) {
-          console.log(`Could not fetch Twitter profile for ${company.name} (@${handle})`);
-          continue;
-        }
-        
-        // Insert into company_twitter_data
-        console.log(`Inserting Twitter data for ${company.name} (@${handle})`);
-        
-        await db.insert(company_twitter_data).values({
-          company_id: company.id,
-          username: twitterProfile.username,
-          name: twitterProfile.name,
-          bio: twitterProfile.bio,
-          followers_count: twitterProfile.followers,
-          following_count: twitterProfile.following,
-          tweet_count: twitterProfile.tweets,
-          profile_image_url: twitterProfile.profileImageUrl,
-          banner_image_url: twitterProfile.bannerImageUrl,
-          is_verified: twitterProfile.verified,
-          is_business_account: twitterProfile.isBusinessAccount,
-          business_category: twitterProfile.businessCategory,
-          location: twitterProfile.location,
-          website_url: twitterProfile.url,
-          twitter_created_at: twitterProfile.createdAt,
-          last_fetched_at: new Date(),
-          raw_data: twitterProfile.rawData || null,
-        });
-        
-        console.log(`Successfully enriched ${company.name} with Twitter data`);
-
-        // Update the company's twitter_followers field for compatibility
-        if (twitterProfile.followers) {
-          const followerCount = twitterProfile.followers;
-          let followerRange = '0-1K';
-          
-          if (followerCount > 500000) {
-            followerRange = '500K+';
-          } else if (followerCount > 100000) {
-            followerRange = '100K-500K';
-          } else if (followerCount > 10000) {
-            followerRange = '10K-100K';
-          } else if (followerCount > 1000) {
-            followerRange = '1K-10K';
-          }
-          
-          await db.update(companies)
-            .set({
-              twitter_followers: followerRange
-            })
-            .where(eq(companies.id, company.id));
-            
-          console.log(`Updated ${company.name}'s follower range to ${followerRange}`);
-        }
-        
-        // Add a small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-      } catch (error) {
-        console.error(`Error processing company ${company.name}:`, error);
-        // Continue with the next company
-      }
+      ON CONFLICT (company_id) DO UPDATE SET
+        username = EXCLUDED.username,
+        name = EXCLUDED.name,
+        bio = EXCLUDED.bio,
+        followers = EXCLUDED.followers,
+        following = EXCLUDED.following,
+        tweets = EXCLUDED.tweets,
+        profile_image_url = EXCLUDED.profile_image_url,
+        banner_image_url = EXCLUDED.banner_image_url,
+        verified = EXCLUDED.verified,
+        is_business_account = EXCLUDED.is_business_account,
+        business_category = EXCLUDED.business_category,
+        location = EXCLUDED.location,
+        website_url = EXCLUDED.website_url,
+        created_at = EXCLUDED.created_at,
+        raw_data = EXCLUDED.raw_data,
+        updated_at = NOW()
+      RETURNING id;
+    `;
+    
+    const values = [
+      companyId,
+      profile.username,
+      profile.name,
+      profile.bio,
+      profile.followers,
+      profile.following,
+      profile.tweets,
+      profile.profileImageUrl,
+      profile.bannerImageUrl,
+      profile.verified,
+      profile.isBusinessAccount,
+      profile.businessCategory,
+      profile.location,
+      profile.url,
+      new Date(), // current timestamp
+      JSON.stringify(profile.rawData)
+    ];
+    
+    const result = await sql.unsafe(query, values);
+    
+    if (result.rows && result.rows.length > 0) {
+      console.log(`Stored Twitter data for company ${companyId} with Twitter handle @${profile.username}`);
+      return true;
+    } else {
+      console.error(`Failed to store Twitter data for company ${companyId}`);
+      return false;
     }
+  } catch (error) {
+    console.error(`Error storing Twitter data for company ${companyId}:`, error);
+    return false;
+  }
+}
 
+/**
+ * Main function to enrich company data with Twitter profiles
+ */
+async function main() {
+  try {
+    console.log('Starting company Twitter data enrichment...');
+    
+    // Get companies with Twitter handles but no Twitter data
+    const companies = await getCompaniesWithTwitterHandles();
+    console.log(`Found ${companies.length} companies with Twitter handles but no Twitter data`);
+    
+    if (companies.length === 0) {
+      console.log('No companies to enrich');
+      return;
+    }
+    
+    // Process each company
+    let successCount = 0;
+    let failureCount = 0;
+    
+    for (const company of companies) {
+      const { id, twitter_handle } = company;
+      
+      if (!isValidTwitterHandle(twitter_handle)) {
+        console.warn(`Skipping invalid Twitter handle: ${twitter_handle} for company ${id}`);
+        failureCount++;
+        continue;
+      }
+      
+      // Clean the handle (remove @ if present)
+      const handle = twitter_handle.replace(/^@/, '');
+      
+      console.log(`Processing company ${id} with Twitter handle: @${handle}`);
+      
+      // Fetch Twitter profile data
+      const profile = await getTwitterProfile(handle);
+      
+      if (!profile) {
+        console.warn(`Could not fetch Twitter profile for @${handle}`);
+        failureCount++;
+        continue;
+      }
+      
+      // Store the profile data
+      const success = await storeTwitterData(id, profile);
+      
+      if (success) {
+        successCount++;
+      } else {
+        failureCount++;
+      }
+      
+      // Add a short delay to avoid rate limits
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    console.log(`Enrichment completed. Success: ${successCount}, Failures: ${failureCount}`);
     console.log('Company Twitter data enrichment completed.');
   } catch (error) {
     console.error('Enrichment script failed:', error);

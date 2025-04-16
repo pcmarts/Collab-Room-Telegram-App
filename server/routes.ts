@@ -15,6 +15,7 @@ import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, n
 import { storage } from "./storage";
 import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
+import twitterRoutes from './routes/twitter-routes.js';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -189,8 +190,7 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
   }
 }
 
-// Import route modules
-import twitterRoutes from './routes/twitter-routes';
+// Twitter routes are imported at the top of the file
 
 export async function registerRoutes(app: Express) {
   // Network statistics endpoint

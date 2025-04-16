@@ -57,27 +57,40 @@ export async function getTwitterProfile(username) {
     const data = await response.json();
     
     // Check for errors in the response
-    if (data.errors || !data.data || !data.data.user) {
-      console.error('Twitter API returned an error or no user data', data.errors || 'No user data');
+    if (data.errors) {
+      console.error('Twitter API returned errors:', data.errors);
       return null;
     }
     
-    const { data: { user } } = data;
-    const legacy = user.legacy || {};
+    // The structure is: data.result.data.user.result
+    if (!data.result || !data.result.data || !data.result.data.user || !data.result.data.user.result) {
+      console.error('No user data found in response');
+      return null;
+    }
+    
+    const { result: { data: { user } } } = data;
+    const userData = user.result || {};
+    const legacy = userData.legacy || {};
+    
+    // Get profile image URL with safe handling
+    let profileImageUrl = legacy.profile_image_url_https || '';
+    if (profileImageUrl) {
+      profileImageUrl = profileImageUrl.replace('_normal', '');
+    }
     
     // Transform the response into our TwitterProfile structure
     const profile = {
       username: username,
       name: legacy.name,
       bio: legacy.description,
-      followers: legacy.followers_count,
-      following: legacy.friends_count,
-      tweets: legacy.statuses_count,
-      profileImageUrl: legacy.profile_image_url_https.replace('_normal', ''), // Get full-sized image
+      followers: legacy.followers_count || 0,
+      following: legacy.friends_count || 0,
+      tweets: legacy.statuses_count || 0,
+      profileImageUrl: profileImageUrl,
       bannerImageUrl: legacy.profile_banner_url,
-      verified: user.is_blue_verified || legacy.verified || false,
-      isBusinessAccount: user.professional?.professional_type === 'Business',
-      businessCategory: user.professional?.category?.[0]?.name || null,
+      verified: userData.is_blue_verified || legacy.verified || false,
+      isBusinessAccount: userData.professional?.professional_type === 'Business',
+      businessCategory: userData.professional?.category?.[0]?.name || null,
       location: legacy.location,
       url: legacy.entities?.url?.urls?.[0]?.expanded_url || legacy.url,
       createdAt: legacy.created_at,
