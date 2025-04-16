@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { LetterAvatar } from "@/components/ui/letter-avatar";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 import AddNoteDialog from "./AddNoteDialog";
 
 export interface SwipeableCardProps {
@@ -178,8 +179,9 @@ export default function SwipeableCard({
             <div className="flex items-center gap-3">
               {/* Company Logo */}
               {!data.isPotentialMatch && (
-                <LetterAvatar 
+                <LogoAvatar 
                   name={data.creator_company_name || "Company"} 
+                  logoUrl={data.company_data?.logo_url || data.creator_company_logo_url}
                   size="sm"
                   className="flex-shrink-0"
                 />
@@ -187,8 +189,9 @@ export default function SwipeableCard({
               
               {/* Potential Match Company Logo */}
               {data.isPotentialMatch && (
-                <LetterAvatar 
+                <LogoAvatar 
                   name={data.potentialMatchData?.company_name || "Company"}
+                  logoUrl={data.company_data?.logo_url || data.potentialMatchData?.company_logo_url}
                   size="sm"
                   className="flex-shrink-0"
                 />
