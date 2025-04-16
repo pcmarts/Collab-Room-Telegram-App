@@ -98,10 +98,25 @@ export default function SwipeableCard({
 
   // Use either onSwipe or handleSwipe prop based on which is provided
   const handleSwipeAction = (direction: "left" | "right", note?: string) => {
-    if (propHandleSwipe) {
-      propHandleSwipe(direction, note);
-    } else if (onSwipe) {
-      onSwipe(direction, note);
+    console.log(`[SwipeableCard] Handling swipe action: ${direction}${note ? ' with note' : ''}`, {
+      cardId: data.id,
+      collaborationType: data.collab_type,
+      hasPropHandleSwipe: !!propHandleSwipe,
+      hasOnSwipe: !!onSwipe
+    });
+    
+    try {
+      if (propHandleSwipe) {
+        console.log('[SwipeableCard] Calling propHandleSwipe');
+        propHandleSwipe(direction, note);
+      } else if (onSwipe) {
+        console.log('[SwipeableCard] Calling onSwipe');
+        onSwipe(direction, note);
+      } else {
+        console.warn('[SwipeableCard] No swipe handler provided (neither onSwipe nor handleSwipe)');
+      }
+    } catch (error) {
+      console.error('[SwipeableCard] Error in swipe handler:', error);
     }
   };
   
@@ -109,10 +124,18 @@ export default function SwipeableCard({
   const handleSwipe = handleSwipeAction;
 
   const handleButtonClick = (direction: "left" | "right") => {
-    if (direction === "right") {
-      setShowNoteDialog(true);
-    } else {
-      handleSwipeAction(direction);
+    console.log(`[SwipeableCard] Button clicked: ${direction === "right" ? "Request" : "Skip"}`);
+    
+    try {
+      if (direction === "right") {
+        console.log('[SwipeableCard] Opening note dialog for Request button');
+        setShowNoteDialog(true);
+      } else {
+        console.log('[SwipeableCard] Directly calling handleSwipeAction for Skip button');
+        handleSwipeAction(direction);
+      }
+    } catch (error) {
+      console.error('[SwipeableCard] Error in button click handler:', error);
     }
   };
 
