@@ -4,6 +4,9 @@ import ws from "ws";
 import * as schema from "@shared/schema";
 import { config } from "../shared/config";
 
+// Re-export the schema tables
+export * from "@shared/schema";
+
 neonConfig.webSocketConstructor = ws;
 
 // Database connection is now validated through the config module

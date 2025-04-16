@@ -5,7 +5,7 @@
  * when a user is approved.
  */
 
-import { db, users, companies } from '../db.js';
+import { db, users, companies } from '../db';
 import { eq } from 'drizzle-orm';
 
 // API request options
