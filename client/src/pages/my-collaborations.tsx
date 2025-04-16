@@ -1005,9 +1005,8 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   </div>
                   <div className="p-3 text-left">
                     <p className="text-xs flex flex-col gap-1">
-                      <strong>Privacy first.</strong>
-                      <span>Contact details shared only upon successful match.</span>
-                      <span>Anyone you passed on won't be notified.</span>
+                      <strong>PRIVACY FIRST</strong>
+                      <span>Contact details shared only upon successful match. Anyone you passed on won't be notified.</span>
                     </p>
                   </div>
                 </div>
