@@ -946,71 +946,79 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               {collaborations.map(collab => renderCollaborationCard(collab))}
             </div>
           ) : (
-            <div className="text-center py-12 px-6 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
+            <div className="text-center py-8 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
+              {/* Top CTA Button */}
+              <GlowButton 
+                onClick={() => setLocation('/create-collaboration-steps')}
+                className="w-full max-w-xs py-3 mx-auto mb-6"
+              >
+                Create Your First Collab
+              </GlowButton>
+              
               {/* Header */}
-              <h2 className="text-2xl font-semibold mb-6">Start Your First Collaboration</h2>
+              <h2 className="text-xl font-semibold mb-4">Start Your First Collaboration</h2>
               
               {/* How Collaborations Work Section */}
-              <div className="mb-8">
-                <h3 className="text-lg font-medium mb-4">How Collaborations Work</h3>
+              <div className="mb-5">
+                <h3 className="text-base font-medium mb-3">How Collaborations Work</h3>
                 
-                <div className="grid gap-6 md:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-3">
                   {/* Step 1 */}
-                  <div className="flex flex-col items-center p-4">
-                    <div className="rounded-full bg-primary/10 w-10 h-10 flex items-center justify-center mb-3">
+                  <div className="flex flex-col items-center p-2">
+                    <div className="rounded-full bg-primary/10 w-8 h-8 flex items-center justify-center mb-2">
                       <span className="font-semibold text-primary">1</span>
                     </div>
-                    <h4 className="font-medium mb-2">Create Your Collaboration</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Define your project and what you're looking for. Outline what makes your collaboration valuable.
+                    <h4 className="font-medium mb-1 text-sm">Create Your Collaboration</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Define your project and what makes it valuable.
                     </p>
                   </div>
                   
                   {/* Step 2 */}
-                  <div className="flex flex-col items-center p-4">
-                    <div className="rounded-full bg-primary/10 w-10 h-10 flex items-center justify-center mb-3">
+                  <div className="flex flex-col items-center p-2">
+                    <div className="rounded-full bg-primary/10 w-8 h-8 flex items-center justify-center mb-2">
                       <span className="font-semibold text-primary">2</span>
                     </div>
-                    <h4 className="font-medium mb-2">Post Your Collaboration</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Your collaboration becomes visible to other Web3 professionals looking for partnerships.
+                    <h4 className="font-medium mb-1 text-sm">Post Your Collaboration</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Make it visible to Web3 professionals.
                     </p>
                   </div>
                   
                   {/* Step 3 */}
-                  <div className="flex flex-col items-center p-4">
-                    <div className="rounded-full bg-primary/10 w-10 h-10 flex items-center justify-center mb-3">
+                  <div className="flex flex-col items-center p-2">
+                    <div className="rounded-full bg-primary/10 w-8 h-8 flex items-center justify-center mb-2">
                       <span className="font-semibold text-primary">3</span>
                     </div>
-                    <h4 className="font-medium mb-2">Approve Partners</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Review interested collaborators and approve those who are the right fit for your vision.
+                    <h4 className="font-medium mb-1 text-sm">Approve Partners</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Select the right collaborators for your vision.
                     </p>
                   </div>
                 </div>
               </div>
               
               {/* Privacy Section */}
-              <div className="mb-8 flex flex-col items-center">
-                <div className="inline-flex items-center gap-2 border border-muted-foreground/20 rounded-lg px-4 py-2 bg-background">
-                  <span className="text-primary"><Lock size={16} /></span>
-                  <p className="text-sm">
-                    <strong>Privacy is our priority.</strong> Contact details are only shared when both parties match.
+              <div className="mb-5 flex flex-col items-center">
+                <div className="inline-flex items-center gap-1 border border-muted-foreground/20 rounded-lg px-3 py-1 bg-background">
+                  <span className="text-primary"><Lock size={14} /></span>
+                  <p className="text-xs">
+                    <strong>Privacy is our priority.</strong> Contact details shared only on match.
                   </p>
                 </div>
               </div>
               
               {/* Network Stats */}
-              <div className="mb-8">
-                <p className="text-sm text-muted-foreground">
-                  Join the blockchain companies already finding valuable partnerships on The Collab Room.
+              <div className="mb-5">
+                <p className="text-xs text-muted-foreground">
+                  Join the blockchain companies finding valuable partnerships on The Collab Room.
                 </p>
               </div>
               
-              {/* CTA Button */}
+              {/* Bottom CTA Button */}
               <GlowButton 
                 onClick={() => setLocation('/create-collaboration-steps')}
-                className="w-full max-w-xs py-4 mx-auto"
+                className="w-full max-w-xs py-3 mx-auto"
               >
                 Create Your First Collab
               </GlowButton>
