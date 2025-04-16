@@ -971,7 +971,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       <span className="font-bold text-xl text-primary-foreground">2</span>
                       <div className="absolute right-0 w-3 h-3 bg-primary/85 rotate-45 translate-x-1/2"></div>
                     </div>
-                    <div className="p-3 text-left flex items-center h-full min-h-[4rem] justify-center">
+                    <div className="p-3 text-left flex items-center h-full min-h-[4rem] w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
                       <h4 className="font-medium text-sm">Your Collab is Live</h4>
                     </div>
                   </div>
