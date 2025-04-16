@@ -11,7 +11,6 @@
  */
 
 import express from 'express';
-import { getTwitterProfile } from '../utils/twitter-api-simplified.js';
 
 const router = express.Router();
 
@@ -29,21 +28,26 @@ router.get('/profile/:username', async (req, res) => {
       });
     }
     
-    // Get the stub Twitter profile from our utility
-    const profile = await getTwitterProfile(username);
-    
-    if (!profile) {
-      return res.status(404).json({ 
-        error: `Twitter profile not found for @${username}` 
-      });
-    }
-    
-    // Remove the raw data before sending to client (same as original implementation)
-    const { rawData, ...cleanProfile } = profile;
-    
+    // Return a stub profile response
     res.json({
       success: true,
-      profile: cleanProfile
+      profile: {
+        username: username,
+        name: "Twitter User",
+        bio: "This is a stub profile response. Twitter integration is disabled.",
+        followers: 0,
+        following: 0,
+        tweets: 0,
+        profileImageUrl: "",
+        bannerImageUrl: "",
+        verified: false,
+        isBusinessAccount: false,
+        businessCategory: null,
+        location: "",
+        url: "",
+        createdAt: new Date().toISOString(),
+        restId: "stub-id"
+      }
     });
   } catch (error) {
     console.error('Error in /api/twitter/profile/:username:', error);
@@ -122,23 +126,25 @@ router.get('/refresh-company/:id', async (req, res) => {
       });
     }
     
-    // Get a stub profile for response
-    const profile = await getTwitterProfile("company");
-    
-    if (!profile) {
-      return res.status(500).json({
-        error: 'Failed to create stub profile'
-      });
-    }
-    
-    // Remove the raw data before sending to client
-    const { rawData, ...cleanProfile } = profile;
-    
     // Return a stub response
     res.json({
       success: true,
       message: `Twitter integration is disabled. No actual refresh performed for company ID ${id}`,
-      profile: cleanProfile
+      profile: {
+        username: "company",
+        name: "Company Name",
+        bio: "This is a stub profile response. Twitter integration is disabled.",
+        followers: 0,
+        following: 0,
+        tweets: 0,
+        profileImageUrl: "",
+        bannerImageUrl: "",
+        verified: false,
+        isBusinessAccount: false,
+        businessCategory: null,
+        location: "",
+        url: ""
+      }
     });
   } catch (error) {
     console.error('Error in /api/twitter/refresh-company/:id:', error);
