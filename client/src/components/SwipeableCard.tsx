@@ -177,29 +177,48 @@ export default function SwipeableCard({
             <div className="flex items-center gap-3">
               {/* Company Logo */}
               {!data.isPotentialMatch && (
-                data.creator_company_logo_url ? (
+                // First try company_data.logo_url, then fall back to creator_company_logo_url
+                (data.company_data?.logo_url || data.creator_company_logo_url) ? (
                   <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40">
                     <img 
-                      src={(data.creator_company_logo_url?.replace('_normal', '_400x400')) || ''} 
+                      src={
+                        // First priority: use company_data.logo_url if available
+                        data.company_data?.logo_url ? 
+                          // Apply Twitter CDN image optimization if it's a Twitter URL
+                          (data.company_data.logo_url.includes('pbs.twimg.com') ? 
+                            data.company_data.logo_url.replace('_normal', '_400x400') : 
+                            data.company_data.logo_url
+                          ) : 
+                          // Second priority: fall back to creator_company_logo_url
+                          ((data.creator_company_logo_url?.replace('_normal', '_400x400')) || '')
+                      } 
                       alt={data.creator_company_name || "Company"} 
                       className="h-full w-full object-cover"
                       onLoad={() => {
                         console.log(`[SwipeableCard] Logo loaded successfully for ${data.creator_company_name || "Company"}`);
                       }}
                       onError={(e) => {
-                        console.log(`[SwipeableCard] Logo error for ${data.creator_company_name || "Company"}, URL was: ${data.creator_company_logo_url || "no URL"}`);
-                        // Fallback 1: Try without _400x400 suffix first
+                        console.log(`[SwipeableCard] Logo error for ${data.creator_company_name || "Company"}`);
+                        // Get the source that failed
                         const target = e.target as HTMLImageElement;
-                        if (data.creator_company_logo_url && target.src.includes('_400x400')) {
-                          console.log(`[SwipeableCard] Trying fallback to original URL: ${data.creator_company_logo_url}`);
-                          target.src = data.creator_company_logo_url;
+                        const failedUrl = target.src;
+                        console.log(`Failed URL: ${failedUrl}`);
+                        
+                        // Attempt different fallbacks in sequence
+                        
+                        // Fallback 1: If we tried an optimized Twitter URL, try the original
+                        if (failedUrl.includes('_400x400')) {
+                          const originalUrl = failedUrl.replace('_400x400', '');
+                          console.log(`[SwipeableCard] Trying fallback to original URL: ${originalUrl}`);
+                          target.src = originalUrl;
                           return;
                         }
                         
-                        // Fallback 2: If company data exists, try using the logo directly from company_data
-                        if (data.company_data?.logo_url) {
-                          console.log(`[SwipeableCard] Using logo from company_data: ${data.company_data.logo_url}`);
-                          target.src = data.company_data.logo_url;
+                        // Fallback 2: If we used company_data.logo_url, try creator_company_logo_url
+                        if (data.company_data?.logo_url && data.creator_company_logo_url && 
+                            failedUrl === data.company_data.logo_url) {
+                          console.log(`[SwipeableCard] Trying creator_company_logo_url: ${data.creator_company_logo_url}`);
+                          target.src = data.creator_company_logo_url;
                           return;
                         }
                         
@@ -221,30 +240,48 @@ export default function SwipeableCard({
               
               {/* Potential Match Company Logo */}
               {data.isPotentialMatch && (
-                data.potentialMatchData?.company_logo_url ? (
+                // First try company_data.logo_url, then fall back to potentialMatchData.company_logo_url
+                (data.company_data?.logo_url || data.potentialMatchData?.company_logo_url) ? (
                   <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40">
                     <img 
-                      src={data.potentialMatchData?.company_logo_url?.replace('_normal', '_400x400') || ''} 
+                      src={
+                        // First priority: use company_data.logo_url if available
+                        data.company_data?.logo_url ? 
+                          // Apply Twitter CDN image optimization if it's a Twitter URL
+                          (data.company_data.logo_url.includes('pbs.twimg.com') ? 
+                            data.company_data.logo_url.replace('_normal', '_400x400') : 
+                            data.company_data.logo_url
+                          ) : 
+                          // Second priority: fall back to potentialMatchData.company_logo_url
+                          ((data.potentialMatchData?.company_logo_url?.replace('_normal', '_400x400')) || '')
+                      } 
                       alt={data.potentialMatchData?.company_name || 'Company'} 
                       className="h-full w-full object-cover"
                       onLoad={() => {
                         console.log(`[SwipeableCard] Potential match logo loaded for ${data.potentialMatchData?.company_name || "Company"}`);
                       }}
                       onError={(e) => {
-                        console.log(`[SwipeableCard] Potential match logo error for ${data.potentialMatchData?.company_name || "Company"}, URL was: ${data.potentialMatchData?.company_logo_url || "no URL"}`);
-                        
-                        // Fallback 1: Try without _400x400 suffix first
+                        console.log(`[SwipeableCard] Potential match logo error for ${data.potentialMatchData?.company_name || "Company"}`);
+                        // Get the source that failed
                         const target = e.target as HTMLImageElement;
-                        if (data.potentialMatchData?.company_logo_url && target.src.includes('_400x400')) {
-                          console.log(`[SwipeableCard] Trying fallback to original URL: ${data.potentialMatchData.company_logo_url}`);
-                          target.src = data.potentialMatchData.company_logo_url;
+                        const failedUrl = target.src;
+                        console.log(`Failed URL: ${failedUrl}`);
+                        
+                        // Attempt different fallbacks in sequence
+                        
+                        // Fallback 1: If we tried an optimized Twitter URL, try the original
+                        if (failedUrl.includes('_400x400')) {
+                          const originalUrl = failedUrl.replace('_400x400', '');
+                          console.log(`[SwipeableCard] Trying fallback to original URL: ${originalUrl}`);
+                          target.src = originalUrl;
                           return;
                         }
                         
-                        // Fallback 2: If specific company data exists in data.company_data
-                        if (data.company_data?.logo_url) {
-                          console.log(`[SwipeableCard] Using logo from company_data: ${data.company_data.logo_url}`);
-                          target.src = data.company_data.logo_url;
+                        // Fallback 2: If we used company_data.logo_url, try potentialMatchData.company_logo_url
+                        if (data.company_data?.logo_url && data.potentialMatchData?.company_logo_url && 
+                            failedUrl === data.company_data.logo_url) {
+                          console.log(`[SwipeableCard] Trying potentialMatchData.company_logo_url: ${data.potentialMatchData.company_logo_url}`);
+                          target.src = data.potentialMatchData.company_logo_url;
                           return;
                         }
                         
