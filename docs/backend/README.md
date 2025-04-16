@@ -254,9 +254,39 @@ app.post("/api/admin/impersonate", checkAdminMiddleware, async (req: TelegramReq
 });
 ```
 
+## External API Integrations
+
+### Twitter API Integration
+
+The application integrates with Twitter API via RapidAPI to enrich company profiles with Twitter data:
+
+```javascript
+async function fetchTwitterProfile(handle) {
+  const options = {
+    method: 'GET',
+    headers: {
+      'X-RapidAPI-Key': process.env.X_RAPIDAPI_KEY,
+      'X-RapidAPI-Host': 'twitter241.p.rapidapi.com'
+    }
+  };
+
+  const url = `https://twitter241.p.rapidapi.com/user?username=${encodeURIComponent(username)}`;
+  const response = await fetch(url, options);
+  // Process response...
+}
+```
+
+The Twitter integration is used to:
+1. Fetch profile details when a company is created
+2. Update company logo URLs and descriptions
+3. Store comprehensive Twitter profile data for analytics
+
+For detailed implementation, see [Twitter API Integration](./twitter-api-native-fetch.md).
+
 ## Related Documentation
 
 - [Security Implementation](./security.md) - Detailed documentation about security features and best practices
 - [Structured Logging System](./logging.md) - Comprehensive logging with environment-specific levels and security features
+- [Twitter API Integration](./twitter-api-native-fetch.md) - Native fetch implementation for Twitter data enrichment
 - [API Documentation](../api/README.md) - API endpoints and usage
 - [Authentication Documentation](../auth/README.md) - Authentication system details

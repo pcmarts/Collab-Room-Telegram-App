@@ -13,6 +13,7 @@ This documentation is organized into the following sections:
    * [Security Implementation](./backend/security.md) - Comprehensive security measures
    * [Security Checklist](./backend/security-checklist.md) - Guidelines to maintain application security
    * [Structured Logging System](./backend/logging.md) - Environment-aware logging with data protection
+   * [Twitter API Integration](./backend/twitter-api-native-fetch.md) - Native fetch implementation for Twitter data
 4. [Database](./database/README.md) - Database schema and data models
 5. [API](./api/README.md) - API endpoints and usage
 6. [Telegram Integration](./telegram/README.md) - Integration with Telegram WebApp
