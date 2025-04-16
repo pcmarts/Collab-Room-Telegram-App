@@ -949,6 +949,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             <div className="text-center pt-4 pb-4 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
               {/* Collaboration Steps Section */}
               <div className="mb-4 text-left">
+                <h3 className="text-base font-medium mb-2 pl-2">How Collaborations Work</h3>
                 <div className="flex flex-col gap-3">
                   {/* Step 1 */}
                   <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
@@ -971,9 +972,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       <div className="absolute right-0 w-3 h-3 bg-primary/85 rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left">
-                      <h4 className="font-medium text-sm">Post Your Collab</h4>
+                      <h4 className="font-medium text-sm">Your Collab is Live</h4>
                       <p className="text-xs text-muted-foreground">
-                        Allow other web3 marketers to Discover your collab.
+                        Other web3 marketers can now Discover your collab.
                       </p>
                     </div>
                   </div>
