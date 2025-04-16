@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.8.7] - 2025-04-16
+
+### Enhanced
+- Improved Matches page UI to prevent text truncation issues
+- Redesigned match cards with better text wrapping for company names, person names, and role titles
+- Enhanced visual styling of collaboration type badges
+- Optimized spacing and layout for better readability and information hierarchy
+- Implemented responsive design improvements for different screen sizes
+
+### Technical Details
+- Updated card layout in MatchesPage.tsx to use break-words for proper text wrapping
+- Reorganized match card content for better information presentation
+- Improved badge styling with consistent color and spacing
+- Added proper spacing between card elements for better visual hierarchy
+
 ## [Version 1.8.6] - 2025-04-16
 
 ### Fixed

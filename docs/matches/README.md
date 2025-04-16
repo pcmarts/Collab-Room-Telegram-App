@@ -6,7 +6,8 @@ The Matches page displays users who have matched with collaborations. Users can 
 
 ## Key Features
 
-- Display of match cards showing collaboration type, person, and company information
+- Display of match cards showing collaboration type, person, and company information with complete text (no truncation)
+- Responsive layout that ensures all text is fully visible at different screen sizes
 - "Details" button to show comprehensive information about the collaboration and matched person
 - Detailed match screen with rich social media links and professional information
 - "Chat" button to initiate Telegram conversations with matched users
@@ -109,6 +110,12 @@ When a match is created through the discovery system, a Match Moment dialog is d
   - Responsive design works across screen sizes
 
 ## Recent Enhancements
+
+**Version 1.8.7 (2025-04-16):**
+- Improved match card UI to prevent text truncation issues for long company names and titles
+- Redesigned card layout with proper text wrapping for complete information visibility
+- Enhanced visual styling with better spacing, layout, and responsive design
+- Optimized information hierarchy for better readability at all screen sizes
 
 **Version 1.8.3 (2025-04-15):**
 - Fixed Twitter handle display in match details view to show user's personal Twitter handle instead of company Twitter handle
