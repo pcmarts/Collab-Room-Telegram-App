@@ -629,6 +629,21 @@ export default function SwipeableCard({
             <X className="h-4 w-4 mr-1" />
             Skip
           </Button>
+          
+          {/* Info button placed between Skip and Request */}
+          <Button 
+            size="default"
+            variant="outline"
+            className="flex-1 pointer-events-auto relative z-50 border-blue-500/20 text-blue-600 hover:bg-blue-500/5"
+            onClick={(e) => {
+              e.stopPropagation();
+              viewDetailsHandler();
+            }}
+          >
+            <Info className="h-4 w-4 mr-1" />
+            Info
+          </Button>
+          
           <Button 
             size="default"
             variant={data.isPotentialMatch ? "secondary" : "default"}
