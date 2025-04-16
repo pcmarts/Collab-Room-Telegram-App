@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion, useMotionValue, useTransform, MotionValue } from "framer-motion";
 import {
   Calendar,
   Check,
@@ -54,6 +54,14 @@ export interface SwipeableCardProps {
   onSwipe: (direction: "left" | "right", note?: string) => void;
   onInfoClick?: () => void;
   handleDetailsClick?: (id: string) => void;
+  
+  // Props for stacked card animation
+  zIndex?: number;
+  constrained?: boolean;
+  setConstrained?: (constrained: boolean) => void;
+  x?: MotionValue<number>;
+  rotate?: MotionValue<number>;
+  opacity?: MotionValue<number>;
 }
 
 export default function SwipeableCard({
@@ -61,9 +69,17 @@ export default function SwipeableCard({
   onSwipe,
   onInfoClick,
   handleDetailsClick,
+  zIndex,
+  constrained,
+  setConstrained,
+  x: propX,
+  rotate: propRotate,
+  opacity: propOpacity,
 }: SwipeableCardProps) {
   const [showNoteDialog, setShowNoteDialog] = useState(false);
-  const x = useMotionValue(0);
+  const x = propX || useMotionValue(0);
+  const rotate = propRotate || useTransform(x, [-200, 0, 200], [-10, 0, 10]);
+  const opacity = propOpacity || useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
   const dragConstraintsRef = React.useRef(null);
 
   const handleSwipe = (direction: "left" | "right", note?: string) => {
