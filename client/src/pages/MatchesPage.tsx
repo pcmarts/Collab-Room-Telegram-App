@@ -861,13 +861,13 @@ export default function MatchesPage() {
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg">
+                      <CardTitle className="text-lg break-words">
                         {match.companyName}
                       </CardTitle>
-                      <CardDescription className="mb-1">
+                      <CardDescription className="mb-1 break-words">
                         {match.matchedPerson}
                       </CardDescription>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground break-words">
                         {match.roleTitle}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
