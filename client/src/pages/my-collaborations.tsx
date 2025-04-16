@@ -989,7 +989,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                     <div className="p-3 text-left">
                       <h4 className="font-medium text-sm">Approve or Pass Collab Requests</h4>
                       <p className="text-xs text-muted-foreground">
-                        Select the right collaborators for your vision.
+                        You'll be notified when others request to join your collab.
                       </p>
                     </div>
                   </div>
