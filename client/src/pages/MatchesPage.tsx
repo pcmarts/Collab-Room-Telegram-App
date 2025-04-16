@@ -857,59 +857,71 @@ export default function MatchesPage() {
         {matches && Array.isArray(matches) && matches.length > 0 ? (
           <div className="space-y-4">
             {matches.map((match) => (
-              <Card key={match.id}>
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {match.companyName}
-                      </CardTitle>
-                      <CardDescription className="mb-1">
-                        {match.matchedPerson}
-                      </CardDescription>
-                      <p className="text-xs text-muted-foreground">
-                        {match.roleTitle}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Matched on {match.matchDate}
-                      </p>
-                    </div>
-                    <div className="flex items-center shrink-0">
-                      <div className="mr-1.5">
-                        {getCollabTypeIcon(match.collaborationType)}
+              <Card key={match.id} className="overflow-visible">
+                <div className="p-4">
+                  {/* Two-column layout with company name and collaboration type */}
+                  <div className="flex flex-col mb-3 space-y-2">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-base break-words pr-2">
+                          {match.companyName}
+                        </h3>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className="text-muted-foreground bg-transparent whitespace-nowrap"
-                      >
-                        {match.collaborationType}
-                      </Badge>
+                      <div className="flex items-center shrink-0">
+                        <div className="mr-1.5">
+                          {getCollabTypeIcon(match.collaborationType)}
+                        </div>
+                        <Badge className="bg-primary/10 hover:bg-primary/15 text-primary border-0 whitespace-normal text-center">
+                          {match.collaborationType}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                </CardHeader>
-                <CardFooter className="flex justify-between pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedMatch(match)}
-                  >
-                    <Info className="w-4 h-4 mr-1" />
-                    Details
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      if (match.username) {
-                        window.open(`https://t.me/${match.username}`, "_blank");
-                      } else {
-                        alert("No Telegram username found for this contact");
-                      }
-                    }}
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Chat
-                  </Button>
-                </CardFooter>
+
+                  {/* Contact info - with full text visible */}
+                  <div className="space-y-2 mb-3">
+                    <div>
+                      <p className="text-sm font-medium break-words">
+                        {match.matchedPerson}
+                      </p>
+                      {match.roleTitle && (
+                        <p className="text-sm text-muted-foreground break-words">
+                          {match.roleTitle}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <span>Matched on {match.matchDate}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="flex justify-between gap-3 mt-3 pt-2 border-t border-border/50">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedMatch(match)}
+                      className="flex-1"
+                    >
+                      <Info className="w-4 h-4 mr-1.5" />
+                      Details
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        if (match.username) {
+                          window.open(`https://t.me/${match.username}`, "_blank");
+                        } else {
+                          alert("No Telegram username found for this contact");
+                        }
+                      }}
+                      className="flex-1"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-1.5" />
+                      Chat
+                    </Button>
+                  </div>
+                </div>
               </Card>
             ))}
           </div>
