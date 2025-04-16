@@ -954,9 +954,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 <div className="flex flex-col gap-3">
                   {/* Step 1 */}
                   <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                    <div className="bg-primary w-12 h-full min-h-[4rem] flex items-center justify-center relative">
+                    <div className="bg-primary/85 w-12 h-full min-h-[4rem] flex items-center justify-center relative">
                       <span className="font-bold text-xl text-primary-foreground">1</span>
-                      <div className="absolute right-0 w-3 h-3 bg-primary rotate-45 translate-x-1/2"></div>
+                      <div className="absolute right-0 w-3 h-3 bg-primary/85 rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left">
                       <h4 className="font-medium text-sm">Create Your Collaboration</h4>
@@ -968,26 +968,26 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   
                   {/* Step 2 */}
                   <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                    <div className="bg-primary w-12 h-full min-h-[4rem] flex items-center justify-center relative">
+                    <div className="bg-primary/85 w-12 h-full min-h-[4rem] flex items-center justify-center relative">
                       <span className="font-bold text-xl text-primary-foreground">2</span>
-                      <div className="absolute right-0 w-3 h-3 bg-primary rotate-45 translate-x-1/2"></div>
+                      <div className="absolute right-0 w-3 h-3 bg-primary/85 rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left">
                       <h4 className="font-medium text-sm">Post Your Collaboration</h4>
                       <p className="text-xs text-muted-foreground">
-                        Allow other web3 marketers to <em>discover</em> your collab.
+                        Allow other web3 marketers to <em className="underline">Discover</em> your collab.
                       </p>
                     </div>
                   </div>
                   
                   {/* Step 3 */}
                   <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                    <div className="bg-primary w-12 h-full min-h-[4rem] flex items-center justify-center relative">
+                    <div className="bg-primary/85 w-12 h-full min-h-[4rem] flex items-center justify-center relative">
                       <span className="font-bold text-xl text-primary-foreground">3</span>
-                      <div className="absolute right-0 w-3 h-3 bg-primary rotate-45 translate-x-1/2"></div>
+                      <div className="absolute right-0 w-3 h-3 bg-primary/85 rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left">
-                      <h4 className="font-medium text-sm">Approve Collab Requests</h4>
+                      <h4 className="font-medium text-sm">Approve or Pass Collab Requests</h4>
                       <p className="text-xs text-muted-foreground">
                         Select the right collaborators for your vision.
                       </p>
@@ -1001,7 +1001,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 <div className="inline-flex items-center gap-1 border border-muted-foreground/20 rounded-lg px-3 py-1 bg-background">
                   <span className="text-primary"><Lock size={14} /></span>
                   <p className="text-xs">
-                    <strong>Privacy first.</strong> Contact details shared only on match.
+                    <strong>Privacy first.</strong> Contact details shared only upon successful match. Passed collaborators won't be notified.
                   </p>
                 </div>
               </div>
