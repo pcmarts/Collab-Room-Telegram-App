@@ -604,17 +604,6 @@ export default function SwipeableCard({
             <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
               {data.description || "No description available."}
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-1 w-full text-xs pointer-events-auto relative z-50"
-              onClick={(e) => {
-                e.stopPropagation();
-                viewDetailsHandler();
-              }}
-            >
-              View Full Details
-            </Button>
           </div>
         </div>
         
