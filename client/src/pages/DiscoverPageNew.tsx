@@ -20,13 +20,14 @@ interface CardStackProps {
   cards: CardData[];
   handleSwipe: (direction: "left" | "right", note?: string) => Promise<void>;
   handleViewCardDetails: (card: CardData) => void;
+  handleDetailsClick: (id: string) => void;
   x: MotionValue<number>;
   rotate: MotionValue<number>;
   opacity: MotionValue<number>;
 }
 
 // CardStack component to handle rendering cards
-const CardStack = ({ cards, handleSwipe, handleViewCardDetails, x, rotate, opacity }: CardStackProps) => {
+const CardStack = ({ cards, handleSwipe, handleViewCardDetails, handleDetailsClick, x, rotate, opacity }: CardStackProps) => {
   // Create constrained states for each card position
   const [constrained0, setConstrained0] = useState(true);
   const [constrained1, setConstrained1] = useState(true);
@@ -58,6 +59,7 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, x, rotate, opaci
             data={card}
             handleSwipe={handleSwipe}
             onInfoClick={() => handleViewCardDetails(card)}
+            handleDetailsClick={handleDetailsClick}
             zIndex={zIndex}
             constrained={constrained}
             setConstrained={setConstrained}
@@ -1099,6 +1101,7 @@ export default function DiscoverPage() {
             cards={cards}
             handleSwipe={handleSwipe}
             handleViewCardDetails={handleViewCardDetails}
+            handleDetailsClick={handleDetailsClick}
             x={x}
             rotate={rotate}
             opacity={opacity}
