@@ -63,28 +63,15 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: false, limit: '100kb' }));
 
-// Set up session store based on environment
-let sessionStore;
-if (config.NODE_ENV === 'production') {
-  // Use PostgreSQL session store in production
-  sessionStore = new PgSession({
-    pool: pool,
-    tableName: 'sessions',
-    createTableIfMissing: true,
-  });
-  // Only log if LOG_LEVEL >= 2 (INFO level or higher)
-  if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
-    logger.info('Using PostgreSQL for session storage');
-  }
-} else {
-  // Use memory store in development
-  sessionStore = new MemoryStoreSession({
-    checkPeriod: 86400000 // prune expired entries every 24h
-  });
-  // Only log if LOG_LEVEL >= 1 (WARN level or higher)
-  if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 1) {
-    logger.warn('Using in-memory session storage (not suitable for production)');
-  }
+// Set up session store - using MemoryStore for all environments
+// Note: In a production environment, you'd typically use a persistent store
+const sessionStore = new MemoryStoreSession({
+  checkPeriod: 86400000 // prune expired entries every 24h
+});
+
+// Only log if LOG_LEVEL >= 1 (WARN level or higher)
+if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 1) {
+  logger.warn('Using in-memory session storage (not suitable for production)');
 }
 
 // Initialize session middleware early to ensure it's available for all routes
