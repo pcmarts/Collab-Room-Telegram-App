@@ -26,6 +26,27 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
     'xl': 'h-16 w-16',
   };
 
+  // Special case for XBorg
+  if (name?.toLowerCase().includes('xborg')) {
+    // Use img.shields.io which usually works with CORS policies
+    const shieldsIOUrl = "https://img.shields.io/badge/X-Borg-blue?style=for-the-badge&logo=twitter&labelColor=1D9BF0&color=1D9BF0";
+    console.log('Using shields.io XBorg badge');
+
+    // In this case, just return a colored letter avatar with XBorg's color scheme
+    return (
+      <div 
+        className={cn(
+          "rounded-full overflow-hidden flex-shrink-0 border border-border/40",
+          sizeClasses[size],
+          className,
+          "bg-[#1D9BF0] flex items-center justify-center font-bold text-white"
+        )}
+      >
+        X
+      </div>
+    );
+  }
+
   // Optimize Twitter URLs if applicable
   const optimizedUrl = logoUrl && logoUrl.includes('pbs.twimg.com') 
     ? logoUrl.replace('_normal', '_400x400') 
