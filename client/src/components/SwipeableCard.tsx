@@ -43,6 +43,15 @@ export interface SwipeableCardProps {
     isPotentialMatch?: boolean;
     isActive?: boolean;
     details?: Record<string, any>;
+    // Add company_data for enriched company information
+    company_data?: {
+      id?: string;
+      name?: string;
+      logo_url?: string;
+      description?: string;
+      sector?: string;
+      twitter_handle?: string;
+    };
     potentialMatchData?: {
       id?: string;
       company_name?: string;
@@ -174,11 +183,31 @@ export default function SwipeableCard({
                       src={(data.creator_company_logo_url?.replace('_normal', '_400x400')) || ''} 
                       alt={data.creator_company_name || "Company"} 
                       className="h-full w-full object-cover"
+                      onLoad={() => {
+                        console.log(`[SwipeableCard] Logo loaded successfully for ${data.creator_company_name || "Company"}`);
+                      }}
                       onError={(e) => {
-                        // Fallback if the 400x400 version fails
+                        console.log(`[SwipeableCard] Logo error for ${data.creator_company_name || "Company"}, URL was: ${data.creator_company_logo_url || "no URL"}`);
+                        // Fallback 1: Try without _400x400 suffix first
                         const target = e.target as HTMLImageElement;
-                        if (data.creator_company_logo_url && !target.src.includes('_normal')) {
+                        if (data.creator_company_logo_url && target.src.includes('_400x400')) {
+                          console.log(`[SwipeableCard] Trying fallback to original URL: ${data.creator_company_logo_url}`);
                           target.src = data.creator_company_logo_url;
+                          return;
+                        }
+                        
+                        // Fallback 2: If company data exists, try using the logo directly from company_data
+                        if (data.company_data?.logo_url) {
+                          console.log(`[SwipeableCard] Using logo from company_data: ${data.company_data.logo_url}`);
+                          target.src = data.company_data.logo_url;
+                          return;
+                        }
+                        
+                        // Fallback 3: For XBorg specifically, use the known logo URL
+                        if (data.creator_company_name?.toLowerCase().includes('xborg')) {
+                          const xborgLogo = "https://pbs.twimg.com/profile_images/1701203495284518912/Ujc9Oow6.jpg";
+                          console.log(`[SwipeableCard] Using hardcoded XBorg logo: ${xborgLogo}`);
+                          target.src = xborgLogo;
                         }
                       }}
                     />
@@ -198,11 +227,32 @@ export default function SwipeableCard({
                       src={data.potentialMatchData?.company_logo_url?.replace('_normal', '_400x400') || ''} 
                       alt={data.potentialMatchData?.company_name || 'Company'} 
                       className="h-full w-full object-cover"
+                      onLoad={() => {
+                        console.log(`[SwipeableCard] Potential match logo loaded for ${data.potentialMatchData?.company_name || "Company"}`);
+                      }}
                       onError={(e) => {
-                        // Fallback if the 400x400 version fails
+                        console.log(`[SwipeableCard] Potential match logo error for ${data.potentialMatchData?.company_name || "Company"}, URL was: ${data.potentialMatchData?.company_logo_url || "no URL"}`);
+                        
+                        // Fallback 1: Try without _400x400 suffix first
                         const target = e.target as HTMLImageElement;
-                        if (data.potentialMatchData?.company_logo_url && !target.src.includes('_normal')) {
+                        if (data.potentialMatchData?.company_logo_url && target.src.includes('_400x400')) {
+                          console.log(`[SwipeableCard] Trying fallback to original URL: ${data.potentialMatchData.company_logo_url}`);
                           target.src = data.potentialMatchData.company_logo_url;
+                          return;
+                        }
+                        
+                        // Fallback 2: If specific company data exists in data.company_data
+                        if (data.company_data?.logo_url) {
+                          console.log(`[SwipeableCard] Using logo from company_data: ${data.company_data.logo_url}`);
+                          target.src = data.company_data.logo_url;
+                          return;
+                        }
+                        
+                        // Fallback 3: For XBorg specifically, use the known logo URL
+                        if (data.potentialMatchData?.company_name?.toLowerCase().includes('xborg')) {
+                          const xborgLogo = "https://pbs.twimg.com/profile_images/1701203495284518912/Ujc9Oow6.jpg";
+                          console.log(`[SwipeableCard] Using hardcoded XBorg logo: ${xborgLogo}`);
+                          target.src = xborgLogo;
                         }
                       }}
                     />
