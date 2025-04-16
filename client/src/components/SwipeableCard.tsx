@@ -51,7 +51,9 @@ export interface SwipeableCardProps {
       industry?: string;
     };
   };
-  onSwipe: (direction: "left" | "right", note?: string) => void;
+  // Support both naming conventions for the swipe handler
+  onSwipe?: (direction: "left" | "right", note?: string) => void;
+  handleSwipe?: (direction: "left" | "right", note?: string) => void; 
   onInfoClick?: () => void;
   handleDetailsClick?: (id: string) => void;
   
@@ -67,6 +69,7 @@ export interface SwipeableCardProps {
 export default function SwipeableCard({
   data,
   onSwipe,
+  handleSwipe: propHandleSwipe,  // Renamed to avoid conflict
   onInfoClick,
   handleDetailsClick,
   zIndex,
@@ -82,15 +85,23 @@ export default function SwipeableCard({
   const opacity = propOpacity || useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
   const dragConstraintsRef = React.useRef(null);
 
-  const handleSwipe = (direction: "left" | "right", note?: string) => {
-    onSwipe(direction, note);
+  // Use either onSwipe or handleSwipe prop based on which is provided
+  const handleSwipeAction = (direction: "left" | "right", note?: string) => {
+    if (propHandleSwipe) {
+      propHandleSwipe(direction, note);
+    } else if (onSwipe) {
+      onSwipe(direction, note);
+    }
   };
+  
+  // For compatibility with existing code that might call handleSwipe
+  const handleSwipe = handleSwipeAction;
 
   const handleButtonClick = (direction: "left" | "right") => {
     if (direction === "right") {
       setShowNoteDialog(true);
     } else {
-      handleSwipe(direction);
+      handleSwipeAction(direction);
     }
   };
 
@@ -101,7 +112,15 @@ export default function SwipeableCard({
   };
 
   return (
-    <div className="w-full h-full relative touch-none">
+    <motion.div 
+      className="w-full h-full absolute inset-0 touch-none"
+      style={{ 
+        zIndex: zIndex || 1,
+        x,
+        rotate,
+        opacity
+      }}
+    >
       <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl isolate">
         {/* Overlay effects for swipe direction */}
         <motion.div 
@@ -574,10 +593,10 @@ export default function SwipeableCard({
           console.log("Sending request with note from SwipeableCard:", note);
           // Give the dialog time to fully close before executing the swipe
           setTimeout(() => {
-            handleSwipe("right", note);
+            handleSwipeAction("right", note);
           }, 300);
         }}
       />
-    </div>
+    </motion.div>
   );
 }
