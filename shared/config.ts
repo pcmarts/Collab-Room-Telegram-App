@@ -43,6 +43,9 @@ const configSchema = z.object({
   // Authentication
   TELEGRAM_BOT_TOKEN: z.string().min(1, 'TELEGRAM_BOT_TOKEN is required').optional(),
   
+  // External APIs
+  X_RAPIDAPI_KEY: z.string().min(1, 'X_RAPIDAPI_KEY is required for Twitter API').optional(),
+  
   // Development fallbacks
   ALLOW_DEV_FALLBACKS: z.coerce.boolean().default(false),
   
@@ -68,6 +71,9 @@ function loadConfig(): Config {
     
     // Authentication
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    
+    // External APIs
+    X_RAPIDAPI_KEY: process.env.X_RAPIDAPI_KEY,
     
     // Security settings
     RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS,
