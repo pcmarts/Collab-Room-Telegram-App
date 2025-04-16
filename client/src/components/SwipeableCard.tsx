@@ -159,12 +159,17 @@ export default function SwipeableCard({
         zIndex: zIndex || 1,
         x,
         rotate,
-        opacity
+        opacity,
+        touchAction: "auto" // Enable default touch actions
       }}
       // Explicitly make this non-draggable to prevent interference with button clicks
       drag={false}
       // Make sure all child elements receive pointer events
       initial={{ pointerEvents: "auto" }}
+      // Add debug logging for swipe events
+      onTouchStart={(e) => console.log("[SwipeableCard] Touch start")}
+      onTouchEnd={(e) => console.log("[SwipeableCard] Touch end")}
+      onClick={(e) => console.log("[SwipeableCard] Div clicked")}
     >
       <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl isolate">
         {/* Overlay effects for swipe direction */}
@@ -550,12 +555,17 @@ export default function SwipeableCard({
         </div>
         
         {/* Action buttons */}
-        <div className="p-3 border-t flex justify-between items-center gap-3">
+        <div className="p-3 border-t flex justify-between items-center gap-3 relative z-50 pointer-events-auto">
           <Button 
             size="default"
             variant="outline"
-            className="flex-1 bg-transparent border-red-500/20 text-red-500 hover:bg-red-500/5"
-            onClick={() => handleButtonClick("left")}
+            className="flex-1 bg-transparent border-red-500/20 text-red-500 hover:bg-red-500/5 pointer-events-auto"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              console.log("[SwipeableCard] Skip button clicked");
+              handleButtonClick("left");
+            }}
           >
             <X className="h-4 w-4 mr-1" />
             Skip
@@ -568,6 +578,8 @@ export default function SwipeableCard({
             className="flex-1 pointer-events-auto relative z-50 border-blue-500/20 text-blue-600 hover:bg-blue-500/5"
             onClick={(e) => {
               e.stopPropagation();
+              e.preventDefault();
+              console.log("[SwipeableCard] Info button clicked");
               viewDetailsHandler();
             }}
           >
@@ -578,8 +590,13 @@ export default function SwipeableCard({
           <Button 
             size="default"
             variant={data.isPotentialMatch ? "secondary" : "default"}
-            className={`flex-1 ${data.isPotentialMatch ? 'bg-primary/10 text-primary hover:bg-primary/20' : ''}`}
-            onClick={() => handleButtonClick("right")}
+            className={`flex-1 pointer-events-auto ${data.isPotentialMatch ? 'bg-primary/10 text-primary hover:bg-primary/20' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              console.log("[SwipeableCard] Request/Match button clicked");
+              handleButtonClick("right");
+            }}
           >
             {data.isPotentialMatch ? (
               <Sparkles className="h-4 w-4 mr-1" />
