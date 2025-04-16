@@ -946,9 +946,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               {collaborations.map(collab => renderCollaborationCard(collab))}
             </div>
           ) : (
-            <div className="text-center pt-4 pb-8 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
+            <div className="text-center pt-4 pb-4 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
               {/* Collaboration Steps Section */}
-              <div className="mb-5 text-left mt-0">
+              <div className="mb-4 text-left">
                 <div className="flex flex-col gap-3">
                   {/* Step 1 */}
                   <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
@@ -994,8 +994,16 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 </div>
               </div>
               
+              {/* Bottom CTA Button */}
+              <Button 
+                onClick={() => setLocation('/create-collaboration-steps')}
+                className="w-full max-w-xs py-3 mx-auto mb-4 bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Create Your First Collab
+              </Button>
+              
               {/* Privacy Section */}
-              <div className="mb-4 flex flex-col items-center">
+              <div className="flex flex-col items-center">
                 <div className="flex items-stretch border border-muted-foreground/10 rounded-lg overflow-hidden">
                   <div className="bg-yellow-500/85 w-12 flex items-center justify-center">
                     <span className="text-white"><Lock size={18} /></span>
@@ -1008,14 +1016,6 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   </div>
                 </div>
               </div>
-              
-              {/* Bottom CTA Button */}
-              <Button 
-                onClick={() => setLocation('/create-collaboration-steps')}
-                className="w-full max-w-xs py-3 mx-auto bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Create Your First Collab
-              </Button>
             </div>
           )}
           
