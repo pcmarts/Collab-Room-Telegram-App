@@ -946,9 +946,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               {collaborations.map(collab => renderCollaborationCard(collab))}
             </div>
           ) : (
-            <div className="text-center py-8 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
+            <div className="text-center pt-6 pb-8 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
               {/* How Collaborations Work Section */}
-              <div className="mb-5 text-left mt-2">
+              <div className="mb-5 text-left mt-0">
                 <h3 className="text-base font-medium mb-3 pl-2">How Collaborations Work</h3>
                 
                 <div className="flex flex-col gap-3">
@@ -1004,13 +1004,6 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                     <strong>Privacy first.</strong> Contact details shared only on match.
                   </p>
                 </div>
-              </div>
-              
-              {/* Network Stats */}
-              <div className="mb-5">
-                <p className="text-xs text-muted-foreground">
-                  Join 100+ companies finding valuable partnerships on The Collab Room.
-                </p>
               </div>
               
               {/* Bottom CTA Button */}
