@@ -997,7 +997,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               </div>
               
               {/* Privacy Section */}
-              <div className="mb-5 flex flex-col items-center">
+              <div className="mb-3 flex flex-col items-center">
                 <div className="inline-flex items-center gap-1 border border-muted-foreground/20 rounded-lg px-3 py-1 bg-background">
                   <span className="text-primary"><Lock size={14} /></span>
                   <p className="text-xs">
