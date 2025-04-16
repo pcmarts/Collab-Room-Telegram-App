@@ -5,15 +5,12 @@ import { bot } from "./telegram";
 import session from 'express-session';
 import MemoryStore from 'memorystore';
 import { config } from "../shared/config";
-import { pool } from "./db";
-import connectPgSimple from 'connect-pg-simple';
 import { apiLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
 import { requestLogger, errorLogger } from './middleware/logger-middleware';
 
-// Use PostgreSQL for session storage in production, memory store in development
+// Use in-memory session storage
 const MemoryStoreSession = MemoryStore(session);
-const PgSession = connectPgSimple(session);
 
 // Create Express application
 const app = express();
