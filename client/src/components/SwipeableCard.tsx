@@ -177,25 +177,7 @@ export default function SwipeableCard({
         }`}>
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">
-              {/* Company Logo */}
-              {!data.isPotentialMatch && (
-                <LogoAvatar 
-                  name={data.creator_company_name || "Company"} 
-                  logoUrl={data.company_data?.logo_url || data.creator_company_logo_url}
-                  size="sm"
-                  className="flex-shrink-0"
-                />
-              )}
-              
-              {/* Potential Match Company Logo */}
-              {data.isPotentialMatch && (
-                <LogoAvatar 
-                  name={data.potentialMatchData?.company_name || "Company"}
-                  logoUrl={data.company_data?.logo_url || data.potentialMatchData?.company_logo_url}
-                  size="sm"
-                  className="flex-shrink-0"
-                />
-              )}
+              {/* Company Logo Removed */}
               
               {/* Company Name and Type */}
               <div>
