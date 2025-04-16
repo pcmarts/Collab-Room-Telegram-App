@@ -1155,6 +1155,32 @@ async function handleApproveUserCallback(
       );
       // Continue execution even if notification fails
     }
+    
+    // Enrich the company with Twitter data (async, don't wait for completion)
+    if (user.company_id) {
+      try {
+        // Import the Twitter enrichment utility (using dynamic import for ESM)
+        import('./utils/twitter-enrichment.js').then(({ enrichCompanyOnUserApproval }) => {
+          // Run Twitter enrichment in the background
+          enrichCompanyOnUserApproval(user.id)
+            .then(result => {
+              if (result.success) {
+                console.log(`[CALLBACK_DEBUG] Successfully enriched company Twitter data after user approval: ${result.message}`);
+              } else {
+                console.warn(`[CALLBACK_DEBUG] Failed to enrich company Twitter data after user approval: ${result.error}`);
+              }
+            })
+            .catch(err => {
+              console.error('[CALLBACK_DEBUG] Error during company Twitter enrichment after user approval:', err);
+            });
+        }).catch(importErr => {
+          console.error('[CALLBACK_DEBUG] Failed to import Twitter enrichment utility:', importErr);
+        });
+      } catch (enrichError) {
+        console.error('[CALLBACK_DEBUG] Failed to start Twitter enrichment process:', enrichError);
+        // Continue execution even if enrichment fails
+      }
+    }
 
     // Update the admin's message to show approval status
     try {

@@ -5,9 +5,8 @@
  * when a user is approved.
  */
 
-const { Pool } = require('pg');
-const { db, users, companies } = require('../db');
-const { eq } = require('drizzle-orm');
+import { db, users, companies } from '../db.js';
+import { eq } from 'drizzle-orm';
 
 // API request options
 const getApiOptions = () => ({
@@ -95,17 +94,10 @@ async function storeTwitterData(companyId, profile) {
   try {
     console.log(`Storing Twitter data for company ${companyId} with handle @${profile.username}...`);
     
-    // Get a database client from the pool
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false
-      }
-    });
-    
-    const client = await pool.connect();
-    
+    // Use direct SQL execution through Drizzle DB connection
+    // This improves reliability and avoids creating new connections
     try {
+      // Create a custom SQL query with the existing drizzle connection
       const query = `
         INSERT INTO company_twitter_data (
           company_id, 
@@ -171,13 +163,14 @@ async function storeTwitterData(companyId, profile) {
         profile.rawData
       ];
       
-      const result = await client.query(query, values);
+      // Execute raw SQL using Drizzle's db instance
+      const result = await db.execute(query, values);
       
-      if (result.rows && result.rows.length > 0) {
+      if (result && result.length > 0) {
         console.log(`Successfully stored Twitter data for company ${companyId}`);
         return {
           success: true,
-          id: result.rows[0].id
+          id: result[0].id
         };
       } else {
         console.error(`Failed to store Twitter data for company ${companyId}`);
@@ -186,9 +179,9 @@ async function storeTwitterData(companyId, profile) {
           error: 'No rows returned after insert/update'
         };
       }
-    } finally {
-      client.release();
-      await pool.end();
+    } catch (dbError) {
+      console.error(`Database error while storing Twitter data: ${dbError}`);
+      throw dbError;
     }
   } catch (error) {
     console.error(`Error storing Twitter data for company ${companyId}:`, error);
@@ -206,74 +199,55 @@ async function updateCompanyWithTwitterData(companyId, twitterData) {
   try {
     console.log(`Processing company ${companyId}...`);
     
-    // Get a database client
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false
-      }
-    });
-    
-    const client = await pool.connect();
-    
     try {
-      // Get current company data
-      const companyResult = await client.query(
-        'SELECT id, name, short_description, logo_url FROM companies WHERE id = $1',
-        [companyId]
-      );
+      // Get current company data using Drizzle
+      const [company] = await db.select({
+        id: companies.id,
+        name: companies.name,
+        short_description: companies.short_description,
+        logo_url: companies.logo_url
+      })
+      .from(companies)
+      .where(eq(companies.id, companyId));
       
-      if (companyResult.rows.length === 0) {
+      if (!company) {
         console.log(`Company ${companyId} not found in database.`);
         return { success: false, reason: 'Company not found' };
       }
       
-      const company = companyResult.rows[0];
-      
-      // Prepare update fields
-      const updates = [];
-      const updateValues = [];
-      let updateCount = 1;
+      const updates = {};
       
       // Always update logo_url with Twitter profile image
-      updates.push(`logo_url = $${updateCount}`);
-      updateValues.push(twitterData.profile_image_url);
-      updateCount++;
+      updates.logo_url = twitterData.profile_image_url;
       
       // Only update short_description if it's empty or null
       let descriptionUpdated = false;
       if (!company.short_description) {
-        updates.push(`short_description = $${updateCount}`);
-        updateValues.push(twitterData.bio);
-        updateCount++;
+        updates.short_description = twitterData.bio;
         descriptionUpdated = true;
       }
       
-      // Skip if no updates to make
-      if (updates.length === 0) {
+      // Skip if no updates to make (shouldn't happen as we always update logo_url)
+      if (Object.keys(updates).length === 0) {
         console.log(`No updates needed for company ${companyId}`);
         return { success: true, changes: 0 };
       }
       
-      // Add company ID to values array
-      updateValues.push(companyId);
+      // Update company using Drizzle
+      const [updatedCompany] = await db.update(companies)
+        .set(updates)
+        .where(eq(companies.id, companyId))
+        .returning({
+          id: companies.id,
+          name: companies.name,
+          short_description: companies.short_description,
+          logo_url: companies.logo_url
+        });
       
-      // Construct and execute update query
-      const updateQuery = `
-        UPDATE companies 
-        SET ${updates.join(', ')} 
-        WHERE id = $${updateCount}
-        RETURNING id, name, short_description, logo_url
-      `;
-      
-      const updateResult = await client.query(updateQuery, updateValues);
-      
-      if (updateResult.rows.length === 0) {
+      if (!updatedCompany) {
         console.log(`Failed to update company ${companyId}`);
         return { success: false, reason: 'Update failed' };
       }
-      
-      const updatedCompany = updateResult.rows[0];
       
       console.log(`Successfully updated company: ${updatedCompany.name} (${companyId})`);
       console.log(`- Logo URL: ${updatedCompany.logo_url}`);
@@ -281,13 +255,13 @@ async function updateCompanyWithTwitterData(companyId, twitterData) {
       
       return { 
         success: true, 
-        changes: updates.length,
+        changes: Object.keys(updates).length,
         logoUpdated: true,
         descriptionUpdated: descriptionUpdated
       };
-    } finally {
-      client.release();
-      await pool.end();
+    } catch (dbError) {
+      console.error(`Database error while updating company: ${dbError}`);
+      throw dbError;
     }
   } catch (error) {
     console.error(`Error updating company ${companyId}:`, error);
@@ -347,28 +321,21 @@ async function enrichCompanyOnUserApproval(userId) {
       return { success: false, error: storeResult.error };
     }
     
-    // Step 3: Get Twitter data to update company
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false
-      }
-    });
-    
-    const client = await pool.connect();
-    
+    // Step 3: Get Twitter data to update company using Drizzle's SQL method
     try {
-      const twitterDataResult = await client.query(
-        'SELECT bio, profile_image_url FROM company_twitter_data WHERE company_id = $1',
-        [company.id]
-      );
+      // Get the Twitter data using a raw SQL query with Drizzle
+      const twitterDataQuery = `
+        SELECT bio, profile_image_url FROM company_twitter_data WHERE company_id = $1
+      `;
       
-      if (twitterDataResult.rows.length === 0) {
+      const twitterDataResult = await db.execute(twitterDataQuery, [company.id]);
+      
+      if (!twitterDataResult || twitterDataResult.length === 0) {
         console.error(`Twitter data not found for company ${company.id}`);
         return { success: false, error: 'Twitter data not found' };
       }
       
-      const twitterData = twitterDataResult.rows[0];
+      const twitterData = twitterDataResult[0];
       
       // Step 4: Update company with Twitter data
       const updateResult = await updateCompanyWithTwitterData(company.id, twitterData);
@@ -385,9 +352,9 @@ async function enrichCompanyOnUserApproval(userId) {
         logoUpdated: updateResult.logoUpdated,
         descriptionUpdated: updateResult.descriptionUpdated
       };
-    } finally {
-      client.release();
-      await pool.end();
+    } catch (dbError) {
+      console.error(`Database error getting Twitter data: ${dbError}`);
+      throw dbError;
     }
   } catch (error) {
     console.error('Error during company Twitter enrichment:', error);
@@ -395,6 +362,6 @@ async function enrichCompanyOnUserApproval(userId) {
   }
 }
 
-module.exports = {
+export {
   enrichCompanyOnUserApproval
 };
