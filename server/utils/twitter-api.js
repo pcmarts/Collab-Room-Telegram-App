@@ -5,7 +5,8 @@
  * enrich company information in the application.
  */
 
-import fetch from 'node-fetch';
+// Using built-in fetch API from Node.js 18+
+import { fetch } from 'undici';
 
 /**
  * @typedef {Object} TwitterProfile

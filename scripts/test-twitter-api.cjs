@@ -5,6 +5,9 @@
  * node scripts/test-twitter-api.cjs [username]
  */
 
+// Import node's fetch API in CJS
+const { fetch } = require('undici');
+
 // Using environment variable directly (already loaded in the Replit environment)
 const API_KEY = process.env.X_RAPIDAPI_KEY;
 

@@ -1,130 +1,192 @@
 /**
- * Direct test script for the Twitter API
- * This script directly tests the Twitter API functionality
+ * Direct Twitter API test for a specific company
+ * Uses global fetch to call the Twitter API directly
  * 
- * Usage:
- * node scripts/direct-twitter-api-test.js [username]
- * 
- * Example:
- * node scripts/direct-twitter-api-test.js Bondexapp
+ * Run with:
+ * node scripts/direct-twitter-api-test.js [twitter_handle]
  */
 
-// Import required modules
-// Using built-in fetch instead of node-fetch
-import 'dotenv/config';
+const TWITTER_HANDLE = process.argv[2] || 'Bondexapp';
+const COMPANY_ID = '4c95f244-d5c1-4369-9531-834401fdce12';
 
-/**
- * Fetches Twitter profile data using the RapidAPI Twitter241 endpoint
- * 
- * @param {string} username - Twitter handle without @ symbol
- * @returns {Promise<Object|null>} Twitter profile data or null if not found
- */
-async function getTwitterProfile(username) {
+// Check if API key is available
+if (!process.env.X_RAPIDAPI_KEY) {
+  console.error('Error: X_RAPIDAPI_KEY environment variable is missing');
+  process.exit(1);
+}
+
+console.log(`Testing Twitter API enrichment for company ID: ${COMPANY_ID}`);
+console.log(`Using Twitter handle: @${TWITTER_HANDLE}`);
+
+// API request options
+const options = {
+  method: 'GET',
+  headers: {
+    'X-RapidAPI-Key': process.env.X_RAPIDAPI_KEY,
+    'X-RapidAPI-Host': 'twitter241.p.rapidapi.com'
+  }
+};
+
+// Function to fetch Twitter profile
+async function fetchTwitterProfile(username) {
   try {
     // Clean the username (remove @ if present)
     username = username.replace(/^@/, '');
     
-    console.log(`Fetching Twitter profile for @${username}`);
+    console.log(`Fetching Twitter profile for @${username}...`);
     
-    if (!process.env.X_RAPIDAPI_KEY) {
-      console.error('Error: X_RAPIDAPI_KEY environment variable is not set');
-      process.exit(1);
-    }
-    
-    const options = {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': process.env.X_RAPIDAPI_KEY,
-        'X-RapidAPI-Host': 'twitter241.p.rapidapi.com'
-      }
-    };
-    
+    // Make the API request
     const response = await fetch(`https://twitter241.p.rapidapi.com/user?username=${username}`, options);
     
     if (!response.ok) {
-      console.error(`Twitter API error: ${response.status} ${response.statusText}`);
-      return null;
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
     
     const data = await response.json();
     
     // Check for errors in the response
-    if (data.errors || !data.data || !data.data.user) {
-      console.error('Twitter API returned an error or no user data', data.errors || 'No user data');
-      return null;
+    if (data.errors) {
+      throw new Error(`Twitter API returned errors: ${JSON.stringify(data.errors)}`);
     }
     
-    const { data: { user } } = data;
-    const legacy = user.legacy || {};
+    // The structure is: data.result.data.user.result
+    if (!data.result || !data.result.data || !data.result.data.user || !data.result.data.user.result) {
+      throw new Error('No user data found in response');
+    }
     
-    // Transform the response into our TwitterProfile structure
+    // Extract the user data
+    const { result: { data: { user } } } = data;
+    const userData = user.result || {};
+    const legacy = userData.legacy || {};
+    
+    // Get profile image URL with safe handling
+    let profileImageUrl = legacy.profile_image_url_https || '';
+    if (profileImageUrl) {
+      profileImageUrl = profileImageUrl.replace('_normal', '');
+    }
+    
+    // Transform the response into a clean profile object
     const profile = {
       username: username,
       name: legacy.name,
       bio: legacy.description,
-      followers: legacy.followers_count,
-      following: legacy.friends_count,
-      tweets: legacy.statuses_count,
-      profileImageUrl: legacy.profile_image_url_https.replace('_normal', ''), // Get full-sized image
+      followers: legacy.followers_count || 0,
+      following: legacy.friends_count || 0,
+      tweets: legacy.statuses_count || 0,
+      profileImageUrl: profileImageUrl,
       bannerImageUrl: legacy.profile_banner_url,
-      verified: user.is_blue_verified || legacy.verified || false,
-      isBusinessAccount: user.professional?.professional_type === 'Business',
-      businessCategory: user.professional?.category?.[0]?.name || null,
+      verified: userData.is_blue_verified || legacy.verified || false,
+      isBusinessAccount: userData.professional?.professional_type === 'Business',
+      businessCategory: userData.professional?.category?.[0]?.name || null,
       location: legacy.location,
       url: legacy.entities?.url?.urls?.[0]?.expanded_url || legacy.url,
-      createdAt: legacy.created_at
+      createdAt: legacy.created_at,
+      restId: userData.rest_id || null, // Include the Twitter rest_id for API integrations
     };
     
-    console.log(`Successfully fetched profile for @${username}`);
-    return profile;
+    return { success: true, profile };
   } catch (error) {
     console.error(`Error fetching Twitter profile for @${username}:`, error);
-    return null;
+    return { success: false, error: error.message };
   }
 }
 
-/**
- * Main function to run the test
- */
-async function main() {
-  // Get username from command line argument, default to Bondexapp
-  const username = process.argv[2] || 'Bondexapp';
+// Function to simulate storing data in the database
+function simulateStore(companyId, profile) {
+  console.log('\n========== TWITTER DATA ENRICHMENT SIMULATION ==========');
+  console.log(`Company ID: ${companyId}`);
+  console.log('Twitter Data:');
+  console.log('-----------------');
+  console.log(`Username: ${profile.username}`);
+  console.log(`Display Name: ${profile.name}`);
+  console.log(`Twitter Rest ID: ${profile.restId}`);
+  console.log(`Bio: ${profile.bio ? profile.bio.substring(0, 50) + (profile.bio.length > 50 ? '...' : '') : 'N/A'}`);
+  console.log(`Followers: ${profile.followers.toLocaleString()}`);
+  console.log(`Following: ${profile.following.toLocaleString()}`);
+  console.log(`Tweets: ${profile.tweets.toLocaleString()}`);
+  console.log(`Verified: ${profile.verified ? 'Yes' : 'No'}`);
+  console.log(`Business Account: ${profile.isBusinessAccount ? 'Yes' : 'No'}`);
+  console.log(`Business Category: ${profile.businessCategory || 'N/A'}`);
+  console.log(`Location: ${profile.location || 'N/A'}`);
+  console.log(`Website: ${profile.url || 'N/A'}`);
+  console.log(`Account Created: ${profile.createdAt || 'N/A'}`);
+  console.log(`Profile Image: ${profile.profileImageUrl || 'N/A'}`);
+  console.log('\nSQL that would be executed:');
+  console.log(`
+INSERT INTO company_twitter_data (
+  company_id, username, name, bio, followers, following, tweets, 
+  profile_image_url, banner_image_url, verified, is_business_account, 
+  business_category, location, website_url, created_at, rest_id
+) VALUES (
+  '${companyId}', 
+  '${profile.username}', 
+  '${profile.name}', 
+  '${profile.bio ? profile.bio.replace(/'/g, "''") : ''}', 
+  ${profile.followers}, 
+  ${profile.following}, 
+  ${profile.tweets}, 
+  '${profile.profileImageUrl || ''}', 
+  '${profile.bannerImageUrl || ''}', 
+  ${profile.verified}, 
+  ${profile.isBusinessAccount}, 
+  '${profile.businessCategory || ''}', 
+  '${profile.location || ''}', 
+  '${profile.url || ''}', 
+  NOW(), 
+  '${profile.restId}'
+)
+ON CONFLICT (company_id) DO UPDATE SET
+  username = EXCLUDED.username,
+  name = EXCLUDED.name,
+  bio = EXCLUDED.bio,
+  followers = EXCLUDED.followers,
+  following = EXCLUDED.following,
+  tweets = EXCLUDED.tweets,
+  profile_image_url = EXCLUDED.profile_image_url,
+  banner_image_url = EXCLUDED.banner_image_url,
+  verified = EXCLUDED.verified,
+  is_business_account = EXCLUDED.is_business_account,
+  business_category = EXCLUDED.business_category,
+  location = EXCLUDED.location,
+  website_url = EXCLUDED.website_url,
+  rest_id = EXCLUDED.rest_id,
+  updated_at = NOW()
+RETURNING id;
+  `);
+  console.log('========== END SIMULATION ==========\n');
   
+  return { success: true };
+}
+
+// Main function
+async function main() {
   try {
-    const profile = await getTwitterProfile(username);
+    // Fetch Twitter profile
+    const result = await fetchTwitterProfile(TWITTER_HANDLE);
     
-    if (profile) {
-      console.log('Twitter API test successful. Profile details:');
-      
-      // Print formatted profile information
-      const details = {
-        'Username          ': profile.username,
-        'Name              ': profile.name,
-        'Verified          ': profile.verified ? 'Yes' : 'No',
-        'Business Account  ': profile.isBusinessAccount ? 'Yes' : 'No', 
-        'Business Category ': profile.businessCategory || 'N/A',
-        'Bio               ': profile.bio,
-        'Location          ': profile.location || 'N/A',
-        'Website           ': profile.url || 'N/A',
-        'Created At        ': profile.createdAt,
-        'Followers         ': profile.followers.toLocaleString(),
-        'Following         ': profile.following.toLocaleString(),
-        'Tweets            ': profile.tweets.toLocaleString(),
-        'profileImageUrl   ': profile.profileImageUrl,
-        'bannerImageUrl    ': profile.bannerImageUrl || 'N/A'
-      };
-      
-      for (const [key, value] of Object.entries(details)) {
-        console.log(`${key}: ${value}`);
-      }
-      
+    if (!result.success) {
+      console.error('Failed to fetch Twitter profile:', result.error);
+      process.exit(1);
+    }
+    
+    console.log('\nSuccessfully fetched Twitter profile data:');
+    console.log(`Name: ${result.profile.name}`);
+    console.log(`Followers: ${result.profile.followers.toLocaleString()}`);
+    console.log(`Twitter Rest ID: ${result.profile.restId}`);
+    
+    // Simulate storing in database
+    const storeResult = simulateStore(COMPANY_ID, result.profile);
+    
+    if (storeResult.success) {
+      console.log('\nTwitter data enrichment simulation successful!');
+      console.log('Rest ID successfully captured and would be stored in the database.');
       process.exit(0);
     } else {
-      console.error('Twitter API test failed: No profile returned');
+      console.error('\nTwitter data enrichment simulation failed:', storeResult.error);
       process.exit(1);
     }
   } catch (error) {
-    console.error('Twitter API test failed with error:', error);
+    console.error('Script failed:', error);
     process.exit(1);
   }
 }
