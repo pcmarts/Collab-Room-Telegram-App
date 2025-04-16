@@ -161,6 +161,10 @@ export default function SwipeableCard({
         rotate,
         opacity
       }}
+      // Explicitly make this non-draggable to prevent interference with button clicks
+      drag={false}
+      // Make sure all child elements receive pointer events
+      initial={{ pointerEvents: "auto" }}
     >
       <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl isolate">
         {/* Overlay effects for swipe direction */}
