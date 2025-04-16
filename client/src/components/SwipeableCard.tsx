@@ -179,7 +179,7 @@ export default function SwipeableCard({
               {!data.isPotentialMatch && (
                 // First try company_data.logo_url, then fall back to creator_company_logo_url
                 (data.company_data?.logo_url || data.creator_company_logo_url) ? (
-                  <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40">
+                  <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40 bg-background">
                     <img 
                       src={
                         // First priority: use company_data.logo_url if available
@@ -193,7 +193,7 @@ export default function SwipeableCard({
                           ((data.creator_company_logo_url?.replace('_normal', '_400x400')) || '')
                       } 
                       alt={data.creator_company_name || "Company"} 
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                       onLoad={() => {
                         console.log(`[SwipeableCard] Logo loaded successfully for ${data.creator_company_name || "Company"}`);
                       }}
@@ -249,7 +249,7 @@ export default function SwipeableCard({
               {data.isPotentialMatch && (
                 // First try company_data.logo_url, then fall back to potentialMatchData.company_logo_url
                 (data.company_data?.logo_url || data.potentialMatchData?.company_logo_url) ? (
-                  <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40">
+                  <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40 bg-background">
                     <img 
                       src={
                         // First priority: use company_data.logo_url if available
@@ -263,7 +263,7 @@ export default function SwipeableCard({
                           ((data.potentialMatchData?.company_logo_url?.replace('_normal', '_400x400')) || '')
                       } 
                       alt={data.potentialMatchData?.company_name || 'Company'} 
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                       onLoad={() => {
                         console.log(`[SwipeableCard] Potential match logo loaded for ${data.potentialMatchData?.company_name || "Company"}`);
                       }}
