@@ -971,8 +971,11 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       <span className="font-bold text-xl text-primary-foreground">2</span>
                       <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
                     </div>
-                    <div className="p-3 text-left flex items-center h-full min-h-[4rem] w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                      <h4 className="font-medium text-sm">Your Collab is Live</h4>
+                    <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
+                      <h4 className="font-medium text-sm">Approve or Pass Collab Requests</h4>
+                      <p className="text-xs text-muted-foreground">
+                        You'll be notified when others request to join your collab.
+                      </p>
                     </div>
                   </div>
                   
@@ -983,9 +986,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                      <h4 className="font-medium text-sm">Approve or Pass Collab Requests</h4>
+                      <h4 className="font-medium text-sm">Chat with Your New Match</h4>
                       <p className="text-xs text-muted-foreground">
-                        You'll be notified when others request to join your collab.
+                        You'll be able to chat directly in Telegram with your new collaborator.
                       </p>
                     </div>
                   </div>
