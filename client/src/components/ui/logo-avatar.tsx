@@ -28,21 +28,38 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
 
   // Special case for XBorg
   if (name?.toLowerCase().includes('xborg')) {
-    // Use img.shields.io which usually works with CORS policies
-    const shieldsIOUrl = "https://img.shields.io/badge/X-Borg-blue?style=for-the-badge&logo=twitter&labelColor=1D9BF0&color=1D9BF0";
-    console.log('Using shields.io XBorg badge');
+    // Use a direct image URL from a reliable CDN
+    // Different CDN options to try - we'll use Imgur which has good CORS support
+    // Original URL was: https://pbs.twimg.com/profile_images/1701203495284518912/Ujc9Oow6_400x400.jpg
+    const xborgLogoUrl = "https://i.imgur.com/PFGqlxf.jpg"; // Imgur hosted XBorg logo
+    console.log('Using Imgur hosted XBorg logo');
 
-    // In this case, just return a colored letter avatar with XBorg's color scheme
     return (
       <div 
         className={cn(
-          "rounded-full overflow-hidden flex-shrink-0 border border-border/40",
+          "rounded-full overflow-hidden flex-shrink-0 border border-border/40 bg-background",
           sizeClasses[size],
-          className,
-          "bg-[#1D9BF0] flex items-center justify-center font-bold text-white"
+          className
         )}
       >
-        X
+        <img 
+          src={xborgLogoUrl}
+          alt="XBorg"
+          className="h-full w-full object-contain"
+          onError={(e) => {
+            console.error('Imgur XBorg logo failed to load, falling back to text avatar');
+            // If this image fails too, render a letter avatar with XBorg's color scheme
+            const target = e.target as HTMLImageElement;
+            if (target) {
+              target.style.display = 'none';
+              const parent = target.parentElement;
+              if (parent) {
+                parent.classList.add('bg-[#1D9BF0]', 'flex', 'items-center', 'justify-center', 'font-bold', 'text-white');
+                parent.textContent = 'X';
+              }
+            }
+          }}
+        />
       </div>
     );
   }
