@@ -71,7 +71,7 @@ export function SwipeableCard({
   const [showNoteDialog, setShowNoteDialog] = useState(false);
   
   // Debug information to console
-  console.log(" SWIPEABLE CARD DEBUG ", {
+  console.log("🔵🔵🔵 SWIPEABLE CARD DEBUG 🔵🔵🔵", {
     id: data.id,
     collab_type: data.collab_type,
     isTwitterCoMarketing: data.collab_type?.toLowerCase().includes('twitter') && 
@@ -234,7 +234,7 @@ export function SwipeableCard({
                 data.creator_company_logo_url ? (
                   <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 border border-border/40">
                     <img 
-                      src={(data.creator_company_logo_url?.replace('_normal', '_400x400')) || ''} 
+                      src={data.creator_company_logo_url?.replace('_normal', '_400x400') || ''} 
                       alt={data.creator_company_name || "Company"} 
                       className="h-full w-full object-cover"
                       onError={(e) => {
@@ -670,7 +670,7 @@ export function SwipeableCard({
                 <span>
                   {data.potentialMatchData.first_name} 
                   {data.potentialMatchData.last_name ? ` ${data.potentialMatchData.last_name}` : ''} 
-                  {data.potentialMatchData.job_title ? `  ${data.potentialMatchData.job_title}` : ''}
+                  {data.potentialMatchData.job_title ? ` • ${data.potentialMatchData.job_title}` : ''}
                 </span>
               </div>
               
