@@ -959,38 +959,47 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               <div className="mb-5">
                 <h3 className="text-base font-medium mb-3">How Collaborations Work</h3>
                 
-                <div className="grid gap-3 md:grid-cols-3">
+                <div className="flex flex-col gap-3">
                   {/* Step 1 */}
-                  <div className="flex flex-col items-center p-2">
-                    <div className="rounded-full bg-primary/10 w-8 h-8 flex items-center justify-center mb-2">
-                      <span className="font-semibold text-primary">1</span>
+                  <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
+                    <div className="bg-primary w-12 h-full min-h-[4rem] flex items-center justify-center relative">
+                      <span className="font-bold text-xl text-primary-foreground">1</span>
+                      <div className="absolute right-0 w-3 h-3 bg-primary rotate-45 translate-x-1/2"></div>
                     </div>
-                    <h4 className="font-medium mb-1 text-sm">Create Your Collaboration</h4>
-                    <p className="text-xs text-muted-foreground">
-                      Define your project and what makes it valuable.
-                    </p>
+                    <div className="p-3 text-left">
+                      <h4 className="font-medium text-sm">Create Your Collaboration</h4>
+                      <p className="text-xs text-muted-foreground">
+                        Define your project and what makes it valuable.
+                      </p>
+                    </div>
                   </div>
                   
                   {/* Step 2 */}
-                  <div className="flex flex-col items-center p-2">
-                    <div className="rounded-full bg-primary/10 w-8 h-8 flex items-center justify-center mb-2">
-                      <span className="font-semibold text-primary">2</span>
+                  <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
+                    <div className="bg-primary w-12 h-full min-h-[4rem] flex items-center justify-center relative">
+                      <span className="font-bold text-xl text-primary-foreground">2</span>
+                      <div className="absolute right-0 w-3 h-3 bg-primary rotate-45 translate-x-1/2"></div>
                     </div>
-                    <h4 className="font-medium mb-1 text-sm">Post Your Collaboration</h4>
-                    <p className="text-xs text-muted-foreground">
-                      Make it visible to Web3 professionals.
-                    </p>
+                    <div className="p-3 text-left">
+                      <h4 className="font-medium text-sm">Post Your Collaboration</h4>
+                      <p className="text-xs text-muted-foreground">
+                        Make it visible to Web3 professionals.
+                      </p>
+                    </div>
                   </div>
                   
                   {/* Step 3 */}
-                  <div className="flex flex-col items-center p-2">
-                    <div className="rounded-full bg-primary/10 w-8 h-8 flex items-center justify-center mb-2">
-                      <span className="font-semibold text-primary">3</span>
+                  <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
+                    <div className="bg-primary w-12 h-full min-h-[4rem] flex items-center justify-center relative">
+                      <span className="font-bold text-xl text-primary-foreground">3</span>
+                      <div className="absolute right-0 w-3 h-3 bg-primary rotate-45 translate-x-1/2"></div>
                     </div>
-                    <h4 className="font-medium mb-1 text-sm">Approve Partners</h4>
-                    <p className="text-xs text-muted-foreground">
-                      Select the right collaborators for your vision.
-                    </p>
+                    <div className="p-3 text-left">
+                      <h4 className="font-medium text-sm">Approve Partners</h4>
+                      <p className="text-xs text-muted-foreground">
+                        Select the right collaborators for your vision.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
