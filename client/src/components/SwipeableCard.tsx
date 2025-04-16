@@ -199,6 +199,13 @@ export default function SwipeableCard({
                       }}
                       onError={(e) => {
                         console.log(`[SwipeableCard] Logo error for ${data.creator_company_name || "Company"}`);
+                        console.log(`[DEBUG] Full data object:`, JSON.stringify({
+                          id: data.id,
+                          company_name: data.creator_company_name,
+                          company_data_logo: data.company_data?.logo_url,
+                          creator_company_logo: data.creator_company_logo_url,
+                        }, null, 2));
+                        
                         // Get the source that failed
                         const target = e.target as HTMLImageElement;
                         const failedUrl = target.src;
@@ -262,6 +269,13 @@ export default function SwipeableCard({
                       }}
                       onError={(e) => {
                         console.log(`[SwipeableCard] Potential match logo error for ${data.potentialMatchData?.company_name || "Company"}`);
+                        console.log(`[DEBUG] Potential match data object:`, JSON.stringify({
+                          id: data.id,
+                          potential_company_name: data.potentialMatchData?.company_name,
+                          company_data_logo: data.company_data?.logo_url,
+                          potential_company_logo: data.potentialMatchData?.company_logo_url
+                        }, null, 2));
+                        
                         // Get the source that failed
                         const target = e.target as HTMLImageElement;
                         const failedUrl = target.src;
