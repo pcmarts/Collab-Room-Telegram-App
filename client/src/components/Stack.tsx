@@ -1,5 +1,5 @@
 import React, { useState, Children } from "react";
-import { SwipeableCard } from "./SwipeableCard";
+import SwipeableCard from "./SwipeableCard";
 
 export const Stack = ({ onVote, children, ...props }) => {
   const [stack, setStack] = useState(Children.toArray(children));
@@ -32,13 +32,14 @@ export const Stack = ({ onVote, children, ...props }) => {
         return (
           <SwipeableCard
             key={item.key || index}
-            onVote={(result) => handleVote(item, result)}
-            style={{
-              zIndex: index * 10
+            data={item.props.data || {}}
+            onSwipe={(direction, note) => {
+              console.log("Stack received swipe:", direction, note);
+              handleVote(item, direction);
             }}
-          >
-            {item}
-          </SwipeableCard>
+            onInfoClick={() => console.log("Info clicked for", item)}
+            zIndex={index * 10}
+          />
         );
       })}
     </div>
