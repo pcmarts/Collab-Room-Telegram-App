@@ -5,6 +5,19 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.8.5] - 2025-04-16
+
+### Enhanced
+- Improved "My Collaborations" empty state experience with a clearer three-step explanation of how collaborations work
+- Updated the step sequence to present a more logical user journey: Create, Approve, Chat
+- Enhanced visual design with consistent spacing, sizing, and opacity for better focus on call-to-action
+
+### Technical Details
+- Redesigned the empty state in client/src/pages/my-collaborations.tsx with consistent styling for all elements
+- Applied 65% opacity to background elements to make the primary CTA button stand out
+- Updated the flow explanation to include Telegram chat integration in the final step
+- Maintained consistent width of 3.5rem for all numbered steps and privacy icon for visual harmony
+
 ## [Version 1.8.4] - 2025-04-15
 
 ### Enhanced

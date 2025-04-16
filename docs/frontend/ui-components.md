@@ -2,6 +2,20 @@
 
 This document provides documentation for specialized UI components used across The Collab Room application.
 
+## Empty States
+
+The Collab Room implements thoughtfully designed empty states to guide users when content is not yet available. For detailed information on empty state implementation, see the [Empty State Design documentation](./empty-state-design.md).
+
+### My Collaborations Empty State
+
+The empty state on the My Collaborations page features a three-step explanation of how collaborations work, along with a privacy section and prominent CTA. This design uses consistent element sizing (w-14 width for numbers and icons), 65% opacity backgrounds to emphasize the CTA button, and a clean horizontal layout for easy scanning.
+
+**Key Features:**
+- "How Collaborations Work" title introducing the three-step process
+- Numbered step cards with directional triangle indicators 
+- Prominent "Create Your First Collab" button
+- Privacy section with lock icon and privacy explanation
+
 ## Text Loop Component
 
 The TextLoop component provides an animated text rotation effect that smoothly transitions between different text items. It's primarily used on the welcome page to showcase different collaboration types.
