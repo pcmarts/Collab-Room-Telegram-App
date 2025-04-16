@@ -1126,23 +1126,27 @@ export default function DiscoverPage() {
       <div className="p-4 border-t bg-card/50 flex justify-between items-center">
         <Button 
           variant="outline" 
-          size="icon" 
           onClick={handleOpenFilters}
-          className="rounded-full h-10 w-10"
+          size="sm"
+          className="flex items-center gap-1"
         >
-          <Filter className="h-5 w-5" />
+          <Filter className="h-4 w-4" />
+          Filters
         </Button>
         
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={handleRefresh}
-            size="sm"
-            className="flex items-center gap-1"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
+          {/* Only show refresh button when no cards are available */}
+          {cards.length === 0 && (
+            <Button 
+              variant="outline" 
+              onClick={handleRefresh}
+              size="sm"
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+          )}
         </div>
       </div>
       
