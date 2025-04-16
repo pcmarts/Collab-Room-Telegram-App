@@ -107,7 +107,14 @@ export default function SwipeableCard({
 
   const viewDetailsHandler = () => {
     if (handleDetailsClick && data.id) {
-      handleDetailsClick(data.id);
+      try {
+        console.log(`[SwipeableCard] Navigating to details for collaboration: ${data.id}`);
+        handleDetailsClick(data.id);
+      } catch (error) {
+        console.error(`[SwipeableCard] Error navigating to details for collaboration ${data.id}:`, error);
+      }
+    } else {
+      console.warn(`[SwipeableCard] Cannot navigate to details: ${!handleDetailsClick ? 'handleDetailsClick is not defined' : 'data.id is not available'}`);
     }
   };
 
