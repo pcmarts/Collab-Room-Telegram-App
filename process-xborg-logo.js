@@ -8,7 +8,8 @@
  * npx tsx process-xborg-logo.js
  */
 
-import { db, companies, companyTwitterData } from './server/db.js';
+import { db } from './server/db.js';
+import { companies, company_twitter_data } from './shared/schema.js';
 import { eq, sql, ilike } from 'drizzle-orm';
 import { downloadAndSaveImage } from './server/utils/image-downloader.js';
 
@@ -21,10 +22,10 @@ async function processXBorgLogo() {
         company_id: companies.id,
         company_name: companies.name,
         logo_url: companies.logo_url,
-        profile_image_url: companyTwitterData.profile_image_url
+        profile_image_url: company_twitter_data.profile_image_url
       })
       .from(companies)
-      .leftJoin(companyTwitterData, eq(companies.id, companyTwitterData.company_id))
+      .leftJoin(company_twitter_data, eq(companies.id, company_twitter_data.company_id))
       .where(ilike(companies.name, '%XBorg%'));
     
     if (!results || results.length === 0) {
