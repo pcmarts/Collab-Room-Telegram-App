@@ -5,6 +5,18 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.8.9] - 2025-04-16
+
+### Fixed
+- Resolved deployment issues by fixing SQL import statements across multiple files
+- Fixed module import errors with drizzle-orm and @neondatabase/serverless packages
+- Added documentation explaining the SQL import fixes for future reference
+
+### Technical Details
+- Updated import statements in server/routes/twitter-routes.js and multiple script files
+- Changed `import { sql } from '@neondatabase/serverless'` to `import { sql } from 'drizzle-orm'`
+- Created comprehensive documentation in docs/sql-import-fix-summary.md
+
 ## [Version 1.8.8] - 2025-04-16
 
 ### Fixed

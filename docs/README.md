@@ -24,8 +24,10 @@ This documentation is organized into the following sections:
 9. [Discovery System](./discovery/README.md) - How the collaboration discovery system works
    * [Swipe Filtering](./discovery/swipe-filtering.md) - Preventing duplicate cards in discovery
 10. [Matches System](./matches/README.md) - Details on the match display and interaction system
-11. [Security Audit](./security-audit-report.md) - Comprehensive security audit findings and remediations
-12. [Changelog](../CHANGELOG.md) - History of changes to the application
+11. [Deployment](./deployment/README.md) - Deployment processes and troubleshooting
+   * [SQL Import Fix](./deployment/sql-import-fix.md) - Documentation on fixing SQL import issues
+12. [Security Audit](./security-audit-report.md) - Comprehensive security audit findings and remediations
+13. [Changelog](../CHANGELOG.md) - History of changes to the application
 
 ## Quick Start
 
