@@ -10,7 +10,9 @@
  * npx tsx download-all-company-logos.js
  */
 
-import { db, companies } from './server/db.js';
+import { db } from './server/db.js';
+import { companies, company_twitter_data } from './shared/schema.js';
+import { eq, isNotNull, and } from 'drizzle-orm';
 import { downloadAndSaveImage } from './server/utils/image-downloader.js';
 
 // Main function to process all companies
@@ -18,24 +20,16 @@ async function downloadAllCompanyLogos() {
   try {
     console.log('Starting company logo download process...');
     
-    // Step 1: Get all companies with Twitter data that have a profile_image_url
-    const query = `
-      SELECT 
-        c.id AS company_id, 
-        c.name AS company_name,
-        c.logo_url,
-        ctd.profile_image_url 
-      FROM 
-        companies c
-      JOIN 
-        company_twitter_data ctd 
-      ON 
-        c.id = ctd.company_id
-      WHERE 
-        ctd.profile_image_url IS NOT NULL
-    `;
-    
-    const results = await db.execute(query);
+    // Step 1: Get all companies with Twitter data that have a profile_image_url using Drizzle ORM
+    const results = await db.select({
+      company_id: companies.id,
+      company_name: companies.name,
+      logo_url: companies.logo_url,
+      profile_image_url: company_twitter_data.profile_image_url
+    })
+    .from(companies)
+    .innerJoin(company_twitter_data, eq(companies.id, company_twitter_data.company_id))
+    .where(isNotNull(company_twitter_data.profile_image_url));
     
     if (!results || results.length === 0) {
       console.log('No companies with Twitter profile images found.');
@@ -80,15 +74,15 @@ async function downloadAllCompanyLogos() {
           continue;
         }
         
-        // Update the company with the new local logo URL
-        const updateQuery = `
-          UPDATE companies 
-          SET logo_url = $1
-          WHERE id = $2
-          RETURNING id, name, logo_url
-        `;
-        
-        const updateResult = await db.execute(updateQuery, [downloadResult.publicPath, company.company_id]);
+        // Update the company with the new local logo URL using Drizzle ORM
+        const updateResult = await db.update(companies)
+          .set({ logo_url: downloadResult.publicPath })
+          .where(eq(companies.id, company.company_id))
+          .returning({
+            id: companies.id,
+            name: companies.name,
+            logo_url: companies.logo_url
+          });
         
         if (!updateResult || updateResult.length === 0) {
           throw new Error('Failed to update company record');

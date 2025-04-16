@@ -9,20 +9,6 @@ interface LogoAvatarProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
-// Define special company logo handlers
-const SPECIAL_COMPANY_LOGOS: Record<string, (size: string, className?: string) => JSX.Element> = {
-  // XBorg logo as SVG to avoid CORS issues
-  'xborg': (size: string, className?: string) => (
-    <svg viewBox="0 0 100 100" className="h-full w-full">
-      <rect width="100" height="100" fill="black" />
-      <g fill="#FF3B44">
-        <polygon points="30,28 50,43 70,28 58,28 50,34 42,28" />
-        <polygon points="30,72 50,57 70,72 58,72 50,66 42,72" />
-      </g>
-    </svg>
-  )
-};
-
 /**
  * LogoAvatar component tries to load a logo image first 
  * but falls back to a LetterAvatar if the image fails to load
@@ -40,27 +26,6 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
     'lg': 'h-12 w-12',
     'xl': 'h-16 w-16',
   };
-
-  // Check for special company handling based on name
-  const normalizedName = name?.toLowerCase() || '';
-  const specialLogoKey = Object.keys(SPECIAL_COMPANY_LOGOS).find(key => 
-    normalizedName.includes(key)
-  );
-
-  // For special company logos like XBorg, use the SVG version
-  if (specialLogoKey) {
-    return (
-      <div 
-        className={cn(
-          "rounded-full overflow-hidden flex-shrink-0 border border-border/40",
-          sizeClasses[size],
-          className
-        )}
-      >
-        {SPECIAL_COMPANY_LOGOS[specialLogoKey](size, className)}
-      </div>
-    );
-  }
 
   // Process the logo URL to get the best possible version
   useEffect(() => {
