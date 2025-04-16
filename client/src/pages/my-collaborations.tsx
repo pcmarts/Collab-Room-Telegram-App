@@ -998,7 +998,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               
               {/* Privacy Section */}
               <div className="mb-4 flex flex-col items-center">
-                <div className="inline-flex items-start gap-2 border border-muted-foreground/20 rounded-lg overflow-hidden">
+                <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
                   <div className="bg-yellow-500/85 w-12 h-full min-h-[4rem] flex items-center justify-center relative">
                     <span className="text-white"><Lock size={18} /></span>
                     <div className="absolute right-0 w-3 h-3 bg-yellow-500/85 rotate-45 translate-x-1/2"></div>
