@@ -975,7 +975,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                     <div className="p-3 text-left">
                       <h4 className="font-medium text-sm">Post Your Collaboration</h4>
                       <p className="text-xs text-muted-foreground">
-                        Allow other web3 marketers to <em className="underline">Discover</em> your collab.
+                        Allow other web3 marketers to DISCOVER your collab.
                       </p>
                     </div>
                   </div>
