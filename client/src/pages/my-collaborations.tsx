@@ -948,12 +948,12 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           ) : (
             <div className="text-center py-8 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
               {/* Top CTA Button */}
-              <GlowButton 
+              <Button 
                 onClick={() => setLocation('/create-collaboration-steps')}
-                className="w-full max-w-xs py-3 mx-auto mb-8"
+                className="w-full max-w-xs py-3 mx-auto mb-8 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Create Your First Collab
-              </GlowButton>
+              </Button>
               
               {/* How Collaborations Work Section */}
               <div className="mb-5 text-left">
@@ -983,7 +983,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                     <div className="p-3 text-left">
                       <h4 className="font-medium text-sm">Post Your Collaboration</h4>
                       <p className="text-xs text-muted-foreground">
-                        Host chooses your Collab to host (e.g., Twitter, newsletter, etc.).
+                        Allow other web3 marketers to <em>discover</em> your collab.
                       </p>
                     </div>
                   </div>
@@ -1022,12 +1022,12 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               </div>
               
               {/* Bottom CTA Button */}
-              <GlowButton 
+              <Button 
                 onClick={() => setLocation('/create-collaboration-steps')}
-                className="w-full max-w-xs py-3 mx-auto"
+                className="w-full max-w-xs py-3 mx-auto bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Create Your First Collab
-              </GlowButton>
+              </Button>
             </div>
           )}
           
