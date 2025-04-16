@@ -6,7 +6,7 @@
  */
 
 // Using built-in fetch API from Node.js 18+
-import { fetch } from 'undici';
+// No need to import fetch as it's globally available in Node.js 18+
 
 /**
  * @typedef {Object} TwitterProfile
