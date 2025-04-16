@@ -5,14 +5,14 @@
  */
 
 import https from 'https';
-import { logger } from './logger.js';
+import { logger } from './logger';
 
 /**
  * Fetches Twitter user information using the Twitter241 RapidAPI
  * @param {string} username - Twitter handle with or without @ symbol
  * @returns {Promise<Object>} - Parsed user data
  */
-async function fetchTwitterUserInfo(username) {
+async function fetchTwitterUserInfo(username: string): Promise<any> {
   // Get API key from environment variable
   const apiKey = process.env.X_RAPIDAPI_KEY;
   
@@ -38,7 +38,7 @@ async function fetchTwitterUserInfo(username) {
     logger.debug(`Making Twitter API request for username: ${cleanUsername}`);
     
     const req = https.request(options, function (res) {
-      const chunks = [];
+      const chunks: Buffer[] = [];
 
       res.on('data', function (chunk) {
         chunks.push(chunk);
@@ -48,7 +48,7 @@ async function fetchTwitterUserInfo(username) {
         const body = Buffer.concat(chunks);
         try {
           const parsedData = JSON.parse(body.toString());
-          if (res.statusCode >= 400) {
+          if (res.statusCode && res.statusCode >= 400) {
             logger.error(`Twitter API error: ${res.statusCode} - ${JSON.stringify(parsedData)}`);
             reject(new Error(`Twitter API error: ${res.statusCode}`));
             return;
@@ -57,14 +57,14 @@ async function fetchTwitterUserInfo(username) {
           logger.debug(`Successfully received Twitter profile data for: ${cleanUsername}`);
           resolve(parsedData);
         } catch (error) {
-          logger.error(`Error parsing Twitter API response: ${error.message}`);
+          logger.error(`Error parsing Twitter API response: ${error instanceof Error ? error.message : 'Unknown error'}`);
           reject(error);
         }
       });
     });
 
     req.on('error', function (error) {
-      logger.error(`Twitter API request error: ${error.message}`);
+      logger.error(`Twitter API request error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       reject(error);
     });
 
@@ -72,12 +72,30 @@ async function fetchTwitterUserInfo(username) {
   });
 }
 
+interface TwitterProfile {
+  username: string;
+  name: string;
+  bio: string;
+  followers: number;
+  following: number;
+  tweets: number;
+  profileImageUrl: string;
+  bannerImageUrl?: string;
+  verified: boolean;
+  isBusinessAccount: boolean;
+  businessCategory: string | null;
+  location: string | null;
+  url: string | null;
+  createdAt: string;
+  rawData?: any;
+}
+
 /**
  * Get essential Twitter profile data for a given username
  * @param {string} username - Twitter handle with or without @ symbol
- * @returns {Promise<Object>} - Essential profile data or null if error
+ * @returns {Promise<TwitterProfile | null>} - Essential profile data or null if error
  */
-async function getTwitterProfile(username) {
+async function getTwitterProfile(username: string): Promise<TwitterProfile | null> {
   try {
     const userData = await fetchTwitterUserInfo(username);
     
@@ -110,12 +128,13 @@ async function getTwitterProfile(username) {
       rawData: userData
     };
   } catch (error) {
-    logger.error(`Failed to get Twitter profile for ${username}: ${error.message}`);
+    logger.error(`Failed to get Twitter profile for ${username}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     return null;
   }
 }
 
 export {
   fetchTwitterUserInfo,
-  getTwitterProfile
+  getTwitterProfile,
+  type TwitterProfile
 };

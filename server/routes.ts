@@ -189,6 +189,9 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
   }
 }
 
+// Import route modules
+import twitterRoutes from './routes/twitter-routes';
+
 export async function registerRoutes(app: Express) {
   // Network statistics endpoint
   app.get("/api/network-stats", async (_req: Request, res: Response) => {
@@ -3740,6 +3743,9 @@ export async function registerRoutes(app: Express) {
       });
     }
   });
+
+  // Register Twitter API routes
+  app.use('/api', twitterRoutes);
 
   return httpServer;
 }

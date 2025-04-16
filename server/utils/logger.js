@@ -18,19 +18,19 @@ const LOG_LEVEL = parseInt(process.env.LOG_LEVEL || '2', 10);
 
 // Create logger object
 const logger = {
-  error: (...args: any[]) => {
+  error: (...args) => {
     if (LOG_LEVEL >= LOG_LEVELS.ERROR) console.error(`[${new Date().toISOString()}] [ERROR]`, ...args);
   },
-  warn: (...args: any[]) => {
+  warn: (...args) => {
     if (LOG_LEVEL >= LOG_LEVELS.WARN) console.warn(`[${new Date().toISOString()}] [WARN]`, ...args);
   },
-  info: (...args: any[]) => {
+  info: (...args) => {
     if (LOG_LEVEL >= LOG_LEVELS.INFO) console.info(`[${new Date().toISOString()}] [INFO]`, ...args);
   },
-  http: (...args: any[]) => {
+  http: (...args) => {
     if (LOG_LEVEL >= LOG_LEVELS.HTTP) console.info(`[${new Date().toISOString()}] [HTTP]`, ...args);
   },
-  debug: (...args: any[]) => {
+  debug: (...args) => {
     if (LOG_LEVEL >= LOG_LEVELS.DEBUG) console.debug(`[${new Date().toISOString()}] [DEBUG]`, ...args);
   }
 };
