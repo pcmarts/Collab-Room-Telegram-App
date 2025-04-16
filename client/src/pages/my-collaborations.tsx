@@ -959,7 +959,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       <div className="absolute right-0 w-3 h-3 bg-primary/85 rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left">
-                      <h4 className="font-medium text-sm">Create Your Collaboration</h4>
+                      <h4 className="font-medium text-sm">Create Your Collab</h4>
                       <p className="text-xs text-muted-foreground">
                         Choose from Twitter Collabs, reports, newsletters, podcasts, etc.
                       </p>
@@ -973,9 +973,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                       <div className="absolute right-0 w-3 h-3 bg-primary/85 rotate-45 translate-x-1/2"></div>
                     </div>
                     <div className="p-3 text-left">
-                      <h4 className="font-medium text-sm">Post Your Collaboration</h4>
+                      <h4 className="font-medium text-sm">Post Your Collab</h4>
                       <p className="text-xs text-muted-foreground">
-                        Allow other web3 marketers to DISCOVER your collab.
+                        Allow other web3 marketers to Discover your collab.
                       </p>
                     </div>
                   </div>
