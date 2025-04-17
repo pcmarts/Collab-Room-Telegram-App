@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, File, Trash2, Download, Image, FileText, FileArchive, Music, Video, AlertCircle } from "lucide-react";
-import { useFileUploads } from "@/hooks/use-file-uploads";
+import { useFileUpload } from "@/hooks/use-file-uploads";
 import { formatDistanceToNow } from "date-fns";
 import {
   AlertDialog,
@@ -50,7 +50,7 @@ export function FileList({
     isDeleting,
     isStorageAvailable,
     storageStatus,
-  } = useFileUploads({ userId, relatedId });
+  } = useFileUpload({ userId, relatedId });
   
   // Helper function to get icon based on file type
   const getFileIcon = (mimeType: string) => {
