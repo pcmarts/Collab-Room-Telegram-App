@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { db } from "./db";
 import { eq, and, or, inArray, isNull, not, desc, sql, ilike, lt } from "drizzle-orm";
 import { notifyMatchCreated, notifyNewCollabRequest } from "./telegram";
+import { supabaseStorage } from "@shared/supabase-storage";
 
 export interface IStorage {
   // User methods
@@ -1444,6 +1445,93 @@ export class DatabaseStorage implements IStorage {
         })
         .returning();
       return newPrefs;
+    }
+  }
+
+  // File upload methods
+  async createFileUpload(fileUpload: InsertFileUpload): Promise<FileUpload> {
+    try {
+      const [newFileUpload] = await db
+        .insert(file_uploads)
+        .values(fileUpload)
+        .returning();
+      return newFileUpload;
+    } catch (error) {
+      console.error("Error creating file upload:", error);
+      throw error;
+    }
+  }
+
+  async getFileUpload(id: string): Promise<FileUpload | undefined> {
+    try {
+      const [fileUpload] = await db
+        .select()
+        .from(file_uploads)
+        .where(eq(file_uploads.id, id));
+      return fileUpload;
+    } catch (error) {
+      console.error(`Error fetching file upload with ID ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async getUserFileUploads(userId: string): Promise<FileUpload[]> {
+    try {
+      return db
+        .select()
+        .from(file_uploads)
+        .where(eq(file_uploads.user_id, userId))
+        .orderBy(desc(file_uploads.created_at));
+    } catch (error) {
+      console.error(`Error fetching file uploads for user ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  async getFileUploadsByRelatedId(relatedId: string): Promise<FileUpload[]> {
+    try {
+      return db
+        .select()
+        .from(file_uploads)
+        .where(eq(file_uploads.related_id, relatedId))
+        .orderBy(desc(file_uploads.created_at));
+    } catch (error) {
+      console.error(`Error fetching file uploads for related ID ${relatedId}:`, error);
+      throw error;
+    }
+  }
+
+  async deleteFileUpload(id: string): Promise<boolean> {
+    try {
+      // First get the file info to get the file path
+      const fileUpload = await this.getFileUpload(id);
+      if (!fileUpload) {
+        console.error(`File upload with ID ${id} not found for deletion`);
+        return false;
+      }
+
+      // Delete from Supabase storage if it's configured
+      if (supabaseStorage.isConfigured()) {
+        const deleted = await supabaseStorage.deleteFile(fileUpload.file_path);
+        if (!deleted) {
+          console.error(`Failed to delete file from storage: ${fileUpload.file_path}`);
+          // Continue with database deletion even if storage deletion fails
+          // This allows for cleanup of database records even if files are missing
+        }
+      } else {
+        console.warn(`Supabase not configured: Skipping physical file deletion for ${fileUpload.file_path}`);
+      }
+
+      // Delete from database
+      const result = await db
+        .delete(file_uploads)
+        .where(eq(file_uploads.id, id))
+        .returning();
+
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error deleting file upload ${id}:`, error);
+      throw error;
     }
   }
 }
