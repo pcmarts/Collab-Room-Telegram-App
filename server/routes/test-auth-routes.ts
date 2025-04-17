@@ -1,5 +1,8 @@
 import { Router } from 'express';
 import { storage } from '../storage';
+import { db } from '../db';
+import { companies } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
 const router = Router();
@@ -28,19 +31,29 @@ router.get('/api/test-session/create', async (req: any, res) => {
       });
     }
 
+    // Get company info through a direct database query 
+    // since we don't have a specific method for this in the storage interface
+    const companiesResult = await db.select()
+      .from(companies)
+      .where(eq(companies.user_id, testUser.id));
+
+    let company = companiesResult[0];
+    
     // Create a test company if needed
-    let company = await storage.getCompanyByUserId(testUser.id);
     if (!company) {
-      company = await storage.createCompany({
-        id: randomUUID(),
+      // Insert company directly via db query
+      const result = await db.insert(companies).values({
         user_id: testUser.id,
         name: 'Test Company',
         short_description: 'A test company for development',
         website: 'https://example.com',
         job_title: 'Developer',
+        funding_stage: 'Seed',
         blockchain_networks: ['Ethereum'],
-        tags: ['DeFi'],
-      });
+        tags: ['DeFi']
+      }).returning();
+      
+      company = result[0];
     }
 
     // Create or update the session

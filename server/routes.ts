@@ -41,7 +41,10 @@ interface ImpersonationSession extends Session {
     last_name?: string;
     // Add expiry time to invalidate cached user data after a certain period
     cachedAt: number;
-  }
+  },
+  // For test authentication
+  user?: any,
+  isAuthenticated?: boolean
 }
 
 // Extend Express Request type to include session
