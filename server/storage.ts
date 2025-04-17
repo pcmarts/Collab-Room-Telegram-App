@@ -1,7 +1,7 @@
 import { 
   users, companies, collaborations, collab_notifications, swipes, matches,
   notification_preferences, marketing_preferences, conference_preferences,
-  company_twitter_data, // Add company_twitter_data table
+  company_twitter_data, file_uploads, // Add file_uploads table
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication,
@@ -9,7 +9,7 @@ import {
   type Swipe, type InsertSwipe,
   type Match, type InsertMatch,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences,
-  type CompanyTwitterData // Add CompanyTwitterData type
+  type CompanyTwitterData, type FileUpload, type InsertFileUpload // Add FileUpload types
 } from "@shared/schema";
 import { z } from 'zod';
 import { db } from "./db";
@@ -67,6 +67,13 @@ export interface IStorage {
   // Conference preferences
   getUserConferencePreferences(userId: string): Promise<ConferencePreferences | undefined>;
   updateUserConferencePreferences(userId: string, preferences: Partial<ConferencePreferences>): Promise<ConferencePreferences | undefined>;
+  
+  // File upload methods
+  createFileUpload(fileUpload: InsertFileUpload): Promise<FileUpload>;
+  getFileUpload(id: string): Promise<FileUpload | undefined>;
+  getUserFileUploads(userId: string): Promise<FileUpload[]>;
+  getFileUploadsByRelatedId(relatedId: string): Promise<FileUpload[]>;
+  deleteFileUpload(id: string): Promise<boolean>;
 }
 
 export interface CollaborationFilters {

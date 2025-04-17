@@ -254,6 +254,15 @@ export const COMPANY_CATEGORIES = [
 
 export const COMPANY_SIZES = ["1-10", "11-50", "51-200", "200+"] as const;
 
+// File upload types
+export const FILE_CATEGORIES = [
+  "profile",
+  "company_logo",
+  "collaboration_attachment",
+  "message_attachment",
+  "document",
+] as const;
+
 // Core user table
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -574,6 +583,24 @@ export const matches = pgTable("matches", {
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
+// File uploads table for tracking uploaded files
+export const file_uploads = pgTable("file_uploads", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  filename: text("filename").notNull(), // Original filename
+  file_path: text("file_path").notNull(), // Path in Supabase storage
+  public_url: text("public_url").notNull(), // Public URL for accessing the file
+  size_bytes: integer("size_bytes").notNull(), // File size in bytes
+  mime_type: text("mime_type").notNull(), // MIME type of the file
+  category: text("category", { enum: FILE_CATEGORIES }).notNull(), // Category/purpose of the file
+  related_id: uuid("related_id"), // ID of related entity (collaboration, match, etc)
+  related_type: text("related_type"), // Type of related entity (collaboration, match, etc)
+  metadata: jsonb("metadata"), // Additional metadata about the file
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
 // Schema validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
@@ -595,6 +622,7 @@ export const insertCollabNotificationSchema =
   createInsertSchema(collab_notifications);
 export const insertSwipeSchema = createInsertSchema(swipes);
 export const insertMatchSchema = createInsertSchema(matches);
+export const insertFileUploadSchema = createInsertSchema(file_uploads);
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -611,6 +639,7 @@ export type Collaboration = typeof collaborations.$inferSelect;
 export type CollabNotification = typeof collab_notifications.$inferSelect;
 export type Swipe = typeof swipes.$inferSelect;
 export type Match = typeof matches.$inferSelect;
+export type FileUpload = typeof file_uploads.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
@@ -633,6 +662,7 @@ export type InsertCollabNotification = z.infer<
 >;
 export type InsertSwipe = z.infer<typeof insertSwipeSchema>;
 export type InsertMatch = z.infer<typeof insertMatchSchema>;
+export type InsertFileUpload = z.infer<typeof insertFileUploadSchema>;
 
 // Onboarding schema with validation
 // Rename to applicationSchema for clarity
@@ -882,3 +912,17 @@ export const createCollaborationSchema = z.object({
 });
 
 export type CreateCollaboration = z.infer<typeof createCollaborationSchema>;
+
+// File upload validation schema
+export const fileUploadSchema = z.object({
+  file: z.instanceof(File, { message: "Please select a file" }),
+  category: z.enum(FILE_CATEGORIES, { 
+    required_error: "File category is required",
+    invalid_type_error: "Invalid file category"
+  }),
+  relatedId: z.string().uuid().optional(),
+  relatedType: z.string().optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+
+export type FileUploadData = z.infer<typeof fileUploadSchema>;
