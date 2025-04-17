@@ -18,6 +18,7 @@ import { logger } from './utils/logger';
 import twitterRoutes from './routes/twitter-routes.js';
 import fileUploadRoutes from './routes/file-upload-routes';
 import testRoutes from './routes/test-routes';
+import testAuthRoutes from './routes/test-auth-routes';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -3780,6 +3781,7 @@ export async function registerRoutes(app: Express) {
   // Register Test routes (only enabled in development)
   if (process.env.NODE_ENV !== 'production') {
     app.use('/', testRoutes);
+    app.use('/', testAuthRoutes);
     logger.info('Test routes registered (DISABLED in production)');
   }
 
