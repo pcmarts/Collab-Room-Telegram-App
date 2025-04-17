@@ -17,6 +17,7 @@ import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate
 import { logger } from './utils/logger';
 import twitterRoutes from './routes/twitter-routes.js';
 import fileUploadRoutes from './routes/file-upload-routes';
+import testRoutes from './routes/test-routes';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -3775,6 +3776,12 @@ export async function registerRoutes(app: Express) {
   
   // Register File Upload routes
   app.use('/', fileUploadRoutes);
+  
+  // Register Test routes (only enabled in development)
+  if (process.env.NODE_ENV !== 'production') {
+    app.use('/', testRoutes);
+    logger.info('Test routes registered (DISABLED in production)');
+  }
 
   return httpServer;
 }

@@ -79,10 +79,45 @@ export default function TestUploadPage() {
     }
   });
   
+  // Create a mock user session for testing purposes
+  const createMockUserSession = async () => {
+    try {
+      // Make a request to create a test session
+      const response = await fetch('/api/test-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Using a fixed test user ID for consistent testing
+          userId: '00000000-0000-0000-0000-000000000001',
+          username: 'test-user',
+          isAdmin: true
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create test session');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating test session:', error);
+      toast({
+        title: "Authentication Error",
+        description: "Failed to create a test session. Upload functionality may not work.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   // Function to upload a sample image from the assets
   const uploadSampleImage = async () => {
     try {
       setIsUploading(true);
+      
+      // Ensure we have a test session first
+      await createMockUserSession();
       
       // Use one of the images from attached_assets
       const imageUrl = '/THE COLLAB ROOM small.jpg'; // Path to the image in public folder
