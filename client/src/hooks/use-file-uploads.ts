@@ -1,9 +1,26 @@
-import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import { useQuery } from '@tanstack/react-query';
+/**
+ * useFileUpload Hook
+ * 
+ * This hook provides methods for working with the file upload API.
+ * It handles uploading files, fetching file lists, and other file-related operations.
+ */
 
-export interface FileUploadResult {
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+
+export interface FileUploadPayload {
+  fileData: string;       // Base64 encoded file data
+  fileName: string;       // Original filename
+  fileType: string;       // MIME type
+  fileSize: string;       // Size in bytes
+  category: 'profile' | 'company_logo' | 'collaboration_attachment' | 'message_attachment' | 'document';
+  relatedId?: string;     // Optional ID of related entity (user, collaboration, etc.)
+  relatedType?: string;   // Optional type of related entity
+}
+
+export interface FileUpload {
   id: string;
   user_id: string;
   filename: string;
@@ -12,246 +29,160 @@ export interface FileUploadResult {
   size_bytes: number;
   mime_type: string;
   category: string;
-  related_id?: string;
-  related_type?: string;
-  created_at: Date;
+  related_id: string | null;
+  related_type: string | null;
+  created_at: string;
+  metadata: {
+    originalName: string;
+    uploadDate: string;
+    [key: string]: any;
+  };
 }
 
-export interface FileUploadError {
-  message: string;
-  error?: any;
-}
-
-export interface FileUploadOptions {
-  category: 'profile' | 'company_logo' | 'collaboration_attachment' | 'message_attachment' | 'document';
-  relatedId?: string;
-  relatedType?: string;
-  showToasts?: boolean;
-}
-
-interface FileUploadHookOptions {
-  userId?: string;
-  relatedId?: string;
-  category?: string;
-}
-
-export function useFileUpload(options?: FileUploadHookOptions) {
+export function useFileUpload() {
   const [isUploading, setIsUploading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [lastUploadedFile, setLastUploadedFile] = useState<FileUploadResult | null>(null);
-  const [error, setError] = useState<FileUploadError | null>(null);
-  const [storageStatus, setStorageStatus] = useState<{ available: boolean; message?: string }>({ 
-    available: false,
-    message: 'Checking storage status...'
-  });
   const { toast } = useToast();
-  
-  // Fetch files based on options
-  const filesQuery = useQuery({
-    queryKey: ['files', options?.userId, options?.relatedId, options?.category],
-    queryFn: async () => {
-      let url = '/api/files';
-      const params = new URLSearchParams();
-      
-      if (options?.userId) params.append('userId', options.userId);
-      if (options?.relatedId) params.append('relatedId', options.relatedId);
-      if (options?.category) params.append('category', options.category);
-      
-      const queryString = params.toString();
-      if (queryString) {
-        url += `?${queryString}`;
+  const queryClient = useQueryClient();
+
+  // Mutation for uploading a file
+  const uploadFileMutation = useMutation({
+    mutationFn: async (fileData: FileUploadPayload) => {
+      setIsUploading(true);
+      const response = await fetch('/api/files/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fileData),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
       }
-      
-      return apiRequest(url, 'GET');
+      return response.json();
     },
-    enabled: Boolean(storageStatus.available)
+    onSuccess: () => {
+      // Invalidate file queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+    },
+    onSettled: () => {
+      setIsUploading(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Upload failed',
+        description: error.message || 'There was a problem uploading the file.',
+        variant: 'destructive',
+      });
+    }
   });
-  
-  // Check if storage is available on mount
-  useEffect(() => {
-    const checkStorage = async () => {
-      try {
-        const status = await checkFileStorageStatus();
-        setStorageStatus({ 
-          available: status,
-          message: status ? undefined : 'Storage service is not available'
-        });
-      } catch (err) {
-        setStorageStatus({ 
-          available: false,
-          message: 'Failed to connect to storage service'
-        });
-      }
-    };
-    
-    checkStorage();
-  }, []);
 
-  /**
-   * Upload a file using Base64 data
-   */
-  const uploadBase64File = async (
-    base64Data: string,
-    fileName: string,
-    fileType: string,
-    fileSize: number,
-    options: FileUploadOptions
-  ): Promise<FileUploadResult | null> => {
-    try {
-      setIsUploading(true);
-      setError(null);
-
-      const uploadData = {
-        fileData: base64Data,
-        fileName,
-        fileType,
-        fileSize,
-        category: options.category,
-        relatedId: options.relatedId,
-        relatedType: options.relatedType
-      };
-
-      const response = await apiRequest('/api/files/upload', 'POST', uploadData);
-      
-      if (response) {
-        setLastUploadedFile(response);
-        
-        if (options.showToasts) {
-          toast({
-            title: 'File uploaded successfully',
-            description: `${fileName} has been uploaded.`,
-            duration: 3000
-          });
-        }
-        
-        return response;
-      }
-      
-      throw new Error('Failed to upload file: No response from server');
-    } catch (err: any) {
-      const errorMessage = err.message || 'An unknown error occurred during file upload';
-      
-      setError({
-        message: errorMessage,
-        error: err
+  // Mutation for deleting a file
+  const deleteFileMutation = useMutation({
+    mutationFn: async (fileId: string) => {
+      return apiRequest(`/api/files/${fileId}`, {
+        method: 'DELETE',
       });
-      
-      if (options.showToasts) {
-        toast({
-          variant: 'destructive',
-          title: 'Upload failed',
-          description: errorMessage,
-          duration: 5000
-        });
-      }
-      
-      console.error('File upload error:', err);
-      return null;
-    } finally {
-      setIsUploading(false);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      toast({
+        title: 'File deleted',
+        description: 'The file has been successfully deleted.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Delete failed',
+        description: error.message || 'There was a problem deleting the file.',
+        variant: 'destructive',
+      });
     }
+  });
+
+  // Query for getting all files for the current user
+  const useUserFiles = () => {
+    return useQuery<FileUpload[]>({
+      queryKey: ['/api/files'],
+      queryFn: async () => {
+        return apiRequest('/api/files');
+      }
+    });
   };
 
-  /**
-   * Delete a file by ID
-   */
-  const deleteFile = async (fileId: string, showToast = true): Promise<boolean> => {
-    try {
-      setIsUploading(true);
-      setError(null);
+  // Query for getting files related to a specific entity
+  const useRelatedFiles = (relatedId: string) => {
+    return useQuery<FileUpload[]>({
+      queryKey: ['/api/files/related', relatedId],
+      queryFn: async () => {
+        return apiRequest(`/api/files/related/${relatedId}`);
+      },
+      enabled: !!relatedId, // Only run query if relatedId is provided
+    });
+  };
 
-      await apiRequest(`/api/files/${fileId}`, 'DELETE');
-      
-      if (showToast) {
-        toast({
-          title: 'File deleted',
-          description: 'The file has been successfully deleted.',
-          duration: 3000
-        });
+  // Query to check if file storage is available
+  const useFileStorageStatus = () => {
+    return useQuery({
+      queryKey: ['/api/files/status'],
+      queryFn: async () => {
+        return apiRequest('/api/files/status');
       }
-      
-      return true;
-    } catch (err: any) {
-      const errorMessage = err.message || 'An unknown error occurred while deleting the file';
-      
-      setError({
-        message: errorMessage,
-        error: err
-      });
-      
-      if (showToast) {
-        toast({
-          variant: 'destructive',
-          title: 'Delete failed',
-          description: errorMessage,
-          duration: 5000
-        });
-      }
-      
-      console.error('File deletion error:', err);
+    });
+  };
+
+  // Method to check for file storage availability
+  const checkStorageAvailability = async (): Promise<boolean> => {
+    try {
+      const response = await apiRequest('/api/files/status');
+      return response.status === 'available';
+    } catch (error) {
       return false;
-    } finally {
-      setIsUploading(false);
     }
   };
 
-  /**
-   * Upload a company logo
-   */
-  const uploadCompanyLogo = async (
-    base64Data: string,
-    fileName: string,
-    fileType: string,
-    fileSize: number,
-    showToast = true
-  ): Promise<FileUploadResult | null> => {
-    return uploadBase64File(
-      base64Data,
-      fileName,
-      fileType,
-      fileSize,
-      {
-        category: 'company_logo',
-        showToasts: showToast
+  // Method to upload a file
+  const uploadFile = async (fileData: FileUploadPayload): Promise<FileUpload | null> => {
+    try {
+      if (!fileData.fileData || !fileData.fileName || !fileData.fileType) {
+        throw new Error('Missing required file information');
       }
-    );
+
+      const isAvailable = await checkStorageAvailability();
+      if (!isAvailable) {
+        throw new Error('File storage is not available. Please check your Supabase configuration.');
+      }
+
+      const response = await uploadFileMutation.mutateAsync(fileData);
+      return response as FileUpload;
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: 'Upload failed',
+        description: error instanceof Error ? error.message : 'There was a problem uploading the file.',
+        variant: 'destructive',
+      });
+      return null;
+    }
   };
 
-  /**
-   * Check if file storage is available
-   */
-  const checkFileStorageStatus = async (): Promise<boolean> => {
+  // Method to delete a file
+  const deleteFile = async (fileId: string): Promise<boolean> => {
     try {
-      const response = await apiRequest('/api/files/status', 'GET');
-      return response?.status === 'available';
-    } catch (err) {
-      console.error('Error checking file storage status:', err);
+      await deleteFileMutation.mutateAsync(fileId);
+      return true;
+    } catch (error) {
+      console.error('Delete error:', error);
       return false;
     }
   };
 
   return {
-    // File data and state
-    files: filesQuery.data,
-    isLoading: filesQuery.isLoading,
-    isError: filesQuery.isError,
-    
-    // Upload methods
-    uploadBase64File,
-    uploadCompanyLogo,
-    
-    // Delete methods
+    uploadFile,
     deleteFile,
-    isDeleting,
-    
-    // Storage status
-    checkFileStorageStatus,
-    isStorageAvailable: storageStatus.available,
-    storageStatus,
-    
-    // General state
+    useUserFiles,
+    useRelatedFiles,
+    useFileStorageStatus,
+    checkStorageAvailability,
     isUploading,
-    lastUploadedFile,
-    error
   };
 }
