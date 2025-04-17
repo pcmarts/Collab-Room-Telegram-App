@@ -33,6 +33,7 @@ import CreateCollaborationSteps from "@/pages/create-collaboration-steps";
 import EditCollaborationSteps from "@/pages/edit-collaboration-steps";
 import CreateCollaboration from "@/pages/create-collaboration";
 import MyCollaborations from "@/pages/my-collaborations";
+import TestUploadPage from "@/pages/test-upload";
 import Apply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
 import AdminApplications from "@/pages/admin/applications";
@@ -142,6 +143,7 @@ function Router() {
           
           {/* Testing Routes */}
           <Route path="/auth-test" component={AuthTestPage} />
+          <Route path="/test-upload" component={TestUploadPage} />
 
           <Route path="/not-found" component={NotFound} />
           <Route path="*" component={NotFound} />
