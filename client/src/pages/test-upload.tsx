@@ -1,17 +1,113 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileUpload } from "@/components/ui/file-upload";
 import { FileList } from "@/components/ui/file-list";
 import { useLocation } from "wouter";
+import { queryClient } from "@/lib/queryClient";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
+
+// Function to convert File to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+// Function to convert URL to File object
+const urlToFile = async (url: string, filename: string, mimeType: string): Promise<File> => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new File([blob], filename, { type: mimeType });
+};
 
 export default function TestUploadPage() {
-  const [_, navigate] = useLocation();
+  const [, navigate] = useLocation();
   const [uploadedFile, setUploadedFile] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   
   const handleUploadComplete = (fileData: any) => {
     console.log("Upload complete:", fileData);
     setUploadedFile(fileData);
+  };
+  
+  // Upload mutation
+  const uploadMutation = useMutation({
+    mutationFn: async (data: { 
+      base64Data: string, 
+      filename: string, 
+      mimeType: string, 
+      size: number, 
+      category: string 
+    }) => {
+      const response = await fetch('/api/files/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload file');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "File uploaded successfully",
+        description: `File ${data.filename} has been uploaded`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      setUploadedFile(data);
+      setIsUploading(false);
+    },
+    onError: (error) => {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      });
+      setIsUploading(false);
+    }
+  });
+  
+  // Function to upload a sample image from the assets
+  const uploadSampleImage = async () => {
+    try {
+      setIsUploading(true);
+      
+      // Use one of the images from attached_assets
+      const imageUrl = '/THE COLLAB ROOM small.jpg'; // Path to the image in public folder
+      const file = await urlToFile(imageUrl, 'collab-room-logo.jpg', 'image/jpeg');
+      
+      // Convert file to base64
+      const base64Data = await fileToBase64(file);
+      
+      // Upload the file
+      uploadMutation.mutate({
+        base64Data,
+        filename: file.name,
+        mimeType: file.type,
+        size: file.size,
+        category: 'company_logo'
+      });
+    } catch (error) {
+      console.error('Error uploading sample image:', error);
+      toast({
+        title: "Error preparing sample image",
+        description: error instanceof Error ? error.message : "Failed to process the sample image",
+        variant: "destructive",
+      });
+      setIsUploading(false);
+    }
   };
   
   return (
@@ -27,6 +123,9 @@ export default function TestUploadPage() {
         <Card>
           <CardHeader>
             <CardTitle>Upload Twitter Profile Picture</CardTitle>
+            <CardDescription>
+              Upload your profile picture using the file upload component
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <FileUpload
@@ -51,11 +150,28 @@ export default function TestUploadPage() {
         <Card>
           <CardHeader>
             <CardTitle>Your Files</CardTitle>
+            <CardDescription>
+              List of all your uploaded profile images
+            </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="mb-4">
+              <Button 
+                onClick={uploadSampleImage} 
+                disabled={isUploading}
+                className="w-full"
+              >
+                {isUploading ? "Uploading Sample Image..." : "Upload Sample Logo"}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">
+                This will upload a sample company logo from the assets.
+              </p>
+            </div>
+            
             <FileList 
               emptyMessage="No files uploaded yet"
               category="profile"
+              className="mt-4"
             />
           </CardContent>
         </Card>
