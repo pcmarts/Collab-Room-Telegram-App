@@ -1,18 +1,9 @@
 import { Router } from 'express';
-import multer from 'multer';
 import { storage } from '../storage';
 import { supabaseStorage } from '@shared/supabase-storage';
 import { z } from 'zod';
 import { fileUploadSchema } from '@shared/schema';
 import { randomUUID } from 'crypto';
-
-// Configure multer for memory storage
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB file size limit
-  },
-});
 
 const router = Router();
 
@@ -59,8 +50,8 @@ router.get('/api/files/related/:relatedId', requireAuth, async (req, res) => {
   }
 });
 
-// Upload a file
-router.post('/api/files/upload', requireAuth, upload.single('file'), async (req: any, res) => {
+// Upload a file - Note: For simplicity, using Base64 encoded data
+router.post('/api/files/upload', requireAuth, async (req: any, res) => {
   try {
     // Check if Supabase is configured
     if (!supabaseStorage.isConfigured()) {
@@ -70,12 +61,21 @@ router.post('/api/files/upload', requireAuth, upload.single('file'), async (req:
     }
 
     // Validate request
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+    const { 
+      fileData,      // Base64 encoded file content
+      fileName,      // Original file name
+      fileType,      // MIME type
+      fileSize,      // Size in bytes
+      category,      // Category for organizing files
+      relatedId,     // Optional related entity ID
+      relatedType    // Optional related entity type
+    } = req.body;
+
+    if (!fileData || !fileName || !fileType) {
+      return res.status(400).json({ error: 'Missing required file information' });
     }
 
     const userId = req.session.user.id;
-    const { category, relatedId, relatedType } = req.body;
 
     // Validate category
     const validationSchema = z.object({
@@ -93,11 +93,12 @@ router.post('/api/files/upload', requireAuth, upload.single('file'), async (req:
       });
     }
 
-    // Create a File object from the multer buffer
-    const fileBuffer = req.file.buffer;
-    const fileObject = new File([fileBuffer], req.file.originalname, {
-      type: req.file.mimetype,
-    });
+    // Create a blob from the base64 data
+    const binaryData = Buffer.from(fileData.split(',')[1], 'base64');
+    const blob = new Blob([binaryData], { type: fileType });
+    
+    // Create a File object
+    const fileObject = new File([blob], fileName, { type: fileType });
 
     // Generate path for the file
     const filePath = supabaseStorage.generateFilePath(fileObject, userId, category);
@@ -112,17 +113,16 @@ router.post('/api/files/upload', requireAuth, upload.single('file'), async (req:
     // Create database record
     const fileUpload = {
       user_id: userId,
-      filename: req.file.originalname,
+      filename: fileName,
       file_path: filePath,
       public_url: publicUrl,
-      size_bytes: req.file.size,
-      mime_type: req.file.mimetype,
+      size_bytes: parseInt(fileSize) || 0,
+      mime_type: fileType,
       category: category,
       related_id: relatedId || null,
       related_type: relatedType || null,
       metadata: {
-        originalName: req.file.originalname,
-        encoding: req.file.encoding,
+        originalName: fileName,
         uploadDate: new Date().toISOString(),
       },
     };
