@@ -1,169 +1,184 @@
-import { createClient } from '@supabase/supabase-js';
+/**
+ * Supabase Storage Utility Functions
+ * 
+ * This module provides utility functions for interacting with Supabase storage,
+ * allowing file uploads, retrievals, and deletion while handling common edge cases
+ * such as missing credentials or network issues.
+ */
 
-// Supabase client initialization 
-// We've extracted this to a separate file to maintain consistency across all storage operations
+import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'crypto';
+import { logger } from '../server/utils/logger';
+
+// Constants
+const BUCKET_NAME = 'profile-data';
+const MAX_UPLOAD_SIZE = 100 * 1024 * 1024; // 100MB
+const REQUIRED_ENVIRONMENT_VARIABLES = ['SUPABASE_URL', 'SUPABASE_KEY'];
+
+// File categories and their corresponding paths
+const CATEGORY_PATHS = {
+  'profile': 'profiles',
+  'company_logo': 'companies/logos',
+  'collaboration_attachment': 'collaborations/attachments',
+  'message_attachment': 'messages/attachments',
+  'document': 'documents'
+};
+
+// Initialize Supabase client if environment variables are available
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 
-// Initialize the Supabase client with proper error handling
 let supabase: any = null;
 
-// Function to check if Supabase is properly configured
-function isSupabaseConfigured(): boolean {
-  return !!supabaseUrl && !!supabaseKey;
-}
-
-// Only create the client if we have the required credentials
-if (isSupabaseConfigured()) {
-  try {
-    supabase = createClient(supabaseUrl as string, supabaseKey as string);
-    console.log('Supabase storage client initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize Supabase client:', error);
-    supabase = null;
+try {
+  if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+    logger.info('Supabase storage client initialized successfully');
+  } else {
+    logger.warn('Supabase environment variables missing. Storage features will be unavailable.');
+    logger.warn(`Missing variables: ${REQUIRED_ENVIRONMENT_VARIABLES.filter(v => !process.env[v]).join(', ')}`);
   }
-} else {
-  console.warn('Supabase credentials not provided. Storage features will be unavailable.');
+} catch (error) {
+  logger.error('Failed to initialize Supabase client:', error);
 }
-
-// Default bucket name - this should match the bucket you've created in Supabase
-const DEFAULT_BUCKET = 'profile-data';
 
 /**
- * Utility functions for interacting with Supabase Storage
+ * Check if Supabase storage is properly configured
+ * @returns {boolean} True if Supabase is configured, false otherwise
  */
-export const supabaseStorage = {
-  /**
-   * Check if Supabase storage is configured
-   * @returns True if Supabase is configured
-   */
-  isConfigured(): boolean {
-    return isSupabaseConfigured() && supabase !== null;
-  },
-  /**
-   * Upload a file to Supabase Storage
-   * 
-   * @param file File to upload
-   * @param path Path within the bucket to store the file
-   * @param userId User ID to associate with the file (for access control)
-   * @returns The public URL of the uploaded file
-   */
-  async uploadFile(file: File, path: string, userId: string): Promise<string | null> {
-    // Check if Supabase is configured
-    if (!isSupabaseConfigured() || !supabase) {
-      console.error('Cannot upload file: Supabase is not configured. Please check your environment variables.');
-      return null;
-    }
-    
-    try {
-      const { data, error } = await supabase.storage
-        .from(DEFAULT_BUCKET)
-        .upload(path, file, {
-          upsert: true,
-          // Add file metadata
-          cacheControl: '3600', // Cache for 1 hour
-          contentType: file.type, // Set the correct content type
-        });
+function isConfigured(): boolean {
+  return !!supabase;
+}
 
-      if (error) {
-        console.error('Error uploading file to Supabase:', error);
-        return null;
-      }
+/**
+ * Generate a unique file path for uploading to Supabase
+ * @param {File} file - The file object
+ * @param {string} userId - The user ID
+ * @param {string} category - The file category
+ * @returns {string} The generated file path
+ */
+function generateFilePath(file: File, userId: string, category: string): string {
+  // Get category folder or default to 'misc'
+  const categoryFolder = CATEGORY_PATHS[category as keyof typeof CATEGORY_PATHS] || 'misc';
+  
+  // Generate UUID for file to ensure uniqueness
+  const fileUuid = randomUUID();
+  
+  // Extract file extension
+  const fileExtension = file.name.split('.').pop() || '';
+  
+  // Sanitize original filename and limit its length
+  const sanitizedName = file.name
+    .toLowerCase()
+    .replace(/[^a-z0-9.]/g, '-')
+    .substring(0, 30);
+  
+  // Construct path: category/userId/uuid-sanitizedName.extension
+  return `${categoryFolder}/${userId}/${fileUuid}-${sanitizedName}.${fileExtension}`;
+}
 
-      // Get the public URL
-      const { data: urlData } = supabase.storage
-        .from(DEFAULT_BUCKET)
-        .getPublicUrl(path);
-
-      return urlData.publicUrl;
-    } catch (error) {
-      console.error('Exception in uploadFile:', error);
-      return null;
-    }
-  },
-
-  /**
-   * Delete a file from Supabase Storage
-   * 
-   * @param path Full path to the file in the bucket
-   * @returns True if deletion was successful
-   */
-  async deleteFile(path: string): Promise<boolean> {
-    // Check if Supabase is configured
-    if (!isSupabaseConfigured() || !supabase) {
-      console.error('Cannot delete file: Supabase is not configured. Please check your environment variables.');
-      return false;
-    }
-    
-    try {
-      const { error } = await supabase.storage
-        .from(DEFAULT_BUCKET)
-        .remove([path]);
-
-      if (error) {
-        console.error('Error deleting file from Supabase:', error);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Exception in deleteFile:', error);
-      return false;
-    }
-  },
-
-  /**
-   * List all files in a directory
-   * 
-   * @param path Directory path to list
-   * @returns Array of files or null if error
-   */
-  async listFiles(path: string): Promise<any[] | null> {
-    // Check if Supabase is configured
-    if (!isSupabaseConfigured() || !supabase) {
-      console.error('Cannot list files: Supabase is not configured. Please check your environment variables.');
-      return null;
-    }
-    
-    try {
-      const { data, error } = await supabase.storage
-        .from(DEFAULT_BUCKET)
-        .list(path);
-
-      if (error) {
-        console.error('Error listing files in Supabase:', error);
-        return null;
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Exception in listFiles:', error);
-      return null;
-    }
-  },
-
-  /**
-   * Generate a unique file path for a given file and user
-   * 
-   * @param file The file being uploaded
-   * @param userId The user's ID
-   * @param category Optional category for organizing files
-   * @returns A unique path for the file
-   */
-  generateFilePath(file: File, userId: string, category: string = 'general'): string {
-    // Get the file extension
-    const extension = file.name.split('.').pop()?.toLowerCase() || '';
-    
-    // Generate a timestamp to ensure uniqueness
-    const timestamp = Date.now();
-    
-    // Create a sanitized file name - replace spaces and special chars
-    const sanitizedName = file.name
-      .toLowerCase()
-      .replace(/[^a-z0-9.]/g, '_')
-      .replace(/_{2,}/g, '_');
-    
-    // Return path format: userId/category/timestamp_sanitizedName
-    return `${userId}/${category}/${timestamp}_${sanitizedName}`;
+/**
+ * Upload a file to Supabase storage
+ * @param {File} file - The file to upload
+ * @param {string} filePath - The path where the file should be stored
+ * @param {string} userId - The user ID of the uploader
+ * @returns {Promise<string|null>} The public URL of the uploaded file or null on failure
+ */
+async function uploadFile(file: File, filePath: string, userId: string): Promise<string | null> {
+  if (!isConfigured()) {
+    logger.error('Supabase storage not configured. Cannot upload file.');
+    return null;
   }
+  
+  try {
+    // Check file size
+    if (file.size > MAX_UPLOAD_SIZE) {
+      logger.error(`File too large (${file.size} bytes). Max size: ${MAX_UPLOAD_SIZE} bytes`);
+      return null;
+    }
+    
+    // Upload the file
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type
+      });
+    
+    if (error) {
+      logger.error('Error uploading file to Supabase:', error);
+      return null;
+    }
+    
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(filePath);
+    
+    return urlData?.publicUrl || null;
+  } catch (error) {
+    logger.error('Exception during file upload:', error);
+    return null;
+  }
+}
+
+/**
+ * Delete a file from Supabase storage
+ * @param {string} filePath - The path of the file to delete
+ * @returns {Promise<boolean>} True if deletion was successful, false otherwise
+ */
+async function deleteFile(filePath: string): Promise<boolean> {
+  if (!isConfigured()) {
+    logger.error('Supabase storage not configured. Cannot delete file.');
+    return false;
+  }
+  
+  try {
+    const { error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .remove([filePath]);
+    
+    if (error) {
+      logger.error('Error deleting file from Supabase:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    logger.error('Exception during file deletion:', error);
+    return false;
+  }
+}
+
+/**
+ * Get the public URL for a file in Supabase storage
+ * @param {string} filePath - The path of the file
+ * @returns {string|null} The public URL or null if not configured
+ */
+function getPublicUrl(filePath: string): string | null {
+  if (!isConfigured()) {
+    logger.error('Supabase storage not configured. Cannot get public URL.');
+    return null;
+  }
+  
+  try {
+    const { data } = supabase.storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(filePath);
+    
+    return data?.publicUrl || null;
+  } catch (error) {
+    logger.error('Exception getting public URL:', error);
+    return null;
+  }
+}
+
+// Export functions
+export const supabaseStorage = {
+  isConfigured,
+  uploadFile,
+  deleteFile,
+  getPublicUrl,
+  generateFilePath
 };

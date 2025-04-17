@@ -16,6 +16,7 @@ import { storage } from "./storage";
 import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
 import twitterRoutes from './routes/twitter-routes.js';
+import fileUploadRoutes from './routes/file-upload-routes';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -3771,6 +3772,9 @@ export async function registerRoutes(app: Express) {
 
   // Register Twitter API routes
   app.use('/api', twitterRoutes);
+  
+  // Register File Upload routes
+  app.use('/', fileUploadRoutes);
 
   return httpServer;
 }
