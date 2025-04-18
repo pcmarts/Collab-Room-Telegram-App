@@ -344,6 +344,8 @@ interface NewUserNotification {
   company_name: string;
   company_website?: string;
   job_title: string;
+  twitter_url?: string;
+  company_twitter_handle?: string;
 }
 
 export async function notifyAdminsNewUser(userData: NewUserNotification) {
@@ -373,12 +375,26 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
 
     // Format the Telegram handle
     const telegramHandle = userData.handle ? `@${userData.handle}` : "";
+    
+    // Format Twitter URLs
+    const userTwitterFormatted = userData.twitter_url 
+      ? `<a href="${userData.twitter_url}">${userData.first_name} ${userData.last_name || ""}</a>` 
+      : `${userData.first_name} ${userData.last_name || ""}`;
+      
+    // Format company Twitter
+    const companyTwitterUrl = userData.company_twitter_handle 
+      ? `https://twitter.com/${userData.company_twitter_handle.replace(/^@/, '')}`
+      : null;
+    
+    const companyTwitterLink = companyTwitterUrl 
+      ? ` (<a href="${companyTwitterUrl}">Twitter</a>)` 
+      : "";
 
     // Build the message with HTML formatting
     const message =
       `🆕 <b>New User Application!</b>\n\n` +
-      `<b>Name:</b> ${userData.first_name} ${userData.last_name || ""} ${telegramHandle ? `(${telegramHandle})` : ""}\n` +
-      `<b>Company:</b> ${companyNameFormatted}\n` +
+      `<b>Name:</b> ${userTwitterFormatted} ${telegramHandle ? `(${telegramHandle})` : ""}\n` +
+      `<b>Company:</b> ${companyNameFormatted}${companyTwitterLink}\n` +
       `<b>Role:</b> ${userData.job_title}\n\n` +
       `Use the buttons below to take action:`;
 
@@ -1198,9 +1214,17 @@ async function handleApproveUserCallback(
           ],
         };
 
+        // Format user Twitter URL if available
+        const userTwitterLink = user.twitter_url
+          ? `<a href="${user.twitter_url}">${user.first_name} ${user.last_name || ""}</a>`
+          : `<b>${user.first_name} ${user.last_name || ""}</b>`;
+          
+        // Format user Telegram handle
+        const userTelegramHandle = user.handle ? ` (@${user.handle})` : "";
+          
         await bot.editMessageText(
           `✅ <b>Application Approved!</b>\n\n` +
-            `You have approved <b>${user.first_name} ${user.last_name || ""}</b>'s application.\n` +
+            `You have approved ${userTwitterLink}'s application.${userTelegramHandle}\n` +
             `They have been notified and now have full access to the platform.`,
           {
             chat_id: chatId,
