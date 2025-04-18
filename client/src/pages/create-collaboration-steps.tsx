@@ -807,7 +807,8 @@ export default function CreateCollaborationSteps({
                 <div className="grid grid-cols-2 gap-1">
                   {COLLAB_TOPICS.map((topic) => {
                     const isSelected = currentValue.includes(topic);
-                    const hasReachedMax = currentValue.length >= 3 && !isSelected;
+                    // Fix: make sure we're checking for exactly 3 items, not more
+                    const hasReachedMax = currentValue.length === 3 && !isSelected;
                     
                     return (
                       <Button
@@ -829,11 +830,13 @@ export default function CreateCollaborationSteps({
                             const updatedTopics = currentValue.filter((t) => t !== topic);
                             console.log("Updated topics (after removal):", updatedTopics);
                             field.onChange(updatedTopics);
-                          } else if (currentValue.length < 3) {
-                            // Only allow selection if under the limit
-                            const updatedTopics = [...currentValue, topic];
-                            console.log("Updated topics (after addition):", updatedTopics);
-                            field.onChange(updatedTopics);
+                          } else {
+                            // Allow selection as long as we don't exceed the maximum of 3
+                            if (currentValue.length < 3) {
+                              const updatedTopics = [...currentValue, topic];
+                              console.log("Updated topics (after addition):", updatedTopics);
+                              field.onChange(updatedTopics);
+                            }
                           }
                         }}
                       >
@@ -1245,7 +1248,8 @@ export default function CreateCollaborationSteps({
                 <div className="grid grid-cols-2 gap-1">
                   {TWITTER_COLLAB_TYPES.map((type) => {
                     const isSelected = currentValue.includes(type);
-                    const hasReachedMax = currentValue.length >= 3 && !isSelected;
+                    // Fix: make sure we're checking for exactly 3 items, not more
+                    const hasReachedMax = currentValue.length === 3 && !isSelected;
                     
                     return (
                       <Button
@@ -1265,10 +1269,12 @@ export default function CreateCollaborationSteps({
                             // If removing the last item, select Thread Collab as default
                             const newValue = updatedTypes.length > 0 ? updatedTypes : ["Thread Collab"];
                             field.onChange(newValue);
-                          } else if (currentValue.length < 3) {
-                            // Only allow selection if under the limit of 3
-                            const updatedTypes = [...currentValue, type];
-                            field.onChange(updatedTypes);
+                          } else {
+                            // Allow selection as long as we don't exceed the maximum of 3
+                            if (currentValue.length < 3) {
+                              const updatedTypes = [...currentValue, type];
+                              field.onChange(updatedTypes);
+                            }
                           }
                         }}
                       >
