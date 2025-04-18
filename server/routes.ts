@@ -11,7 +11,7 @@ import {
 } from "../shared/schema";
 import { eq, and, not, desc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, bot } from "./telegram";
+import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, bot } from "./telegram";
 import { storage } from "./storage";
 import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
@@ -765,7 +765,9 @@ export async function registerRoutes(app: Express) {
               handle: result.user.handle,
               company_name: company.name,
               company_website: company.website,
-              job_title: company.job_title
+              job_title: company.job_title,
+              twitter_url: result.user.twitter_url,
+              company_twitter_handle: company.twitter_handle
             });
             console.log('Admin notification sent for new user application');
           } else {
@@ -2266,6 +2268,16 @@ export async function registerRoutes(app: Express) {
       try {
         // Pass data to storage without strict type checking
         const newCollaboration = await storage.createCollaboration(collabData as any);
+        
+        // Send notification to admins about new collaboration
+        try {
+          await notifyAdminsNewCollaboration(newCollaboration.id, newCollaboration.creator_id);
+          console.log(`Admin notification sent for new collaboration ${newCollaboration.id}`);
+        } catch (notifyError) {
+          // Log error but don't fail the overall request
+          console.error('Failed to send admin notification for new collaboration:', notifyError);
+        }
+        
         res.status(201);
         return res.json({
           success: true,

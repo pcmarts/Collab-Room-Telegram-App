@@ -492,6 +492,165 @@ export async function notifyUserApproved(chatId: number) {
   }
 }
 
+/**
+ * Notify all admins when a new collaboration is created
+ * @param collaborationId The ID of the newly created collaboration
+ * @param creatorId The ID of the user who created the collaboration
+ */
+export async function notifyAdminsNewCollaboration(collaborationId: string, creatorId: string) {
+  try {
+    // Get all admin users
+    const adminUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.is_admin, true));
+
+    if (!adminUsers.length) {
+      console.warn("No admin users found to notify about new collaboration");
+      return;
+    }
+    
+    // Get collaboration details
+    const [collaboration] = await db
+      .select()
+      .from(collaborations)
+      .where(eq(collaborations.id, collaborationId));
+      
+    if (!collaboration) {
+      console.error(`Collaboration with ID ${collaborationId} not found`);
+      return;
+    }
+    
+    // Get creator details
+    const [creator] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, creatorId));
+      
+    if (!creator) {
+      console.error(`Creator with ID ${creatorId} not found`);
+      return;
+    }
+    
+    // Get creator's company details
+    const [company] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.user_id, creatorId));
+      
+    if (!company) {
+      console.error(`Company for creator ${creatorId} not found`);
+      return;
+    }
+    
+    // Format creator Twitter URL if available
+    const creatorTwitterFormatted = creator.twitter_url
+      ? `<a href="${creator.twitter_url}">${creator.first_name} ${creator.last_name || ""}</a>`
+      : `${creator.first_name} ${creator.last_name || ""}`;
+      
+    // Format Telegram handle
+    const telegramHandle = creator.handle ? `@${creator.handle}` : "";
+    
+    // Format company website
+    const companyWebsite = company.website
+      ? company.website.startsWith("http")
+        ? company.website
+        : `https://${company.website}`
+      : null;
+        
+    // Format company name with website link
+    const companyNameFormatted = companyWebsite
+      ? `<a href="${companyWebsite}">${company.name}</a>`
+      : company.name;
+      
+    // Format company Twitter
+    const companyTwitterUrl = company.twitter_handle
+      ? `https://twitter.com/${company.twitter_handle.replace(/^@/, '')}`
+      : null;
+      
+    const companyTwitterLink = companyTwitterUrl
+      ? ` (<a href="${companyTwitterUrl}">Twitter</a>)`
+      : "";
+      
+    // Format collaboration details
+    const collabDetails = typeof collaboration.details === 'string'
+      ? JSON.parse(collaboration.details)
+      : collaboration.details || {};
+      
+    const shortDescription = collabDetails.short_description || "";
+    const expectations = collabDetails.expectations || "";
+    const goals = collabDetails.goals || "";
+    
+    // Build the message with HTML formatting
+    const message =
+      `🆕 <b>New Collaboration Created!</b>\n\n` +
+      `<b>Type:</b> ${collaboration.collab_type}\n` +
+      `<b>Description:</b> ${collaboration.description || "N/A"}\n` +
+      (shortDescription ? `<b>Short Description:</b> ${shortDescription}\n` : "") +
+      (expectations ? `<b>Expectations:</b> ${expectations}\n` : "") +
+      (goals ? `<b>Goals:</b> ${goals}\n` : "") +
+      (collaboration.topics && collaboration.topics.length > 0 
+        ? `<b>Topics:</b> ${collaboration.topics.join(", ")}\n` 
+        : "") +
+      `\n<b>Created By:</b>\n` +
+      `<b>Name:</b> ${creatorTwitterFormatted} ${telegramHandle ? `(${telegramHandle})` : ""}\n` +
+      `<b>Company:</b> ${companyNameFormatted}${companyTwitterLink}\n` +
+      `<b>Role:</b> ${company.job_title}\n\n` +
+      `<b>Company Details:</b>\n` +
+      `<b>Funding Stage:</b> ${company.funding_stage || "N/A"}\n` +
+      (company.has_token ? `<b>Token:</b> ${company.token_ticker || "Yes"}\n` : "") +
+      (company.blockchain_networks && company.blockchain_networks.length > 0
+        ? `<b>Blockchain Networks:</b> ${company.blockchain_networks.join(", ")}\n`
+        : "") +
+      (company.tags && company.tags.length > 0
+        ? `<b>Tags:</b> ${company.tags.join(", ")}\n`
+        : "");
+        
+    // Create keyboard with view button
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "👁️ View Collaboration",
+            web_app: { url: `${WEBAPP_URL}/collaborations/${collaborationId}` },
+          },
+        ],
+      ],
+    };
+
+    // Send notification to each admin
+    for (const admin of adminUsers) {
+      try {
+        const result = await bot.sendMessage(
+          parseInt(admin.telegram_id),
+          message,
+          {
+            parse_mode: "HTML",
+            disable_web_page_preview: false, // Keep website previews for admin notifications
+            reply_markup: keyboard,
+          },
+        );
+        console.log(`New collaboration notification sent to admin ${admin.telegram_id}`);
+
+        // Log the admin notification
+        logAdminMessage(
+          admin.telegram_id,
+          "NEW_COLLABORATION",
+          `New collaboration created by ${creator.first_name} ${creator.last_name || ""} (${creator.telegram_id})`,
+          `Collaboration ID: ${collaborationId}`,
+        );
+      } catch (error) {
+        console.error(
+          `Failed to send collaboration notification to admin ${admin.telegram_id}:`,
+          error,
+        );
+      }
+    }
+  } catch (error) {
+    console.error("Failed to notify admins about new collaboration:", error);
+  }
+}
+
 // Initialize commands based on user roles
 setupBotCommands()
   .then(success => {
@@ -1240,10 +1399,18 @@ async function handleApproveUserCallback(
         editError,
       );
       // If editing fails, send a new message instead
+      // Format user Twitter URL if available
+      const userTwitterLink = user.twitter_url
+        ? `<a href="${user.twitter_url}">${user.first_name} ${user.last_name || ""}</a>`
+        : `<b>${user.first_name} ${user.last_name || ""}</b>`;
+        
+      // Format user Telegram handle
+      const userTelegramHandle = user.handle ? ` (@${user.handle})` : "";
+        
       await bot.sendMessage(
         chatId,
         `✅ <b>Application Approved!</b>\n\n` +
-          `You have approved <b>${user.first_name} ${user.last_name || ""}</b>'s application.\n` +
+          `You have approved ${userTwitterLink}'s application.${userTelegramHandle}\n` +
           `They have been notified and now have full access to the platform.`,
         { parse_mode: "HTML" },
       );
