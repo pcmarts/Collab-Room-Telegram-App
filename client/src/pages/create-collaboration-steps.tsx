@@ -761,47 +761,49 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="topics"
-          render={() => (
+          render={({ field }) => (
             <FormItem className="space-y-1 pt-0">
               <div className="mb-1">
-                <FormLabel className="mb-0 text-sm">Select Topics (pick at least one)</FormLabel>
+                <FormLabel className="mb-0 text-sm">Select Topics (pick at least one, max 3)</FormLabel>
               </div>
               <div className="grid grid-cols-2 gap-1">
-                {COLLAB_TOPICS.map((topic) => (
-                  <FormField
-                    key={topic}
-                    control={form.control}
-                    name="topics"
-                    render={({ field }) => {
-                      const isSelected = field.value?.includes(topic);
-                      return (
-                        <FormItem key={topic} className="flex-1">
-                          <FormControl>
-                            <Button
-                              type="button"
-                              variant={isSelected ? "default" : "outline"}
-                              className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
-                              onClick={() => {
-                                const currentValue = field.value || [];
-                                const updatedTopics = isSelected
-                                  ? currentValue.filter((t) => t !== topic)
-                                  : [...currentValue, topic];
-                                field.onChange(updatedTopics);
-                              }}
-                            >
-                              {isSelected && (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
-                                  <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                              )}
-                              {topic}
-                            </Button>
-                          </FormControl>
-                        </FormItem>
-                      );
-                    }}
-                  />
-                ))}
+                {COLLAB_TOPICS.map((topic) => {
+                  const currentValue = field.value || [];
+                  const isSelected = currentValue.includes(topic);
+                  const hasReachedMax = currentValue.length >= 3 && !isSelected;
+                  
+                  return (
+                    <Button
+                      key={topic}
+                      type="button"
+                      variant={isSelected ? "default" : "outline"}
+                      className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${
+                        isSelected ? 'bg-primary text-primary-foreground' 
+                        : hasReachedMax ? 'bg-muted text-muted-foreground cursor-not-allowed' 
+                        : 'bg-background hover:bg-accent/20'
+                      }`}
+                      disabled={hasReachedMax}
+                      onClick={() => {
+                        if (isSelected) {
+                          // Always allow deselection
+                          const updatedTopics = currentValue.filter((t) => t !== topic);
+                          field.onChange(updatedTopics);
+                        } else if (currentValue.length < 3) {
+                          // Only allow selection if under the limit
+                          const updatedTopics = [...currentValue, topic];
+                          field.onChange(updatedTopics);
+                        }
+                      }}
+                    >
+                      {isSelected && (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      )}
+                      {topic}
+                    </Button>
+                  );
+                })}
               </div>
               <FormMessage />
             </FormItem>
