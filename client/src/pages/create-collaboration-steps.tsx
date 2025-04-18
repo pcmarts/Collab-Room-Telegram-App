@@ -828,13 +828,13 @@ export default function CreateCollaborationSteps({
             return (
               <FormItem className="space-y-1 pt-0">
                 <div className="mb-1">
-                  <FormLabel className="mb-0 text-sm">Select Topics (pick at least one, max 3)</FormLabel>
+                  <FormLabel className="mb-0 text-sm">Select Topics (pick at least one, max 4)</FormLabel>
                 </div>
                 <div className="grid grid-cols-2 gap-1">
                   {COLLAB_TOPICS.map((topic) => {
                     const isSelected = currentValue.includes(topic);
-                    // Fix: make sure we're checking for exactly 3 items, not more
-                    const hasReachedMax = currentValue.length === 3 && !isSelected;
+                    // Fix: make sure we're checking for exactly 4 items, not more
+                    const hasReachedMax = currentValue.length === 4 && !isSelected;
                     
                     return (
                       <Button
@@ -1270,7 +1270,7 @@ export default function CreateCollaborationSteps({
             
             return (
               <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">Co-Marketing Type</FormLabel>
+                <FormLabel className="mb-0 text-sm">Co-Marketing Type (Select 1-3 options)</FormLabel>
                 <div className="grid grid-cols-2 gap-1">
                   {TWITTER_COLLAB_TYPES.map((type) => {
                     const isSelected = currentValue.includes(type);
