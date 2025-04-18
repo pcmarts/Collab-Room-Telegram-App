@@ -790,7 +790,8 @@ export default function CreateCollaborationSteps({
               </div>
               <div className="grid grid-cols-2 gap-1">
                 {COLLAB_TOPICS.map((topic) => {
-                  const currentValue = field.value || [];
+                  // Make sure field.value is always an array
+                  const currentValue = Array.isArray(field.value) ? field.value : [];
                   const isSelected = currentValue.includes(topic);
                   const hasReachedMax = currentValue.length >= 3 && !isSelected;
                   
@@ -806,13 +807,18 @@ export default function CreateCollaborationSteps({
                       }`}
                       disabled={hasReachedMax}
                       onClick={() => {
+                        console.log("Topic clicked:", topic);
+                        console.log("Current topics:", currentValue);
+                        
                         if (isSelected) {
                           // Always allow deselection
                           const updatedTopics = currentValue.filter((t) => t !== topic);
+                          console.log("Updated topics (after removal):", updatedTopics);
                           field.onChange(updatedTopics);
                         } else if (currentValue.length < 3) {
                           // Only allow selection if under the limit
                           const updatedTopics = [...currentValue, topic];
+                          console.log("Updated topics (after addition):", updatedTopics);
                           field.onChange(updatedTopics);
                         }
                       }}
