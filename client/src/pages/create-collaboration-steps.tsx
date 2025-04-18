@@ -350,9 +350,9 @@ export default function CreateCollaborationSteps({
           });
           return false;
         }
-        if (topics.length > 3) {
+        if (topics.length > 4) {
           toast({
-            title: "Please select at most 3 topics",
+            title: "Please select at most 4 topics",
             variant: "destructive",
           });
           return false;
@@ -857,8 +857,8 @@ export default function CreateCollaborationSteps({
                             console.log("Updated topics (after removal):", updatedTopics);
                             field.onChange(updatedTopics);
                           } else {
-                            // Allow selection as long as we don't exceed the maximum of 3
-                            if (currentValue.length < 3) {
+                            // Allow selection as long as we don't exceed the maximum of 4
+                            if (currentValue.length < 4) {
                               const updatedTopics = [...currentValue, topic];
                               console.log("Updated topics (after addition):", updatedTopics);
                               field.onChange(updatedTopics);
