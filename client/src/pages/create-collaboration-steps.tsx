@@ -660,7 +660,7 @@ export default function CreateCollaborationSteps({
         }
         
         data.details = {
-          twittercomarketing_type: twitterTypes,
+          twittercomarketing_type: twitterTypes || ["Thread Collab"],
           host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) 
             ? rawDetails.host_follower_count 
@@ -689,6 +689,17 @@ export default function CreateCollaborationSteps({
         company_has_token: data.required_token_status || false,
         company_blockchain_networks: data.required_blockchain_networks || [],
       };
+      
+      // Ensure topics is always a valid array of proper topic values from schema, not marketing types
+      if (!Array.isArray(formattedData.topics) || formattedData.topics.length === 0) {
+        formattedData.topics = [];
+      } else {
+        // Filter topics to ensure only valid COLLAB_TOPICS values are included
+        formattedData.topics = formattedData.topics.filter(topic => 
+          COLLAB_TOPICS.includes(topic as any));
+      }
+      
+      console.log("Validated final topics array:", formattedData.topics);
 
       // Remove specific_date if not needed
       if (data.date_type !== "specific_date") {
@@ -828,7 +839,7 @@ export default function CreateCollaborationSteps({
             return (
               <FormItem className="space-y-1 pt-0">
                 <div className="mb-1">
-                  <FormLabel className="mb-0 text-sm">Select Topics <i>(Select 1-3 options)</i></FormLabel>
+                  <FormLabel className="mb-0 text-sm">Select Topics (pick at least one, max 4)</FormLabel>
                 </div>
                 <div className="grid grid-cols-2 gap-1">
                   {COLLAB_TOPICS.map((topic) => {
@@ -1270,7 +1281,7 @@ export default function CreateCollaborationSteps({
             
             return (
               <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">Co-Marketing Type (Select 1-3 options)</FormLabel>
+                <FormLabel className="mb-0 text-sm">Co-Marketing Type (pick at least one, max 3)</FormLabel>
                 <div className="grid grid-cols-2 gap-1">
                   {TWITTER_COLLAB_TYPES.map((type) => {
                     const isSelected = currentValue.includes(type);
