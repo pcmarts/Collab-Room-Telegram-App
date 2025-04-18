@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ChevronDown, ChevronUp, Save, Upload } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "../components/PageHeader";
 import { Switch } from "@/components/ui/switch";
@@ -13,20 +13,13 @@ import { apiRequest } from "@/lib/queryClient";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { Textarea } from "@/components/ui/textarea";
-import { SquareImageCropper } from "@/components/ui/square-image-cropper";
-import { useFileUpload } from "@/hooks/use-file-uploads";
-import { Separator } from "@/components/ui/separator";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default function CompanyInfoForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [_, setLocation] = useLocation();
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const { uploadCompanyLogo, isUploading: isFileUploading } = useFileUpload();
 
   // Add scrolling functionality
   useEffect(() => {
@@ -112,11 +105,6 @@ export default function CompanyInfoForm() {
         short_description: profileData.company.short_description || '',
         long_description: profileData.company.long_description || ''
       });
-      
-      // Set the logo URL if available
-      if (profileData.company.logo_url) {
-        setLogoUrl(profileData.company.logo_url);
-      }
     }
   }, [profileData]);
 
@@ -153,47 +141,6 @@ export default function CompanyInfoForm() {
         : [...prev, category]
     );
   };
-  
-  const handleImageCropped = async (data: { 
-    base64Data: string; 
-    filename: string; 
-    mimeType: string; 
-    size: number;
-  }) => {
-    try {
-      setIsUploading(true);
-      
-      // Upload the cropped image
-      const result = await uploadCompanyLogo(
-        data.base64Data,
-        data.filename,
-        data.mimeType,
-        data.size,
-        true // show toast
-      );
-      
-      if (result) {
-        setLogoUrl(result.public_url);
-        
-        // Update the company with the new logo URL
-        await apiRequest('/api/company', 'POST', {
-          logo_url: result.public_url
-        });
-        
-        // Refresh profile data
-        await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-      }
-    } catch (error) {
-      console.error('Error uploading company logo:', error);
-      toast({
-        variant: "destructive",
-        title: "Upload Failed",
-        description: "There was a problem uploading your company logo."
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,8 +161,7 @@ export default function CompanyInfoForm() {
         blockchain_networks: formData.has_token ? formData.blockchain_networks : [],
         tags: formData.tags,
         short_description: formData.short_description,
-        long_description: formData.long_description,
-        logo_url: logoUrl
+        long_description: formData.long_description
       };
 
       // apiRequest already parses the JSON and throws an error if response is not OK
@@ -261,29 +207,6 @@ export default function CompanyInfoForm() {
 
       <div className="p-4 space-y-6">
         <form onSubmit={handleSubmit} className="space-y-4 pb-24">
-          {/* Company Logo Upload */}
-          <div className="space-y-4">
-            <Label className="text-lg">Company Logo</Label>
-            <p className="text-sm text-muted-foreground">
-              Upload your company logo. It will be displayed as a circular avatar across the platform.
-            </p>
-            
-            <Card className="shadow-sm overflow-hidden">
-              <CardContent className="p-6">
-                <SquareImageCropper
-                  currentImageUrl={logoUrl}
-                  categoryName="Company Logo"
-                  onImageCropped={handleImageCropped}
-                  isUploading={isUploading || isFileUploading}
-                  maxSizeMB={5}
-                  className="w-full max-w-md mx-auto"
-                />
-              </CardContent>
-            </Card>
-          </div>
-          
-          <Separator className="my-4" />
-          
           <div>
             <Label htmlFor="company_name">Company Name</Label>
             <Input

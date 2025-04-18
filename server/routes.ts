@@ -16,9 +16,6 @@ import { storage } from "./storage";
 import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
 import twitterRoutes from './routes/twitter-routes.js';
-import fileUploadRoutes from './routes/file-upload-routes';
-import testRoutes from './routes/test-routes';
-import testAuthRoutes from './routes/test-auth-routes';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -41,10 +38,7 @@ interface ImpersonationSession extends Session {
     last_name?: string;
     // Add expiry time to invalidate cached user data after a certain period
     cachedAt: number;
-  },
-  // For test authentication
-  user?: any,
-  isAuthenticated?: boolean
+  }
 }
 
 // Extend Express Request type to include session
@@ -3777,16 +3771,6 @@ export async function registerRoutes(app: Express) {
 
   // Register Twitter API routes
   app.use('/api', twitterRoutes);
-  
-  // Register File Upload routes
-  app.use('/', fileUploadRoutes);
-  
-  // Register Test routes (only enabled in development)
-  if (process.env.NODE_ENV !== 'production') {
-    app.use('/', testRoutes);
-    app.use('/', testAuthRoutes);
-    logger.info('Test routes registered (DISABLED in production)');
-  }
 
   return httpServer;
 }
