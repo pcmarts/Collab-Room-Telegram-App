@@ -690,14 +690,31 @@ export default function CreateCollaborationSteps({
         company_blockchain_networks: data.required_blockchain_networks || [],
       };
       
-      // Ensure topics is always a valid array of proper topic values from schema, not marketing types
+      // Ensure topics is always a valid array of proper topic values from schema
+      // We need to ensure collab_type is not mixing in with topics
       if (!Array.isArray(formattedData.topics) || formattedData.topics.length === 0) {
         formattedData.topics = [];
       } else {
         // Filter topics to ensure only valid COLLAB_TOPICS values are included
+        // This is critical to prevent form errors with "Co-Marketing on Twitter" being 
+        // incorrectly included in topics array
         formattedData.topics = formattedData.topics.filter(topic => 
           COLLAB_TOPICS.includes(topic as any));
       }
+      
+      // Make sure collab_type is not accidentally included in topics 
+      // This is the root cause of the validation error
+      if (formattedData.topics.includes(formattedData.collab_type as any)) {
+        console.log("FIXING ERROR: Removing collab_type from topics array");
+        formattedData.topics = formattedData.topics.filter(
+          (topic) => topic !== formattedData.collab_type
+        );
+      }
+      
+      // Additional check for any Twitter types that might be in topics
+      formattedData.topics = formattedData.topics.filter(
+        (topic) => !TWITTER_COLLAB_TYPES.includes(topic as any)
+      );
       
       console.log("Validated final topics array:", formattedData.topics);
 
