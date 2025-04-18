@@ -342,10 +342,31 @@ export default function CreateCollaborationSteps({
         break;
         
       case "topics":
-        const topics = form.getValues("topics");
+        let topics = form.getValues("topics");
+        
+        // Filter out any collaboration types or Twitter marketing types that might be in topics array
+        if (Array.isArray(topics)) {
+          // Remove any collaboration types or Twitter marketing types from topics
+          const cleanedTopics = topics.filter(topic => 
+            COLLAB_TOPICS.includes(topic as any) && 
+            !COLLAB_TYPES.includes(topic as any) &&
+            !TWITTER_COLLAB_TYPES.includes(topic as any)
+          );
+          
+          // Update the form with cleaned topics if they've changed
+          if (JSON.stringify(cleanedTopics) !== JSON.stringify(topics)) {
+            console.log("Cleaning topics array - removed invalid items:", 
+              topics.filter(t => !cleanedTopics.includes(t)));
+            form.setValue("topics", cleanedTopics);
+            topics = cleanedTopics;
+          }
+        }
+        
+        // Now validate with the cleaned array
         if (!topics || !Array.isArray(topics) || topics.length === 0) {
           toast({
             title: "Please select at least one topic",
+            description: "You must select between 1 and 4 topics from the list",
             variant: "destructive",
           });
           return false;
@@ -353,6 +374,7 @@ export default function CreateCollaborationSteps({
         if (topics.length > 4) {
           toast({
             title: "Please select at most 4 topics",
+            description: "Maximum allowed is 4 topics",
             variant: "destructive",
           });
           return false;
@@ -502,10 +524,30 @@ export default function CreateCollaborationSteps({
         
       // Add validation for Twitter Co-Marketing Type
       case "twitter_comarketing_type":
-        const twitterMarketingTypes = form.getValues("details.twittercomarketing_type");
+        let twitterMarketingTypes = form.getValues("details.twittercomarketing_type");
+        
+        // Validate and clean the Twitter marketing types array
+        if (Array.isArray(twitterMarketingTypes)) {
+          // Ensure only valid Twitter marketing types are included (no topic leakage)
+          const cleanedTypes = twitterMarketingTypes.filter(type => 
+            TWITTER_COLLAB_TYPES.includes(type as any) && 
+            !COLLAB_TOPICS.includes(type as any)
+          );
+          
+          // Update if needed
+          if (JSON.stringify(cleanedTypes) !== JSON.stringify(twitterMarketingTypes)) {
+            console.log("Cleaning Twitter marketing types - removed invalid items:", 
+              twitterMarketingTypes.filter(t => !cleanedTypes.includes(t)));
+            form.setValue("details.twittercomarketing_type", cleanedTypes);
+            twitterMarketingTypes = cleanedTypes;
+          }
+        }
+        
+        // Now validate with the cleaned array
         if (!twitterMarketingTypes || !Array.isArray(twitterMarketingTypes) || twitterMarketingTypes.length === 0) {
           toast({
             title: "Please select at least one Twitter co-marketing type",
+            description: "You must select between 1 and 3 marketing types",
             variant: "destructive",
           });
           return false;
@@ -513,6 +555,7 @@ export default function CreateCollaborationSteps({
         if (twitterMarketingTypes.length > 3) {
           toast({
             title: "Please select at most 3 Twitter co-marketing types",
+            description: "Maximum allowed is 3 types",
             variant: "destructive",
           });
           return false;
