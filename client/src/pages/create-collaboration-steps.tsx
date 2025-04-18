@@ -144,7 +144,13 @@ export default function CreateCollaborationSteps({
       if (currentStepId === "twitter_comarketing_type") {
         // Reset the Twitter marketing type field
         const twitterDetails = form.getValues("details") as Record<string, any>;
-        form.setValue("details.twittercomarketing_type", twitterDetails.twittercomarketing_type || ["Thread Collab"]);
+        // Ensure we have twittercomarketing_type, but also enforce the maximum of 3
+        let currentTypes = twitterDetails.twittercomarketing_type || ["Thread Collab"];
+        // If we somehow have more than 3 selected, trim down to the first 3
+        if (Array.isArray(currentTypes) && currentTypes.length > 3) {
+          currentTypes = currentTypes.slice(0, 3);
+        }
+        form.setValue("details.twittercomarketing_type", currentTypes);
       }
       else if (currentStepId === "twitter_comarketing_handle") {
         // Ensure the Twitter handle field has proper value
@@ -228,6 +234,7 @@ export default function CreateCollaborationSteps({
           break;
           
         case "Co-Marketing on Twitter":
+          // Initialize with Thread Collab by default, but support up to 3 selections
           newDetails.twittercomarketing_type = ["Thread Collab"];
           newDetails.host_twitter_handle = "https://x.com/";
           newDetails.host_follower_count = TWITTER_FOLLOWER_COUNTS[0];
@@ -611,8 +618,23 @@ export default function CreateCollaborationSteps({
         
         console.log("Using root-level description for Twitter co-marketing:", data.description);
 
+        // Ensure we have valid Twitter co-marketing types and enforce the maximum of 3
+        let twitterTypes = Array.isArray(rawDetails?.twittercomarketing_type) 
+          ? rawDetails.twittercomarketing_type 
+          : ["Thread Collab"];
+        
+        // If no types selected, default to Thread Collab
+        if (twitterTypes.length === 0) {
+          twitterTypes = ["Thread Collab"];
+        }
+        
+        // Enforce maximum of 3 types
+        if (twitterTypes.length > 3) {
+          twitterTypes = twitterTypes.slice(0, 3);
+        }
+        
         data.details = {
-          twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Thread Collab"],
+          twittercomarketing_type: twitterTypes,
           host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) 
             ? rawDetails.host_follower_count 
@@ -1202,19 +1224,31 @@ export default function CreateCollaborationSteps({
                 <div className="grid grid-cols-2 gap-1">
                   {TWITTER_COLLAB_TYPES.map((type) => {
                     const isSelected = currentValue.includes(type);
+                    const hasReachedMax = currentValue.length >= 3 && !isSelected;
+                    
                     return (
                       <Button
                         key={type}
                         type="button"
                         variant={isSelected ? "default" : "outline"}
-                        className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                        className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${
+                          isSelected ? 'bg-primary text-primary-foreground' 
+                          : hasReachedMax ? 'bg-muted text-muted-foreground cursor-not-allowed' 
+                          : 'bg-background hover:bg-accent/20'
+                        }`}
+                        disabled={hasReachedMax}
                         onClick={() => {
-                          const updatedTypes = isSelected
-                            ? currentValue.filter((t) => t !== type)
-                            : [...currentValue, type];
-                          // Ensure at least one value is selected
-                          const newValue = updatedTypes.length > 0 ? updatedTypes : ["Thread Collab"];
-                          field.onChange(newValue);
+                          if (isSelected) {
+                            // Allow deselection, but ensure at least one remains selected
+                            const updatedTypes = currentValue.filter((t) => t !== type);
+                            // If removing the last item, select Thread Collab as default
+                            const newValue = updatedTypes.length > 0 ? updatedTypes : ["Thread Collab"];
+                            field.onChange(newValue);
+                          } else if (currentValue.length < 3) {
+                            // Only allow selection if under the limit of 3
+                            const updatedTypes = [...currentValue, type];
+                            field.onChange(updatedTypes);
+                          }
                         }}
                       >
                         {isSelected && (
@@ -1228,7 +1262,7 @@ export default function CreateCollaborationSteps({
                   })}
                 </div>
                 <FormDescription className="text-xs">
-                  Select at least one type of Twitter content
+                  Select at least one type of Twitter content (maximum 3)
                 </FormDescription>
                 <FormMessage />
               </FormItem>
