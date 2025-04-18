@@ -350,6 +350,13 @@ export default function CreateCollaborationSteps({
           });
           return false;
         }
+        if (topics.length > 3) {
+          toast({
+            title: "Please select at most 3 topics",
+            variant: "destructive",
+          });
+          return false;
+        }
         break;
       
       // Type-specific validations
@@ -487,6 +494,25 @@ export default function CreateCollaborationSteps({
         if (!subscriberCount) {
           toast({
             title: "Please select a subscriber count range",
+            variant: "destructive",
+          });
+          return false;
+        }
+        break;
+        
+      // Add validation for Twitter Co-Marketing Type
+      case "twitter_comarketing_type":
+        const twitterMarketingTypes = form.getValues("details.twittercomarketing_type");
+        if (!twitterMarketingTypes || !Array.isArray(twitterMarketingTypes) || twitterMarketingTypes.length === 0) {
+          toast({
+            title: "Please select at least one Twitter co-marketing type",
+            variant: "destructive",
+          });
+          return false;
+        }
+        if (twitterMarketingTypes.length > 3) {
+          toast({
+            title: "Please select at most 3 Twitter co-marketing types",
             variant: "destructive",
           });
           return false;
