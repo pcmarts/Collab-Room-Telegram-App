@@ -828,7 +828,7 @@ export default function CreateCollaborationSteps({
             return (
               <FormItem className="space-y-1 pt-0">
                 <div className="mb-1">
-                  <FormLabel className="mb-0 text-sm">Select Topics (pick at least one, max 4)</FormLabel>
+                  <FormLabel className="mb-0 text-sm">Select Topics <i>(Select 1-3 options)</i></FormLabel>
                 </div>
                 <div className="grid grid-cols-2 gap-1">
                   {COLLAB_TOPICS.map((topic) => {
