@@ -144,13 +144,7 @@ export default function CreateCollaborationSteps({
       if (currentStepId === "twitter_comarketing_type") {
         // Reset the Twitter marketing type field
         const twitterDetails = form.getValues("details") as Record<string, any>;
-        // Ensure we have twittercomarketing_type, but also enforce the maximum of 3
-        let currentTypes = twitterDetails.twittercomarketing_type || ["Thread Collab"];
-        // If we somehow have more than 3 selected, trim down to the first 3
-        if (Array.isArray(currentTypes) && currentTypes.length > 3) {
-          currentTypes = currentTypes.slice(0, 3);
-        }
-        form.setValue("details.twittercomarketing_type", currentTypes);
+        form.setValue("details.twittercomarketing_type", twitterDetails.twittercomarketing_type || ["Thread Collab"]);
       }
       else if (currentStepId === "twitter_comarketing_handle") {
         // Ensure the Twitter handle field has proper value
@@ -234,7 +228,6 @@ export default function CreateCollaborationSteps({
           break;
           
         case "Co-Marketing on Twitter":
-          // Initialize with Thread Collab by default, but support up to 3 selections
           newDetails.twittercomarketing_type = ["Thread Collab"];
           newDetails.host_twitter_handle = "https://x.com/";
           newDetails.host_follower_count = TWITTER_FOLLOWER_COUNTS[0];
@@ -342,39 +335,10 @@ export default function CreateCollaborationSteps({
         break;
         
       case "topics":
-        let topics = form.getValues("topics");
-        
-        // Filter out any collaboration types or Twitter marketing types that might be in topics array
-        if (Array.isArray(topics)) {
-          // Remove any collaboration types or Twitter marketing types from topics
-          const cleanedTopics = topics.filter(topic => 
-            COLLAB_TOPICS.includes(topic as any) && 
-            !COLLAB_TYPES.includes(topic as any) &&
-            !TWITTER_COLLAB_TYPES.includes(topic as any)
-          );
-          
-          // Update the form with cleaned topics if they've changed
-          if (JSON.stringify(cleanedTopics) !== JSON.stringify(topics)) {
-            console.log("Cleaning topics array - removed invalid items:", 
-              topics.filter(t => !cleanedTopics.includes(t)));
-            form.setValue("topics", cleanedTopics);
-            topics = cleanedTopics;
-          }
-        }
-        
-        // Now validate with the cleaned array
+        const topics = form.getValues("topics");
         if (!topics || !Array.isArray(topics) || topics.length === 0) {
           toast({
             title: "Please select at least one topic",
-            description: "You must select between 1 and 4 topics from the list",
-            variant: "destructive",
-          });
-          return false;
-        }
-        if (topics.length > 4) {
-          toast({
-            title: "Please select at most 4 topics",
-            description: "Maximum allowed is 4 topics",
             variant: "destructive",
           });
           return false;
@@ -521,46 +485,6 @@ export default function CreateCollaborationSteps({
           return false;
         }
         break;
-        
-      // Add validation for Twitter Co-Marketing Type
-      case "twitter_comarketing_type":
-        let twitterMarketingTypes = form.getValues("details.twittercomarketing_type");
-        
-        // Validate and clean the Twitter marketing types array
-        if (Array.isArray(twitterMarketingTypes)) {
-          // Ensure only valid Twitter marketing types are included (no topic leakage)
-          const cleanedTypes = twitterMarketingTypes.filter(type => 
-            TWITTER_COLLAB_TYPES.includes(type as any) && 
-            !COLLAB_TOPICS.includes(type as any)
-          );
-          
-          // Update if needed
-          if (JSON.stringify(cleanedTypes) !== JSON.stringify(twitterMarketingTypes)) {
-            console.log("Cleaning Twitter marketing types - removed invalid items:", 
-              twitterMarketingTypes.filter(t => !cleanedTypes.includes(t)));
-            form.setValue("details.twittercomarketing_type", cleanedTypes);
-            twitterMarketingTypes = cleanedTypes;
-          }
-        }
-        
-        // Now validate with the cleaned array
-        if (!twitterMarketingTypes || !Array.isArray(twitterMarketingTypes) || twitterMarketingTypes.length === 0) {
-          toast({
-            title: "Please select at least one Twitter co-marketing type",
-            description: "You must select between 1 and 3 marketing types",
-            variant: "destructive",
-          });
-          return false;
-        }
-        if (twitterMarketingTypes.length > 3) {
-          toast({
-            title: "Please select at most 3 Twitter co-marketing types",
-            description: "Maximum allowed is 3 types",
-            variant: "destructive",
-          });
-          return false;
-        }
-        break;
     }
 
     return true;
@@ -687,23 +611,8 @@ export default function CreateCollaborationSteps({
         
         console.log("Using root-level description for Twitter co-marketing:", data.description);
 
-        // Ensure we have valid Twitter co-marketing types and enforce the maximum of 3
-        let twitterTypes = Array.isArray(rawDetails?.twittercomarketing_type) 
-          ? rawDetails.twittercomarketing_type 
-          : ["Thread Collab"];
-        
-        // If no types selected, default to Thread Collab
-        if (twitterTypes.length === 0) {
-          twitterTypes = ["Thread Collab"];
-        }
-        
-        // Enforce maximum of 3 types
-        if (twitterTypes.length > 3) {
-          twitterTypes = twitterTypes.slice(0, 3);
-        }
-        
         data.details = {
-          twittercomarketing_type: twitterTypes || ["Thread Collab"],
+          twittercomarketing_type: Array.isArray(rawDetails?.twittercomarketing_type) ? rawDetails.twittercomarketing_type : ["Thread Collab"],
           host_twitter_handle: typeof rawDetails?.host_twitter_handle === 'string' ? rawDetails.host_twitter_handle : "https://x.com/",
           host_follower_count: TWITTER_FOLLOWER_COUNTS.includes(rawDetails?.host_follower_count) 
             ? rawDetails.host_follower_count 
@@ -732,34 +641,6 @@ export default function CreateCollaborationSteps({
         company_has_token: data.required_token_status || false,
         company_blockchain_networks: data.required_blockchain_networks || [],
       };
-      
-      // Ensure topics is always a valid array of proper topic values from schema
-      // We need to ensure collab_type is not mixing in with topics
-      if (!Array.isArray(formattedData.topics) || formattedData.topics.length === 0) {
-        formattedData.topics = [];
-      } else {
-        // Filter topics to ensure only valid COLLAB_TOPICS values are included
-        // This is critical to prevent form errors with "Co-Marketing on Twitter" being 
-        // incorrectly included in topics array
-        formattedData.topics = formattedData.topics.filter(topic => 
-          COLLAB_TOPICS.includes(topic as any));
-      }
-      
-      // Make sure collab_type is not accidentally included in topics 
-      // This is the root cause of the validation error
-      if (formattedData.topics.includes(formattedData.collab_type as any)) {
-        console.log("FIXING ERROR: Removing collab_type from topics array");
-        formattedData.topics = formattedData.topics.filter(
-          (topic) => topic !== formattedData.collab_type
-        );
-      }
-      
-      // Additional check for any Twitter types that might be in topics
-      formattedData.topics = formattedData.topics.filter(
-        (topic) => !TWITTER_COLLAB_TYPES.includes(topic as any)
-      );
-      
-      console.log("Validated final topics array:", formattedData.topics);
 
       // Remove specific_date if not needed
       if (data.date_type !== "specific_date") {
@@ -880,77 +761,51 @@ export default function CreateCollaborationSteps({
         <FormField
           control={form.control}
           name="topics"
-          render={({ field }) => {
-            // Normalize field value to ensure it's always an array
-            let currentValue: string[] = [];
-            
-            // Handle different possible value types
-            if (Array.isArray(field.value)) {
-              // Already an array, use it
-              currentValue = field.value;
-            } else if (typeof field.value === 'string') {
-              // Single string value, convert to array
-              currentValue = [field.value];
-            } else {
-              // Default to empty array
-              currentValue = [];
-            }
-            
-            return (
-              <FormItem className="space-y-1 pt-0">
-                <div className="mb-1">
-                  <FormLabel className="mb-0 text-sm">Select Topics (pick at least one, max 4)</FormLabel>
-                </div>
-                <div className="grid grid-cols-2 gap-1">
-                  {COLLAB_TOPICS.map((topic) => {
-                    const isSelected = currentValue.includes(topic);
-                    // Fix: make sure we're checking for exactly 4 items, not more
-                    const hasReachedMax = currentValue.length === 4 && !isSelected;
-                    
-                    return (
-                      <Button
-                        key={topic}
-                        type="button"
-                        variant={isSelected ? "default" : "outline"}
-                        className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${
-                          isSelected ? 'bg-primary text-primary-foreground' 
-                          : hasReachedMax ? 'bg-muted text-muted-foreground cursor-not-allowed' 
-                          : 'bg-background hover:bg-accent/20'
-                        }`}
-                        disabled={hasReachedMax}
-                        onClick={() => {
-                          console.log("Topic clicked:", topic);
-                          console.log("Current topics:", currentValue);
-                          
-                          if (isSelected) {
-                            // Always allow deselection
-                            const updatedTopics = currentValue.filter((t) => t !== topic);
-                            console.log("Updated topics (after removal):", updatedTopics);
-                            field.onChange(updatedTopics);
-                          } else {
-                            // Allow selection as long as we don't exceed the maximum of 4
-                            if (currentValue.length < 4) {
-                              const updatedTopics = [...currentValue, topic];
-                              console.log("Updated topics (after addition):", updatedTopics);
-                              field.onChange(updatedTopics);
-                            }
-                          }
-                        }}
-                      >
-                        {isSelected && (
-                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                        )}
-                        {topic}
-                      </Button>
-                    );
-                  })}
-                </div>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
+          render={() => (
+            <FormItem className="space-y-1 pt-0">
+              <div className="mb-1">
+                <FormLabel className="mb-0 text-sm">Select Topics (pick at least one)</FormLabel>
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                {COLLAB_TOPICS.map((topic) => (
+                  <FormField
+                    key={topic}
+                    control={form.control}
+                    name="topics"
+                    render={({ field }) => {
+                      const isSelected = field.value?.includes(topic);
+                      return (
+                        <FormItem key={topic} className="flex-1">
+                          <FormControl>
+                            <Button
+                              type="button"
+                              variant={isSelected ? "default" : "outline"}
+                              className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
+                              onClick={() => {
+                                const currentValue = field.value || [];
+                                const updatedTopics = isSelected
+                                  ? currentValue.filter((t) => t !== topic)
+                                  : [...currentValue, topic];
+                                field.onChange(updatedTopics);
+                              }}
+                            >
+                              {isSelected && (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 h-2 w-2">
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                              )}
+                              {topic}
+                            </Button>
+                          </FormControl>
+                        </FormItem>
+                      );
+                    }}
+                  />
+                ))}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
         />
       )
     },
@@ -1341,38 +1196,23 @@ export default function CreateCollaborationSteps({
             
             return (
               <FormItem className="space-y-1 pt-0">
-                <FormLabel className="mb-0 text-sm">Co-Marketing Type (pick at least one, max 3)</FormLabel>
+                <FormLabel className="mb-0 text-sm">Co-Marketing Type</FormLabel>
                 <div className="grid grid-cols-2 gap-1">
                   {TWITTER_COLLAB_TYPES.map((type) => {
                     const isSelected = currentValue.includes(type);
-                    // Fix: make sure we're checking for exactly 3 items, not more
-                    const hasReachedMax = currentValue.length === 3 && !isSelected;
-                    
                     return (
                       <Button
                         key={type}
                         type="button"
                         variant={isSelected ? "default" : "outline"}
-                        className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${
-                          isSelected ? 'bg-primary text-primary-foreground' 
-                          : hasReachedMax ? 'bg-muted text-muted-foreground cursor-not-allowed' 
-                          : 'bg-background hover:bg-accent/20'
-                        }`}
-                        disabled={hasReachedMax}
+                        className={`w-full h-auto py-1 px-1 text-[10px] justify-start normal-case ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent/20'}`}
                         onClick={() => {
-                          if (isSelected) {
-                            // Allow deselection, but ensure at least one remains selected
-                            const updatedTypes = currentValue.filter((t) => t !== type);
-                            // If removing the last item, select Thread Collab as default
-                            const newValue = updatedTypes.length > 0 ? updatedTypes : ["Thread Collab"];
-                            field.onChange(newValue);
-                          } else {
-                            // Allow selection as long as we don't exceed the maximum of 3
-                            if (currentValue.length < 3) {
-                              const updatedTypes = [...currentValue, type];
-                              field.onChange(updatedTypes);
-                            }
-                          }
+                          const updatedTypes = isSelected
+                            ? currentValue.filter((t) => t !== type)
+                            : [...currentValue, type];
+                          // Ensure at least one value is selected
+                          const newValue = updatedTypes.length > 0 ? updatedTypes : ["Thread Collab"];
+                          field.onChange(newValue);
                         }}
                       >
                         {isSelected && (
@@ -1386,7 +1226,7 @@ export default function CreateCollaborationSteps({
                   })}
                 </div>
                 <FormDescription className="text-xs">
-                  Select at least one type of Twitter content (maximum 3)
+                  Select at least one type of Twitter content
                 </FormDescription>
                 <FormMessage />
               </FormItem>
