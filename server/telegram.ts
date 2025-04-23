@@ -251,8 +251,7 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
           .select({
             id: users.id,
             first_name: users.first_name,
-            last_name: users.last_name,
-            company_id: users.company_id
+            last_name: users.last_name
           })
           .from(users)
           .where(eq(users.telegram_id, telegramIdFromCode));
@@ -261,17 +260,16 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
           // If found, get company info
           let companyName = null;
           
-          if (referrerUser.company_id) {
-            const companyResults = await db
-              .select({
-                name: companies.name
-              })
-              .from(companies)
-              .where(eq(companies.id, referrerUser.company_id));
+          // Look up company by user_id since the relationship is user -> company
+          const companyResults = await db
+            .select({
+              name: companies.name
+            })
+            .from(companies)
+            .where(eq(companies.user_id, referrerUser.id));
               
-            if (companyResults && companyResults.length > 0) {
-              companyName = companyResults[0].name;
-            }
+          if (companyResults && companyResults.length > 0) {
+            companyName = companyResults[0].name;
           }
               
           referrerDetails = {
