@@ -30,32 +30,54 @@ export default function ReferralsPage() {
     );
   }
   
+  // Check if referrals are enabled/available
+  const isReferralEnabled = !!referralInfo;
+  
   return (
-    <div className="flex flex-col h-[100dvh]">
-      <div className="flex-none px-4 py-4">
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Fixed header */}
+      <div className="sticky top-0 z-10 bg-background border-b px-4 pt-4 pb-2">
         <PageHeader
           title="Invite Friends"
           description="Share your referral link to invite friends to The Collab Room"
         />
       </div>
       
-      <div className="flex-1 overflow-y-auto px-4 pb-6">
-        <div className="space-y-6 container max-w-md mx-auto">
-          <ReferralCard 
-            referralInfo={referralInfo}
-            isLoading={isLoading}
-            error={error as Error}
-          />
+      {/* Main scrollable content area */}
+      <div className="overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
+        <div className="container max-w-md mx-auto px-4 pb-32 space-y-6">
+          {/* Referral Card Component - this is always shown if referrals are enabled */}
+          {isReferralEnabled && (
+            <ReferralCard 
+              referralInfo={referralInfo}
+              isLoading={isLoading}
+              error={error as Error}
+            />
+          )}
           
-          {/* Only show the info panel if the user has no referrals yet */}
-          {(!referredUsers || referredUsers.length === 0) && (
+          {/* Info Panel - only shown when user has no referrals yet */}
+          {isReferralEnabled && (!referredUsers || referredUsers.length === 0) && (
             <ReferralInfoPanel />
           )}
           
-          <ReferredUsersList 
-            users={referredUsers}
-            isLoading={isLoading}
-          />
+          {/* List of referred users */}
+          {isReferralEnabled && (
+            <ReferredUsersList 
+              users={referredUsers}
+              isLoading={isLoading}
+            />
+          )}
+          
+          {/* If referrals are not enabled, show a message */}
+          {!isReferralEnabled && !isLoading && (
+            <div className="p-8 bg-muted/30 rounded-lg text-center mt-8">
+              <h3 className="font-medium text-lg mb-2">Referrals Coming Soon</h3>
+              <p className="text-muted-foreground">
+                The referral program will be available soon. 
+                Check back later to invite your friends!
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
