@@ -9,6 +9,169 @@ This technical guide provides detailed implementation instructions for developer
 4. [Telegram Integration](#4-telegram-integration)
 5. [Testing Guidelines](#5-testing-guidelines)
 
+## Implementation Phases and User Testing Plan
+
+This section outlines the phased implementation approach with clear testing checkpoints. Since Telegram authentication can only be properly tested by the admin user, each phase includes specific testing prompts and expected logs.
+
+### Phase 1: Database Schema and Basic Service Implementation
+
+**Steps:**
+1. Implement database schema
+2. Create basic service functions
+3. Add enhanced logging
+4. Enable user testing
+
+**Implementation Checklist:**
+```
+[ ] Add user_referrals and referral_events tables to shared/schema.ts
+[ ] Implement proper indexes on all lookup fields
+[ ] Add Zod validation schemas
+[ ] Create migration script
+[ ] Add referral service with basic functions
+[ ] Implement detailed logging for each operation
+```
+
+**Testing Prompt for Admin User:**
+```
+Please test the basic referral infrastructure:
+
+1. Log in to the application through Telegram with your admin account
+2. Visit your profile page to confirm existing data loads correctly
+3. Edit your profile information and save to verify no disruption
+4. Submit an application form with a test referral code to verify form still works
+
+Expected logs to check:
+- User authentication logs (confirming Telegram auth works)
+- Profile data loading logs
+- Profile update operation logs
+- Application form submission logs
+
+Success criteria:
+- All existing functionality continues to work
+- Log entries are detailed and properly formatted
+- No schema-related errors appear in logs
+```
+
+### Phase 2: API Endpoints and Integration
+
+**Steps:**
+1. Implement API endpoints
+2. Connect to existing application form
+3. Set up notification templates
+4. Enable user testing
+
+**Implementation Checklist:**
+```
+[ ] Create /api/referrals endpoint (GET)
+[ ] Create /api/referrals/generate endpoint (POST)
+[ ] Create /api/referrals/verify endpoint (POST)
+[ ] Create /api/referrals/apply endpoint (POST)
+[ ] Add enhanced logging to all endpoints
+[ ] Connect referral verification to existing application form
+[ ] Implement notification templates for referral events
+[ ] Update routes.ts to include referral routes
+```
+
+**Testing Prompt for Admin User:**
+```
+Please test the referral API endpoints:
+
+1. Log in to the application through Telegram with your admin account
+2. Test the application form with a test referral code
+3. Visit the dashboard page to see if referral features appear
+4. Try generating a referral code through the UI or API
+5. Submit an application with the generated referral code
+
+Expected logs to check:
+- Referral code generation logs (check format and user ID)
+- Referral verification logs (shows validation steps)
+- Application form submission logs with referral data
+- Any error logs related to referral operations
+
+Expected response data to verify:
+- Referral code should match format: telegramId_randomHex
+- Referral link should be properly URL-encoded
+- Error messages should be clear and user-friendly
+
+Specific error cases to test:
+- Try using an invalid referral code
+- Try referring yourself (should be prevented)
+
+Success criteria:
+- All API endpoints return expected data
+- Referral codes are properly validated
+- Application form correctly processes referral codes
+- Detailed logs show all operation steps
+```
+
+### Phase 3: UI Components and Final Integration
+
+**Steps:**
+1. Implement UI components
+2. Complete profile integration
+3. Add admin dashboard features
+4. Final testing and verification
+
+**Implementation Checklist:**
+```
+[ ] Create ReferralCard component for dashboard
+[ ] Add referral tab to user profile
+[ ] Implement share functionality with Telegram WebApp API
+[ ] Add referral section to admin dashboard
+[ ] Implement analytics tracking for referral events
+[ ] Add haptic feedback for referral actions
+```
+
+**Testing Prompt for Admin User:**
+```
+Please perform final testing of the complete referral system:
+
+1. Log in to the application through Telegram with your admin account
+2. Navigate to your dashboard/profile page
+3. Locate and use the referral generation feature
+4. Test the "Copy Link" and "Share Link" buttons
+5. Try sharing a referral with another user
+6. Test applying a referral code from another account
+7. Verify the referral status updates correctly
+8. Check that referred users appear in your referral list
+
+Expected user interactions to test:
+- Dashboard should show referral information (codes available, used)
+- Haptic feedback should work when generating or sharing codes
+- Share functionality should properly open Telegram share
+- Referral tab should display all referred users
+- Admin dashboard should show referral statistics
+
+Specific flows to test:
+- Complete referral cycle: generate → share → apply → approve
+- View referred users in dashboard
+- Test error handling with invalid inputs
+
+Success criteria:
+- All UI components display correctly and are responsive
+- Referral generation and sharing work seamlessly
+- Profile integration shows correct referral status
+- Analytics events are properly tracked
+- Admin dashboard shows accurate referral statistics
+- All error states are handled gracefully with clear messages
+```
+
+**Testing Log Analysis:**
+After each testing phase, we will analyze logs for:
+
+1. User authentication events
+2. Referral code generation
+3. Referral link usage 
+4. Application form submission with referrals
+5. Referral status updates
+6. Error patterns or edge cases
+
+The logs should provide clear visibility into:
+- Whether operations succeeded or failed
+- User IDs involved in each operation
+- Detailed error information when issues occur
+- Performance metrics for database operations
+
 ## 1. Database Schema Implementation
 
 ### Schema Updates
