@@ -50,9 +50,7 @@ export function useReferrals() {
 export function useValidateReferralCode() {
   return useMutation({
     mutationFn: async (code: string) => {
-      return await apiRequest(`/api/referrals/validate/${code}`, {
-        method: 'GET'
-      });
+      return await apiRequest(`/api/referrals/validate/${code}`);
     }
   });
 }
@@ -63,10 +61,7 @@ export function useReferralCode() {
   
   return useMutation({
     mutationFn: async (data: { referral_code: string, user_id: string }) => {
-      return await apiRequest('/api/referrals/use-code', {
-        method: 'POST',
-        body: JSON.stringify(data)
-      });
+      return await apiRequest('/api/referrals/use-code', 'POST', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/profile'] });

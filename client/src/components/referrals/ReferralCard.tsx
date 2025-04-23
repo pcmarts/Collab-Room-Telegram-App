@@ -66,7 +66,13 @@ export function ReferralCard({ className = '', referralInfo, isLoading, error }:
     try {
       // Check if Telegram webapp is available
       if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.openTelegramLink(referralLink);
+        // Use native sharing capability if available
+        if ('share' in window.Telegram.WebApp) {
+          window.Telegram.WebApp.share(referralLink);
+        } else {
+          // Fallback to clipboard
+          handleCopyLink();
+        }
       } else {
         // Fallback to copy
         handleCopyLink();
