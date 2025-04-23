@@ -174,7 +174,27 @@ The logs should provide clear visibility into:
 
 ## 1. Database Schema Implementation
 
-### Schema Updates
+### Database Schema Evolution
+
+#### Current State Analysis
+
+The current schema has a simple `referral_code` field in the `users` table:
+
+```typescript
+// Existing users table (partial schema)
+export const users = pgTable("users", {
+  // ... other fields
+  referral_code: text("referral_code"),
+  // ... other fields
+});
+```
+
+This field is used during user signup but doesn't support:
+- Tracking who referred whom
+- Limiting the number of referrals per user
+- Tracking referral status
+
+#### New Schema Design
 
 Add the following tables to `shared/schema.ts`:
 

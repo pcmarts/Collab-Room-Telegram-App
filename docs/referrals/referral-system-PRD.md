@@ -451,11 +451,31 @@ Implement a referral system that:
 
 ## 12. Integration with Existing Systems
 
-### 12.1 Application Form Updates
-- Leverage the existing referral code field in the application form
-- Enhance validation to ensure code format matches referral system requirements
-- Update form submission logic to process referral codes through the new referral system
-- Update success messaging to acknowledge referral usage
+### 12.1 Application Form Integration Strategy
+
+#### Current State Assessment
+- The users table currently has a `referral_code` field that stores referral codes
+- The application form UI (welcome.tsx, company-details.tsx) already collects referral codes
+- The admin interface displays the referral codes in the user profile section
+
+#### Transition Strategy
+- **Phase 1: Dual Storage**
+  - Keep the existing `referral_code` field in the users table
+  - Add the new `user_referrals` table with enhanced tracking capabilities
+  - During application form submission, process the referral code through both systems
+  - Modify form validation to match the new referral code format requirements
+
+- **Phase 2: Migrate Historical Data**
+  - Create a migration script to copy existing referral codes to the new system
+  - For each user with a referral code:
+    - Create a record in the `user_referrals` table for the referrer
+    - Create a `referral_event` record linking the referrer and referred user
+    - Set appropriate counts for referrals used
+
+- **Phase 3: Switch to New System**
+  - Update all application form processing to use only the new system
+  - Keep the users.referral_code field for backward compatibility
+  - All new referrals will be fully tracked in the new system
 
 ### 12.2 Profile Page Updates
 - Add "Referrals" tab to user profile page
