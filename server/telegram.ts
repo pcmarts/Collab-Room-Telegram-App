@@ -243,7 +243,7 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
       // Parse the telegram_id from the referral code (format: telegram_id_random_string)
       // Ensure referralCode contains at least one underscore
       if (referralCode && referralCode.includes('_')) {
-        const telegramIdFromCode = referralCode.split('_')[0];
+        const telegramIdFromCode = referralCode.split('_')[1];
         console.log(`[REFERRAL] Extracted Telegram ID from code: ${telegramIdFromCode}`);
       
         // First try to look up user by the embedded telegram_id in the code
