@@ -2,7 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { ReferralSuccessCelebration } from './ReferralSuccessCelebration';
 
 interface ReferredUser {
   id: string;
@@ -38,6 +39,11 @@ const logAnalyticsEvent = async (eventType: 'generate' | 'share' | 'copy' | 'vie
 };
 
 export function ReferredUsersList({ className = '', users = [], isLoading = false }: ReferredUsersListProps) {
+  // Track previous user count to detect new referrals
+  const previousUserCountRef = useRef<number>(0);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [newUser, setNewUser] = useState<ReferredUser | null>(null);
+
   // Log view event when component mounts
   useEffect(() => {
     if (!isLoading && users) {
@@ -47,6 +53,24 @@ export function ReferredUsersList({ className = '', users = [], isLoading = fals
       });
     }
   }, [isLoading, users]);
+
+  // Check for new referrals when users list updates
+  useEffect(() => {
+    if (!isLoading && users.length > previousUserCountRef.current) {
+      // A new user joined! Show celebration for the most recent user
+      const mostRecentUser = [...users].sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )[0];
+      
+      if (mostRecentUser) {
+        setNewUser(mostRecentUser);
+        setShowCelebration(true);
+      }
+    }
+    // Update the ref with the current count
+    previousUserCountRef.current = users.length;
+  }, [isLoading, users]);
+
   if (isLoading) {
     return (
       <Card className={`bg-gray-950 text-white border-gray-800 ${className}`}>
@@ -70,45 +94,56 @@ export function ReferredUsersList({ className = '', users = [], isLoading = fals
   }
   
   return (
-    <Card className={`bg-gray-950 text-white border-gray-800 ${className}`}>
-      <CardHeader>
-        <CardTitle>Your Invited Friends</CardTitle>
-        <CardDescription className="text-gray-400">
-          {users.length > 0 
-            ? `${users.length} user${users.length > 1 ? 's' : ''} joined with your referral link`
-            : 'No one has used your referral link yet'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {users.length === 0 ? (
-          <div className="py-6 flex flex-col items-center justify-center text-center text-gray-500">
-            <Users className="h-12 w-12 mb-4 text-gray-700" />
-            <p className="mb-1 text-gray-400">No friends have joined yet</p>
-            <p className="text-sm text-gray-600">Share your referral link to invite friends to The Collab Room</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {users.map((user) => (
-              <div key={user.id} className="flex items-center py-3 border-b border-gray-800 last:border-0">
-                <Avatar className="h-10 w-10 mr-3">
-                  <AvatarFallback className="bg-gray-800 text-gray-300">
-                    {user.first_name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="font-medium text-white">
-                    {user.first_name} {user.last_name || ''}
-                  </p>
-                  <p className="text-sm text-gray-400">@{user.handle}</p>
+    <>
+      <Card className={`bg-gray-950 text-white border-gray-800 ${className}`}>
+        <CardHeader>
+          <CardTitle>Your Invited Friends</CardTitle>
+          <CardDescription className="text-gray-400">
+            {users.length > 0 
+              ? `${users.length} user${users.length > 1 ? 's' : ''} joined with your referral link`
+              : 'No one has used your referral link yet'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {users.length === 0 ? (
+            <div className="py-6 flex flex-col items-center justify-center text-center text-gray-500">
+              <Users className="h-12 w-12 mb-4 text-gray-700" />
+              <p className="mb-1 text-gray-400">No friends have joined yet</p>
+              <p className="text-sm text-gray-600">Share your referral link to invite friends to The Collab Room</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {users.map((user) => (
+                <div key={user.id} className="flex items-center py-3 border-b border-gray-800 last:border-0">
+                  <Avatar className="h-10 w-10 mr-3">
+                    <AvatarFallback className="bg-gray-800 text-gray-300">
+                      {user.first_name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-medium text-white">
+                      {user.first_name} {user.last_name || ''}
+                    </p>
+                    <p className="text-sm text-gray-400">@{user.handle}</p>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500">
-                  {new Date(user.created_at).toLocaleDateString()}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Success celebration dialog */}
+      {newUser && (
+        <ReferralSuccessCelebration 
+          isOpen={showCelebration}
+          onClose={() => setShowCelebration(false)}
+          userName={`${newUser.first_name} ${newUser.last_name || ''}`}
+        />
+      )}
+    </>
   );
 }
