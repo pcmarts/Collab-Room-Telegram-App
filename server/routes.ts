@@ -676,6 +676,43 @@ export async function registerRoutes(app: Express) {
             throw new Error('Missing required company fields for new user');
           }
 
+          // Process referral code if it exists
+          if (referral_code) {
+            logger.info(`Processing referral code: ${referral_code} for new user ${user.id}`);
+            try {
+              // If the code is in the format r_TELEGRAM_ID_RANDOM, extract the telegram_id
+              if (referral_code.startsWith('r_') && referral_code.includes('_')) {
+                const telegramIdFromCode = referral_code.split('_')[1];
+                logger.info(`Extracted referrer Telegram ID from code: ${telegramIdFromCode}`);
+                
+                // Look up referrer by telegram_id
+                const [referrer] = await tx
+                  .select()
+                  .from(users)
+                  .where(eq(users.telegram_id, telegramIdFromCode));
+                
+                if (referrer) {
+                  logger.info(`Found referrer user: ${referrer.id} (${referrer.first_name} ${referrer.last_name || ''}) for code ${referral_code}`);
+                  
+                  // Update user with referrer id
+                  await tx
+                    .update(users)
+                    .set({ referred_by: referrer.id })
+                    .where(eq(users.id, user.id));
+                  
+                  logger.info(`Updated user ${user.id} with referrer ${referrer.id}`);
+                } else {
+                  logger.warn(`Could not find referrer with Telegram ID ${telegramIdFromCode} for code ${referral_code}`);
+                }
+              } else {
+                logger.warn(`Referral code ${referral_code} doesn't match expected format r_TELEGRAM_ID_RANDOM`);
+              }
+            } catch (referralError) {
+              logger.error(`Error processing referral: ${referralError}`);
+              // Continue with user creation even if referral processing fails
+            }
+          }
+
           await tx
             .insert(companies)
             .values({
