@@ -1,8 +1,14 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users } from 'lucide-react';
-import { useEffect } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ReferredUser {
   id: string;
@@ -13,55 +19,44 @@ interface ReferredUser {
 }
 
 interface ReferredUsersListProps {
-  className?: string;
-  users?: ReferredUser[];
-  isLoading?: boolean;
+  users: ReferredUser[];
+  isLoading: boolean;
 }
 
-// Function to log analytics events
-const logAnalyticsEvent = async (eventType: 'generate' | 'share' | 'copy' | 'view', details?: Record<string, any>) => {
-  try {
-    await fetch('/api/referrals/track', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        eventType,
-        details
-      })
-    });
-    console.log(`Logged referral ${eventType} event`);
-  } catch (err) {
-    console.error(`Failed to log referral ${eventType} event:`, err);
-  }
-};
+const ReferredUsersList = ({ users, isLoading }: ReferredUsersListProps) => {
 
-export function ReferredUsersList({ className = '', users = [], isLoading = false }: ReferredUsersListProps) {
-  // Log view event when component mounts
-  useEffect(() => {
-    if (!isLoading && users) {
-      logAnalyticsEvent('view', {
-        component: 'ReferredUsersList',
-        num_users: users.length
-      });
+  // Helper function to get user initials for avatar
+  const getUserInitials = (firstName: string, lastName: string | null) => {
+    const first = firstName ? firstName.charAt(0).toUpperCase() : '';
+    const last = lastName ? lastName.charAt(0).toUpperCase() : '';
+    return `${first}${last}`;
+  };
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      return 'Unknown date';
     }
-  }, [isLoading, users]);
+  };
 
+  // Render loading skeleton
   if (isLoading) {
     return (
-      <Card className={`bg-gray-950 text-white border-gray-800 ${className}`}>
+      <Card className="w-full">
         <CardHeader>
-          <Skeleton className="h-8 w-1/2 mb-2 bg-gray-800" />
-          <Skeleton className="h-4 w-1/3 bg-gray-800" />
+          <Skeleton className="h-6 w-3/4 mb-2" />
+          <Skeleton className="h-4 w-1/2" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center py-3 border-b border-gray-800 last:border-0">
-              <Skeleton className="h-10 w-10 rounded-full mr-3 bg-gray-800" />
-              <div className="flex-1">
-                <Skeleton className="h-4 w-1/3 mb-2 bg-gray-800" />
-                <Skeleton className="h-3 w-1/4 bg-gray-800" />
+            <div key={i} className="flex items-center space-x-4">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-3 w-1/4" />
               </div>
             </div>
           ))}
@@ -69,47 +64,49 @@ export function ReferredUsersList({ className = '', users = [], isLoading = fals
       </Card>
     );
   }
-  
+
   return (
-    <Card className={`bg-gray-950 text-white border-gray-800 ${className}`}>
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle>Your Invited Friends</CardTitle>
-        <CardDescription className="text-gray-400">
-          {users.length > 0 
-            ? `${users.length} user${users.length > 1 ? 's' : ''} joined with your referral link`
-            : 'No one has used your referral link yet'}
+        <CardTitle>Referred Friends</CardTitle>
+        <CardDescription>
+          {users.length > 0
+            ? 'Friends you have invited to Collab Room'
+            : 'You haven\'t referred anyone yet'}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+
+      <CardContent className="space-y-4">
         {users.length === 0 ? (
-          <div className="py-6 flex flex-col items-center justify-center text-center text-gray-500">
-            <Users className="h-12 w-12 mb-4 text-gray-700" />
-            <p className="mb-1 text-gray-400">No friends have joined yet</p>
-            <p className="text-sm text-gray-600">Share your referral link to invite friends to The Collab Room</p>
+          <div className="text-center py-4 text-muted-foreground">
+            Share your referral code to invite friends
           </div>
         ) : (
-          <div className="space-y-1">
-            {users.map((user) => (
-              <div key={user.id} className="flex items-center py-3 border-b border-gray-800 last:border-0">
-                <Avatar className="h-10 w-10 mr-3">
-                  <AvatarFallback className="bg-gray-800 text-gray-300">
-                    {user.first_name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="font-medium text-white">
-                    {user.first_name} {user.last_name || ''}
+          users.map((user) => (
+            <div key={user.id} className="flex items-center space-x-4">
+              <Avatar>
+                <AvatarFallback>
+                  {getUserInitials(user.first_name, user.last_name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">
+                    {user.first_name} {user.last_name}
                   </p>
-                  <p className="text-sm text-gray-400">@{user.handle}</p>
+                  <Badge variant="outline" className="text-xs">
+                    {formatDate(user.created_at)}
+                  </Badge>
                 </div>
-                <div className="text-xs text-gray-500">
-                  {new Date(user.created_at).toLocaleDateString()}
-                </div>
+                <p className="text-xs text-muted-foreground">@{user.handle}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))
         )}
       </CardContent>
     </Card>
   );
-}
+};
+
+export { ReferredUsersList };
+export default ReferredUsersList;

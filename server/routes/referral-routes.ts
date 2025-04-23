@@ -1,468 +1,330 @@
-/**
- * Referral system routes for The Collab Room
- * 
- * These routes handle:
- * - Generating referral codes
- * - Validating referral codes
- * - Applying referrals
- * - Viewing referred users
- */
-
-import { Router, Request, Response } from 'express';
+import express from 'express';
 import { z } from 'zod';
-import { v4 as uuidv4 } from 'uuid';
-import { randomBytes } from 'crypto';
+import { db } from '../db';
+import { users, user_referrals, referral_events } from '@shared/schema';
+import { eq, desc } from 'drizzle-orm';
 import { storage } from '../storage';
+import crypto from 'crypto';
 
-const router = Router();
+// Simple in-memory rate limiter
+const requestCounts: Record<string, { count: number, resetTime: number }> = {};
 
-// Generate a random referral code
-const generateReferralCode = (): string => {
-  // Create a short, readable code using only alphanumeric characters
-  return randomBytes(4).toString('hex').toUpperCase();
+// Basic rate limiter middleware
+const referralLimiter = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const ip = req.ip || 'unknown';
+  const now = Date.now();
+  const windowMs = 60 * 60 * 1000; // 1 hour
+  
+  // Clean up expired entries
+  if (requestCounts[ip] && requestCounts[ip].resetTime < now) {
+    delete requestCounts[ip];
+  }
+  
+  // Create new entry if doesn't exist
+  if (!requestCounts[ip]) {
+    requestCounts[ip] = {
+      count: 0,
+      resetTime: now + windowMs
+    };
+  }
+  
+  // Increment count
+  requestCounts[ip].count++;
+  
+  // Check limit
+  if (requestCounts[ip].count > 20) { // 20 requests per hour
+    return res.status(429).json({
+      success: false,
+      message: 'Too many referral requests, please try again later'
+    });
+  }
+  
+  next();
 };
 
-/**
- * Get current user's referral code
- * If they don't have one, generate a new one
- */
-router.get('/my-code', async (req: Request, res: Response) => {
-  console.log('DEBUG - /my-code request headers:', JSON.stringify(req.headers));
-  // Parse Telegram init data from header
-  let userId: string;
-  let telegramId: string | undefined;
-  
-  // Try to extract Telegram data from the init-data header
-  try {
-    const initData = req.headers['x-telegram-init-data'] as string;
-    if (initData) {
-      // Parse Telegram data
-      const decodedInitData = new URLSearchParams(initData);
-      const userJson = decodedInitData.get('user') || '{}';
-      console.log('Parsed Telegram user data:', userJson);
-      const telegramUser = JSON.parse(userJson);
-      
-      if (telegramUser.id) {
-        telegramId = telegramUser.id.toString();
-        console.log('Found Telegram ID in init data:', telegramId);
-      }
-    }
-  } catch (error) {
-    console.error('Error parsing Telegram init data:', error);
+// Create a router instance
+const router = express.Router();
+
+interface TelegramRequest extends express.Request {
+  telegramData?: {
+    id: string;
+    username?: string;
+    first_name: string;
+    last_name?: string;
   }
-  
-  if (telegramId) {
-    try {
-      // Get user by telegram ID
-      const user = await storage.getUserByTelegramId(telegramId);
-      if (!user) {
-        return res.status(401).json({ error: 'Unauthorized - user not found for provided Telegram ID' });
-      }
-      userId = user.id;
-      console.log('Found user by Telegram ID:', userId);
-    } catch (error) {
-      console.error('Error getting user by Telegram ID:', error);
-      return res.status(500).json({ error: 'Server error while getting user' });
-    }
-  } else {
-    // Fall back to session-based auth
-    const userData = req.session?.user;
-    if (!userData) {
-      console.log('No user session found, returning 401');
-      return res.status(401).json({ error: 'Unauthorized - no user session' });
-    }
-    userId = userData.id;
-  }
+}
+
+// Define validation schemas
+const validateReferralSchema = z.object({
+  referral_code: z.string().min(5),
+});
+
+const applyReferralSchema = z.object({
+  referral_code: z.string().min(5),
+});
+
+// Get current user's referral code
+router.get('/my-code', async (req: TelegramRequest, res) => {
   try {
-    // Get user data
-    const user = await storage.getUser(userId);
+    // Check if user is authenticated
+    if (!req.telegramData || !req.telegramData.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
+    }
+
+    // Get user from database
+    const telegramId = req.telegramData.id;
+    const user = await storage.getUserByTelegramId(telegramId);
+
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
-    let referralCode = user.referral_code;
+    // Get or create referral code
+    const [userReferral] = await db
+      .select()
+      .from(user_referrals)
+      .where(eq(user_referrals.user_id, user.id));
 
-    // If user doesn't have a referral code yet, generate one and save it
-    if (!referralCode) {
-      referralCode = generateReferralCode();
-      await storage.updateUserReferralCode(userId, referralCode);
+    if (!userReferral) {
+      // Create new referral code
+      const randomSuffix = crypto.randomBytes(4).toString('hex');
+      const referralCode = `r_${user.telegram_id}_${randomSuffix}`;
+
+      // Create user_referral record
+      const [newUserReferral] = await db
+        .insert(user_referrals)
+        .values({
+          user_id: user.id,
+          referral_code: referralCode,
+          total_available: 3, // Default limit
+          total_used: 0,
+          created_at: new Date(),
+          updated_at: new Date()
+        })
+        .returning();
+
+      // Update user's referral code
+      await db
+        .update(users)
+        .set({ referral_code: referralCode })
+        .where(eq(users.id, user.id));
+
+      // Generate shareable Telegram bot link
+      const shareableLink = `https://t.me/collabroom_test_bot?start=${referralCode}`;
+
+      return res.status(200).json({
+        success: true,
+        referral_code: referralCode,
+        total_available: newUserReferral.total_available,
+        total_used: newUserReferral.total_used,
+        remaining: newUserReferral.total_available - newUserReferral.total_used,
+        shareable_link: shareableLink
+      });
+    } else {
+      // Generate shareable Telegram bot link
+      const shareableLink = `https://t.me/collabroom_test_bot?start=${userReferral.referral_code}`;
+
+      return res.status(200).json({
+        success: true,
+        referral_code: userReferral.referral_code,
+        total_available: userReferral.total_available,
+        total_used: userReferral.total_used,
+        remaining: userReferral.total_available - userReferral.total_used,
+        shareable_link: shareableLink
+      });
     }
-
-    // Get stats: how many referrals used and how many are available
-    const referredUsers = await storage.getReferredUsers(userId);
-    const totalUsed = referredUsers.length;
-    const totalAvailable = 3; // Default limit
-    const remaining = Math.max(0, totalAvailable - totalUsed);
-
-    return res.json({
-      referral_code: referralCode,
-      total_used: totalUsed,
-      total_available: totalAvailable,
-      remaining
-    });
   } catch (error) {
     console.error('Error getting referral code:', error);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while retrieving referral code'
+    });
   }
 });
 
-/**
- * Get users who were referred by the current user
- */
-router.get('/my-referrals', async (req: Request, res: Response) => {
-  console.log('DEBUG - /my-referrals request headers:', JSON.stringify(req.headers));
-  // Parse Telegram init data from header
-  let userId: string;
-  let telegramId: string | undefined;
-  
-  // Try to extract Telegram data from the init-data header
+// Get users referred by current user
+router.get('/my-referrals', async (req: TelegramRequest, res) => {
   try {
-    const initData = req.headers['x-telegram-init-data'] as string;
-    if (initData) {
-      // Parse Telegram data
-      const decodedInitData = new URLSearchParams(initData);
-      const userJson = decodedInitData.get('user') || '{}';
-      console.log('Parsed Telegram user data:', userJson);
-      const telegramUser = JSON.parse(userJson);
-      
-      if (telegramUser.id) {
-        telegramId = telegramUser.id.toString();
-        console.log('Found Telegram ID in init data:', telegramId);
-      }
+    // Check if user is authenticated
+    if (!req.telegramData || !req.telegramData.id) {
+      return res.status(401).json({
+        success: false, 
+        message: 'Authentication required'
+      });
     }
-  } catch (error) {
-    console.error('Error parsing Telegram init data:', error);
-  }
-  
-  if (telegramId) {
-    try {
-      // Get user by telegram ID
-      const user = await storage.getUserByTelegramId(telegramId);
-      if (!user) {
-        return res.status(401).json({ error: 'Unauthorized - user not found for provided Telegram ID' });
-      }
-      userId = user.id;
-      console.log('Found user by Telegram ID:', userId);
-    } catch (error) {
-      console.error('Error getting user by Telegram ID:', error);
-      return res.status(500).json({ error: 'Server error while getting user' });
-    }
-  } else {
-    // Fall back to session-based auth
-    const userData = req.session?.user;
-    if (!userData) {
-      console.log('No user session found, returning 401');
-      return res.status(401).json({ error: 'Unauthorized - no user session' });
-    }
-    userId = userData.id;
-  }
-  try {
-    // Get referred users
-    const referredUsers = await storage.getReferredUsers(userId);
-    
-    // Get stats: how many referrals used and how many are available
-    const totalUsed = referredUsers.length;
-    const totalAvailable = 3; // Default limit
-    const remaining = Math.max(0, totalAvailable - totalUsed);
 
-    return res.json({
-      referred_users: referredUsers,
-      total_used: totalUsed,
-      total_available: totalAvailable,
-      remaining
+    // Get user from database
+    const telegramId = req.telegramData.id;
+    const user = await storage.getUserByTelegramId(telegramId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Get users referred by this user
+    const referredUsers = await db
+      .select({
+        user: users
+      })
+      .from(users)
+      .where(eq(users.referred_by, user.id));
+
+    const formattedUsers = referredUsers.map(item => ({
+      id: item.user.id,
+      first_name: item.user.first_name,
+      last_name: item.user.last_name,
+      handle: item.user.handle,
+      created_at: item.user.created_at
+    }));
+
+    // Get referral information
+    const [userReferral] = await db
+      .select()
+      .from(user_referrals)
+      .where(eq(user_referrals.user_id, user.id));
+
+    if (!userReferral) {
+      return res.status(200).json({
+        success: true,
+        referral_code: null,
+        total_available: 3,
+        total_used: 0,
+        remaining: 3,
+        referred_users: formattedUsers
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      referral_code: userReferral.referral_code,
+      total_available: userReferral.total_available,
+      total_used: userReferral.total_used,
+      remaining: userReferral.total_available - userReferral.total_used,
+      referred_users: formattedUsers
     });
   } catch (error) {
     console.error('Error getting referred users:', error);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while retrieving referred users'
+    });
   }
 });
 
-/**
- * Validate a referral code
- */
-router.get('/validate/:code', async (req: Request, res: Response) => {
-  const { code } = req.params;
-  if (!code) {
-    return res.status(400).json({ error: 'Referral code is required' });
-  }
-
+// Validate a referral code
+router.post('/validate', referralLimiter, async (req, res) => {
   try {
-    // Find user with this referral code
-    const referrer = await storage.getUserByReferralCode(code);
-    if (!referrer) {
-      return res.status(404).json({ error: 'Invalid referral code' });
+    // Validate request body
+    const validation = validateReferralSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid referral code format'
+      });
     }
 
-    // Check if the referrer has reached their limit
-    const referredUsers = await storage.getReferredUsers(referrer.id);
-    const totalUsed = referredUsers.length;
-    const totalAvailable = 3; // Default limit
+    const { referral_code } = validation.data;
 
-    if (totalUsed >= totalAvailable) {
-      return res.status(400).json({ error: 'Referral code has reached its usage limit' });
+    // Check if referral code exists
+    const [referral] = await db
+      .select({
+        user_referral: user_referrals,
+        user: users
+      })
+      .from(user_referrals)
+      .innerJoin(users, eq(user_referrals.user_id, users.id))
+      .where(eq(user_referrals.referral_code, referral_code));
+
+    if (!referral) {
+      return res.status(404).json({
+        success: false,
+        message: 'Referral code not found'
+      });
     }
 
-    return res.json({
-      valid: true,
+    // Check if referral slots are available
+    if (referral.user_referral.total_used >= referral.user_referral.total_available) {
+      return res.status(400).json({
+        success: false,
+        message: 'Referral code has reached its usage limit'
+      });
+    }
+
+    // Return referrer info (without sensitive data)
+    return res.status(200).json({
+      success: true,
       referrer: {
-        id: referrer.id,
-        first_name: referrer.first_name,
-        last_name: referrer.last_name,
-        handle: referrer.handle
+        first_name: referral.user.first_name,
+        last_name: referral.user.last_name
       }
     });
   } catch (error) {
     console.error('Error validating referral code:', error);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while validating referral code'
+    });
   }
 });
 
-/**
- * Apply a referral code
- */
-router.post('/use-code', async (req: Request, res: Response) => {
-  console.log('DEBUG - /use-code request headers:', JSON.stringify(req.headers));
-  // Validate request body
-  const schema = z.object({
-    referral_code: z.string(),
-    user_id: z.string().optional() // Optional for admin usage
-  });
-
+// Log referral activity
+router.post('/log-activity', referralLimiter, async (req: TelegramRequest, res) => {
   try {
-    const data = schema.parse(req.body);
-    
-    // Get applying user ID (either from request body, Telegram, or session)
-    let userId = data.user_id;
-    let telegramId: string | undefined;
-    
-    if (!userId) {
-      // Try to extract Telegram data from the init-data header
-      try {
-        const initData = req.headers['x-telegram-init-data'] as string;
-        if (initData) {
-          // Parse Telegram data
-          const decodedInitData = new URLSearchParams(initData);
-          const userJson = decodedInitData.get('user') || '{}';
-          console.log('Parsed Telegram user data:', userJson);
-          const telegramUser = JSON.parse(userJson);
-          
-          if (telegramUser.id) {
-            telegramId = telegramUser.id.toString();
-            console.log('Found Telegram ID in init data:', telegramId);
-          }
-        }
-      } catch (error) {
-        console.error('Error parsing Telegram init data:', error);
-      }
-      
-      if (telegramId) {
-        try {
-          const user = await storage.getUserByTelegramId(telegramId);
-          if (user) {
-            userId = user.id;
-            console.log('Found user by Telegram ID:', userId);
-          }
-        } catch (error) {
-          console.error('Error getting user by Telegram ID:', error);
-          return res.status(500).json({ error: 'Server error while getting user' });
-        }
-      } else {
-        // Fall back to session-based auth
-        userId = req.session?.user?.id;
-        console.log('Using session auth, userId:', userId);
-      }
-    }
-    
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized - could not determine user' });
+    // Check if user is authenticated
+    if (!req.telegramData || !req.telegramData.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
     }
 
-    // Find user with this referral code
-    const referrer = await storage.getUserByReferralCode(data.referral_code);
-    if (!referrer) {
-      return res.status(404).json({ error: 'Invalid referral code' });
-    }
+    // Get user from database
+    const telegramId = req.telegramData.id;
+    const user = await storage.getUserByTelegramId(telegramId);
 
-    // Prevent self-referral
-    if (referrer.id === userId) {
-      return res.status(400).json({ error: 'Cannot use your own referral code' });
-    }
-
-    // Check if the user already has a referrer
-    const user = await storage.getUser(userId);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
-    if (user.referred_by) {
-      return res.status(400).json({ error: 'User already has a referrer' });
-    }
-
-    // Check if the referrer has reached their limit
-    const referredUsers = await storage.getReferredUsers(referrer.id);
-    const totalUsed = referredUsers.length;
-    const totalAvailable = 3; // Default limit
-
-    if (totalUsed >= totalAvailable) {
-      return res.status(400).json({ error: 'Referral code has reached its usage limit' });
-    }
-
-    // Apply referral: update user record and create referral event
-    await storage.applyReferral(userId, referrer.id);
-
-    return res.json({
-      success: true,
-      referrer: {
-        id: referrer.id,
-        first_name: referrer.first_name,
-        last_name: referrer.last_name,
-        handle: referrer.handle
-      }
-    });
-  } catch (error) {
-    console.error('Error applying referral code:', error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request data', details: error.errors });
-    }
-    return res.status(500).json({ error: 'Server error' });
-  }
-});
-
-/**
- * Admin-only: List all referral events 
- */
-router.get('/admin/events', async (req: Request, res: Response) => {
-  console.log('DEBUG - /admin/events request headers:', JSON.stringify(req.headers));
-  // Parse Telegram init data from header
-  let userId: string | undefined;
-  let telegramId: string | undefined;
-  
-  // Try to extract Telegram data from the init-data header
-  try {
-    const initData = req.headers['x-telegram-init-data'] as string;
-    if (initData) {
-      // Parse Telegram data
-      const decodedInitData = new URLSearchParams(initData);
-      const userJson = decodedInitData.get('user') || '{}';
-      console.log('Parsed Telegram user data:', userJson);
-      const telegramUser = JSON.parse(userJson);
-      
-      if (telegramUser.id) {
-        telegramId = telegramUser.id.toString();
-        console.log('Found Telegram ID in init data:', telegramId);
-      }
-    }
-  } catch (error) {
-    console.error('Error parsing Telegram init data:', error);
-  }
-  
-  if (telegramId) {
-    try {
-      // Get user by telegram ID
-      const user = await storage.getUserByTelegramId(telegramId);
-      if (!user) {
-        return res.status(401).json({ error: 'Unauthorized - user not found for provided Telegram ID' });
-      }
-      userId = user.id;
-      console.log('Found user by Telegram ID:', userId);
-    } catch (error) {
-      console.error('Error getting user by Telegram ID:', error);
-      return res.status(500).json({ error: 'Server error while getting user' });
-    }
-  } else {
-    // Fall back to session-based auth
-    const userData = req.session?.user;
-    if (!userData) {
-      console.log('No user session found, returning 401');
-      return res.status(401).json({ error: 'Unauthorized - no user session' });
-    }
-    userId = userData.id;
-  }
-  
-  // Check if user is an admin
-  const user = await storage.getUser(userId);
-  if (!user || !user.is_admin) {
-    return res.status(403).json({ error: 'Forbidden - admin access required' });
-  }
-
-  try {
-    const events = await storage.getReferralEvents();
-    return res.json(events);
-  } catch (error) {
-    console.error('Error getting referral events:', error);
-    return res.status(500).json({ error: 'Server error' });
-  }
-});
-
-/**
- * Track referral analytics events
- */
-router.post('/track', async (req: Request, res: Response) => {
-  // Parse Telegram init data from header or fallback to session
-  let userId: string;
-  let telegramId: string | undefined;
-  
-  // Try to extract Telegram data from the init-data header
-  try {
-    const initData = req.headers['x-telegram-init-data'] as string;
-    if (initData) {
-      // Parse Telegram data
-      const decodedInitData = new URLSearchParams(initData);
-      const userJson = decodedInitData.get('user') || '{}';
-      const telegramUser = JSON.parse(userJson);
-      
-      if (telegramUser.id) {
-        telegramId = telegramUser.id.toString();
-      }
-    }
-  } catch (error) {
-    console.error('Error parsing Telegram init data:', error);
-  }
-  
-  if (telegramId) {
-    try {
-      // Get user by telegram ID
-      const user = await storage.getUserByTelegramId(telegramId);
-      if (!user) {
-        return res.status(401).json({ error: 'Unauthorized - user not found for provided Telegram ID' });
-      }
-      userId = user.id;
-    } catch (error) {
-      console.error('Error getting user by Telegram ID:', error);
-      return res.status(500).json({ error: 'Server error while getting user' });
-    }
-  } else {
-    // Fall back to session-based auth
-    const userData = req.session?.user;
-    if (!userData) {
-      return res.status(401).json({ error: 'Unauthorized - no user session' });
-    }
-    userId = userData.id;
-  }
-
-  // Validate request body
-  const schema = z.object({
-    eventType: z.enum(['generate', 'share', 'copy', 'view']),
-    details: z.record(z.any()).optional()
-  });
-
-  try {
-    const data = schema.parse(req.body);
+    // Validate request body
+    const { activity_type, details } = req.body;
     
-    // Log the event
+    if (!activity_type || !['share', 'view', 'copy', 'generate'].includes(activity_type)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid activity type'
+      });
+    }
+
+    // Log the activity
     await storage.logReferralActivity({
-      userId,
-      eventType: data.eventType,
-      details: data.details
+      userId: user.id,
+      eventType: activity_type,
+      details
     });
 
-    return res.json({ success: true });
+    return res.status(200).json({
+      success: true,
+      message: 'Activity logged successfully'
+    });
   } catch (error) {
-    console.error('Error tracking referral event:', error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request data', details: error.errors });
-    }
-    return res.status(500).json({ error: 'Server error' });
+    console.error('Error logging referral activity:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while logging activity'
+    });
   }
 });
 

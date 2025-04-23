@@ -1,85 +1,48 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gift, Zap, Users } from 'lucide-react';
-import { useEffect } from 'react';
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ReferralCard } from './ReferralCard';
+import { ReferredUsersList } from './ReferredUsersList';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { PanelBottom, UserPlus } from 'lucide-react';
+import { useReferrals } from '@/hooks/use-referrals';
 
-interface ReferralInfoPanelProps {
-  className?: string;
-}
-
-// Function to log analytics events
-const logAnalyticsEvent = async (eventType: 'view', details?: Record<string, any>) => {
-  try {
-    await fetch('/api/referrals/track', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        eventType,
-        details
-      })
-    });
-    console.log(`Logged referral ${eventType} event`);
-  } catch (err) {
-    console.error(`Failed to log referral ${eventType} event:`, err);
-  }
-};
-
-export function ReferralInfoPanel({ className = '' }: ReferralInfoPanelProps) {
-  // Log view event when component mounts
-  useEffect(() => {
-    logAnalyticsEvent('view', {
-      component: 'ReferralInfoPanel'
-    });
-  }, []);
+const ReferralInfoPanel = () => {
+  const [activeTab, setActiveTab] = useState('invite');
+  const { referredUsers, isLoading } = useReferrals();
 
   return (
-    <Card className={`bg-gray-950 text-white border-gray-800 ${className}`}>
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle>Referral Program</CardTitle>
-        <CardDescription className="text-gray-400">
-          Invite friends and help them skip the waiting list
+        <CardTitle>Friend Referrals</CardTitle>
+        <CardDescription>
+          Invite friends to join Collab Room and see who you've referred
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-start">
-            <div className="mr-3 bg-primary/20 p-2 rounded-full">
-              <Gift className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h4 className="text-sm font-medium">Limited Invitations</h4>
-              <p className="text-xs text-gray-400">
-                You can invite up to 3 friends to join The Collab Room.
-              </p>
-            </div>
-          </div>
+        <Tabs defaultValue="invite" onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="invite" className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              <span>Invite Friends</span>
+            </TabsTrigger>
+            <TabsTrigger value="referred" className="flex items-center gap-2">
+              <PanelBottom className="h-4 w-4" />
+              <span>My Referrals</span>
+            </TabsTrigger>
+          </TabsList>
           
-          <div className="flex items-start">
-            <div className="mr-3 bg-primary/20 p-2 rounded-full">
-              <Zap className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h4 className="text-sm font-medium">Instant Access</h4>
-              <p className="text-xs text-gray-400">
-                Your invited friends get instant access, bypassing the waiting list.
-              </p>
-            </div>
-          </div>
+          <TabsContent value="invite" className="mt-0">
+            <ReferralCard />
+          </TabsContent>
           
-          <div className="flex items-start">
-            <div className="mr-3 bg-primary/20 p-2 rounded-full">
-              <Users className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h4 className="text-sm font-medium">Track Your Invites</h4>
-              <p className="text-xs text-gray-400">
-                See who has joined through your referral link in your dashboard.
-              </p>
-            </div>
-          </div>
-        </div>
+          <TabsContent value="referred" className="mt-0">
+            <ReferredUsersList users={referredUsers} isLoading={isLoading} />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
-}
+};
+
+export { ReferralInfoPanel };
+export default ReferralInfoPanel;

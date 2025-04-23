@@ -2,6 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
 interface ReferralInfo {
+  success: boolean;
+  referral_code: string;
+  total_available: number;
+  total_used: number;
+  remaining: number;
+  shareable_link: string;
+}
+
+interface ReferralListResponse {
+  success: boolean;
   referral_code: string;
   total_available: number;
   total_used: number;
@@ -15,30 +25,30 @@ interface ReferralInfo {
   }>;
 }
 
-// Hook to get referral information and referred users
+// Hook to get referral information
 export function useReferrals() {
   const queryClient = useQueryClient();
   
-  // Fetch user's referral data
-  const referralQuery = useQuery<ReferralInfo>({
+  // Fetch user's referral code data
+  const referralCodeQuery = useQuery<ReferralInfo>({
     queryKey: ['/api/referrals/my-code'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
   });
   
-  // Fetch user's referrals list
-  const referralsListQuery = useQuery<ReferralInfo>({
+  // Fetch user's referred users
+  const referredUsersQuery = useQuery<ReferralListResponse>({
     queryKey: ['/api/referrals/my-referrals'],
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
   });
   
   return {
-    referralInfo: referralQuery.data,
-    referredUsers: referralsListQuery.data?.referred_users || [],
-    isLoading: referralQuery.isLoading || referralsListQuery.isLoading,
-    isError: referralQuery.isError || referralsListQuery.isError,
-    error: referralQuery.error || referralsListQuery.error,
+    referralInfo: referralCodeQuery.data,
+    referredUsers: referredUsersQuery.data?.referred_users || [],
+    isLoading: referralCodeQuery.isLoading || referredUsersQuery.isLoading,
+    isError: referralCodeQuery.isError || referredUsersQuery.isError,
+    error: referralCodeQuery.error || referredUsersQuery.error,
     refetch: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/referrals/my-code'] });
       queryClient.invalidateQueries({ queryKey: ['/api/referrals/my-referrals'] });
@@ -50,21 +60,19 @@ export function useReferrals() {
 export function useValidateReferralCode() {
   return useMutation({
     mutationFn: async (code: string) => {
-      return await apiRequest(`/api/referrals/validate/${code}`);
+      const result = await apiRequest('/api/referrals/validate', 'POST', {
+        referral_code: code
+      });
+      return result as { success: boolean; referrer?: { first_name: string; last_name: string | null } };
     }
   });
 }
 
-// Hook to use a referral code
-export function useReferralCode() {
-  const queryClient = useQueryClient();
-  
+// Hook to log referral activities
+export function useLogReferralActivity() {
   return useMutation({
-    mutationFn: async (data: { referral_code: string, user_id: string }) => {
-      return await apiRequest('/api/referrals/use-code', 'POST', data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+    mutationFn: async (data: { activity_type: 'share' | 'copy' | 'view' | 'generate'; details?: Record<string, any> }) => {
+      return await apiRequest('/api/referrals/log-activity', 'POST', data);
     }
   });
 }

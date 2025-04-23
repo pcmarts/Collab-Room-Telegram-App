@@ -1,116 +1,133 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Check, Gift, Sparkles } from 'lucide-react';
+import { PartyPopper, Copy, Share2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface ReferralSuccessCelebrationProps {
-  isOpen: boolean;
-  onClose: () => void;
-  userName?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  referralCode: string;
+  shareableLink?: string;
 }
 
-// Function to log analytics events
-const logAnalyticsEvent = async (eventType: 'celebration_view', details?: Record<string, any>) => {
-  try {
-    await fetch('/api/referrals/track', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        eventType,
-        details
-      })
-    });
-    console.log(`Logged referral ${eventType} event`);
-  } catch (err) {
-    console.error(`Failed to log referral ${eventType} event:`, err);
-  }
-};
-
-export function ReferralSuccessCelebration({ isOpen, onClose, userName = 'your friend' }: ReferralSuccessCelebrationProps) {
-  // State to track confetti animation
-  const [isAnimating, setIsAnimating] = useState(true);
+const ReferralSuccessCelebration = ({
+  open,
+  onOpenChange,
+  referralCode,
+  shareableLink
+}: ReferralSuccessCelebrationProps) => {
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
   
-  // Trigger haptic feedback when opened
+  // Reset copied state after 2 seconds
   useEffect(() => {
-    if (isOpen) {
-      // Log view event
-      logAnalyticsEvent('celebration_view', {
-        component: 'ReferralSuccessCelebration',
-        user_name: userName
-      });
-      
-      // Try to use Telegram haptic feedback if available
-      if (window.Telegram?.WebApp?.HapticFeedback) {
-        // Provide a success notification haptic
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        
-        // After a short delay, also provide an impact
-        setTimeout(() => {
-          window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-        }, 300);
-      }
-      
-      // Reset animation after 5 seconds
+    if (copied) {
       const timer = setTimeout(() => {
-        setIsAnimating(false);
-      }, 5000);
-      
+        setCopied(false);
+      }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, userName]);
-  
+  }, [copied]);
+
+  // Handle copy to clipboard
+  const handleCopy = async () => {
+    try {
+      // Copy the referral code to clipboard
+      await navigator.clipboard.writeText(referralCode);
+      setCopied(true);
+      toast({
+        title: 'Copied to clipboard!',
+        description: 'Your referral code has been copied.',
+      });
+      
+      // Log the activity
+      await apiRequest('/api/referrals/log-activity', 'POST', {
+        activity_type: 'copy',
+        details: { source: 'celebration_modal' }
+      });
+    } catch (error) {
+      toast({
+        title: 'Copy failed',
+        description: 'Could not copy to clipboard.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Handle Telegram share
+  const handleShare = async () => {
+    if (!shareableLink) return;
+    
+    try {
+      // Log the activity
+      await apiRequest('/api/referrals/log-activity', 'POST', {
+        activity_type: 'share',
+        details: { platform: 'telegram', source: 'celebration_modal' }
+      });
+
+      // Check if Telegram Web App is available
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.openTelegramLink(shareableLink);
+      } else {
+        window.open(shareableLink, '_blank');
+      }
+      
+      onOpenChange(false);
+    } catch (error) {
+      toast({
+        title: 'Share failed',
+        description: 'Could not share your referral link.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-gray-950 border-gray-800 text-white max-w-xs mx-auto">
-        <div className={`confetti-container ${isAnimating ? 'animate' : ''}`}>
-          {/* Generate confetti particles */}
-          {Array.from({ length: 50 }).map((_, i) => (
-            <div 
-              key={i} 
-              className="confetti-particle"
-              style={{
-                background: `hsl(${Math.random() * 360}, 80%, 60%)`,
-                left: `${Math.random() * 100}%`,
-                width: `${5 + Math.random() * 7}px`,
-                height: `${5 + Math.random() * 7}px`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${1 + Math.random() * 3}s`
-              }}
-            />
-          ))}
-        </div>
-        
-        <div className="flex justify-center my-4">
-          <div className="bg-primary/20 p-4 rounded-full">
-            <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <div className="flex justify-center mb-4">
+            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <PartyPopper className="h-8 w-8 text-primary" />
+            </div>
           </div>
-        </div>
-        
-        <DialogHeader className="text-center">
-          <DialogTitle className="text-xl">Congratulations!</DialogTitle>
-          <DialogDescription className="text-gray-400">
-            {userName} has joined The Collab Room using your referral link.
-          </DialogDescription>
+          <DialogTitle className="text-center text-xl">
+            Your application is approved!
+          </DialogTitle>
         </DialogHeader>
         
-        <div className="flex flex-col gap-4 my-4">
-          <div className="flex items-center gap-2 bg-gray-900 p-3 rounded-lg">
-            <Check className="h-5 w-5 text-green-500" />
-            <span className="text-sm">Referral Completed Successfully</span>
-          </div>
+        <div className="space-y-4 py-4">
+          <p className="text-center text-muted-foreground">
+            Welcome to Collab Room! You can now invite up to 3 friends to skip the waiting list.
+          </p>
           
-          <div className="flex items-center gap-2 bg-gray-900 p-3 rounded-lg">
-            <Gift className="h-5 w-5 text-primary" />
-            <span className="text-sm">They now have instant access to the platform</span>
+          <div className="border rounded-md p-3 bg-background flex items-center justify-between">
+            <code className="font-mono text-sm">{referralCode}</code>
+            <Button variant="ghost" size="icon" onClick={handleCopy}>
+              {copied ? (
+                <span className="text-green-500">✓</span>
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
           </div>
         </div>
         
-        <Button onClick={onClose} className="w-full">
-          Awesome!
-        </Button>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" className="w-full sm:w-auto" onClick={() => onOpenChange(false)}>
+            Explore Collab Room
+          </Button>
+          <Button className="w-full sm:w-auto" onClick={handleShare}>
+            <Share2 className="mr-2 h-4 w-4" /> 
+            Share on Telegram
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export { ReferralSuccessCelebration };
+export default ReferralSuccessCelebration;
