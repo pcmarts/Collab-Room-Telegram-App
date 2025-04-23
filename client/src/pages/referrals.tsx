@@ -1,9 +1,18 @@
-import { useProfile } from '@/hooks/use-profile';
+import { useQuery } from '@tanstack/react-query';
 import { useReferrals } from '@/hooks/use-referrals';
 import { ReferralCard } from '@/components/referrals/ReferralCard';
 import { ReferredUsersList } from '@/components/referrals/ReferredUsersList';
 import { PageHeader } from '@/components/page-header';
 import { Loader2 } from 'lucide-react';
+
+// Define useProfile hook inline since it's having import issues
+const useProfile = () => {
+  return useQuery({
+    queryKey: ['/api/profile'],
+    staleTime: 60 * 1000, // 1 minute
+    retry: 1,
+  });
+};
 
 export default function ReferralsPage() {
   const { isLoading: isProfileLoading } = useProfile();

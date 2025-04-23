@@ -14,7 +14,7 @@ export const pool = new Pool({
   ssl: config.NODE_ENV === 'production',
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000
+  connectionTimeoutMillis: 10000 // Increased timeout for better reliability
 });
 
 // Add error handler to prevent pool crashes
