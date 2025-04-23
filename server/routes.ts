@@ -5,6 +5,7 @@ import { db } from "./db";
 import { 
   users, companies, notification_preferences, marketing_preferences, conference_preferences, 
   events, user_events, collaborations, collab_notifications, swipes, matches,
+  referral_events, user_referrals,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
   InsertCollaboration, CollabApplication, InsertCollabApplication,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
@@ -535,19 +536,29 @@ export async function registerRoutes(app: Express) {
       }
       
       // Use a transaction to ensure all referral-related updates are atomic
+      let updatedUser;
       await db.transaction(async (tx) => {
         // Update user approval status with approval timestamp
-        const [updatedUser] = await tx.update(users)
+        const [user] = await tx.update(users)
           .set({ 
             is_approved: true,
             approved_at: new Date()
           })
           .where(eq(users.id, userId))
           .returning();
+          
+        updatedUser = user;
         
         // Process referral if user was referred
         if (user.referred_by) {
           logger.info(`User ${userId} was referred by ${user.referred_by}, processing referral completion`);
+          logger.info(`REFERRAL TRACKING: User approval with referral - ${JSON.stringify({
+            user_id: userId,
+            referred_by: user.referred_by,
+            telegram_id: user.telegram_id,
+            first_name: user.first_name,
+            timestamp: new Date().toISOString()
+          })}`);
           
           try {
             // Get referrer
@@ -614,7 +625,7 @@ export async function registerRoutes(app: Express) {
       }
 
       // Enrich the company with Twitter data (async, don't wait for completion)
-      if (user.company_id) {
+      if (user && user.company_id) {
         try {
           // Import the Twitter enrichment utility (using dynamic import for ESM)
           import('./utils/twitter-enrichment.js').then(({ enrichCompanyOnUserApproval }) => {
