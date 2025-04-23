@@ -8,6 +8,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { ShareIcon, UsersIcon } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ReferredUser {
@@ -65,44 +67,69 @@ const ReferredUsersList = ({ users, isLoading }: ReferredUsersListProps) => {
     );
   }
 
+  // If there are no referred users, return a simplified empty state
+  if (users.length === 0) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Referred Friends</CardTitle>
+          <CardDescription>
+            Track friends you've invited to The Collab Room
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 px-4">
+            <div className="mx-auto w-16 h-16 bg-muted/70 rounded-full flex items-center justify-center mb-4">
+              <UsersIcon className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-medium mb-2">No referrals yet</h3>
+            <p className="text-muted-foreground mb-6">
+              Your referred friends will appear here after they join using your referral link.
+            </p>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              data-share-button
+            >
+              <ShareIcon className="h-4 w-4 mr-2" />
+              Share Your Referral Link
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Referred Friends</CardTitle>
         <CardDescription>
-          {users.length > 0
-            ? 'Friends you have invited to Collab Room'
-            : 'You haven\'t referred anyone yet'}
+          Friends you have invited to The Collab Room
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {users.length === 0 ? (
-          <div className="text-center py-4 text-muted-foreground">
-            Share your referral code to invite friends
-          </div>
-        ) : (
-          users.map((user) => (
-            <div key={user.id} className="flex items-center space-x-4">
-              <Avatar>
-                <AvatarFallback>
-                  {getUserInitials(user.first_name, user.last_name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">
-                    {user.first_name} {user.last_name}
-                  </p>
-                  <Badge variant="outline" className="text-xs">
-                    {formatDate(user.created_at)}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">@{user.handle}</p>
+        {users.map((user) => (
+          <div key={user.id} className="flex items-center space-x-4">
+            <Avatar>
+              <AvatarFallback>
+                {getUserInitials(user.first_name, user.last_name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">
+                  {user.first_name} {user.last_name}
+                </p>
+                <Badge variant="outline" className="text-xs">
+                  {formatDate(user.created_at)}
+                </Badge>
               </div>
+              <p className="text-xs text-muted-foreground">@{user.handle}</p>
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </CardContent>
     </Card>
   );

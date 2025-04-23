@@ -43,33 +43,41 @@ export default function ReferralsPage() {
         />
       </div>
       
-      {/* Main scrollable content area */}
+      {/* Main scrollable content area - exact height from PRD */}
       <div className="overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
-        <div className="container max-w-md mx-auto px-4 pb-32 space-y-6">
-          {/* Referral Card Component - this is always shown if referrals are enabled */}
-          {isReferralEnabled && (
-            <ReferralCard 
-              referralInfo={referralInfo}
-              isLoading={isLoading}
-              error={error as Error}
-            />
-          )}
-          
-          {/* Info Panel - only shown when user has no referrals yet */}
-          {isReferralEnabled && (!referredUsers || referredUsers.length === 0) && (
-            <ReferralInfoPanel />
-          )}
-          
-          {/* List of referred users */}
-          {isReferralEnabled && (
-            <ReferredUsersList 
-              users={referredUsers}
-              isLoading={isLoading}
-            />
-          )}
-          
-          {/* If referrals are not enabled, show a message */}
-          {!isReferralEnabled && !isLoading && (
+        <div className="container max-w-md mx-auto px-4 pb-32">
+          {/* Conditionally render based on referral availability */}
+          {isReferralEnabled ? (
+            <div className="space-y-6 pt-4">
+              {/* Main referral card - always shown */}
+              <ReferralCard 
+                referralInfo={referralInfo}
+                isLoading={isLoading}
+                error={error as Error}
+              />
+              
+              {/* Conditional components based on referral state */}
+              {referredUsers && referredUsers.length > 0 ? (
+                /* Users have been referred - show the list */
+                <ReferredUsersList 
+                  users={referredUsers} 
+                  isLoading={isLoading} 
+                />
+              ) : (
+                /* No referred users yet - show the info panel */
+                <ReferralInfoPanel 
+                  onShare={() => {
+                    // Trigger the share button from ReferralCard
+                    const shareButton = document.querySelector('[data-share-button]');
+                    if (shareButton) {
+                      (shareButton as HTMLButtonElement).click();
+                    }
+                  }} 
+                />
+              )}
+            </div>
+          ) : (
+            /* Referrals not enabled - show coming soon message */
             <div className="p-8 bg-muted/30 rounded-lg text-center mt-8">
               <h3 className="font-medium text-lg mb-2">Referrals Coming Soon</h3>
               <p className="text-muted-foreground">

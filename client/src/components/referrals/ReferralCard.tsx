@@ -257,6 +257,7 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
           className="w-full"
           onClick={handleShare}
           disabled={referralInfo.remaining < 1}
+          data-share-button
         >
           <Share2 className="h-4 w-4 mr-2" />
           Share
