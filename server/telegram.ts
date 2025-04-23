@@ -7,6 +7,8 @@ import {
   notification_preferences,
   swipes,
   matches,
+  user_referrals,
+  referral_events,
 } from "@shared/schema";
 import { eq, sql, inArray } from "drizzle-orm";
 import { format } from "date-fns";
@@ -601,6 +603,8 @@ export async function notifyUserApproved(chatId: number) {
  */
 export async function notifyReferrerAboutApproval(referrerId: string, referredUserFirstName: string) {
   try {
+    console.log(`[REFERRAL NOTIFICATION] Starting notification process for referrer ${referrerId} about ${referredUserFirstName}`);
+    
     // Get referrer details
     const [referrer] = await db
       .select()
@@ -608,20 +612,56 @@ export async function notifyReferrerAboutApproval(referrerId: string, referredUs
       .where(eq(users.id, referrerId));
 
     if (!referrer || !referrer.telegram_id) {
-      console.warn(`Cannot notify referrer ${referrerId}: User or Telegram ID not found`);
+      console.warn(`[REFERRAL NOTIFICATION] Cannot notify referrer ${referrerId}: User or Telegram ID not found`);
       return;
     }
+    
+    console.log(`[REFERRAL NOTIFICATION] Found referrer: ${referrer.first_name} (ID: ${referrer.id}, Telegram ID: ${referrer.telegram_id})`);
 
     // Get referrer's referral stats
+    console.log(`[REFERRAL NOTIFICATION] Querying referral record for user ${referrerId}`);
     const [referralRecord] = await db
       .select()
       .from(user_referrals)
       .where(eq(user_referrals.user_id, referrerId));
 
     if (!referralRecord) {
-      console.warn(`No referral record found for referrer ${referrerId}`);
-      return;
+      console.log(`[REFERRAL NOTIFICATION] No referral record found for referrer ${referrerId}, creating one...`);
+      
+      // Create a referral record if it doesn't exist
+      const randomSuffix = Math.random().toString(16).substring(2, 10);
+      const referralCode = `${referrer.telegram_id}_${randomSuffix}`;
+      
+      // Insert the new referral record
+      const [newReferralRecord] = await db
+        .insert(user_referrals)
+        .values({
+          user_id: referrerId,
+          referral_code: referralCode,
+          total_available: 3,
+          total_used: 1, // Already used 1 for the current referral
+          created_at: new Date(),
+          updated_at: new Date()
+        })
+        .returning();
+        
+      console.log(`[REFERRAL NOTIFICATION] Created new referral record with code ${referralCode}`);
+      
+      // Use the newly created record
+      return await notifyReferrerWithRecord(referrer, newReferralRecord, referredUserFirstName);
     }
+    
+    console.log(`[REFERRAL NOTIFICATION] Found referral record: ${JSON.stringify(referralRecord)}`);
+    return await notifyReferrerWithRecord(referrer, referralRecord, referredUserFirstName);
+  } catch (error) {
+    console.error(`[REFERRAL NOTIFICATION] Error in notifyReferrerAboutApproval:`, error);
+    throw error;
+  }
+}
+
+// Helper function to send the actual notification
+async function notifyReferrerWithRecord(referrer: any, referralRecord: any, referredUserFirstName: string) {
+  try {
 
     // Calculate remaining referrals
     const usedReferrals = referralRecord.total_used;
@@ -678,7 +718,8 @@ export async function notifyReferrerAboutApproval(referrerId: string, referredUs
       `Referral notification sent`,
     );
   } catch (error) {
-    console.error("Failed to send referral success notification:", error);
+    console.error("[REFERRAL NOTIFICATION] Failed to send referral success notification:", error);
+    throw error; // Propagate the error for better debugging
   }
 }
 
