@@ -83,45 +83,47 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
         details: { platform: 'telegram' }
       });
 
+      // Format the invitation message with the full URL
+      const messageText = `Join me on The Collab Room! Use this link to get immediate access: ${referralInfo.shareable_link}`;
+      
       // Check if Telegram Web App is available and has the share features
       if (window.Telegram?.WebApp) {
-        // Try using Telegram direct sharing if available
         const tg = window.Telegram.WebApp;
         
-        // Try opening the link directly in Telegram
+        // Check if the Telegram WebApp supports the openLink method for sharing
+        if (typeof tg.openLink === 'function') {
+          // Open Telegram's native share URL directly
+          const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralInfo.shareable_link)}&text=${encodeURIComponent('Join me on The Collab Room! Use this link to get immediate access.')}`;
+          
+          // Use the openLink method to open the Telegram share page
+          tg.openLink(shareUrl);
+          return;
+        }
+        
+        // Try opening Telegram's direct link as fallback
         if (typeof tg.openTelegramLink === 'function') {
+          // Open the direct shareable link
           tg.openTelegramLink(referralInfo.shareable_link);
           return;
         }
-        
-        // Fallback to the expansion approach - give user more screen space
-        if (typeof tg.expand === 'function') {
-          tg.expand();
-          // Just copy the link to clipboard as well
-          await navigator.clipboard.writeText(referralInfo.shareable_link);
-          toast({
-            title: 'Link copied to clipboard',
-            description: 'You can now share it with your friends.',
-          });
-          return;
-        }
       }
       
-      // Last resort fallback - browser behavior
-      await navigator.clipboard.writeText(referralInfo.shareable_link);
-      toast({
-        title: 'Link copied to clipboard',
-        description: 'You can now share it with your friends.',
-      });
-      
-      // If available, also try to use the native share API
+      // If native sharing is available, use it as fallback
       if (navigator.share) {
         await navigator.share({
           title: 'Join me on The Collab Room',
-          text: 'Use my referral code to join The Collab Room!',
+          text: messageText,
           url: referralInfo.shareable_link
         });
+        return;
       }
+      
+      // Last resort fallback - browser behavior
+      await navigator.clipboard.writeText(messageText);
+      toast({
+        title: 'Link copied to clipboard',
+        description: 'Share this message with your friends.',
+      });
     } catch (error) {
       console.error('Share error:', error);
       // Show a helpful toast
@@ -132,7 +134,9 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
       
       // Make sure the user has the link even if sharing failed
       try {
-        await navigator.clipboard.writeText(referralInfo.shareable_link);
+        // Format the invitation message with the full URL
+        const messageText = `Join me on The Collab Room! Use this link to get immediate access: ${referralInfo.shareable_link}`;
+        await navigator.clipboard.writeText(messageText);
       } catch (clipboardError) {
         toast({
           title: 'Share failed',

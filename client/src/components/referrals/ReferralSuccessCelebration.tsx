@@ -67,20 +67,66 @@ const ReferralSuccessCelebration = ({
         details: { platform: 'telegram', source: 'celebration_modal' }
       });
 
+      // Format the invitation message with the full URL
+      const messageText = `Join me on The Collab Room! Use this link to get immediate access: ${shareableLink}`;
+      
       // Check if Telegram Web App is available
       if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.openTelegramLink(shareableLink);
-      } else {
-        window.open(shareableLink, '_blank');
+        const tg = window.Telegram.WebApp;
+        
+        // Try using Telegram's internal share URL
+        if (typeof tg.openTelegramLink === 'function') {
+          tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(shareableLink)}&text=${encodeURIComponent('Join me on The Collab Room! Use this link to get immediate access.')}`);
+          onOpenChange(false);
+          return;
+        }
+        
+        // Fallback to direct link opening
+        if (typeof tg.openLink === 'function') {
+          tg.openLink(shareableLink);
+          onOpenChange(false);
+          return;
+        }
       }
       
+      // Try native sharing if available
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Join me on The Collab Room',
+          text: messageText,
+          url: shareableLink
+        });
+        onOpenChange(false);
+        return;
+      }
+      
+      // Fallback to clipboard + browser behavior
+      await navigator.clipboard.writeText(messageText);
+      toast({
+        title: 'Link copied to clipboard',
+        description: 'Share this message with your friends.',
+      });
+      
+      // Close the dialog after clipboard copy
       onOpenChange(false);
     } catch (error) {
+      console.error('Share error:', error);
       toast({
         title: 'Share failed',
         description: 'Could not share your referral link.',
         variant: 'destructive',
       });
+      
+      // Try just copying the link to clipboard as a fallback
+      try {
+        await navigator.clipboard.writeText(shareableLink);
+        toast({
+          title: 'Link copied to clipboard',
+          description: 'You can manually share it with your friends.',
+        });
+      } catch (clipboardError) {
+        // Silent fail
+      }
     }
   };
 
