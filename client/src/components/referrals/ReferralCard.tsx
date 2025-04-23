@@ -77,26 +77,73 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
     if (!referralInfo?.shareable_link) return;
     
     try {
-      // Check if Telegram Web App is available
-      if (window.Telegram?.WebApp) {
-        // Log the activity
-        await apiRequest('/api/referrals/log-activity', 'POST', {
-          activity_type: 'share',
-          details: { platform: 'telegram' }
-        });
+      // Log the activity first
+      await apiRequest('/api/referrals/log-activity', 'POST', {
+        activity_type: 'share',
+        details: { platform: 'telegram' }
+      });
 
-        // Share using Telegram Web App
-        window.Telegram.WebApp.openTelegramLink(referralInfo.shareable_link);
-      } else {
-        // Fallback for non-Telegram environment
-        window.open(referralInfo.shareable_link, '_blank');
+      // Check if Telegram Web App is available and has the share features
+      if (window.Telegram?.WebApp) {
+        // First try using modern Web App expansion sharing
+        if (typeof window.Telegram.WebApp.switchInlineQuery === 'function') {
+          // This method works best for sharing with specific users in chats
+          window.Telegram.WebApp.switchInlineQuery(referralInfo.referral_code);
+          return;
+        }
+        
+        // Next try the legacy link opening approach
+        if (typeof window.Telegram.WebApp.openTelegramLink === 'function') {
+          window.Telegram.WebApp.openTelegramLink(referralInfo.shareable_link);
+          return;
+        }
+        
+        // Fallback to the most basic expansion (open with parameter)
+        if (typeof window.Telegram.WebApp.expand === 'function') {
+          window.Telegram.WebApp.expand();
+          // Just copy the link to clipboard as well
+          await navigator.clipboard.writeText(referralInfo.shareable_link);
+          toast({
+            title: 'Link copied to clipboard',
+            description: 'You can now share it with your friends.',
+          });
+          return;
+        }
+      }
+      
+      // Last resort fallback - browser behavior
+      await navigator.clipboard.writeText(referralInfo.shareable_link);
+      toast({
+        title: 'Link copied to clipboard',
+        description: 'You can now share it with your friends.',
+      });
+      
+      // If available, also try to use the native share API
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Join me on The Collab Room',
+          text: 'Use my referral code to join The Collab Room!',
+          url: referralInfo.shareable_link
+        });
       }
     } catch (error) {
+      console.error('Share error:', error);
+      // Show a helpful toast
       toast({
-        title: 'Share failed',
-        description: 'Could not share your referral link.',
-        variant: 'destructive',
+        title: 'Direct sharing failed',
+        description: 'The link has been copied to your clipboard instead.',
       });
+      
+      // Make sure the user has the link even if sharing failed
+      try {
+        await navigator.clipboard.writeText(referralInfo.shareable_link);
+      } catch (clipboardError) {
+        toast({
+          title: 'Share failed',
+          description: 'Could not share your referral link.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 

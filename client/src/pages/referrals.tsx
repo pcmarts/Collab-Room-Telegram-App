@@ -31,28 +31,32 @@ export default function ReferralsPage() {
   }
   
   return (
-    <div className="container max-w-md mx-auto px-4 py-6">
-      <PageHeader
-        title="Invite Friends"
-        description="Share your referral link to invite friends to The Collab Room"
-      />
+    <div className="flex flex-col h-[100dvh]">
+      <div className="flex-none px-4 py-4">
+        <PageHeader
+          title="Invite Friends"
+          description="Share your referral link to invite friends to The Collab Room"
+        />
+      </div>
       
-      <div className="space-y-6 mt-8">
-        <ReferralCard 
-          referralInfo={referralInfo}
-          isLoading={isLoading}
-          error={error as Error}
-        />
-        
-        {/* Only show the info panel if the user has no referrals yet */}
-        {(!referredUsers || referredUsers.length === 0) && (
-          <ReferralInfoPanel />
-        )}
-        
-        <ReferredUsersList 
-          users={referredUsers}
-          isLoading={isLoading}
-        />
+      <div className="flex-1 overflow-y-auto px-4 pb-6">
+        <div className="space-y-6 container max-w-md mx-auto">
+          <ReferralCard 
+            referralInfo={referralInfo}
+            isLoading={isLoading}
+            error={error as Error}
+          />
+          
+          {/* Only show the info panel if the user has no referrals yet */}
+          {(!referredUsers || referredUsers.length === 0) && (
+            <ReferralInfoPanel />
+          )}
+          
+          <ReferredUsersList 
+            users={referredUsers}
+            isLoading={isLoading}
+          />
+        </div>
       </div>
 
       {/* Success celebration dialog */}
