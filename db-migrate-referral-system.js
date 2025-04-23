@@ -53,7 +53,25 @@ async function main() {
     `);
     logger.info('Created referral_events table');
 
-    // Generate referral codes for existing users
+    // First, clean up existing referral codes to ensure uniqueness
+    await pool.query(`
+      -- Update duplicate referral codes to ensure uniqueness
+      WITH duplicate_codes AS (
+        SELECT referral_code, array_agg(id) AS user_ids
+        FROM users 
+        WHERE referral_code IS NOT NULL
+        GROUP BY referral_code
+        HAVING COUNT(*) > 1
+      )
+      UPDATE users u
+      SET referral_code = CONCAT(u.telegram_id, '_', SUBSTRING(MD5(RANDOM()::TEXT) FROM 1 FOR 8))
+      FROM duplicate_codes dc
+      WHERE u.referral_code = dc.referral_code
+      AND u.id = ANY(dc.user_ids[2:]);
+    `);
+    logger.info('Updated duplicate referral codes to ensure uniqueness');
+
+    // Generate referral codes for users who don't have one
     await pool.query(`
       WITH existing_users AS (
         SELECT id, telegram_id FROM users WHERE referral_code IS NULL
@@ -63,7 +81,7 @@ async function main() {
       FROM existing_users eu
       WHERE u.id = eu.id;
     `);
-    logger.info('Generated referral codes for existing users');
+    logger.info('Generated referral codes for users without codes');
 
     // Check if user_referrals table is empty
     const { rows: countResult } = await pool.query(`
@@ -71,14 +89,12 @@ async function main() {
     `);
     
     if (parseInt(countResult[0].count) === 0) {
-      // Create user_referrals records for existing users only if the table is empty
+      // Create user_referrals records for existing users but ensure uniqueness
       await pool.query(`
+        -- Insert records ensuring uniqueness of referral_code
         INSERT INTO user_referrals (user_id, referral_code)
         SELECT id, referral_code FROM users
-        WHERE referral_code IS NOT NULL
-        AND NOT EXISTS (
-          SELECT 1 FROM user_referrals WHERE user_id = users.id
-        );
+        WHERE referral_code IS NOT NULL;
       `);
       logger.info('Created user_referrals records for existing users');
     } else {
