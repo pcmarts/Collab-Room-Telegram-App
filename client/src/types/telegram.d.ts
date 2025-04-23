@@ -2,7 +2,8 @@ interface TelegramWebApp {
   ready: () => void;
   expand: () => void;
   close: () => void;
-  share: (url: string) => void;
+  share: (text: string) => Promise<boolean>;
+  openTelegramLink: (url: string) => void;
   MainButton: {
     show: () => void;
     hide: () => void;

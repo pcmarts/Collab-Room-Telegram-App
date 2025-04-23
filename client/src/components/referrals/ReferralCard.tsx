@@ -65,16 +65,60 @@ export function ReferralCard({ className = '', referralInfo, isLoading, error }:
     setIsSharing(true);
     try {
       // Check if Telegram webapp is available
-      if (window.Telegram && window.Telegram.WebApp) {
-        // Use native sharing capability if available
-        if ('share' in window.Telegram.WebApp) {
-          window.Telegram.WebApp.share(referralLink);
-        } else {
-          // Fallback to clipboard
-          handleCopyLink();
+      if (window.Telegram?.WebApp) {
+        // Prepare share text
+        const shareText = `Join me on The Collab Room! Use my referral link to get instant access: ${referralLink}`;
+        
+        // Try to use native Telegram sharing functionality
+        try {
+          // The WebApp.share() method returns a Promise that resolves to true if the user shared the message
+          const shared = await window.Telegram.WebApp.share(shareText);
+          
+          if (shared) {
+            console.log('Successfully shared via Telegram');
+            // Trigger haptic feedback if available
+            if (window.Telegram.WebApp.HapticFeedback) {
+              window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
+            
+            toast({
+              title: "Successfully Shared",
+              description: "Your referral link has been shared!"
+            });
+            
+            // Log the share event
+            console.log('Referral link shared via Telegram', { code: referralInfo?.referral_code });
+          } else {
+            console.log('User canceled sharing');
+            toast({
+              title: "Sharing Canceled",
+              description: "You canceled sharing the referral link."
+            });
+          }
+        } catch (shareError) {
+          console.error('Error using Telegram share:', shareError);
+          
+          // Fallback to using Telegram openTelegramLink if available
+          if ('openTelegramLink' in window.Telegram.WebApp) {
+            try {
+              // Try to open a deep link to share via Telegram
+              window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join me on The Collab Room!')}`);
+            } catch (linkError) {
+              console.error('Error using openTelegramLink:', linkError);
+              // Fallback to clipboard
+              handleCopyLink();
+            }
+          } else {
+            // Fallback to clipboard
+            handleCopyLink();
+            toast({
+              title: "Sharing Feature Unavailable",
+              description: "Link copied to clipboard instead. You can paste it in Telegram manually."
+            });
+          }
         }
       } else {
-        // Fallback to copy
+        // Fallback to copy if Telegram WebApp is not available
         handleCopyLink();
         toast({
           title: "Telegram Sharing Unavailable",
