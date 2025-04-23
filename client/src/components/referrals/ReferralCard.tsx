@@ -85,22 +85,18 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
 
       // Check if Telegram Web App is available and has the share features
       if (window.Telegram?.WebApp) {
-        // First try using modern Web App expansion sharing
-        if (typeof window.Telegram.WebApp.switchInlineQuery === 'function') {
-          // This method works best for sharing with specific users in chats
-          window.Telegram.WebApp.switchInlineQuery(referralInfo.referral_code);
+        // Try using Telegram direct sharing if available
+        const tg = window.Telegram.WebApp;
+        
+        // Try opening the link directly in Telegram
+        if (typeof tg.openTelegramLink === 'function') {
+          tg.openTelegramLink(referralInfo.shareable_link);
           return;
         }
         
-        // Next try the legacy link opening approach
-        if (typeof window.Telegram.WebApp.openTelegramLink === 'function') {
-          window.Telegram.WebApp.openTelegramLink(referralInfo.shareable_link);
-          return;
-        }
-        
-        // Fallback to the most basic expansion (open with parameter)
-        if (typeof window.Telegram.WebApp.expand === 'function') {
-          window.Telegram.WebApp.expand();
+        // Fallback to the expansion approach - give user more screen space
+        if (typeof tg.expand === 'function') {
+          tg.expand();
           // Just copy the link to clipboard as well
           await navigator.clipboard.writeText(referralInfo.shareable_link);
           toast({

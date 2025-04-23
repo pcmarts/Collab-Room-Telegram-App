@@ -60,11 +60,12 @@ export default function ReferralsPage() {
       </div>
 
       {/* Success celebration dialog */}
-      {newUser && (
+      {newUser && referralInfo && (
         <ReferralSuccessCelebration 
-          isOpen={showCelebration}
-          onClose={closeCelebration}
-          userName={`${newUser.first_name} ${newUser.last_name || ''}`}
+          open={showCelebration}
+          onOpenChange={closeCelebration}
+          referralCode={referralInfo.referral_code}
+          shareableLink={referralInfo.shareable_link}
         />
       )}
     </div>
