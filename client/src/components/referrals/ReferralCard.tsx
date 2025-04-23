@@ -83,60 +83,53 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
         details: { platform: 'telegram' }
       });
 
-      // Format the invitation message with the full URL
-      const messageText = `Join me on The Collab Room! Use this link to get immediate access: ${referralInfo.shareable_link}`;
+      // Pre-populated message as specified in the PRD
+      const messageText = `Hey, I think you should check out Collab Room!`;
       
-      // Check if Telegram Web App is available and has the share features
+      // Check if Telegram Web App is available
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         
-        // Check if the Telegram WebApp supports the openLink method for sharing
-        if (typeof tg.openLink === 'function') {
-          // Open Telegram's native share URL directly
-          const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralInfo.shareable_link)}&text=${encodeURIComponent('Join me on The Collab Room! Use this link to get immediate access.')}`;
-          
-          // Use the openLink method to open the Telegram share page
-          tg.openLink(shareUrl);
-          return;
-        }
+        // Using Telegram's native share dialog as specified in the PRD
+        // Format: t.me/share/url?url=URL&text=TEXT
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralInfo.shareable_link)}&text=${encodeURIComponent(messageText)}`;
         
-        // Try opening Telegram's direct link as fallback
-        if (typeof tg.openTelegramLink === 'function') {
-          // Open the direct shareable link
-          tg.openTelegramLink(referralInfo.shareable_link);
+        // For Telegram WebApp, we need to use the appropriate method to open external links
+        if (typeof tg.openLink === 'function') {
+          // This will open Telegram's native share dialog
+          tg.openLink(shareUrl);
           return;
         }
       }
       
-      // If native sharing is available, use it as fallback
+      // Fallback for non-Telegram environments: try Web Share API
       if (navigator.share) {
         await navigator.share({
           title: 'Join me on The Collab Room',
-          text: messageText,
+          text: `${messageText} ${referralInfo.shareable_link}`,
           url: referralInfo.shareable_link
         });
         return;
       }
       
-      // Last resort fallback - browser behavior
-      await navigator.clipboard.writeText(messageText);
+      // Last resort fallback - copy to clipboard
+      const fullMessage = `${messageText} ${referralInfo.shareable_link}`;
+      await navigator.clipboard.writeText(fullMessage);
       toast({
         title: 'Link copied to clipboard',
         description: 'Share this message with your friends.',
       });
     } catch (error) {
       console.error('Share error:', error);
-      // Show a helpful toast
-      toast({
-        title: 'Direct sharing failed',
-        description: 'The link has been copied to your clipboard instead.',
-      });
       
-      // Make sure the user has the link even if sharing failed
+      // Fallback to clipboard copying when sharing API isn't available (as specified in PRD)
       try {
-        // Format the invitation message with the full URL
-        const messageText = `Join me on The Collab Room! Use this link to get immediate access: ${referralInfo.shareable_link}`;
-        await navigator.clipboard.writeText(messageText);
+        const fullMessage = `Hey, I think you should check out Collab Room! ${referralInfo.shareable_link}`;
+        await navigator.clipboard.writeText(fullMessage);
+        toast({
+          title: 'Link copied to clipboard',
+          description: 'Share this message with your friends.',
+        });
       } catch (clipboardError) {
         toast({
           title: 'Share failed',

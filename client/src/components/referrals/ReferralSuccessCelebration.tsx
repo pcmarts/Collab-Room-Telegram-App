@@ -67,41 +67,40 @@ const ReferralSuccessCelebration = ({
         details: { platform: 'telegram', source: 'celebration_modal' }
       });
 
-      // Format the invitation message with the full URL
-      const messageText = `Join me on The Collab Room! Use this link to get immediate access: ${shareableLink}`;
+      // Pre-populated message as specified in the PRD
+      const messageText = `Hey, I think you should check out Collab Room!`;
       
       // Check if Telegram Web App is available
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         
-        // Try using Telegram's internal share URL
-        if (typeof tg.openTelegramLink === 'function') {
-          tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(shareableLink)}&text=${encodeURIComponent('Join me on The Collab Room! Use this link to get immediate access.')}`);
-          onOpenChange(false);
-          return;
-        }
+        // Using Telegram's native share dialog as specified in the PRD
+        // Format: t.me/share/url?url=URL&text=TEXT
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareableLink)}&text=${encodeURIComponent(messageText)}`;
         
-        // Fallback to direct link opening
+        // For Telegram WebApp, we need to use the appropriate method to open external links
         if (typeof tg.openLink === 'function') {
-          tg.openLink(shareableLink);
+          // This will open Telegram's native share dialog
+          tg.openLink(shareUrl);
           onOpenChange(false);
           return;
         }
       }
       
-      // Try native sharing if available
+      // Fallback for non-Telegram environments: try Web Share API
       if (navigator.share) {
         await navigator.share({
           title: 'Join me on The Collab Room',
-          text: messageText,
+          text: `${messageText} ${shareableLink}`,
           url: shareableLink
         });
         onOpenChange(false);
         return;
       }
       
-      // Fallback to clipboard + browser behavior
-      await navigator.clipboard.writeText(messageText);
+      // Last resort fallback - copy to clipboard
+      const fullMessage = `${messageText} ${shareableLink}`;
+      await navigator.clipboard.writeText(fullMessage);
       toast({
         title: 'Link copied to clipboard',
         description: 'Share this message with your friends.',
@@ -111,21 +110,21 @@ const ReferralSuccessCelebration = ({
       onOpenChange(false);
     } catch (error) {
       console.error('Share error:', error);
-      toast({
-        title: 'Share failed',
-        description: 'Could not share your referral link.',
-        variant: 'destructive',
-      });
       
-      // Try just copying the link to clipboard as a fallback
+      // Fallback to clipboard copying when sharing API isn't available (as specified in PRD)
       try {
-        await navigator.clipboard.writeText(shareableLink);
+        const fullMessage = `Hey, I think you should check out Collab Room! ${shareableLink}`;
+        await navigator.clipboard.writeText(fullMessage);
         toast({
           title: 'Link copied to clipboard',
-          description: 'You can manually share it with your friends.',
+          description: 'Share this message with your friends.',
         });
       } catch (clipboardError) {
-        // Silent fail
+        toast({
+          title: 'Share failed',
+          description: 'Could not share your referral link.',
+          variant: 'destructive',
+        });
       }
     }
   };
