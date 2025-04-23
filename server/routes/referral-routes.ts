@@ -267,15 +267,35 @@ router.post('/use-code', async (req: Request, res: Response) => {
  * Admin-only: List all referral events 
  */
 router.get('/admin/events', async (req: Request, res: Response) => {
-  // Check if user is authenticated and is an admin
-  const userData = req.session?.passport?.user;
-  if (!userData) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  // Try to get user from Telegram first
+  const telegramId = (req as any).telegramData?.id;
+  let userId: string | undefined;
+  
+  if (telegramId) {
+    try {
+      // Get user by telegram ID
+      const user = await storage.getUserByTelegramId(telegramId);
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized - user not found for provided Telegram ID' });
+      }
+      userId = user.id;
+    } catch (error) {
+      console.error('Error getting user by Telegram ID:', error);
+      return res.status(500).json({ error: 'Server error while getting user' });
+    }
+  } else {
+    // Fall back to session-based auth
+    const userData = req.session?.user;
+    if (!userData) {
+      return res.status(401).json({ error: 'Unauthorized - no user session' });
+    }
+    userId = userData.id;
   }
-
-  const user = await storage.getUser(userData.id);
-  if (!user || user.role !== 'admin') {
-    return res.status(403).json({ error: 'Forbidden' });
+  
+  // Check if user is an admin
+  const user = await storage.getUser(userId);
+  if (!user || !user.is_admin) {
+    return res.status(403).json({ error: 'Forbidden - admin access required' });
   }
 
   try {
