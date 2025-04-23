@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useReferrals } from '@/hooks/use-referrals';
 import { ReferralCard } from '@/components/referrals/ReferralCard';
 import { ReferredUsersList } from '@/components/referrals/ReferredUsersList';
+import { ReferralInfoPanel } from '@/components/referrals/ReferralInfoPanel';
 import { PageHeader } from '@/components/page-header';
 import { Loader2 } from 'lucide-react';
 
@@ -39,6 +40,11 @@ export default function ReferralsPage() {
           isLoading={isLoading}
           error={error as Error}
         />
+        
+        {/* Only show the info panel if the user has no referrals yet */}
+        {(!referredUsers || referredUsers.length === 0) && (
+          <ReferralInfoPanel />
+        )}
         
         <ReferredUsersList 
           users={referredUsers}

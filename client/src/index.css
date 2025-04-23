@@ -170,6 +170,64 @@ body.scrollable-page {
   width: 100% !important;
 }
 
+/* Confetti animation styles for referral celebration */
+.confetti-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.confetti-container.animate .confetti-particle {
+  animation-name: confetti-fall, confetti-shake;
+  animation-timing-function: ease-in-out, ease-in-out;
+  animation-iteration-count: 1, infinite;
+  animation-fill-mode: both, both;
+  animation-play-state: running, running;
+}
+
+.confetti-particle {
+  position: absolute;
+  top: -10%;
+  left: 0;
+  opacity: 0;
+}
+
+@keyframes confetti-fall {
+  0% {
+    top: -10%;
+    opacity: 1;
+    transform: translateZ(0);
+  }
+  100% {
+    top: 105%;
+    opacity: 0.7;
+    transform: translateZ(0);
+  }
+}
+
+@keyframes confetti-shake {
+  0% {
+    transform: translateX(0%) rotate(0deg);
+  }
+  25% {
+    transform: translateX(15%) rotate(45deg);
+  }
+  50% {
+    transform: translateX(-15%) rotate(-45deg);
+  }
+  75% {
+    transform: translateX(5%) rotate(22.5deg);
+  }
+  100% {
+    transform: translateX(-5%) rotate(-22.5deg);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
