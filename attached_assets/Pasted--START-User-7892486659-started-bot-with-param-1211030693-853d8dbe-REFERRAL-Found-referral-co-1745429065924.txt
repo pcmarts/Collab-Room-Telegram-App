@@ -1,0 +1,373 @@
+
+
+
+
+[START] User 7892486659 started bot with param: 1211030693_853d8dbe
+[REFERRAL] Found referral code: 1211030693_853d8dbe
+[REFERRAL] Extracted Telegram ID from code: 1211030693
+[REFERRAL] Found referrer: Paul Martin
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[2025-04-23T17:23:11.700Z] [WARN] ⚠️ No Telegram data found in request
+[2025-04-23T17:23:11.702Z] [WARN] GET /api/profile 401 in 3ms {
+  method: 'GET',
+  url: '/api/profile',
+  status: 401,
+  responseTime: '3ms',
+  ip: '172.31.128.61'
+}
+[2025-04-23T17:23:16.365Z] [WARN] GET /api/profile 404 in 24ms {
+  method: 'GET',
+  url: '/api/profile?_t=1745428996234',
+  status: 404,
+  responseTime: '24ms',
+  ip: '172.31.128.61'
+}
+[2025-04-23T17:23:29.246Z] [WARN] GET /api/profile 404 in 19ms {
+  method: 'GET',
+  url: '/api/profile?_t=1745429009118',
+  status: 404,
+  responseTime: '19ms',
+  ip: '172.31.128.61'
+}
+[2025-04-23T17:23:41.407Z] [WARN] GET /api/profile 404 in 24ms {
+  method: 'GET',
+  url: '/api/profile?_t=1745429021269',
+  status: 404,
+  responseTime: '24ms',
+  ip: '172.31.128.61'
+}
+[2025-04-23T17:23:43.819Z] [WARN] GET /api/profile 404 in 32ms {
+  method: 'GET',
+  url: '/api/profile?_t=1745429023687',
+  status: 404,
+  responseTime: '32ms',
+  ip: '172.31.128.61'
+}
+[2025-04-23T17:23:44.925Z] [INFO] Processing referral code: 1211030693_853d8dbe for new user 3c784ed0-2322-4f06-91c6-83f1ede9b944
+[2025-04-23T17:23:44.925Z] [INFO] Extracted referrer Telegram ID from code: 1211030693
+[2025-04-23T17:23:44.943Z] [INFO] Found referrer user: b4093f49-f0c3-4bae-a294-35fb87c493eb (Paul Martin) for code 1211030693_853d8dbe
+[2025-04-23T17:23:44.962Z] [INFO] Updated user 3c784ed0-2322-4f06-91c6-83f1ede9b944 with referrer b4093f49-f0c3-4bae-a294-35fb87c493eb
+Failed to send notification to admin 123456789: TelegramError: ETELEGRAM: 400 Bad Request: chat not found
+    at /home/runner/workspace/node_modules/node-telegram-bot-api/src/telegram.js:316:15
+    at tryCatcher (/home/runner/workspace/node_modules/bluebird/js/release/util.js:16:23)
+    at Promise._settlePromiseFromHandler (/home/runner/workspace/node_modules/bluebird/js/release/promise.js:547:31)
+    at Promise._settlePromise (/home/runner/workspace/node_modules/bluebird/js/release/promise.js:604:18)
+    at Promise._settlePromise0 (/home/runner/workspace/node_modules/bluebird/js/release/promise.js:649:10)
+    at Promise._settlePromises (/home/runner/workspace/node_modules/bluebird/js/release/promise.js:729:18)
+    at _drainQueueStep (/home/runner/workspace/node_modules/bluebird/js/release/async.js:93:12)
+    at _drainQueue (/home/runner/workspace/node_modules/bluebird/js/release/async.js:86:9)
+    at Async._drainQueues (/home/runner/workspace/node_modules/bluebird/js/release/async.js:102:5)
+    at Async.drainQueues [as _onImmediate] (/home/runner/workspace/node_modules/bluebird/js/release/async.js:15:14)
+    at process.processImmediate (node:internal/timers:483:21) {
+  code: 'ETELEGRAM',
+  response: <ref *1> IncomingMessage {
+    _events: {
+      close: [Array],
+      error: [Function (anonymous)],
+      data: [Function (anonymous)],
+      end: [Array],
+      readable: undefined
+    },
+    _readableState: ReadableState {
+      highWaterMark: 16384,
+      buffer: [],
+      bufferIndex: 0,
+      length: 0,
+      pipes: [],
+      awaitDrainWriters: null,
+      [Symbol(kState)]: 194779004
+    },
+    _maxListeners: undefined,
+    socket: null,
+    httpVersionMajor: 1,
+    httpVersionMinor: 1,
+    httpVersion: '1.1',
+    complete: true,
+    rawHeaders: [
+      'Server',
+      'nginx/1.18.0',
+      'Date',
+      'Wed, 23 Apr 2025 17:23:45 GMT',
+      'Content-Type',
+      'application/json',
+      'Content-Length',
+      '73',
+      'Connection',
+      'keep-alive',
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains; preload',
+      'Access-Control-Allow-Origin',
+      '*',
+      'Access-Control-Expose-Headers',
+      'Content-Length,Content-Type,Date,Server,Connection'
+    ],
+    rawTrailers: [],
+    joinDuplicateHeaders: undefined,
+    aborted: false,
+    upgrade: false,
+    url: '',
+    method: null,
+    statusCode: 400,
+    statusMessage: 'Bad Request',
+    client: TLSSocket {
+      _tlsOptions: [Object],
+      _secureEstablished: true,
+      _securePending: false,
+      _newSessionPending: false,
+      _controlReleased: true,
+      secureConnecting: false,
+      _SNICallback: null,
+      servername: 'api.telegram.org',
+      alpnProtocol: false,
+      authorized: true,
+      authorizationError: null,
+      encrypted: true,
+      _events: [Object: null prototype],
+      _eventsCount: 9,
+      connecting: false,
+      _hadError: false,
+      _parent: null,
+      _host: 'api.telegram.org',
+      _closeAfterHandlingError: false,
+      _readableState: [ReadableState],
+      _writableState: [WritableState],
+      allowHalfOpen: false,
+      _maxListeners: undefined,
+      _sockname: null,
+      _pendingData: null,
+      _pendingEncoding: '',
+      server: undefined,
+      _server: null,
+      ssl: [TLSWrap],
+      _requestCert: true,
+      _rejectUnauthorized: true,
+      parser: null,
+      _httpMessage: null,
+      timeout: 0,
+      [Symbol(alpncallback)]: null,
+      [Symbol(res)]: [TLSWrap],
+      [Symbol(verified)]: true,
+      [Symbol(pendingSession)]: null,
+      [Symbol(async_id_symbol)]: -1,
+      [Symbol(kHandle)]: [TLSWrap],
+      [Symbol(lastWriteQueueSize)]: 0,
+      [Symbol(timeout)]: null,
+      [Symbol(kBuffer)]: null,
+      [Symbol(kBufferCb)]: null,
+      [Symbol(kBufferGen)]: null,
+      [Symbol(shapeMode)]: true,
+      [Symbol(kCapture)]: false,
+      [Symbol(kSetNoDelay)]: false,
+      [Symbol(kSetKeepAlive)]: true,
+      [Symbol(kSetKeepAliveInitialDelay)]: 1,
+      [Symbol(kBytesRead)]: 0,
+      [Symbol(kBytesWritten)]: 0,
+      [Symbol(connect-options)]: [Object]
+    },
+    _consuming: false,
+    _dumped: false,
+    req: ClientRequest {
+      _events: [Object: null prototype],
+      _eventsCount: 5,
+      _maxListeners: undefined,
+      outputData: [],
+      outputSize: 0,
+      writable: true,
+      destroyed: true,
+      _last: false,
+      chunkedEncoding: false,
+      shouldKeepAlive: true,
+      maxRequestsOnConnectionReached: false,
+      _defaultKeepAlive: true,
+      useChunkedEncodingByDefault: true,
+      sendDate: false,
+      _removedConnection: false,
+      _removedContLen: false,
+      _removedTE: false,
+      strictContentLength: false,
+      _contentLength: 913,
+      _hasBody: true,
+      _trailer: '',
+      finished: true,
+      _headerSent: true,
+      _closed: true,
+      socket: [TLSSocket],
+      _header: 'POST /bot7342777609:AAEEmK27smWtw0sE-AeOmJH6FBUwe4Dv9bw/sendMessage HTTP/1.1\r\n' +
+        'host: api.telegram.org\r\n' +
+        'content-type: application/x-www-form-urlencoded\r\n' +
+        'content-length: 913\r\n' +
+        'Connection: keep-alive\r\n' +
+        '\r\n',
+      _keepAliveTimeout: 0,
+      _onPendingData: [Function: nop],
+      agent: [Agent],
+      socketPath: undefined,
+      method: 'POST',
+      maxHeaderSize: undefined,
+      insecureHTTPParser: undefined,
+      joinDuplicateHeaders: undefined,
+      path: '/bot7342777609:AAEEmK27smWtw0sE-AeOmJH6FBUwe4Dv9bw/sendMessage',
+      _ended: true,
+      res: [Circular *1],
+      aborted: false,
+      timeoutCb: null,
+      upgradeOrConnect: false,
+      parser: null,
+      maxHeadersCount: null,
+      reusedSocket: true,
+      host: 'api.telegram.org',
+      protocol: 'https:',
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false,
+      [Symbol(kBytesWritten)]: 0,
+      [Symbol(kNeedDrain)]: false,
+      [Symbol(corked)]: 0,
+      [Symbol(kOutHeaders)]: [Object: null prototype],
+      [Symbol(errored)]: null,
+      [Symbol(kHighWaterMark)]: 16384,
+      [Symbol(kRejectNonStandardBodyWrites)]: false,
+      [Symbol(kUniqueHeaders)]: null
+    },
+    _eventsCount: 4,
+    request: Request {
+      _events: [Object: null prototype],
+      _eventsCount: 5,
+      _maxListeners: undefined,
+      method: 'POST',
+      simple: false,
+      resolveWithFullResponse: true,
+      forever: true,
+      readable: true,
+      writable: true,
+      explicitMethod: true,
+      _qs: [Querystring],
+      _auth: [Auth],
+      _multipart: [Multipart],
+      _redirect: [Redirect],
+      _tunnel: [Tunnel],
+      _rp_resolve: [Function (anonymous)],
+      _rp_reject: [Function (anonymous)],
+      _rp_promise: [Promise [Object]],
+      _rp_callbackOrig: undefined,
+      callback: [Function (anonymous)],
+      _rp_options: [Object],
+      headers: [Object],
+      setHeader: [Function (anonymous)],
+      hasHeader: [Function (anonymous)],
+      getHeader: [Function (anonymous)],
+      removeHeader: [Function (anonymous)],
+      localAddress: undefined,
+      pool: [Object],
+      dests: [],
+      __isRequestRequest: true,
+      _callback: [Function: RP$callback],
+      uri: [Url],
+      proxy: null,
+      tunnel: true,
+      setHost: true,
+      originalCookieHeader: undefined,
+      _disableCookies: true,
+      _jar: undefined,
+      port: 443,
+      host: 'api.telegram.org',
+      body: 'parse_mode=HTML&disable_web_page_preview=false&reply_markup=%7B%22inline_keyboard%22%3A%5B%5B%7B%22text%22%3A%22%E2%9C%85%20Approve%20Application%22%2C%22callback_data%22%3A%22approve_user_7892486659%22%7D%5D%2C%5B%7B%22text%22%3A%22%F0%9F%91%81%EF%B8%8F%20View%20Application%22%2C%22web_app%22%3A%7B%22url%22%3A%22https%3A%2F%2F4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev%2Fadmin%2Fapplications%22%7D%7D%5D%5D%7D&chat_id=123456789&text=%F0%9F%86%95%20%3Cb%3ENew%20User%20Application%21%3C%2Fb%3E%0A%0A%3Cb%3EName%3A%3C%2Fb%3E%20%3Ca%20href%3D%22https%3A%2F%2Fx.com%2Fasdf%22%3EJIM%20asdf%3C%2Fa%3E%20%28%40jimtesting%29%0A%3Cb%3ECompany%3A%3C%2Fb%3E%20%3Ca%20href%3D%22https%3A%2F%2Fwww.asdf.com%22%3Easdf%3C%2Fa%3E%20%28%3Ca%20href%3D%22https%3A%2F%2Ftwitter.com%2Fasdf%22%3ETwitter%3C%2Fa%3E%29%0A%3Cb%3ERole%3A%3C%2Fb%3E%20asdf%0A%0AUse%20the%20buttons%20below%20to%20take%20action%3A',
+      path: '/bot7342777609:AAEEmK27smWtw0sE-AeOmJH6FBUwe4Dv9bw/sendMessage',
+      httpModule: [Object],
+      agentClass: [Function: Agent],
+      agentOptions: [Object],
+      agent: [Agent],
+      _started: true,
+      href: 'https://api.telegram.org/bot7342777609:AAEEmK27smWtw0sE-AeOmJH6FBUwe4Dv9bw/sendMessage',
+      req: [ClientRequest],
+      ntick: true,
+      response: [Circular *1],
+      originalHost: 'api.telegram.org',
+      originalHostHeaderName: 'host',
+      responseContent: [Circular *1],
+      _destdata: true,
+      _ended: true,
+      _callbackCalled: true,
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    toJSON: [Function: responseToJSON],
+    caseless: Caseless { dict: [Object] },
+    body: {
+      ok: false,
+      error_code: 400,
+      description: 'Bad Request: chat not found'
+    },
+    [Symbol(shapeMode)]: true,
+    [Symbol(kCapture)]: false,
+    [Symbol(kHeaders)]: {
+      server: 'nginx/1.18.0',
+      date: 'Wed, 23 Apr 2025 17:23:45 GMT',
+      'content-type': 'application/json',
+      'content-length': '73',
+      connection: 'keep-alive',
+      'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+      'access-control-allow-origin': '*',
+      'access-control-expose-headers': 'Content-Length,Content-Type,Date,Server,Connection'
+    },
+    [Symbol(kHeadersCount)]: 16,
+    [Symbol(kTrailers)]: null,
+    [Symbol(kTrailersCount)]: 0
+  }
+}
+Enhanced notification sent to admin 1211030693
+Admin notification sent for new user application
+============ DEBUG: Application Status SSE Connection ============
+Params: { userId: '3c784ed0-2322-4f06-91c6-83f1ede9b944' }
+Client disconnected from status updates for user 3c784ed0-2322-4f06-91c6-83f1ede9b944
+[2025-04-23T17:23:59.821Z] [WARN] ⚠️ No Telegram data found in request
+[2025-04-23T17:23:59.821Z] [WARN] GET /api/profile 401 in 0ms {
+  method: 'GET',
+  url: '/api/profile',
+  status: 401,
+  responseTime: '0ms',
+  ip: '172.31.128.61'
+}
+============ DEBUG: User Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AugUYxEWz717NbkQsGfoqrIbHAsUbijii.qSz85oioJmsVt3DM%2B0Cg85O4RpTK5rSZjjsZqorVwvM',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/admin/applications',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.59',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkilRoI1&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745429035&signature=g0uuCnyxa5Tj8QJb2Cv1VQuDC-ufNpxQkyC5gg5qT_MgS0dTN5TokAr4lARVOatmeXKTrABdzYF3abL5T4w-CA&hash=b0aa92c7bf0cf0cc78f2d0d74ee5c47f6fde20b791e7a69c036d25617982f027'
+}
+Fetching matches with details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Failed to fetch matches: TypeError: storage.getUserMatchesWithDetails is not a function
+    at <anonymous> (/home/runner/workspace/server/routes.ts:3247:42)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[2025-04-23T17:23:59.858Z] [ERROR] GET /api/matches 500 in 33ms {
+  method: 'GET',
+  url: '/api/matches',
+  status: 500,
+  responseTime: '33ms',
+  ip: '172.31.128.61'
+}
+Found 44 users in database
+[2025-04-23T17:24:03.632Z] [INFO] User 3c784ed0-2322-4f06-91c6-83f1ede9b944 was referred by b4093f49-f0c3-4bae-a294-35fb87c493eb, processing referral completion
+[2025-04-23T17:24:03.632Z] [INFO] REFERRAL TRACKING: User approval with referral - {"user_id":"3c784ed0-2322-4f06-91c6-83f1ede9b944","referred_by":"b4093f49-f0c3-4bae-a294-35fb87c493eb","telegram_id":"7892486659","first_name":"JIM","timestamp":"2025-04-23T17:24:03.632Z"}
+[2025-04-23T17:24:03.683Z] [INFO] Created completed referral event for referrer b4093f49-f0c3-4bae-a294-35fb87c493eb and user 3c784ed0-2322-4f06-91c6-83f1ede9b944
+[2025-04-23T17:24:03.729Z] [INFO] Updated referral count for referrer b4093f49-f0c3-4bae-a294-35fb87c493eb
+Approval notification sent successfully
+Found 44 users in database
