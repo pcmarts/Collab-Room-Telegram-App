@@ -8,7 +8,7 @@ import { useReferrals } from '@/hooks/use-referrals';
 
 const ReferralInfoPanel = () => {
   const [activeTab, setActiveTab] = useState('invite');
-  const { referredUsers, isLoading } = useReferrals();
+  const { referralInfo, referredUsers, isLoading } = useReferrals();
 
   return (
     <Card className="w-full">
@@ -32,7 +32,10 @@ const ReferralInfoPanel = () => {
           </TabsList>
           
           <TabsContent value="invite" className="mt-0">
-            <ReferralCard />
+            <ReferralCard 
+              referralInfo={referralInfo}
+              isLoading={isLoading}
+            />
           </TabsContent>
           
           <TabsContent value="referred" className="mt-0">

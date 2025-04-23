@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useReferrals } from '@/hooks/use-referrals';
 import { 
   Card, 
   CardContent, 
@@ -16,9 +15,23 @@ import { Share2, Copy, Check, ExternalLink } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiRequest } from '@/lib/queryClient';
 
-const ReferralCard = () => {
+interface ReferralInfo {
+  success: boolean;
+  referral_code: string;
+  total_available: number;
+  total_used: number;
+  remaining: number;
+  shareable_link: string;
+}
+
+interface ReferralCardProps {
+  referralInfo?: ReferralInfo;
+  isLoading: boolean;
+  error?: Error;
+}
+
+const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => {
   const { toast } = useToast();
-  const { referralInfo, isLoading, refetch } = useReferrals();
   const [copied, setCopied] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
