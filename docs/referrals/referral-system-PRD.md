@@ -224,6 +224,24 @@ Implement a referral system that:
 - System automatically marks them as approved
 - Update user records to indicate they were referred
 
+#### Referral Status Tracking
+- **Pending**: When a referral link is clicked but signup not completed
+- **Completed**: When a referred user completes signup process
+- **Expired**: If a referral invitation remains pending for more than 7 days
+- Track conversion rates between statuses for analytics
+
+#### Database Indexing
+- Create indexes on `referralCode` column for fast lookups
+- Create composite index on `referrerId` and `status` for efficient filtering
+- Optimize queries for retrieving referred friends list
+
+#### Error Handling
+- Provide specific error messages for all referral states:
+  - All slots used: "You've used all your referral slots. Thank you for growing our community!"
+  - Invalid code: "This referral code is invalid or has expired."
+  - Self-referral: "You cannot use your own referral code."
+  - Already referred: "You have already used a referral code."
+
 #### Edge Cases Handling
 1. **Self-Referral Attempt**: System detects and prevents
 2. **Already Registered User**: System detects if email/Telegram ID already exists
@@ -414,6 +432,12 @@ Implement a referral system that:
 
 - **Risk**: Performance degradation from inefficient referral queries
 - **Mitigation**: Implement proper indexing and caching strategies
+
+- **Risk**: Non-URL-safe characters in referral codes causing issues when shared
+- **Mitigation**: Use URL-safe character set (a-z, 0-9) for all referral codes
+
+- **Risk**: Inconsistent referral data after user profile updates
+- **Mitigation**: Update referral system when user profiles are updated via profile-overview page
 
 ### 8.2 User Experience Risks
 - **Risk**: Users not understanding the referral program benefits
