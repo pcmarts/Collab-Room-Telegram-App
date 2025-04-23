@@ -394,4 +394,76 @@ router.get('/admin/events', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * Track referral analytics events
+ */
+router.post('/track', async (req: Request, res: Response) => {
+  // Parse Telegram init data from header or fallback to session
+  let userId: string;
+  let telegramId: string | undefined;
+  
+  // Try to extract Telegram data from the init-data header
+  try {
+    const initData = req.headers['x-telegram-init-data'] as string;
+    if (initData) {
+      // Parse Telegram data
+      const decodedInitData = new URLSearchParams(initData);
+      const userJson = decodedInitData.get('user') || '{}';
+      const telegramUser = JSON.parse(userJson);
+      
+      if (telegramUser.id) {
+        telegramId = telegramUser.id.toString();
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing Telegram init data:', error);
+  }
+  
+  if (telegramId) {
+    try {
+      // Get user by telegram ID
+      const user = await storage.getUserByTelegramId(telegramId);
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized - user not found for provided Telegram ID' });
+      }
+      userId = user.id;
+    } catch (error) {
+      console.error('Error getting user by Telegram ID:', error);
+      return res.status(500).json({ error: 'Server error while getting user' });
+    }
+  } else {
+    // Fall back to session-based auth
+    const userData = req.session?.user;
+    if (!userData) {
+      return res.status(401).json({ error: 'Unauthorized - no user session' });
+    }
+    userId = userData.id;
+  }
+
+  // Validate request body
+  const schema = z.object({
+    eventType: z.enum(['generate', 'share', 'copy', 'view']),
+    details: z.record(z.any()).optional()
+  });
+
+  try {
+    const data = schema.parse(req.body);
+    
+    // Log the event
+    await storage.logReferralActivity({
+      userId,
+      eventType: data.eventType,
+      details: data.details
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error tracking referral event:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid request data', details: error.errors });
+    }
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;

@@ -29,6 +29,26 @@ export function ReferralCard({ className = '', referralInfo, isLoading, error }:
   const referralLink = referralInfo ? 
     `https://t.me/collabroom_test_bot?start=r_${referralInfo.referral_code}` : '';
   
+  // Function to log analytics events
+  const logAnalyticsEvent = async (eventType: 'generate' | 'share' | 'copy' | 'view', details?: Record<string, any>) => {
+    try {
+      await fetch('/api/referrals/track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          eventType,
+          details
+        })
+      });
+      console.log(`Logged referral ${eventType} event`);
+    } catch (err) {
+      console.error(`Failed to log referral ${eventType} event:`, err);
+      // Don't show toast for analytics errors
+    }
+  };
+  
   // Function to copy referral link to clipboard
   const handleCopyLink = async () => {
     if (!referralLink) return;
@@ -36,6 +56,13 @@ export function ReferralCard({ className = '', referralInfo, isLoading, error }:
     setIsCopying(true);
     try {
       await navigator.clipboard.writeText(referralLink);
+      
+      // Log analytics event
+      logAnalyticsEvent('copy', {
+        referral_code: referralInfo?.referral_code,
+        method: 'clipboard'
+      });
+      
       toast({
         title: "Link Copied",
         description: "Referral link copied to clipboard!"
@@ -81,6 +108,13 @@ export function ReferralCard({ className = '', referralInfo, isLoading, error }:
               window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
             }
             
+            // Log analytics event for successful share
+            logAnalyticsEvent('share', {
+              referral_code: referralInfo?.referral_code,
+              method: 'telegram_native',
+              success: true
+            });
+            
             toast({
               title: "Successfully Shared",
               description: "Your referral link has been shared!"
@@ -89,6 +123,13 @@ export function ReferralCard({ className = '', referralInfo, isLoading, error }:
             // Log the share event
             console.log('Referral link shared via Telegram', { code: referralInfo?.referral_code });
           } else {
+            // Log analytics event for canceled share
+            logAnalyticsEvent('share', {
+              referral_code: referralInfo?.referral_code,
+              method: 'telegram_native',
+              success: false,
+              reason: 'user_canceled'
+            });
             console.log('User canceled sharing');
             toast({
               title: "Sharing Canceled",
@@ -103,8 +144,24 @@ export function ReferralCard({ className = '', referralInfo, isLoading, error }:
             try {
               // Try to open a deep link to share via Telegram
               window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join me on The Collab Room!')}`);
+              
+              // Log analytics event
+              logAnalyticsEvent('share', {
+                referral_code: referralInfo?.referral_code,
+                method: 'telegram_deep_link',
+                success: true
+              });
             } catch (linkError) {
               console.error('Error using openTelegramLink:', linkError);
+              
+              // Log the error
+              logAnalyticsEvent('share', {
+                referral_code: referralInfo?.referral_code,
+                method: 'telegram_deep_link',
+                success: false,
+                error: linkError.message
+              });
+              
               // Fallback to clipboard
               handleCopyLink();
             }

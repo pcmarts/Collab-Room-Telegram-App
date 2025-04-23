@@ -1209,6 +1209,37 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  async logReferralActivity(data: {
+    userId: string;
+    eventType: 'generate' | 'share' | 'copy' | 'view';
+    details?: Record<string, any>;
+  }): Promise<void> {
+    try {
+      // Create an activity log entry
+      await db
+        .insert(referral_events)
+        .values({
+          id: crypto.randomUUID(),
+          referrer_id: data.userId,
+          referred_id: null, // No referred user for these events
+          status: 'activity_log', // Special status for analytics
+          created_at: new Date(),
+          details: data.details ? JSON.stringify({
+            event_type: data.eventType,
+            timestamp: new Date().toISOString(),
+            ...data.details
+          }) : JSON.stringify({
+            event_type: data.eventType,
+            timestamp: new Date().toISOString()
+          })
+        });
+    } catch (error) {
+      console.error("Error logging referral activity:", error);
+      // Don't throw error - we don't want analytics to break the app
+      console.error(error);
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
