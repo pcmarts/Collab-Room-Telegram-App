@@ -36,6 +36,7 @@ import MyCollaborations from "@/pages/my-collaborations";
 import Apply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
 import AdminApplications from "@/pages/admin/applications";
+import AdminReferralsPage from "@/pages/admin/referrals";
 import ReferralsPage from "@/pages/referrals";
 // Import filter sub-pages
 import FiltersDashboard from "@/pages/filters/dashboard";
@@ -132,6 +133,7 @@ function Router() {
           <Route path="/admin/dashboard" component={AdminDashboard} />
           <Route path="/admin/users" component={AdminUsers} />
           <Route path="/admin/applications" component={AdminApplications} />
+          <Route path="/admin/referrals" component={AdminReferralsPage} />
 
           {/* Collaboration Routes */}
           <Route path="/create-collaboration-steps" component={CreateCollaborationSteps} />

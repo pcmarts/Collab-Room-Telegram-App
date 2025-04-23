@@ -4,7 +4,7 @@ import { Loader2, Users, Filter, Download } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/page-header';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -119,11 +119,36 @@ export default function AdminReferralsPage() {
     );
   }
   
+  // This disables the default fixed positioning and overflow hidden
+  // so that we can have a normal scrolling container with a scrollbar
+  useEffect(() => {
+    // Save the original style
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalWidth = document.body.style.width;
+    const originalHeight = document.body.style.height;
+
+    // Modify for this page to allow scrolling
+    document.body.style.overflow = "auto";
+    document.body.style.position = "static";
+    document.body.style.width = "auto";
+    document.body.style.height = "auto";
+
+    // Cleanup function to restore original styles when component unmounts
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.width = originalWidth;
+      document.body.style.height = originalHeight;
+    };
+  }, []);
+
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="page-scrollable pb-20">
       <PageHeader
         title="Referral Management"
-        description="Monitor and manage all referrals in the system"
+        subtitle="Monitor and manage all referrals in the system"
+        backUrl="/admin/dashboard"
       />
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
