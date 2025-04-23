@@ -603,17 +603,46 @@ export async function notifyUserApproved(chatId: number) {
  */
 export async function notifyReferrerAboutApproval(referrerId: string, referredUserFirstName: string) {
   try {
+    // Validate input parameters
+    if (!referrerId) {
+      console.error(`[REFERRAL NOTIFICATION] Invalid referrer ID: ${referrerId}`);
+      return false;
+    }
+    
+    if (!referredUserFirstName) {
+      console.warn(`[REFERRAL NOTIFICATION] Missing user first name, using "New user" instead`);
+      referredUserFirstName = "New user";
+    }
+    
     console.log(`[REFERRAL NOTIFICATION] Starting notification process for referrer ${referrerId} about ${referredUserFirstName}`);
     console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Referrer ID type: ${typeof referrerId}`);
     console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Referrer ID value: '${referrerId}'`);
+    
+    // Attempt multiple ways to find the referrer
+    let referrerUser = null;
     
     // Check if the referrer ID is a valid UUID (the ID format in our database)
     const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(referrerId);
     console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Is valid UUID? ${isValidUuid}`);
     
-    if (!isValidUuid) {
-      console.warn(`[REFERRAL NOTIFICATION] Invalid referrer ID format: ${referrerId}. Looking up by Telegram ID instead.`);
-      // Try to find the user by telegram_id instead (in case the referred_by field contains a telegram_id)
+    // Method 1: Try by user.id if it's a valid UUID
+    if (isValidUuid) {
+      const [userById] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, referrerId));
+        
+      if (userById) {
+        console.log(`[REFERRAL NOTIFICATION] Found user by ID: ${userById.id}`);
+        referrerUser = userById;
+      } else {
+        console.warn(`[REFERRAL NOTIFICATION] Could not find user with ID: ${referrerId}, trying alternate lookup methods`);
+      }
+    }
+    
+    // Method 2: Try by Telegram ID
+    if (!referrerUser) {
+      console.warn(`[REFERRAL NOTIFICATION] Looking up by Telegram ID: ${referrerId}`);
       const [userByTelegramId] = await db
         .select()
         .from(users)
@@ -623,12 +652,44 @@ export async function notifyReferrerAboutApproval(referrerId: string, referredUs
       
       if (userByTelegramId) {
         console.log(`[REFERRAL NOTIFICATION] Found user by Telegram ID: ${userByTelegramId.id}`);
-        referrerId = userByTelegramId.id;
+        referrerUser = userByTelegramId;
       } else {
-        console.error(`[REFERRAL NOTIFICATION] Could not find user with Telegram ID: ${referrerId}`);
-        return;
+        console.warn(`[REFERRAL NOTIFICATION] Could not find user with Telegram ID: ${referrerId}, trying alternate lookup methods`);
       }
     }
+    
+    // Method 3: Try by database lookup with a pattern like '%referrerId%'
+    if (!referrerUser) {
+      console.warn(`[REFERRAL NOTIFICATION] Attempting partial matching for user ID or Telegram ID: ${referrerId}`);
+      // This could be risky, but as a last resort for debugging
+      const usersWithSimilarIds = await db
+        .select()
+        .from(users)
+        .where(sql`${users.id}::text LIKE ${'%' + referrerId + '%'} OR ${users.telegram_id} LIKE ${'%' + referrerId + '%'}`);
+        
+      if (usersWithSimilarIds.length > 0) {
+        console.log(`[REFERRAL NOTIFICATION] Found ${usersWithSimilarIds.length} users with similar IDs`);
+        for (const user of usersWithSimilarIds) {
+          console.log(`[REFERRAL NOTIFICATION] Possible match: ID=${user.id}, TelegramID=${user.telegram_id}, Name=${user.first_name}`);
+        }
+        // Use the first match
+        if (usersWithSimilarIds.length === 1) {
+          referrerUser = usersWithSimilarIds[0];
+          console.log(`[REFERRAL NOTIFICATION] Using user with ID: ${referrerUser.id} (Telegram ID: ${referrerUser.telegram_id})`);
+        }
+      } else {
+        console.error(`[REFERRAL NOTIFICATION] Could not find any users with IDs similar to: ${referrerId}`);
+      }
+    }
+    
+    // If we still haven't found a user, fail the notification
+    if (!referrerUser) {
+      console.error(`[REFERRAL NOTIFICATION] Failed to find referrer after multiple lookup attempts. Aborting notification.`);
+      return false;
+    }
+    
+    // Use the found user's ID as the referrer ID for the remaining operations
+    referrerId = referrerUser.id;
     
     // Get referrer details
     const [referrer] = await db
@@ -710,63 +771,88 @@ async function notifyReferrerWithRecord(referrer: any, referralRecord: any, refe
     console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Referral Record: ${JSON.stringify(referralRecord)}`);
     console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Referred User First Name: ${referredUserFirstName}`);
 
+    // Validate all required fields are present
+    if (!referrer || !referrer.telegram_id) {
+      console.error(`[REFERRAL NOTIFICATION] Missing referrer data: ${JSON.stringify(referrer)}`);
+      return false;
+    }
+
+    if (!referralRecord || !referralRecord.referral_code) {
+      console.error(`[REFERRAL NOTIFICATION] Missing referral record data: ${JSON.stringify(referralRecord)}`);
+      return false;
+    }
+
     // Calculate remaining referrals
-    const usedReferrals = referralRecord.total_used;
-    const totalReferrals = referralRecord.total_available;
+    const usedReferrals = referralRecord.total_used || 0;
+    const totalReferrals = referralRecord.total_available || 3;
     const remainingReferrals = Math.max(0, totalReferrals - usedReferrals);
 
-    // Create share button with referral code
-    const keyboard = {
-      inline_keyboard: [
-        [
-          {
-            text: "🚀 Invite More Friends",
-            web_app: { url: `${WEBAPP_URL}/referrals` },
-          },
+    console.log(`[REFERRAL NOTIFICATION] DEBUGGING - About to send message to Telegram ID: ${referrer.telegram_id}`);
+
+    try {
+      // Create share button with referral code
+      const keyboard = {
+        inline_keyboard: [
+          [
+            {
+              text: "🚀 Invite More Friends",
+              web_app: { url: `${WEBAPP_URL}/referrals` },
+            },
+          ],
+          [
+            {
+              text: "📋 Copy Referral Code",
+              callback_data: `copy_referral_code_${referralRecord.referral_code}`,
+            },
+          ],
         ],
-        [
-          {
-            text: "📋 Copy Referral Code",
-            callback_data: `copy_referral_code_${referralRecord.referral_code}`,
-          },
-        ],
-      ],
-    };
+      };
 
-    // Send notification message
-    await bot.sendMessage(
-      parseInt(referrer.telegram_id),
-      `🎉 <b>Referral Success!</b>\n\n` +
-        `Great news! <b>${referredUserFirstName}</b> whom you referred has been approved and now has full access to Collab Room.\n\n` +
-        `<b>Your Referral Stats:</b>\n` +
-        `• ${usedReferrals}/${totalReferrals} referrals used\n` +
-        `• ${remainingReferrals} referral${remainingReferrals !== 1 ? 's' : ''} remaining\n\n` +
-        `Share your unique code to invite more people:`,
-      { 
-        parse_mode: "HTML",
-        reply_markup: keyboard 
-      },
-    );
+      // Send notification message
+      const telegramId = parseInt(referrer.telegram_id);
+      console.log(`[REFERRAL NOTIFICATION] Sending notification to Telegram ID: ${telegramId}`);
+      
+      await bot.sendMessage(
+        telegramId,
+        `🎉 <b>Referral Success!</b>\n\n` +
+          `Great news! <b>${referredUserFirstName}</b> whom you referred has been approved and now has full access to Collab Room.\n\n` +
+          `<b>Your Referral Stats:</b>\n` +
+          `• ${usedReferrals}/${totalReferrals} referrals used\n` +
+          `• ${remainingReferrals} referral${remainingReferrals !== 1 ? 's' : ''} remaining\n\n` +
+          `Share your unique code to invite more people:`,
+        { 
+          parse_mode: "HTML",
+          reply_markup: keyboard 
+        },
+      );
 
-    // Send the referral code as a separate message for easy copying
-    await bot.sendMessage(
-      parseInt(referrer.telegram_id),
-      `<code>${referralRecord.referral_code}</code>`,
-      { parse_mode: "HTML" }
-    );
+      // Send the referral code as a separate message for easy copying
+      await bot.sendMessage(
+        telegramId,
+        `<code>${referralRecord.referral_code}</code>`,
+        { parse_mode: "HTML" }
+      );
 
-    console.log(`Referral success notification sent to referrer ${referrer.id} (${referrer.first_name})`);
+      console.log(`[REFERRAL NOTIFICATION] Success! Notification sent to referrer ${referrer.id} (${referrer.first_name})`);
 
-    // Log the notification
-    logAdminMessage(
-      "SYSTEM",
-      "REFERRAL_SUCCESS_NOTIFICATION",
-      `Sent referral success notification to ${referrer.first_name} for referring ${referredUserFirstName}`,
-      `Referral notification sent`,
-    );
+      // Log the notification
+      logAdminMessage(
+        "SYSTEM",
+        "REFERRAL_SUCCESS_NOTIFICATION",
+        `Sent referral success notification to ${referrer.first_name} for referring ${referredUserFirstName}`,
+        `Referral notification sent`,
+      );
+      
+      return true;
+    } catch (telegramError) {
+      console.error(`[REFERRAL NOTIFICATION] Telegram API error sending notification:`, telegramError);
+      // Instead of throwing, we return false to indicate failure
+      return false;
+    }
   } catch (error) {
     console.error("[REFERRAL NOTIFICATION] Failed to send referral success notification:", error);
-    throw error; // Propagate the error for better debugging
+    // Don't throw the error - we don't want to block the approval process
+    return false;
   }
 }
 
@@ -1530,6 +1616,34 @@ async function handleApproveUserCallback(
         console.log(`[REFERRAL] User ${telegramIdToApprove} was referred by ${userToApprove.referred_by}, sending notification`);
         console.log(`[REFERRAL] User's referred_by field: ${userToApprove.referred_by}, typeof=${typeof userToApprove.referred_by}`);
         console.log(`[REFERRAL] User's ID field: ${userToApprove.id}, typeof=${typeof userToApprove.id}`);
+        
+        // Log more information about the referrer to help debug the notification issues
+        try {
+          const [referrerUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, userToApprove.referred_by));
+            
+          if (referrerUser) {
+            console.log(`[REFERRAL] Found referrer user: ID=${referrerUser.id}, Name=${referrerUser.first_name}, TelegramID=${referrerUser.telegram_id}`);
+          } else {
+            console.log(`[REFERRAL] Could not find referrer with user ID ${userToApprove.referred_by}`);
+            
+            // Try to find referrer by Telegram ID if the ID lookup fails
+            const [referrerByTelegramId] = await db
+              .select()
+              .from(users)
+              .where(eq(users.telegram_id, userToApprove.referred_by));
+              
+            if (referrerByTelegramId) {
+              console.log(`[REFERRAL] Found referrer by Telegram ID: ${referrerByTelegramId.id}`);
+            } else {
+              console.log(`[REFERRAL] Could not find referrer by Telegram ID either: ${userToApprove.referred_by}`);
+            }
+          }
+        } catch (lookupError) {
+          console.error(`[REFERRAL] Error looking up referrer details: ${lookupError}`);
+        }
         
         // Create or update a referral event record
         try {
