@@ -10,7 +10,7 @@ import {
   user_referrals,
   referral_events,
 } from "@shared/schema";
-import { eq, sql, inArray } from "drizzle-orm";
+import { eq, sql, inArray, and } from "drizzle-orm";
 import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
@@ -604,9 +604,12 @@ export async function notifyUserApproved(chatId: number) {
 export async function notifyReferrerAboutApproval(referrerId: string, referredUserFirstName: string) {
   try {
     console.log(`[REFERRAL NOTIFICATION] Starting notification process for referrer ${referrerId} about ${referredUserFirstName}`);
+    console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Referrer ID type: ${typeof referrerId}`);
+    console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Referrer ID value: '${referrerId}'`);
     
     // Check if the referrer ID is a valid UUID (the ID format in our database)
     const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(referrerId);
+    console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Is valid UUID? ${isValidUuid}`);
     
     if (!isValidUuid) {
       console.warn(`[REFERRAL NOTIFICATION] Invalid referrer ID format: ${referrerId}. Looking up by Telegram ID instead.`);
@@ -615,6 +618,8 @@ export async function notifyReferrerAboutApproval(referrerId: string, referredUs
         .select()
         .from(users)
         .where(eq(users.telegram_id, referrerId));
+      
+      console.log(`[REFERRAL NOTIFICATION] DEBUGGING - User lookup by Telegram ID result: ${JSON.stringify(userByTelegramId || 'Not found')}`);
       
       if (userByTelegramId) {
         console.log(`[REFERRAL NOTIFICATION] Found user by Telegram ID: ${userByTelegramId.id}`);
@@ -700,6 +705,10 @@ export async function notifyReferrerAboutApproval(referrerId: string, referredUs
 // Helper function to send the actual notification
 async function notifyReferrerWithRecord(referrer: any, referralRecord: any, referredUserFirstName: string) {
   try {
+    console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Inside notifyReferrerWithRecord`);
+    console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Referrer: ${JSON.stringify(referrer)}`);
+    console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Referral Record: ${JSON.stringify(referralRecord)}`);
+    console.log(`[REFERRAL NOTIFICATION] DEBUGGING - Referred User First Name: ${referredUserFirstName}`);
 
     // Calculate remaining referrals
     const usedReferrals = referralRecord.total_used;
@@ -1519,6 +1528,8 @@ async function handleApproveUserCallback(
     if (userToApprove.referred_by) {
       try {
         console.log(`[REFERRAL] User ${telegramIdToApprove} was referred by ${userToApprove.referred_by}, sending notification`);
+        console.log(`[REFERRAL] User's referred_by field: ${userToApprove.referred_by}, typeof=${typeof userToApprove.referred_by}`);
+        console.log(`[REFERRAL] User's ID field: ${userToApprove.id}, typeof=${typeof userToApprove.id}`);
         
         // Create or update a referral event record
         try {
