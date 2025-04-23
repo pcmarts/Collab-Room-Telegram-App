@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,6 +28,18 @@ export function ReferralCard({ className = '', referralInfo, isLoading, error }:
   const baseUrl = window.location.origin;
   const referralLink = referralInfo ? 
     `https://t.me/collabroom_test_bot?start=r_${referralInfo.referral_code}` : '';
+    
+  // Log view event when component mounts and has referral data
+  useEffect(() => {
+    if (!isLoading && referralInfo && referralInfo.referral_code) {
+      logAnalyticsEvent('view', {
+        component: 'ReferralCard',
+        referral_code: referralInfo.referral_code,
+        total_used: referralInfo.total_used,
+        total_available: referralInfo.total_available
+      });
+    }
+  }, [isLoading, referralInfo]);
   
   // Function to log analytics events
   const logAnalyticsEvent = async (eventType: 'generate' | 'share' | 'copy' | 'view', details?: Record<string, any>) => {

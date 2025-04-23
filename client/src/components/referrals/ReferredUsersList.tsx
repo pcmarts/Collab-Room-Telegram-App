@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface ReferredUser {
   id: string;
@@ -17,7 +18,35 @@ interface ReferredUsersListProps {
   isLoading?: boolean;
 }
 
+// Function to log analytics events
+const logAnalyticsEvent = async (eventType: 'generate' | 'share' | 'copy' | 'view', details?: Record<string, any>) => {
+  try {
+    await fetch('/api/referrals/track', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        eventType,
+        details
+      })
+    });
+    console.log(`Logged referral ${eventType} event`);
+  } catch (err) {
+    console.error(`Failed to log referral ${eventType} event:`, err);
+  }
+};
+
 export function ReferredUsersList({ className = '', users = [], isLoading = false }: ReferredUsersListProps) {
+  // Log view event when component mounts
+  useEffect(() => {
+    if (!isLoading && users) {
+      logAnalyticsEvent('view', {
+        component: 'ReferredUsersList',
+        num_users: users.length
+      });
+    }
+  }, [isLoading, users]);
   if (isLoading) {
     return (
       <Card className={`bg-gray-950 text-white border-gray-800 ${className}`}>

@@ -3,15 +3,26 @@ import React from 'react';
 interface PageHeaderProps {
   title: string;
   description?: string;
+  actions?: React.ReactNode;
   className?: string;
 }
 
-export function PageHeader({ title, description, className = '' }: PageHeaderProps) {
+export function PageHeader({ 
+  title, 
+  description, 
+  actions, 
+  className = '' 
+}: PageHeaderProps) {
   return (
-    <div className={`space-y-2 ${className}`}>
-      <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+    <div className={`mb-6 ${className}`}>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        {actions && <div className="flex items-center space-x-2">{actions}</div>}
+      </div>
       {description && (
-        <p className="text-muted-foreground text-sm">{description}</p>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {description}
+        </p>
       )}
     </div>
   );
