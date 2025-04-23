@@ -1244,10 +1244,106 @@ describe('Referral Service', () => {
       
       // Format should be telegramId_randomSuffix
       expect(code).toMatch(/^123456789_[a-f0-9]{8}$/);
+      
+      // Ensure URL-safe characters only
+      expect(code).not.toMatch(/[^a-zA-Z0-9_-]/);
     });
     
     it('should generate unique codes for multiple calls', () => {
       const telegramId = '123456789';
+      
+      // Test database indexing performance
+      it('should efficiently look up referral codes', async () => {
+        // Create a test that measures query performance with indexed fields
+      });
+    });
+  });
+});
+```
+
+### Database Testing
+
+Test referral table indexing for performance:
+
+```typescript
+// tests/referral-db.test.ts
+import { db } from '../server/db';
+import { user_referrals, referral_events } from '@shared/schema';
+import { eq } from 'drizzle-orm';
+
+describe('Referral Database Performance', () => {
+  it('should efficiently query referral codes with indexes', async () => {
+    // Setup: Insert test data
+    const startTime = performance.now();
+    
+    // Test lookup by indexed referral_code field
+    await db.select()
+      .from(user_referrals)
+      .where(eq(user_referrals.referral_code, 'test_12345678'))
+      .limit(1);
+      
+    const endTime = performance.now();
+    const queryTime = endTime - startTime;
+    
+    // Query should be fast due to indexing
+    expect(queryTime).toBeLessThan(10); // less than 10ms
+  });
+  
+  it('should handle edge case when user has used all referrals', async () => {
+    // Test the error handling when total_used >= total_available
+  });
+});
+```
+
+### Error Handling Tests
+
+Test proper error handling:
+
+```typescript
+// tests/referral-errors.test.ts
+import { verifyReferralCode, applyReferral } from '../server/services/referral-service';
+
+describe('Referral Error Handling', () => {
+  it('should properly handle and report referral limit errors', async () => {
+    // Setup a test user with all referrals used
+    
+    // Attempt to apply a new referral
+    const result = await verifyReferralCode('test_12345678', 'new_user_id');
+    
+    // Should return appropriate error
+    expect(result.valid).toBe(false);
+    expect(result.error).toBe('NO_AVAILABLE_REFERRALS');
+    expect(result.message).toContain('reached its limit');
+  });
+  
+  it('should handle status transition from pending to completed', async () => {
+    // Test the pending status functionality
+  });
+});
+```
+
+### Integration Tests
+
+Test the complete referral flow:
+
+```typescript
+// tests/referral-flow.test.ts
+import request from 'supertest';
+import app from '../server/index';
+
+describe('Referral Flow Integration Tests', () => {
+  it('should complete a full referral cycle', async () => {
+    // 1. Generate referral code for user A
+    // 2. User B applies referral code
+    // 3. Verify user B is approved
+    // 4. Verify user A's used count is incremented
+    // 5. Verify relationship is recorded
+  });
+  
+  it('should handle pending status appropriately', async () => {
+    // Test the entire flow with a pending status before completion
+  });
+});
       const code1 = generateReferralCode(telegramId);
       const code2 = generateReferralCode(telegramId);
       

@@ -70,8 +70,8 @@ Implement a referral system that:
 #### Required Database Tables
 - **user_referrals**: Tracks referral codes and limits for each user
   - `id` (UUID, primary key)
-  - `user_id` (UUID, foreign key to users table)
-  - `referral_code` (string, unique)
+  - `user_id` (UUID, foreign key to users table, indexed)
+  - `referral_code` (string, unique, indexed)
   - `total_available` (integer, default 3)
   - `total_used` (integer, default 0)
   - `created_at` (timestamp)
@@ -79,16 +79,16 @@ Implement a referral system that:
 
 - **referral_events**: Tracks individual referral relationships
   - `id` (UUID, primary key)
-  - `referrer_id` (UUID, foreign key to users table)
-  - `referred_user_id` (UUID, foreign key to users table)
+  - `referrer_id` (UUID, foreign key to users table, indexed)
+  - `referred_user_id` (UUID, foreign key to users table, indexed)
   - `status` (string, enum: pending, completed, expired)
   - `created_at` (timestamp)
   - `completed_at` (timestamp, nullable)
 
 - **referral_notifications**: Tracks delivery status of referral-related notifications
   - `id` (UUID, primary key)
-  - `referral_event_id` (UUID, foreign key to referral_events table)
-  - `recipient_id` (UUID, foreign key to users table)
+  - `referral_event_id` (UUID, foreign key to referral_events table, indexed)
+  - `recipient_id` (UUID, foreign key to users table, indexed)
   - `notification_type` (string, enum: referral_received, referral_completed, referral_limit_reached)
   - `status` (string, enum: queued, sent, delivered, failed)
   - `telegram_message_id` (string, nullable)
@@ -102,6 +102,8 @@ Implement a referral system that:
 #### Referral Code Format
 - Format: `${telegram_id}_${randomString(8)}`
 - Example: `123456789_a1b2c3d4`
+- Must use URL-safe characters only (alphanumeric, underscores, dashes)
+- No special characters that would require URL encoding
 
 ### 3.2 API Requirements
 
@@ -304,14 +306,22 @@ Implement a referral system that:
 
 #### Performance
 - Add caching for frequently accessed referral data
-- Monitor database query performance
+- Monitor database query performance 
 - Optimize for mobile network conditions
+- Ensure proper indexing on all lookup fields (referral_code, user_id, etc.)
+- Implement batching for bulk operations
 
 #### Security
 - Validate all inputs server-side
 - Protect against referral system abuse
 - Implement rate limiting
 - Secure storage of referral relationships
+
+#### Error Handling
+- Provide clear error messages when referral limits are reached
+- Implement proper error logging for failed referral operations
+- Create specific error codes for common issues (invalid code, self-referral, etc.)
+- Handle edge cases gracefully with user-friendly messages
 
 ### 5.3 Analytics & Monitoring
 
