@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { User, MessageSquare, FolderPlus } from "lucide-react"
+import { User, MessageSquare, FolderPlus, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DiscoveryIcon } from "@/components/icons/DiscoveryIcon"
 import { Badge } from "@/components/ui/badge"
@@ -44,6 +44,11 @@ const BottomNavigation = () => {
       href: "/my-collaborations",
     },
     {
+      label: "Referrals",
+      icon: Users,
+      href: "/referrals",
+    },
+    {
       label: "My Account",
       icon: User,
       href: "/dashboard",
@@ -58,7 +63,7 @@ const BottomNavigation = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 z-50 w-full h-24 bg-background border-t border-border pb-6">
-      <div className="grid h-full grid-cols-4 mx-auto">
+      <div className="grid h-full grid-cols-5 mx-auto">
         {navItems.map((item) => (
           <Link
             key={item.href}
