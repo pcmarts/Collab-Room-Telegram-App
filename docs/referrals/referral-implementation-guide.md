@@ -1224,6 +1224,35 @@ async function processUserApplication(userData: any) {
 
 ## 5. Testing Guidelines
 
+### Integration with Existing Systems
+
+When implementing the referral system, consider these integration points with existing components:
+
+1. **Application Form Integration**
+   - Update validation in the existing referral code field
+   - Connect the application form submission to the referral verification API
+   - Test the integration with existing form validation
+
+2. **User Profile Integration**
+   - Add referral tab to the user profile page
+   - Respect existing profile update flows
+   - Test that profile edits don't break referral relationships
+
+3. **Notification System Integration**
+   - Extend the existing notification system with referral event types
+   - Reuse notification templates and delivery mechanisms
+   - Test notification delivery for all referral events
+
+4. **Admin Interface Integration**
+   - Add referral statistics to the admin dashboard
+   - Integrate with existing user management flows
+   - Test admin tools with various user permission levels
+
+5. **Analytics Integration**
+   - Add referral-specific event tracking to existing analytics
+   - Use consistent event naming patterns
+   - Test analytics data flow from referral events
+
 ### Unit Tests
 
 Create tests for referral code generation and validation:

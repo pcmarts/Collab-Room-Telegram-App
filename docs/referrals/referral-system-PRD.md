@@ -449,6 +449,65 @@ Implement a referral system that:
 - A/B testing of different referral messaging
 - Advanced referral program with tiered rewards
 
+## 12. Integration with Existing Systems
+
+### 12.1 Application Form Updates
+- Leverage the existing referral code field in the application form
+- Enhance validation to ensure code format matches referral system requirements
+- Update form submission logic to process referral codes through the new referral system
+- Update success messaging to acknowledge referral usage
+
+### 12.2 Profile Page Updates
+- Add "Referrals" tab to user profile page
+- Ensure profile edit operations preserve referral relationships
+- Add referral statistics to admin user view
+- Include referral information in user exports
+
+### 12.3 Notification System Updates
+- Add referral notification type to user notification preferences
+- Create new Telegram message templates for:
+  - "Your referral code was used"
+  - "You have been referred by [user]"
+  - "Your referred friend has joined"
+- Update notification tracking to include referral-specific events
+
+### 12.4 Admin Interface Updates
+- Add "Referrals" section to admin dashboard with:
+  - Total referrals generated
+  - Conversion rate (referral links → signups)
+  - Top referrers list
+- Add referral source indication to user approval queue
+- Create admin tools to adjust referral limits for specific users
+
+### 12.5 Analytics Integration
+- Update user acquisition source tracking to include "referral" as a source
+- Tag all users acquired through referrals in analytics systems
+- Extend conversion funnels to include referral-specific paths
+- Create referral performance reports
+
+### 12.6 Security Considerations
+- Apply basic rate limiting rules to referral endpoints:
+  - Maximum 5 referral code verification attempts per minute per user
+- Implement simple referral validation rules:
+  - Prevent self-referrals
+  - Validate referral code format
+  - Check referral limits
+
+### 12.7 Database Migration Strategy
+- Phase 1: Create new tables without foreign key constraints
+- Phase 2: Populate default values for existing users
+- Phase 3: Add foreign key constraints and indexes
+- Include rollback plan for each migration step
+- Schedule migrations during low-traffic periods
+- Add database health monitoring during and after migrations
+
+### 12.8 Mobile-Specific Considerations
+- Ensure referral code copy works with mobile clipboard
+- Use native share sheet on mobile devices when available
+- Optimize referral card display for smaller screens
+- Test referral flows on various mobile device sizes
+- Implement mobile-specific haptic feedback patterns
+
 ## 10. Implementation Patterns
 
 ### 10.1 Telegram Integration Patterns
