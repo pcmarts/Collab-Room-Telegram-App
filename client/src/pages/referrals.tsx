@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useReferrals } from '@/hooks/use-referrals';
+import { useReferralCelebration } from '@/hooks/use-referral-celebration';
 import { ReferralCard } from '@/components/referrals/ReferralCard';
 import { ReferredUsersList } from '@/components/referrals/ReferredUsersList';
 import { ReferralInfoPanel } from '@/components/referrals/ReferralInfoPanel';
+import { ReferralSuccessCelebration } from '@/components/referrals/ReferralSuccessCelebration';
 import { PageHeader } from '@/components/page-header';
 import { Loader2 } from 'lucide-react';
 
@@ -18,6 +20,7 @@ const useProfile = () => {
 export default function ReferralsPage() {
   const { isLoading: isProfileLoading } = useProfile();
   const { referralInfo, referredUsers, isLoading, isError, error, refetch } = useReferrals();
+  const { showCelebration, newUser, closeCelebration } = useReferralCelebration();
   
   if (isProfileLoading || isLoading) {
     return (
@@ -51,6 +54,15 @@ export default function ReferralsPage() {
           isLoading={isLoading}
         />
       </div>
+
+      {/* Success celebration dialog */}
+      {newUser && (
+        <ReferralSuccessCelebration 
+          isOpen={showCelebration}
+          onClose={closeCelebration}
+          userName={`${newUser.first_name} ${newUser.last_name || ''}`}
+        />
+      )}
     </div>
   );
 }
