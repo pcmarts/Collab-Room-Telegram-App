@@ -27,13 +27,30 @@ const generateReferralCode = (): string => {
  * If they don't have one, generate a new one
  */
 router.get('/my-code', async (req: Request, res: Response) => {
-  // Check if user is authenticated
-  const userData = req.session?.passport?.user;
-  if (!userData) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  // Try to get user from Telegram first
+  const telegramId = (req as any).telegramData?.id;
+  let userId: string;
+  
+  if (telegramId) {
+    try {
+      // Get user by telegram ID
+      const user = await storage.getUserByTelegramId(telegramId);
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized - user not found for provided Telegram ID' });
+      }
+      userId = user.id;
+    } catch (error) {
+      console.error('Error getting user by Telegram ID:', error);
+      return res.status(500).json({ error: 'Server error while getting user' });
+    }
+  } else {
+    // Fall back to session-based auth
+    const userData = req.session?.user;
+    if (!userData) {
+      return res.status(401).json({ error: 'Unauthorized - no user session' });
+    }
+    userId = userData.id;
   }
-
-  const userId = userData.id;
   try {
     // Get user data
     const user = await storage.getUser(userId);
@@ -71,13 +88,30 @@ router.get('/my-code', async (req: Request, res: Response) => {
  * Get users who were referred by the current user
  */
 router.get('/my-referrals', async (req: Request, res: Response) => {
-  // Check if user is authenticated
-  const userData = req.session?.passport?.user;
-  if (!userData) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  // Try to get user from Telegram first
+  const telegramId = (req as any).telegramData?.id;
+  let userId: string;
+  
+  if (telegramId) {
+    try {
+      // Get user by telegram ID
+      const user = await storage.getUserByTelegramId(telegramId);
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized - user not found for provided Telegram ID' });
+      }
+      userId = user.id;
+    } catch (error) {
+      console.error('Error getting user by Telegram ID:', error);
+      return res.status(500).json({ error: 'Server error while getting user' });
+    }
+  } else {
+    // Fall back to session-based auth
+    const userData = req.session?.user;
+    if (!userData) {
+      return res.status(401).json({ error: 'Unauthorized - no user session' });
+    }
+    userId = userData.id;
   }
-
-  const userId = userData.id;
   try {
     // Get referred users
     const referredUsers = await storage.getReferredUsers(userId);
@@ -152,10 +186,30 @@ router.post('/use-code', async (req: Request, res: Response) => {
   try {
     const data = schema.parse(req.body);
     
-    // Get applying user ID (either from request body or session)
-    const userId = data.user_id || req.session?.passport?.user?.id;
+    // Get applying user ID (either from request body, Telegram, or session)
+    let userId = data.user_id;
+    
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      // Try to get user from Telegram
+      const telegramId = (req as any).telegramData?.id;
+      if (telegramId) {
+        try {
+          const user = await storage.getUserByTelegramId(telegramId);
+          if (user) {
+            userId = user.id;
+          }
+        } catch (error) {
+          console.error('Error getting user by Telegram ID:', error);
+          return res.status(500).json({ error: 'Server error while getting user' });
+        }
+      } else {
+        // Fall back to session-based auth
+        userId = req.session?.user?.id;
+      }
+    }
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized - could not determine user' });
     }
 
     // Find user with this referral code

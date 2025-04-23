@@ -17,6 +17,7 @@ import { z } from 'zod';
 import { db } from "./db";
 import { eq, and, or, inArray, isNull, not, desc, sql, ilike, lt } from "drizzle-orm";
 import { notifyMatchCreated, notifyNewCollabRequest } from "./telegram";
+import crypto from 'crypto';
 
 export interface IStorage {
   // User methods
@@ -1112,6 +1113,101 @@ export class DatabaseStorage implements IStorage {
       .from(referral_events)
       .where(eq(referral_events.referrer_id, userId))
       .orderBy(desc(referral_events.created_at));
+  }
+
+  // Additional referral methods required by the API routes
+  
+  async updateUserReferralCode(userId: string, referralCode: string): Promise<User | undefined> {
+    try {
+      const [updatedUser] = await db
+        .update(users)
+        .set({ referral_code: referralCode })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error("Error updating user referral code:", error);
+      throw error;
+    }
+  }
+
+  async getUserByReferralCode(code: string): Promise<User | undefined> {
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.referral_code, code));
+      return user;
+    } catch (error) {
+      console.error("Error getting user by referral code:", error);
+      throw error;
+    }
+  }
+
+  async getReferredUsers(referrerId: string): Promise<any[]> {
+    try {
+      // Find users who were referred by this user
+      const referredUsers = await db
+        .select({
+          id: users.id,
+          first_name: users.first_name,
+          last_name: users.last_name,
+          handle: users.handle,
+          created_at: users.created_at
+        })
+        .from(users)
+        .where(eq(users.referred_by, referrerId));
+        
+      return referredUsers;
+    } catch (error) {
+      console.error("Error getting referred users:", error);
+      throw error;
+    }
+  }
+
+  async applyReferral(userId: string, referrerId: string): Promise<void> {
+    try {
+      // Start a transaction to ensure data consistency
+      await db.transaction(async (tx) => {
+        // 1. Update the user with the referrer ID
+        await tx
+          .update(users)
+          .set({ 
+            referred_by: referrerId,
+            // Auto-approve referred users
+            status: 'approved',
+            approved_at: new Date()
+          })
+          .where(eq(users.id, userId));
+          
+        // 2. Create a referral event to track this referral
+        await tx
+          .insert(referral_events)
+          .values({
+            id: crypto.randomUUID(),
+            referrer_id: referrerId,
+            referred_id: userId,
+            status: 'completed',
+            created_at: new Date(),
+            completed_at: new Date()
+          });
+      });
+    } catch (error) {
+      console.error("Error applying referral:", error);
+      throw error;
+    }
+  }
+
+  async getReferralEvents(): Promise<ReferralEvent[]> {
+    try {
+      return db
+        .select()
+        .from(referral_events)
+        .orderBy(desc(referral_events.created_at));
+    } catch (error) {
+      console.error("Error getting all referral events:", error);
+      throw error;
+    }
   }
 }
 
