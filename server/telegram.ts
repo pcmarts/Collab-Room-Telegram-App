@@ -240,37 +240,53 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
       console.log(`[REFERRAL] Found referral code: ${referralCode}`);
       
       // Look up the referrer by referral code
-      const [referrerUser] = await db
-        .select({
-          id: users.id,
-          first_name: users.first_name,
-          last_name: users.last_name,
-          company_id: users.company_id
-        })
-        .from(users)
-        .where(eq(users.referral_code, referralCode));
+      // Parse the telegram_id from the referral code (format: telegram_id_random_string)
+      // Ensure referralCode contains at least one underscore
+      if (referralCode && referralCode.includes('_')) {
+        const telegramIdFromCode = referralCode.split('_')[0];
+        console.log(`[REFERRAL] Extracted Telegram ID from code: ${telegramIdFromCode}`);
       
-      if (referrerUser) {
-        // If found, get company info
-        const [company] = referrerUser.company_id ? 
-          await db
-            .select({
-              name: companies.name
-            })
-            .from(companies)
-            .where(eq(companies.id, referrerUser.company_id)) : 
-          [{ name: null }];
-            
-        referrerDetails = {
-          id: referrerUser.id,
-          first_name: referrerUser.first_name,
-          last_name: referrerUser.last_name || '',
-          company_name: company?.name || null
-        };
+        // First try to look up user by the embedded telegram_id in the code
+        const [referrerUser] = await db
+          .select({
+            id: users.id,
+            first_name: users.first_name,
+            last_name: users.last_name,
+            company_id: users.company_id
+          })
+          .from(users)
+          .where(eq(users.telegram_id, telegramIdFromCode));
         
-        console.log(`[REFERRAL] Found referrer: ${referrerDetails.first_name} ${referrerDetails.last_name}`);
+        if (referrerUser) {
+          // If found, get company info
+          let companyName = null;
+          
+          if (referrerUser.company_id) {
+            const companyResults = await db
+              .select({
+                name: companies.name
+              })
+              .from(companies)
+              .where(eq(companies.id, referrerUser.company_id));
+              
+            if (companyResults && companyResults.length > 0) {
+              companyName = companyResults[0].name;
+            }
+          }
+              
+          referrerDetails = {
+            id: referrerUser.id,
+            first_name: referrerUser.first_name,
+            last_name: referrerUser.last_name || '',
+            company_name: companyName
+          };
+          
+          console.log(`[REFERRAL] Found referrer: ${referrerDetails.first_name} ${referrerDetails.last_name}`);
+        } else {
+          console.log(`[REFERRAL] Invalid referral code: ${referralCode}`);
+        }
       } else {
-        console.log(`[REFERRAL] Invalid referral code: ${referralCode}`);
+        console.log(`[REFERRAL] Referral code doesn't match expected format with underscore: ${referralCode}`);
       }
     }
 
@@ -301,9 +317,17 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
       };
       
       // Customize welcome message for referred users
-      if (referrerDetails) {
-        const referrerName = `${referrerDetails.first_name} ${referrerDetails.last_name}`.trim();
-        const companyPart = referrerDetails.company_name ? ` from ${referrerDetails.company_name}` : '';
+      if (referrerDetails !== null) {
+        // Type assertion to ensure TypeScript knows referrerDetails is not null here
+        const details = referrerDetails as {
+          id: string;
+          first_name: string;
+          last_name: string;
+          company_name: string | null;
+        };
+        
+        const referrerName = `${details.first_name} ${details.last_name}`.trim();
+        const companyPart = details.company_name ? ` from ${details.company_name}` : '';
         
         welcomeMessage =
           `🎉 Congratulations! You've been referred by ${referrerName}${companyPart}.\n\n` +
