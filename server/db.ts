@@ -1,26 +1,15 @@
-import pg from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
+import ws from "ws";
 import * as schema from "@shared/schema";
-import { config } from "../shared/config";
 
-const { Pool } = pg;
+neonConfig.webSocketConstructor = ws;
 
-// Re-export the schema tables
-export * from "@shared/schema";
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?",
+  );
+}
 
-// Create a PostgreSQL connection pool with connection retries and error handling
-export const pool = new Pool({
-  connectionString: config.DATABASE_URL,
-  ssl: config.NODE_ENV === 'production',
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000 // Increased timeout for better reliability
-});
-
-// Add error handler to prevent pool crashes
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle database client', err);
-});
-
-// Create the Drizzle ORM instance with the schema
-export const db = drizzle(pool, { schema });
+export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export const db = drizzle({ client: pool, schema });
