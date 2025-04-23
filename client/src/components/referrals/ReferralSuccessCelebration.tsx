@@ -74,15 +74,29 @@ const ReferralSuccessCelebration = ({
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         
-        // Using Telegram's native share dialog as specified in the PRD
-        // Format: t.me/share/url?url=URL&text=TEXT
-        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareableLink)}&text=${encodeURIComponent(messageText)}`;
-        
-        // For Telegram WebApp, we need to use the appropriate method to open external links
-        if (typeof tg.openLink === 'function') {
+        // Special handling for native Telegram sharing - this is the right method to use!
+        // We need to invoke the sharing menu through the supported API
+        if (tg.isVersionAtLeast && tg.isVersionAtLeast('6.1')) {
+          // Direct method to share using built-in share URL format
+          // This is the core functionality we need - using proper Telegram URL scheme
+          const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareableLink)}&text=${encodeURIComponent(messageText)}`;
+          
           // This will open Telegram's native share dialog
+          tg.openTelegramLink(shareUrl);
+          
+          // Close the dialog
+          setTimeout(() => onOpenChange(false), 500);
+          return;
+        } else {
+          // Fallback for older Telegram versions
+          // Direct Telegram share URL handling
+          const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareableLink)}&text=${encodeURIComponent(messageText)}`;
+          
+          // For older Telegram WebApp versions
           tg.openLink(shareUrl);
-          onOpenChange(false);
+          
+          // Close the dialog
+          setTimeout(() => onOpenChange(false), 500);
           return;
         }
       }
@@ -111,7 +125,7 @@ const ReferralSuccessCelebration = ({
     } catch (error) {
       console.error('Share error:', error);
       
-      // Fallback to clipboard copying when sharing API isn't available (as specified in PRD)
+      // Fallback to clipboard copying when sharing API isn't available
       try {
         const fullMessage = `Hey, I think you should check out Collab Room! ${shareableLink}`;
         await navigator.clipboard.writeText(fullMessage);
@@ -119,6 +133,9 @@ const ReferralSuccessCelebration = ({
           title: 'Link copied to clipboard',
           description: 'Share this message with your friends.',
         });
+        
+        // Close the dialog
+        onOpenChange(false);
       } catch (clipboardError) {
         toast({
           title: 'Share failed',

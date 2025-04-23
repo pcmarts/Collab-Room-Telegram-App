@@ -90,13 +90,40 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         
-        // Using Telegram's native share dialog as specified in the PRD
-        // Format: t.me/share/url?url=URL&text=TEXT
-        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralInfo.shareable_link)}&text=${encodeURIComponent(messageText)}`;
-        
-        // For Telegram WebApp, we need to use the appropriate method to open external links
-        if (typeof tg.openLink === 'function') {
-          // This will open Telegram's native share dialog
+        // Special handling for native Telegram sharing - this is the right method to use!
+        // We need to invoke the sharing menu through the supported API
+        if (tg.isVersionAtLeast && tg.isVersionAtLeast('6.1')) {
+          // The most reliable way to launch Telegram's native sharing dialog in WebApp
+          // Available in newer Telegram WebApp versions
+          if (tg.showPopup && typeof tg.showPopup === 'function') {
+            // When we show a popup, it has the callback function for when user clicks OK
+            tg.showPopup({
+              title: "Share Invitation",
+              message: "Open Telegram's share menu?", 
+              buttons: [{type: "default", text: "Share Now"}]
+            }, () => {
+              // After showing popup and user confirms, create the share URL
+              const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralInfo.shareable_link)}&text=${encodeURIComponent(messageText)}`;
+              
+              // Use Telegram's internal URL handling - this will open the native share dialog
+              tg.openTelegramLink(shareUrl);
+            });
+            return;
+          } else {
+            // Direct method to share using built-in share URL format
+            // This is the core functionality we need - using proper Telegram URL scheme
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralInfo.shareable_link)}&text=${encodeURIComponent(messageText)}`;
+            
+            // This will open Telegram's native share dialog
+            tg.openTelegramLink(shareUrl);
+            return;
+          }
+        } else {
+          // Fallback for older Telegram versions
+          // Direct Telegram share URL handling
+          const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralInfo.shareable_link)}&text=${encodeURIComponent(messageText)}`;
+          
+          // For older Telegram WebApp versions
           tg.openLink(shareUrl);
           return;
         }
@@ -122,7 +149,7 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
     } catch (error) {
       console.error('Share error:', error);
       
-      // Fallback to clipboard copying when sharing API isn't available (as specified in PRD)
+      // Fallback to clipboard copying when sharing API isn't available
       try {
         const fullMessage = `Hey, I think you should check out Collab Room! ${referralInfo.shareable_link}`;
         await navigator.clipboard.writeText(fullMessage);
