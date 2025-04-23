@@ -525,8 +525,31 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
     // Send notification to each admin
     for (const admin of adminUsers) {
       try {
+        // Make sure we have a valid numeric Telegram ID
+        let telegramId: number;
+        
+        // Try multiple ways to convert the ID to a proper number
+        if (typeof admin.telegram_id === 'number') {
+          telegramId = admin.telegram_id;
+        } else if (typeof admin.telegram_id === 'string') {
+          // Remove any non-numeric characters and parse as integer
+          const cleanId = admin.telegram_id.replace(/[^0-9]/g, '');
+          telegramId = parseInt(cleanId, 10);
+        } else {
+          console.error(`[ADMIN_NOTIFICATION] Invalid admin Telegram ID format: ${admin.telegram_id}`);
+          continue; // Skip this admin
+        }
+        
+        // Double-check that we have a valid number
+        if (isNaN(telegramId) || telegramId <= 0) {
+          console.error(`[ADMIN_NOTIFICATION] Invalid admin Telegram ID after conversion: ${telegramId}`);
+          continue; // Skip this admin
+        }
+        
+        console.log(`[ADMIN_NOTIFICATION] Sending notification to admin Telegram ID: ${telegramId}`);
+        
         const result = await bot.sendMessage(
-          parseInt(admin.telegram_id),
+          telegramId,
           message,
           {
             parse_mode: "HTML",
@@ -534,6 +557,7 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
             reply_markup: keyboard,
           },
         );
+        
         console.log(`Enhanced notification sent to admin ${admin.telegram_id}`);
 
         // Log the admin notification
@@ -808,11 +832,31 @@ async function notifyReferrerWithRecord(referrer: any, referralRecord: any, refe
         ],
       };
 
-      // Send notification message
-      const telegramId = parseInt(referrer.telegram_id);
+      // Make sure we have a valid numeric Telegram ID
+      let telegramId: number;
+      
+      // Try multiple ways to convert the ID to a proper number
+      if (typeof referrer.telegram_id === 'number') {
+        telegramId = referrer.telegram_id;
+      } else if (typeof referrer.telegram_id === 'string') {
+        // Remove any non-numeric characters and parse as integer
+        const cleanId = referrer.telegram_id.replace(/[^0-9]/g, '');
+        telegramId = parseInt(cleanId, 10);
+      } else {
+        console.error(`[REFERRAL NOTIFICATION] Invalid Telegram ID format: ${referrer.telegram_id}`);
+        return false;
+      }
+      
+      // Double-check that we have a valid number
+      if (isNaN(telegramId) || telegramId <= 0) {
+        console.error(`[REFERRAL NOTIFICATION] Invalid Telegram ID after conversion: ${telegramId}`);
+        return false;
+      }
+      
       console.log(`[REFERRAL NOTIFICATION] Sending notification to Telegram ID: ${telegramId}`);
       
-      await bot.sendMessage(
+      // Direct message using Telegram API
+      const sendResult = await bot.sendMessage(
         telegramId,
         `🎉 <b>Referral Success!</b>\n\n` +
           `Great news! <b>${referredUserFirstName}</b> whom you referred has been approved and now has full access to Collab Room.\n\n` +
@@ -825,13 +869,17 @@ async function notifyReferrerWithRecord(referrer: any, referralRecord: any, refe
           reply_markup: keyboard 
         },
       );
+      
+      console.log(`[REFERRAL NOTIFICATION] First message send result:`, sendResult ? "Success" : "Failed");
 
       // Send the referral code as a separate message for easy copying
-      await bot.sendMessage(
+      const codeResult = await bot.sendMessage(
         telegramId,
         `<code>${referralRecord.referral_code}</code>`,
         { parse_mode: "HTML" }
       );
+      
+      console.log(`[REFERRAL NOTIFICATION] Code message send result:`, codeResult ? "Success" : "Failed");
 
       console.log(`[REFERRAL NOTIFICATION] Success! Notification sent to referrer ${referrer.id} (${referrer.first_name})`);
 
@@ -927,8 +975,31 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
     // Send notification to each admin
     for (const admin of adminUsers) {
       try {
+        // Make sure we have a valid numeric Telegram ID
+        let telegramId: number;
+        
+        // Try multiple ways to convert the ID to a proper number
+        if (typeof admin.telegram_id === 'number') {
+          telegramId = admin.telegram_id;
+        } else if (typeof admin.telegram_id === 'string') {
+          // Remove any non-numeric characters and parse as integer
+          const cleanId = admin.telegram_id.replace(/[^0-9]/g, '');
+          telegramId = parseInt(cleanId, 10);
+        } else {
+          console.error(`[COLLAB_NOTIFICATION] Invalid admin Telegram ID format: ${admin.telegram_id}`);
+          continue; // Skip this admin
+        }
+        
+        // Double-check that we have a valid number
+        if (isNaN(telegramId) || telegramId <= 0) {
+          console.error(`[COLLAB_NOTIFICATION] Invalid admin Telegram ID after conversion: ${telegramId}`);
+          continue; // Skip this admin
+        }
+        
+        console.log(`[COLLAB_NOTIFICATION] Sending notification to admin Telegram ID: ${telegramId}`);
+        
         await bot.sendMessage(
-          parseInt(admin.telegram_id),
+          telegramId,
           message,
           {
             parse_mode: "HTML",
@@ -936,6 +1007,7 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
             reply_markup: keyboard,
           },
         );
+        
         console.log(`New collaboration notification sent to admin ${admin.telegram_id}`);
 
         // Log the admin notification
