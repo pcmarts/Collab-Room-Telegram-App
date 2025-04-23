@@ -1203,6 +1203,20 @@ bot.on("callback_query", async (callbackQuery) => {
     else if (action.startsWith("match_info_")) {
       await handleMatchInfoCallback(callbackQuery);
     }
+    // Handle copy referral code actions
+    else if (action.startsWith("copy_referral_code_")) {
+      // Extract the referral code from the callback data
+      const referralCode = action.substring("copy_referral_code_".length);
+      
+      // Answer the callback query with the code in a way that the user can easily copy it
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: `Your code: ${referralCode}\n\nIt has been copied to the clipboard!`,
+        show_alert: true
+      });
+      
+      // Log the copy event
+      console.log(`User ${callbackQuery.from.id} copied referral code ${referralCode}`);
+    }
     // Unknown action
     else {
       console.log(`Unknown callback action: ${action}`);
@@ -1421,6 +1435,17 @@ async function handleApproveUserCallback(
 
     // Send notification to the approved user
     await notifyUserApproved(parseInt(telegramIdToApprove));
+
+    // Check if this user was referred by someone and notify the referrer
+    if (userToApprove.referred_by) {
+      try {
+        console.log(`[REFERRAL] User ${telegramIdToApprove} was referred by ${userToApprove.referred_by}, sending notification`);
+        await notifyReferrerAboutApproval(userToApprove.referred_by, userToApprove.first_name);
+      } catch (referralError) {
+        console.error(`Error notifying referrer: ${referralError}`);
+        // Continue with approval process even if referrer notification fails
+      }
+    }
 
     // Update the original message to show the user has been approved
     if (callbackQuery.message) {
