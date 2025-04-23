@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
-import { Users, UserPlus } from 'lucide-react';
+import { Users, UserPlus, Link2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 // Define the profile data type that comes from the API
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
     <div className="container mx-auto py-6 px-4">
       <PageHeader title="Admin Dashboard" backUrl="/dashboard" />
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
+      <div className="mt-8 grid gap-6 md:grid-cols-3">
         {/* Applications Card */}
         <Card className="relative overflow-hidden">
           <CardHeader>
@@ -99,6 +99,27 @@ export default function AdminDashboard() {
               onClick={() => setLocation('/admin/users')}
             >
               Manage Users
+            </Button>
+          </CardContent>
+        </Card>
+        
+        {/* Referrals Management Card */}
+        <Card className="relative overflow-hidden">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5" />
+              Referral System
+            </CardTitle>
+            <CardDescription>
+              Monitor and manage referrals, track user invitations and referral completions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              className="w-full md:w-auto"
+              onClick={() => setLocation('/admin/referrals')}
+            >
+              Manage Referrals
             </Button>
           </CardContent>
         </Card>
