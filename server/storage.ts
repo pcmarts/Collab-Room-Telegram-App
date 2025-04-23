@@ -1,7 +1,7 @@
 import { 
   users, companies, collaborations, collab_notifications, swipes, matches,
   notification_preferences, marketing_preferences, conference_preferences,
-  company_twitter_data, // Add company_twitter_data table
+  company_twitter_data, user_referrals, referral_events, // Added referral tables
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication,
@@ -9,7 +9,9 @@ import {
   type Swipe, type InsertSwipe,
   type Match, type InsertMatch,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences,
-  type CompanyTwitterData // Add CompanyTwitterData type
+  type CompanyTwitterData,
+  type UserReferral, type InsertUserReferral, // Added referral types
+  type ReferralEvent, type InsertReferralEvent
 } from "@shared/schema";
 import { z } from 'zod';
 import { db } from "./db";
@@ -67,6 +69,15 @@ export interface IStorage {
   // Conference preferences
   getUserConferencePreferences(userId: string): Promise<ConferencePreferences | undefined>;
   updateUserConferencePreferences(userId: string, preferences: Partial<ConferencePreferences>): Promise<ConferencePreferences | undefined>;
+  
+  // Referral methods
+  getUserReferral(userId: string): Promise<UserReferral | undefined>;
+  createUserReferral(referral: InsertUserReferral): Promise<UserReferral>;
+  getReferralByCode(referralCode: string): Promise<UserReferral | undefined>;
+  incrementReferralUsage(referralId: string): Promise<UserReferral | undefined>;
+  createReferralEvent(event: InsertReferralEvent): Promise<ReferralEvent>;
+  completeReferralEvent(referralEventId: string): Promise<ReferralEvent | undefined>;
+  getUserReferralEvents(userId: string): Promise<ReferralEvent[]>;
 }
 
 export interface CollaborationFilters {
@@ -332,271 +343,152 @@ export class DatabaseStorage implements IStorage {
     // Explicitly exclude regardless of the excludeIds array
     query = query.where(not(eq(collaborations.creator_id, userId)));
     
-    // Apply filters based on user preferences
-    // These only apply if the corresponding filter is enabled
-
-    // 1. Collaboration Types Filter (from collaborations table)
-    if (marketingPrefs?.discovery_filter_collab_types_enabled && 
-        marketingPrefs?.collabs_to_discover && 
-        marketingPrefs.collabs_to_discover.length > 0) {
+    // Apply filters based on marketing preferences if they exist and filters are enabled
+    if (marketingPrefs) {
+      console.log('Found marketing preferences - applying any enabled filters');
       
-      console.log(`Filtering by collaboration types: ${marketingPrefs.collabs_to_discover.join(', ')}`);
-      // Using inArray for single value field (not an array)
-      // This implements OR logic between selected collaboration types
-      query = query.where(inArray(collaborations.collab_type, marketingPrefs.collabs_to_discover));
+      // 1. Collaboration Types Filter (from collaborations table)
+      if (marketingPrefs.discovery_filter_collab_types_enabled && 
+          marketingPrefs.collabs_to_discover && 
+          marketingPrefs.collabs_to_discover.length > 0) {
+        
+        console.log(`Filtering by collaboration types: ${marketingPrefs.collabs_to_discover.join(', ')}`);
+        // Using inArray for single value field (not an array)
+        // This implements OR logic between selected collaboration types
+        query = query.where(inArray(collaborations.collab_type, marketingPrefs.collabs_to_discover));
+      }
+      
+      // 2. Topics Filter (exclusion)
+      if (marketingPrefs.discovery_filter_topics_enabled && 
+          marketingPrefs.filtered_marketing_topics && 
+          marketingPrefs.filtered_marketing_topics.length > 0) {
+        
+        console.log(`Excluding topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
+        
+        // Exclude collaborations that contain any of the filtered topics
+        // This is complex because topics is an array field
+        // We need to use SQL overlap operator && to check if any topics match the filtered ones
+        query = query.where(
+          sql`NOT (${collaborations.topics} && ${sql.array(marketingPrefs.filtered_marketing_topics, 'text')})`
+        );
+      }
+      
+      // 3. Company Followers Filter
+      if (marketingPrefs.discovery_filter_company_followers_enabled && 
+          marketingPrefs.company_twitter_followers) {
+        
+        console.log(`Filtering by company followers: ${marketingPrefs.company_twitter_followers}`);
+        
+        // Apply filter based on the minimum company followers preference
+        query = query.where(eq(collaborations.company_twitter_followers, marketingPrefs.company_twitter_followers));
+      }
+      
+      // 4. User Followers Filter
+      if (marketingPrefs.discovery_filter_user_followers_enabled && 
+          marketingPrefs.twitter_followers) {
+        
+        console.log(`Filtering by user followers: ${marketingPrefs.twitter_followers}`);
+        
+        // Apply filter based on the minimum user followers preference
+        query = query.where(eq(collaborations.twitter_followers, marketingPrefs.twitter_followers));
+      }
+      
+      // 5. Funding Stage Filter
+      if (marketingPrefs.discovery_filter_funding_stages_enabled && 
+          marketingPrefs.funding_stage) {
+        
+        console.log(`Filtering by funding stage: ${marketingPrefs.funding_stage}`);
+        
+        // Apply filter based on the funding stage preference
+        query = query.where(eq(collaborations.funding_stage, marketingPrefs.funding_stage));
+      }
+      
+      // 6. Token Status Filter
+      if (marketingPrefs.discovery_filter_token_status_enabled) {
+        console.log(`Filtering by token status: ${marketingPrefs.company_has_token}`);
+        
+        // Apply filter based on the token status preference
+        query = query.where(eq(collaborations.company_has_token, marketingPrefs.company_has_token));
+      }
+      
+      // 7. Company Sectors Filter
+      if (marketingPrefs.discovery_filter_company_sectors_enabled && 
+          marketingPrefs.company_tags && 
+          marketingPrefs.company_tags.length > 0) {
+        
+        console.log(`Filtering by company sectors: ${marketingPrefs.company_tags.join(', ')}`);
+        
+        // Use SQL overlap operator to check if any tags match
+        query = query.where(
+          sql`${collaborations.company_tags} && ${sql.array(marketingPrefs.company_tags, 'text')}`
+        );
+      }
+      
+      // 8. Blockchain Networks Filter
+      if (marketingPrefs.discovery_filter_blockchain_networks_enabled && 
+          marketingPrefs.company_blockchain_networks && 
+          marketingPrefs.company_blockchain_networks.length > 0) {
+        
+        console.log(`Filtering by blockchain networks: ${marketingPrefs.company_blockchain_networks.join(', ')}`);
+        
+        // Use SQL overlap operator to check if any networks match
+        query = query.where(
+          sql`${collaborations.company_blockchain_networks} && ${sql.array(marketingPrefs.company_blockchain_networks, 'text')}`
+        );
+      }
     }
     
-    // 2. Topics Filter (from collaborations table)
-    if (marketingPrefs?.discovery_filter_topics_enabled && 
-        marketingPrefs?.filtered_marketing_topics && 
-        marketingPrefs.filtered_marketing_topics.length > 0) {
-      
-      console.log(`Filtering by topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
-      
-      // Convert JavaScript array to PostgreSQL array format
-      const topicsPgArray = '{' + marketingPrefs.filtered_marketing_topics.join(',') + '}';
-      console.log(`Converting to PostgreSQL array format: ${topicsPgArray}`);
-      
-      // Filter for collaborations that match ANY of the selected topics (OR logic)
-      // The && operator is the "overlap" operator which checks if arrays have any elements in common
-      query = query.where(sql`${collaborations.topics} && ${topicsPgArray}::text[]`);
-    }
-    
-    // 3. Company Tags/Sectors Filter (from companies table)
-    if (marketingPrefs?.discovery_filter_company_sectors_enabled && 
-        marketingPrefs?.company_tags && 
-        marketingPrefs.company_tags.length > 0) {
-      
-      console.log(`Filtering by company tags/sectors from COMPANIES table: ${marketingPrefs.company_tags.join(', ')}`);
-      
-      // Convert to PostgreSQL array format
-      const tagsPgArray = '{' + marketingPrefs.company_tags.join(',') + '}';
-      console.log(`Converting company tags to PostgreSQL array format: ${tagsPgArray}`);
-      
-      // Filter based on the companies table (joined data) rather than duplicated data
-      query = query.where(sql`${companies.tags} && ${tagsPgArray}::text[]`);
-    }
-    
-    // 4. User Twitter Follower Count Filter (from users table)
-    if (marketingPrefs?.discovery_filter_user_followers_enabled && 
-        marketingPrefs?.twitter_followers) {
-      
-      console.log(`Filtering by min user Twitter followers from USERS table: ${marketingPrefs.twitter_followers}`);
-      // Use the users table for user twitter followers
-      query = query.where(sql`${users.twitter_followers} >= ${marketingPrefs.twitter_followers}`);
-    }
-    
-    // 5. Company Twitter Follower Count Filter (from companies table)
-    if (marketingPrefs?.discovery_filter_company_followers_enabled && 
-        marketingPrefs?.company_twitter_followers) {
-      
-      console.log(`Filtering by min company Twitter followers from COMPANIES table: ${marketingPrefs.company_twitter_followers}`);
-      // Use the companies table instead of the duplicated data in collaborations
-      query = query.where(sql`${companies.twitter_followers} >= ${marketingPrefs.company_twitter_followers}`);
-    }
-    
-    // 6. Funding Stages Filter (from companies table)
-    if (marketingPrefs?.discovery_filter_funding_stages_enabled && 
-        marketingPrefs?.funding_stage) {
-      
-      // Convert comma-separated string to array
-      const fundingStages = marketingPrefs.funding_stage.split(',');
-      console.log(`Filtering by funding stages from COMPANIES table: ${fundingStages.join(', ')}`);
-      
-      // Convert to PostgreSQL array format
-      const fundingStagesPgArray = '{' + fundingStages.join(',') + '}';
-      console.log(`Converting funding stages to PostgreSQL array format: ${fundingStagesPgArray}`);
-      
-      // Use the companies table for funding stage data
-      query = query.where(sql`${companies.funding_stage} = ANY(${fundingStagesPgArray}::text[])`);
-    }
-    
-    // 7. Token Status Filter (from companies table)
-    if (marketingPrefs?.discovery_filter_token_status_enabled) {
-      console.log(`Filtering by token status from COMPANIES table: ${marketingPrefs.company_has_token}`);
-      // Use the companies table for token status
-      query = query.where(sql`${companies.has_token} = ${marketingPrefs.company_has_token}`);
-    }
-    
-    // 8. Blockchain Networks Filter (from companies table)
-    if (marketingPrefs?.discovery_filter_blockchain_networks_enabled && 
-        marketingPrefs?.company_blockchain_networks && 
-        marketingPrefs.company_blockchain_networks.length > 0) {
-      
-      console.log(`Filtering by blockchain networks from COMPANIES table: ${marketingPrefs.company_blockchain_networks.join(', ')}`);
-      
-      // Convert to PostgreSQL array format
-      const networksPgArray = '{' + marketingPrefs.company_blockchain_networks.join(',') + '}';
-      console.log(`Converting blockchain networks to PostgreSQL array format: ${networksPgArray}`);
-      
-      // Use the companies table for blockchain networks data
-      // This is the key change to fix the blockchain networks filter issue
-      query = query.where(sql`${companies.blockchain_networks} && ${networksPgArray}::text[]`);
-      
-      // Add debug logging to verify the filter is being applied correctly
-      console.log(`Applied blockchain networks filter using companies.blockchain_networks`);
-    }
-    
-    // Apply cursor-based pagination if a cursor is provided
+    // Handle cursor-based pagination
     if (filters.cursor) {
       console.log(`Using cursor-based pagination with cursor: ${filters.cursor}`);
       
-      try {
-        // Find the creation timestamp of the cursor collaboration
-        const [cursorCollab] = await db
-          .select({ created_at: collaborations.created_at })
-          .from(collaborations)
-          .where(eq(collaborations.id, filters.cursor));
+      // Get the collaboration with the cursor ID to determine its timestamp
+      const [cursorCollab] = await db
+        .select()
+        .from(collaborations)
+        .where(eq(collaborations.id, filters.cursor));
+      
+      if (cursorCollab) {
+        console.log(`Found cursor collaboration with timestamp: ${cursorCollab.created_at}`);
         
-        if (cursorCollab) {
-          console.log(`Found cursor collaboration with timestamp: ${cursorCollab.created_at}`);
-          
-          // Add a filter to get only collaborations older than the cursor
-          query = query.where(
-            sql`${collaborations.created_at} < ${cursorCollab.created_at}`
-          );
-        } else {
-          console.warn(`Cursor collaboration not found: ${filters.cursor}`);
-        }
-      } catch (err) {
-        console.error('Error applying cursor-based pagination:', err);
+        // Filter collaborations older than the cursor (for descending sort)
+        query = query.where(lt(collaborations.created_at, cursorCollab.created_at));
+      } else {
+        console.log(`Warning: Cursor collaboration with ID ${filters.cursor} not found`);
       }
     }
     
-    // Add additional debug logging
-    console.log('Final joined filter query constructed, executing and returning results');
+    // Add ordering (always sort by most recent first)
+    query = query.orderBy(desc(collaborations.created_at));
     
-    // Get the collaborations with joined data, with limit + 1 to determine if there are more
-    const rawResults = await query
-      .orderBy(desc(collaborations.created_at))
-      .limit(limit + 1);
-      
-    // Map the joined results back to just the collaborations
-    // This ensures backward compatibility with existing frontend code
-    const rawCollaborations = rawResults.map(result => result.collaboration);
+    // Add limit
+    query = query.limit(limit + 1); // Fetch one extra to determine if there are more results
     
-    // Determine if there are more collaborations
-    const hasMore = rawCollaborations.length > limit;
+    // Execute the query
+    const results = await query;
+    console.log(`Found ${results.length} collaborations (including potential extra for pagination)`);
     
-    // Remove the extra item if we have more than the limit
-    const limitedCollaborations = hasMore ? rawCollaborations.slice(0, limit) : rawCollaborations;
+    // Extract just the collaboration objects from the joined results
+    const collaborationResults = results.map(r => r.collaboration);
     
-    // ADDITIONAL SAFETY CHECK: Double check that no excluded IDs made it through the query
-    // This shouldn't be necessary if the SQL query worked correctly, but we're adding it as a fallback
-    // This is especially important in case of race conditions where swipes happen during the query execution
+    // Determine if there are more results and extract the proper limit
+    const hasMore = collaborationResults.length > limit;
+    const items = hasMore ? collaborationResults.slice(0, limit) : collaborationResults;
     
-    // We need to make sure NO MATTER WHAT that:
-    // 1. User's own collaborations are filtered out (using creator_id)
-    // 2. Previously swiped collaborations are filtered out
-    // 3. Any excludeIds from the request are filtered out
+    // Determine the next cursor (if there are more results)
+    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].id : undefined;
     
-    // First check for previously swiped collaborations and excludeIds
-    const filteredCollaborations = limitedCollaborations.filter(collab => {
-      // Should exclude if:
-      // 1. Creator ID matches current user (user's own collaboration)
-      const isOwnCollab = collab.creator_id === userId;
-      // 2. ID is in the excludeIds array (previously swiped or specifically excluded)
-      const isExcludedId = excludeIds.includes(collab.id);
-      
-      // Keep only if BOTH conditions are false
-      return !isOwnCollab && !isExcludedId;
-    });
-    
-    // If we filtered out any collaborations, log a warning
-    if (filteredCollaborations.length < limitedCollaborations.length) {
-      console.warn(`WARNING: Found and removed ${limitedCollaborations.length - filteredCollaborations.length} collaborations that should have been excluded!`);
-      
-      // Log exactly which IDs were excluded and why
-      const problemCollabs = limitedCollaborations.filter(collab => 
-        collab.creator_id === userId || excludeIds.includes(collab.id)
-      );
-      
-      console.warn(`IDs that were supposed to be excluded but appeared in results:`, 
-        problemCollabs.map(collab => collab.id)
-      );
-      
-      // Log the detailed reason for each problem collab
-      problemCollabs.forEach(collab => {
-        if (collab.creator_id === userId) {
-          console.warn(`Collab ${collab.id} was created by the current user (${userId}) and should have been excluded`);
-        }
-        if (excludeIds.includes(collab.id)) {
-          console.warn(`Collab ${collab.id} was in the excludeIds array and should have been excluded`);
-        }
-      });
-    }
-    
-    // Replace the limitedCollaborations with our filtered version
-    limitedCollaborations.length = 0;
-    limitedCollaborations.push(...filteredCollaborations);
-    
-    // The next cursor will be the ID of the last item in the current page
-    const nextCursor = hasMore && limitedCollaborations.length > 0 
-      ? limitedCollaborations[limitedCollaborations.length - 1].id 
-      : undefined;
-    
-    console.log(`Returning ${limitedCollaborations.length} collaborations with hasMore=${hasMore}`);
-    
-    // Enhance collaborations with creator company info
-    const enhancedCollaborations = await Promise.all(limitedCollaborations.map(async (collab) => {
-      try {
-        // Find the company associated with the creator_id
-        const [company] = await db
-          .select()
-          .from(companies)
-          .where(eq(companies.user_id, collab.creator_id));
-        
-        if (company) {
-          // Company logo functionality removed as requested
-          let logoUrl = null;
-
-          // Add all company data to the collaboration object
-          return {
-            ...collab,
-            creator_company_name: company.name,
-            creator_company_logo_url: logoUrl, // Set logo URL directly on collaboration
-            // Add all company information
-            company_data: {
-              id: company.id,
-              name: company.name,
-              logo_url: logoUrl, // Include logo URL in company_data
-              short_description: company.short_description,
-              long_description: company.long_description,
-              website: company.website,
-              job_title: company.job_title,
-              twitter_handle: company.twitter_handle,
-              twitter_followers: company.twitter_followers,
-              linkedin_url: company.linkedin_url,
-              funding_stage: company.funding_stage,
-              has_token: company.has_token,
-              token_ticker: company.token_ticker,
-              blockchain_networks: company.blockchain_networks,
-              tags: company.tags
-            }
-          };
-        }
-        
-        return collab;
-      } catch (err) {
-        console.error('Error getting company info for collaboration:', err);
-        return collab;
-      }
-    }));
+    console.log(`Returning ${items.length} collaborations, hasMore: ${hasMore}, nextCursor: ${nextCursor}`);
     
     return {
-      items: enhancedCollaborations,
+      items,
       hasMore,
       nextCursor
     };
   }
-  
+
   async updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined> {
     try {
-      // Make sure status is either 'active' or 'paused'
-      if (status !== 'active' && status !== 'paused') {
-        throw new Error('Invalid status value. Status must be either "active" or "paused".');
-      }
-      
       const [updatedCollaboration] = await db
         .update(collaborations)
         .set({ 
@@ -605,7 +497,6 @@ export class DatabaseStorage implements IStorage {
         })
         .where(eq(collaborations.id, id))
         .returning();
-        
       return updatedCollaboration;
     } catch (error) {
       console.error("Error updating collaboration status:", error);
@@ -613,127 +504,308 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  // Collaboration applications
-  // Updated application methods to use swipes instead of collab_applications
+  // Collaboration applications (Legacy implementation - using swipes now)
   async applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication> {
-    console.log("Creating a swipe right from application data:", application);
+    console.warn("Legacy applyToCollaboration called - this is now managed via swipes");
     
-    // Create a swipe right on the collaboration
-    const [newSwipe] = await db
-      .insert(swipes)
-      .values({
-        user_id: application.applicant_id,
-        collaboration_id: application.collaboration_id,
-        direction: 'right',
-        details: application.details, // Store application details in swipe details
-        created_at: new Date()
-      })
-      .returning();
+    // Create a swipe instead
+    const swipeData: InsertSwipe = {
+      user_id: application.applicant_id,
+      collaboration_id: application.collaboration_id,
+      direction: "right",
+      details: application.details,
+    };
     
-    // Convert swipe to CollabApplication format for backward compatibility
+    const swipe = await this.createSwipe(swipeData);
+    
+    // Create the legacy compatibility object
     return {
-      id: newSwipe.id,
-      collaboration_id: newSwipe.collaboration_id,
-      applicant_id: newSwipe.user_id,
-      status: 'pending', // Default status for new applications
-      details: newSwipe.details,
-      created_at: newSwipe.created_at || new Date()
+      id: swipe.id,
+      collaboration_id: swipe.collaboration_id,
+      applicant_id: swipe.user_id,
+      status: "pending",
+      details: swipe.details as any,
+      created_at: swipe.created_at,
     };
   }
   
   async getCollaborationApplications(collaborationId: string): Promise<CollabApplication[]> {
-    console.log("Getting applications (swipes) for collaboration:", collaborationId);
+    console.warn("Legacy getCollaborationApplications called - this is now managed via swipes");
     
-    // Get all "right" swipes for this collaboration
-    const swipesData = await db
-      .select()
-      .from(swipes)
-      .where(and(
-        eq(swipes.collaboration_id, collaborationId),
-        eq(swipes.direction, 'right')
-      ))
-      .orderBy(desc(swipes.created_at));
+    // Use swipes to provide backward compatibility
+    const swipes = await this.getCollaborationSwipes(collaborationId);
+    const rightSwipes = swipes.filter(swipe => swipe.direction === "right");
     
-    // Convert swipes to CollabApplication format
-    return swipesData.map(swipe => ({
+    return rightSwipes.map(swipe => ({
       id: swipe.id,
       collaboration_id: swipe.collaboration_id,
       applicant_id: swipe.user_id,
-      status: 'pending', // Default status for existing applications
-      details: swipe.details,
-      created_at: swipe.created_at || new Date()
+      status: "pending",
+      details: swipe.details as any,
+      created_at: swipe.created_at,
     }));
   }
   
   async getUserApplications(userId: string): Promise<CollabApplication[]> {
-    console.log("Getting applications (swipes) by user:", userId);
+    console.warn("Legacy getUserApplications called - this is now managed via swipes");
     
-    // Get all "right" swipes by this user
-    const swipesData = await db
-      .select()
-      .from(swipes)
-      .where(and(
-        eq(swipes.user_id, userId),
-        eq(swipes.direction, 'right')
-      ))
-      .orderBy(desc(swipes.created_at));
+    // Use swipes to provide backward compatibility
+    const swipes = await this.getUserSwipes(userId);
+    const rightSwipes = swipes.filter(swipe => swipe.direction === "right");
     
-    // Convert swipes to CollabApplication format
-    return swipesData.map(swipe => ({
+    return rightSwipes.map(swipe => ({
       id: swipe.id,
       collaboration_id: swipe.collaboration_id,
       applicant_id: swipe.user_id,
-      status: 'pending', // Default status
-      details: swipe.details,
-      created_at: swipe.created_at || new Date()
+      status: "pending",
+      details: swipe.details as any,
+      created_at: swipe.created_at,
     }));
   }
   
   async updateApplicationStatus(id: string, status: string): Promise<CollabApplication | undefined> {
-    console.log("Updating application (swipe) status:", id, status);
+    console.warn("Legacy updateApplicationStatus called - this is now managed via matches");
     
-    // This is now a no-op as we're using swipes instead of applications
-    // But we need to maintain backward compatibility
+    // This is a no-op since we're using the swiping system now
+    return {
+      id,
+      collaboration_id: "",
+      applicant_id: "",
+      status,
+      details: {},
+      created_at: new Date(),
+    };
+  }
+  
+  // Swipe methods
+  async createSwipe(swipe: InsertSwipe): Promise<Swipe> {
+    console.log("Creating swipe:", swipe);
     
-    // Find the swipe
-    const [swipe] = await db
-      .select()
-      .from(swipes)
-      .where(eq(swipes.id, id));
+    const [newSwipe] = await db
+      .insert(swipes)
+      .values(swipe)
+      .returning();
     
-    if (!swipe) {
-      return undefined;
-    }
-    
-    // If status is 'accepted', create a match
-    if (status === 'accepted') {
-      // Get the collaboration to find the creator_id
-      const [collaboration] = await db
-        .select()
-        .from(collaborations)
-        .where(eq(collaborations.id, swipe.collaboration_id));
+    // If this is a right swipe (application), check for a potential match
+    if (swipe.direction === 'right') {
+      console.log("Right swipe detected - checking for potential match");
       
-      if (collaboration) {
-        // Create match
-        await this.createMatch({
-          collaboration_id: swipe.collaboration_id,
-          requester_id: swipe.user_id,
-          host_id: collaboration.creator_id,
-          status: 'active',
-          created_at: new Date()
-        });
+      try {
+        // Get the collaboration
+        const [collaboration] = await db
+          .select()
+          .from(collaborations)
+          .where(eq(collaborations.id, swipe.collaboration_id));
+        
+        if (collaboration) {
+          console.log("Found collaboration by:", collaboration.creator_id);
+          
+          // Check if the collaboration creator has swiped right on any of this user's collaborations
+          const creatorSwipes = await db
+            .select()
+            .from(swipes)
+            .where(
+              and(
+                eq(swipes.user_id, collaboration.creator_id),
+                eq(swipes.direction, 'right')
+              )
+            );
+          
+          console.log(`Found ${creatorSwipes.length} right swipes by collaboration creator`);
+          
+          // Get user's collaborations
+          const userCollaborations = await db
+            .select()
+            .from(collaborations)
+            .where(eq(collaborations.creator_id, swipe.user_id));
+          
+          console.log(`Found ${userCollaborations.length} collaborations by swiper`);
+          
+          // Check if any of the creator's right swipes are on the user's collaborations
+          const userCollabIds = userCollaborations.map(collab => collab.id);
+          const matchingSwipes = creatorSwipes.filter(s => userCollabIds.includes(s.collaboration_id));
+          
+          if (matchingSwipes.length > 0) {
+            console.log("Found potential match! Creator swiped right on user's collaboration");
+            
+            // Take the first matching swipe (simplest case)
+            const matchingSwipe = matchingSwipes[0];
+            
+            // Create a match record
+            const matchData: InsertMatch = {
+              collaboration_id: matchingSwipe.collaboration_id,
+              host_id: swipe.user_id, // The user is the host of their own collaboration
+              requester_id: collaboration.creator_id, // The creator requested to collaborate
+              status: 'active',
+              note: matchingSwipe.note,
+            };
+            
+            console.log("Creating match:", matchData);
+            
+            try {
+              const match = await this.createMatch(matchData);
+              console.log("Match created:", match.id);
+              
+              // Also create a match for this swipe
+              const reverseMatchData: InsertMatch = {
+                collaboration_id: swipe.collaboration_id,
+                host_id: collaboration.creator_id, // The creator is the host of their own collaboration
+                requester_id: swipe.user_id, // The user requested to collaborate
+                status: 'active',
+                note: swipe.note,
+              };
+              
+              console.log("Creating reverse match:", reverseMatchData);
+              const reverseMatch = await this.createMatch(reverseMatchData);
+              console.log("Reverse match created:", reverseMatch.id);
+              
+              // Notify both users
+              try {
+                await notifyMatchCreated(match);
+                console.log("Match notification sent");
+              } catch (notifyError) {
+                console.error("Error sending match notification:", notifyError);
+              }
+            } catch (matchError) {
+              console.error("Error creating match:", matchError);
+            }
+          } else {
+            console.log("No match found yet");
+            
+            // Notify collaboration creator of new right swipe
+            try {
+              await notifyNewCollabRequest(collaboration, newSwipe);
+              console.log("Collaboration request notification sent");
+            } catch (notifyError) {
+              console.error("Error sending collaboration request notification:", notifyError);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error checking for matches:", error);
       }
     }
     
-    // Return converted swipe as CollabApplication
-    return {
-      id: swipe.id,
-      collaboration_id: swipe.collaboration_id,
-      applicant_id: swipe.user_id,
-      status: status, // Use the updated status
-      details: swipe.details,
-      created_at: swipe.created_at || new Date()
-    };
+    return newSwipe;
+  }
+  
+  async getUserSwipes(userId: string): Promise<Swipe[]> {
+    return db
+      .select()
+      .from(swipes)
+      .where(eq(swipes.user_id, userId))
+      .orderBy(desc(swipes.created_at));
+  }
+  
+  async getCollaborationSwipes(collaborationId: string): Promise<Swipe[]> {
+    return db
+      .select()
+      .from(swipes)
+      .where(eq(swipes.collaboration_id, collaborationId))
+      .orderBy(desc(swipes.created_at));
+  }
+  
+  async getPotentialMatchesForHost(userId: string): Promise<any[]> {
+    console.log("Finding potential matches for host:", userId);
+    
+    // 1. Get host's collaborations
+    const hostCollaborations = await this.getUserCollaborations(userId);
+    
+    // 2. Get all right swipes on the host's collaborations
+    const collabIds = hostCollaborations.map(collab => collab.id);
+    
+    if (collabIds.length === 0) {
+      console.log("Host has no collaborations to match");
+      return [];
+    }
+    
+    // Find all right swipes on host's collaborations
+    const rightSwipes = await db
+      .select({
+        swipe: swipes,
+        user: users,
+        company: companies,
+      })
+      .from(swipes)
+      .innerJoin(users, eq(swipes.user_id, users.id))
+      .innerJoin(companies, eq(users.id, companies.user_id))
+      .where(
+        and(
+          inArray(swipes.collaboration_id, collabIds),
+          eq(swipes.direction, 'right')
+        )
+      )
+      .orderBy(desc(swipes.created_at));
+    
+    console.log(`Found ${rightSwipes.length} right swipes on host's collaborations`);
+    
+    // Transform results to include user and company info
+    const enrichedSwipes = rightSwipes.map(result => ({
+      ...result.swipe,
+      user: result.user,
+      company: result.company,
+    }));
+    
+    return enrichedSwipes;
+  }
+  
+  // Match methods
+  async createMatch(match: InsertMatch): Promise<Match> {
+    const [newMatch] = await db
+      .insert(matches)
+      .values({
+        ...match,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returning();
+    return newMatch;
+  }
+  
+  async getUserMatches(userId: string): Promise<Match[]> {
+    return db
+      .select()
+      .from(matches)
+      .where(
+        or(
+          eq(matches.host_id, userId),
+          eq(matches.requester_id, userId)
+        )
+      )
+      .orderBy(desc(matches.created_at));
+  }
+  
+  async getCollaborationMatches(collaborationId: string): Promise<Match[]> {
+    return db
+      .select()
+      .from(matches)
+      .where(eq(matches.collaboration_id, collaborationId))
+      .orderBy(desc(matches.created_at));
+  }
+  
+  async getMatchById(id: string): Promise<Match | undefined> {
+    const [match] = await db
+      .select()
+      .from(matches)
+      .where(eq(matches.id, id));
+    return match;
+  }
+  
+  async updateMatchStatus(id: string, status: string): Promise<Match | undefined> {
+    try {
+      const [updatedMatch] = await db
+        .update(matches)
+        .set({ 
+          status,
+          updated_at: new Date()
+        })
+        .where(eq(matches.id, id))
+        .returning();
+      return updatedMatch;
+    } catch (error) {
+      console.error("Error updating match status:", error);
+      throw error;
+    }
   }
   
   // Notification methods
@@ -754,540 +826,47 @@ export class DatabaseStorage implements IStorage {
   }
   
   async markNotificationAsRead(id: string): Promise<CollabNotification | undefined> {
-    const [notification] = await db
-      .update(collab_notifications)
-      .set({ is_read: true })
-      .where(eq(collab_notifications.id, id))
-      .returning();
-    return notification;
+    try {
+      const [updatedNotification] = await db
+        .update(collab_notifications)
+        .set({ is_read: true })
+        .where(eq(collab_notifications.id, id))
+        .returning();
+      return updatedNotification;
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      throw error;
+    }
   }
   
   async markNotificationAsSent(id: string): Promise<CollabNotification | undefined> {
-    const [notification] = await db
-      .update(collab_notifications)
-      .set({ is_sent: true })
-      .where(eq(collab_notifications.id, id))
-      .returning();
-    return notification;
-  }
-  
-  // Swipe methods
-  async createSwipe(swipe: InsertSwipe): Promise<Swipe> {
     try {
-      console.log("Creating swipe with data:", JSON.stringify(swipe, null, 2));
-      
-      // Insert the new swipe
-      const [newSwipe] = await db
-        .insert(swipes)
-        .values({
-          ...swipe,
-          details: swipe.details || {} // Ensure details is set (not undefined)
-        })
+      const [updatedNotification] = await db
+        .update(collab_notifications)
+        .set({ is_sent: true })
+        .where(eq(collab_notifications.id, id))
         .returning();
-      
-      console.log("Swipe created:", JSON.stringify(newSwipe, null, 2));
-
-      // If this is a right swipe, get the collaboration details for notifications
-      if (swipe.direction === 'right') {
-        // Get the collaboration details
-        const [collaboration] = await db
-          .select()
-          .from(collaborations)
-          .where(eq(collaborations.id, swipe.collaboration_id));
-        
-        if (collaboration) {
-          // Send a notification to the host (collaboration creator)
-          // but only if the swiper is not the host themselves
-          if (collaboration.creator_id !== swipe.user_id) {
-            try {
-              console.log("Sending collaboration request notification to host:", {
-                hostId: collaboration.creator_id,
-                requesterId: swipe.user_id,
-                collaborationId: swipe.collaboration_id
-              });
-              
-              // Send the notification using our new function
-              await notifyNewCollabRequest(
-                collaboration.creator_id,
-                swipe.user_id,
-                swipe.collaboration_id,
-                newSwipe.note || undefined // Pass the optional note, convert null to undefined
-              );
-            } catch (notifyError) {
-              console.error("Error sending collab request notification:", notifyError);
-              // Continue processing even if notification fails
-            }
-          }
-          
-          // Check for a match
-          await this.checkForMatch(newSwipe);
-        }
-      }
-      
-      return newSwipe;
+      return updatedNotification;
     } catch (error) {
-      console.error("Error creating swipe:", error);
-      throw error;
-    }
-  }
-  
-  // Helper method to check for a match when a new swipe is created
-  private async checkForMatch(newSwipe: Swipe): Promise<void> {
-    try {
-      console.log("Checking for match with new swipe:", newSwipe.id);
-      
-      // Get the collaboration details
-      const collaboration = await this.getCollaboration(newSwipe.collaboration_id);
-      if (!collaboration) {
-        console.error("Collaboration not found:", newSwipe.collaboration_id);
-        return;
-      }
-      
-      // Determine if the user is swiping on their own collaboration
-      const isUserTheHost = newSwipe.user_id === collaboration.creator_id;
-      if (isUserTheHost) {
-        console.log("User is swiping on their own collaboration - skipping match check");
-        return;
-      }
-      
-      // If requester swiped right on host's collaboration, 
-      // check if host has swiped right on any of requester's collaborations
-      const hostId = collaboration.creator_id;
-      const requesterId = newSwipe.user_id;
-      
-      console.log(`Checking for match: Host ID ${hostId}, Requester ID ${requesterId}`);
-      
-      // Get requester's collaborations
-      const requesterCollabs = await this.getUserCollaborations(requesterId);
-      if (requesterCollabs.length === 0) {
-        console.log("Requester has no collaborations - no match possible");
-        return;
-      }
-      
-      const requesterCollabIds = requesterCollabs.map(collab => collab.id);
-      
-      // Check if host has swiped right on any of requester's collaborations
-      const hostRightSwipes = await db
-        .select()
-        .from(swipes)
-        .where(and(
-          eq(swipes.user_id, hostId),
-          inArray(swipes.collaboration_id, requesterCollabIds),
-          eq(swipes.direction, 'right')
-        ));
-      
-      if (hostRightSwipes.length === 0) {
-        console.log("No matching right swipes found from host");
-        return;
-      }
-      
-      console.log(`Found ${hostRightSwipes.length} potential matches from host`);
-      
-      // We have a match! Create a match record and notifications
-      const matchedSwipe = hostRightSwipes[0]; // Use the first match found
-      const matchedCollab = requesterCollabs.find(c => c.id === matchedSwipe.collaboration_id);
-      
-      if (!matchedCollab) {
-        console.error("Matched collaboration not found:", matchedSwipe.collaboration_id);
-        return;
-      }
-      
-      console.log("Creating match between:", {
-        host_collab: newSwipe.collaboration_id,
-        host_id: hostId,
-        requester_collab: matchedCollab.id,
-        requester_id: requesterId
-      });
-      
-      // Create the match record with the note from the swipe
-      const match = await this.createMatch({
-        collaboration_id: newSwipe.collaboration_id,
-        host_id: hostId,
-        requester_id: requesterId,
-        note: newSwipe.note // Directly copy the note from the swipe to the match
-      });
-      
-      // Log detailed info about note transfer
-      console.log("Note transfer details:", {
-        swipeId: newSwipe.id,
-        swipeNote: newSwipe.note,
-        matchId: match.id,
-        matchNote: match.note
-      });
-      
-      console.log("Match created:", match);
-      
-      // Get user details for notifications
-      const host = await this.getUser(hostId);
-      const requester = await this.getUser(requesterId);
-      
-      if (!host || !requester) {
-        console.error("Could not find host or requester for notifications");
-        return;
-      }
-      
-      // Create notifications for both parties
-      await this.createNotification({
-        user_id: hostId,
-        collaboration_id: newSwipe.collaboration_id,
-        type: 'match',
-        content: `${requester.first_name} ${requester.last_name || ''} matched with your ${collaboration.collab_type} collaboration!`,
-        is_read: false,
-        is_sent: false,
-        created_at: new Date()
-      });
-      
-      await this.createNotification({
-        user_id: requesterId,
-        collaboration_id: matchedCollab.id,
-        type: 'match',
-        content: `You matched with ${host.first_name} ${host.last_name || ''}'s ${collaboration.collab_type} collaboration!`,
-        is_read: false,
-        is_sent: false,
-        created_at: new Date()
-      });
-      
-      console.log("Match notifications created successfully");
-      
-      // Send Telegram notifications to both users
-      try {
-        console.log("Sending Telegram match notifications to users:", {
-          hostId,
-          requesterId,
-          collaborationId: newSwipe.collaboration_id
-        });
-        
-        await notifyMatchCreated(hostId, requesterId, newSwipe.collaboration_id);
-        console.log("Telegram notifications sent successfully");
-      } catch (telegramError) {
-        // Don't fail the process if Telegram notification fails
-        console.error("Error sending Telegram notifications:", telegramError);
-      }
-    } catch (error) {
-      console.error("Error checking for match:", error);
-    }
-  }
-  
-  async getUserSwipes(userId: string): Promise<Swipe[]> {
-    try {
-      return db
-        .select()
-        .from(swipes)
-        .where(eq(swipes.user_id, userId))
-        .orderBy(desc(swipes.created_at));
-    } catch (error) {
-      console.error("Error getting user swipes:", error);
-      throw error;
-    }
-  }
-  
-  async getCollaborationSwipes(collaborationId: string): Promise<Swipe[]> {
-    try {
-      return db
-        .select()
-        .from(swipes)
-        .where(eq(swipes.collaboration_id, collaborationId))
-        .orderBy(desc(swipes.created_at));
-    } catch (error) {
-      console.error("Error getting collaboration swipes:", error);
-      throw error;
-    }
-  }
-  
-  async getPotentialMatchesForHost(userId: string): Promise<any[]> {
-    try {
-      // 1. Get all collaborations created by this user
-      const userCollabs = await this.getUserCollaborations(userId);
-      if (!userCollabs.length) {
-        return [];
-      }
-      
-      const collabIds = userCollabs.map(collab => collab.id);
-      
-      // 2. Find all right swipes by other users on these collaborations
-      const rightSwipes = await db
-        .select({
-          swipe: swipes,
-          user: users,
-          company: companies,
-          collaboration: collaborations
-        })
-        .from(swipes)
-        .where(and(
-          inArray(swipes.collaboration_id, collabIds),
-          eq(swipes.direction, 'right') // Only get right swipes (interest)
-        ))
-        .innerJoin(users, eq(swipes.user_id, users.id))
-        .innerJoin(companies, eq(users.id, companies.user_id))
-        .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
-        .orderBy(desc(swipes.created_at));
-      
-      // 3. Filter out potential matches that have already been swiped on
-      
-      // First, get all swipes made by the host for regular collaborations
-      const hostSwipes = await this.getUserSwipes(userId);
-      const hostSwipeMap = new Map();
-      
-      // Create a map of user_id -> collaboration_id -> direction
-      hostSwipes.forEach(swipe => {
-        if (!hostSwipeMap.has(swipe.user_id)) {
-          hostSwipeMap.set(swipe.user_id, new Map());
-        }
-        hostSwipeMap.get(swipe.user_id).set(swipe.collaboration_id, swipe.direction);
-      });
-      
-      // Also track swipes made on potential matches by their swipe ID
-      // This is critical - we need to exclude potential matches that have already been swiped on
-      const swipeIdSet = new Set<string>();
-      hostSwipes.forEach(swipe => {
-        swipeIdSet.add(swipe.id);
-      });
-      
-      // 3b. Get all existing matches for the user to filter out already matched collaborations
-      const userMatches = await this.getUserMatches(userId);
-      console.log(`Found ${userMatches.length} existing matches for user ${userId}`);
-      
-      // Create a set of collaboration IDs that are already in the matches table
-      const matchedCollaborationIds = new Set<string>(
-        userMatches.map(match => match.collaboration_id)
-      );
-      
-      // Filter out already-swiped users or already-swiped potential matches
-      const potentialMatches = rightSwipes.filter(match => {
-        // Skip if this swipe ID is in our previously swiped set
-        if (swipeIdSet.has(match.swipe.id)) {
-          console.log(`Filtering out already swiped potential match with swipe ID: ${match.swipe.id}`);
-          return false;
-        }
-        
-        // Check if this collaboration already has a match
-        if (matchedCollaborationIds.has(match.collaboration.id)) {
-          console.log(`Filtering out already matched collaboration with ID: ${match.collaboration.id}`);
-          return false;
-        }
-        
-        // Also check the traditional way - if host has swiped on this user's collaboration
-        const userMap = hostSwipeMap.get(match.user.id);
-        if (!userMap) return true; // Host hasn't swiped on this user at all
-        
-        // Check if host has swiped on this user for this collaboration
-        return !userMap.has(match.collaboration.id);
-      });
-      
-      // 4. Format the data for the frontend
-      return potentialMatches.map(match => ({
-        id: match.swipe.id,
-        swipe_id: match.swipe.id,
-        user_id: match.user.id,
-        collaboration_id: match.collaboration.id,
-        collaboration_type: match.collaboration.collab_type,
-        collaboration_description: match.collaboration.description,
-        collaboration_topics: match.collaboration.topics,
-        swipe_direction: match.swipe.direction,
-        swipe_created_at: match.swipe.created_at,
-        user_first_name: match.user.first_name,
-        user_last_name: match.user.last_name,
-        user_twitter_followers: match.user.twitter_followers,
-        company_name: match.company.name,
-        company_job_title: match.company.job_title,
-        company_twitter_followers: match.company.twitter_followers,
-        company_description: match.company.short_description,
-        company_website: match.company.website,
-        company_twitter: match.company.twitter_handle,
-        company_linkedin: match.company.linkedin_url,
-        requester_company: match.company.name,
-        requester_role: match.company.job_title,
-        note: match.swipe.note // Include the personalized note in potential matches
-      }));
-    } catch (error) {
-      console.error("Error getting potential matches for host:", error);
-      throw error;
-    }
-  }
-  
-  // Match methods
-  async createMatch(match: InsertMatch): Promise<Match> {
-    try {
-      const [newMatch] = await db
-        .insert(matches)
-        .values(match)
-        .returning();
-      return newMatch;
-    } catch (error) {
-      console.error("Error creating match:", error);
-      throw error;
-    }
-  }
-
-  async getUserMatches(userId: string): Promise<Match[]> {
-    try {
-      // Get matches where the user is either host or requester
-      const userMatches = await db
-        .select()
-        .from(matches)
-        .where(
-          or(
-            eq(matches.host_id, userId),
-            eq(matches.requester_id, userId)
-          )
-        )
-        .orderBy(desc(matches.created_at));
-      return userMatches;
-    } catch (error) {
-      console.error("Error getting user matches:", error);
-      throw error;
-    }
-  }
-  
-  async getUserMatchesWithDetails(userId: string): Promise<any[]> {
-    try {
-      console.log(`Fetching complete match details for user ${userId}`);
-      
-      // Get matches with collaboration and user details in a single query
-      const result = await db.execute(sql`
-        WITH user_matches AS (
-          SELECT 
-            m.*,
-            CASE
-              WHEN m.host_id = ${userId} THEN m.requester_id
-              ELSE m.host_id
-            END AS other_user_id,
-            CASE
-              WHEN m.host_id = ${userId} THEN 'host'
-              ELSE 'requester'
-            END AS user_role
-          FROM matches m
-          WHERE m.host_id = ${userId} OR m.requester_id = ${userId}
-          ORDER BY m.created_at DESC
-        )
-        SELECT
-          um.id AS match_id,
-          um.collaboration_id,
-          um.status AS match_status,
-          um.created_at AS match_date,
-          um.user_role,
-          um.note AS match_note,
-          
-          -- Collaboration details
-          c.id AS collab_id,
-          c.collab_type,
-          c.description AS collab_description,
-          c.topics AS collab_topics,
-          c.status AS collab_status,
-          c.details AS collab_details,
-          
-          -- Other user details
-          ou.id AS other_user_id,
-          ou.first_name AS other_user_first_name,
-          ou.last_name AS other_user_last_name,
-          ou.handle AS other_user_handle,
-          ou.twitter_followers AS other_user_twitter_followers,
-          ou.twitter_url AS other_user_twitter_url,
-          ou.linkedin_url AS other_user_linkedin_url,
-          
-          -- Other user's company details
-          comp.id AS company_id,
-          comp.name AS company_name,
-          comp.job_title AS role_title,
-          comp.short_description AS company_description,
-          comp.website AS company_website,
-          comp.twitter_handle AS company_twitter_handle,
-          comp.twitter_followers AS company_twitter_followers,
-          comp.linkedin_url AS company_linkedin_url,
-          comp.funding_stage,
-          comp.has_token,
-          comp.token_ticker,
-          comp.blockchain_networks,
-          comp.tags AS company_tags
-        FROM user_matches um
-        JOIN collaborations c ON um.collaboration_id = c.id
-        JOIN users ou ON um.other_user_id = ou.id
-        LEFT JOIN companies comp ON ou.id = comp.user_id
-        ORDER BY um.created_at DESC
-      `);
-      
-      // Access the rows directly from the query result and convert to array of objects
-      const matchesResult = Array.isArray(result) ? result : [];
-      const rows = 'rows' in result ? result.rows : matchesResult;
-      const userMatchesWithDetails = Array.isArray(rows) ? rows : [];
-      
-      console.log(`Found ${userMatchesWithDetails.length} enriched matches for user ${userId}`);
-      return userMatchesWithDetails;
-    } catch (error) {
-      console.error("Error getting user matches with details:", error);
-      throw error;
-    }
-  }
-
-  async getCollaborationMatches(collaborationId: string): Promise<Match[]> {
-    try {
-      const collabMatches = await db
-        .select()
-        .from(matches)
-        .where(eq(matches.collaboration_id, collaborationId))
-        .orderBy(desc(matches.created_at));
-      return collabMatches;
-    } catch (error) {
-      console.error("Error getting collaboration matches:", error);
-      throw error;
-    }
-  }
-
-  async getMatchById(id: string): Promise<Match | undefined> {
-    try {
-      const [match] = await db
-        .select()
-        .from(matches)
-        .where(eq(matches.id, id));
-      return match;
-    } catch (error) {
-      console.error("Error getting match by ID:", error);
-      throw error;
-    }
-  }
-
-  async updateMatchStatus(id: string, status: string): Promise<Match | undefined> {
-    try {
-      // Make sure status is valid (active, archived, completed)
-      if (!['active', 'archived', 'completed'].includes(status)) {
-        throw new Error('Invalid status value. Status must be one of: active, archived, completed');
-      }
-      
-      const [updatedMatch] = await db
-        .update(matches)
-        .set({ 
-          status,
-          updated_at: new Date()
-        })
-        .where(eq(matches.id, id))
-        .returning();
-        
-      return updatedMatch;
-    } catch (error) {
-      console.error("Error updating match status:", error);
+      console.error("Error marking notification as sent:", error);
       throw error;
     }
   }
   
   // Notification preferences
   async getUserNotificationPreferences(userId: string): Promise<NotificationPreferences | undefined> {
-    const [userPreferences] = await db
+    const [prefs] = await db
       .select()
       .from(notification_preferences)
       .where(eq(notification_preferences.user_id, userId));
-    return userPreferences;
+    return prefs;
   }
   
   async updateUserNotificationPreferences(userId: string, prefs: Partial<NotificationPreferences>): Promise<NotificationPreferences | undefined> {
-    // Check if notification preferences exist for this user
     const existingPrefs = await this.getUserNotificationPreferences(userId);
     
-    // Log the current state for debugging
-    console.log(`[updateUserNotificationPreferences] User ${userId} - Existing prefs:`, existingPrefs);
-    console.log(`[updateUserNotificationPreferences] Updating with:`, prefs);
-    
     if (existingPrefs) {
-      // Update existing preferences with updated_at timestamp
+      // Update existing preferences
       const [updatedPrefs] = await db
         .update(notification_preferences)
         .set({
@@ -1296,63 +875,72 @@ export class DatabaseStorage implements IStorage {
         })
         .where(eq(notification_preferences.id, existingPrefs.id))
         .returning();
-      
-      console.log(`[updateUserNotificationPreferences] Updated preferences:`, updatedPrefs);
       return updatedPrefs;
     } else {
-      // Create new preferences with both timestamps
+      // Create new preferences
       const [newPrefs] = await db
         .insert(notification_preferences)
         .values({
           user_id: userId,
           notifications_enabled: prefs.notifications_enabled !== undefined ? prefs.notifications_enabled : true,
-          notification_frequency: prefs.notification_frequency || 'Daily',
-          created_at: new Date(),
+          notification_frequency: prefs.notification_frequency || "Daily",
           updated_at: new Date()
         })
         .returning();
-      
-      console.log(`[updateUserNotificationPreferences] Created new preferences:`, newPrefs);
       return newPrefs;
     }
   }
   
-  // Marketing preferences methods
+  // Marketing preferences
   async getUserMarketingPreferences(userId: string): Promise<MarketingPreferences | undefined> {
-    const [userPreferences] = await db
+    const [prefs] = await db
       .select()
       .from(marketing_preferences)
       .where(eq(marketing_preferences.user_id, userId));
-    return userPreferences;
+    return prefs;
   }
   
   async updateUserMarketingPreferences(userId: string, prefs: Partial<MarketingPreferences>): Promise<MarketingPreferences | undefined> {
-    // Check if preferences exist for this user
     const existingPrefs = await this.getUserMarketingPreferences(userId);
     
-    // Ensure all array fields are properly initialized and validated
-    const safePrefs = {
+    // Handle array fields
+    const processedPrefs = {
       ...prefs,
+      // Make sure array fields are properly initialized
       collabs_to_discover: Array.isArray(prefs.collabs_to_discover) ? prefs.collabs_to_discover : [],
       collabs_to_host: Array.isArray(prefs.collabs_to_host) ? prefs.collabs_to_host : [],
       twitter_collabs: Array.isArray(prefs.twitter_collabs) ? prefs.twitter_collabs : [],
       filtered_marketing_topics: Array.isArray(prefs.filtered_marketing_topics) ? prefs.filtered_marketing_topics : [],
-      company_blockchain_networks: Array.isArray(prefs.company_blockchain_networks) ? prefs.company_blockchain_networks : []
+      company_blockchain_networks: Array.isArray(prefs.company_blockchain_networks) ? prefs.company_blockchain_networks : [],
+      company_tags: Array.isArray(prefs.company_tags) ? prefs.company_tags : []
     };
     
     console.log("STORAGE: Saving marketing preferences with arrays:", {
-      collabs_to_discover: safePrefs.collabs_to_discover,
-      collabs_to_host: safePrefs.collabs_to_host,
-      twitter_collabs: safePrefs.twitter_collabs,
-      filtered_marketing_topics: safePrefs.filtered_marketing_topics,
-      company_blockchain_networks: safePrefs.company_blockchain_networks
+      collabs_to_discover: processedPrefs.collabs_to_discover,
+      collabs_to_host: processedPrefs.collabs_to_host,
+      twitter_collabs: processedPrefs.twitter_collabs,
+      filtered_marketing_topics: processedPrefs.filtered_marketing_topics,
+      company_blockchain_networks: processedPrefs.company_blockchain_networks,
+      company_tags: processedPrefs.company_tags
     });
     
     if (existingPrefs) {
       // Update existing preferences
       const [updatedPrefs] = await db
         .update(marketing_preferences)
-        .set(safePrefs)
+        .set({
+          ...processedPrefs,
+          // Ensure defaults for boolean fields
+          discovery_filter_enabled: prefs.discovery_filter_enabled || false,
+          discovery_filter_collab_types_enabled: prefs.discovery_filter_collab_types_enabled || false,
+          discovery_filter_topics_enabled: prefs.discovery_filter_topics_enabled || false,
+          discovery_filter_company_followers_enabled: prefs.discovery_filter_company_followers_enabled || false,
+          discovery_filter_user_followers_enabled: prefs.discovery_filter_user_followers_enabled || false,
+          discovery_filter_funding_stages_enabled: prefs.discovery_filter_funding_stages_enabled || false,
+          discovery_filter_token_status_enabled: prefs.discovery_filter_token_status_enabled || false,
+          discovery_filter_company_sectors_enabled: prefs.discovery_filter_company_sectors_enabled || false,
+          discovery_filter_blockchain_networks_enabled: prefs.discovery_filter_blockchain_networks_enabled || false,
+        })
         .where(eq(marketing_preferences.id, existingPrefs.id))
         .returning();
       return updatedPrefs;
@@ -1362,36 +950,36 @@ export class DatabaseStorage implements IStorage {
         .insert(marketing_preferences)
         .values({
           user_id: userId,
-          collabs_to_discover: safePrefs.collabs_to_discover,
-          collabs_to_host: safePrefs.collabs_to_host,
-          twitter_collabs: safePrefs.twitter_collabs,
-          filtered_marketing_topics: safePrefs.filtered_marketing_topics,
-          company_blockchain_networks: safePrefs.company_blockchain_networks,
+          collabs_to_discover: processedPrefs.collabs_to_discover,
+          collabs_to_host: processedPrefs.collabs_to_host,
+          twitter_collabs: processedPrefs.twitter_collabs,
+          filtered_marketing_topics: processedPrefs.filtered_marketing_topics,
+          // Ensure defaults for boolean fields
           discovery_filter_enabled: prefs.discovery_filter_enabled || false,
+          discovery_filter_collab_types_enabled: prefs.discovery_filter_collab_types_enabled || false,
           discovery_filter_topics_enabled: prefs.discovery_filter_topics_enabled || false,
           discovery_filter_company_followers_enabled: prefs.discovery_filter_company_followers_enabled || false,
           discovery_filter_user_followers_enabled: prefs.discovery_filter_user_followers_enabled || false,
           discovery_filter_funding_stages_enabled: prefs.discovery_filter_funding_stages_enabled || false,
           discovery_filter_token_status_enabled: prefs.discovery_filter_token_status_enabled || false,
           discovery_filter_company_sectors_enabled: prefs.discovery_filter_company_sectors_enabled || false,
-          discovery_filter_blockchain_networks_enabled: prefs.discovery_filter_blockchain_networks_enabled || false
+          discovery_filter_blockchain_networks_enabled: prefs.discovery_filter_blockchain_networks_enabled || false,
         })
         .returning();
       return newPrefs;
     }
   }
   
-  // Conference preferences methods
+  // Conference preferences
   async getUserConferencePreferences(userId: string): Promise<ConferencePreferences | undefined> {
-    const [userPreferences] = await db
+    const [prefs] = await db
       .select()
       .from(conference_preferences)
       .where(eq(conference_preferences.user_id, userId));
-    return userPreferences;
+    return prefs;
   }
   
   async updateUserConferencePreferences(userId: string, prefs: Partial<ConferencePreferences>): Promise<ConferencePreferences | undefined> {
-    // Check if preferences exist for this user
     const existingPrefs = await this.getUserConferencePreferences(userId);
     
     // Ensure all array fields are properly initialized and validated
@@ -1438,6 +1026,92 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return newPrefs;
     }
+  }
+  
+  // Referral methods
+  async getUserReferral(userId: string): Promise<UserReferral | undefined> {
+    const [referral] = await db
+      .select()
+      .from(user_referrals)
+      .where(eq(user_referrals.user_id, userId));
+    return referral;
+  }
+
+  async createUserReferral(referral: InsertUserReferral): Promise<UserReferral> {
+    const [newReferral] = await db
+      .insert(user_referrals)
+      .values(referral)
+      .returning();
+    return newReferral;
+  }
+
+  async getReferralByCode(referralCode: string): Promise<UserReferral | undefined> {
+    const [referral] = await db
+      .select()
+      .from(user_referrals)
+      .where(eq(user_referrals.referral_code, referralCode));
+    return referral;
+  }
+
+  async incrementReferralUsage(referralId: string): Promise<UserReferral | undefined> {
+    try {
+      const [referral] = await db
+        .select()
+        .from(user_referrals)
+        .where(eq(user_referrals.id, referralId));
+
+      if (!referral) {
+        console.error(`Referral with ID ${referralId} not found`);
+        return undefined;
+      }
+
+      const [updatedReferral] = await db
+        .update(user_referrals)
+        .set({ 
+          total_used: referral.total_used + 1,
+          updated_at: new Date()
+        })
+        .where(eq(user_referrals.id, referralId))
+        .returning();
+
+      return updatedReferral;
+    } catch (error) {
+      console.error("Error incrementing referral usage:", error);
+      throw error;
+    }
+  }
+
+  async createReferralEvent(event: InsertReferralEvent): Promise<ReferralEvent> {
+    const [newEvent] = await db
+      .insert(referral_events)
+      .values(event)
+      .returning();
+    return newEvent;
+  }
+
+  async completeReferralEvent(referralEventId: string): Promise<ReferralEvent | undefined> {
+    try {
+      const [updatedEvent] = await db
+        .update(referral_events)
+        .set({ 
+          status: 'completed',
+          completed_at: new Date()
+        })
+        .where(eq(referral_events.id, referralEventId))
+        .returning();
+      return updatedEvent;
+    } catch (error) {
+      console.error("Error completing referral event:", error);
+      throw error;
+    }
+  }
+
+  async getUserReferralEvents(userId: string): Promise<ReferralEvent[]> {
+    return db
+      .select()
+      .from(referral_events)
+      .where(eq(referral_events.referrer_id, userId))
+      .orderBy(desc(referral_events.created_at));
   }
 }
 
