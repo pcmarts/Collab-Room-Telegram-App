@@ -750,9 +750,17 @@ export async function registerRoutes(app: Express) {
           if (referral_code) {
             logger.info(`Processing referral code: ${referral_code} for new user ${user.id}`);
             try {
-              // If the code is in the format r_TELEGRAM_ID_RANDOM, extract the telegram_id
-              if (referral_code.startsWith('r_') && referral_code.includes('_')) {
-                const telegramIdFromCode = referral_code.split('_')[1];
+              // Handle both formats: with 'r_' prefix and without prefix (direct telegram_id_randomstring format)
+              if (referral_code.includes('_')) {
+                // If it has r_ prefix, extract it without the prefix
+                let processedCode = referral_code;
+                if (referral_code.startsWith('r_')) {
+                  processedCode = referral_code.substring(2);
+                }
+                // Extract the Telegram ID from the code
+                // For code format: telegramId_randomString, use index 0
+                // For code format: r_telegramId_randomString, we use the processedCode with r_ prefix removed
+                const telegramIdFromCode = processedCode.split('_')[0];
                 logger.info(`Extracted referrer Telegram ID from code: ${telegramIdFromCode}`);
                 
                 // Look up referrer by telegram_id
@@ -775,7 +783,7 @@ export async function registerRoutes(app: Express) {
                   logger.warn(`Could not find referrer with Telegram ID ${telegramIdFromCode} for code ${referral_code}`);
                 }
               } else {
-                logger.warn(`Referral code ${referral_code} doesn't match expected format r_TELEGRAM_ID_RANDOM`);
+                logger.warn(`Referral code ${referral_code} doesn't match expected format TELEGRAM_ID_RANDOM`);
               }
             } catch (referralError) {
               logger.error(`Error processing referral: ${referralError}`);

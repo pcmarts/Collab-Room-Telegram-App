@@ -235,15 +235,24 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
     console.log(`[START] User ${telegramId} started bot with param: ${referralParam || 'none'}`);
     
     // Check if the parameter is a referral code
-    if (referralParam && referralParam.startsWith('r_')) {
-      referralCode = referralParam.substring(2); // Remove 'r_' prefix
+    // Handle both formats: with 'r_' prefix and without prefix (direct telegram_id_randomstring format)
+    if (referralParam) {
+      if (referralParam.startsWith('r_')) {
+        referralCode = referralParam.substring(2); // Remove 'r_' prefix
+      } else if (referralParam.includes('_')) {
+        // If it has an underscore but no prefix, it's likely a direct referral code
+        referralCode = referralParam;
+      }
       console.log(`[REFERRAL] Found referral code: ${referralCode}`);
       
       // Look up the referrer by referral code
       // Parse the telegram_id from the referral code (format: telegram_id_random_string)
       // Ensure referralCode contains at least one underscore
       if (referralCode && referralCode.includes('_')) {
-        const telegramIdFromCode = referralCode.split('_')[1];
+        // Extract the Telegram ID from the code
+        // For code format: telegramId_randomString, use index 0
+        // For code format: r_telegramId_randomString, we already removed the r_ prefix
+        const telegramIdFromCode = referralCode.split('_')[0];
         console.log(`[REFERRAL] Extracted Telegram ID from code: ${telegramIdFromCode}`);
       
         // First try to look up user by the embedded telegram_id in the code
