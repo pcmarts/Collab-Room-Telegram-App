@@ -75,8 +75,17 @@ export default function AdminApplications() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [, setLocation] = useLocation();
 
+  // Type for current user profile data
+  interface ProfileData {
+    user: {
+      id: string;
+      is_admin: boolean;
+      // Other user properties can be added as needed
+    };
+  }
+
   // Check if current user is admin
-  const { data: currentUserData, isLoading: checkingAdmin } = useQuery({
+  const { data: currentUserData = { user: { id: '', is_admin: false } }, isLoading: checkingAdmin } = useQuery<ProfileData>({
     queryKey: ['/api/profile']
   });
 
@@ -145,42 +154,44 @@ export default function AdminApplications() {
 
   if (checkingAdmin) {
     return (
-      <div className="container mx-auto py-6 px-4">
+      <div className="container mx-auto py-6 px-4 h-screen flex flex-col">
         <PageHeader title="Pending Applications" backUrl="/dashboard" />
-        <div className="mt-8">Loading...</div>
+        <div className="mt-8 flex-1 overflow-auto">Loading...</div>
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="container mx-auto py-6 px-4">
+      <div className="container mx-auto py-6 px-4 h-screen flex flex-col">
         <PageHeader title="Pending Applications" backUrl="/dashboard" />
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>
-              You do not have permission to access this page.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <div className="mt-8 flex-1 overflow-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle>Access Denied</CardTitle>
+              <CardDescription>
+                You do not have permission to access this page.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 px-4">
+    <div className="container mx-auto py-6 px-4 h-screen flex flex-col">
       <PageHeader title="Pending Applications" backUrl="/admin" />
 
-      <div className="mt-8">
-        <Card>
+      <div className="mt-8 flex-1 overflow-auto">
+        <Card className="h-full flex flex-col">
           <CardHeader>
             <CardTitle>Review Applications</CardTitle>
             <CardDescription>
               Review and approve new user applications. {pendingUsers.length} pending applications.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 overflow-y-auto">
             {isLoading ? (
               <div>Loading applications...</div>
             ) : (
