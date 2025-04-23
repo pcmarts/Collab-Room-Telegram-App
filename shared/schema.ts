@@ -270,6 +270,9 @@ export const users = pgTable("users", {
   is_admin: boolean("is_admin").default(false),
   applied_at: timestamp("applied_at", { withTimezone: true }).defaultNow(),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  // New referral-related fields
+  referred_by: uuid("referred_by").references(() => users.id, { onDelete: "set null" }),
+  approved_at: timestamp("approved_at", { withTimezone: true }),
 });
 
 // Company information
@@ -574,6 +577,33 @@ export const matches = pgTable("matches", {
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
+// Combined table for referral tracking and limits
+export const user_referrals = pgTable("user_referrals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  referral_code: text("referral_code").notNull().unique(),
+  total_available: integer("total_available").notNull().default(3),
+  total_used: integer("total_used").notNull().default(0),
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// Table to track individual referrals
+export const referral_events = pgTable("referral_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  referrer_id: uuid("referrer_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  referred_user_id: uuid("referred_user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  status: text("status").notNull().default("pending"), // pending, completed, expired
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  completed_at: timestamp("completed_at", { withTimezone: true }),
+});
+
 // Schema validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
@@ -595,6 +625,14 @@ export const insertCollabNotificationSchema =
   createInsertSchema(collab_notifications);
 export const insertSwipeSchema = createInsertSchema(swipes);
 export const insertMatchSchema = createInsertSchema(matches);
+
+// Referral-related schemas
+export const referralCodeSchema = z.string().regex(/^[0-9]+_[a-f0-9]{8}$/, 
+  "Invalid referral code format");
+export const insertUserReferralSchema = createInsertSchema(user_referrals, {
+  referral_code: referralCodeSchema,
+});
+export const insertReferralEventSchema = createInsertSchema(referral_events);
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -633,6 +671,12 @@ export type InsertCollabNotification = z.infer<
 >;
 export type InsertSwipe = z.infer<typeof insertSwipeSchema>;
 export type InsertMatch = z.infer<typeof insertMatchSchema>;
+
+// Referral system types
+export type UserReferral = typeof user_referrals.$inferSelect;
+export type InsertUserReferral = z.infer<typeof insertUserReferralSchema>;
+export type ReferralEvent = typeof referral_events.$inferSelect;
+export type InsertReferralEvent = z.infer<typeof insertReferralEventSchema>;
 
 // Onboarding schema with validation
 // Rename to applicationSchema for clarity
