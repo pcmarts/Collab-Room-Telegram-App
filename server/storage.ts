@@ -1175,7 +1175,7 @@ export class DatabaseStorage implements IStorage {
           .set({ 
             referred_by: referrerId,
             // Auto-approve referred users
-            status: 'approved',
+            is_approved: true,
             approved_at: new Date()
           })
           .where(eq(users.id, userId));
@@ -1184,13 +1184,58 @@ export class DatabaseStorage implements IStorage {
         await tx
           .insert(referral_events)
           .values({
-            id: crypto.randomUUID(),
             referrer_id: referrerId,
-            referred_id: userId,
-            status: 'completed',
-            created_at: new Date(),
-            completed_at: new Date()
+            referred_user_id: userId,
+            status: 'pending',
+            created_at: new Date()
           });
+          
+        // 3. Check if referrer has a referral record, create if not
+        const [referrerRecord] = await tx
+          .select()
+          .from(user_referrals)
+          .where(eq(user_referrals.user_id, referrerId));
+          
+        if (!referrerRecord) {
+          // Get referrer's Telegram ID for the referral code
+          const [referrer] = await tx
+            .select()
+            .from(users)
+            .where(eq(users.id, referrerId));
+            
+          if (referrer) {
+            // Create Telegram-specific referral code (r_TELEGRAM_ID_RANDOM)
+            const randomSuffix = crypto.randomBytes(4).toString('hex');
+            const referralCode = `r_${referrer.telegram_id}_${randomSuffix}`;
+            
+            // Create user_referral record
+            await tx
+              .insert(user_referrals)
+              .values({
+                user_id: referrerId,
+                referral_code: referralCode,
+                total_available: 3, // Default limit
+                total_used: 1, // This is the first use
+                created_at: new Date(),
+                updated_at: new Date()
+              });
+              
+            // Update user's referral code
+            await tx
+              .update(users)
+              .set({ referral_code: referralCode })
+              .where(eq(users.id, referrerId));
+          }
+        } else {
+          // Increment the usage count
+          await tx
+            .update(user_referrals)
+            .set({ 
+              total_used: referrerRecord.total_used + 1,
+              updated_at: new Date()
+            })
+            .where(eq(user_referrals.id, referrerRecord.id));
+        }
       });
     } catch (error) {
       console.error("Error applying referral:", error);
@@ -1216,24 +1261,17 @@ export class DatabaseStorage implements IStorage {
     details?: Record<string, any>;
   }): Promise<void> {
     try {
-      // Create an activity log entry
-      await db
-        .insert(referral_events)
-        .values({
-          id: crypto.randomUUID(),
-          referrer_id: data.userId,
-          referred_id: null, // No referred user for these events
-          status: 'activity_log', // Special status for analytics
-          created_at: new Date(),
-          details: data.details ? JSON.stringify({
-            event_type: data.eventType,
-            timestamp: new Date().toISOString(),
-            ...data.details
-          }) : JSON.stringify({
-            event_type: data.eventType,
-            timestamp: new Date().toISOString()
-          })
-        });
+      // Create a separate table entry in the database for analytics
+      console.log(`Logging referral activity of type ${data.eventType} for user ${data.userId}`);
+      
+      // For now, we'll just log to console since we don't have a dedicated analytics table
+      // In the future, this should be stored in a separate analytics table
+      console.log(JSON.stringify({
+        user_id: data.userId,
+        event_type: data.eventType,
+        timestamp: new Date().toISOString(),
+        details: data.details
+      }));
     } catch (error) {
       console.error("Error logging referral activity:", error);
       // Don't throw error - we don't want analytics to break the app
