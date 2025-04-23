@@ -54,6 +54,79 @@ interface TelegramRequest extends express.Request {
   }
 }
 
+// Helper function to extract Telegram user data from request
+// This ensures all referral routes have access to authenticated user data
+function getTelegramUserFromRequest(req: any) {
+  try {
+    // If impersonating and not an admin endpoint, return impersonated user
+    if (req.session?.impersonating) {
+      return req.session.impersonating.impersonatedUser;
+    }
+
+    // Check if we have valid cached Telegram user data in the session
+    // and it's less than 30 minutes old
+    const SESSION_DATA_TTL = 30 * 60 * 1000; // 30 minutes
+    if (req.session?.telegramUser && 
+        req.session.telegramUser.id && 
+        (Date.now() - req.session.telegramUser.cachedAt < SESSION_DATA_TTL)) {
+      // Use the cached data from session
+      return req.session.telegramUser;
+    }
+
+    // Get from the standard Telegram init data
+    const initData = req.headers['x-telegram-init-data'] as string;
+    if (initData) {
+      try {
+        // Parse Telegram data
+        const decodedInitData = new URLSearchParams(initData);
+        const userJson = decodedInitData.get('user') || '{}';
+        const telegramUser = JSON.parse(userJson);
+        
+        if (telegramUser.id) {
+          // Store the parsed data in session for future requests
+          if (req.session) {
+            req.session.telegramUser = {
+              ...telegramUser,
+              cachedAt: Date.now()
+            };
+          }
+          return telegramUser;
+        }
+      } catch (err) {
+        console.error('Failed to parse Telegram init data:', err);
+      }
+    }
+    
+    return null;
+  } catch (err) {
+    console.error('Error extracting Telegram user:', err);
+    return null;
+  }
+}
+
+// Authentication middleware for referral routes
+const telegramAuthMiddleware = (req: TelegramRequest, res: express.Response, next: express.NextFunction) => {
+  console.log('============ DEBUG: Referral API Request ============');
+  console.log('URL:', req.originalUrl);
+  console.log('Headers:', req.headers);
+  
+  const telegramUser = getTelegramUserFromRequest(req);
+  if (telegramUser) {
+    console.log('Telegram User Found:', telegramUser.id, telegramUser.first_name, telegramUser.last_name);
+    req.telegramData = telegramUser;
+    next();
+  } else {
+    console.error('No Telegram user data found in request - Authentication failed');
+    res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+  }
+};
+
+// Apply the authentication middleware to all routes
+router.use(telegramAuthMiddleware);
+
 // Define validation schemas
 const validateReferralSchema = z.object({
   referral_code: z.string().min(5),
