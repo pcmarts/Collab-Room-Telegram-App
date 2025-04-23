@@ -1,0 +1,39 @@
+@@ -282,14 +282,34 @@
+     if (!existingUser) {
++      // Build URL with referral code if available
++      let applicationUrl = `${WEBAPP_URL}/welcome`;
++      if (referralCode) {
++        applicationUrl += `?referral=${referralCode}`;
++      }
++      
+       keyboard = {
+         inline_keyboard: [
+           [
+             {
+               text: "Apply to Join",
+-              web_app: { url: `${WEBAPP_URL}/welcome` },
++              web_app: { url: applicationUrl },
+             },
+           ],
+         ],
+       };
+-      welcomeMessage =
+-        "👋 Welcome to Collab Room!\n\nThis is the fastest way to find and share marketing collabs with other Web3 brands—guest blogs, Twitter Collabs, AMAs, and more.\n\nYou'll get filtered, relevant opportunities straight to your Telegram, and can push your own out to a verified network.\n\nClick below to start your application.";
++      
++      // Customize welcome message for referred users
++      if (referrerDetails) {
++        const referrerName = `${referrerDetails.first_name} ${referrerDetails.last_name}`.trim();
++        const companyPart = referrerDetails.company_name ? ` from ${referrerDetails.company_name}` : '';
++        
++        welcomeMessage =
++          `🎉 Congratulations! You've been referred by ${referrerName}${companyPart}.\n\n` +
++          "Welcome to Collab Room - the fastest way to find and share marketing collabs with other Web3 brands—guest blogs, Twitter Collabs, AMAs, and more.\n\n" +
++          "You'll get filtered, relevant opportunities straight to your Telegram, and can push your own out to a verified network.\n\n" +
++          "Click below to start your application with your referral already applied.";
++      } else {
++        welcomeMessage =
++          "👋 Welcome to Collab Room!\n\n" +
++          "This is the fastest way to find and share marketing collabs with other Web3 brands—guest blogs, Twitter Collabs, AMAs, and more.\n\n" +
++          "You'll get filtered, relevant opportunities straight to your Telegram, and can push your own out to a verified network.\n\n" +
++          "Click below to start your application.";
++      }

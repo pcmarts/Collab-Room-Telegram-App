@@ -215,6 +215,9 @@ bot.on("message", async (msg) => {
   }
 });
 
+// Register command handlers - capture the referral code if present
+bot.onText(/\/start(?:\s+(.+))?/, handleStart);
+
 // Register command handlers first
 async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | null) {
   const chatId = msg.chat.id;
@@ -280,18 +283,40 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
     let welcomeMessage;
 
     if (!existingUser) {
+      // Build URL with referral code if available
+      let applicationUrl = `${WEBAPP_URL}/welcome`;
+      if (referralCode) {
+        applicationUrl += `?referral=${referralCode}`;
+      }
+      
       keyboard = {
         inline_keyboard: [
           [
             {
               text: "Apply to Join",
-              web_app: { url: `${WEBAPP_URL}/welcome` },
+              web_app: { url: applicationUrl },
             },
           ],
         ],
       };
-      welcomeMessage =
-        "👋 Welcome to Collab Room!\n\nThis is the fastest way to find and share marketing collabs with other Web3 brands—guest blogs, Twitter Collabs, AMAs, and more.\n\nYou’ll get filtered, relevant opportunities straight to your Telegram, and can push your own out to a verified network.\n\nClick below to start your application.";
+      
+      // Customize welcome message for referred users
+      if (referrerDetails) {
+        const referrerName = `${referrerDetails.first_name} ${referrerDetails.last_name}`.trim();
+        const companyPart = referrerDetails.company_name ? ` from ${referrerDetails.company_name}` : '';
+        
+        welcomeMessage =
+          `🎉 Congratulations! You've been referred by ${referrerName}${companyPart}.\n\n` +
+          "Welcome to Collab Room - the fastest way to find and share marketing collabs with other Web3 brands—guest blogs, Twitter Collabs, AMAs, and more.\n\n" +
+          "You'll get filtered, relevant opportunities straight to your Telegram, and can push your own out to a verified network.\n\n" +
+          "Click below to start your application with your referral already applied.";
+      } else {
+        welcomeMessage =
+          "👋 Welcome to Collab Room!\n\n" +
+          "This is the fastest way to find and share marketing collabs with other Web3 brands—guest blogs, Twitter Collabs, AMAs, and more.\n\n" +
+          "You'll get filtered, relevant opportunities straight to your Telegram, and can push your own out to a verified network.\n\n" +
+          "Click below to start your application.";
+      }
     } else if (existingUser.is_approved) {
       keyboard = {
         inline_keyboard: [
@@ -582,83 +607,25 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
     const [company] = await db
       .select()
       .from(companies)
-      .where(eq(companies.user_id, creatorId));
+      .where(eq(companies.id, creator.company_id || ''));
       
-    if (!company) {
-      console.error(`Company for creator ${creatorId} not found`);
-      return;
-    }
-    
-    // Format creator Twitter URL if available
-    const creatorTwitterFormatted = creator.twitter_url
-      ? `<a href="${creator.twitter_url}">${creator.first_name} ${creator.last_name || ""}</a>`
-      : `${creator.first_name} ${creator.last_name || ""}`;
-      
-    // Format Telegram handle
-    const telegramHandle = creator.handle ? `@${creator.handle}` : "";
-    
-    // Format company website
-    const companyWebsite = company.website
-      ? company.website.startsWith("http")
-        ? company.website
-        : `https://${company.website}`
-      : null;
-        
-    // Format company name with website link
-    const companyNameFormatted = companyWebsite
-      ? `<a href="${companyWebsite}">${company.name}</a>`
-      : company.name;
-      
-    // Format company Twitter
-    const companyTwitterUrl = company.twitter_handle
-      ? `https://twitter.com/${company.twitter_handle.replace(/^@/, '')}`
-      : null;
-      
-    const companyTwitterLink = companyTwitterUrl
-      ? ` (<a href="${companyTwitterUrl}">Twitter</a>)`
-      : "";
-      
-    // Format collaboration details
-    const collabDetails = typeof collaboration.details === 'string'
-      ? JSON.parse(collaboration.details)
-      : collaboration.details || {};
-      
-    const shortDescription = collabDetails.short_description || "";
-    const expectations = collabDetails.expectations || "";
-    const goals = collabDetails.goals || "";
-    
     // Build the message with HTML formatting
+    // Make sure to include the collaboration type, description, and creator details
     const message =
       `🆕 <b>New Collaboration Created!</b>\n\n` +
       `<b>Type:</b> ${collaboration.collab_type}\n` +
-      `<b>Description:</b> ${collaboration.description || "N/A"}\n` +
-      (shortDescription ? `<b>Short Description:</b> ${shortDescription}\n` : "") +
-      (expectations ? `<b>Expectations:</b> ${expectations}\n` : "") +
-      (goals ? `<b>Goals:</b> ${goals}\n` : "") +
-      (collaboration.topics && collaboration.topics.length > 0 
-        ? `<b>Topics:</b> ${collaboration.topics.join(", ")}\n` 
-        : "") +
-      `\n<b>Created By:</b>\n` +
-      `<b>Name:</b> ${creatorTwitterFormatted} ${telegramHandle ? `(${telegramHandle})` : ""}\n` +
-      `<b>Company:</b> ${companyNameFormatted}${companyTwitterLink}\n` +
-      `<b>Role:</b> ${company.job_title}\n\n` +
-      `<b>Company Details:</b>\n` +
-      `<b>Funding Stage:</b> ${company.funding_stage || "N/A"}\n` +
-      (company.has_token ? `<b>Token:</b> ${company.token_ticker || "Yes"}\n` : "") +
-      (company.blockchain_networks && company.blockchain_networks.length > 0
-        ? `<b>Blockchain Networks:</b> ${company.blockchain_networks.join(", ")}\n`
-        : "") +
-      (company.tags && company.tags.length > 0
-        ? `<b>Tags:</b> ${company.tags.join(", ")}\n`
-        : "");
-        
-    // Create keyboard with view button
+      `<b>Description:</b> ${collaboration.description || 'Not provided'}\n\n` +
+      `<b>Created by:</b> ${creator.first_name} ${creator.last_name || ''} ${creator.handle ? `(@${creator.handle})` : ''}\n` +
+      `<b>Company:</b> ${company?.name || 'Unknown'}\n\n` +
+      `Use the button below to view the collaboration:`;
+
+    // Create inline keyboard with a button to view the collaboration
     const keyboard = {
       inline_keyboard: [
         [
           {
             text: "👁️ View Collaboration",
-            web_app: { url: `${WEBAPP_URL}/collaborations/${collaborationId}` },
+            web_app: { url: `${WEBAPP_URL}/admin/collaborations/${collaborationId}` },
           },
         ],
       ],
@@ -667,12 +634,12 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
     // Send notification to each admin
     for (const admin of adminUsers) {
       try {
-        const result = await bot.sendMessage(
+        await bot.sendMessage(
           parseInt(admin.telegram_id),
           message,
           {
             parse_mode: "HTML",
-            disable_web_page_preview: false, // Keep website previews for admin notifications
+            disable_web_page_preview: true,
             reply_markup: keyboard,
           },
         );
@@ -682,8 +649,8 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
         logAdminMessage(
           admin.telegram_id,
           "NEW_COLLABORATION",
-          `New collaboration created by ${creator.first_name} ${creator.last_name || ""} (${creator.telegram_id})`,
-          `Collaboration ID: ${collaborationId}`,
+          `New collaboration created by ${creator.first_name} ${creator.last_name || ""} (ID: ${collaborationId})`,
+          `${creator.first_name} ${creator.last_name || ""} (${creator.telegram_id || 'No Telegram ID'})`
         );
       } catch (error) {
         console.error(
@@ -696,22 +663,6 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
     console.error("Failed to notify admins about new collaboration:", error);
   }
 }
-
-// Initialize commands based on user roles
-setupBotCommands()
-  .then(success => {
-    if (success) {
-      console.log("Bot commands set up successfully");
-    } else {
-      console.error("Failed to set up bot commands");
-    }
-  })
-  .catch(error => {
-    console.error("Error setting up bot commands:", error);
-  });
-
-// Register command handlers - capture the referral code if present
-bot.onText(/\/start(?:\s+(.+))?/, handleStart);
 
 // Admin command to broadcast a message to all users
 async function handleBroadcast(msg: TelegramBot.Message) {
@@ -1046,37 +997,20 @@ async function handleStatus(msg: TelegramBot.Message) {
       .from(users)
       .where(eq(users.telegram_id, telegramId));
 
-    console.log("User found:", user);
-
     if (!user) {
-      // For users without applications, show the Apply button
-      const keyboard = {
-        inline_keyboard: [
-          [
-            {
-              text: "Apply to Join",
-              web_app: { url: `${WEBAPP_URL}/welcome` },
-            },
-          ],
-        ],
-      };
+      // User not found in database
       await bot.sendMessage(
         chatId,
-        "No application found. Click below to start your application.",
-        { reply_markup: keyboard },
+        "You haven't submitted an application yet. Please start the bot with /start and apply to join Collab Room."
       );
       return;
     }
 
-    const applicationDate = user.applied_at
-      ? format(new Date(user.applied_at), "MMMM d, yyyy")
-      : "Not available";
-
-    let statusMessage;
+    let statusText;
     let keyboard;
 
     if (user.is_approved) {
-      statusMessage = `✅ Your application has been approved!\n\nYou can now access Collab Room and discover new collaborations.`;
+      statusText = "✅ Your application has been approved! You have full access to Collab Room.";
       keyboard = {
         inline_keyboard: [
           [
@@ -1085,16 +1019,10 @@ async function handleStatus(msg: TelegramBot.Message) {
               web_app: { url: `${WEBAPP_URL}/discover` },
             },
           ],
-          [
-            {
-              text: "📣 Join Announcement Channel",
-              url: "https://t.me/TheMarketingDAO",
-            },
-          ],
         ],
       };
     } else {
-      statusMessage = `📝 Application Status: Under Review\n\nApplication Details:\n• Name: ${user.first_name} ${user.last_name}\n• Submitted: ${applicationDate}\n\nWe'll notify you here once your application has been reviewed.`;
+      statusText = "⏳ Your application is currently under review. We will notify you once it's approved.";
       keyboard = {
         inline_keyboard: [
           [
@@ -1103,637 +1031,423 @@ async function handleStatus(msg: TelegramBot.Message) {
               web_app: { url: `${WEBAPP_URL}/application-status` },
             },
           ],
-          [
-            {
-              text: "📣 Join Announcement Channel",
-              url: "https://t.me/TheMarketingDAO",
-            },
-          ],
         ],
       };
     }
 
-    await bot.sendMessage(chatId, statusMessage, {
-      parse_mode: "HTML",
-      reply_markup: keyboard,
-    });
-  } catch (error) {
-    console.error("Error handling status check:", error);
-    console.error("Full error details:", error);
     await bot.sendMessage(
       chatId,
-      "Sorry, something went wrong while checking your status. Please try again later.",
+      statusText,
+      keyboard ? { reply_markup: keyboard } : undefined
+    );
+  } catch (error) {
+    console.error("Error in handleStatus:", error);
+    await bot.sendMessage(
+      chatId,
+      "Sorry, something went wrong. Please try again in a few moments."
     );
   }
 }
 
+// Register status command handler
 bot.onText(/\/status/, handleStatus);
 
-// Handle callback queries for match info and user approvals
+// Handle callback queries (button clicks)
 bot.on("callback_query", async (callbackQuery) => {
-  const chatId = callbackQuery.message?.chat.id;
-
-  if (!chatId) {
-    console.error("No chat ID found in callback query");
-    return;
-  }
-
   try {
-    // Check callback data type and route to appropriate handler
-    if (callbackQuery.data?.startsWith("match_info_")) {
-      await handleMatchInfoCallback(callbackQuery);
-    }
-    // Handle user approval callback
-    else if (callbackQuery.data?.startsWith("approve_user_")) {
-      await handleApproveUserCallback(callbackQuery);
-    }
-    // Handle swipe actions from notifications
-    else if (callbackQuery.data?.startsWith("swipe_")) {
-      await handleSwipeCallback(callbackQuery);
-    }
-    // Handle broadcast confirmation
-    else if (callbackQuery.data === "broadcast_confirm") {
-      await handleBroadcastConfirm(callbackQuery);
-    }
-    // Handle broadcast cancellation
-    else if (callbackQuery.data === "broadcast_cancel") {
-      await handleBroadcastCancel(callbackQuery);
-    }
-  } catch (error) {
-    console.error("Error handling callback query:", error);
-    await bot.sendMessage(
-      chatId,
-      "Sorry, there was an error processing your request.",
-    );
-  }
-});
-
-// Handle broadcast confirmation
-async function handleBroadcastConfirm(callbackQuery: TelegramBot.CallbackQuery) {
-  const chatId = callbackQuery.message?.chat.id;
-  const telegramId = callbackQuery.from?.id.toString();
-  
-  if (!chatId || !telegramId) {
-    console.error("[BROADCAST] Missing chat ID or telegram ID in confirmation callback");
-    return;
-  }
-  
-  try {
-    // Acknowledge the callback
-    await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Processing your broadcast request...",
-      show_alert: false
-    });
+    const action = callbackQuery.data;
     
-    // Check if the user has a broadcast state and a message
-    const broadcastState = adminBroadcastState.get(telegramId);
-    if (!broadcastState || broadcastState.state !== "awaiting_confirmation" || !broadcastState.message) {
-      console.error("[BROADCAST] Invalid state in confirmation callback:", broadcastState);
-      await bot.sendMessage(chatId, "❌ Error: No broadcast message found. Please start over with /broadcast");
-      adminBroadcastState.delete(telegramId);
+    if (!action) {
+      console.log("Received callback query with no data");
       return;
     }
     
-    // Get the message from the state
-    const message = broadcastState.message;
+    console.log(`Received callback query with action: ${action}`);
     
-    // Update the message to show that broadcast is confirmed and starting
-    if (callbackQuery.message?.message_id) {
-      try {
-        await bot.editMessageText(
-          "✅ <b>Broadcast Confirmed</b>\n\nYour message is being sent to users now. Please wait for the broadcast to complete...",
-          {
-            chat_id: chatId,
-            message_id: callbackQuery.message.message_id,
-            parse_mode: "HTML"
-          }
-        );
-      } catch (editError) {
-        console.error("[BROADCAST] Error updating confirmation message:", editError);
-        // Continue with the broadcast even if the UI update fails
-      }
+    // Handle broadcast confirmation
+    if (action === "broadcast_confirm") {
+      await handleBroadcastConfirm(callbackQuery);
     }
-    
-    // Start the broadcast process
-    await broadcastMessageToUsers(message, telegramId, chatId);
+    // Handle broadcast cancellation
+    else if (action === "broadcast_cancel") {
+      await handleBroadcastCancel(callbackQuery);
+    }
+    // Handle user approval
+    else if (action.startsWith("approve_user_")) {
+      await handleApproveUserCallback(callbackQuery);
+    }
+    // Handle swipe actions
+    else if (action.startsWith("swipe_")) {
+      await handleSwipeCallback(callbackQuery);
+    }
+    // Handle match actions
+    else if (action.startsWith("match_info_")) {
+      await handleMatchInfoCallback(callbackQuery);
+    }
+    // Unknown action
+    else {
+      console.log(`Unknown callback action: ${action}`);
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Unknown action",
+      });
+    }
   } catch (error) {
-    console.error("[BROADCAST] Error in broadcast confirmation:", error);
+    console.error("Error handling callback query:", error);
+    try {
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Sorry, something went wrong. Please try again.",
+      });
+    } catch (err) {
+      console.error("Error sending callback answer:", err);
+    }
+  }
+});
+
+async function handleBroadcastConfirm(callbackQuery: TelegramBot.CallbackQuery) {
+  if (!callbackQuery.from.id || !callbackQuery.message?.chat.id) {
+    console.log("Missing required callback data for broadcast");
+    return;
+  }
+  
+  const telegramId = callbackQuery.from.id.toString();
+  const chatId = callbackQuery.message.chat.id;
+  
+  // Check broadcast state
+  const state = adminBroadcastState.get(telegramId);
+  
+  if (!state || state.state !== "awaiting_confirmation" || !state.message) {
+    console.log(`Invalid broadcast state for user ${telegramId}`);
+    await bot.sendMessage(
+      chatId,
+      "❌ <b>Error</b>\n\nBroadcast session expired or invalid. Please start again with /broadcast.",
+      { parse_mode: "HTML" }
+    );
+    adminBroadcastState.delete(telegramId);
+    return;
+  }
+  
+  try {
+    // Answer the callback to show processing
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Your broadcast is being processed...",
+    });
     
-    // Clean up state
+    // Update original message to show confirmation
+    await bot.editMessageText(
+      "📤 <b>Broadcast confirmed</b>\n\nYour message is being sent to all users with notifications enabled. Please wait...",
+      {
+        chat_id: chatId,
+        message_id: callbackQuery.message.message_id,
+        parse_mode: "HTML",
+        reply_markup: { inline_keyboard: [] }
+      }
+    );
+    
+    // Process the broadcast
+    await broadcastMessageToUsers(state.message, telegramId, chatId);
+    
+  } catch (error) {
+    console.error("Error processing broadcast confirmation:", error);
     adminBroadcastState.delete(telegramId);
     
     await bot.sendMessage(
       chatId,
-      "❌ <b>Broadcast Error</b>\n\nThere was an error processing your broadcast. Please try again with /broadcast.",
+      "❌ <b>Error</b>\n\nThere was an error processing your broadcast. Please try again with /broadcast.",
       { parse_mode: "HTML" }
     );
   }
 }
 
-// Handle broadcast cancellation
 async function handleBroadcastCancel(callbackQuery: TelegramBot.CallbackQuery) {
-  const chatId = callbackQuery.message?.chat.id;
-  const telegramId = callbackQuery.from?.id.toString();
+  if (!callbackQuery.from.id || !callbackQuery.message?.chat.id) {
+    console.log("Missing required callback data for broadcast cancel");
+    return;
+  }
   
-  if (!chatId || !telegramId) return;
+  const telegramId = callbackQuery.from.id.toString();
+  const chatId = callbackQuery.message.chat.id;
   
   try {
-    // Acknowledge the callback
+    // Answer the callback
     await bot.answerCallbackQuery(callbackQuery.id, {
       text: "Broadcast cancelled",
-      show_alert: false
     });
     
-    // Clean up state
+    // Remove from broadcast state
     adminBroadcastState.delete(telegramId);
     
-    // Update the message to show cancellation
-    if (callbackQuery.message?.message_id) {
-      try {
-        await bot.editMessageText(
-          "❌ <b>Broadcast Cancelled</b>\n\nYour broadcast message was not sent. Use /broadcast to start again if needed.",
-          {
-            chat_id: chatId,
-            message_id: callbackQuery.message.message_id,
-            parse_mode: "HTML"
-          }
-        );
-      } catch (editError) {
-        console.error("[BROADCAST] Error updating cancellation message:", editError);
-        // Send new message if edit fails
-        await bot.sendMessage(
-          chatId,
-          "❌ <b>Broadcast Cancelled</b>\n\nYour broadcast message was not sent. Use /broadcast to start again if needed.",
-          { parse_mode: "HTML" }
-        );
+    // Update the message
+    await bot.editMessageText(
+      "✅ <b>Broadcast cancelled</b>\n\nYour message will not be sent. Use /broadcast to start again if needed.",
+      {
+        chat_id: chatId,
+        message_id: callbackQuery.message.message_id,
+        parse_mode: "HTML",
+        reply_markup: { inline_keyboard: [] }
       }
-    }
+    );
     
+    // Log the cancellation
     logAdminMessage(
       telegramId,
       "BROADCAST_CANCELLED",
       "Admin cancelled broadcast at confirmation step"
     );
   } catch (error) {
-    console.error("[BROADCAST] Error handling broadcast cancellation:", error);
-    // Try to send a fallback message
+    console.error("Error cancelling broadcast:", error);
+    
     await bot.sendMessage(
       chatId,
-      "❌ Broadcast cancelled.",
+      "❌ <b>Error</b>\n\nThere was an error cancelling your broadcast, but the broadcast has been stopped.",
       { parse_mode: "HTML" }
     );
   }
 }
 
-// Handler for match info callbacks
-// Handle user approval callbacks from admin notifications
 async function handleApproveUserCallback(
-  callbackQuery: TelegramBot.CallbackQuery,
+  callbackQuery: TelegramBot.CallbackQuery
 ) {
-  const chatId = callbackQuery.message?.chat.id;
-  if (!chatId || !callbackQuery.data) return;
-
-  console.log(
-    "[CALLBACK_DEBUG] Processing user approval callback:",
-    callbackQuery.data,
-  );
-
   try {
-    // First, acknowledge the callback to show progress to admin
-    await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Processing approval...",
-      show_alert: false,
-    });
+    if (!callbackQuery.data) {
+      return;
+    }
 
-    // Extract Telegram ID from callback data
-    // Format: approve_user_{telegram_id}
-    const telegramId = callbackQuery.data.replace("approve_user_", "");
-    if (!telegramId) {
-      console.error(
-        "[CALLBACK_DEBUG] Invalid user approval callback format:",
-        callbackQuery.data,
-      );
-      await bot.sendMessage(chatId, "Error: Invalid approval data format");
+    // Extract the Telegram ID to approve from the callback data
+    // Format: approve_user_<telegram_id>
+    const telegramIdToApprove = callbackQuery.data.split("_")[2];
+    const adminTelegramId = callbackQuery.from.id.toString();
+    const chatId = callbackQuery.message?.chat.id;
+
+    if (!telegramIdToApprove || !chatId) {
+      console.error("Missing required data for user approval");
       return;
     }
 
     console.log(
-      "[CALLBACK_DEBUG] Approving user with Telegram ID:",
-      telegramId,
+      `[APPROVAL] Admin ${adminTelegramId} is approving user ${telegramIdToApprove}`
     );
 
-    // Get user by Telegram ID
-    const [user] = await db
+    // Find the user to approve by Telegram ID
+    const [userToApprove] = await db
       .select()
       .from(users)
-      .where(eq(users.telegram_id, telegramId));
+      .where(eq(users.telegram_id, telegramIdToApprove));
 
-    if (!user) {
-      console.error(
-        "[CALLBACK_DEBUG] User not found for approval:",
-        telegramId,
-      );
-      await bot.sendMessage(chatId, "Error: User not found");
+    if (!userToApprove) {
+      console.error(`[APPROVAL] User with Telegram ID ${telegramIdToApprove} not found`);
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "User not found in database.",
+        show_alert: true,
+      });
       return;
     }
 
     // Check if user is already approved
-    if (user.is_approved) {
-      console.log("[CALLBACK_DEBUG] User is already approved:", telegramId);
-      await bot.sendMessage(
-        chatId,
-        `User ${user.first_name} ${user.last_name || ""} is already approved.`,
-      );
+    if (userToApprove.is_approved) {
+      console.log(`[APPROVAL] User ${telegramIdToApprove} is already approved`);
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "This user is already approved.",
+        show_alert: true,
+      });
+
+      // Update the button text to show it's already approved
+      if (callbackQuery.message) {
+        // Get the current inline keyboard
+        const currentKeyboard = callbackQuery.message.reply_markup?.inline_keyboard;
+
+        if (currentKeyboard) {
+          // Update the first button (the approval button)
+          currentKeyboard[0][0] = {
+            text: "✅ Already Approved",
+            callback_data: "already_approved", // Dummy callback, won't do anything
+          };
+
+          // Update the message with the new keyboard
+          await bot.editMessageReplyMarkup(
+            { inline_keyboard: currentKeyboard },
+            {
+              chat_id: chatId,
+              message_id: callbackQuery.message.message_id,
+            }
+          );
+        }
+      }
       return;
     }
 
-    // Update user approval status
-    const [updatedUser] = await db
+    // Confirm the approval
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Approving user...",
+    });
+
+    // Update the user in the database
+    await db
       .update(users)
-      .set({ is_approved: true })
-      .where(eq(users.id, user.id))
-      .returning();
+      .set({
+        is_approved: true,
+        approved_at: new Date(),
+        approved_by: adminTelegramId,
+      })
+      .where(eq(users.telegram_id, telegramIdToApprove));
 
-    console.log("[CALLBACK_DEBUG] User approval successful:", updatedUser);
-
+    console.log(`[APPROVAL] User ${telegramIdToApprove} has been approved`);
+    
     // Log the approval action
-    const adminTelegramId = callbackQuery.from?.id?.toString() || "unknown";
     logAdminMessage(
       adminTelegramId,
       "USER_APPROVAL",
-      `Approved user: ${user.first_name} ${user.last_name || ""} (${telegramId})`,
-      `${user.first_name} ${user.last_name || ""} (${telegramId})`,
+      `Admin approved user ${userToApprove.first_name} ${userToApprove.last_name || ""} (${telegramIdToApprove})`,
+      `${userToApprove.first_name} ${userToApprove.last_name || ""} (${telegramIdToApprove})`
     );
 
     // Send notification to the approved user
-    try {
-      await notifyUserApproved(parseInt(telegramId));
-      console.log("[CALLBACK_DEBUG] Approval notification sent to user");
-    } catch (notifyError) {
-      console.error(
-        "[CALLBACK_DEBUG] Failed to send approval notification:",
-        notifyError,
-      );
-      // Continue execution even if notification fails
-    }
-    
-    // Enrich the company with Twitter data (async, don't wait for completion)
-    if (user.company_id) {
-      try {
-        // Import the Twitter enrichment utility (using dynamic import for ESM)
-        import('./utils/twitter-enrichment.js').then(({ enrichCompanyOnUserApproval }) => {
-          // Run Twitter enrichment in the background
-          enrichCompanyOnUserApproval(user.id)
-            .then(result => {
-              if (result.success) {
-                console.log(`[CALLBACK_DEBUG] Successfully enriched company Twitter data after user approval: ${result.message}`);
-              } else {
-                console.warn(`[CALLBACK_DEBUG] Failed to enrich company Twitter data after user approval: ${result.error}`);
-              }
-            })
-            .catch(err => {
-              console.error('[CALLBACK_DEBUG] Error during company Twitter enrichment after user approval:', err);
-            });
-        }).catch(importErr => {
-          console.error('[CALLBACK_DEBUG] Failed to import Twitter enrichment utility:', importErr);
-        });
-      } catch (enrichError) {
-        console.error('[CALLBACK_DEBUG] Failed to start Twitter enrichment process:', enrichError);
-        // Continue execution even if enrichment fails
-      }
-    }
+    await notifyUserApproved(parseInt(telegramIdToApprove));
 
-    // Update the admin's message to show approval status
-    try {
-      // Only edit the message if it exists
-      if (callbackQuery.message?.message_id) {
-        // Simplified keyboard for approval confirmation - no "Approved" button
-        const updatedKeyboard = {
-          inline_keyboard: [
-            [
-              {
-                text: "👁️ View Applications",
-                web_app: { url: `${WEBAPP_URL}/admin/applications` },
-              },
-            ],
-          ],
+    // Update the original message to show the user has been approved
+    if (callbackQuery.message) {
+      // Get the current inline keyboard
+      const currentKeyboard = callbackQuery.message.reply_markup?.inline_keyboard;
+
+      if (currentKeyboard) {
+        // Update the first button (the approval button)
+        currentKeyboard[0][0] = {
+          text: "✅ User Approved",
+          callback_data: "already_approved", // Dummy callback, won't do anything
         };
 
-        // Format user Twitter URL if available
-        const userTwitterLink = user.twitter_url
-          ? `<a href="${user.twitter_url}">${user.first_name} ${user.last_name || ""}</a>`
-          : `<b>${user.first_name} ${user.last_name || ""}</b>`;
-          
-        // Format user Telegram handle
-        const userTelegramHandle = user.handle ? ` (@${user.handle})` : "";
-          
-        await bot.editMessageText(
-          `✅ <b>Application Approved!</b>\n\n` +
-            `You have approved ${userTwitterLink}'s application.${userTelegramHandle}\n` +
-            `They have been notified and now have full access to the platform.`,
+        // Update the message with the new keyboard
+        await bot.editMessageReplyMarkup(
+          { inline_keyboard: currentKeyboard },
           {
             chat_id: chatId,
             message_id: callbackQuery.message.message_id,
-            parse_mode: "HTML",
-            reply_markup: updatedKeyboard,
-          },
+          }
         );
       }
-    } catch (editError) {
-      console.error(
-        "[CALLBACK_DEBUG] Failed to update approval message:",
-        editError,
-      );
-      // If editing fails, send a new message instead
-      // Format user Twitter URL if available
-      const userTwitterLink = user.twitter_url
-        ? `<a href="${user.twitter_url}">${user.first_name} ${user.last_name || ""}</a>`
-        : `<b>${user.first_name} ${user.last_name || ""}</b>`;
-        
-      // Format user Telegram handle
-      const userTelegramHandle = user.handle ? ` (@${user.handle})` : "";
-        
-      await bot.sendMessage(
-        chatId,
-        `✅ <b>Application Approved!</b>\n\n` +
-          `You have approved ${userTwitterLink}'s application.${userTelegramHandle}\n` +
-          `They have been notified and now have full access to the platform.`,
-        { parse_mode: "HTML" },
-      );
     }
   } catch (error) {
-    console.error("[CALLBACK_DEBUG] Error in user approval process:", error);
-    await bot.sendMessage(
-      chatId,
-      "Sorry, there was an error processing the approval. Please try again or check the admin dashboard.",
-    );
+    console.error("Error handling user approval:", error);
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "An error occurred while approving the user. Please try again.",
+      show_alert: true,
+    });
   }
 }
 
 async function handleMatchInfoCallback(
-  callbackQuery: TelegramBot.CallbackQuery,
+  callbackQuery: TelegramBot.CallbackQuery
 ) {
-  const chatId = callbackQuery.message?.chat.id;
-  if (!chatId || !callbackQuery.data) return;
-
-  console.log(
-    "[CALLBACK_DEBUG] Processing match info callback:",
-    callbackQuery.data,
-  );
-
   try {
-    // First, acknowledge the callback to show progress to user
-    await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Loading match details...",
-      show_alert: false,
-    });
-
-    // Extract data from callback
-    // Format: match_info_userId_collaborationId
-    const parts = callbackQuery.data.split("_");
-    if (parts.length !== 4) {
-      console.error(
-        "[CALLBACK_DEBUG] Invalid callback data format:",
-        callbackQuery.data,
-      );
+    if (!callbackQuery.data) {
       return;
     }
 
-    const userId = parts[2];
-    const collaborationId = parts[3];
+    // Extract match ID from the callback data
+    // Format: match_info_<match_id>
+    const matchId = callbackQuery.data.split("_")[2];
+    const chatId = callbackQuery.message?.chat.id;
 
-    console.log("[CALLBACK_DEBUG] Extracted IDs:", { userId, collaborationId });
-
-    // Get user details with full query logging
-    console.log("[CALLBACK_DEBUG] Fetching user data for ID:", userId);
-    const [user] = await db.select().from(users).where(eq(users.id, userId));
-
-    if (!user) {
-      console.error("[CALLBACK_DEBUG] User not found for match info:", userId);
-      await bot.sendMessage(
-        chatId,
-        "Sorry, the user information could not be found.",
-      );
+    if (!matchId || !chatId) {
+      console.error("Missing required data for match info");
       return;
     }
 
-    console.log("[CALLBACK_DEBUG] User data retrieved:", JSON.stringify(user));
+    console.log(`[MATCH_INFO] Fetching info for match ${matchId}`);
 
-    // Get company details with full query logging
-    console.log("[CALLBACK_DEBUG] Fetching company data for user ID:", userId);
-    const [company] = await db
+    // Find the match by ID
+    const [match] = await db
       .select()
-      .from(companies)
-      .where(eq(companies.user_id, userId));
+      .from(matches)
+      .where(eq(matches.id, matchId));
 
-    console.log(
-      "[CALLBACK_DEBUG] Company data retrieved:",
-      company ? JSON.stringify(company) : "None",
-    );
+    if (!match) {
+      console.error(`[MATCH_INFO] Match with ID ${matchId} not found`);
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Match not found in database.",
+        show_alert: true,
+      });
+      return;
+    }
 
-    // Get collaboration details with full query logging
-    console.log(
-      "[CALLBACK_DEBUG] Fetching collaboration data for ID:",
-      collaborationId,
-    );
+    // Get collaboration details
     const [collaboration] = await db
       .select()
       .from(collaborations)
-      .where(eq(collaborations.id, collaborationId));
+      .where(eq(collaborations.id, match.collaboration_id));
 
     if (!collaboration) {
-      console.error(
-        "[CALLBACK_DEBUG] Collaboration not found for ID:",
-        collaborationId,
-      );
-      await bot.sendMessage(
-        chatId,
-        "Sorry, the collaboration information could not be found.",
-      );
+      console.error(`[MATCH_INFO] Collaboration with ID ${match.collaboration_id} not found`);
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Collaboration details not found.",
+        show_alert: true,
+      });
       return;
     }
 
-    console.log(
-      "[CALLBACK_DEBUG] Collaboration data retrieved:",
-      JSON.stringify(collaboration),
-    );
+    // Get requester user details
+    const [requester] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, match.requester_id));
 
-    // Format user and company info
-    const userFullName = `${user.first_name} ${user.last_name || ""}`.trim();
-    const userHandle = user.handle ? `@${user.handle}` : "";
+    // Get host user details
+    const [host] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, match.host_id));
 
-    // Format company website and social links
-    const companyWebsite = company?.website
-      ? company.website.startsWith("http")
-        ? company.website
-        : `https://${company.website}`
-      : "";
-    const companyName = companyWebsite
-      ? `<a href="${companyWebsite}">${company?.name || "Unknown Company"}</a>`
-      : company?.name || "Unknown Company";
-
-    const twitterHandle = company?.twitter_handle || "";
-    const twitterUrl = twitterHandle
-      ? `https://twitter.com/${twitterHandle.replace("@", "")}`
-      : "";
-    const twitterFollowers = company?.twitter_followers || "Unknown";
-    const linkedinUrl = company?.linkedin_url || "";
-
-    // Build a detailed information message with rich formatting
-    let infoMessage = `<b>🔍 Match Details</b>\n\n`;
-
-    // User info section with tag linking and Telegram tag
-    infoMessage += `<b>👤 User:</b> ${userFullName}`;
-    if (userHandle) {
-      infoMessage += ` (<a href="https://t.me/${user.handle}">@${user.handle}</a>)`;
-    }
-    infoMessage += `\n`;
-
-    if (company) {
-      infoMessage += `<b>🏢 Company:</b> ${companyName}\n`;
-      infoMessage += `<b>💼 Role:</b> ${company.job_title || "Not specified"}\n`;
-      if (company.funding_stage) {
-        infoMessage += `<b>💰 Funding Stage:</b> ${company.funding_stage}\n`;
-      }
-
-      // Add blockchain networks if available
-      if (
-        company.blockchain_networks &&
-        company.blockchain_networks.length > 0
-      ) {
-        infoMessage += `<b>⛓️ Blockchain Networks:</b> ${company.blockchain_networks.join(", ")}\n`;
-      }
-
-      // Add company tags if available
-      if (company.tags && company.tags.length > 0) {
-        infoMessage += `<b>🏷️ Company Tags:</b> ${company.tags.join(", ")}\n`;
-      }
+    if (!requester || !host) {
+      console.error(`[MATCH_INFO] User details not found for match ${matchId}`);
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "User details not found.",
+        show_alert: true,
+      });
+      return;
     }
 
-    // Social links section with proper hyperlinks
-    let socialLinksSection = "";
-    if (twitterHandle) {
-      const formattedTwitterHandle = twitterHandle.startsWith("@")
-        ? twitterHandle
-        : `@${twitterHandle}`;
-      socialLinksSection += `• <a href="${twitterUrl}">Twitter: ${formattedTwitterHandle}</a> (${twitterFollowers} followers)\n`;
-    }
-    if (linkedinUrl) {
-      socialLinksSection += `• <a href="${linkedinUrl}">LinkedIn Profile</a>\n`;
-    }
+    // Build a detailed message with match information
+    const matchInfo = 
+      `<b>📋 Match Details</b>\n\n` +
+      `<b>Match Type:</b> ${collaboration.collab_type}\n` +
+      `<b>Created:</b> ${format(match.created_at || new Date(), "MMM d, yyyy")}\n\n` +
+      `<b>👤 Host:</b> ${host.first_name} ${host.last_name || ''} ${host.handle ? `(@${host.handle})` : ''}\n` +
+      `<b>👤 Requester:</b> ${requester.first_name} ${requester.last_name || ''} ${requester.handle ? `(@${requester.handle})` : ''}\n\n` +
+      `<b>Status:</b> ${match.status.charAt(0).toUpperCase() + match.status.slice(1)}\n\n` +
+      `Click below to view full details:`;
 
-    if (socialLinksSection) {
-      infoMessage += `\n<b>🔗 Social Links:</b>\n${socialLinksSection}`;
-    }
-
-    // Collaboration details section with enhanced formatting
-    infoMessage += `\n<b>🤝 Collaboration Type:</b> ${collaboration.collab_type}\n`;
-
-    if (collaboration.description) {
-      infoMessage += `\n<b>📝 Description:</b>\n${collaboration.description}\n`;
-    }
-
-    if (collaboration.topics && collaboration.topics.length > 0) {
-      infoMessage += `\n<b>🏷️ Topics:</b> ${collaboration.topics.join(", ")}\n`;
-    }
-
-    // Add collaboration details from JSON if available
-    if (collaboration.details) {
-      const details =
-        typeof collaboration.details === "string"
-          ? JSON.parse(collaboration.details)
-          : collaboration.details;
-
-      if (details.short_description) {
-        infoMessage += `\n<b>💡 Summary:</b>\n${details.short_description}\n`;
-      }
-      if (details.expectations) {
-        infoMessage += `\n<b>✅ Expectations:</b>\n${details.expectations}\n`;
-      }
-      if (details.goals) {
-        infoMessage += `\n<b>🎯 Goals:</b>\n${details.goals}\n`;
-      }
-    }
-
-    // Create keyboard with enhanced action buttons - one button per row for better Telegram display
+    // Create inline keyboard with button to view match
     const keyboard = {
       inline_keyboard: [
         [
           {
-            text: "💬 Chat Now",
-            url: `https://t.me/${user.handle || user.telegram_id}`,
-          },
-        ],
-        [
-          {
-            text: "🔎 View Full Profile",
-            web_app: { url: `${WEBAPP_URL}/discover` },
-          },
-        ],
-        [
-          {
-            text: "🚀 Find More Matches",
-            web_app: { url: `${WEBAPP_URL}/discover` },
+            text: "🔍 View Full Details",
+            web_app: { url: `${WEBAPP_URL}/matches/${matchId}` },
           },
         ],
       ],
     };
 
-    console.log("[CALLBACK_DEBUG] Sending formatted message:", infoMessage);
-    console.log("[CALLBACK_DEBUG] With keyboard:", JSON.stringify(keyboard));
+    // Answer the callback query first
+    await bot.answerCallbackQuery(callbackQuery.id);
 
-    // Send the detailed info using direct message approach to ensure proper formatting
-    try {
-      await sendDirectFormattedMessage(chatId, infoMessage, keyboard);
-      console.log(
-        "[CALLBACK_DEBUG] Successfully sent formatted message to chat:",
-        chatId,
-      );
-    } catch (error) {
-      console.error("[CALLBACK_DEBUG] Error in direct message send:", error);
-      // Fallback to standard message if direct send fails
-      await bot.sendMessage(chatId, infoMessage, {
-        parse_mode: "HTML",
-        reply_markup: keyboard,
-        disable_web_page_preview: true, // Disable link previews as requested
-      });
-    }
+    // Send match information as a new message
+    await bot.sendMessage(chatId, matchInfo, {
+      parse_mode: "HTML",
+      reply_markup: keyboard,
+    });
   } catch (error) {
-    console.error(
-      "[CALLBACK_DEBUG] Error handling match info callback:",
-      error,
-    );
-    try {
-      await bot.sendMessage(
-        chatId,
-        "Sorry, an error occurred while retrieving the match information. Please try again later.",
-      );
-    } catch (innerError) {
-      console.error(
-        "[CALLBACK_DEBUG] Failed to send error message:",
-        innerError,
-      );
-    }
+    console.error("Error handling match info:", error);
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "An error occurred while retrieving match information.",
+      show_alert: true,
+    });
   }
 }
-
-// Basic error handling
-bot.on("polling_error", (error) => {
-  console.error("=== Telegram Bot Polling Error ===");
-  console.error(error);
-});
-
-bot.on("error", (error) => {
-  console.error("=== Telegram Bot General Error ===");
-  console.error(error);
-});
-
-console.log("Telegram bot initialization completed");
 
 /**
  * Send a match notification to both users when a match occurs
  * @param hostUserId ID of the host user (collaboration creator)
- * @param requesterUserId ID of the requester user (user who swiped right)
+ * @param requesterUserId ID of the user who swiped right
  * @param collaborationId ID of the collaboration that was matched
  */
 /**
@@ -1742,81 +1456,16 @@ console.log("Telegram bot initialization completed");
  */
 async function sendDirectFormattedMessage(
   chatId: number,
-  message: string,
-  keyboard: any,
+  text: string,
+  options?: TelegramBot.SendMessageOptions
 ) {
   try {
-    // Validate inputs
-    if (!chatId || isNaN(chatId)) {
-      console.error(`[DIRECT_MSG_DEBUG] Invalid chat ID: ${chatId}`);
-      throw new Error(`Invalid chat ID: ${chatId}`);
-    }
-
-    if (!message || typeof message !== "string") {
-      console.error(
-        `[DIRECT_MSG_DEBUG] Invalid message format, must be a string`,
-      );
-      throw new Error("Invalid message format");
-    }
-
-    // Detect HTML tags to ensure proper formatting
-    const hasHtmlTags =
-      message.includes("<b>") ||
-      message.includes("<i>") ||
-      message.includes("<a href");
-
-    // Log exact message being sent for debugging
-    console.log(`[DIRECT_MSG_DEBUG] Preparing message to ${chatId}:`);
-    console.log(`[DIRECT_MSG_DEBUG] Contains HTML tags: ${hasHtmlTags}`);
-    console.log(`[DIRECT_MSG_DEBUG] MESSAGE:\n${message}`);
-    console.log(
-      `[DIRECT_MSG_DEBUG] KEYBOARD:\n${JSON.stringify(keyboard, null, 2)}`,
-    );
-
-    // Prepare message options
-    const messageOptions: TelegramBot.SendMessageOptions = {
-      parse_mode: hasHtmlTags ? "HTML" : undefined, // Only set HTML mode when tags are present
-      reply_markup: keyboard,
-      disable_web_page_preview: true, // Disable link previews as requested
-    };
-
-    console.log(
-      `[DIRECT_MSG_DEBUG] Message options:\n${JSON.stringify(messageOptions, null, 2)}`,
-    );
-
-    // Use lower-level sendMessage API for direct access
-    console.log(`[DIRECT_MSG_DEBUG] Sending message to chat ID ${chatId}...`);
-    const result = await bot.sendMessage(chatId, message, messageOptions);
-
-    console.log(`[DIRECT_MSG_DEBUG] Success! Message ID: ${result.message_id}`);
-    return result;
+    await bot.sendMessage(chatId, text, options);
+    console.log(`Successfully sent formatted message to ${chatId}`);
+    return true;
   } catch (error) {
-    console.error(`[DIRECT_MSG_DEBUG] Failed to send message:`, error);
-
-    // Attempt to determine error cause for better debugging
-    if (error instanceof Error) {
-      if (error.message.includes("ETELEGRAM")) {
-        console.error(
-          `[DIRECT_MSG_DEBUG] Telegram API error: ${error.message}`,
-        );
-
-        // Check for specific error conditions
-        if (error.message.includes("chat not found")) {
-          console.error(
-            `[DIRECT_MSG_DEBUG] Chat ID ${chatId} not found. Verify the Telegram ID is correct.`,
-          );
-        } else if (error.message.includes("bot was blocked")) {
-          console.error(`[DIRECT_MSG_DEBUG] User has blocked the bot.`);
-        } else if (error.message.includes("can't parse entities")) {
-          console.error(
-            `[DIRECT_MSG_DEBUG] HTML parsing error. Check your HTML formatting.`,
-          );
-          console.error(`[DIRECT_MSG_DEBUG] Message that failed: ${message}`);
-        }
-      }
-    }
-
-    throw error;
+    console.error(`Failed to send message to ${chatId}:`, error);
+    return false;
   }
 }
 
@@ -1824,371 +1473,245 @@ async function sendDirectFormattedMessage(
  * Callback handler for swipe actions from Telegram notifications
  */
 async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
-  const chatId = callbackQuery.message?.chat.id;
-  if (!chatId || !callbackQuery.data) return;
-
-  console.log(
-    "[CALLBACK_DEBUG] Processing swipe callback:",
-    callbackQuery.data,
-  );
-
   try {
-    // First, acknowledge the callback to show progress
-    await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Processing action...",
-      show_alert: false,
-    });
-
-    // Extract data from callback
-    // Format: swipe_action_shortCollabId_shortUserId
-    // Where action is 'm' (match) or 'p' (pass)
-    const parts = callbackQuery.data.split("_");
-    if (parts.length !== 4) {
-      console.error(
-        "[CALLBACK_DEBUG] Invalid swipe callback format:",
-        callbackQuery.data,
-      );
-      await bot.sendMessage(chatId, "Error: Invalid action format");
+    if (!callbackQuery.data) {
       return;
     }
 
-    const actionCode = parts[1]; // 'm' or 'p'
-    const shortCollabId = parts[2]; // First 8 chars of collaboration ID
-    const shortUserId = parts[3]; // First 8 chars of user ID
+    // Extract the action and data from the callback
+    // Format: swipe_<direction>_<collabID>_<userID>
+    const parts = callbackQuery.data.split("_");
+    const direction = parts[1]; // "right" or "left"
+    const collaborationId = parts[2];
+    const requesterId = parts[3];
+    const chatId = callbackQuery.message?.chat.id;
+    const fromTelegramId = callbackQuery.from.id.toString();
 
-    // Convert from shorthand action code to full action
-    const action = actionCode === "m" ? "match" : "pass";
+    if (!direction || !collaborationId || !requesterId || !chatId) {
+      console.error("Missing required data for swipe action");
+      return;
+    }
 
-    console.log("[CALLBACK_DEBUG] Parsed short IDs:", {
-      actionCode,
-      shortCollabId,
-      shortUserId,
-      fullAction: action,
-    });
+    console.log(
+      `[SWIPE_ACTION] User ${fromTelegramId} swiped ${direction} on collab ${collaborationId} for user ${requesterId}`
+    );
 
-    // Query the database to get the full IDs based on the shortened versions
-    // Find collaboration ID that starts with the short ID
+    // Get the user from the Telegram ID
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.telegram_id, fromTelegramId));
+
+    if (!user) {
+      console.error(`[SWIPE_ACTION] User with Telegram ID ${fromTelegramId} not found`);
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "User not found. Please try again.",
+        show_alert: true,
+      });
+      return;
+    }
+
+    // Get the collaboration
     const [collaboration] = await db
       .select()
       .from(collaborations)
-      .where(
-        eq(
-          collaborations.id,
-          sql`(SELECT id FROM collaborations WHERE id::text LIKE ${shortCollabId + "%"} LIMIT 1)`,
-        ),
-      );
+      .where(eq(collaborations.id, collaborationId));
 
     if (!collaboration) {
-      console.error(
-        "[CALLBACK_DEBUG] Collaboration not found for short ID:",
-        shortCollabId,
-      );
-      await bot.sendMessage(chatId, "Error: Collaboration not found");
-      return;
-    }
-
-    // Find user ID that starts with the short ID
-    const [matchedUser] = await db
-      .select()
-      .from(users)
-      .where(
-        eq(
-          users.id,
-          sql`(SELECT id FROM users WHERE id::text LIKE ${shortUserId + "%"} LIMIT 1)`,
-        ),
-      );
-
-    if (!matchedUser) {
-      console.error(
-        "[CALLBACK_DEBUG] User not found for short ID:",
-        shortUserId,
-      );
-      await bot.sendMessage(chatId, "Error: User not found");
-      return;
-    }
-
-    // Now we have the full IDs
-    const collaborationId = collaboration.id;
-    const userId = matchedUser.id;
-
-    console.log("[CALLBACK_DEBUG] Swipe action:", {
-      action,
-      collaborationId,
-      userId,
-    });
-
-    // Get the current user (host) from the chatId
-    const telegramId = callbackQuery.from?.id.toString();
-    if (!telegramId) {
-      console.error("[CALLBACK_DEBUG] No Telegram ID in callback");
-      await bot.sendMessage(chatId, "Error: User identification failed");
-      return;
-    }
-
-    // Get host user record from Telegram ID
-    const [hostUser] = await db
-      .select()
-      .from(users)
-      .where(eq(users.telegram_id, telegramId));
-
-    if (!hostUser) {
-      console.error("[CALLBACK_DEBUG] Host user not found:", telegramId);
-      await bot.sendMessage(chatId, "Error: Your user account was not found");
-      return;
-    }
-
-    // Check if the host owns the collaboration
-    if (collaboration.creator_id !== hostUser.id) {
-      console.error("[CALLBACK_DEBUG] User is not the collaboration creator:", {
-        hostId: hostUser.id,
-        creatorId: collaboration.creator_id,
+      console.error(`[SWIPE_ACTION] Collaboration with ID ${collaborationId} not found`);
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Collaboration not found. It may have been deleted.",
+        show_alert: true,
       });
-      await bot.sendMessage(
-        chatId,
-        "Error: You don't have permission to perform this action",
-      );
       return;
     }
 
-    // Get the requester user's details
-    const [requesterUser] = await db
+    // Get the requester user
+    const [requester] = await db
       .select()
       .from(users)
-      .where(eq(users.id, userId));
+      .where(eq(users.id, requesterId));
 
-    if (!requesterUser) {
-      console.error("[CALLBACK_DEBUG] Requester user not found:", userId);
-      await bot.sendMessage(chatId, "Error: The other user was not found");
+    if (!requester) {
+      console.error(`[SWIPE_ACTION] Requester with ID ${requesterId} not found`);
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Requester not found. They may have been removed.",
+        show_alert: true,
+      });
       return;
     }
 
-    // Create the appropriate swipe based on the action
-    const direction = action === "match" ? "right" : "left";
+    // Check if this is a valid swipe (user owns the collaboration)
+    if (collaboration.user_id !== user.id) {
+      console.error(
+        `[SWIPE_ACTION] User ${user.id} does not own collaboration ${collaborationId}`
+      );
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "You can only respond to requests for your own collaborations.",
+        show_alert: true,
+      });
+      return;
+    }
 
-    // Create a swipe record
-    // Use db directly since we don't have access to storage here
-    const [swipe] = await db
-      .insert(swipes)
-      .values({
-        user_id: hostUser.id,
-        collaboration_id: collaborationId,
-        direction,
-        created_at: new Date(),
-      })
-      .returning();
+    // Check if swipe already exists (to prevent duplicates)
+    const existingSwipes = await db
+      .select()
+      .from(swipes)
+      .where(
+        sql`${swipes.collaboration_id} = ${collaborationId} AND ${swipes.user_id} = ${requesterId}`
+      );
 
-    console.log("[CALLBACK_DEBUG] Created swipe record:", swipe);
+    if (!existingSwipes || existingSwipes.length === 0) {
+      console.error(
+        `[SWIPE_ACTION] No existing swipe found for collab ${collaborationId} and user ${requesterId}`
+      );
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Original request not found. It may have been removed.",
+        show_alert: true,
+      });
+      return;
+    }
 
-    // Update message based on action taken
-    let responseMessage;
-    let updatedKeyboard;
+    // Check if there's already a match
+    const existingMatches = await db
+      .select()
+      .from(matches)
+      .where(
+        sql`${matches.collaboration_id} = ${collaborationId} AND ${matches.requester_id} = ${requesterId}`
+      );
 
-    if (action === "match") {
-      // If it's a match, create a match record and notify both users
+    if (existingMatches && existingMatches.length > 0) {
+      console.log(
+        `[SWIPE_ACTION] Match already exists for collab ${collaborationId} and user ${requesterId}`
+      );
+      
+      // Update the original message to show match already exists
+      if (callbackQuery.message) {
+        await bot.editMessageText(
+          `✅ You've already matched with ${requester.first_name} ${requester.last_name || ''} on this collaboration.`,
+          {
+            chat_id: chatId,
+            message_id: callbackQuery.message.message_id,
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "View Match Details",
+                    callback_data: `match_info_${existingMatches[0].id}`,
+                  },
+                ],
+              ],
+            },
+          }
+        );
+      }
+      
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "You've already matched with this user.",
+      });
+      
+      return;
+    }
+
+    // If swiping right, create a match
+    if (direction === "right") {
+      // Create a match record
       const [match] = await db
         .insert(matches)
         .values({
+          id: crypto.randomUUID(),
           collaboration_id: collaborationId,
-          host_id: hostUser.id,
-          requester_id: userId,
-          status: "active",
+          host_id: user.id,
+          requester_id: requesterId,
           created_at: new Date(),
+          status: "active",
         })
         .returning();
 
-      console.log("[CALLBACK_DEBUG] Created match record:", match);
+      console.log(
+        `[SWIPE_ACTION] Created match ${match.id} for collab ${collaborationId} and user ${requesterId}`
+      );
 
-      // Only notify the requester about the match, as the host will see the updated message
-      try {
-        // Modified to only notify the requester, not the host
-        const [requesterUser] = await db
-          .select()
-          .from(users)
-          .where(eq(users.id, userId));
-
-        const requesterChatId = parseInt(requesterUser.telegram_id);
-
-        // Get host company information
-        const [hostCompany] = await db
-          .select()
-          .from(companies)
-          .where(eq(companies.user_id, hostUser.id));
-
-        const hostCompanyName = hostCompany?.name || "their company";
-
-        // Format company website URL if available
-        const hostCompanyWebsite = hostCompany?.website
-          ? hostCompany.website.startsWith("http")
-            ? hostCompany.website
-            : `https://${hostCompany.website}`
-          : "";
-
-        // Create a safer HTML message with proper website handling
-        let matchMessage = `🎉 <b>New Match!</b>\n\n${hostUser.first_name} ${hostUser.last_name || ""}`;
-
-        // Add company info with website if available
-        if (hostCompanyWebsite) {
-          matchMessage += ` from <a href="${hostCompanyWebsite}">${hostCompany?.name || "a company"}</a>`;
-        } else {
-          matchMessage += ` from ${hostCompanyName}`;
-        }
-
-        // Finish the message
-        matchMessage += ` just approved your collaboration request for <b>${collaboration.collab_type}</b>!\n\nYou can now chat directly to coordinate your collaboration.`;
-
-        // Create a keyboard with relevant actions
-        const matchKeyboard = {
+      // Send notification to the requester about the match
+      if (requester.telegram_id) {
+        const requesterChatId = parseInt(requester.telegram_id);
+        
+        // Create custom keyboard for the matched user to view the match
+        const keyboard = {
           inline_keyboard: [
             [
               {
-                text: `💬 Chat with ${hostUser.first_name}`,
-                url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
-              },
-            ],
-            [
-              {
-                text: "🚀 Launch Collab Room",
-                web_app: { url: `${WEBAPP_URL}/discover` },
+                text: "🎉 View Match Details",
+                web_app: { url: `${WEBAPP_URL}/matches/${match.id}` },
               },
             ],
           ],
         };
 
-        await bot.sendMessage(requesterChatId, matchMessage, {
-          parse_mode: "HTML",
-          reply_markup: matchKeyboard,
-        });
-
-        console.log("[CALLBACK_DEBUG] Match notification sent to requester");
-      } catch (notifyError) {
-        console.error(
-          "[CALLBACK_DEBUG] Error sending match notification to requester:",
-          notifyError,
-        );
-        // Continue execution even if notification fails
-      }
-
-      // Fetch the company information for the requester
-      const [requesterCompany] = await db
-        .select()
-        .from(companies)
-        .where(eq(companies.user_id, userId))
-        .catch((error) => {
-          console.error(
-            "[CALLBACK_DEBUG] Error fetching requester company:",
-            error,
-          );
-          return [null];
-        });
-
-      // Update the message to show match success with company and collab details
-      // Extract collaboration details for potential title
-      const collabDetails =
-        typeof collaboration.details === "string"
-          ? JSON.parse(collaboration.details || "{}")
-          : collaboration.details || {};
-
-      // Get title from details object if available
-      const collabTitle = collabDetails.title || collabDetails.name || "";
-
-      // Generate a safe company name with or without website link
-      let safeCompanyDisplay = "";
-
-      // Format company website if available
-      let safeRequesterCompanyWebsite = "";
-      if (requesterCompany?.website) {
-        safeRequesterCompanyWebsite = requesterCompany.website.startsWith(
-          "http",
-        )
-          ? requesterCompany.website
-          : `https://${requesterCompany.website}`;
-      }
-
-      // Create company display format with conditional link
-      if (
-        safeRequesterCompanyWebsite &&
-        safeRequesterCompanyWebsite.includes(".")
-      ) {
-        safeCompanyDisplay = `<a href="${safeRequesterCompanyWebsite}">${(requesterCompany?.name || "a company").replace(/[<>]/g, "")}</a>`;
-      } else {
-        safeCompanyDisplay = (requesterCompany?.name || "a company").replace(
-          /[<>]/g,
-          "",
+        await sendDirectFormattedMessage(
+          requesterChatId,
+          `🎉 <b>Match Alert!</b>\n\n` +
+          `${user.first_name} ${user.last_name || ''} just matched with you on a ${collaboration.collab_type} collaboration!\n\n` +
+          `Click below to view the match details and start chatting:`,
+          {
+            parse_mode: "HTML",
+            reply_markup: keyboard,
+          }
         );
       }
 
-      // Create the response message with safe HTML
-      responseMessage = `✅ <b>Matched!</b>\n\nYou've successfully matched with ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${safeCompanyDisplay} for the "${collaboration.collab_type}" collaboration${collabTitle ? ` "${collabTitle}"` : ""}.\n\nA notification has been sent to them about the match.`;
-
-      updatedKeyboard = {
-        inline_keyboard: [
-          [
-            {
-              text: `💬 Chat with ${requesterUser.first_name}`,
-              url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
+      // Update the original message
+      if (callbackQuery.message) {
+        await bot.editMessageText(
+          `✅ You matched with ${requester.first_name} ${requester.last_name || ''}!`,
+          {
+            chat_id: chatId,
+            message_id: callbackQuery.message.message_id,
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "View Match Details",
+                    callback_data: `match_info_${match.id}`,
+                  },
+                ],
+              ],
             },
-          ],
-          [
-            {
-              text: "My Matches",
-              web_app: { url: `${WEBAPP_URL}/matches` },
-            },
-          ],
-        ],
-      };
-    } else {
-      // For pass, just show a simple confirmation
-      responseMessage = `❌ <b>Passed</b>\n\nYou've passed on ${requesterUser.first_name} ${requesterUser.last_name || ""}'s request.`;
-
-      updatedKeyboard = {
-        inline_keyboard: [
-          [
-            {
-              text: "🔎 View More Requests",
-              web_app: { url: `${WEBAPP_URL}/discover` },
-            },
-          ],
-        ],
-      };
-    }
-
-    // Update the message with the new status
-    try {
-      if (callbackQuery.message?.message_id) {
-        await bot.editMessageText(responseMessage, {
-          chat_id: chatId,
-          message_id: callbackQuery.message.message_id,
-          parse_mode: "HTML",
-          reply_markup: updatedKeyboard,
-        });
-      } else {
-        // Fallback if message_id is not available
-        await bot.sendMessage(chatId, responseMessage, {
-          parse_mode: "HTML",
-          reply_markup: updatedKeyboard,
-        });
+          }
+        );
       }
-    } catch (editError) {
-      console.error("[CALLBACK_DEBUG] Failed to update message:", editError);
-      // Send a new message as fallback
-      await bot.sendMessage(chatId, responseMessage, {
-        parse_mode: "HTML",
-        reply_markup: updatedKeyboard,
+
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: `You matched with ${requester.first_name}! They've been notified.`,
+      });
+    } 
+    // If swiping left, just update the UI
+    else if (direction === "left") {
+      console.log(
+        `[SWIPE_ACTION] User ${user.id} swiped left on request from ${requesterId} for collab ${collaborationId}`
+      );
+
+      // Update the original message
+      if (callbackQuery.message) {
+        await bot.editMessageText(
+          `❌ You declined the collaboration request from ${requester.first_name} ${requester.last_name || ''}.`,
+          {
+            chat_id: chatId,
+            message_id: callbackQuery.message.message_id,
+          }
+        );
+      }
+
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: `You declined the request from ${requester.first_name}.`,
       });
     }
   } catch (error) {
-    console.error("[CALLBACK_DEBUG] Error in swipe callback handler:", error);
-    try {
-      await bot.sendMessage(
-        chatId,
-        "Sorry, there was an error processing your action. Please try again using the app.",
-      );
-    } catch (sendError) {
-      console.error(
-        "[CALLBACK_DEBUG] Failed to send error message:",
-        sendError,
-      );
-    }
+    console.error("Error handling swipe action:", error);
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "An error occurred while processing your response. Please try again.",
+      show_alert: true,
+    });
   }
 }
 
@@ -2201,51 +1724,29 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
 export async function notifyNewCollabRequest(
   hostUserId: string,
   requesterUserId: string,
-  collaborationId: string,
-  note?: string,
+  collaborationId: string
 ) {
   try {
-    console.log("[Telegram Bot] Sending collab request notification:", {
-      hostUserId,
-      requesterUserId,
-      collaborationId,
-    });
-
-    // Check if host has notifications enabled
-    const [notificationPrefs] = await db
-      .select()
-      .from(notification_preferences)
-      .where(eq(notification_preferences.user_id, hostUserId));
-
-    // Skip if notifications are disabled
-    if (notificationPrefs && !notificationPrefs.notifications_enabled) {
-      console.log(
-        "[Telegram Bot] Host has notifications disabled:",
-        hostUserId,
-      );
-      return;
-    }
-
-    // Get user details from database
-    const [hostUser] = await db
+    // Get host user details
+    const [host] = await db
       .select()
       .from(users)
       .where(eq(users.id, hostUserId));
 
-    const [requesterUser] = await db
+    if (!host || !host.telegram_id) {
+      console.error(`Host user ${hostUserId} not found or has no Telegram ID`);
+      return false;
+    }
+
+    // Get requester user details
+    const [requester] = await db
       .select()
       .from(users)
       .where(eq(users.id, requesterUserId));
 
-    if (!hostUser || !requesterUser) {
-      console.error(
-        "[Telegram Bot] Could not find user data for collab request notification:",
-        {
-          hostFound: !!hostUser,
-          requesterFound: !!requesterUser,
-        },
-      );
-      return;
+    if (!requester) {
+      console.error(`Requester user ${requesterUserId} not found`);
+      return false;
     }
 
     // Get collaboration details
@@ -2255,139 +1756,60 @@ export async function notifyNewCollabRequest(
       .where(eq(collaborations.id, collaborationId));
 
     if (!collaboration) {
-      console.error(
-        "[Telegram Bot] Could not find collaboration for request notification:",
-        { collaborationId },
-      );
-      return;
+      console.error(`Collaboration ${collaborationId} not found`);
+      return false;
     }
 
-    // Get company details for both users
-    const [requesterCompany] = await db
+    // Check if the host's notifications are enabled
+    const [preferences] = await db
       .select()
-      .from(companies)
-      .where(eq(companies.user_id, requesterUserId));
+      .from(notification_preferences)
+      .where(eq(notification_preferences.user_id, hostUserId));
 
-    if (!requesterCompany) {
-      console.error("[Telegram Bot] Could not find requester company data:", {
-        requesterUserId,
-      });
-      return;
+    if (preferences && preferences.notifications_enabled === false) {
+      console.log(`Host ${hostUserId} has notifications disabled`);
+      return false;
     }
 
-    // Convert telegram_id to integers for chat ID
-    const hostChatId = parseInt(hostUser.telegram_id);
-
-    if (isNaN(hostChatId)) {
-      console.error("[Telegram Bot] Invalid host chat ID:", {
-        hostChatId,
-      });
-      return;
-    }
-
-    // Format company twitter URL if available
-    const twitterHandle = requesterCompany.twitter_handle
-      ? requesterCompany.twitter_handle.replace("@", "")
-      : null;
-
-    const twitterUrl = twitterHandle
-      ? `https://twitter.com/${twitterHandle}`
-      : null;
-
-    // Format company name with Twitter hyperlink if available
-    const companyNameFormatted = twitterUrl
-      ? `<a href="${twitterUrl}">${requesterCompany.name}</a>`
-      : requesterCompany.name;
-
-    // Format the collaboration date if available
-    let collabDate = "Any future date";
-    if (
-      collaboration.date_type === "specific_date" &&
-      collaboration.specific_date
-    ) {
-      collabDate = collaboration.specific_date;
-    }
-
-    // Format topics as a comma-separated string
-    const topicsText =
-      collaboration.topics && collaboration.topics.length > 0
-        ? collaboration.topics.join(", ")
-        : "Not specified";
-
-    // Extract short description from details if available
-    let shortDescription = "";
-    if (collaboration.details) {
-      const details =
-        typeof collaboration.details === "string"
-          ? JSON.parse(collaboration.details)
-          : collaboration.details;
-
-      shortDescription =
-        details.short_description ||
-        details.description ||
-        collaboration.description ||
-        "";
-    } else {
-      shortDescription = collaboration.description || "";
-    }
-
-    // Build the message with HTML formatting
-    let message =
-      `<b>New Collab Request</b>\n` +
-      `The <i>${requesterCompany.job_title}</i> from ${companyNameFormatted}\n` +
-      `Would like to collaborate on your collab <i>${collaboration.collab_type}</i> - <i>${shortDescription}</i>\n` +
-      `<b>Topic</b>:<i> ${topicsText}</i>\n` +
-      `🗓️: ${collabDate}\n\n`;
-
-    // Add the note if it exists
-    if (note) {
-      message += `📝 <b>Note from user:</b>\n<i>${note}</i>\n\n`;
-    }
-
-    // Create shortened IDs for callback data (Telegram has a 64-byte limit)
-    // Generate shorter identifiers by taking first 8 chars of each UUID
-    const shortCollabId = collaborationId.substring(0, 8);
-    const shortUserId = requesterUserId.substring(0, 8);
-
-    // Create inline keyboard with two buttons on separate rows
+    // Create inline keyboard with swipe options
     const keyboard = {
       inline_keyboard: [
         [
           {
-            text: "More Info",
-            web_app: { url: `${WEBAPP_URL}/discover` },
+            text: "✅ Yes, Let's Collab!",
+            callback_data: `swipe_right_${collaborationId}_${requesterUserId}`,
+          },
+          {
+            text: "❌ Not Interested",
+            callback_data: `swipe_left_${collaborationId}_${requesterUserId}`,
           },
         ],
         [
           {
-            text: "❌ Pass",
-            callback_data: `swipe_p_${shortCollabId}_${shortUserId}`,
-          },
-          {
-            text: "✅ Match",
-            callback_data: `swipe_m_${shortCollabId}_${shortUserId}`,
+            text: "👀 View Profile",
+            web_app: { url: `${WEBAPP_URL}/profile/${requesterUserId}` },
           },
         ],
       ],
     };
 
+    // Format the message with user and collaboration details
+    const message = 
+      `🔔 <b>New Collaboration Request!</b>\n\n` +
+      `<b>${requester.first_name} ${requester.last_name || ""}</b> is interested in your <b>${collaboration.collab_type}</b> collaboration.\n\n` +
+      `Would you like to connect with them?`;
+
     // Send notification to host
-    try {
-      await sendDirectFormattedMessage(hostChatId, message, keyboard);
-      console.log(
-        `[Telegram Bot] Successfully sent collab request notification to host (${hostChatId})`,
-      );
-    } catch (error) {
-      console.error(
-        `[Telegram Bot] Failed to send collab request notification to host (${hostChatId}):`,
-        error,
-      );
-    }
+    await sendDirectFormattedMessage(parseInt(host.telegram_id), message, {
+      parse_mode: "HTML",
+      reply_markup: keyboard,
+    });
+
+    console.log(`Sent collaboration request notification to host ${hostUserId}`);
+    return true;
   } catch (error) {
-    console.error(
-      "[Telegram Bot] Error sending collab request notification:",
-      error,
-    );
+    console.error("Error sending collaboration request notification:", error);
+    return false;
   }
 }
 
@@ -2395,43 +1817,30 @@ export async function notifyMatchCreated(
   hostUserId: string,
   requesterUserId: string,
   collaborationId: string,
-  note?: string,
+  matchId: string
 ) {
   try {
-    console.log("[Telegram Bot] Sending match notifications:", {
-      hostUserId,
-      requesterUserId,
-      collaborationId,
-    });
-
-    // Get user details from database
-    const [hostUser] = await db
+    // Get host user details
+    const [host] = await db
       .select()
       .from(users)
       .where(eq(users.id, hostUserId));
 
-    const [requesterUser] = await db
+    if (!host || !host.telegram_id) {
+      console.error(`Host user ${hostUserId} not found or has no Telegram ID`);
+      return false;
+    }
+
+    // Get requester user details
+    const [requester] = await db
       .select()
       .from(users)
       .where(eq(users.id, requesterUserId));
 
-    if (!hostUser || !requesterUser) {
-      console.error(
-        "[Telegram Bot] Could not find user data for match notification:",
-        {
-          hostFound: !!hostUser,
-          requesterFound: !!requesterUser,
-        },
-      );
-      return;
+    if (!requester || !requester.telegram_id) {
+      console.error(`Requester user ${requesterUserId} not found or has no Telegram ID`);
+      return false;
     }
-
-    console.log("[DEBUG] User records:", {
-      hostId: hostUser.id,
-      hostTelegramId: hostUser.telegram_id,
-      requesterIds: requesterUser.id,
-      requesterTelegramId: requesterUser.telegram_id,
-    });
 
     // Get collaboration details
     const [collaboration] = await db
@@ -2440,482 +1849,83 @@ export async function notifyMatchCreated(
       .where(eq(collaborations.id, collaborationId));
 
     if (!collaboration) {
-      console.error(
-        "[Telegram Bot] Could not find collaboration for match notification:",
-        { collaborationId },
-      );
-      return;
+      console.error(`Collaboration ${collaborationId} not found`);
+      return false;
     }
 
-    // Extract collaboration details for more comprehensive notification
-    let collabDetails = collaboration.details;
-    if (typeof collabDetails === "string") {
-      try {
-        collabDetails = JSON.parse(collabDetails);
-      } catch (e) {
-        console.error("[ERROR] Failed to parse collaboration details:", e);
-        collabDetails = {};
-      }
-    }
-
-    // Format date information if available
-    let dateInfo = "Flexible timing";
-    if (
-      collaboration.date_type === "specific_date" &&
-      collaboration.specific_date
-    ) {
-      dateInfo = collaboration.specific_date;
-    }
-
-    // Format topics as comma-separated list if available
-    const topicsText =
-      collaboration.topics && collaboration.topics.length > 0
-        ? collaboration.topics.join(", ")
-        : "Not specified";
-
-    // Extract description if available with proper type safety
-    let shortDescription = "";
-
-    // Use a type-safe approach with a fallback chain
-    if (collabDetails && typeof collabDetails === "object") {
-      // Access using index notation to avoid TypeScript errors
-      if (
-        "short_description" in collabDetails &&
-        typeof collabDetails["short_description"] === "string"
-      ) {
-        shortDescription = collabDetails["short_description"];
-      } else if (
-        "description" in collabDetails &&
-        typeof collabDetails["description"] === "string"
-      ) {
-        shortDescription = collabDetails["description"];
-      }
-    }
-
-    // Fallback to collaboration description if needed
-    if (!shortDescription && collaboration.description) {
-      shortDescription = collaboration.description;
-    }
-
-    // Get company details for both users
-    const [hostCompany] = await db
+    // Check notification preferences for both users
+    const [hostPreferences] = await db
       .select()
-      .from(companies)
-      .where(eq(companies.user_id, hostUserId));
+      .from(notification_preferences)
+      .where(eq(notification_preferences.user_id, hostUserId));
 
-    const [requesterCompany] = await db
+    const [requesterPreferences] = await db
       .select()
-      .from(companies)
-      .where(eq(companies.user_id, requesterUserId));
+      .from(notification_preferences)
+      .where(eq(notification_preferences.user_id, requesterUserId));
 
-    console.log("[DEBUG] Company records found:", {
-      hostCompanyFound: !!hostCompany,
-      requesterCompanyFound: !!requesterCompany,
-    });
+    // Create keyboard for viewing match details
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "🎉 View Match Details",
+            web_app: { url: `${WEBAPP_URL}/matches/${matchId}` },
+          },
+        ],
+      ],
+    };
 
-    // Convert telegram_id to integers for chat ID
-    const hostChatId = parseInt(hostUser.telegram_id);
-    const requesterChatId = parseInt(requesterUser.telegram_id);
+    // Format the message
+    const matchMessage = 
+      `🎉 <b>New Match!</b>\n\n` +
+      `You've matched with <b>${requester.first_name} ${requester.last_name || ""}</b> on your <b>${collaboration.collab_type}</b> collaboration!\n\n` +
+      `Click below to view the match details and start chatting:`;
 
-    if (isNaN(hostChatId) || isNaN(requesterChatId)) {
-      console.error("[Telegram Bot] Invalid chat IDs:", {
-        hostChatId,
-        requesterChatId,
+    const requesterMessage = 
+      `🎉 <b>New Match!</b>\n\n` +
+      `<b>${host.first_name} ${host.last_name || ""}</b> has matched with you on a <b>${collaboration.collab_type}</b> collaboration!\n\n` +
+      `Click below to view the match details and start chatting:`;
+
+    // Send match notifications if enabled
+    let hostNotified = false;
+    let requesterNotified = false;
+
+    // Notify host if their notifications are enabled
+    if (!hostPreferences || hostPreferences.notifications_enabled !== false) {
+      await sendDirectFormattedMessage(parseInt(host.telegram_id), matchMessage, {
+        parse_mode: "HTML",
+        reply_markup: keyboard,
       });
-      return;
+      hostNotified = true;
     }
 
-    console.log("[DEBUG] Chat IDs for notifications:", {
-      hostChatId,
-      requesterChatId,
-    });
-
-    // Format company website links with robust error handling
-    let requesterCompanyWebsite = "";
-    let hostCompanyWebsite = "";
-
-    try {
-      // Process requester company website (if exists)
-      if (requesterCompany?.website && requesterCompany.website.trim()) {
-        // Sanitize website URL: remove spaces, special characters, ensure proper format
-        let websiteUrl = requesterCompany.website.trim();
-
-        // Add protocol if missing
-        requesterCompanyWebsite = websiteUrl.startsWith("http")
-          ? websiteUrl
-          : `https://${websiteUrl}`;
-
-        // Basic URL validation
-        if (!requesterCompanyWebsite.includes(".")) {
-          console.log(
-            "[WARNING] Invalid requester company website format:",
-            websiteUrl,
-          );
-          requesterCompanyWebsite = ""; // Reset if invalid
-        }
-      }
-    } catch (error) {
-      console.error(
-        "[ERROR] Failed to process requester company website:",
-        error,
-      );
-      requesterCompanyWebsite = "";
+    // Notify requester if their notifications are enabled
+    if (!requesterPreferences || requesterPreferences.notifications_enabled !== false) {
+      await sendDirectFormattedMessage(parseInt(requester.telegram_id), requesterMessage, {
+        parse_mode: "HTML",
+        reply_markup: keyboard,
+      });
+      requesterNotified = true;
     }
 
-    try {
-      // Process host company website (if exists)
-      if (hostCompany?.website && hostCompany.website.trim()) {
-        // Sanitize website URL: remove spaces, special characters, ensure proper format
-        let websiteUrl = hostCompany.website.trim();
-
-        // Add protocol if missing
-        hostCompanyWebsite = websiteUrl.startsWith("http")
-          ? websiteUrl
-          : `https://${websiteUrl}`;
-
-        // Basic URL validation
-        if (!hostCompanyWebsite.includes(".")) {
-          console.log(
-            "[WARNING] Invalid host company website format:",
-            websiteUrl,
-          );
-          hostCompanyWebsite = ""; // Reset if invalid
-        }
-      }
-    } catch (error) {
-      console.error("[ERROR] Failed to process host company website:", error);
-      hostCompanyWebsite = "";
-    }
-
-    // Format company names - simplified to avoid errors with malformed HTML
-    const requesterCompanyName = requesterCompanyWebsite
-      ? `<a href="${requesterCompanyWebsite}">${(requesterCompany?.name || "a company").replace(/[<>]/g, "")}</a>`
-      : (requesterCompany?.name || "a company").replace(/[<>]/g, "");
-
-    const hostCompanyName = hostCompanyWebsite
-      ? `<a href="${hostCompanyWebsite}">${(hostCompany?.name || "a company").replace(/[<>]/g, "")}</a>`
-      : (hostCompany?.name || "a company").replace(/[<>]/g, "");
-
-    // IMPORTANT: Create the keyboard objects with specific formatting
-    // Host keyboard (separate buttons to ensure proper layout)
-    const hostKeyboard = {
-      inline_keyboard: [
-        [
-          {
-            text: `💬 Chat with ${requesterUser.first_name}`,
-            url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
-          },
-        ],
-        // Remove the callback button that's causing issues
-        [
-          {
-            text: "🚀 Launch Collab Room",
-            web_app: { url: `${WEBAPP_URL}/discover` },
-          },
-        ],
-        [
-          {
-            text: "👥 View Matches",
-            web_app: { url: `${WEBAPP_URL}/matches` },
-          },
-        ],
-      ],
-    };
-
-    // Requester keyboard (separate buttons to ensure proper layout)
-    const requesterKeyboard = {
-      inline_keyboard: [
-        [
-          {
-            text: `💬 Chat with ${hostUser.first_name}`,
-            url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
-          },
-        ],
-        // Remove the callback button that's causing issues
-        [
-          {
-            text: "🚀 Launch Collab Room",
-            web_app: { url: `${WEBAPP_URL}/discover` },
-          },
-        ],
-        [
-          {
-            text: "👥 View Matches",
-            web_app: { url: `${WEBAPP_URL}/matches` },
-          },
-        ],
-      ],
-    };
-
-    // Prepare host notification with carefully formatted HTML
-    let hostMessage = `🎉 <b>New Match!</b>\n\n`;
-
-    // Add user name with safe formatting
-    hostMessage += `${requesterUser.first_name} ${requesterUser.last_name || ""}`;
-
-    // Add Telegram handle as link if available
-    if (requesterUser.handle) {
-      hostMessage += ` (<a href="https://t.me/${requesterUser.handle.replace(/[<>]/g, "")}">@${requesterUser.handle.replace(/[<>]/g, "")}</a>)`;
-    }
-
-    // Add job title if available
-    hostMessage += `, the <b>${(requesterCompany?.job_title || "professional").replace(/[<>]/g, "")}</b>`;
-
-    // Add company info - use a consistent format whether or not there's a valid website
-    if (requesterCompanyWebsite) {
-      hostMessage += ` from ${requesterCompanyName}`;
-    } else {
-      hostMessage += ` from ${(requesterCompany?.name || "a company").replace(/[<>]/g, "")}`;
-    }
-
-    // Complete the match info
-    hostMessage += ` is a match for your <b>${collaboration.collab_type}</b> collaboration!`;
-
-    // Add the personalization note if provided
-    if (note && note.trim()) {
-      // Sanitize the note to prevent HTML injection
-      const sanitizedNote = note.trim().replace(/[<>]/g, "");
-      hostMessage += `\n\n<b>💬 Their note:</b>\n"${sanitizedNote}"`;
-    }
-
-    // Add collaboration details section
-    hostMessage += `\n\n<b>🔍 Collaboration Details:</b>\n`;
-
-    // Add description if available
-    if (shortDescription) {
-      hostMessage += `• <b>Description:</b> ${shortDescription.replace(/[<>]/g, "")}\n`;
-    }
-
-    // Add topics
-    hostMessage += `• <b>Topics:</b> ${topicsText}\n`;
-
-    // Add date/timing
-    hostMessage += `• <b>Timing:</b> ${dateInfo}\n`;
-
-    // Add closing message
-    hostMessage += `\n\nDrop them a message and get started on your collab!`;
-
-    // Prepare requester notification with carefully formatted HTML
-    let requesterMessage = `🎉 <b>New Match!</b>\n\n`;
-
-    // Add user name with safe formatting
-    requesterMessage += `${hostUser.first_name} ${hostUser.last_name || ""}`;
-
-    // Add Telegram handle as link if available
-    if (hostUser.handle) {
-      requesterMessage += ` (<a href="https://t.me/${hostUser.handle.replace(/[<>]/g, "")}">@${hostUser.handle.replace(/[<>]/g, "")}</a>)`;
-    }
-
-    // Add company info - use a consistent format whether or not there's a valid website
-    if (hostCompanyWebsite) {
-      requesterMessage += ` from ${hostCompanyName}`;
-    } else {
-      requesterMessage += ` from ${(hostCompany?.name || "a company").replace(/[<>]/g, "")}`;
-    }
-
-    // Add basic match notification
-    requesterMessage += ` just approved your collab request for <b>${collaboration.collab_type}</b>!\n\n`;
-
-    // Add collaboration details section
-    requesterMessage += `<b>🔍 Collaboration Details:</b>\n`;
-
-    // Add description if available
-    if (shortDescription) {
-      requesterMessage += `• <b>Description:</b> ${shortDescription.replace(/[<>]/g, "")}\n`;
-    }
-
-    // Add topics
-    requesterMessage += `• <b>Topics:</b> ${topicsText}\n`;
-
-    // Add date/timing
-    requesterMessage += `• <b>Timing:</b> ${dateInfo}\n\n`;
-
-    // Complete the message
-    requesterMessage += `You can now chat directly with ${hostUser.first_name} to get started!`;
-
-    console.log("[DEBUG] Formatted messages to send:");
-    console.log(`Host message (to ${hostChatId}):\n${hostMessage}`);
-    console.log(
-      `Requester message (to ${requesterChatId}):\n${requesterMessage}`,
-    );
-
-    // Send both notifications with full error handling
-    let hostSuccess = false;
-    let requesterSuccess = false;
-
-    try {
-      // First try the enhanced direct formatted message approach
-      await sendDirectFormattedMessage(hostChatId, hostMessage, hostKeyboard);
-      hostSuccess = true;
-      console.log(
-        `[DEBUG] Successfully sent formatted message to host (${hostChatId})`,
-      );
-
-      await sendDirectFormattedMessage(
-        requesterChatId,
-        requesterMessage,
-        requesterKeyboard,
-      );
-      requesterSuccess = true;
-      console.log(
-        `[DEBUG] Successfully sent formatted message to requester (${requesterChatId})`,
-      );
-
-      console.log(
-        "[Telegram Bot] Successfully sent enhanced HTML notifications to both users",
-      );
-
-      // Log the match notifications
-      logAdminMessage(
-        "SYSTEM",
-        "MATCH_NOTIFICATION_HOST",
-        `Sent match notification to host ${hostUser.first_name} ${hostUser.last_name || ""} (${hostUser.telegram_id})`,
-        `Match with ${requesterUser.first_name} ${requesterUser.last_name || ""} on ${collaboration.collab_type}`,
-      );
-
-      logAdminMessage(
-        "SYSTEM",
-        "MATCH_NOTIFICATION_REQUESTER",
-        `Sent match notification to requester ${requesterUser.first_name} ${requesterUser.last_name || ""} (${requesterUser.telegram_id})`,
-        `Match with ${hostUser.first_name} ${hostUser.last_name || ""} on ${collaboration.collab_type}`,
-      );
-    } catch (directError) {
-      console.error(
-        "[Telegram Bot] Error in direct notification sending:",
-        directError,
-      );
-
-      // If direct formatting failed, try standard message as fallback
-      try {
-        if (!hostSuccess) {
-          // Try sending plain message to host without HTML formatting
-          console.log("[DEBUG] Trying fallback message to host...");
-          let plainHostMessage = `🎉 New Match! ${requesterUser.first_name} ${requesterUser.last_name || ""} from ${requesterCompany?.name || "a company"} matched with your ${collaboration.collab_type} collaboration!`;
-
-          // Add personalization note even to fallback message
-          if (note && note.trim()) {
-            plainHostMessage += `\n\n💬 Their note:\n"${note.trim()}"`;
-          }
-
-          // Add collaboration details section in plain text
-          plainHostMessage += `\n\nCollaboration Details:\n`;
-
-          // Add description if available
-          if (shortDescription) {
-            plainHostMessage += `• Description: ${shortDescription}\n`;
-          }
-
-          // Add topics
-          plainHostMessage += `• Topics: ${topicsText}\n`;
-
-          // Add date/timing
-          plainHostMessage += `• Timing: ${dateInfo}\n\n`;
-
-          // Complete with a closing message
-          plainHostMessage += `Drop them a message and get started on your collab!`;
-
-          // Simplified fallback keyboard without callback data
-          const fallbackHostKeyboard = {
-            inline_keyboard: [
-              [
-                {
-                  text: `Chat with ${requesterUser.first_name}`,
-                  url: `https://t.me/${requesterUser.handle || requesterUser.telegram_id}`,
-                },
-              ],
-              [
-                {
-                  text: "View Matches",
-                  web_app: { url: `${WEBAPP_URL}/matches` },
-                },
-              ],
-            ],
-          };
-
-          await bot.sendMessage(hostChatId, plainHostMessage, {
-            reply_markup: fallbackHostKeyboard,
-          });
-          console.log(
-            `[DEBUG] Successfully sent fallback message to host (${hostChatId})`,
-          );
-
-          // Log the fallback notification
-          logAdminMessage(
-            "SYSTEM",
-            "MATCH_NOTIFICATION_HOST_FALLBACK",
-            `Sent fallback match notification to host ${hostUser.first_name} ${hostUser.last_name || ""} (${hostUser.telegram_id})`,
-            `Match with ${requesterUser.first_name} ${requesterUser.last_name || ""} on ${collaboration.collab_type}`,
-          );
-        }
-
-        if (!requesterSuccess) {
-          // Try sending plain message to requester without HTML formatting
-          console.log("[DEBUG] Trying fallback message to requester...");
-
-          // Create a plain text message without HTML tags for fallback but include details
-          let plainRequesterMessage = `🎉 New Match! ${hostUser.first_name} ${hostUser.last_name || ""} from ${hostCompany?.name || "a company"} just approved your collab request for ${collaboration.collab_type}!\n\n`;
-
-          // Add collaboration details section in plain text
-          plainRequesterMessage += `Collaboration Details:\n`;
-
-          // Add description if available
-          if (shortDescription) {
-            plainRequesterMessage += `• Description: ${shortDescription}\n`;
-          }
-
-          // Add topics
-          plainRequesterMessage += `• Topics: ${topicsText}\n`;
-
-          // Add date/timing
-          plainRequesterMessage += `• Timing: ${dateInfo}\n\n`;
-
-          // Complete the message
-          plainRequesterMessage += `You can now chat directly with ${hostUser.first_name} to get started!`;
-
-          // Simplified fallback keyboard without callback data
-          const fallbackRequesterKeyboard = {
-            inline_keyboard: [
-              [
-                {
-                  text: `Chat with ${hostUser.first_name}`,
-                  url: `https://t.me/${hostUser.handle || hostUser.telegram_id}`,
-                },
-              ],
-              [
-                {
-                  text: "View Matches",
-                  web_app: { url: `${WEBAPP_URL}/matches` },
-                },
-              ],
-            ],
-          };
-
-          await bot.sendMessage(requesterChatId, plainRequesterMessage, {
-            reply_markup: fallbackRequesterKeyboard,
-          });
-          console.log(
-            `[DEBUG] Successfully sent fallback message to requester (${requesterChatId})`,
-          );
-
-          // Log the fallback notification
-          logAdminMessage(
-            "SYSTEM",
-            "MATCH_NOTIFICATION_REQUESTER_FALLBACK",
-            `Sent fallback match notification to requester ${requesterUser.first_name} ${requesterUser.last_name || ""} (${requesterUser.telegram_id})`,
-            `Match with ${hostUser.first_name} ${hostUser.last_name || ""} on ${collaboration.collab_type}`,
-          );
-        }
-      } catch (fallbackError) {
-        console.error(
-          "[Telegram Bot] Even fallback notification failed:",
-          fallbackError,
-        );
-      }
-    }
+    console.log(`Match notifications sent - Host: ${hostNotified}, Requester: ${requesterNotified}`);
+    return true;
   } catch (error) {
-    console.error("[Telegram Bot] Error preparing match notifications:", error);
-    console.error(
-      error instanceof Error ? error.stack : "No stack trace available",
-    );
+    console.error("Error sending match notifications:", error);
+    return false;
   }
 }
+
+// Set up bot commands when module loads
+setupBotCommands()
+  .then(success => {
+    if (success) {
+      console.log("Bot commands set up successfully");
+    } else {
+      console.error("Failed to set up bot commands");
+    }
+  })
+  .catch(error => {
+    console.error("Error setting up bot commands:", error);
+  });
