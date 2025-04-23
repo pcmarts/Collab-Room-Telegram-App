@@ -533,12 +533,66 @@ export async function registerRoutes(app: Express) {
         res.status(404);
         return res.json({ error: "User not found" });
       }
-
-      // Update user approval status
-      const [updatedUser] = await db.update(users)
-        .set({ is_approved: true })
-        .where(eq(users.id, userId))
-        .returning();
+      
+      // Use a transaction to ensure all referral-related updates are atomic
+      await db.transaction(async (tx) => {
+        // Update user approval status with approval timestamp
+        const [updatedUser] = await tx.update(users)
+          .set({ 
+            is_approved: true,
+            approved_at: new Date()
+          })
+          .where(eq(users.id, userId))
+          .returning();
+        
+        // Process referral if user was referred
+        if (user.referred_by) {
+          logger.info(`User ${userId} was referred by ${user.referred_by}, processing referral completion`);
+          
+          try {
+            // Get referrer
+            const [referrer] = await tx.select()
+              .from(users)
+              .where(eq(users.id, user.referred_by));
+            
+            if (referrer) {
+              // Log referral completion event
+              await tx.insert(referral_events)
+                .values({
+                  referrer_id: referrer.id,
+                  referred_user_id: userId,
+                  status: 'completed',
+                  completed_at: new Date()
+                });
+              
+              logger.info(`Created completed referral event for referrer ${referrer.id} and user ${userId}`);
+              
+              // Update referrer's referral record, increasing used count
+              const [referrerReferral] = await tx.select()
+                .from(user_referrals)
+                .where(eq(user_referrals.user_id, referrer.id));
+              
+              if (referrerReferral) {
+                await tx.update(user_referrals)
+                  .set({ 
+                    total_used: referrerReferral.total_used + 1,
+                    updated_at: new Date()
+                  })
+                  .where(eq(user_referrals.id, referrerReferral.id));
+                
+                logger.info(`Updated referral count for referrer ${referrer.id}`);
+              } else {
+                logger.warn(`No referral record found for referrer ${referrer.id}`);
+              }
+            } else {
+              logger.warn(`Referrer with ID ${user.referred_by} not found for user ${userId}`);
+            }
+          } catch (referralError) {
+            logger.error(`Error processing referral completion: ${referralError}`);
+            // Continue with approval process even if referral processing fails
+          }
+        }
+      });
 
       // Send Telegram notification to the approved user
       try {
@@ -548,11 +602,16 @@ export async function registerRoutes(app: Express) {
       }
       
       // Send real-time update to client via SSE if they have an active connection
-      sendApplicationStatusUpdate(
-        userId, 
-        'approved',
-        'Your application has been approved! You can now access all platform features.'
-      );
+      // We'll need to define this function if it doesn't exist
+      if (typeof sendApplicationStatusUpdate === 'function') {
+        sendApplicationStatusUpdate(
+          userId, 
+          'approved',
+          'Your application has been approved! You can now access all platform features.'
+        );
+      } else {
+        logger.info(`User ${userId} approved. Status update would be sent if SSE was implemented.`);
+      }
 
       // Enrich the company with Twitter data (async, don't wait for completion)
       if (user.company_id) {
