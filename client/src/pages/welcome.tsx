@@ -34,6 +34,18 @@ export default function Welcome() {
     // Cleanup on unmount
     return () => clearInterval(fixInterval);
   }, []);
+  
+  // Extract referral code from URL when component mounts
+  useEffect(() => {
+    // Get referral code from URL if it exists
+    const searchParams = new URLSearchParams(window.location.search);
+    const urlReferralCode = searchParams.get('referral');
+    
+    if (urlReferralCode) {
+      console.log('Found referral code in URL:', urlReferralCode);
+      setReferralCode(urlReferralCode);
+    }
+  }, []);
 
   const handleContinue = () => {
     if (referralCode.trim()) {
@@ -73,13 +85,20 @@ export default function Welcome() {
         <Card className="border border-primary/20">
           <CardContent className="pt-6 space-y-6 pb-16">
             <div>
-              <Label htmlFor="referral_code" className="text-base">Have a Referral Code?</Label>
+              <Label htmlFor="referral_code" className="text-base flex items-center gap-2">
+                Have a Referral Code?
+                {referralCode && (
+                  <span className="text-xs text-green-500 font-normal">
+                    (Referral code applied)
+                  </span>
+                )}
+              </Label>
               <Input
                 id="referral_code"
                 value={referralCode}
                 onChange={(e) => setReferralCode(e.target.value)}
                 placeholder="Enter your referral code (optional)"
-                className="mt-2"
+                className={`mt-2 ${referralCode ? 'border-green-500 focus-visible:ring-green-500' : ''}`}
               />
             </div>
           </CardContent>
