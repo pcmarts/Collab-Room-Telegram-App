@@ -32,6 +32,9 @@ export function useReferrals() {
   // Fetch user's referral code data
   const referralCodeQuery = useQuery<ReferralInfo>({
     queryKey: ['/api/referrals/my-code'],
+    queryFn: async () => {
+      return apiRequest('/api/referrals/my-code', 'GET');
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
   });
@@ -39,6 +42,9 @@ export function useReferrals() {
   // Fetch user's referred users
   const referredUsersQuery = useQuery<ReferralListResponse>({
     queryKey: ['/api/referrals/my-referrals'],
+    queryFn: async () => {
+      return apiRequest('/api/referrals/my-referrals', 'GET');
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
   });
