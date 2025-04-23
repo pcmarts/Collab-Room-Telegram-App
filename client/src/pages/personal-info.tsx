@@ -87,11 +87,16 @@ export default function PersonalInfo() {
       return;
     }
 
-    // Store all form data including social media info
+    // Get referral code from sessionStorage if it exists
+    const referralCode = sessionStorage.getItem('referralCode');
+    console.log('Retrieved referral code from sessionStorage:', referralCode);
+
+    // Store all form data including social media info and referral code
     const completeFormData = {
       ...formData,
       twitter_followers: formData.twitter_followers || '',  // Ensure this is never undefined
       linkedin_url: formData.linkedin_url || 'https://linkedin.com/in/',  // Ensure this is never undefined
+      referralCode: referralCode || null, // Add referral code to form data
     };
 
     sessionStorage.setItem('userFormData', JSON.stringify(completeFormData));
