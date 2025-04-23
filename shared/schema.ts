@@ -6,7 +6,6 @@ import {
   boolean,
   jsonb,
   integer,
-  index,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -254,13 +253,6 @@ export const COMPANY_CATEGORIES = [
 ] as const;
 
 export const COMPANY_SIZES = ["1-10", "11-50", "51-200", "200+"] as const;
-
-// Referral status for tracking invites
-export const REFERRAL_STATUS = [
-  "pending",
-  "completed",
-  "expired"
-] as const;
 
 // Core user table
 export const users = pgTable("users", {
@@ -582,48 +574,6 @@ export const matches = pgTable("matches", {
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
-// User Referrals table - tracks user's referral codes and limits
-export const referrals = pgTable("referrals", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  user_id: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" })
-    .unique(), // One referral record per user
-  referral_code: text("referral_code").notNull().unique(), // Permanent referral code for this user
-  total_available: integer("total_available").notNull().default(3), // Default to 3 referral slots
-  total_used: integer("total_used").notNull().default(0), // Count of used referral slots
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-}, (table) => {
-  return {
-    referralCodeIdx: index("referral_code_idx").on(table.referral_code), // Index for fast lookups by code
-  };
-});
-
-// Referral Invites table - tracks individual referral usages
-export const referral_invites = pgTable("referral_invites", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  referrer_id: uuid("referrer_id") 
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  referral_code: text("referral_code").notNull(), // The code that was used
-  referee_id: uuid("referee_id")
-    .references(() => users.id), // Optional until the user completes signup
-  referee_telegram_id: text("referee_telegram_id"), // Store Telegram ID even before user record is created
-  status: text("status", { enum: REFERRAL_STATUS }).notNull().default("pending"),
-  clicked_at: timestamp("clicked_at", { withTimezone: true }).defaultNow(),
-  completed_at: timestamp("completed_at", { withTimezone: true }),
-  expired_at: timestamp("expired_at", { withTimezone: true }),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-}, (table) => {
-  return {
-    // Composite index for efficiently listing a user's referred friends
-    referrerStatusIdx: index("referrer_status_idx").on(table.referrer_id, table.status),
-    // Index for checking if a Telegram user has already been referred
-    refereeTelegramIdx: index("referee_telegram_idx").on(table.referee_telegram_id),
-  };
-});
-
 // Schema validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
@@ -645,8 +595,6 @@ export const insertCollabNotificationSchema =
   createInsertSchema(collab_notifications);
 export const insertSwipeSchema = createInsertSchema(swipes);
 export const insertMatchSchema = createInsertSchema(matches);
-export const insertReferralSchema = createInsertSchema(referrals);
-export const insertReferralInviteSchema = createInsertSchema(referral_invites);
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -663,8 +611,6 @@ export type Collaboration = typeof collaborations.$inferSelect;
 export type CollabNotification = typeof collab_notifications.$inferSelect;
 export type Swipe = typeof swipes.$inferSelect;
 export type Match = typeof matches.$inferSelect;
-export type Referral = typeof referrals.$inferSelect;
-export type ReferralInvite = typeof referral_invites.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
