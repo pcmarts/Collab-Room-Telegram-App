@@ -6,8 +6,9 @@ This technical guide provides detailed implementation instructions for developer
 1. [Database Schema Implementation](#1-database-schema-implementation)
 2. [API Implementation](#2-api-implementation)
 3. [Frontend Component Implementation](#3-frontend-component-implementation)
-4. [Telegram Integration](#4-telegram-integration)
-5. [Testing Guidelines](#5-testing-guidelines)
+4. [Migration Strategy](#4-migration-strategy)
+5. [Telegram Integration](#5-telegram-integration)
+6. [Testing Guidelines](#6-testing-guidelines)
 
 ## Implementation Phases and User Testing Plan
 
@@ -1238,7 +1239,218 @@ import { ReferredUsersList } from '@/components/referrals/ReferredUsersList';
 </div>
 ```
 
-## 4. Telegram Integration
+## 4. Migration Strategy
+
+### Dual Processing During Transition
+
+To ensure a smooth transition from the existing referral code field to the new referral system, we'll implement a dual-processing approach:
+
+```typescript
+// Example implementation in user signup handler
+async function handleSignup(req, res) {
+  try {
+    const { referral_code, /* other user data */ } = req.body;
+    
+    // Create the user first
+    const newUser = await storage.createUser({
+      // User data
+      referral_code, // Store in legacy field for backward compatibility
+      // Other fields
+    });
+    
+    // If a referral code was provided, process it with the new system too
+    if (referral_code) {
+      try {
+        // Process with new system
+        await referralService.applyReferral(
+          referral_code,
+          newUser.id,
+          uuidv4() // Idempotency key
+        );
+        
+        logger.info('Referral processed with both legacy and new system', {
+          userId: newUser.id,
+          referralCode: referral_code
+        });
+      } catch (referralError) {
+        // Log but continue - user is already created
+        logger.warn('Failed to process referral with new system', {
+          userId: newUser.id,
+          referralCode: referral_code,
+          error: referralError.message
+        });
+      }
+    }
+    
+    // Continue with user creation flow
+    
+  } catch (error) {
+    // Handle errors
+  }
+}
+```
+
+### Migrating Historical Data
+
+Create a migration script in `server/migrations/migrate-legacy-referrals.ts`:
+
+```typescript
+import { db } from "../db";
+import { users, user_referrals, referral_events } from "@shared/schema";
+import { eq, isNotNull, and } from "drizzle-orm";
+import { logger } from "../utils/logger";
+import { generateReferralCode } from "../services/referral-service";
+
+/**
+ * Migrates legacy referral data to the new referral system
+ */
+export async function migrateLegacyReferrals() {
+  logger.info("Starting migration of legacy referral data");
+  
+  // Find all users who have used a referral code
+  const usersWithReferralCodes = await db.select({
+    id: users.id,
+    telegram_id: users.telegram_id,
+    referral_code: users.referral_code,
+    created_at: users.created_at
+  })
+  .from(users)
+  .where(isNotNull(users.referral_code));
+  
+  logger.info(`Found ${usersWithReferralCodes.length} users with referral codes`);
+  
+  // Group users by referral code
+  const referralCodeGroups = {};
+  for (const user of usersWithReferralCodes) {
+    if (!referralCodeGroups[user.referral_code]) {
+      referralCodeGroups[user.referral_code] = [];
+    }
+    referralCodeGroups[user.referral_code].push(user);
+  }
+  
+  // Process each unique referral code
+  for (const [referralCode, referredUsers] of Object.entries(referralCodeGroups)) {
+    try {
+      // Find a potential referrer - user with the same telegram_id prefix in the code
+      const telegramIdPrefix = referralCode.split('_')[0];
+      const potentialReferrers = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramIdPrefix))
+        .limit(1);
+      
+      if (potentialReferrers.length === 0) {
+        logger.warn(`Could not find referrer for code ${referralCode}`);
+        continue;
+      }
+      
+      const referrer = potentialReferrers[0];
+      
+      // Check if referrer already has a referral record
+      const existingReferral = await db.select()
+        .from(user_referrals)
+        .where(eq(user_referrals.user_id, referrer.id))
+        .limit(1);
+      
+      let referralRecord;
+      
+      if (existingReferral.length > 0) {
+        // Use existing record
+        referralRecord = existingReferral[0];
+        
+        // Update used count if needed
+        if (referralRecord.total_used < referredUsers.length) {
+          await db.update(user_referrals)
+            .set({ total_used: referredUsers.length })
+            .where(eq(user_referrals.id, referralRecord.id));
+            
+          referralRecord.total_used = referredUsers.length;
+        }
+      } else {
+        // Create new referral record for referrer
+        const [newReferral] = await db.insert(user_referrals).values({
+          user_id: referrer.id,
+          referral_code: referralCode,
+          total_available: Math.max(3, referredUsers.length), // Ensure enough slots for historical data
+          total_used: referredUsers.length,
+        }).returning();
+        
+        referralRecord = newReferral;
+      }
+      
+      // Create referral events for each referred user
+      for (const referredUser of referredUsers) {
+        // Check if event already exists
+        const existingEvent = await db.select()
+          .from(referral_events)
+          .where(
+            and(
+              eq(referral_events.referrer_id, referrer.id),
+              eq(referral_events.referred_user_id, referredUser.id)
+            )
+          )
+          .limit(1);
+          
+        if (existingEvent.length === 0) {
+          // Create new event
+          await db.insert(referral_events).values({
+            referrer_id: referrer.id,
+            referred_user_id: referredUser.id,
+            status: 'completed', // Historical referrals are already completed
+            created_at: referredUser.created_at || new Date(),
+            completed_at: referredUser.created_at || new Date(),
+          });
+        }
+      }
+      
+      logger.info(`Migrated referral code ${referralCode} with ${referredUsers.length} referred users`);
+    } catch (error) {
+      logger.error(`Error migrating referral code ${referralCode}`, {
+        error: error.message,
+        stack: error.stack
+      });
+    }
+  }
+  
+  logger.info("Legacy referral data migration completed");
+}
+```
+
+### Transition Plan
+
+The complete transition plan consists of these phases:
+
+1. **Phase 1: Infrastructure Deployment**
+   - Deploy new database tables without modifying existing application logic
+   - Implement new referral service and API endpoints
+   - Enable dual processing for new signups (both systems)
+   - Implement analytics tracking for the new system
+
+2. **Phase 2: Data Migration**
+   - Run the migration script during a maintenance window
+   - Verify data consistency between old and new systems
+   - Enable the referral UI components with feature flag
+
+3. **Phase 3: Full Transition**
+   - Update application UI to fully use new referral system
+   - Maintain backward compatibility with existing referral_code field
+   - Gradually phase out direct references to users.referral_code
+   - Monitor system performance and user feedback
+
+4. **Phase 4: Legacy System Deprecation (Future)**
+   - Once all systems are transitioned, mark users.referral_code as deprecated
+   - Prepare for eventual removal in a future schema update
+
+### Rollback Strategy
+
+Each phase includes a rollback plan:
+
+1. **Phase 1 Rollback**: Disable new API endpoints and revert to using only the legacy field
+2. **Phase 2 Rollback**: Disable feature flag for new UI components
+3. **Phase 3 Rollback**: Re-enable legacy code paths and disable new UI components
+
+All changes will be feature-flagged to allow quick enabling/disabling without code deployment.
+
+## 5. Telegram Integration
 
 ### Update Telegram Bot Handler
 
@@ -1405,7 +1617,7 @@ async function processUserApplication(userData: any) {
 }
 ```
 
-## 5. Testing Guidelines
+## 6. Testing Guidelines
 
 ### Integration with Existing Systems
 

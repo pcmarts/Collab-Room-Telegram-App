@@ -120,10 +120,10 @@ Implement a referral system that:
   ```
 
 #### Endpoints
-1. **Generate Referral Code**
-   - `POST /api/referrals/generate`
-   - Response includes referral code, shareable link, available/used counts
-   - Rate limited to 5 requests per day per user
+1. **Get Referral Code**
+   - `GET /api/referrals/code`
+   - Response includes automatically generated referral code, shareable link, available/used counts
+   - Referral code is created automatically upon user signup - no manual generation needed
    - Idempotent - always returns the same unique code for each user
    - Each user gets only one permanent code for their entire account lifetime
 
@@ -326,7 +326,7 @@ Implement a referral system that:
 ### 5.3 Analytics & Monitoring
 
 #### Analytics Events to Track
-- **referral_code_generated**: When a user generates a referral code
+- **referral_code_assigned**: When a referral code is automatically assigned to a new user
 - **referral_link_copied**: When a user copies their referral link
 - **referral_link_shared**: When a user shares via Telegram dialog
 - **referral_link_clicked**: When a referred user clicks a referral link
