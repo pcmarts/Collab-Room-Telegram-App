@@ -26,6 +26,8 @@ The referral system will be integrated into the existing Collab Room platform, a
 - Conversion rate of referral link clicks to signed up users
 - Percentage of users who share referral links
 - Reduction in time between application and approval for referred users
+- Engagement with referral UI elements (tooltip views, page visits)
+- Referral funnel completion rates (generated → shared → completed)
 
 ## 2. Product Overview
 
@@ -83,18 +85,45 @@ Implement a referral system that:
   - `created_at` (timestamp)
   - `completed_at` (timestamp, nullable)
 
+- **referral_notifications**: Tracks delivery status of referral-related notifications
+  - `id` (UUID, primary key)
+  - `referral_event_id` (UUID, foreign key to referral_events table)
+  - `recipient_id` (UUID, foreign key to users table)
+  - `notification_type` (string, enum: referral_received, referral_completed, referral_limit_reached)
+  - `status` (string, enum: queued, sent, delivered, failed)
+  - `telegram_message_id` (string, nullable)
+  - `created_at` (timestamp)
+  - `sent_at` (timestamp, nullable)
+  - `delivered_at` (timestamp, nullable)
+  - `read_at` (timestamp, nullable)
+  - `error_message` (string, nullable)
+  - `retry_count` (integer, default 0)
+
 #### Referral Code Format
 - Format: `${telegram_id}_${randomString(8)}`
 - Example: `123456789_a1b2c3d4`
 
 ### 3.2 API Requirements
 
+#### Modular Route Structure
+- All referral-related routes should be in a separate file: `server/routes/referrals.ts`
+- Main routes file imports and registers referral routes to avoid bloat
+- Example registration pattern:
+  ```typescript
+  // In server/routes.ts
+  import { referralRoutes } from './routes/referrals';
+  
+  // Register routes
+  app.use('/api/referrals', referralRoutes);
+  ```
+
 #### Endpoints
 1. **Generate Referral Code**
    - `POST /api/referrals/generate`
    - Response includes referral code, shareable link, available/used counts
    - Rate limited to 5 requests per day per user
-   - Idempotent - returns existing code if user already has one
+   - Idempotent - always returns the same unique code for each user
+   - Each user gets only one permanent code for their entire account lifetime
 
 2. **Get User's Referral Information**
    - `GET /api/referrals`
@@ -133,10 +162,38 @@ Implement a referral system that:
 - List of referred friends with their status
 
 #### UI Components
-1. **ReferralCard**: Main component showing referral code and sharing options
+1. **ReferralCard**: Main component showing permanent referral code and sharing options
+   - Displays the user's referral code automatically (no "Generate" button needed)
+   - Shows the same code every time the user visits the page
+   - Includes counters for available/used referrals
 2. **ReferralShareButtons**: Contains Telegram share and copy link buttons
 3. **ReferredUsersList**: Shows which friends have been invited
 4. **ReferralInfoPanel**: Explains the referral program and benefits
+
+#### Empty States and Celebrations
+1. **NoReferralsYet**: Empty state when user hasn't referred anyone yet
+   - Three-step explanation of how referrals work (Share → Friends Join → Track)
+   - Clear call-to-action button to share the pre-generated referral code
+   - Consistent design with 65% opacity for background elements
+
+2. **AllReferralsUsed**: Empty state when user has used all referral slots
+   - Thank you message for helping grow the community
+   - Clear explanation that all slots have been used
+   - Visual indication that limit has been reached
+   - Option to view referred friends and their status
+
+3. **SuccessfulReferralCelebration**: Animation shown when a referred friend joins
+   - Confetti animation with brand colors
+   - Haptic feedback on mobile devices (via Telegram WebApp API)
+   - Congratulatory message with friend's name
+   - Sound effect (with mute option)
+
+#### Contextual Help
+1. **ReferralTooltips**: Context-sensitive help throughout the interface
+   - Explanation of referral limits when hovering over counter
+   - Instructions for sharing when hovering over share buttons
+   - Clarification of status indicators in the referred friends list
+   - Tips for writing effective invitation messages
 
 ### 3.4 Telegram Integration
 
@@ -147,7 +204,7 @@ Implement a referral system that:
 
 #### Sharing Features
 - Native Telegram share dialog
-- Pre-populated message: "Hey, join my Collab Room!"
+- Pre-populated message: "Hey, I think you should check out Collab Room!"
 - Fallback to clipboard copying when sharing API isn't available
 
 #### Notification System
@@ -179,10 +236,11 @@ Implement a referral system that:
 
 #### For Existing Users:
 1. User views referral section on dashboard
-2. User clicks "Generate Referral Link" if they don't have one
+2. User sees their permanent referral link (automatically generated on first visit)
 3. User chooses to share via Telegram or copy link
 4. User receives notification when referred friend joins
 5. User sees referred friend in their dashboard list
+6. User can return anytime to access the same referral link
 
 #### For New Users with Referral:
 1. User clicks referral link shared by a friend
@@ -219,17 +277,22 @@ Implement a referral system that:
 - Backend API implementation
 - Security measures & rate limiting
 - Migration script for existing users
+- Feature flag implementation for controlled rollout
+- Notification table setup and integration
 
 #### Phase 2: UI Components & Basic Tracking
-- Develop referral UI components
+- Develop referral UI components with empty states
 - Implement sharing functionality
 - Basic referral tracking
 - Testing UI components
+- Implement contextual help tooltips
+- Build celebration animations for successful referrals
 
 #### Phase 3: Full Integration & Auto-Approval
-- Telegram notification integration
+- Telegram notification integration with delivery tracking
 - Auto-approval logic
-- Analytics tracking
+- Analytics tracking and dashboard implementation
+- Notification delivery monitoring system
 - Comprehensive edge case testing
 
 ### 5.2 Technical Considerations
@@ -250,7 +313,41 @@ Implement a referral system that:
 - Implement rate limiting
 - Secure storage of referral relationships
 
-### 5.3 Documentation Requirements
+### 5.3 Analytics & Monitoring
+
+#### Analytics Events to Track
+- **referral_code_generated**: When a user generates a referral code
+- **referral_link_copied**: When a user copies their referral link
+- **referral_link_shared**: When a user shares via Telegram dialog
+- **referral_link_clicked**: When a referred user clicks a referral link
+- **referral_signup_started**: When a referred user begins signup process
+- **referral_signup_completed**: When a referred user completes signup
+- **tooltip_viewed**: When a user interacts with contextual help tooltips
+- **referral_limit_reached**: When a user has used all available referrals
+- **celebration_displayed**: When the success animation is shown
+- **empty_state_viewed**: When a user sees an empty state screen
+
+#### Analytics Dashboard
+- **Referral Funnel Visualization**: Shows conversion through each step
+  - First Visit → Sharing → Clicks → Signups → Completions
+- **User Engagement Metrics**: Which UI elements are most interacted with
+- **Referral Source Analysis**: Which sharing methods are most effective
+- **Time-to-Conversion Tracking**: How long it takes from share to signup
+- **Referral Program Health Indicators**: Overall program effectiveness
+- **Conversion Funnel Analysis**: Detailed view of user progression through the referral process with drop-off points highlighted
+- **Cohort Analysis**: Performance of referrals based on user segments and time periods
+
+#### Notification Delivery Monitoring
+- Track delivery status of all referral-related notifications
+- Monitor notification delivery success rates
+- Track notification engagement (read rates, click-through rates)
+- Alert on notification delivery failures above threshold
+- Dashboard to visualize notification performance over time
+- Daily/weekly delivery success rate reports
+- Detailed error categorization for failed deliveries
+- Notification template performance comparison
+
+### 5.4 Documentation Requirements
 
 #### Developer Documentation
 - API documentation with request/response examples
@@ -262,6 +359,7 @@ Implement a referral system that:
 - Help content explaining the referral program
 - FAQs about the referral process
 - Clear explanations of referral limits
+- Contextual tooltips for all referral UI elements
 
 ## 6. Testing Strategy
 
@@ -274,6 +372,9 @@ Implement a referral system that:
 - Test Telegram sharing functionality
 - Test referral application process
 - Test notification delivery
+- Test empty state displays
+- Test celebration animations
+- Test haptic feedback integration
 
 ### 6.3 Edge Case Testing
 - Self-referral attempts
@@ -338,7 +439,182 @@ Implement a referral system that:
 - A/B testing of different referral messaging
 - Advanced referral program with tiered rewards
 
-## 10. Approvals
+## 10. Implementation Patterns
+
+### 10.1 Telegram Integration Patterns
+- Follow existing Haptic Feedback system pattern from `docs/telegram/haptic-feedback.md`:
+  ```typescript
+  // Example implementation for Telegram haptic feedback
+  const triggerReferralHaptic = (type: 'generated' | 'shared' | 'completed') => {
+    // Check if Telegram WebApp and HapticFeedback is available
+    if (!window.Telegram?.WebApp?.HapticFeedback) {
+      console.log('Haptic feedback not available in this environment');
+      return;
+    }
+    
+    const haptic = window.Telegram.WebApp.HapticFeedback;
+    
+    try {
+      switch (type) {
+        case 'generated':
+          // Medium impact followed by light tap for code generation
+          haptic.impactOccurred('medium');
+          break;
+        case 'shared':
+          // Light impact for sharing action
+          haptic.impactOccurred('light');
+          break;
+        case 'completed':
+          // Success notification pattern for completed referral
+          haptic.notificationOccurred('success');
+          setTimeout(() => haptic.impactOccurred('light'), 100);
+          break;
+      }
+    } catch (error) {
+      console.error('Error triggering haptic feedback:', error);
+    }
+  };
+  ```
+
+### 10.2 Security Implementation Patterns
+- Use established rate limiter middleware pattern:
+  ```typescript
+  // Example implementation of rate limiter for referral endpoints
+  export const referralLimiter = createRateLimiter({
+    windowMs: config.RATE_LIMIT_WINDOW_MS,
+    max: 5, // 5 requests per day
+    message: "Too many referral requests, please try again tomorrow",
+    skipIfDevelopment: true
+  });
+  
+  // Apply to routes
+  app.post('/api/referrals/generate', referralLimiter, handleReferralGeneration);
+  ```
+
+- Apply consistent security headers in new API endpoints:
+  ```typescript
+  // Example security headers setup
+  app.use((req, res, next) => {
+    // Add standard security headers
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+    next();
+  });
+  ```
+
+- Use established logger utility with automatic sensitive data redaction:
+  ```typescript
+  // Example logging pattern
+  logger.info('Referral code generated', {
+    userId: user.id,
+    // Logger will automatically redact sensitive information
+    referralCode: referralCode
+  });
+  ```
+
+### 10.3 React Query Integration Patterns
+- Configure referral-related queries with the same settings used throughout the app:
+  ```typescript
+  const { data: referralInfo } = useQuery({
+    queryKey: ['/api/referrals'],
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    retry: false,
+  });
+  ```
+
+### 10.4 Database Access Patterns
+- Use proper SQL import pattern:
+  ```typescript
+  // Correct pattern
+  import { sql } from 'drizzle-orm';
+  
+  // Instead of
+  // import { sql } from '@neondatabase/serverless';
+  ```
+
+- Implement consistent transaction management:
+  ```typescript
+  // Example transaction pattern for first-time referral code generation
+  await db.transaction(async (tx) => {
+    // Check if user already has a referral code
+    const [existingReferral] = await tx.select()
+      .from(referrals)
+      .where(eq(referrals.userId, user.id));
+      
+    // If user already has a referral code, return it
+    if (existingReferral) {
+      return {
+        referralCode: existingReferral.referralCode,
+        totalAvailable: existingReferral.totalAvailable,
+        totalUsed: existingReferral.totalUsed
+      };
+    }
+    
+    // Otherwise, create a new permanent referral code
+    const generatedCode = generateUniqueReferralCode(user.telegramId);
+    
+    // Create referral record
+    const [newReferral] = await tx.insert(referrals).values({
+      userId: user.id,
+      referralCode: generatedCode,
+      totalAvailable: 3,
+      totalUsed: 0
+    }).returning();
+    
+    // Update user record
+    await tx.update(users)
+      .set({ hasReferralCode: true })
+      .where(eq(users.id, user.id));
+      
+    return {
+      referralCode: newReferral.referralCode,
+      totalAvailable: newReferral.totalAvailable,
+      totalUsed: newReferral.totalUsed
+    };
+  });
+  ```
+
+### 10.5 Mobile UI Patterns
+- Use scrollable containers with fixed button pattern:
+  ```tsx
+  // Example UI pattern
+  <div className="overflow-y-auto" style={{ height: "calc(100vh - 120px)" }}>
+    <div className="pb-32">
+      {/* Referral content */}
+      <ReferralCard />
+      <ReferredUsersList users={referredUsers} />
+    </div>
+  </div>
+  <TelegramFixedButtonContainer>
+    <ReferralShareButtons />
+  </TelegramFixedButtonContainer>
+  ```
+
+- Apply existing scroll behavior patterns for consistent mobile experience
+
+### 10.6 Feature Flag Implementation
+- Use environment variable based feature flag:
+  ```typescript
+  // In server/config.ts
+  ENABLE_REFERRAL_SYSTEM: z.boolean().default(false),
+  
+  // In client-side code
+  const isReferralEnabled = useMemo(() => {
+    return !!window.ENV?.ENABLE_REFERRAL_SYSTEM;
+  }, []);
+  
+  // Conditionally render components based on flag
+  {isReferralEnabled && <ReferralCard />}
+  ```
+
+## 11. Approvals
 - [ ] Product Manager
 - [ ] Technical Lead
 - [ ] Design Lead
