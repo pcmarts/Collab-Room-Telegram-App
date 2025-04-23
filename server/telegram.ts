@@ -605,6 +605,26 @@ export async function notifyReferrerAboutApproval(referrerId: string, referredUs
   try {
     console.log(`[REFERRAL NOTIFICATION] Starting notification process for referrer ${referrerId} about ${referredUserFirstName}`);
     
+    // Check if the referrer ID is a valid UUID (the ID format in our database)
+    const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(referrerId);
+    
+    if (!isValidUuid) {
+      console.warn(`[REFERRAL NOTIFICATION] Invalid referrer ID format: ${referrerId}. Looking up by Telegram ID instead.`);
+      // Try to find the user by telegram_id instead (in case the referred_by field contains a telegram_id)
+      const [userByTelegramId] = await db
+        .select()
+        .from(users)
+        .where(eq(users.telegram_id, referrerId));
+      
+      if (userByTelegramId) {
+        console.log(`[REFERRAL NOTIFICATION] Found user by Telegram ID: ${userByTelegramId.id}`);
+        referrerId = userByTelegramId.id;
+      } else {
+        console.error(`[REFERRAL NOTIFICATION] Could not find user with Telegram ID: ${referrerId}`);
+        return;
+      }
+    }
+    
     // Get referrer details
     const [referrer] = await db
       .select()
@@ -652,10 +672,28 @@ export async function notifyReferrerAboutApproval(referrerId: string, referredUs
     }
     
     console.log(`[REFERRAL NOTIFICATION] Found referral record: ${JSON.stringify(referralRecord)}`);
-    return await notifyReferrerWithRecord(referrer, referralRecord, referredUserFirstName);
+    // Update the total_used count as we're approving a referred user
+    await db
+      .update(user_referrals)
+      .set({
+        total_used: referralRecord.total_used + 1,
+        updated_at: new Date()
+      })
+      .where(eq(user_referrals.id, referralRecord.id));
+    
+    // Re-fetch the updated record
+    const [updatedReferralRecord] = await db
+      .select()
+      .from(user_referrals)
+      .where(eq(user_referrals.id, referralRecord.id));
+    
+    console.log(`[REFERRAL NOTIFICATION] Updated referral record, now used ${updatedReferralRecord.total_used} of ${updatedReferralRecord.total_available}`);
+    
+    return await notifyReferrerWithRecord(referrer, updatedReferralRecord || referralRecord, referredUserFirstName);
   } catch (error) {
     console.error(`[REFERRAL NOTIFICATION] Error in notifyReferrerAboutApproval:`, error);
-    throw error;
+    // Don't throw the error - we don't want to block the approval process if notification fails
+    return false;
   }
 }
 
@@ -1481,6 +1519,50 @@ async function handleApproveUserCallback(
     if (userToApprove.referred_by) {
       try {
         console.log(`[REFERRAL] User ${telegramIdToApprove} was referred by ${userToApprove.referred_by}, sending notification`);
+        
+        // Create or update a referral event record
+        try {
+          // Check if a referral event already exists
+          const [existingEvent] = await db
+            .select()
+            .from(referral_events)
+            .where(and(
+              eq(referral_events.referrer_id, userToApprove.referred_by),
+              eq(referral_events.referred_user_id, userToApprove.id)
+            ));
+            
+          if (existingEvent) {
+            // Update existing referral event
+            await db
+              .update(referral_events)
+              .set({
+                status: 'completed',
+                completed_at: new Date()
+              })
+              .where(eq(referral_events.id, existingEvent.id));
+            
+            console.log(`[REFERRAL] Updated existing referral event ${existingEvent.id} to completed status`);
+          } else {
+            // Create new referral event
+            const [newEvent] = await db
+              .insert(referral_events)
+              .values({
+                referrer_id: userToApprove.referred_by,
+                referred_user_id: userToApprove.id,
+                status: 'completed',
+                created_at: new Date(),
+                completed_at: new Date()
+              })
+              .returning();
+              
+            console.log(`[REFERRAL] Created new referral event ${newEvent.id} with completed status`);
+          }
+        } catch (eventError) {
+          console.error(`[REFERRAL] Error updating referral event: ${eventError}`);
+          // Continue with notification process even if event creation fails
+        }
+        
+        // Send notification to referrer
         await notifyReferrerAboutApproval(userToApprove.referred_by, userToApprove.first_name);
       } catch (referralError) {
         console.error(`Error notifying referrer: ${referralError}`);
