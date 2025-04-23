@@ -216,6 +216,13 @@ Implement a referral system that:
 
 ### 3.5 Business Logic
 
+#### Automatic Code Generation
+- Referral code is automatically generated when a user account is created
+- No user action required to generate a referral code
+- Code is permanent and consistent throughout the user's lifetime
+- Format uses Telegram ID with a random suffix for uniqueness
+- No need for rate limiting since codes are only generated once per user
+
 #### Referral Limits
 - Each user gets 3 referral slots by default
 - Counting mechanism tracks used vs. available slots
@@ -231,6 +238,7 @@ Implement a referral system that:
 2. **Already Registered User**: System detects if email/Telegram ID already exists
 3. **Multiple Codes Usage**: System only honors the first valid code used
 4. **Referrer Account Deletion**: Referred users maintain their status
+5. **Transition from Legacy Codes**: System correctly handles existing users with legacy referral codes
 
 ## 4. User Experience
 

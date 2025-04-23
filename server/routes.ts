@@ -4,8 +4,8 @@ import { createServer } from "http";
 import { db } from "./db";
 import { 
   users, companies, notification_preferences, marketing_preferences, conference_preferences, 
-  events, user_events, collaborations, collab_notifications, swipes, matches,
-  createCollaborationSchema, applicationSchema, collabApplicationSchema,
+  collaborations, collab_notifications, swipes, matches, referral_events, user_referrals,
+  createCollaborationSchema, createCollabApplicationSchema,
   InsertCollaboration, CollabApplication, InsertCollabApplication,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "../shared/schema";
@@ -16,6 +16,7 @@ import { storage } from "./storage";
 import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
 import twitterRoutes from './routes/twitter-routes.js';
+import referralRoutes from './routes/referrals';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -193,6 +194,10 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
 // Twitter routes are imported at the top of the file
 
 export async function registerRoutes(app: Express) {
+  // Register API routes
+  app.use('/api/referrals', referralRoutes);
+  app.use('/api/twitter', twitterRoutes);
+  
   // Network statistics endpoint
   app.get("/api/network-stats", async (_req: Request, res: Response) => {
     try {

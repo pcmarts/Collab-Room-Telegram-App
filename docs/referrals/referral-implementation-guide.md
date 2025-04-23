@@ -17,7 +17,7 @@ This section outlines the phased implementation approach with clear testing chec
 
 **Steps:**
 1. Implement database schema
-2. Create basic service functions
+2. Create basic service functions 
 3. Add enhanced logging
 4. Enable user testing
 
@@ -26,9 +26,66 @@ This section outlines the phased implementation approach with clear testing chec
 [ ] Add user_referrals and referral_events tables to shared/schema.ts
 [ ] Implement proper indexes on all lookup fields
 [ ] Add Zod validation schemas
-[ ] Create migration script
+[ ] Create migration script that handles existing referral codes in users table
+[ ] Modify the user creation process to automatically generate referral codes
 [ ] Add referral service with basic functions
 [ ] Implement detailed logging for each operation
+```
+
+**Migration Strategy for Existing Referral Codes:**
+```typescript
+// In migration script:
+
+// 1. Get all existing users with referral codes
+const usersWithReferralCodes = await db.select({
+  id: users.id,
+  telegram_id: users.telegram_id,
+  referral_code: users.referral_code
+})
+.from(users)
+.where(
+  and(
+    not(isNull(users.referral_code)),
+    not(eq(users.referral_code, ''))
+  )
+);
+
+console.log(`Found ${usersWithReferralCodes.length} users with existing referral codes to migrate`);
+
+// 2. For each user, create a record in the new user_referrals table
+for (const user of usersWithReferralCodes) {
+  try {
+    // Check if entry already exists
+    const [existingReferral] = await db.select()
+      .from(user_referrals)
+      .where(eq(user_referrals.user_id, user.id));
+      
+    if (existingReferral) {
+      console.log(`User ${user.id} already has a referral record, skipping`);
+      continue;
+    }
+    
+    // Create new referral record with existing code if possible
+    let referralCode = user.referral_code;
+    
+    // If the existing code doesn't match our format, generate a new one
+    if (!referralCode.match(/^[0-9]+_[a-f0-9]{8}$/)) {
+      referralCode = generateReferralCode(user.telegram_id);
+      console.log(`Generated new referral code for user ${user.id}`);
+    }
+    
+    await db.insert(user_referrals).values({
+      user_id: user.id,
+      referral_code: referralCode,
+      total_available: 3,
+      total_used: 0
+    });
+    
+    console.log(`Migrated referral code for user ${user.id}`);
+  } catch (error) {
+    console.error(`Error migrating referral code for user ${user.id}:`, error);
+  }
+}
 ```
 
 **Testing Prompt for Admin User:**
@@ -337,35 +394,17 @@ export function decodeReferralInfo(encoded: string): string {
 }
 
 /**
- * Gets or creates a referral code for a user
+ * Creates a referral code for a new user
+ * This should be called during user creation/signup
  */
-export async function getOrCreateReferralCode(userId: string, telegramId: string): Promise<{
+export async function createReferralCodeForUser(userId: string, telegramId: string): Promise<{
   referralCode: string;
   referralLink: string;
-  isNew: boolean;
   totalAvailable: number;
   totalUsed: number;
 }> {
   try {
-    // Check if user already has a referral code
-    const existingCode = await db.select()
-      .from(user_referrals)
-      .where(eq(user_referrals.user_id, userId))
-      .limit(1);
-      
-    if (existingCode.length > 0) {
-      const referral = existingCode[0];
-      const encodedCode = encodeReferralInfo(referral.referral_code);
-      const referralLink = `https://t.me/collab_room_bot?start=r_${encodedCode}`;
-      
-      return {
-        referralCode: referral.referral_code,
-        referralLink,
-        isNew: false,
-        totalAvailable: referral.total_available,
-        totalUsed: referral.total_used
-      };
-    }
+    logger.info('Creating referral code for new user', { userId, telegramId });
     
     // Generate new code
     const referralCode = generateReferralCode(telegramId);
@@ -380,14 +419,59 @@ export async function getOrCreateReferralCode(userId: string, telegramId: string
         total_available: 3,
         total_used: 0,
       });
+      
+      logger.info('Created referral record for user', { 
+        userId, 
+        referralCode 
+      });
     });
     
     return {
       referralCode,
       referralLink,
-      isNew: true,
       totalAvailable: 3,
       totalUsed: 0
+    };
+  } catch (error) {
+    logger.error('Failed to create referral code for user', {
+      userId,
+      error: error.message,
+      stack: error.stack,
+    });
+    throw new Error('Failed to create referral code');
+  }
+}
+
+/**
+ * Gets a user's referral code (should already exist)
+ */
+export async function getUserReferralCode(userId: string): Promise<{
+  referralCode: string;
+  referralLink: string;
+  totalAvailable: number;
+  totalUsed: number;
+} | null> {
+  try {
+    // Get user's referral record
+    const existingCode = await db.select()
+      .from(user_referrals)
+      .where(eq(user_referrals.user_id, userId))
+      .limit(1);
+      
+    if (existingCode.length === 0) {
+      logger.warn('Referral code not found for existing user', { userId });
+      return null;
+    }
+    
+    const referral = existingCode[0];
+    const encodedCode = encodeReferralInfo(referral.referral_code);
+    const referralLink = `https://t.me/collab_room_bot?start=r_${encodedCode}`;
+    
+    return {
+      referralCode: referral.referral_code,
+      referralLink,
+      totalAvailable: referral.total_available,
+      totalUsed: referral.total_used
     };
   } catch (error) {
     logger.error('Failed to generate referral code', {
