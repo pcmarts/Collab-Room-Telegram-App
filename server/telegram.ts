@@ -595,6 +595,94 @@ export async function notifyUserApproved(chatId: number) {
 }
 
 /**
+ * Notify referrer when a user they referred is approved
+ * @param referrerId The database ID of the referrer
+ * @param referredUserFirstName First name of the referred user who was approved
+ */
+export async function notifyReferrerAboutApproval(referrerId: string, referredUserFirstName: string) {
+  try {
+    // Get referrer details
+    const [referrer] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, referrerId));
+
+    if (!referrer || !referrer.telegram_id) {
+      console.warn(`Cannot notify referrer ${referrerId}: User or Telegram ID not found`);
+      return;
+    }
+
+    // Get referrer's referral stats
+    const [referralRecord] = await db
+      .select()
+      .from(user_referrals)
+      .where(eq(user_referrals.user_id, referrerId));
+
+    if (!referralRecord) {
+      console.warn(`No referral record found for referrer ${referrerId}`);
+      return;
+    }
+
+    // Calculate remaining referrals
+    const usedReferrals = referralRecord.total_used;
+    const totalReferrals = referralRecord.total_available;
+    const remainingReferrals = Math.max(0, totalReferrals - usedReferrals);
+
+    // Create share button with referral code
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "🚀 Invite More Friends",
+            web_app: { url: `${WEBAPP_URL}/referrals` },
+          },
+        ],
+        [
+          {
+            text: "📋 Copy Referral Code",
+            callback_data: `copy_referral_code_${referralRecord.referral_code}`,
+          },
+        ],
+      ],
+    };
+
+    // Send notification message
+    await bot.sendMessage(
+      parseInt(referrer.telegram_id),
+      `🎉 <b>Referral Success!</b>\n\n` +
+        `Great news! <b>${referredUserFirstName}</b> whom you referred has been approved and now has full access to Collab Room.\n\n` +
+        `<b>Your Referral Stats:</b>\n` +
+        `• ${usedReferrals}/${totalReferrals} referrals used\n` +
+        `• ${remainingReferrals} referral${remainingReferrals !== 1 ? 's' : ''} remaining\n\n` +
+        `Share your unique code to invite more people:`,
+      { 
+        parse_mode: "HTML",
+        reply_markup: keyboard 
+      },
+    );
+
+    // Send the referral code as a separate message for easy copying
+    await bot.sendMessage(
+      parseInt(referrer.telegram_id),
+      `<code>${referralRecord.referral_code}</code>`,
+      { parse_mode: "HTML" }
+    );
+
+    console.log(`Referral success notification sent to referrer ${referrer.id} (${referrer.first_name})`);
+
+    // Log the notification
+    logAdminMessage(
+      "SYSTEM",
+      "REFERRAL_SUCCESS_NOTIFICATION",
+      `Sent referral success notification to ${referrer.first_name} for referring ${referredUserFirstName}`,
+      `Referral notification sent`,
+    );
+  } catch (error) {
+    console.error("Failed to send referral success notification:", error);
+  }
+}
+
+/**
  * Notify all admins when a new collaboration is created
  * @param collaborationId The ID of the newly created collaboration
  * @param creatorId The ID of the user who created the collaboration
