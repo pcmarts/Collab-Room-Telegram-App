@@ -216,13 +216,59 @@ bot.on("message", async (msg) => {
 });
 
 // Register command handlers first
-async function handleStart(msg: TelegramBot.Message) {
+async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | null) {
   const chatId = msg.chat.id;
   const telegramId = msg.from?.id.toString();
+  // Extract referral code from the message if present
+  const referralParam = match && match[1] ? match[1].trim() : null;
+  let referralCode = null;
+  let referrerDetails = null;
 
   try {
     if (!telegramId) {
       throw new Error("No Telegram ID found in message");
+    }
+
+    console.log(`[START] User ${telegramId} started bot with param: ${referralParam || 'none'}`);
+    
+    // Check if the parameter is a referral code
+    if (referralParam && referralParam.startsWith('r_')) {
+      referralCode = referralParam.substring(2); // Remove 'r_' prefix
+      console.log(`[REFERRAL] Found referral code: ${referralCode}`);
+      
+      // Look up the referrer by referral code
+      const [referrerUser] = await db
+        .select({
+          id: users.id,
+          first_name: users.first_name,
+          last_name: users.last_name,
+          company_id: users.company_id
+        })
+        .from(users)
+        .where(eq(users.referral_code, referralCode));
+      
+      if (referrerUser) {
+        // If found, get company info
+        const [company] = referrerUser.company_id ? 
+          await db
+            .select({
+              name: companies.name
+            })
+            .from(companies)
+            .where(eq(companies.id, referrerUser.company_id)) : 
+          [{ name: null }];
+            
+        referrerDetails = {
+          id: referrerUser.id,
+          first_name: referrerUser.first_name,
+          last_name: referrerUser.last_name || '',
+          company_name: company?.name || null
+        };
+        
+        console.log(`[REFERRAL] Found referrer: ${referrerDetails.first_name} ${referrerDetails.last_name}`);
+      } else {
+        console.log(`[REFERRAL] Invalid referral code: ${referralCode}`);
+      }
     }
 
     const [existingUser] = await db
@@ -664,8 +710,8 @@ setupBotCommands()
     console.error("Error setting up bot commands:", error);
   });
 
-// Register command handlers
-bot.onText(/\/start/, handleStart);
+// Register command handlers - capture the referral code if present
+bot.onText(/\/start(?:\s+(.+))?/, handleStart);
 
 // Admin command to broadcast a message to all users
 async function handleBroadcast(msg: TelegramBot.Message) {
