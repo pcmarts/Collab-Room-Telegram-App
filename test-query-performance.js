@@ -9,8 +9,7 @@
  */
 
 import { db } from './server/db.js';
-import { IStorage } from './server/storage.js';
-import { StorageImplementation } from './server/storage.js';
+import { storage } from './server/storage.js';
 
 async function runQueryTest() {
   console.log('Starting query performance test...');
@@ -30,9 +29,6 @@ async function runQueryTest() {
     
     const userId = testUser.id;
     console.log(`Testing with user ID: ${userId}`);
-    
-    // Create storage instance
-    const storage = new StorageImplementation();
     
     // Parameters for the test
     const numIterations = 5;
