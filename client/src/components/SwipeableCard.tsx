@@ -1,5 +1,17 @@
 import React, { useState } from "react";
 import { motion, useMotionValue, useTransform, MotionValue } from "framer-motion";
+
+// TypeScript definition for Telegram WebApp API
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        openLink: (url: string) => void;
+        // Include other WebApp methods as needed
+      }
+    }
+  }
+}
 import {
   Calendar,
   Check,
@@ -283,15 +295,20 @@ export default function SwipeableCard({
                   onClick={(e) => {
                     // Stop event propagation to prevent parent handling
                     e.stopPropagation();
-                    // Log click for debugging
-                    console.log("[SwipeableCard] Twitter link clicked");
-                    // Don't prevent default (let the link work naturally)
+                    // Use Telegram's openLink method if available
+                    if (window.Telegram?.WebApp?.openLink && data.details?.host_twitter_handle) {
+                      e.preventDefault();
+                      const twitterUrl = `https://twitter.com/${data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}`;
+                      console.log("[SwipeableCard] Opening Twitter via Telegram WebApp:", twitterUrl);
+                      window.Telegram.WebApp.openLink(twitterUrl);
+                      return false;
+                    }
+                    console.log("[SwipeableCard] Twitter link clicked - default browser handling");
                   }}
                   onTouchEnd={(e) => {
                     // Stop touch event propagation for mobile
                     e.stopPropagation();
                     console.log("[SwipeableCard] Twitter link touch end");
-                    // We don't prevent default because we want the link to work
                   }}
                 >
                   @{data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
@@ -339,15 +356,20 @@ export default function SwipeableCard({
                   onClick={(e) => {
                     // Stop event propagation to prevent parent handling
                     e.stopPropagation();
-                    // Log click for debugging
-                    console.log("[SwipeableCard] Twitter Spaces link clicked");
-                    // Don't prevent default (let the link work naturally)
+                    // Use Telegram's openLink method if available
+                    if (window.Telegram?.WebApp?.openLink && data.details?.twitter_handle) {
+                      e.preventDefault();
+                      const twitterUrl = `https://twitter.com/${data.details.twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}`;
+                      console.log("[SwipeableCard] Opening Twitter Spaces via Telegram WebApp:", twitterUrl);
+                      window.Telegram.WebApp.openLink(twitterUrl);
+                      return false;
+                    }
+                    console.log("[SwipeableCard] Twitter Spaces link clicked - default browser handling");
                   }}
                   onTouchEnd={(e) => {
                     // Stop touch event propagation for mobile
                     e.stopPropagation();
                     console.log("[SwipeableCard] Twitter Spaces link touch end");
-                    // We don't prevent default because we want the link to work
                   }}
                 >
                   {data.details.twitter_handle.includes('@') ? data.details.twitter_handle : '@' + data.details.twitter_handle.replace('https://twitter.com/', '').replace('https://x.com/', '')}
@@ -398,9 +420,14 @@ export default function SwipeableCard({
                     onClick={(e) => {
                       // Stop event propagation to prevent parent handling
                       e.stopPropagation();
-                      // Log click for debugging
-                      console.log("[SwipeableCard] Podcast link clicked");
-                      // Don't prevent default (let the link work naturally)
+                      // Use Telegram's openLink method if available
+                      if (window.Telegram?.WebApp?.openLink && data.details?.podcast_link) {
+                        e.preventDefault();
+                        console.log("[SwipeableCard] Opening Podcast link via Telegram WebApp:", data.details.podcast_link);
+                        window.Telegram.WebApp.openLink(data.details.podcast_link);
+                        return false;
+                      }
+                      console.log("[SwipeableCard] Podcast link clicked - default browser handling");
                     }}
                     onTouchEnd={(e) => {
                       // Stop touch event propagation for mobile
@@ -458,9 +485,14 @@ export default function SwipeableCard({
                     onClick={(e) => {
                       // Stop event propagation to prevent parent handling
                       e.stopPropagation();
-                      // Log click for debugging
-                      console.log("[SwipeableCard] Blog link clicked");
-                      // Don't prevent default (let the link work naturally)
+                      // Use Telegram's openLink method if available
+                      if (window.Telegram?.WebApp?.openLink && data.details?.blog_link) {
+                        e.preventDefault();
+                        console.log("[SwipeableCard] Opening Blog link via Telegram WebApp:", data.details.blog_link);
+                        window.Telegram.WebApp.openLink(data.details.blog_link);
+                        return false;
+                      }
+                      console.log("[SwipeableCard] Blog link clicked - default browser handling");
                     }}
                     onTouchEnd={(e) => {
                       // Stop touch event propagation for mobile
