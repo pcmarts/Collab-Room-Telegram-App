@@ -12,7 +12,7 @@ import {
 } from "../shared/schema";
 import { eq, and, not, desc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, bot } from "./telegram";
+import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, notifyReferrerAboutApproval, bot } from "./telegram";
 import { storage } from "./storage";
 import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
@@ -610,6 +610,18 @@ export async function registerRoutes(app: Express) {
         await notifyUserApproved(parseInt(user.telegram_id));
       } catch (msgError) {
         console.error('Failed to send user approval notification:', msgError);
+      }
+      
+      // If the user was referred, notify the referrer about the approval
+      if (user.referred_by && user.first_name) {
+        try {
+          logger.info(`Notifying referrer ${user.referred_by} about approval of ${user.first_name}`);
+          await notifyReferrerAboutApproval(user.referred_by, user.first_name);
+          logger.info(`Successfully notified referrer ${user.referred_by} about approval`);
+        } catch (referrerNotifyError) {
+          logger.error(`Failed to send notification to referrer: ${referrerNotifyError}`);
+          // Continue with approval process even if referrer notification fails
+        }
       }
       
       // Send real-time update to client via SSE if they have an active connection
