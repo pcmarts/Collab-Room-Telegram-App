@@ -6,6 +6,7 @@ import {
   boolean,
   jsonb,
   integer,
+  index,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -273,6 +274,11 @@ export const users = pgTable("users", {
   // New referral-related fields
   referred_by: uuid("referred_by").references(() => users.id, { onDelete: "set null" }),
   approved_at: timestamp("approved_at", { withTimezone: true }),
+}, (table) => {
+  return {
+    // Index for users.id since it's frequently used in joins with other tables
+    userIdIdx: index("user_id_idx").on(table.id),
+  };
 });
 
 // Company information
@@ -295,6 +301,11 @@ export const companies = pgTable("companies", {
   blockchain_networks: text("blockchain_networks").array(),
   tags: text("tags").array(),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+  return {
+    // Index for companies.user_id for joins with users table
+    companyUserIdIdx: index("company_user_id_idx").on(table.user_id),
+  };
 });
 
 // Twitter data for companies
