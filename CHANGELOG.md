@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.9.3] - 2025-04-24
+
+### Fixed
+- Fixed missing company data in collaboration details dialog when using optimized database queries
+- Ensured all company information appears correctly in the details view (funding stage, token, blockchain networks, etc.)
+
+### Enhanced
+- Improved the company data mapping when displaying collaboration details
+- Added comprehensive company field mapping for better data structure consistency
+
+### Technical Details
+- Updated handleViewCardDetails function in DiscoverPageNew.tsx to properly structure company data
+- Enhanced collaborationResults mapping in storage.ts to include all company fields
+- Implemented fallback mechanism for company data structure to ensure backward compatibility
+
 ## [Version 1.9.2] - 2025-04-24
 
 ### Performance

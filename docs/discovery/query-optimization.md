@@ -28,10 +28,23 @@ We've implemented an optimized version of the `searchCollaborationsPaginated` fu
    const collaborationResults = filteredResults.map(r => {
      return {
        ...r.collaboration,
+       // Basic company information
        creator_company_name: r.company.name,
        company_logo_url: r.company.logo_url,
        company_description: r.company.description,
        company_website: r.company.website,
+       
+       // Additional company fields to support the details dialog
+       company_twitter: r.company.twitter_handle,
+       company_twitter_followers: r.company.twitter_followers,
+       company_linkedin: r.company.linkedin_url,
+       company_short_description: r.company.short_description,
+       company_has_token: r.company.has_token,
+       company_token_ticker: r.company.token_ticker,
+       company_blockchain_networks: r.company.blockchain_networks,
+       company_tags: r.company.tags,
+       
+       // User information
        creator_first_name: r.user.first_name,
        creator_last_name: r.user.last_name,
        creator_role: r.user.role_title
@@ -78,6 +91,54 @@ A critical part of the optimization was ensuring that all necessary data for ren
 1. Include full company data (name, logo URL, description, website) in the results
 2. Include creator information (first name, last name, role title) for each collaboration
 3. Merge this data into the collaboration objects before returning them
+4. Ensure all company fields are available for the details dialog (social media links, funding information, blockchain data, etc.)
+5. Maintain backward compatibility with components that expect specific data structures
+
+#### Client-Side Data Structure Transformation
+To ensure the collaboration details dialog correctly displays company information, we implemented a transformation function in the client that structures the data properly:
+
+```javascript
+const handleViewCardDetails = (card: CardData) => {
+  // Make a copy of the card data to avoid modifying the original
+  const cardWithCompanyData = { ...card };
+  
+  // Ensure company_data is properly structured for the details dialog
+  if (!cardWithCompanyData.company_data) {
+    cardWithCompanyData.company_data = {
+      // Basic company information
+      name: card.creator_company_name,
+      logo_url: card.company_logo_url,
+      description: card.company_description,
+      website: card.company_website,
+      
+      // Social media links
+      twitter_handle: card.company_twitter || card.twitter_handle,
+      twitter_followers: card.company_twitter_followers || card.twitter_followers,
+      linkedin_url: card.company_linkedin || card.linkedin_url,
+      
+      // Classification information
+      funding_stage: card.funding_stage,
+      tags: card.company_tags || card.tags,
+      
+      // Blockchain related fields
+      has_token: card.has_token || card.company_has_token,
+      token_ticker: card.token_ticker || card.company_token_ticker,
+      blockchain_networks: card.blockchain_networks || card.company_blockchain_networks,
+      
+      // Job information
+      job_title: card.creator_role || card.job_title
+    };
+  }
+  
+  // Also set companyName for backward compatibility
+  if (!cardWithCompanyData.companyName && cardWithCompanyData.creator_company_name) {
+    cardWithCompanyData.companyName = cardWithCompanyData.creator_company_name;
+  }
+  
+  setSelectedCardDetails(cardWithCompanyData);
+  setCardDialogOpen(true);
+};
+```
 
 ### Fallback Mechanism
 If the optimized implementation encounters any errors, it automatically falls back to the legacy implementation:
@@ -96,3 +157,5 @@ try {
 2. Implement selective loading of related data based on what's actually needed by the client
 3. Add query result caching for frequently accessed cards
 4. Implement database indexing strategy specifically optimized for the discovery cards query pattern
+5. Consider pre-computing nested data structures on the server to avoid client-side transformations
+6. Implement a consistent data structure standard for both server and client to minimize transformation needs
