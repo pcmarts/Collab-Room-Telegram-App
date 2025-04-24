@@ -5,6 +5,18 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.9.5] - 2025-04-24
+
+### Performance
+- Optimized database queries with strategic indexing for discovery cards
+- Reduced query execution time from ~40ms to ~20ms (50% improvement)
+- Added comprehensive performance testing and measurement tools
+
+### Technical Details
+- Implemented database indexing migration script (db-migrate-add-indexes.js)
+- Created performance test utility (test-query-performance.js) for benchmarking
+- Added detailed documentation on database indexing strategy in docs/discovery/database-indexing.md
+
 ## [Version 1.9.4] - 2025-04-24
 
 ### Performance

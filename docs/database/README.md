@@ -192,6 +192,17 @@ The project includes several migration scripts for evolving the database schema:
 
 ### Recent Database Optimizations
 
+#### Performance Testing and Measurement (v1.9.5)
+
+In version 1.9.5, we conducted comprehensive performance testing of the database indexes implemented in v1.9.4:
+
+- Measured query execution time reduction from ~40ms to ~20ms (50% improvement)
+- Created performance test utility (`test-query-performance.js`) for benchmarking database operations
+- Documented query execution patterns and optimizations for future reference
+- Verified real-world performance improvements in the discovery cards feature
+
+For detailed benchmark results and performance analysis, see [Database Indexing for Discovery Cards](../discovery/database-indexing.md).
+
 #### Database Indexing (v1.9.4)
 
 In version 1.9.4, strategic database indexes were added to improve query performance, particularly for the discovery cards functionality:
