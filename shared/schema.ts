@@ -421,6 +421,16 @@ export const marketing_preferences = pgTable("marketing_preferences", {
     "discovery_filter_blockchain_networks_enabled",
   ).default(false),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+  return {
+    // Index for marketing_preferences.user_id for joining with users
+    marketingPrefUserIdIdx: index("marketing_pref_user_id_idx").on(table.user_id),
+    // Composite index for common filter combinations
+    marketingFilterIdx: index("marketing_filter_idx").on(
+      table.discovery_filter_enabled, 
+      table.discovery_filter_collab_types_enabled
+    )
+  };
 });
 
 // Conference coffee preferences
@@ -533,6 +543,17 @@ export const collaborations = pgTable("collaborations", {
   specific_date: text("specific_date"), // Store as simple text in YYYY-MM-DD format
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+  return {
+    // Index for collaborations.creator_id for joins with users table
+    creatorIdIdx: index("collab_creator_id_idx").on(table.creator_id),
+    // Index for collaborations.created_at used in sorting and pagination
+    createdAtIdx: index("collab_created_at_idx").on(table.created_at),
+    // Index for status field which is used in filtering
+    statusIdx: index("collab_status_idx").on(table.status),
+    // Composite index for creator_id + status (common filter combination)
+    creatorStatusIdx: index("collab_creator_status_idx").on(table.creator_id, table.status)
+  };
 });
 
 // Collaboration applications
@@ -566,6 +587,17 @@ export const swipes = pgTable("swipes", {
   note: text("note"), // Store the personalized note for invitation
   details: jsonb("details"), // To store application details for backward compatibility
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+  return {
+    // Index for swipes.user_id for filtering by user
+    swipeUserIdIdx: index("swipe_user_id_idx").on(table.user_id),
+    // Index for swipes.collaboration_id for filtering by collaboration
+    swipeCollabIdIdx: index("swipe_collab_id_idx").on(table.collaboration_id),
+    // Composite index for user_id + collaboration_id for the NOT EXISTS query
+    userCollabIdx: index("swipe_user_collab_idx").on(table.user_id, table.collaboration_id),
+    // Composite index for direction + user_id for finding matches
+    directionUserIdx: index("swipe_direction_user_idx").on(table.direction, table.user_id)
+  };
 });
 
 // Matches table for storing successful collaboration matches
@@ -586,6 +618,17 @@ export const matches = pgTable("matches", {
   requester_accepted: boolean("requester_accepted").default(false),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+  return {
+    // Index for matches.host_id for filtering by host
+    matchHostIdIdx: index("match_host_id_idx").on(table.host_id),
+    // Index for matches.requester_id for filtering by requester
+    matchRequesterIdIdx: index("match_requester_id_idx").on(table.requester_id),
+    // Index for matches.collaboration_id for join operations
+    matchCollabIdIdx: index("match_collab_id_idx").on(table.collaboration_id),
+    // Composite index for host_id + requester_id for finding specific matches
+    hostRequesterIdx: index("match_host_requester_idx").on(table.host_id, table.requester_id)
+  };
 });
 
 // Combined table for referral tracking and limits

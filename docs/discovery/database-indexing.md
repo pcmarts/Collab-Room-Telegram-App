@@ -1,0 +1,98 @@
+# Database Indexing for Discovery Cards
+
+This document describes the database indexing strategy implemented to improve the performance of discovery cards loading and related queries in The Collab Room application.
+
+## Overview
+
+Database indexes have been added to optimize the performance of the frequently used join and filter operations in the discovery card functionality. These indexes are particularly important for improving the performance of the optimized query implemented in the `searchCollaborationsPaginated` function.
+
+## Indexed Tables and Columns
+
+### Users Table
+- `user_id_idx` on `users.id`: Improves performance when joining with companies and collaborations tables
+
+### Companies Table
+- `company_user_id_idx` on `companies.user_id`: Optimizes joins between companies and users tables
+
+### Collaborations Table
+- `collab_creator_id_idx` on `collaborations.creator_id`: Improves filtering by creator and joins with users
+- `collab_created_at_idx` on `collaborations.created_at`: Optimizes sorting and cursor-based pagination
+- `collab_status_idx` on `collaborations.status`: Enhances filtering by active/inactive status
+- `collab_creator_status_idx` on `collaborations.creator_id, collaborations.status`: Composite index for a common filter combination
+
+### Swipes Table
+- `swipe_user_id_idx` on `swipes.user_id`: Improves filtering by user
+- `swipe_collab_id_idx` on `swipes.collaboration_id`: Enhances filtering by collaboration 
+- `swipe_user_collab_idx` on `swipes.user_id, swipes.collaboration_id`: Optimizes the critical NOT EXISTS subquery
+- `swipe_direction_user_idx` on `swipes.direction, swipes.user_id`: Improves finding matches based on swipe direction
+
+### Matches Table
+- `match_host_id_idx` on `matches.host_id`: Improves filtering by host user
+- `match_requester_id_idx` on `matches.requester_id`: Enhances filtering by requester user
+- `match_collab_id_idx` on `matches.collaboration_id`: Optimizes joining with collaborations
+- `match_host_requester_idx` on `matches.host_id, matches.requester_id`: Composite index for finding specific matches
+
+### Marketing Preferences Table
+- `marketing_pref_user_id_idx` on `marketing_preferences.user_id`: Improves preference loading
+- `marketing_filter_idx` on `marketing_preferences.discovery_filter_enabled, marketing_preferences.discovery_filter_collab_types_enabled`: Composite index for filter toggle states
+
+## Key Query Patterns Optimized
+
+### NOT EXISTS Subquery
+One of the most critical query patterns optimized is the NOT EXISTS subquery used to exclude already swiped collaborations:
+
+```sql
+NOT EXISTS (
+  SELECT 1 FROM swipes
+  WHERE swipes.collaboration_id = collaborations.id
+  AND swipes.user_id = $userId
+)
+```
+
+The `swipe_user_collab_idx` composite index significantly improves the performance of this operation.
+
+### Joins with Marketing Preferences
+The query joins collaborations with marketing preferences to apply filters:
+
+```sql
+LEFT JOIN marketing_preferences
+ON marketing_preferences.user_id = $userId
+```
+
+The `marketing_pref_user_id_idx` index improves the performance of this join operation.
+
+### Sorting and Pagination
+Cursor-based pagination relies on sorting by created_at timestamp:
+
+```sql
+ORDER BY collaborations.created_at DESC
+```
+
+The `collab_created_at_idx` index improves the performance of this sorting operation.
+
+## Performance Improvements
+
+The addition of these indexes has resulted in significant performance improvements:
+
+1. Reduced query execution time for the main discovery card query
+2. Improved responsiveness for pagination operations
+3. Enhanced overall throughput for the application
+
+A performance testing utility (`test-query-performance.js`) has been created to measure the impact of these optimizations.
+
+## Implementation
+
+The indexes were implemented via the Drizzle ORM index builder in `shared/schema.ts`. A migration script (`db-migrate-add-indexes.js`) was created to apply these indexes to the database.
+
+## Future Considerations
+
+As the application data grows, consider:
+
+1. Monitoring index usage and performance with database analysis tools
+2. Adding additional focused indexes based on evolving query patterns
+3. Periodically rebuilding indexes to maintain optimal performance
+
+## References
+
+- [PostgreSQL Indexing Documentation](https://www.postgresql.org/docs/current/indexes.html)
+- [Drizzle ORM Index Documentation](https://orm.drizzle.team/docs/indexes)

@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.9.4] - 2025-04-24
+
+### Performance
+- Added database indexing to improve query performance for discovery cards
+- Optimized database join operations with strategic indexes
+- Implemented composite indexes for frequently combined filter conditions
+
+### Technical Details
+- Added indexes for key join columns: collaborations.creator_id, users.id, companies.user_id
+- Created index on collaborations.created_at for better pagination performance
+- Added composite indexes for swipes.user_id + swipes.collaboration_id to optimize exclusion queries
+- Added index on marketing_preferences.user_id to speed up preference loading
+- Created migration script (db-migrate-add-indexes.js) for applying index changes
+- Added performance testing utility (test-query-performance.js) to measure improvements
+
 ## [Version 1.9.3] - 2025-04-24
 
 ### Fixed
