@@ -269,8 +269,11 @@ export class DatabaseStorage implements IStorage {
     return result.items;
   }
   
-  async searchCollaborationsPaginated(userId: string, filters: CollaborationFilters): Promise<PaginatedCollaborations> {
-    console.log('============ DEBUG: Search Collaborations Paginated (Join-Based) ============');
+  /**
+   * Legacy implementation of search collaborations paginated - kept for reference and fallback
+   */
+  async searchCollaborationsPaginatedLegacy(userId: string, filters: CollaborationFilters): Promise<PaginatedCollaborations> {
+    console.log('============ DEBUG: Search Collaborations Paginated (Join-Based Legacy) ============');
     console.log('Filters:', filters);
     console.log('User ID:', userId);
     
@@ -486,6 +489,236 @@ export class DatabaseStorage implements IStorage {
       hasMore,
       nextCursor
     };
+  }
+  
+  /**
+   * Optimized implementation of search collaborations paginated that combines multiple database calls
+   * into a single operation with subqueries to improve performance
+   */
+  async searchCollaborationsPaginated(userId: string, filters: CollaborationFilters): Promise<PaginatedCollaborations> {
+    console.log('============ DEBUG: Search Collaborations Paginated (Optimized) ============');
+    console.log('Filters:', filters);
+    console.log('User ID:', userId);
+    
+    // Performance tracking
+    const startTime = Date.now();
+    
+    // Set default limit if not provided
+    const limit = filters.limit || 10;
+    console.log(`Using limit: ${limit}`);
+    
+    try {
+      // Get the cursor collaboration's timestamp if cursor is provided
+      let cursorTimestamp: Date | undefined;
+      if (filters.cursor) {
+        const [cursorCollab] = await db
+          .select({
+            created_at: collaborations.created_at
+          })
+          .from(collaborations)
+          .where(eq(collaborations.id, filters.cursor));
+        
+        if (cursorCollab) {
+          cursorTimestamp = cursorCollab.created_at;
+          console.log(`Found cursor collaboration with timestamp: ${cursorTimestamp}`);
+        } else {
+          console.log(`Warning: Cursor collaboration with ID ${filters.cursor} not found`);
+        }
+      }
+      
+      // Prepare the base query with necessary joins
+      let query = db
+        .select({
+          collaboration: collaborations,
+          company: companies,
+          user: users,
+          marketingPrefs: marketing_preferences
+        })
+        .from(collaborations)
+        .innerJoin(
+          users,
+          eq(collaborations.creator_id, users.id)
+        )
+        .innerJoin(
+          companies,
+          eq(users.id, companies.user_id)
+        )
+        // Left join with marketing preferences to include them in a single query
+        .leftJoin(
+          marketing_preferences,
+          eq(marketing_preferences.user_id, userId)
+        )
+        .where(
+          eq(collaborations.status, 'active')
+        );
+      
+      // Log to verify the join structure
+      console.log('Using optimized join structure with marketing preferences included');
+      
+      // Exclude user's own collaborations and previously swiped ones using SQL expressions
+      // Also include any explicit exclusions from filters.excludeIds
+      const excludeConditions = and(
+        // Never show user's own collaborations
+        not(eq(collaborations.creator_id, userId)),
+        
+        // Exclude previously swiped collaborations using NOT EXISTS
+        sql`NOT EXISTS (
+          SELECT 1 FROM ${swipes}
+          WHERE ${swipes.collaboration_id} = ${collaborations.id}
+          AND ${swipes.user_id} = ${userId}
+        )`,
+        
+        // Exclude any explicitly provided IDs
+        filters.excludeIds && filters.excludeIds.length > 0
+          ? not(inArray(collaborations.id, filters.excludeIds))
+          : undefined
+      );
+      
+      query = query.where(excludeConditions);
+      
+      // Handle cursor-based pagination if cursor timestamp was found
+      if (cursorTimestamp) {
+        query = query.where(lt(collaborations.created_at, cursorTimestamp));
+      }
+      
+      // Add ordering (always sort by most recent first)
+      query = query.orderBy(desc(collaborations.created_at));
+      
+      // Add limit with an extra item to determine if there are more results
+      query = query.limit(limit + 1);
+      
+      // Execute the query
+      const results = await query;
+      
+      // Extract marketing preferences from the first result (all results have the same preferences)
+      const marketingPrefs = results.length > 0 ? results[0].marketingPrefs : null;
+      
+      // Post-process the results to apply any marketing preference filters
+      let filteredResults = [...results];
+      
+      if (marketingPrefs) {
+        console.log('Found marketing preferences - applying any enabled filters');
+        
+        // Apply filters based on marketing preferences
+        if (marketingPrefs.discovery_filter_enabled) {
+          // 1. Collaboration Types Filter
+          if (marketingPrefs.discovery_filter_collab_types_enabled && 
+              marketingPrefs.collabs_to_discover && 
+              marketingPrefs.collabs_to_discover.length > 0) {
+            console.log(`Filtering by collaboration types: ${marketingPrefs.collabs_to_discover.join(', ')}`);
+            filteredResults = filteredResults.filter(r => 
+              marketingPrefs.collabs_to_discover!.includes(r.collaboration.collab_type)
+            );
+          }
+          
+          // 2. Topics Filter (exclusion)
+          if (marketingPrefs.discovery_filter_topics_enabled && 
+              marketingPrefs.filtered_marketing_topics && 
+              marketingPrefs.filtered_marketing_topics.length > 0) {
+            console.log(`Excluding topics: ${marketingPrefs.filtered_marketing_topics.join(', ')}`);
+            filteredResults = filteredResults.filter(r => {
+              // Check if any topics in the collaboration match any filtered topics
+              // If there's an overlap, exclude the collaboration
+              const collabTopics = r.collaboration.topics || [];
+              const filteredTopics = marketingPrefs.filtered_marketing_topics || [];
+              return !collabTopics.some(topic => filteredTopics.includes(topic));
+            });
+          }
+          
+          // Apply remaining filters - we're keeping these for completeness
+          // but they could be moved to SQL for better performance if needed
+          
+          // 3. Company Followers Filter
+          if (marketingPrefs.discovery_filter_company_followers_enabled && 
+              marketingPrefs.company_twitter_followers) {
+            console.log(`Filtering by company followers: ${marketingPrefs.company_twitter_followers}`);
+            filteredResults = filteredResults.filter(r => 
+              r.collaboration.company_twitter_followers === marketingPrefs.company_twitter_followers
+            );
+          }
+          
+          // 4. User Followers Filter
+          if (marketingPrefs.discovery_filter_user_followers_enabled && 
+              marketingPrefs.twitter_followers) {
+            console.log(`Filtering by user followers: ${marketingPrefs.twitter_followers}`);
+            filteredResults = filteredResults.filter(r => 
+              r.collaboration.twitter_followers === marketingPrefs.twitter_followers
+            );
+          }
+          
+          // 5. Funding Stage Filter
+          if (marketingPrefs.discovery_filter_funding_stages_enabled && 
+              marketingPrefs.funding_stage) {
+            console.log(`Filtering by funding stage: ${marketingPrefs.funding_stage}`);
+            filteredResults = filteredResults.filter(r => 
+              r.collaboration.funding_stage === marketingPrefs.funding_stage
+            );
+          }
+          
+          // 6. Token Status Filter
+          if (marketingPrefs.discovery_filter_token_status_enabled) {
+            console.log(`Filtering by token status: ${marketingPrefs.company_has_token}`);
+            filteredResults = filteredResults.filter(r => 
+              r.collaboration.company_has_token === marketingPrefs.company_has_token
+            );
+          }
+          
+          // 7. Company Sectors Filter
+          if (marketingPrefs.discovery_filter_company_sectors_enabled && 
+              marketingPrefs.company_tags && 
+              marketingPrefs.company_tags.length > 0) {
+            console.log(`Filtering by company sectors: ${marketingPrefs.company_tags.join(', ')}`);
+            filteredResults = filteredResults.filter(r => {
+              const collabTags = r.collaboration.company_tags || [];
+              const prefTags = marketingPrefs.company_tags || [];
+              // Check if there's any overlap between tags
+              return collabTags.some(tag => prefTags.includes(tag));
+            });
+          }
+          
+          // 8. Blockchain Networks Filter
+          if (marketingPrefs.discovery_filter_blockchain_networks_enabled && 
+              marketingPrefs.company_blockchain_networks && 
+              marketingPrefs.company_blockchain_networks.length > 0) {
+            console.log(`Filtering by blockchain networks: ${marketingPrefs.company_blockchain_networks.join(', ')}`);
+            filteredResults = filteredResults.filter(r => {
+              const collabNetworks = r.collaboration.company_blockchain_networks || [];
+              const prefNetworks = marketingPrefs.company_blockchain_networks || [];
+              // Check if there's any overlap between networks
+              return collabNetworks.some(network => prefNetworks.includes(network));
+            });
+          }
+        }
+      }
+      
+      // Extract just the collaboration objects from the filtered results
+      const collaborationResults = filteredResults.map(r => r.collaboration);
+      
+      // Determine if there are more results and extract the proper limit
+      const hasMore = collaborationResults.length > limit;
+      const items = hasMore ? collaborationResults.slice(0, limit) : collaborationResults;
+      
+      // Determine the next cursor (if there are more results)
+      const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].id : undefined;
+      
+      // Performance measurement
+      const endTime = Date.now();
+      console.log(`Query execution time: ${endTime - startTime}ms`);
+      console.log(`Found ${results.length} initial results, ${filteredResults.length} after filtering`);
+      console.log(`Returning ${items.length} collaborations, hasMore: ${hasMore}, nextCursor: ${nextCursor}`);
+      
+      return {
+        items,
+        hasMore,
+        nextCursor
+      };
+    } catch (error) {
+      console.error('Error in optimized searchCollaborationsPaginated:', error);
+      
+      // Fallback to legacy implementation if optimization fails
+      console.log('Falling back to legacy implementation');
+      return this.searchCollaborationsPaginatedLegacy(userId, filters);
+    }
   }
 
   async updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined> {

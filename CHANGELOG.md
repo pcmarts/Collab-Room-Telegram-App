@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.9.2] - 2025-04-24
+
+### Performance
+- Optimized discovery cards loading by reducing database roundtrips
+- Combined multiple separate queries into a single efficient query
+- Implemented SQL-based filtering to reduce data processing overhead
+- Added performance tracking to measure query execution time
+- Created fallback mechanism to ensure stability during optimization
+
+### Technical Details
+- Enhanced `searchCollaborationsPaginated` with SQL `NOT EXISTS` subqueries
+- Optimized joins to fetch marketing preferences in a single database call
+- Created comprehensive documentation of query optimization in docs/discovery/query-optimization.md
+- Added performance metrics logging for ongoing optimization efforts
+
 ## [Version 1.9.1] - 2025-04-24
 
 ### Changed
