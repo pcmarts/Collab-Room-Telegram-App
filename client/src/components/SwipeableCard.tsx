@@ -280,7 +280,19 @@ export default function SwipeableCard({
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-sm font-medium text-[#1DA1F2] hover:underline pointer-events-auto relative z-50"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    // Stop event propagation to prevent parent handling
+                    e.stopPropagation();
+                    // Log click for debugging
+                    console.log("[SwipeableCard] Twitter link clicked");
+                    // Don't prevent default (let the link work naturally)
+                  }}
+                  onTouchEnd={(e) => {
+                    // Stop touch event propagation for mobile
+                    e.stopPropagation();
+                    console.log("[SwipeableCard] Twitter link touch end");
+                    // We don't prevent default because we want the link to work
+                  }}
                 >
                   @{data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
                 </a>
@@ -324,7 +336,19 @@ export default function SwipeableCard({
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-sm font-medium text-[#1DA1F2] hover:underline pointer-events-auto relative z-50"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    // Stop event propagation to prevent parent handling
+                    e.stopPropagation();
+                    // Log click for debugging
+                    console.log("[SwipeableCard] Twitter Spaces link clicked");
+                    // Don't prevent default (let the link work naturally)
+                  }}
+                  onTouchEnd={(e) => {
+                    // Stop touch event propagation for mobile
+                    e.stopPropagation();
+                    console.log("[SwipeableCard] Twitter Spaces link touch end");
+                    // We don't prevent default because we want the link to work
+                  }}
                 >
                   {data.details.twitter_handle.includes('@') ? data.details.twitter_handle : '@' + data.details.twitter_handle.replace('https://twitter.com/', '').replace('https://x.com/', '')}
                 </a>
@@ -372,8 +396,17 @@ export default function SwipeableCard({
                     rel="noopener noreferrer"
                     className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50"
                     onClick={(e) => {
+                      // Stop event propagation to prevent parent handling
                       e.stopPropagation();
-                      // Don't prevent default so the link works normally
+                      // Log click for debugging
+                      console.log("[SwipeableCard] Podcast link clicked");
+                      // Don't prevent default (let the link work naturally)
+                    }}
+                    onTouchEnd={(e) => {
+                      // Stop touch event propagation for mobile
+                      e.stopPropagation();
+                      console.log("[SwipeableCard] Podcast link touch end");
+                      // We don't prevent default because we want the link to work
                     }}
                   >
                     {data.details.podcast_link}
@@ -423,8 +456,17 @@ export default function SwipeableCard({
                     rel="noopener noreferrer"
                     className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50"
                     onClick={(e) => {
+                      // Stop event propagation to prevent parent handling
                       e.stopPropagation();
-                      // Don't prevent default so the link works normally
+                      // Log click for debugging
+                      console.log("[SwipeableCard] Blog link clicked");
+                      // Don't prevent default (let the link work naturally)
+                    }}
+                    onTouchEnd={(e) => {
+                      // Stop touch event propagation for mobile
+                      e.stopPropagation();
+                      console.log("[SwipeableCard] Blog link touch end");
+                      // We don't prevent default because we want the link to work
                     }}
                   >
                     {data.details.blog_link}
