@@ -9,6 +9,7 @@ This documentation is organized into the following sections:
 1. [Architecture](./architecture/README.md) - Overview of the system architecture
 2. [Frontend](./frontend/README.md) - Documentation for the React frontend
    * [Notifications System](./frontend/notifications.md) - Details on the simplified notification system
+   * [Navigation Updates](./frontend/navigation-updates.md) - Documentation of bottom navigation simplification
 3. [Backend](./backend/README.md) - Documentation for the Express backend
    * [Security Implementation](./backend/security.md) - Comprehensive security measures
    * [Security Checklist](./backend/security-checklist.md) - Guidelines to maintain application security

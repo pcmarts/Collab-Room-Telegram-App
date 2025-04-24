@@ -282,7 +282,7 @@ export default function Dashboard() {
           onClick={() => setLocation('/referrals')}
         >
           <Users className="h-5 w-5" />
-          <span>Your Code</span>
+          <span>Invite Your Friends</span>
         </Button>
         
         {/* Admin Panel Button - Only shown to admins */}

@@ -5,6 +5,14 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.9.1] - 2025-04-24
+
+### Changed
+- Moved "Your Code" (formerly "Referrals") from bottom navigation to dashboard button
+- Simplified UI by removing referrals option from main navigation menu
+- Updated page header from "Invite Friends" to "Your Code" for cleaner interface
+- Improved mobile navigation with 4-column layout instead of 5-column
+
 ## [Version 1.9.0] - 2025-04-24
 
 ### Enhanced

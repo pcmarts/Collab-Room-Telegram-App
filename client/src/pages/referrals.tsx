@@ -38,7 +38,7 @@ export default function ReferralsPage() {
       {/* Fixed header */}
       <div className="sticky top-0 z-10 bg-background">
         <PageHeader
-          title="Your Code"
+          title="Invite Friends"
           showBackButton={true}
           backUrl="/dashboard"
         />

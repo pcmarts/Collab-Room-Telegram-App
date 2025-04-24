@@ -220,10 +220,8 @@ const ReferralCard = ({ referralInfo, isLoading, error }: ReferralCardProps) => 
       )}
       
       <CardHeader>
-        <CardTitle>Invite Friends</CardTitle>
-        <CardDescription>
-          Share your referral code to invite friends to The Collab Room
-        </CardDescription>
+        <CardTitle>Your Code</CardTitle>
+
       </CardHeader>
       
       <CardContent className="space-y-4">
