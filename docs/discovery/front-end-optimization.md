@@ -76,6 +76,20 @@ const fetchDiscoveryData = async () => {
 };
 ```
 
+## Important Implementation Details
+
+### Company Information
+
+The unified endpoint includes complete company information with each collaboration. This is critical for properly displaying cards in the discovery view. The implementation:
+
+1. Uses database joins to retrieve company and creator data in a single query
+2. Enriches collaboration objects with their associated company and creator information
+3. Returns the enriched objects to ensure all necessary data is available for rendering the cards
+
+### Error Handling
+
+The unified endpoint includes robust error handling to ensure that even if one query fails, the others can still succeed. This prevents total failure of the discovery page.
+
 ## Future Enhancements
 
 1. **Further Optimization**: Add request caching on the client-side for additional performance gains

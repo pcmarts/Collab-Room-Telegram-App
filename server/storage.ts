@@ -698,8 +698,12 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      // Extract just the collaboration objects from the filtered results
-      const collaborationResults = filteredResults.map(r => r.collaboration);
+      // Extract collaborations with company information
+      const collaborationResults = filteredResults.map(r => ({
+        ...r.collaboration,
+        company: r.company,
+        creator: r.user
+      }));
       
       // Determine if there are more results and extract the proper limit
       const hasMore = collaborationResults.length > limit;

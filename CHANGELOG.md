@@ -5,7 +5,20 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Version 1.9.3] - 2025-04-24
+## [Version 1.9.4] - 2025-04-24
+
+### Performance
+- Optimized front-end data loading by implementing a unified discovery endpoint
+- Fixed issue with company data not displaying correctly on discovery cards
+- Reduced HTTP requests from three down to one for discovery page initialization
+- Parallelized database queries for collaborative data fetching
+
+### Technical Details
+- Added unified `/api/discovery/unified` endpoint that combines user swipes, potential matches, and collaboration search
+- Improved company information handling to ensure proper display on discovery cards
+- Added comprehensive documentation for performance optimizations in `/docs/discovery`
+
+## [Version 1.9.3] - 2025-04-23
 
 ### Performance
 - Implemented strategic database indexing to improve query performance
