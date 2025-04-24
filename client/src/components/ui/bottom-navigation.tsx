@@ -44,11 +44,6 @@ const BottomNavigation = () => {
       href: "/my-collaborations",
     },
     {
-      label: "Referrals",
-      icon: Users,
-      href: "/referrals",
-    },
-    {
       label: "My Account",
       icon: User,
       href: "/dashboard",
@@ -63,7 +58,7 @@ const BottomNavigation = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 z-50 w-full h-24 bg-background border-t border-border pb-6">
-      <div className="grid h-full grid-cols-5 mx-auto">
+      <div className="grid h-full grid-cols-4 mx-auto">
         {navItems.map((item) => (
           <Link
             key={item.href}
