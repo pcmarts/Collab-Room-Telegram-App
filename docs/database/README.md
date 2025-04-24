@@ -177,19 +177,42 @@ Key relationships in the database:
 
 The project includes several migration scripts for evolving the database schema:
 
+- `db-migrate-add-indexes.js`: Adds database indexes for query optimization
 - `db-migrate-add-description.js`: Adds the 'description' column to collaborations
+- `db-migrate-add-note-to-swipes-matches.js`: Adds note column to swipes and matches tables
+- `db-migrate-add-twitter-rest-id.js`: Adds Twitter REST ID field
+- `db-migrate-add-details-to-swipes.js`: Adds the 'details' JSON column to the swipes table
 - `db-migrate-blockchain-networks.js`: Adds blockchain networks related fields
+- `db-migrate-blockchain-filters.js`: Adds blockchain filter fields
 - `db-migrate-collab-fields.js`: Restructures collaboration fields
 - `db-migrate-preferences.js`: Updates preference tables
-- `db-migrate-add-details-to-swipes.js`: Adds the 'details' JSON column to the swipes table
+- `db-migrate-referral-system.js`: Adds referral tables and fields
+- `db-migrate-twitter-profiles.js`: Adds company_twitter_data table
 - `db-migrate-fix-matches-table.js`: Drops and recreates the matches table with correct foreign key references
 
-### Recent Database Cleanup
+### Recent Database Optimizations
+
+#### Database Indexing (v1.9.4)
+
+In version 1.9.4, strategic database indexes were added to improve query performance, particularly for the discovery cards functionality:
+
+- Indexes for key join columns: `users.id`, `companies.user_id`, `collaborations.creator_id`
+- Index on `collaborations.created_at` for improved pagination performance
+- Composite indexes for frequently used query patterns, such as `swipes.user_id + swipes.collaboration_id`
+- Indexes on filter fields to optimize the performance of frequently used filter operations
+
+For detailed information about the database indexing strategy, see [Database Indexing for Discovery Cards](../discovery/database-indexing.md).
+
+#### Table Cleanup (v1.3.1)
 
 In version 1.3.1, the redundant `match_requests` table was removed from the database as it was not being used by the application. The table contained no data and had no code references. All matching functionality is properly handled by the `matches` table, which tracks relationships between hosts and requesters.
+
+### Database Update Process
 
 When updating the database schema:
 
 1. Update models in `shared/schema.ts`
-2. Create a migration script if needed
+2. Create a migration script if needed (see examples in project root)
 3. Run `npm run db:push` to apply changes
+
+For database indexing, use the `index` function from `drizzle-orm/pg-core` within table definitions to create appropriate indexes.
