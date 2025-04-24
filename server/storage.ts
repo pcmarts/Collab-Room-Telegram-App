@@ -701,6 +701,18 @@ export class DatabaseStorage implements IStorage {
           company_logo_url: r.company.logo_url,
           company_description: r.company.description,
           company_website: r.company.website,
+          
+          // Additional company fields to support the details dialog
+          company_twitter: r.company.twitter_handle,
+          company_twitter_followers: r.company.twitter_followers,
+          company_linkedin: r.company.linkedin_url,
+          company_short_description: r.company.short_description,
+          company_has_token: r.company.has_token,
+          company_token_ticker: r.company.token_ticker,
+          company_blockchain_networks: r.company.blockchain_networks,
+          company_tags: r.company.tags,
+          
+          // User information
           creator_first_name: r.user.first_name,
           creator_last_name: r.user.last_name,
           creator_role: r.user.role_title

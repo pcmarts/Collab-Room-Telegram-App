@@ -874,15 +874,31 @@ export default function DiscoverPage() {
     
     // Ensure company_data is properly structured for the details dialog
     if (!cardWithCompanyData.company_data) {
+      // Create a complete company_data object with all fields the dialog might need
       cardWithCompanyData.company_data = {
+        // Basic company information
         name: card.creator_company_name,
         logo_url: card.company_logo_url,
         description: card.company_description,
-        website: card.company_website,
         short_description: card.company_description,
-        twitter_handle: card.company_twitter,
-        linkedin_url: card.company_linkedin,
-        funding_stage: card.funding_stage
+        website: card.company_website,
+        
+        // Social media links
+        twitter_handle: card.company_twitter || card.twitter_handle,
+        twitter_followers: card.company_twitter_followers || card.twitter_followers,
+        linkedin_url: card.company_linkedin || card.linkedin_url,
+        
+        // Classification information
+        funding_stage: card.funding_stage,
+        tags: card.company_tags || card.tags,
+        
+        // Blockchain related fields
+        has_token: card.has_token || card.company_has_token,
+        token_ticker: card.token_ticker || card.company_token_ticker,
+        blockchain_networks: card.blockchain_networks || card.company_blockchain_networks,
+        
+        // Job information
+        job_title: card.creator_role || card.job_title,
       };
     }
     
