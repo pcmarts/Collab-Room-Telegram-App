@@ -274,12 +274,22 @@ export default function Dashboard() {
             <span className="text-xs">My Company</span>
           </Button>
         </div>
+
+        {/* Referrals Button */}
+        <Button
+          variant="outline"
+          className="w-full h-16 flex items-center justify-start gap-3"
+          onClick={() => setLocation('/referrals')}
+        >
+          <Users className="h-5 w-5" />
+          <span>Invite Friends</span>
+        </Button>
         
         {/* Admin Panel Button - Only shown to admins */}
         {profile?.user?.is_admin && (
           <Button
             variant="outline"
-            className="w-full h-16 flex items-center justify-start gap-3"
+            className="w-full h-16 flex items-center justify-start gap-3 mt-2"
             onClick={() => setLocation('/admin')}
           >
             <Settings className="h-5 w-5" />

@@ -5,7 +5,7 @@ import { ReferralCard } from '@/components/referrals/ReferralCard';
 import { ReferredUsersList } from '@/components/referrals/ReferredUsersList';
 import { ReferralInfoPanel } from '@/components/referrals/ReferralInfoPanel';
 import { ReferralSuccessCelebration } from '@/components/referrals/ReferralSuccessCelebration';
-import { PageHeader } from '@/components/page-header';
+import { PageHeader } from '@/components/PageHeader';
 import { Loader2 } from 'lucide-react';
 
 // Define useProfile hook inline since it's having import issues
@@ -36,10 +36,12 @@ export default function ReferralsPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Fixed header */}
-      <div className="sticky top-0 z-10 bg-background border-b px-4 pt-4 pb-2">
+      <div className="sticky top-0 z-10 bg-background">
         <PageHeader
           title="Invite Friends"
-          description="Share your referral link to invite friends to The Collab Room"
+          subtitle="Share your referral link to invite friends to The Collab Room"
+          showBackButton={true}
+          backUrl="/dashboard"
         />
       </div>
       
