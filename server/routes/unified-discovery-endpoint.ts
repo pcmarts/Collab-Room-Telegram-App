@@ -11,7 +11,8 @@
 
 import type { Request, Response } from "express";
 import { storage } from "../storage";
-import { getTelegramUserFromRequest } from "../utils/telegram-auth";
+// We'll use the existing getTelegramUserFromRequest from the main routes file
+// since there are import errors with the extracted utility
 
 // Interface for Telegram request with user data
 export interface TelegramRequest extends Request {

@@ -18,8 +18,7 @@ import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate
 import { logger } from './utils/logger';
 import twitterRoutes from './routes/twitter-routes.js';
 import referralRoutes from './routes/referral-routes';
-import { registerDiscoveryRoutes } from './routes/discovery-routes';
-import { getUnifiedDiscoveryData } from './routes/discovery-routes';
+
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -197,8 +196,92 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
 // Twitter routes are imported at the top of the file
 
 export async function registerRoutes(app: Express) {
-  // Register discovery routes
-  registerDiscoveryRoutes(app);
+  // Unified discovery endpoint for optimized front-end data loading
+  app.post("/api/discovery/unified", async (req: TelegramRequest, res: Response) => {
+    try {
+      logger.debug('============ DEBUG: Unified Discovery Data Endpoint ============');
+      logger.debug('Headers:', { 
+        host: req.headers.host,
+        origin: req.headers.origin
+      });
+      
+      // Parse request parameters
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const cursor = req.query.cursor as string | undefined;
+      const excludeOwn = req.query.excludeOwn === 'true';
+      
+      // Parse filters from query parameters
+      const filters: any = {
+        collabTypes: req.query.collabTypes ? (req.query.collabTypes as string).split(',') : undefined,
+        companyTags: req.query.companyTags ? (req.query.companyTags as string).split(',') : undefined,
+        minCompanyFollowers: req.query.minCompanyFollowers as string,
+        minUserFollowers: req.query.minUserFollowers as string,
+        hasToken: req.query.hasToken === 'true',
+        fundingStages: req.query.fundingStages ? (req.query.fundingStages as string).split(',') : undefined,
+        blockchainNetworks: req.query.blockchainNetworks ? (req.query.blockchainNetworks as string).split(',') : undefined,
+        excludeOwn,
+        cursor,
+        limit
+      };
+      
+      // Get additional collaboration IDs to exclude from POST body
+      const excludeIds = req.body && req.body.excludeIds ? req.body.excludeIds : [];
+      if (excludeIds && excludeIds.length > 0) {
+        logger.debug(`Excluding ${excludeIds.length} additional IDs from body:`, excludeIds);
+        filters.excludeIds = excludeIds;
+      }
+      
+      // Get Telegram user from request
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        logger.error('No Telegram user ID found in request');
+        return res.status(401).json({ error: 'Unauthorized - No Telegram user ID' });
+      }
+      
+      const telegramId = telegramUser.id;
+      logger.debug(`Found Telegram user: ${telegramId}`);
+      
+      // Find the database user by Telegram ID
+      const user = await storage.getUserByTelegramId(telegramId.toString());
+      if (!user) {
+        logger.error(`No database user found for Telegram ID: ${telegramId}`);
+        return res.status(401).json({ error: 'Unauthorized - User not found' });
+      }
+      
+      logger.debug(`Found database user: ${user.id}`);
+      
+      // Execute all database queries in parallel for better performance
+      const startTime = Date.now();
+      
+      // Use Promise.all to run these queries in parallel
+      const [userSwipes, potentialMatches, collaborations] = await Promise.all([
+        // Get user swipes
+        storage.getUserSwipes(user.id),
+        
+        // Get potential matches
+        storage.getPotentialMatchesForHost(user.id),
+        
+        // Get collaborations with filtering
+        storage.searchCollaborationsPaginated(user.id, filters)
+      ]);
+      
+      const executionTime = Date.now() - startTime;
+      logger.debug(`Unified discovery data fetched in ${executionTime}ms`);
+      logger.debug(`- User swipes: ${userSwipes.length}`);
+      logger.debug(`- Potential matches: ${potentialMatches.length}`);
+      logger.debug(`- Collaborations: ${collaborations.items.length} (hasMore: ${collaborations.hasMore})`);
+      
+      // Return combined data in a single response
+      return res.json({
+        userSwipes,
+        potentialMatches,
+        collaborations
+      });
+    } catch (error) {
+      logger.error('Error fetching unified discovery data:', error);
+      return res.status(500).json({ error: 'Failed to fetch discovery data' });
+    }
+  });
   // Network statistics endpoint
   app.get("/api/network-stats", async (_req: Request, res: Response) => {
     try {
