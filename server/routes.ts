@@ -18,6 +18,7 @@ import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate
 import { logger } from './utils/logger';
 import twitterRoutes from './routes/twitter-routes.js';
 import referralRoutes from './routes/referral-routes';
+import { registerDiscoveryRoutes } from './routes/discovery-routes';
 import { getUnifiedDiscoveryData } from './routes/discovery-routes';
 
 // Store active SSE connections for application status updates
@@ -196,6 +197,8 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
 // Twitter routes are imported at the top of the file
 
 export async function registerRoutes(app: Express) {
+  // Register discovery routes
+  registerDiscoveryRoutes(app);
   // Network statistics endpoint
   app.get("/api/network-stats", async (_req: Request, res: Response) => {
     try {
