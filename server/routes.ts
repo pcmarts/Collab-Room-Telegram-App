@@ -18,6 +18,7 @@ import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate
 import { logger } from './utils/logger';
 import twitterRoutes from './routes/twitter-routes.js';
 import referralRoutes from './routes/referral-routes';
+import { getUnifiedDiscoveryData } from './routes/discovery-routes';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
