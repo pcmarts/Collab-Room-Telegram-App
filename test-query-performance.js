@@ -9,7 +9,8 @@
  */
 
 import { db } from './server/db.js';
-import { searchCollaborationsPaginated } from './server/storage.js';
+import { IStorage } from './server/storage.js';
+import { StorageImplementation } from './server/storage.js';
 
 async function runQueryTest() {
   console.log('Starting query performance test...');
@@ -30,6 +31,9 @@ async function runQueryTest() {
     const userId = testUser.id;
     console.log(`Testing with user ID: ${userId}`);
     
+    // Create storage instance
+    const storage = new StorageImplementation();
+    
     // Parameters for the test
     const numIterations = 5;
     const pageSize = 10;
@@ -42,7 +46,7 @@ async function runQueryTest() {
       
       const startTime = performance.now();
       
-      const result = await searchCollaborationsPaginated(userId, {
+      const result = await storage.searchCollaborationsPaginated(userId, {
         limit: pageSize,
         excludeOwn: true
       });
@@ -52,7 +56,7 @@ async function runQueryTest() {
       
       totalTimeMs += executionTimeMs;
       
-      console.log(`Found ${result.data.length} collaborations`);
+      console.log(`Found ${result.items.length} collaborations`);
       console.log(`Query execution time: ${executionTimeMs.toFixed(2)}ms`);
     }
     
