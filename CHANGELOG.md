@@ -5,22 +5,6 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Version 1.9.3] - 2025-04-24
-
-### Performance
-- Implemented strategic database indexing to improve query performance
-- Added single-column indexes for frequently filtered and joined columns
-- Created compound indexes for common query patterns
-- Optimized NOT EXISTS subqueries with dedicated indexes
-- Enhanced cursor-based pagination with appropriate indexes
-
-### Technical Details
-- Added indexes for critical join columns (creator_id, user_id) to improve join performance
-- Created compound indexes for common filter combinations
-- Implemented descending index on created_at for efficient pagination
-- Added comprehensive documentation in docs/discovery/database-indexing.md
-- Ensured all indexes follow consistent naming conventions for maintainability
-
 ## [Version 1.9.2] - 2025-04-24
 
 ### Performance
