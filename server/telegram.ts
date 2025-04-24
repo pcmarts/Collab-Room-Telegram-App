@@ -905,9 +905,13 @@ async function notifyReferrerWithRecord(referrer: any, referralRecord: any, refe
       
       console.log(`[REFERRAL NOTIFICATION] Sending notification to Telegram ID: ${telegramId} (original: ${referrer.telegram_id})`);
       
-      // Construct the message
-      const message = `🎉 <b>Referral Success!</b>\n\n` +
-          `Great news! <b>${referredUserFirstName}</b> whom you referred has been approved and now has full access to Collab Room.\n\n` +
+      // Construct the message with @ mentions to trigger Telegram notifications
+      // Get Telegram usernames or use first names if unavailable
+      const referrerMention = referrer.handle ? `@${referrer.handle}` : referrer.first_name;
+      const referredMention = referrer.referred_handle ? `@${referrer.referred_handle}` : referredUserFirstName;
+      
+      const message = `🎉 ${referrerMention} <b>Referral Success!</b>\n\n` +
+          `Great news! ${referredMention} who you referred has been approved and now has full access to Collab Room.\n\n` +
           `<b>Your Referral Stats:</b>\n` +
           `• ${usedReferrals}/${totalReferrals} referrals used\n` +
           `• ${remainingReferrals} referral${remainingReferrals !== 1 ? 's' : ''} remaining\n\n` +
@@ -949,7 +953,7 @@ async function notifyReferrerWithRecord(referrer: any, referralRecord: any, refe
           console.log(`[REFERRAL NOTIFICATION] Attempting fallback message without formatting`);
           await bot.sendMessage(
             telegramId,
-            `Referral Success! ${referredUserFirstName} whom you referred has been approved and now has full access to Collab Room.`
+            `Referral Success! ${referredMention} who you referred has been approved and now has full access to Collab Room.`
           );
           console.log(`[REFERRAL NOTIFICATION] Fallback message sent successfully`);
         } catch (fallbackError) {
