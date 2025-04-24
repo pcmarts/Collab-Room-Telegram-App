@@ -46,13 +46,6 @@ export interface IStorage {
   getCollaborationSwipes(collaborationId: string): Promise<Swipe[]>;
   getPotentialMatchesForHost(userId: string): Promise<any[]>; // Get users who swiped right on host's collaborations
   
-  // Unified discovery data method to optimize front-end loading
-  getDiscoveryData(userId: string, filters: CollaborationFilters): Promise<{
-    userSwipes: Swipe[],
-    potentialMatches: any[],
-    collaborations: PaginatedCollaborations
-  }>;
-  
   // Match methods
   createMatch(match: InsertMatch): Promise<Match>;
   getUserMatches(userId: string): Promise<Match[]>;
@@ -698,12 +691,8 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      // Extract collaborations with company information
-      const collaborationResults = filteredResults.map(r => ({
-        ...r.collaboration,
-        company: r.company,
-        creator: r.user
-      }));
+      // Extract just the collaboration objects from the filtered results
+      const collaborationResults = filteredResults.map(r => r.collaboration);
       
       // Determine if there are more results and extract the proper limit
       const hasMore = collaborationResults.length > limit;

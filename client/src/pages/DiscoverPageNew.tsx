@@ -364,96 +364,7 @@ export default function DiscoverPage() {
     retry: false
   });
   
-  // Process potential matches from the API and transform them into CardData format
-  const processPotentialMatches = (potentialMatches: any[]): CardData[] => {
-    if (!potentialMatches || potentialMatches.length === 0) {
-      return [];
-    }
-    
-    console.log(`[Discovery] Processing ${potentialMatches.length} potential matches`);
-    
-    // Get local storage swiped IDs to filter out any cards the user has already swiped on
-    let persistentSwipedIds: string[] = [];
-    try {
-      const storedIds = localStorage.getItem('swipedCardIds');
-      if (storedIds) {
-        persistentSwipedIds = JSON.parse(storedIds);
-      }
-    } catch (e) {
-      console.warn('[Discovery] Failed to read swiped card IDs from localStorage:', e);
-    }
-    
-    console.log(`[Discovery] Filtering potential matches with ${persistentSwipedIds.length} locally stored swiped IDs`);
-    
-    // Filter out any potential matches for cards the user has already swiped on
-    // Also remove any potential matches where collaboration_id is missing
-    const filteredMatches = potentialMatches.filter((match: any) => {
-      const matchId = match.id;
-      const swipeId = match.swipe_id;
-      const collabId = match.collaboration_id;
-      
-      // Check if either the match ID or swipe ID is in the list of already swiped IDs
-      const alreadySwiped = 
-        (matchId && persistentSwipedIds.includes(matchId)) || 
-        (swipeId && persistentSwipedIds.includes(swipeId));
-        
-      return matchId && !alreadySwiped && collabId;
-    });
-    
-    console.log(`[Discovery] After filtering, ${filteredMatches.length} potential matches remain`);
-    
-    // Transform the potential matches data to match CardData structure
-    const transformedMatches = filteredMatches.map((match: any) => {
-      // Debug the structure of incoming potential matches
-      console.log('[Discovery] Processing potential match data:', {
-        hasMatchData: !!match.potentialMatchData,
-        matchId: match.id,
-        userInfo: match.user_data || match.user || 'No user data',
-        companyInfo: match.company_data || match.company || 'No company data'
-      });
-      
-      // Construct the proper potentialMatchData object
-      const potentialMatchData = {
-        user_id: match.user_id || match.requester_id || '',
-        first_name: match.first_name || match.requester_first_name || '',
-        last_name: match.last_name || match.requester_last_name || '',
-        company_name: match.company_name || match.requester_company || '',
-        company_description: match.company_description || match.short_description || match.description || '',
-        company_website: match.company_website || match.website || '',
-        company_twitter: match.company_twitter || match.twitter_handle || '',
-        company_linkedin: match.company_linkedin || match.linkedin || '',
-        company_logo_url: match.company_logo_url || match.logo_url || '',
-        job_title: match.job_title || match.requester_role || '',
-        twitter_followers: match.twitter_followers || '',
-        company_twitter_followers: match.company_twitter_followers || '',
-        swipe_created_at: match.created_at || match.swipe_created_at || new Date().toISOString(),
-        collaboration_id: match.collaboration_id || match.id,
-        note: match.note || '' // Include the personalized note from the swipe
-      };
-      
-      // Log the constructed potentialMatchData for debugging
-      console.log('[Discovery] Constructed potentialMatchData:', potentialMatchData);
-      
-      return {
-        ...match,
-        id: match.id,
-        isPotentialMatch: true,
-        potentialMatchData: potentialMatchData,
-        collab_type: match.collaboration_type || match.collab_type || 'Collaboration',
-        description: match.collaboration_description || match.description || '',
-        topics: match.collaboration_topics || match.topics || [],
-        creator_company_name: match.company_name || '',
-        // Keep these for backward compatibility
-        requester_company: match.requester_company || match.company_name || '',
-        requester_role: match.requester_role || match.job_title || ''
-      };
-    });
-    
-    // Return validated matches
-    return transformedMatches;
-  };
-
-// Helper function to validate card data and filter out incomplete cards
+  // Helper function to validate card data and filter out incomplete cards
   const validateCardData = (cards: CardData[]): CardData[] => {
     if (!cards || !Array.isArray(cards)) return [];
     
@@ -463,10 +374,9 @@ export default function DiscoverPage() {
     const validCards = cards.filter(card => {
       // Required fields for a valid card
       const hasValidId = !!card.id;
-      // Be more flexible with these conditions since they're coming from the unified endpoint now
-      const hasValidTitle = !!card.title;
-      const hasValidCompany = !!card.creator_company_name;
-      const hasValidType = !!card.collab_type;
+      const hasValidTitle = !!card.title && card.title !== "Collaboration";
+      const hasValidCompany = !!card.creator_company_name && card.creator_company_name !== "Company";
+      const hasValidType = !!card.collab_type && card.collab_type !== "Collaboration";
       
       // Potential matches can have a slightly different structure
       if (card.isPotentialMatch) {
@@ -474,8 +384,8 @@ export default function DiscoverPage() {
         return hasValidId && hasPotentialMatchData;
       }
       
-      // All other cards need company name and collab type at minimum
-      const isValid = hasValidId && hasValidCompany && hasValidType;
+      // All other cards need company name, title, and collab type
+      const isValid = hasValidId && hasValidTitle && hasValidCompany && hasValidType;
       
       if (!isValid) {
         console.log('[Discovery] Filtering out incomplete card:', {
@@ -521,12 +431,35 @@ export default function DiscoverPage() {
       
       console.log(`[Discovery] Fetching next batch with cursor: ${nextCursor || 'initial'}`);
       
+      // Get swipe IDs directly from the server - THE SINGLE SOURCE OF TRUTH
+      // The server already tracks which cards have been swiped and excludes them
+      let serverSwipedIds: string[] = [];
+      try {
+        const latestSwipes = await apiRequest('/api/user-swipes') as any[];
+        if (latestSwipes && latestSwipes.length > 0) {
+          serverSwipedIds = latestSwipes.map(swipe => swipe.collaboration_id);
+          console.log(`[Discovery] Server reports ${serverSwipedIds.length} swipes`);
+        } else {
+          console.log('[Discovery] Server returned no swipes');
+        }
+      } catch (e) {
+        console.warn('[Discovery] Failed to fetch swipes from server:', e);
+      }
+      
       // We only use the local session history for cards swiped in the current session
       // that might not have been saved to the server yet
       const sessionIds = swipeHistory
         .map(hist => hist.card?.id)
         .filter(Boolean) as string[];
       console.log(`[Discovery] Current session has ${sessionIds.length} cards in local swipe history`);
+      
+      // Server IDs + current session IDs
+      const uniqueExclusionIds = Array.from(new Set([
+        ...serverSwipedIds, 
+        ...sessionIds
+      ]));
+      
+      console.log(`[Discovery] Using ${uniqueExclusionIds.length} unique card IDs to exclude`)
       
       // Construct the query parameters
       const params = new URLSearchParams();
@@ -540,62 +473,32 @@ export default function DiscoverPage() {
       params.append('limit', '10'); // Fetch 10 cards at a time
       
       // Additional diagnostic logging
-      console.log('[Discovery] Making unified discovery request with params:', {
-        url: `/api/discovery/unified?${params.toString()}`,
-        excludeIdsCount: sessionIds.length,
+      console.log('[Discovery] Making collaboration search request with params:', {
+        url: `/api/collaborations/search?${params.toString()}`,
+        excludeIdsCount: uniqueExclusionIds.length,
         telegramAvailable: !!window.Telegram?.WebApp,
         sessionAuth: !!document.cookie.includes('connect.sid') // Check if we have a session cookie
       });
       
-      // Use the unified endpoint that combines collaborations, user swipes, and potential matches
-      const unifiedResponse = await apiRequest(`/api/discovery/unified?${params.toString()}`, 'POST', {
-        excludeIds: sessionIds // Send list of locally swiped card IDs in request body
-      });
-      
-      if (!unifiedResponse) {
-        throw new Error('No response from unified discovery endpoint');
-      }
-      
-      // Extract the three data sets from the unified response
-      const { collaborations, userSwipes, potentialMatches } = unifiedResponse;
+      // Fetch data with cursor-based pagination
+      const response = await apiRequest(`/api/collaborations/search?${params.toString()}`, 'POST', {
+        excludeIds: uniqueExclusionIds // Send list of swiped card IDs in request body
+      }) as PaginatedResponse;
       
       // Log detailed response data for debugging
-      console.log('[Discovery] Received unified discovery response:', {
-        success: !!collaborations,
+      console.log('[Discovery] Received collaboration search response:', {
+        success: !!response,
         status: 'success',
-        itemCount: collaborations?.items?.length || 0,
-        swipesCount: userSwipes?.length || 0,
-        potentialMatchesCount: potentialMatches?.length || 0,
-        hasMore: collaborations?.hasMore || false
+        itemCount: response?.items?.length || 0,
+        hasMore: response?.hasMore || false
       });
       
-      // Process potential matches if we have any
-      if (potentialMatches && potentialMatches.length > 0) {
-        // Transform the potential matches data to match CardData structure
-        const transformedMatches = processPotentialMatches(potentialMatches);
-        console.log(`[Discovery] Processed ${transformedMatches.length} potential matches`);
-        
-        // Add potential matches to the cards state
-        setCards(prevCards => {
-          // Filter out any potential matches we already have
-          const existingIds = prevCards.map(card => card.id);
-          const newMatches = transformedMatches.filter(match => !existingIds.includes(match.id));
-          
-          if (newMatches.length > 0) {
-            const newCards = [...prevCards, ...newMatches];
-            console.log('[Discovery] Adding potential matches to cards:', newMatches.length);
-            return newCards;
-          }
-          return prevCards;
-        });
-      }
-      
-      // Update state with new collaborations
-      if (collaborations && collaborations.items && collaborations.items.length > 0) {
-        console.log('[Discovery] Adding collaborations to cards:', collaborations.items.length, 'items');
+      // Update state with new cards and pagination info
+      if (response && response.items && response.items.length > 0) {
+        console.log('[Discovery] Adding items to cards:', response.items.length, 'items');
         
         // Filter out incomplete card data before adding to the state
-        const validItems = validateCardData(collaborations.items);
+        const validItems = validateCardData(response.items);
         console.log('[Discovery] Validated items:', validItems.length, 'valid items');
         
         // Important: Force a state update with the new cards
@@ -606,16 +509,16 @@ export default function DiscoverPage() {
         });
         
         // Update pagination state
-        setNextCursor(collaborations.nextCursor);
-        setHasMore(collaborations.hasMore);
+        setNextCursor(response.nextCursor);
+        setHasMore(response.hasMore);
         
         // Only set all cards viewed if we have no more cards AND current batch is empty
-        if (!collaborations.hasMore && collaborations.items.length === 0) {
+        if (!response.hasMore && response.items.length === 0) {
           setAllCardsViewed(true);
         }
       } else {
         // No cards in the response
-        console.log('[Discovery] No collaboration items in response');
+        console.log('[Discovery] No items in response', response);
         
         // Only set allCardsViewed=true if we have no cards at all
         if (cards.length === 0) {
@@ -1003,14 +906,19 @@ export default function DiscoverPage() {
         telegramDataAvailable: !!window.Telegram?.WebApp?.initData
       });
       
-      // Invalidate queries to ensure we have fresh data
+      // Invalidate and refetch queries to ensure we have fresh data
       await queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/discovery/unified'] });
       
       try {
         // Reset cards array completely for a fresh start
         setCards([]);
+        
+        // Get swipe IDs directly from the server - THE SINGLE SOURCE OF TRUTH
+        // The server already tracks which cards have been swiped and excludes them
+        // No need for additional client-side tracking
+        const latestSwipes = await apiRequest('/api/user-swipes') as any[];
+        console.log(`[Discovery] Refresh: Server reports ${latestSwipes?.length || 0} swipes`);
         
         // We only use the local session history for cards swiped in the current session
         // that might not have been saved to the server yet
@@ -1019,53 +927,72 @@ export default function DiscoverPage() {
           .filter(Boolean) as string[];
         console.log(`[Discovery] Refresh: Current session has ${sessionCardIds.length} cards in local swipe history`);
         
-        // Use the unified endpoint to get all data at once
+        // Server IDs + current session IDs
+        const exclusionIds = [
+          ...(latestSwipes?.map(swipe => swipe.collaboration_id) || []),
+          ...sessionCardIds
+        ];
+        
+        // Remove duplicates
+        const uniqueExclusionIds = Array.from(new Set(exclusionIds));
+        console.log(`[Discovery] Refresh: Using ${uniqueExclusionIds.length} unique card IDs to exclude`);
+
+        // We don't need localStorage - the server will exclude all previously swiped cards
+        // We just send the current session's cards as additional exclusions
+        
+        // Fetch potential matches first (users who swiped right on your collaborations)
+        const potentialMatchesData = await apiRequest('/api/potential-matches') as any[];
+        console.log(`[Discovery] Refresh: Got ${potentialMatchesData?.length || 0} potential matches`);
+        
+        if (potentialMatchesData && potentialMatchesData.length > 0) {
+          // Transform and add potential matches to the card stack
+          const formattedMatches = potentialMatchesData.map((match: any) => ({
+            ...match,
+            id: match.id,
+            isPotentialMatch: true,
+            collab_type: match.collab_type || 'Collaboration',
+            creator_company_name: match.potentialMatchData?.company_name || '',
+            potentialMatchData: match.potentialMatchData || null,
+          }));
+          
+          // Validate potential matches before setting cards
+          const validMatches = formattedMatches.filter(match => {
+            // Make sure we have valid potentialMatchData with required fields
+            return match.id && 
+                  match.potentialMatchData && 
+                  match.potentialMatchData.company_name && 
+                  match.potentialMatchData.user_id;
+          });
+          
+          console.log(`[Discovery] Filtered potential matches: ${formattedMatches.length} -> ${validMatches.length} valid matches`);
+          
+          if (validMatches.length > 0) {
+            setCards(validMatches);
+          } else {
+            // If no valid potential matches, make sure we clear cards array
+            setCards([]);
+          }
+        } else {
+          // No potential matches found, ensure cards array is empty
+          setCards([]);
+        }
+        
+        // Fetch fresh batch of regular collaborations
         const params = new URLSearchParams();
         params.append('limit', '10');
         
-        const unifiedResponse = await apiRequest(`/api/discovery/unified?${params.toString()}`, 'POST', {
-          excludeIds: sessionCardIds
-        });
+        const response = await apiRequest(`/api/collaborations/search?${params.toString()}`, 'POST', {
+          excludeIds: uniqueExclusionIds
+        }) as PaginatedResponse;
         
-        if (!unifiedResponse) {
-          throw new Error('No response from unified discovery endpoint');
-        }
-        
-        // Extract the three data sets from the unified response
-        const { collaborations, userSwipes, potentialMatches } = unifiedResponse;
-        
-        // Log data for debugging
-        console.log('[Discovery] Refresh: Unified response received:', {
-          collaborationsCount: collaborations?.items?.length || 0,
-          userSwipesCount: userSwipes?.length || 0, 
-          potentialMatchesCount: potentialMatches?.length || 0
-        });
-        
-        // Process potential matches if we have any
-        if (potentialMatches && potentialMatches.length > 0) {
-          // Transform the potential matches data to match CardData structure
-          const transformedMatches = processPotentialMatches(potentialMatches);
-          console.log(`[Discovery] Refresh: Processed ${transformedMatches.length} potential matches`);
-          
-          if (transformedMatches.length > 0) {
-            // Add potential matches to cards
-            setCards(transformedMatches);
-          }
-        }
-        
-        // Update state with new collaborations and pagination info
-        if (collaborations && collaborations.items && collaborations.items.length > 0) {
-          // Filter out incomplete card data before adding to the state
-          const validItems = validateCardData(collaborations.items);
-          console.log('[Discovery] Validated items:', validItems.length, 'valid items');
-          
-          // Add to cards state
-          setCards(prevCards => [...prevCards, ...validItems]);
-          setNextCursor(collaborations.nextCursor);
-          setHasMore(collaborations.hasMore);
+        // Update state with new cards and pagination info
+        if (response.items && response.items.length > 0) {
+          setCards(prevCards => [...prevCards, ...response.items]);
+          setNextCursor(response.nextCursor);
+          setHasMore(response.hasMore);
           
           console.log('[Discovery] Refresh complete, card count:', 
-            (potentialMatches?.length || 0) + validItems.length);
+            (potentialMatchesData?.length || 0) + response.items.length);
         } else if (cards.length === 0) {
           console.log('[Discovery] No cards available after refresh');
           setAllCardsViewed(true);
