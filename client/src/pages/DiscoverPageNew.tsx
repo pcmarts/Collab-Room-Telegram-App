@@ -869,7 +869,30 @@ export default function DiscoverPage() {
   
   // View card details
   const handleViewCardDetails = (card: CardData) => {
-    setSelectedCardDetails(card);
+    // First, make a copy of the card data to avoid modifying the original
+    const cardWithCompanyData = { ...card };
+    
+    // Ensure company_data is properly structured for the details dialog
+    if (!cardWithCompanyData.company_data) {
+      cardWithCompanyData.company_data = {
+        name: card.creator_company_name,
+        logo_url: card.company_logo_url,
+        description: card.company_description,
+        website: card.company_website,
+        short_description: card.company_description,
+        twitter_handle: card.company_twitter,
+        linkedin_url: card.company_linkedin,
+        funding_stage: card.funding_stage
+      };
+    }
+    
+    // Also set companyName for backward compatibility
+    if (!cardWithCompanyData.companyName && cardWithCompanyData.creator_company_name) {
+      cardWithCompanyData.companyName = cardWithCompanyData.creator_company_name;
+    }
+    
+    console.log('[Discovery] Opening details dialog with data:', cardWithCompanyData);
+    setSelectedCardDetails(cardWithCompanyData);
     setCardDialogOpen(true);
   };
   
