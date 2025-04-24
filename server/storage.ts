@@ -691,8 +691,21 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      // Extract just the collaboration objects from the filtered results
-      const collaborationResults = filteredResults.map(r => r.collaboration);
+      // Extract collaboration objects with company data merged in
+      const collaborationResults = filteredResults.map(r => {
+        // Merge the company data into the collaboration object
+        return {
+          ...r.collaboration,
+          // Include these important fields from company that the frontend expects
+          creator_company_name: r.company.name,
+          company_logo_url: r.company.logo_url,
+          company_description: r.company.description,
+          company_website: r.company.website,
+          creator_first_name: r.user.first_name,
+          creator_last_name: r.user.last_name,
+          creator_role: r.user.role_title
+        };
+      });
       
       // Determine if there are more results and extract the proper limit
       const hasMore = collaborationResults.length > limit;
