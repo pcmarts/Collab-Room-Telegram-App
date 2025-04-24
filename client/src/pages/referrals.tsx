@@ -38,8 +38,7 @@ export default function ReferralsPage() {
       {/* Fixed header */}
       <div className="sticky top-0 z-10 bg-background">
         <PageHeader
-          title="Invite Friends"
-          subtitle="Share your referral link to invite friends to The Collab Room"
+          title="Your Code"
           showBackButton={true}
           backUrl="/dashboard"
         />
