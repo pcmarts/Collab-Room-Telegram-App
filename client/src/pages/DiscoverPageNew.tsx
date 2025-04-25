@@ -255,19 +255,22 @@ export default function DiscoverPage() {
             companyInfo: match.company_data || match.company || 'No company data'
           });
           
+          // Check if we're dealing with nested user and company objects from server
+          const hasNestedData = !!match.user && !!match.company;
+          
           // Construct the proper potentialMatchData object
           const potentialMatchData = {
-            user_id: match.user_id || match.requester_id || '',
-            first_name: match.first_name || match.requester_first_name || '',
-            last_name: match.last_name || match.requester_last_name || '',
-            company_name: match.company_name || match.requester_company || '',
-            company_description: match.company_description || match.short_description || match.description || '',
-            company_website: match.company_website || match.website || '',
-            company_twitter: match.company_twitter || match.twitter_handle || '',
-            company_linkedin: match.company_linkedin || match.linkedin || '',
-            job_title: match.job_title || match.requester_role || '',
-            twitter_followers: match.twitter_followers || '',
-            company_twitter_followers: match.company_twitter_followers || '',
+            user_id: hasNestedData ? match.user?.id : (match.user_id || match.requester_id || ''),
+            first_name: hasNestedData ? match.user?.first_name : (match.first_name || match.requester_first_name || ''),
+            last_name: hasNestedData ? match.user?.last_name : (match.last_name || match.requester_last_name || ''),
+            company_name: hasNestedData ? match.company?.name : (match.company_name || match.requester_company || ''),
+            company_description: hasNestedData ? match.company?.description : (match.company_description || match.short_description || match.description || ''),
+            company_website: hasNestedData ? match.company?.website : (match.company_website || match.website || ''),
+            company_twitter: hasNestedData ? match.company?.twitter_handle : (match.company_twitter || match.twitter_handle || ''),
+            company_linkedin: hasNestedData ? match.company?.linkedin_url : (match.company_linkedin || match.linkedin || ''),
+            job_title: hasNestedData ? match.user?.job_title : (match.job_title || match.requester_role || ''),
+            twitter_followers: hasNestedData ? match.user?.twitter_followers : (match.twitter_followers || ''),
+            company_twitter_followers: hasNestedData ? match.company?.twitter_followers : (match.company_twitter_followers || ''),
             swipe_created_at: match.created_at || match.swipe_created_at || new Date().toISOString(),
             collaboration_id: match.collaboration_id || match.id,
             note: match.note || '' // Include the personalized note from the swipe
@@ -284,10 +287,10 @@ export default function DiscoverPage() {
             collab_type: match.collaboration_type || match.collab_type || 'Collaboration',
             description: match.collaboration_description || match.description || '',
             topics: match.collaboration_topics || match.topics || [],
-            creator_company_name: match.company_name || '',
+            creator_company_name: potentialMatchData.company_name || '',
             // Keep these for backward compatibility
-            requester_company: match.requester_company || match.company_name || '',
-            requester_role: match.requester_role || match.job_title || '',
+            requester_company: match.requester_company || potentialMatchData.company_name || '',
+            requester_role: match.requester_role || potentialMatchData.job_title || '',
           };
         });
         
@@ -1157,22 +1160,55 @@ export default function DiscoverPage() {
         
         if (potentialMatchesData && potentialMatchesData.length > 0) {
           // Transform and add potential matches to the card stack
-          const formattedMatches = potentialMatchesData.map((match: any) => ({
-            ...match,
-            id: match.id,
-            isPotentialMatch: true,
-            collab_type: match.collab_type || 'Collaboration',
-            creator_company_name: match.potentialMatchData?.company_name || '',
-            potentialMatchData: match.potentialMatchData || null,
-          }));
+          const formattedMatches = potentialMatchesData.map((match: any) => {
+            // Construct proper potentialMatchData object from the raw response
+            const potentialMatchData = {
+              user_id: match.user?.id || match.user_id || '',
+              first_name: match.user?.first_name || match.first_name || '',
+              last_name: match.user?.last_name || match.last_name || '',
+              company_name: match.company?.name || match.company_name || '',
+              company_description: match.company?.description || match.company_description || '',
+              company_website: match.company?.website || match.company_website || '',
+              company_twitter: match.company?.twitter_handle || match.company_twitter || '',
+              company_linkedin: match.company?.linkedin_url || match.company_linkedin || '',
+              job_title: match.user?.job_title || match.job_title || '',
+              twitter_followers: match.user?.twitter_followers || match.twitter_followers || '',
+              company_twitter_followers: match.company?.twitter_followers || match.company_twitter_followers || '',
+              swipe_created_at: match.created_at || new Date().toISOString(),
+              collaboration_id: match.collaboration_id || '',
+              note: match.note || '' // Include the personalized note from the swipe
+            };
+            
+            console.log('[Discovery] Created potentialMatchData:', potentialMatchData);
+            
+            return {
+              ...match,
+              id: match.id,
+              isPotentialMatch: true,
+              collab_type: match.collab_type || 'Collaboration',
+              creator_company_name: potentialMatchData.company_name || '',
+              potentialMatchData: potentialMatchData,
+            };
+          });
           
           // Validate potential matches before setting cards
           const validMatches = formattedMatches.filter(match => {
             // Make sure we have valid potentialMatchData with required fields
-            return match.id && 
+            const isValid = match.id && 
                   match.potentialMatchData && 
                   match.potentialMatchData.company_name && 
                   match.potentialMatchData.user_id;
+                  
+            if (!isValid) {
+              console.log('[Discovery] Filtering out invalid potential match in refresh:', {
+                id: match.id,
+                hasPotentialMatchData: !!match.potentialMatchData,
+                companyName: match.potentialMatchData?.company_name,
+                userId: match.potentialMatchData?.user_id
+              });
+            }
+            
+            return isValid;
           });
           
           console.log(`[Discovery] Filtered potential matches: ${formattedMatches.length} -> ${validMatches.length} valid matches`);
