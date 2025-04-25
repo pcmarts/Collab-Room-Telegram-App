@@ -377,18 +377,23 @@ export function CollaborationDetailsDialog({
                 </div>
               )}
               
+              {/* Company description - highlighted and more prominent */}
+              {companyData.short_description && (
+                <div className="mt-3 p-3 bg-secondary/10 rounded-md border border-secondary/20">
+                  <h4 className="text-sm font-medium mb-1 flex items-center gap-1">
+                    <Info className="h-3.5 w-3.5" />
+                    About {companyName}
+                  </h4>
+                  <p className="text-sm">{companyData.short_description}</p>
+                </div>
+              )}
+              
               {/* Show personalized note if exists */}
               {isPotentialMatch && potentialMatchData.note && (
                 <div className="mt-3 bg-primary/5 p-3 rounded-md border border-primary/10">
                   <h4 className="text-sm font-medium text-primary mb-1">Personalized Note</h4>
                   <p className="text-sm italic">{potentialMatchData.note}</p>
                 </div>
-              )}
-              
-              {companyData.short_description && (
-                <p className="text-sm mt-2 text-muted-foreground">
-                  {companyData.short_description}
-                </p>
               )}
               
               <div className="grid grid-cols-2 gap-2 mt-3">
