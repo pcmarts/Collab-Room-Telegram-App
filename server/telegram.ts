@@ -2556,13 +2556,13 @@ export async function notifyMatchCreated(
       .from(notification_preferences)
       .where(eq(notification_preferences.user_id, requesterUserId));
 
-    // Create keyboard for viewing match details
+    // Create keyboard for viewing all matches (redirects to matches page instead of individual match)
     const keyboard = {
       inline_keyboard: [
         [
           {
-            text: "🎉 View Match Details",
-            web_app: { url: `${WEBAPP_URL}/matches/${matchId}` },
+            text: "🎉 View Matches",
+            web_app: { url: `${WEBAPP_URL}/matches` },
           },
         ],
       ],
@@ -2605,14 +2605,14 @@ export async function notifyMatchCreated(
       `You've matched with <b>${requester.first_name} ${requester.last_name || ""}</b>${requester.handle ? ` (@${requester.handle})` : ''} from ` +
       `<a href="${requesterCompanyUrl}">${requesterCompany?.name || "their company"}</a> ` +
       `on your <b>${collaboration.collab_type}</b> collaboration!\n\n` +
-      `Click below to view the match details and start chatting:`;
+      `Click below to view your matches and start chatting:`;
 
     const requesterMessage = 
       `🎉 <b>New Match!</b>\n\n` +
       `<b>${host.first_name} ${host.last_name || ""}</b>${host.handle ? ` (@${host.handle})` : ''} from ` +
       `<a href="${hostCompanyUrl}">${hostCompany?.name || "their company"}</a> ` +
       `has matched with you on a <b>${collaboration.collab_type}</b> collaboration!\n\n` +
-      `Click below to view the match details and start chatting:`;
+      `Click below to view your matches and start chatting:`;
 
     // Send match notifications if enabled
     let hostNotified = false;
