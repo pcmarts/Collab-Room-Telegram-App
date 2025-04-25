@@ -149,7 +149,9 @@ export default function SimpleCard({
   return (
     <div className="w-full h-full absolute inset-0">
       <Card 
-        className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl no-drag" 
+        className={`h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl no-drag ${
+          data.isPotentialMatch ? 'bg-primary/5 border-primary/30' : ''
+        }`}
       >
         {/* Card header with company info */}
         <div className={`px-4 py-3 border-b relative z-30 ${
@@ -186,6 +188,14 @@ export default function SimpleCard({
                     {data.isPotentialMatch ? data.potentialMatchData?.company_name : (data.creator_company_name || "Company")}
                   </h3>
                   <div className="flex items-center gap-1.5">
+                    {/* Potential Match Badge for clearer highlighting */}
+                    {data.isPotentialMatch ? (
+                      <Badge variant="secondary" className="text-xs bg-primary/20 border-primary/30 text-primary font-medium">
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Potential Match
+                      </Badge>
+                    ) : null}
+                    
                     {/* Type Badge - With defensive handling */}
                     {(data.collab_type?.toLowerCase()?.includes('twitter') || 
                      data.collab_type?.toLowerCase()?.includes('co-marketing')) ? (
