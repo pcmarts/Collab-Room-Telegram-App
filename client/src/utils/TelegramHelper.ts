@@ -45,35 +45,41 @@ export function openTelegramLink(url: string, options?: {
   
   // Function to actually open the link
   const openLink = () => {
-    // Try all methods sequentially until one works
-    // This is our best approach for cross-platform compatibility
-    try {
-      // Method 1: Use window.open directly (often works best for mobile)
-      if (forceWindowOpen) {
-        if (debugLog) console.log('[TelegramHelper] Using forced window.open');
-        try {
-          window.open(validUrl, '_blank');
-          return; // Exit if successful
-        } catch (err) {
-          if (debugLog) console.log('[TelegramHelper] Initial window.open failed, continuing to next method');
-        }
+    if (debugLog) console.log('[TelegramHelper] Attempting to open URL:', validUrl);
+    
+    // Strategy for iOS mobile Telegram: Force direct location change
+    // This is a brutal approach but should work on most mobile devices
+    const isMobile = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent.toLowerCase());
+    
+    if (isMobile) {
+      if (debugLog) console.log('[TelegramHelper] Detected mobile device, using direct location.href');
+      
+      try {
+        // Force direct location change - this should work on most mobile browsers
+        window.location.href = validUrl;
+        return;
+      } catch (err) {
+        if (debugLog) console.error('[TelegramHelper] Direct location change failed:', err);
       }
-
-      // Method 2: Try Telegram WebApp API if available
+    }
+    
+    // For desktop or if the above fails, try multiple methods
+    try {
+      // Method 1: Try Telegram WebApp API if available (works well on desktop)
       if (window.Telegram?.WebApp?.openLink) {
         if (debugLog) console.log('[TelegramHelper] Opening via Telegram.WebApp.openLink()');
         window.Telegram.WebApp.openLink(validUrl);
-        return; // Exit if this method is attempted (no way to detect success/failure)
+        return;
       }
       
-      // Method 3: Fallback to window.open with various targets
+      // Method 2: Use window.open (works on most desktop browsers)
       if (debugLog) console.log('[TelegramHelper] Falling back to window.open()');
       window.open(validUrl, '_blank');
       
     } catch (err) {
       if (debugLog) console.error('[TelegramHelper] Error opening URL:', err);
       
-      // Method 4: Last resort - try changing location
+      // Last resort - try changing location
       try {
         if (debugLog) console.log('[TelegramHelper] Attempting to change window.location as last resort');
         window.location.href = validUrl;
@@ -148,8 +154,31 @@ export function createTelegramLinkHandler(url: string, options?: {
     if (stopPropagation) e.stopPropagation();
     if (preventDefault) e.preventDefault();
     
+    if (debugLog) console.log(`[TelegramHelper] Direct link handler triggered for: ${url}`);
+    
+    // Important: For iOS we need to force direct location change
+    if (/iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase())) {
+      if (debugLog) console.log('[TelegramHelper] iOS device detected, forcing location.href');
+      window.location.href = url;
+      return;
+    }
+    
     openTelegramLink(url, { useTimeout, timeoutMs, debugLog, forceWindowOpen });
   };
+}
+
+/**
+ * Directly open a Twitter profile in the external browser
+ * This is a special case handler optimized for Twitter links on mobile
+ * 
+ * @param handle Twitter handle (with or without @)
+ */
+export function openTwitterProfile(handle: string) {
+  const url = createTwitterUrl(handle);
+  console.log(`[TelegramHelper] Opening Twitter profile directly: ${url}`);
+  
+  // Force direct browser navigation - most compatible with Telegram iOS
+  window.location.href = url;
 }
 
 /**

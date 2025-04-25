@@ -251,6 +251,28 @@ body.scrollable-page {
   pointer-events: auto !important;
 }
 
+/* Special styles for links in cards */
+.telegram-direct-link {
+  position: relative !important;
+  z-index: 9999 !important;
+  cursor: pointer !important;
+  text-decoration: underline !important;
+  font-weight: 500 !important;
+  pointer-events: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+}
+
+/* Special visual indicator for clickable links */
+.telegram-direct-link::after {
+  content: "↗";
+  font-size: 80%;
+  vertical-align: super;
+  margin-left: 1px;
+  opacity: 0.8;
+}
+
 @layer base {
   * {
     @apply border-border;

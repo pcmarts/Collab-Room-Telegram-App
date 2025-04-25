@@ -1,5 +1,4 @@
 import React from 'react';
-import { openTelegramLink } from '@/utils/TelegramHelper';
 
 interface TelegramLinkProps {
   url: string;
@@ -10,11 +9,9 @@ interface TelegramLinkProps {
 }
 
 /**
- * A special link component for Telegram WebApp that ensures
- * reliable link opening on all platforms including iOS and Android.
- * 
- * This component renders a full-overlay clickable area to avoid issues
- * with nested containers blocking clicks in Telegram WebApp.
+ * A simple link component for Telegram WebApp that uses direct href changes
+ * instead of JavaScript to handle link navigation. This is more reliable
+ * on mobile Telegram WebApp which often has issues with JavaScript-based navigation.
  */
 export function TelegramLink({
   url,
@@ -23,61 +20,32 @@ export function TelegramLink({
   style = {},
   debugLog = true
 }: TelegramLinkProps) {
+  // We'll create a direct handler that just forces location change
   const handleClick = (e: React.MouseEvent) => {
     if (debugLog) console.log(`[TelegramLink] Click triggered for ${url}`);
     e.stopPropagation();
     e.preventDefault();
     
-    openTelegramLink(url, {
-      useTimeout: false,
-      forceWindowOpen: true,
-      debugLog
-    });
-  };
-  
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (debugLog) console.log(`[TelegramLink] Touch start for ${url}`);
-    e.stopPropagation();
-  };
-  
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (debugLog) console.log(`[TelegramLink] Touch end for ${url}`);
-    e.stopPropagation();
-    e.preventDefault();
-    
-    openTelegramLink(url, {
-      useTimeout: false,
-      forceWindowOpen: true,
-      debugLog
-    });
+    // Force direct href change for maximum compatibility
+    window.location.href = url;
   };
   
   return (
-    <div 
-      className={`relative inline-block ${className}`}
+    <a 
+      href={url}
+      className={`inline-block ${className}`}
       style={{
         cursor: 'pointer',
+        position: 'relative',
+        zIndex: 9999,
         ...style
       }}
+      onClick={handleClick}
+      target="_blank"
+      rel="noopener noreferrer"
     >
       {children}
-      <button
-        className="absolute inset-0 w-full h-full pointer-events-auto"
-        style={{
-          backgroundColor: 'transparent',
-          border: 'none',
-          zIndex: 9999,
-          boxSizing: 'border-box',
-          cursor: 'pointer',
-          borderRadius: 'inherit'
-        }}
-        onClick={handleClick}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        type="button"
-        aria-label={`Open ${url}`}
-      />
-    </div>
+    </a>
   );
 }
 

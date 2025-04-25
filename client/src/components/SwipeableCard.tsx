@@ -300,14 +300,21 @@ export default function SwipeableCard({
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
               <div className="flex items-center space-x-1.5">
                 <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-                <TelegramLink 
-                  url={createTwitterUrl(data.details?.host_twitter_handle || '')}
-                  className="text-sm font-medium text-[#1DA1F2] hover:underline"
+                {/* Direct link implementation for maximum compatibility */}
+                <a 
+                  href={createTwitterUrl(data.details?.host_twitter_handle || '')}
+                  className="text-sm font-medium text-[#1DA1F2] hover:underline swipeable-card-content"
+                  style={{ position: 'relative', zIndex: 9999, userSelect: 'text' }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = createTwitterUrl(data.details?.host_twitter_handle || '');
+                  }}
+                  target="_blank" 
+                  rel="noopener noreferrer"
                 >
-                  <span>
-                    @{data.details?.host_twitter_handle?.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
-                  </span>
-                </TelegramLink>
+                  @{data.details?.host_twitter_handle?.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
+                </a>
               </div>
               
               {data.details?.host_follower_count && (
@@ -343,14 +350,21 @@ export default function SwipeableCard({
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
               <div className="flex items-center space-x-1.5">
                 <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-                <TelegramLink 
-                  url={createTwitterUrl(data.details?.twitter_handle || '')}
-                  className="text-sm font-medium text-[#1DA1F2] hover:underline"
+                {/* Direct link implementation for maximum compatibility */}
+                <a 
+                  href={createTwitterUrl(data.details?.twitter_handle || '')}
+                  className="text-sm font-medium text-[#1DA1F2] hover:underline swipeable-card-content"
+                  style={{ position: 'relative', zIndex: 9999, userSelect: 'text' }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = createTwitterUrl(data.details?.twitter_handle || '');
+                  }}
+                  target="_blank" 
+                  rel="noopener noreferrer"
                 >
-                  <span>
-                    {data.details.twitter_handle.includes('@') ? data.details.twitter_handle : '@' + data.details.twitter_handle.replace('https://twitter.com/', '').replace('https://x.com/', '')}
-                  </span>
-                </TelegramLink>
+                  {data.details.twitter_handle.includes('@') ? data.details.twitter_handle : '@' + data.details.twitter_handle.replace('https://twitter.com/', '').replace('https://x.com/', '')}
+                </a>
               </div>
               
               {data.details?.host_follower_count && (
@@ -389,14 +403,20 @@ export default function SwipeableCard({
               {data.details?.podcast_link && (
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                   <Link className="w-3 h-3" />
-                  <TelegramLink 
-                    url={data.details?.podcast_link || ''}
-                    className="truncate text-blue-600 hover:text-blue-800 hover:underline text-xs"
+                  <a 
+                    href={data.details?.podcast_link || ''}
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline text-xs swipeable-card-content"
+                    style={{ position: 'relative', zIndex: 9999, userSelect: 'text' }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.location.href = data.details?.podcast_link || '';
+                    }}
+                    target="_blank" 
+                    rel="noopener noreferrer"
                   >
-                    <span>
-                      {data.details?.podcast_link}
-                    </span>
-                  </TelegramLink>
+                    {data.details?.podcast_link}
+                  </a>
                 </div>
               )}
               
@@ -436,14 +456,20 @@ export default function SwipeableCard({
               {data.details?.blog_link && (
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                   <Link className="w-3 h-3" />
-                  <TelegramLink 
-                    url={data.details?.blog_link || ''}
-                    className="truncate text-blue-600 hover:text-blue-800 hover:underline text-xs"
+                  <a 
+                    href={data.details?.blog_link || ''}
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline text-xs swipeable-card-content"
+                    style={{ position: 'relative', zIndex: 9999, userSelect: 'text' }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.location.href = data.details?.blog_link || '';
+                    }}
+                    target="_blank" 
+                    rel="noopener noreferrer"
                   >
-                    <span>
-                      {data.details?.blog_link}
-                    </span>
-                  </TelegramLink>
+                    {data.details?.blog_link}
+                  </a>
                 </div>
               )}
               
