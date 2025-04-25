@@ -85,6 +85,19 @@ export const bot = new TelegramBot(BOT_TOKEN, {
   webHook: false,
 });
 
+// Helper function to check if a chat ID is valid (bot has interacted with user)
+async function isValidChatId(chatId: number): Promise<boolean> {
+  try {
+    // Try to get chat info - this will fail with "chat not found" if 
+    // the bot hasn't interacted with this user yet
+    await bot.getChat(chatId);
+    return true;
+  } catch (error) {
+    console.log(`Chat ID ${chatId} appears to be invalid or hasn't interacted with bot`);
+    return false;
+  }
+}
+
 /**
  * Sets up bot commands based on user roles
  * Regular users only see basic commands
@@ -124,15 +137,22 @@ export async function setupBotCommands() {
       }
       
       try {
-        // Create a chat scope for this specific admin user
-        const adminScope = {
-          type: 'chat',
-          chat_id: parseInt(admin.telegram_id)
-        };
+        // Check if this is a valid chat_id - can't set commands for users the bot hasn't interacted with
+        const chatExists = await isValidChatId(parseInt(admin.telegram_id));
         
-        // Set admin-specific commands
-        await bot.setMyCommands(adminCommands, { scope: adminScope });
-        console.log(`[BOT_SETUP] Set admin commands for ${admin.first_name} (${admin.telegram_id})`);
+        if (chatExists) {
+          // Create a chat scope for this specific admin user
+          const adminScope = {
+            type: 'chat',
+            chat_id: parseInt(admin.telegram_id)
+          };
+          
+          // Set admin-specific commands
+          await bot.setMyCommands(adminCommands, { scope: adminScope });
+          console.log(`[BOT_SETUP] Set admin commands for ${admin.first_name} (${admin.telegram_id})`);
+        } else {
+          console.log(`[BOT_SETUP] Admin ${admin.first_name} (${admin.telegram_id}) hasn't interacted with the bot yet, skipping command setup`);
+        }
       } catch (error) {
         console.error(`[BOT_SETUP] Failed to set commands for admin ${admin.telegram_id}:`, error);
       }
@@ -2045,7 +2065,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       const [collaboration] = await db
         .select()
         .from(collaborations)
-        .where(sql`STARTS_WITH(${collaborations.id}::text, ${shortCollabId})`);
+        .where(sql`SUBSTRING(CAST(${collaborations.id} as TEXT), 1, 8) = ${shortCollabId}`);
       
       if (!collaboration) {
         console.error(`[SWIPE_CALLBACK] Collaboration with short ID ${shortCollabId} not found`);
@@ -2060,7 +2080,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       const [requester] = await db
         .select()
         .from(users)
-        .where(sql`STARTS_WITH(${users.id}::text, ${shortRequesterId})`);
+        .where(sql`SUBSTRING(CAST(${users.id} as TEXT), 1, 8) = ${shortRequesterId}`);
         
       if (!requester) {
         console.error(`[SWIPE_CALLBACK] Requester with short ID ${shortRequesterId} not found`);
