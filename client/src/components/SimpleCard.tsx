@@ -190,9 +190,12 @@ export default function SimpleCard({
                     {data.isPotentialMatch ? data.potentialMatchData?.company_name : (data.creator_company_name || "Company")}
                   </h3>
                   <div className="flex items-center gap-1.5">
-                    {/* Type Badge - Restored */}
-                    {(data.collab_type?.toLowerCase().includes('twitter') || 
-                     data.collab_type?.toLowerCase().includes('co-marketing')) ? (
+                    {/* Add debug log to identify missing fields */}
+                    {!data.collab_type && console.log('[SimpleCard] Missing collab_type for card:', data.id)}
+                    
+                    {/* Type Badge - Restored with more defensive handling */}
+                    {(data.collab_type?.toLowerCase()?.includes('twitter') || 
+                     data.collab_type?.toLowerCase()?.includes('co-marketing')) ? (
                       <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-[#1DA1F2]">
                         <Twitter className="w-3 h-3 mr-1" />
                         {data.collab_type}
@@ -526,10 +529,15 @@ export default function SimpleCard({
             </div>
           )}
           
-          {/* Collaboration Description - title moved to header */}
+          {/* Collaboration Description - with fallbacks and debugging */}
           <div className="mb-3">
+            {!data.description && console.log('[SimpleCard] Missing description for card:', data.id, 'Checking details for fallback')}
             <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
-              {data.description || "No description available."}
+              {data.description || 
+               (data.details?.short_description) || 
+               (data.isPotentialMatch && data.potentialMatchData?.company_description) || 
+               "View details for more information."
+              }
             </p>
           </div>
         </div>
