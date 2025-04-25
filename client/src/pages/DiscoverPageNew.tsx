@@ -1313,6 +1313,11 @@ export default function DiscoverPage() {
         const potentialMatchesData = await apiRequest('/api/potential-matches') as any[];
         console.log(`[Discovery] Refresh: Got ${potentialMatchesData?.length || 0} potential matches`);
         
+        // Detailed log to see exact structure (useful for fixing collaboration details)
+        if (potentialMatchesData && potentialMatchesData.length > 0) {
+          console.log('[Discovery] First potential match full structure:', JSON.stringify(potentialMatchesData[0], null, 2));
+        }
+        
         // Log the raw data to understand its exact structure
         if (potentialMatchesData && potentialMatchesData.length > 0) {
           console.log('[Discovery] Raw potential match data:', JSON.stringify(potentialMatchesData, null, 2));
@@ -1341,15 +1346,26 @@ export default function DiscoverPage() {
               note: match.note || '' // Include the personalized note from the swipe
             };
             
-            console.log('[Discovery] Created potentialMatchData:', potentialMatchData);
+            // Extract collaboration details from API response
+            const collaborationInfo = match.collaboration || {};
             
+            console.log('[Discovery] Created potentialMatchData:', potentialMatchData);
+            console.log('[Discovery] Collaboration info for potential match:', collaborationInfo);
+            
+            // Build the properly formatted card data
             return {
               ...match,
               id: match.id,
               isPotentialMatch: true,
-              collab_type: match.collab_type || 'Collaboration',
+              collab_type: collaborationInfo.collab_type || match.collab_type || 'Collaboration',
+              title: collaborationInfo.title || '',
+              description: collaborationInfo.description || '',
+              topics: collaborationInfo.topics || [],
+              details: collaborationInfo.details || {},
               creator_company_name: potentialMatchData.company_name || '',
               potentialMatchData: potentialMatchData,
+              // Store the full collaboration data for direct access
+              collaboration: collaborationInfo
             };
           });
           
