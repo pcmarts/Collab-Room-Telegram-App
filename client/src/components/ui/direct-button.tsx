@@ -1,9 +1,9 @@
 import React from 'react';
-import { Twitter, Link as LinkIcon, FileText, Mic } from 'lucide-react';
+import { Twitter, Link as LinkIcon, FileText, Mic, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Define button types and their styling
-type ButtonType = 'twitter' | 'podcast' | 'blog' | 'generic';
+type ButtonType = 'twitter' | 'podcast' | 'blog' | 'generic' | 'stream';
 
 // Style configs for different button types
 const typeStyles = {
@@ -24,6 +24,12 @@ const typeStyles = {
     bgColor: 'bg-emerald-100',
     textColor: 'text-emerald-600',
     borderColor: 'border-emerald-300'
+  },
+  stream: {
+    icon: Video,
+    bgColor: 'bg-red-100',
+    textColor: 'text-red-600',
+    borderColor: 'border-red-300'
   },
   generic: {
     icon: LinkIcon,

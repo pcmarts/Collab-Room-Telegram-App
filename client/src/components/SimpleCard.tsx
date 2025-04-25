@@ -485,46 +485,60 @@ export default function SimpleCard({
           {/* Live Stream Guest Appearance */}
           {data.collab_type === 'Live Stream Guest Appearance' && (
             <div className="flex flex-col space-y-2 p-3 bg-red-500/5 rounded-md border border-red-500/10 mb-3">
-              {data.details?.livestream_platform && (
-                <div className="flex items-center space-x-1.5">
-                  <Video className="w-4 h-4 text-red-600" />
-                  <span className="text-sm font-medium text-red-700">
-                    Platform: {data.details.livestream_platform}
-                  </span>
-                </div>
-              )}
+              {/* Debug section - always show */}
+              <p className="text-xs text-slate-500">
+                Collab Type: {data.collab_type}
+              </p>
               
-              {data.details?.host_name && (
-                <p className="text-xs">
-                  <span className="font-medium">Host:</span> {data.details.host_name}
-                </p>
-              )}
+              {/* Platform */}
+              <div className="flex items-center space-x-1.5">
+                <Video className="w-4 h-4 text-red-600" />
+                <span className="text-sm font-medium text-red-700">
+                  Platform: {data.details?.livestream_platform || "Stream Platform"}
+                </span>
+              </div>
               
-              {data.details?.estimated_audience && (
-                <p className="text-xs text-muted-foreground">
-                  <Users className="w-3 h-3 inline mr-1" />
-                  <span className="font-medium">{data.details.estimated_audience}</span> estimated viewers
-                </p>
-              )}
+              {/* Host */}
+              <p className="text-xs">
+                <span className="font-medium">Host:</span> {data.details?.host_name || "Stream Host"}
+              </p>
               
-              {/* Add livestream link if available */}
-              {data.details?.livestream_link && (
+              {/* Audience size always shown */}
+              <p className="text-xs text-muted-foreground">
+                <Users className="w-3 h-3 inline mr-1" />
+                <span className="font-medium">{data.details?.estimated_audience || "Unknown"}</span> estimated viewers
+              </p>
+              
+              {/* Previous streams */}
+              {data.details?.previous_stream_link && (
                 <div className="flex items-center mt-2">
                   <DirectButton 
-                    url={data.details?.livestream_link || ''}
-                    label="View Livestream"
-                    type="video"
+                    url={data.details.previous_stream_link}
+                    label="View Previous Stream"
+                    type="stream"
                   />
                 </div>
               )}
               
-              {/* Show date if available */}
-              {(data.date || data.specific_date || data.details?.livestream_date) && (
-                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
-                  <Calendar className="w-3 h-3" />
-                  <span>{data.date || data.specific_date || data.details?.livestream_date}</span>
-                </div>
-              )}
+              {/* Add livestream link - always show button */}
+              <div className="flex items-center mt-2">
+                <DirectButton 
+                  url={data.details?.livestream_link || '#'}
+                  label="View Livestream"
+                  type="stream"
+                />
+              </div>
+              
+              {/* Show date if available - always show */}
+              <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
+                <Calendar className="w-3 h-3" />
+                <span>{data.date || data.specific_date || data.details?.livestream_date || "Date TBD"}</span>
+              </div>
+              
+              {/* Debug details - uncomment for debugging */}
+              {/* <pre className="text-xs text-slate-500 mt-2 overflow-auto max-h-24">
+                {JSON.stringify(data.details, null, 2)}
+              </pre> */}
             </div>
           )}
           
