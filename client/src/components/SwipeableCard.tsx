@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, useMotionValue, useTransform, MotionValue } from "framer-motion";
 
-// TypeScript definition for Telegram WebApp API
+// TypeScript definitions for Telegram WebApp API
 interface TelegramWebApp {
   openLink: (url: string) => void;
   // Include other WebApp methods as needed
@@ -10,7 +10,7 @@ interface TelegramWebApp {
 declare global {
   interface Window {
     Telegram?: {
-      WebApp?: TelegramWebApp;
+      WebApp: TelegramWebApp;
     }
   }
 }
@@ -417,18 +417,19 @@ export default function SwipeableCard({
                       e.stopPropagation();
                       e.preventDefault();
                       
-                      console.log("[SwipeableCard] Podcast button clicked, opening URL:", data.details.podcast_link);
+                      const podcastLink = data.details?.podcast_link || '';
+                      console.log("[SwipeableCard] Podcast button clicked, opening URL:", podcastLink);
                       
                       // Try using Telegram WebApp API first
-                      if (window.Telegram?.WebApp?.openLink) {
-                        window.Telegram.WebApp.openLink(data.details.podcast_link);
-                      } else {
+                      if (window.Telegram?.WebApp?.openLink && podcastLink) {
+                        window.Telegram.WebApp.openLink(podcastLink);
+                      } else if (podcastLink) {
                         // Fallback to window.open for desktop
-                        window.open(data.details.podcast_link, '_blank', 'noopener,noreferrer');
+                        window.open(podcastLink, '_blank', 'noopener,noreferrer');
                       }
                     }}
                   >
-                    {data.details.podcast_link}
+                    {data.details?.podcast_link}
                   </button>
                 </div>
               )}
@@ -469,32 +470,27 @@ export default function SwipeableCard({
               {data.details?.blog_link && (
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                   <Link className="w-3 h-3" />
-                  <a 
-                    href={data.details.blog_link} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50"
+                  <button 
+                    className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50 bg-transparent border-0 p-0 text-left cursor-pointer text-xs"
                     onClick={(e) => {
                       // Stop event propagation to prevent parent handling
                       e.stopPropagation();
-                      // Use Telegram's openLink method if available
-                      if (window.Telegram?.WebApp?.openLink && data.details?.blog_link) {
-                        e.preventDefault();
-                        console.log("[SwipeableCard] Opening Blog link via Telegram WebApp:", data.details.blog_link);
-                        window.Telegram.WebApp.openLink(data.details.blog_link);
-                        return false;
+                      e.preventDefault();
+                      
+                      const blogLink = data.details?.blog_link || '';
+                      console.log("[SwipeableCard] Blog button clicked, opening URL:", blogLink);
+                      
+                      // Try using Telegram WebApp API first
+                      if (window.Telegram?.WebApp?.openLink && blogLink) {
+                        window.Telegram.WebApp.openLink(blogLink);
+                      } else if (blogLink) {
+                        // Fallback to window.open for desktop
+                        window.open(blogLink, '_blank', 'noopener,noreferrer');
                       }
-                      console.log("[SwipeableCard] Blog link clicked - default browser handling");
-                    }}
-                    onTouchEnd={(e) => {
-                      // Stop touch event propagation for mobile
-                      e.stopPropagation();
-                      console.log("[SwipeableCard] Blog link touch end");
-                      // We don't prevent default because we want the link to work
                     }}
                   >
-                    {data.details.blog_link}
-                  </a>
+                    {data.details?.blog_link}
+                  </button>
                 </div>
               )}
               
