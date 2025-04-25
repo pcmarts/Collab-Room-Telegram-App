@@ -2415,18 +2415,18 @@ export async function notifyNewCollabRequest(
       inline_keyboard: [
         [
           {
-            text: "✅ Yes, Let's Collab!",
-            callback_data: `sr_${shortCollabId}_${shortRequesterId}`,
+            text: "❌ Pass",
+            callback_data: `sl_${shortCollabId}_${shortRequesterId}`,
           },
           {
-            text: "❌ Not Interested",
-            callback_data: `sl_${shortCollabId}_${shortRequesterId}`,
+            text: "✅ Match",
+            callback_data: `sr_${shortCollabId}_${shortRequesterId}`,
           },
         ],
         [
           {
-            text: "👀 View Profile",
-            web_app: { url: `${WEBAPP_URL}/profile/${requesterUserId}` },
+            text: "🚀 Launch Collab Room",
+            web_app: { url: `${WEBAPP_URL}/discover` },
           },
         ],
       ],
@@ -2452,17 +2452,42 @@ export async function notifyNewCollabRequest(
       .orderBy(sql`${swipes.created_at} DESC`)
       .limit(1);
 
-    // Format the message with user and collaboration details in the improved format shown in the screenshot
+    // Format the message with user and collaboration details in the enhanced format
+    
+    // Handle note if present
+    let noteSection = "";
+    if (swipe && swipe.note) {
+      noteSection = `\n📝 <b>Note:</b> ${swipe.note}\n`;
+    }
+    
+    // Handle Twitter and LinkedIn links
+    const twitterLink = requester.twitter_handle ? 
+      `<a href="https://twitter.com/${requester.twitter_handle.replace('@', '')}">Twitter</a>` : 
+      "Twitter";
+    
+    const linkedinLink = requesterCompany?.linkedin_url ? 
+      `<a href="${requesterCompany.linkedin_url}">LinkedIn</a>` : 
+      "LinkedIn";
+    
+    // Host username (if available)
+    const hostUsername = host.username ? `@${host.username}` : host.first_name;
+    
     const message = 
-      `<b>New Collab Request</b>\n` +
-      `The <b>${requester.job_title || "Head of Business Solutions"}</b> from <a href="${requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>\n` +
-      `Would like to collaborate on your collab <b>${collaboration.collab_type}</b>, ${collaboration.description ? collaboration.description : "diving deep into other projects"}.\n` +
-      `<b>Topic:</b> ${collaboration.topics?.join(", ") || "Crypto, SocialFi"}\n` +
-      `<b>📅:</b> Any future date\n\n` +
-      `<b>X (formerly Twitter)</b>\n` +
-      `${requesterCompany?.name || requester.first_name + "'s company"} - ${requesterCompany?.short_description || "Bookmarks for your life"}\n` +
-      `(${requester.twitter_handle || "@" + (requester.username || "user")}) on X\n` +
-      `${requesterCompany?.short_description || requester.bio || "No description available"}`;
+      `🔥 ${hostUsername} - <b>New Collab Request from ${requesterCompany?.name || requester.first_name + "'s company"}</b>` +
+      
+      // Include note if available
+      `${noteSection}` +
+      
+      // Company information section
+      `\n💼 <a href="${requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>` +
+      `\n❓ <i>${requesterCompany?.short_description || "Web3 company focusing on blockchain solutions"}</i>` +
+      `\n🔗 ${twitterLink} | ${linkedinLink}` +
+      `\n👤 ${requester.job_title || "Head of Business Solutions"}` +
+      
+      // Collaboration details
+      `\n\n🤝 <b>Your Collab:</b> ${collaboration.collab_type}` +
+      `\n✏️ <b>Your Collab Description:</b> ${collaboration.description ? collaboration.description : "diving deep into other projects"}` +
+      `\n${collaboration.topics?.length ? "🏷️ " + collaboration.topics.join(", ") : ""}`;
 
     // Send notification to host
     await sendDirectFormattedMessage(parseInt(host.telegram_id), message, {
