@@ -244,10 +244,10 @@ export default function SimpleCard({
               </Button>
             </div>
             
-            {/* Second row with collaboration title - removed "Collaboration" text */}
+            {/* Second row with collaboration title - adjusted for potential matches */}
             <div className="mt-3">
               <h3 className="text-xl font-semibold">
-                {data.title || (data.isPotentialMatch ? "Potential Match" : "")}
+                {data.isPotentialMatch ? "Professional from " + data.potentialMatchData?.company_name : data.title || ""}
               </h3>
             </div>
           </div>
@@ -537,14 +537,12 @@ export default function SimpleCard({
               {/* User info with name and role */}
               <div className="flex items-center gap-2">
                 <LetterAvatar 
-                  name={`${data.potentialMatchData.first_name || ''} ${data.potentialMatchData.last_name || ''}`}
+                  name={data.potentialMatchData.job_title || "Professional"}
                   className="h-8 w-8"
                 />
                 <div>
-                  <div className="font-medium">{data.potentialMatchData.first_name} {data.potentialMatchData.last_name}</div>
-                  {data.potentialMatchData.job_title && (
-                    <div className="text-xs text-muted-foreground">{data.potentialMatchData.job_title}</div>
-                  )}
+                  <div className="font-medium">{data.potentialMatchData.job_title || "Professional"}</div>
+                  <div className="text-xs text-muted-foreground">Interested in your collaboration</div>
                 </div>
               </div>
               

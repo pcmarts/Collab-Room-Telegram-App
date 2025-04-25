@@ -140,11 +140,6 @@ export function CollaborationDetailsDialog({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <DialogTitle className="pt-2">{title}</DialogTitle>
-          {isPotentialMatch && (
-            <DialogDescription>
-              This user is interested in your collaboration
-            </DialogDescription>
-          )}
         </DialogHeader>
         
         <ScrollArea className="max-h-[70vh]">
@@ -403,12 +398,11 @@ export function CollaborationDetailsDialog({
                 {companyName}
               </h3>
               
-              {isPotentialMatch && potentialMatchData.first_name && (
+              {isPotentialMatch && potentialMatchData.job_title && (
                 <div className="flex items-center mt-1 text-sm text-primary">
                   <Users className="h-4 w-4 mr-1" />
                   <span>
-                    {potentialMatchData.first_name} {potentialMatchData.last_name || ""}
-                    {potentialMatchData.job_title && ` • ${potentialMatchData.job_title}`}
+                    {potentialMatchData.job_title}
                   </span>
                 </div>
               )}
