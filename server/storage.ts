@@ -1159,36 +1159,103 @@ export class DatabaseStorage implements IStorage {
     // for each match including collaboration and user information
     console.log(`Getting detailed matches for user ${userId}`);
     
-    const result = await db
-      .select({
-        match_id: matches.id,
-        match_date: matches.created_at,
-        match_status: matches.status,
-        match_note: matches.note,
-        collaboration_id: collaborations.id,
-        collaboration_title: collaborations.title,
-        collaboration_description: collaborations.description,
-        collaboration_type: collaborations.collab_type,
-        host_id: matches.host_id,
-        host_name: users.name,
-        requester_id: matches.requester_id,
-        company_name: companies.name,
-        company_logo: companies.logo_url
-      })
-      .from(matches)
-      .innerJoin(collaborations, eq(matches.collaboration_id, collaborations.id))
-      .innerJoin(users, eq(collaborations.creator_id, users.id))
-      .innerJoin(companies, eq(users.id, companies.user_id))
-      .where(
-        or(
-          eq(matches.host_id, userId),
-          eq(matches.requester_id, userId)
+    try {
+      // First, get the basic match data
+      const matchesResult = await db
+        .select({
+          match_id: matches.id,
+          match_date: matches.created_at,
+          match_status: matches.status,
+          match_note: matches.note,
+          collaboration_id: matches.collaboration_id,
+          host_id: matches.host_id,
+          requester_id: matches.requester_id
+        })
+        .from(matches)
+        .where(
+          or(
+            eq(matches.host_id, userId),
+            eq(matches.requester_id, userId)
+          )
         )
-      )
-      .orderBy(desc(matches.created_at));
+        .orderBy(desc(matches.created_at));
       
-    console.log(`Found ${result.length} detailed matches for user ${userId}`);
-    return result;
+      // Now, enrich the data with collaboration details
+      const enrichedResults = await Promise.all(matchesResult.map(async (match) => {
+        // Get collaboration details
+        const [collaborationData] = await db
+          .select({
+            collab_type: collaborations.collab_type,
+            description: collaborations.description,
+            creator_id: collaborations.creator_id,
+            details: collaborations.details
+          })
+          .from(collaborations)
+          .where(eq(collaborations.id, match.collaboration_id));
+        
+        if (!collaborationData) {
+          console.log(`No collaboration found for match ${match.match_id}`);
+          return null;
+        }
+        
+        // Get creator (host) details
+        const [hostData] = await db
+          .select({
+            first_name: users.first_name,
+            last_name: users.last_name,
+            job_title: users.job_title
+          })
+          .from(users)
+          .where(eq(users.id, collaborationData.creator_id));
+        
+        if (!hostData) {
+          console.log(`No host user found for match ${match.match_id}`);
+          return null;
+        }
+        
+        // Get requester details
+        const [requesterData] = await db
+          .select({
+            first_name: users.first_name,
+            last_name: users.last_name,
+            job_title: users.job_title
+          })
+          .from(users)
+          .where(eq(users.id, match.requester_id));
+        
+        // Get company data for both users
+        const [hostCompany] = await db
+          .select({
+            name: companies.name,
+            short_description: companies.short_description
+          })
+          .from(companies)
+          .where(eq(companies.user_id, collaborationData.creator_id));
+        
+        // Format and return the enriched match data
+        return {
+          id: match.match_id,
+          matchDate: match.match_date ? new Date(match.match_date).toLocaleDateString() : 'Unknown',
+          status: match.match_status,
+          note: match.match_note,
+          collaborationType: collaborationData.collab_type,
+          description: collaborationData.description,
+          details: collaborationData.details,
+          matchedPerson: `${hostData.first_name} ${hostData.last_name || ''}`.trim(),
+          companyName: hostCompany?.name || 'Unknown',
+          roleTitle: hostData.job_title || 'Unknown',
+          companyDescription: hostCompany?.short_description || '',
+        };
+      }));
+      
+      // Filter out any null results
+      const validResults = enrichedResults.filter(result => result !== null);
+      console.log(`Found ${validResults.length} detailed matches for user ${userId}`);
+      return validResults;
+    } catch (error) {
+      console.error("Failed to fetch matches:", error);
+      throw error;
+    }
   }
   
   async getCollaborationMatches(collaborationId: string): Promise<Match[]> {
