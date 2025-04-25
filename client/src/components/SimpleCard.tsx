@@ -113,11 +113,10 @@ export default function SimpleCard({
         propHandleSwipe(direction, note);
       } else if (onSwipe) {
         onSwipe(direction, note);
-      } else {
-        console.warn('[SimpleCard] No swipe handler provided (neither onSwipe nor handleSwipe)');
       }
+      // Silent if no handlers provided
     } catch (error) {
-      console.error('[SimpleCard] Error in swipe handler:', error);
+      // Silent error handling
     }
   };
   
@@ -132,7 +131,7 @@ export default function SimpleCard({
         handleSwipeAction(direction);
       }
     } catch (error) {
-      console.error('[SimpleCard] Error in button click handler:', error);
+      // Silent error handling
     }
   };
 
@@ -141,11 +140,10 @@ export default function SimpleCard({
       try {
         handleDetailsClick(data.id);
       } catch (error) {
-        console.error(`[SimpleCard] Error navigating to details for collaboration ${data.id}:`, error);
+        // Silent error handling
       }
-    } else {
-      console.warn(`[SimpleCard] Cannot navigate to details: ${!handleDetailsClick ? 'handleDetailsClick is not defined' : 'data.id is not available'}`);
     }
+    // Silent if handler or data.id is missing
   };
 
   return (

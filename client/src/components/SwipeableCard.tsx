@@ -145,11 +145,10 @@ export default function SwipeableCard({
       try {
         handleDetailsClick(data.id);
       } catch (error) {
-        console.error(`[SwipeableCard] Error navigating to details for collaboration ${data.id}:`, error);
+        // Silent error handling
       }
-    } else {
-      console.warn(`[SwipeableCard] Cannot navigate to details: ${!handleDetailsClick ? 'handleDetailsClick is not defined' : 'data.id is not available'}`);
     }
+    // Silent if handler or data.id is missing
   };
 
   return (
@@ -575,7 +574,7 @@ export default function SwipeableCard({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              console.log("[SwipeableCard] Skip button clicked");
+              // Silent operation
               handleButtonClick("left");
             }}
           >
@@ -591,7 +590,7 @@ export default function SwipeableCard({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              console.log("[SwipeableCard] Info button clicked");
+              // Silent operation
               viewDetailsHandler();
             }}
           >
@@ -606,7 +605,7 @@ export default function SwipeableCard({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              console.log("[SwipeableCard] Request/Match button clicked");
+              // Silent operation
               handleButtonClick("right");
             }}
           >
@@ -625,7 +624,7 @@ export default function SwipeableCard({
         isOpen={showNoteDialog}
         onClose={() => setShowNoteDialog(false)}
         onSendWithNote={(note) => {
-          console.log("Sending request with note from SwipeableCard:", note);
+          // Silent operation - no logging
           // Give the dialog time to fully close before executing the swipe
           setTimeout(() => {
             handleSwipeAction("right", note);
