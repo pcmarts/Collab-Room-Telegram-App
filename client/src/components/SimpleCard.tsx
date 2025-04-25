@@ -108,19 +108,10 @@ export default function SimpleCard({
 
   // Use either onSwipe or handleSwipe prop based on which is provided
   const handleSwipeAction = (direction: "left" | "right", note?: string) => {
-    console.log(`[SimpleCard] Handling swipe action: ${direction}${note ? ' with note' : ''}`, {
-      cardId: data.id,
-      collaborationType: data.collab_type,
-      hasPropHandleSwipe: !!propHandleSwipe,
-      hasOnSwipe: !!onSwipe
-    });
-    
     try {
       if (propHandleSwipe) {
-        console.log('[SimpleCard] Calling propHandleSwipe');
         propHandleSwipe(direction, note);
       } else if (onSwipe) {
-        console.log('[SimpleCard] Calling onSwipe');
         onSwipe(direction, note);
       } else {
         console.warn('[SimpleCard] No swipe handler provided (neither onSwipe nor handleSwipe)');

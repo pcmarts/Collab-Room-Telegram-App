@@ -113,19 +113,10 @@ export default function SwipeableCard({
 
   // Use either onSwipe or handleSwipe prop based on which is provided
   const handleSwipeAction = (direction: "left" | "right", note?: string) => {
-    console.log(`[SwipeableCard] Handling swipe action: ${direction}${note ? ' with note' : ''}`, {
-      cardId: data.id,
-      collaborationType: data.collab_type,
-      hasPropHandleSwipe: !!propHandleSwipe,
-      hasOnSwipe: !!onSwipe
-    });
-    
     try {
       if (propHandleSwipe) {
-        console.log('[SwipeableCard] Calling propHandleSwipe');
         propHandleSwipe(direction, note);
       } else if (onSwipe) {
-        console.log('[SwipeableCard] Calling onSwipe');
         onSwipe(direction, note);
       } else {
         console.warn('[SwipeableCard] No swipe handler provided (neither onSwipe nor handleSwipe)');
@@ -139,14 +130,10 @@ export default function SwipeableCard({
   const handleSwipe = handleSwipeAction;
 
   const handleButtonClick = (direction: "left" | "right") => {
-    console.log(`[SwipeableCard] Button clicked: ${direction === "right" ? "Request" : "Skip"}`);
-    
     try {
       if (direction === "right") {
-        console.log('[SwipeableCard] Opening note dialog for Request button');
         setShowNoteDialog(true);
       } else {
-        console.log('[SwipeableCard] Directly calling handleSwipeAction for Skip button');
         handleSwipeAction(direction);
       }
     } catch (error) {
@@ -157,7 +144,6 @@ export default function SwipeableCard({
   const viewDetailsHandler = () => {
     if (handleDetailsClick && data.id) {
       try {
-        console.log(`[SwipeableCard] Navigating to details for collaboration: ${data.id}`);
         handleDetailsClick(data.id);
       } catch (error) {
         console.error(`[SwipeableCard] Error navigating to details for collaboration ${data.id}:`, error);
@@ -182,17 +168,14 @@ export default function SwipeableCard({
       drag={false}
       // Make sure all child elements receive pointer events
       initial={{ pointerEvents: "auto" }}
-      // Add debug logging for swipe events
+      // Don't add any special event handlers that might interfere with default behavior
       onTouchStart={(e) => {
-        console.log("[SwipeableCard] Touch start");
         // Don't stop propagation here - we want touch events to be detected
       }}
       onTouchEnd={(e) => {
-        console.log("[SwipeableCard] Touch end");
         // Don't stop propagation here either
       }}
       onClick={(e) => {
-        console.log("[SwipeableCard] Div clicked");
         // Don't prevent default here - we want clicks to work
       }}
     >
@@ -205,14 +188,12 @@ export default function SwipeableCard({
           zIndex: 10 // Keep above motion overlays
         }}
         onClick={(e) => {
-          console.log("[SwipeableCard] Card clicked");
+          // Pass click events to parent
         }}
         onTouchStart={(e) => {
-          console.log("[SwipeableCard] Card touch start");
           // Don't stop propagation - we want the parent to know about touches
         }}
         onTouchEnd={(e) => {
-          console.log("[SwipeableCard] Card touch end");
           // Don't stop propagation - we need touch events to reach the parent
         }}>
         {/* Overlay effects for swipe direction */}
