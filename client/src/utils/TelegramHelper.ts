@@ -133,20 +133,22 @@ export function createTelegramLinkHandler(url: string, options?: {
   useTimeout?: boolean;
   timeoutMs?: number;
   debugLog?: boolean;
+  forceWindowOpen?: boolean;
 }) {
   const {
     stopPropagation = true,
     preventDefault = true,
     useTimeout = true,
     timeoutMs = 50,
-    debugLog = true
+    debugLog = true,
+    forceWindowOpen = true // Default to using window.open for more reliable behavior on mobile
   } = options || {};
   
   return (e: React.MouseEvent | React.TouchEvent) => {
     if (stopPropagation) e.stopPropagation();
     if (preventDefault) e.preventDefault();
     
-    openTelegramLink(url, { useTimeout, timeoutMs, debugLog });
+    openTelegramLink(url, { useTimeout, timeoutMs, debugLog, forceWindowOpen });
   };
 }
 

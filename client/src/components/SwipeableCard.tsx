@@ -175,7 +175,8 @@ export default function SwipeableCard({
         x,
         rotate,
         opacity,
-        touchAction: "auto" // Enable default touch actions
+        touchAction: "auto", // Enable default touch actions
+        pointerEvents: "auto" // Ensure pointer events are enabled
       }}
       // Explicitly make this non-draggable to prevent interference with button clicks
       drag={false}
@@ -186,7 +187,11 @@ export default function SwipeableCard({
       onTouchEnd={(e) => console.log("[SwipeableCard] Touch end")}
       onClick={(e) => console.log("[SwipeableCard] Div clicked")}
     >
-      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl isolate">
+      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl isolate" 
+        style={{ 
+          touchAction: "auto", // Enable touch actions on the card
+          pointerEvents: "auto" // Ensure pointer events pass through
+        }}>
         {/* Overlay effects for swipe direction */}
         <motion.div 
           className="absolute inset-0 bg-red-500/20 z-20" 
@@ -282,7 +287,7 @@ export default function SwipeableCard({
         </div>
         
         {/* Card content */}
-        <div className="p-4 flex-grow overflow-auto">
+        <div className="p-4 flex-grow overflow-auto" style={{ pointerEvents: "auto", touchAction: "auto", position: "relative" }}>
           {/* Twitter Co-Marketing Details */}
           {(data.collab_type?.toLowerCase().includes('twitter') || 
             data.collab_type?.toLowerCase().includes('co-marketing')) && 
@@ -294,44 +299,37 @@ export default function SwipeableCard({
                   type="button"
                   className="text-sm font-medium text-[#1DA1F2] hover:underline pointer-events-auto relative z-50 bg-transparent border-0 p-0 text-left cursor-pointer"
                   onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    
                     // Create the Twitter URL using our utility
                     const twitterUrl = createTwitterUrl(data.details?.host_twitter_handle || '');
                     console.log("[SwipeableCard] Twitter button clicked, opening URL:", twitterUrl);
                     
-                    // Use our helper function with better iOS handling
-                    if (isIOSDevice()) {
-                      // Immediate open for iOS (tends to work better than delayed)
-                      e.stopPropagation();
-                      e.preventDefault();
-                      openTelegramLink(twitterUrl, { useTimeout: false });
-                    } else {
-                      // Small delay for other platforms
-                      e.stopPropagation();
-                      e.preventDefault();
-                      openTelegramLink(twitterUrl, { useTimeout: true });
-                    }
+                    // Always force using window.open for better mobile compatibility
+                    openTelegramLink(twitterUrl, { 
+                      useTimeout: false, // No timeout for immediate response
+                      forceWindowOpen: true, // Always force window.open on all platforms
+                      debugLog: true
+                    });
                   }}
-                  // Special handling for touchstart/touchend events on iOS
-                  onTouchStart={
-                    isIOSDevice() ? 
-                    (e) => {
-                      console.log("[SwipeableCard] Touch start on Twitter handle (iOS)");
-                      // For iOS, preventing default on touchstart helps
-                      e.stopPropagation();
-                      e.preventDefault();
-                    } : undefined
-                  }
-                  onTouchEnd={
-                    isIOSDevice() ? 
-                    (e) => {
-                      console.log("[SwipeableCard] Touch end on Twitter handle (iOS)");
-                      // For iOS, we'll handle the link directly on touchend
-                      e.stopPropagation();
-                      e.preventDefault();
-                      const twitterUrl = createTwitterUrl(data.details?.host_twitter_handle || '');
-                      openTelegramLink(twitterUrl, { useTimeout: false });
-                    } : undefined
-                  }
+                  // Add touch handling for better mobile experience
+                  onTouchStart={(e) => {
+                    console.log("[SwipeableCard] Touch start on Twitter handle");
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
+                  onTouchEnd={(e) => {
+                    console.log("[SwipeableCard] Touch end on Twitter handle");
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const twitterUrl = createTwitterUrl(data.details?.host_twitter_handle || '');
+                    openTelegramLink(twitterUrl, { 
+                      useTimeout: false,
+                      forceWindowOpen: true,
+                      debugLog: true 
+                    });
+                  }}
                 >
                   @{data.details?.host_twitter_handle?.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
                 </button>
@@ -536,33 +534,32 @@ export default function SwipeableCard({
                       e.stopPropagation();
                       e.preventDefault();
                       
-                      // Use our helper function with iOS-specific handling
+                      // Use our helper function with direct window.open for mobile
                       openTelegramLink(blogLink, { 
-                        useTimeout: !isIOSDevice(),
+                        useTimeout: false,
+                        forceWindowOpen: true,
                         debugLog: true
                       });
                     }}
-                    // Special handling for touchstart/touchend events on iOS
-                    onTouchStart={
-                      isIOSDevice() ? 
-                      (e) => {
-                        console.log("[SwipeableCard] Touch start on Blog link (iOS)");
-                        e.stopPropagation();
-                        e.preventDefault();
-                      } : undefined
-                    }
-                    onTouchEnd={
-                      isIOSDevice() ? 
-                      (e) => {
-                        console.log("[SwipeableCard] Touch end on Blog link (iOS)");
-                        e.stopPropagation();
-                        e.preventDefault();
-                        const blogLink = data.details?.blog_link || '';
-                        if (blogLink) {
-                          openTelegramLink(blogLink, { useTimeout: false });
-                        }
-                      } : undefined
-                    }
+                    // Add touch handling for better mobile experience
+                    onTouchStart={(e) => {
+                      console.log("[SwipeableCard] Touch start on Blog link");
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                    onTouchEnd={(e) => {
+                      console.log("[SwipeableCard] Touch end on Blog link");
+                      e.stopPropagation();
+                      e.preventDefault();
+                      const blogLink = data.details?.blog_link || '';
+                      if (blogLink) {
+                        openTelegramLink(blogLink, { 
+                          useTimeout: false,
+                          forceWindowOpen: true,
+                          debugLog: true 
+                        });
+                      }
+                    }}
                   >
                     {data.details?.blog_link}
                   </button>
