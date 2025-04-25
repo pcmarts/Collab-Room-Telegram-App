@@ -75,16 +75,37 @@ export function CollaborationDetailsDialog({
   collaboration
 }: CollaborationDetailsDialogProps) {
   if (!collaboration) return null;
+  
+  // Debug log to see what data we're receiving
+  console.log('[CollabDetails] Full collaboration data received:', collaboration);
+  
+  // Get collaboration data from the appropriate source
+  let collabData = collaboration;
+  
+  // For potential matches, check if we have collaboration data in the collaboration field
+  if (collaboration.isPotentialMatch && collaboration.collaboration) {
+    console.log('[CollabDetails] Found potential match with collaboration data');
+    // Merge the collaboration data with the main object, but let the collaboration field take precedence
+    collabData = {
+      ...collaboration,
+      title: collaboration.collaboration.title || collaboration.title,
+      description: collaboration.collaboration.description || collaboration.description,
+      collab_type: collaboration.collaboration.collab_type || collaboration.collab_type,
+      topics: collaboration.collaboration.topics || collaboration.topics,
+      details: collaboration.collaboration.details || collaboration.details
+    };
+    console.log('[CollabDetails] Merged collaboration data:', collabData);
+  }
 
   // Extract fields with fallbacks
-  const title = collaboration.title || collaboration.collab_type || "Collaboration";
-  const description = collaboration.description || "No description provided";
-  const topics = collaboration.topics || [];
-  const companyData = collaboration.company_data || {};
-  const details = collaboration.details || {};
-  const isPotentialMatch = collaboration.isPotentialMatch || false;
-  const potentialMatchData = collaboration.potentialMatchData || {};
-  const collabType = collaboration.collab_type || "Collaboration";
+  const title = collabData.title || collabData.collab_type || "Collaboration";
+  const description = collabData.description || "No description provided";
+  const topics = collabData.topics || [];
+  const companyData = collabData.company_data || {};
+  const details = collabData.details || {};
+  const isPotentialMatch = collabData.isPotentialMatch || false;
+  const potentialMatchData = collabData.potentialMatchData || {};
+  const collabType = collabData.collab_type || "Collaboration";
   
   // Format company name from the appropriate source
   const companyName = 
