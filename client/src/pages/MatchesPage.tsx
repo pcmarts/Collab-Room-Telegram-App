@@ -489,9 +489,9 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
             {/* User Social Links */}
             <div className="flex flex-wrap gap-2 mt-2">
               {renderSocialLink(
-                match.twitterHandle ||
-                  (match.twitterHandle &&
-                    `https://twitter.com/${match.twitterHandle}`),
+                match.twitterHandle ? 
+                  `https://x.com/${match.twitterHandle}` : 
+                  undefined,
                 match.twitterHandle ? `@${match.twitterHandle}` : "Twitter",
                 <svg
                   className="w-4 h-4"
@@ -595,8 +595,9 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
               )}
 
               {renderSocialLink(
-                match.companyTwitterHandle &&
-                  `https://twitter.com/${match.companyTwitterHandle}`,
+                match.companyTwitterHandle ? 
+                  `https://x.com/${match.companyTwitterHandle}` : 
+                  undefined,
                 match.companyTwitterHandle
                   ? `@${match.companyTwitterHandle}`
                   : "Twitter",
