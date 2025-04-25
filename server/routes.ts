@@ -3907,6 +3907,51 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Endpoint to reset left swipes (delete all swipes with direction="left" for a user)
+  app.post("/api/reset-left-swipes", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Reset Left Swipes Endpoint ============');
+    console.log('Request timestamp:', new Date().toISOString());
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    
+    try {
+      // Get user from telegram data
+      console.log('Attempting to extract telegram user data from request...');
+      const telegramData = getTelegramUserFromRequest(req);
+      
+      if (!telegramData) {
+        console.log('Authentication error: No telegram data found in the request');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      // Find user in database by telegram ID
+      console.log(`Looking up user by Telegram ID: ${telegramData.id}`);
+      const user = await storage.getUserByTelegramId(telegramData.id);
+      
+      if (!user) {
+        console.log(`Database error: User with Telegram ID ${telegramData.id} not found`);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      console.log(`Found database user: ${user.id}`);
+      
+      // Delete left swipes for this user
+      const deletedCount = await storage.deleteLeftSwipes(user.id);
+      
+      console.log(`Success: Deleted ${deletedCount} left swipes for user ${user.id}`);
+      
+      return res.status(200).json({ 
+        success: true,
+        deleted_count: deletedCount,
+        message: `Successfully reset ${deletedCount} left swipes` 
+      });
+      
+    } catch (error) {
+      console.error('Error resetting left swipes:', error);
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
+      return res.status(500).json({ error: 'Failed to reset left swipes' });
+    }
+  });
+
   // Endpoint to retrieve a user's swipe history
   app.get("/api/user-swipes", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Get User Swipes Endpoint ============');
