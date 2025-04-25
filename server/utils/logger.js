@@ -13,8 +13,8 @@ const LOG_LEVELS = {
   DEBUG: 4
 };
 
-// Get log level from environment or default to INFO (2)
-const LOG_LEVEL = parseInt(process.env.LOG_LEVEL || '2', 10);
+// Get log level from environment or default to ERROR (0) - Silent Mode
+const LOG_LEVEL = 0; // FORCED TO SILENT MODE
 
 // Create logger object
 const logger = {
