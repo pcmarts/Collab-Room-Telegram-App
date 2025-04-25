@@ -338,39 +338,57 @@ export default function DiscoverPage() {
     
     console.log('[Discovery] Validating card data, original count:', cards.length);
     
-    // Filter out cards with missing essential data
+    // Log complete card data for the first card to debug field names/structure
+    if (cards.length > 0) {
+      console.log('[Discovery] First card data structure sample:', {
+        id: cards[0].id,
+        collab_type: cards[0].collab_type,
+        creator_company_name: cards[0].creator_company_name,
+        title: cards[0].title,
+        // Log all available fields for debugging
+        availableFields: Object.keys(cards[0])
+      });
+    }
+    
+    // Filter out cards with missing essential data - SIMPLIFIED VALIDATION
     const validCards = cards.filter(card => {
-      // Required fields for a valid card
+      // ONLY require id - all other fields are now optional
+      // We'll show placeholders for missing fields in the UI
       const hasValidId = !!card.id;
-      const hasValidTitle = !!card.title && card.title !== "Collaboration";
-      const hasValidCompany = !!card.creator_company_name && card.creator_company_name !== "Company";
-      const hasValidType = !!card.collab_type && card.collab_type !== "Collaboration";
       
-      // Potential matches can have a slightly different structure
+      // For potential matches
       if (card.isPotentialMatch) {
-        const hasPotentialMatchData = !!card.potentialMatchData;
-        return hasValidId && hasPotentialMatchData;
+        return hasValidId;
       }
       
-      // All other cards need company name, title, and collab type
-      const isValid = hasValidId && hasValidTitle && hasValidCompany && hasValidType;
-      
-      if (!isValid) {
-        console.log('[Discovery] Filtering out incomplete card:', {
-          id: card.id,
-          hasValidTitle,
-          hasValidCompany, 
-          hasValidType,
-          title: card.title,
-          company: card.creator_company_name,
-          type: card.collab_type
-        });
+      // Basic validation - just require an ID
+      if (!hasValidId) {
+        console.log('[Discovery] Filtering out card without ID');
+        return false;
       }
       
-      return isValid;
+      // If collab_type is missing, provide a default
+      if (!card.collab_type) {
+        console.log('[Discovery] Adding default collab_type for card:', card.id);
+        card.collab_type = "Collaboration";
+      }
+      
+      // If creator_company_name is missing, provide a default
+      if (!card.creator_company_name) {
+        console.log('[Discovery] Adding default company name for card:', card.id);
+        card.creator_company_name = "Company";
+      }
+      
+      // If title is missing, use a default or collab_type
+      if (!card.title) {
+        console.log('[Discovery] Adding default title for card:', card.id);
+        card.title = card.collab_type || "Collaboration";
+      }
+      
+      return true;
     });
     
-    console.log('[Discovery] Validation complete, removed:', cards.length - validCards.length);
+    console.log('[Discovery] Validation complete, kept cards:', validCards.length, 'out of', cards.length);
     return validCards;
   };
 
