@@ -43,7 +43,7 @@ export default function AddNoteDialog({
     toast({
       title: "Request Sent Successfully",
       description: "Your collaboration request with a personalized note has been sent.",
-      variant: "success",
+      variant: "success" as any,
     });
   };
 
@@ -56,7 +56,7 @@ export default function AddNoteDialog({
     toast({
       title: "Request Sent Successfully",
       description: "Your collaboration request has been sent.",
-      variant: "success",
+      variant: "success" as any,
     });
   };
 
