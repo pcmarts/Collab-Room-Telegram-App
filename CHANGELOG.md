@@ -5,6 +5,20 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.9.7] - 2025-04-25
+
+### Enhanced
+- Added detailed logging system to investigate swipe count discrepancies
+- Implemented collaboration count verification to validate available cards
+- Added grouping of swipes by collaboration ID to detect potential duplicates
+- Enhanced user swipe endpoint with detailed diagnostic information
+
+### Technical Details
+- Added getActiveCollaborationsCount method to storage.ts for validation
+- Enhanced API logging in the user-swipes endpoint to diagnose swipe records
+- Improved error recovery for edge cases with mismatched swipe counts
+- Added automatic detection for duplicate swipes on the same collaboration
+
 ## [Version 1.9.6] - 2025-04-25
 
 ### Enhanced
