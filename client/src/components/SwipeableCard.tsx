@@ -293,10 +293,7 @@ export default function SwipeableCard({
                     {data.collab_type}
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-xs bg-primary/10 border-primary/20">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    {data.collab_type || "Collaboration"}
-                  </Badge>
+                  <p className="text-sm text-muted-foreground line-clamp-1">{data.collab_type || "Collaboration"}</p>
                 )}
                 </div>
               </div>
@@ -583,6 +580,11 @@ export default function SwipeableCard({
           
           {/* Collaboration Description */}
           <div className="mb-3 swipeable-card-content">
+            <div className="mb-2">
+              <h3 className="font-bold text-sm">
+                {data.title || (data.isPotentialMatch ? "Potential Collaboration" : "Collaboration Details")}
+              </h3>
+            </div>
             <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
               {data.description || "No description available."}
             </p>
