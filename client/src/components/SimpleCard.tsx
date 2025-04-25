@@ -71,10 +71,22 @@ export interface SimpleCardProps {
       twitter_handle?: string;
     };
     potentialMatchData?: {
+      user_id?: string;
       id?: string;
+      first_name?: string;
+      last_name?: string;
       company_name?: string;
       company_logo_url?: string;
       company_description?: string;
+      company_website?: string;
+      company_twitter?: string;
+      company_linkedin?: string;
+      job_title?: string;
+      twitter_followers?: string;
+      company_twitter_followers?: string;
+      swipe_created_at?: string;
+      collaboration_id?: string;
+      note?: string;
       industry?: string;
     };
   };
@@ -529,6 +541,57 @@ export default function SimpleCard({
             </div>
           )}
           
+          {/* Potential Match Information */}
+          {data.isPotentialMatch && data.potentialMatchData && (
+            <div className="flex flex-col space-y-2 p-3 bg-primary/5 rounded-md border border-primary/10 mb-3">
+              {/* User info with name and role */}
+              <div className="flex items-center gap-2">
+                <LetterAvatar 
+                  name={`${data.potentialMatchData.first_name || ''} ${data.potentialMatchData.last_name || ''}`}
+                  className="h-8 w-8"
+                />
+                <div>
+                  <div className="font-medium">{data.potentialMatchData.first_name} {data.potentialMatchData.last_name}</div>
+                  {data.potentialMatchData.job_title && (
+                    <div className="text-xs text-muted-foreground">{data.potentialMatchData.job_title}</div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Social stats */}
+              <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                {data.potentialMatchData.twitter_followers && (
+                  <div className="flex items-center">
+                    <Twitter className="h-3 w-3 mr-1 text-[#1DA1F2]" />
+                    <span>{data.potentialMatchData.twitter_followers} followers</span>
+                  </div>
+                )}
+                
+                {data.potentialMatchData.company_twitter_followers && (
+                  <div className="flex items-center">
+                    <Building className="h-3 w-3 mr-1 text-blue-500" />
+                    <span>{data.potentialMatchData.company_twitter_followers} company followers</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* When they swiped on your collab */}
+              {data.potentialMatchData.swipe_created_at && (
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  <span>Requested on {new Date(data.potentialMatchData.swipe_created_at).toLocaleDateString()}</span>
+                </div>
+              )}
+              
+              {/* Note from user if available */}
+              {data.potentialMatchData.note && (
+                <div className="mt-2 p-2 bg-muted/50 rounded text-sm italic">
+                  "{data.potentialMatchData.note}"
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Collaboration Description - with fallbacks and debugging */}
           <div className="mb-3">
             {!data.description && console.log('[SimpleCard] Missing description for card:', data.id, 'Checking details for fallback')}

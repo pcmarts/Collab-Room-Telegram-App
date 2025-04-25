@@ -1093,18 +1093,25 @@ export class DatabaseStorage implements IStorage {
         first_name: result.user.first_name,
         last_name: result.user.last_name,
         company_name: result.company.name,
-        company_description: result.company.description,
+        company_description: result.company.short_description || '',
         job_title: result.user.job_title,
         
-        // Create potentialMatchData field directly (alternative approach)
+        // Create potentialMatchData field directly with ALL required fields
         potentialMatchData: {
           user_id: result.user.id,
           first_name: result.user.first_name,
           last_name: result.user.last_name,
           company_name: result.company.name,
-          company_description: result.company.description,
+          company_description: result.company.short_description || '',
           company_website: result.company.website,
-          job_title: result.user.job_title
+          company_twitter: result.company.twitter_handle || '',
+          company_linkedin: result.company.linkedin_url || '',
+          job_title: result.user.job_title,
+          twitter_followers: result.user.twitter_followers,
+          company_twitter_followers: result.company.twitter_followers,
+          swipe_created_at: result.swipe.created_at?.toISOString() || new Date().toISOString(),
+          collaboration_id: result.swipe.collaboration_id,
+          note: result.swipe.note || ''
         }
       };
       
