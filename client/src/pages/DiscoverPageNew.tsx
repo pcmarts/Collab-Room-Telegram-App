@@ -33,6 +33,9 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, handleDetailsCli
     return null;
   }
   
+  // More detailed card info logging to debug swipe issues
+  console.log(`[CardStack] Card ID: ${cards[0].id}, Company: ${cards[0].creator_company_name || 'Unknown'}`);
+  
   return (
     <>
       {/* Only show the top card for now to fix overlapping issues */}
