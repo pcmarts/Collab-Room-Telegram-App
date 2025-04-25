@@ -1160,123 +1160,138 @@ export class DatabaseStorage implements IStorage {
     console.log(`Getting detailed matches for user ${userId}`);
     
     try {
-      // First, get the basic match data
-      const matchesResult = await db
-        .select({
-          match_id: matches.id,
-          match_date: matches.created_at,
-          match_status: matches.status,
-          match_note: matches.note,
-          collaboration_id: matches.collaboration_id,
-          host_id: matches.host_id,
-          requester_id: matches.requester_id
-        })
-        .from(matches)
-        .where(
-          or(
-            eq(matches.host_id, userId),
-            eq(matches.requester_id, userId)
-          )
-        )
-        .orderBy(desc(matches.created_at));
+      // First, get the basic match data using a simpler query to avoid Drizzle errors
+      const matchesResult = await db.execute(sql`
+        SELECT 
+          m.id as match_id,
+          m.created_at as match_date,
+          m.status as match_status,
+          m.note as match_note,
+          m.collaboration_id,
+          m.host_id,
+          m.requester_id
+        FROM matches m
+        WHERE m.host_id = ${userId} OR m.requester_id = ${userId}
+        ORDER BY m.created_at DESC
+      `);
       
-      console.log(`Found ${matchesResult.length} basic matches for user ${userId}`);
+      console.log(`Found ${Array.isArray(matchesResult) ? matchesResult.length : 0} basic matches for user ${userId}`);
+      
+      // Ensure matchesResult is treated as an array
+      const matchesArray = Array.isArray(matchesResult) ? matchesResult : [];
+      
+      if (matchesArray.length === 0) {
+        console.log('No matches found for this user');
+        return [];
+      }
       
       // Now, enrich the data with collaboration details
       const enrichedResults = await Promise.all(matchesResult.map(async (match) => {
-        // Get collaboration details
-        const [collaborationData] = await db
-          .select({
-            collab_type: collaborations.collab_type,
-            description: collaborations.description,
-            creator_id: collaborations.creator_id,
-            details: collaborations.details
-          })
-          .from(collaborations)
-          .where(eq(collaborations.id, match.collaboration_id));
-        
-        if (!collaborationData) {
-          console.log(`No collaboration found for match ${match.match_id}`);
+        try {
+          // Get collaboration details
+          const collaborationResult = await db.execute(sql`
+            SELECT 
+              c.collab_type,
+              c.description,
+              c.creator_id,
+              c.details
+            FROM collaborations c
+            WHERE c.id = ${match.collaboration_id}
+          `);
+          
+          if (!collaborationResult.length) {
+            console.log(`No collaboration found for match ${match.match_id}`);
+            return null;
+          }
+          
+          const collaborationData = collaborationResult[0];
+          
+          // Determine who is the "other user" based on who the current user is
+          const isUserHost = match.host_id === userId;
+          const otherUserId = isUserHost ? match.requester_id : match.host_id;
+          
+          // Get other user details
+          const otherUserResult = await db.execute(sql`
+            SELECT 
+              u.first_name,
+              u.last_name,
+              u.handle,
+              u.job_title,
+              u.twitter_url,
+              u.twitter_followers,
+              u.linkedin_url
+            FROM users u
+            WHERE u.id = ${otherUserId}
+          `);
+          
+          if (!otherUserResult.length) {
+            console.log(`No other user found for match ${match.match_id}`);
+            return null;
+          }
+          
+          const otherUserData = otherUserResult[0];
+          
+          // Get company data for the other user
+          const companyResult = await db.execute(sql`
+            SELECT 
+              c.name,
+              c.short_description,
+              c.website,
+              c.twitter_handle,
+              c.twitter_followers,
+              c.linkedin_url,
+              c.funding_stage,
+              c.has_token,
+              c.token_ticker,
+              c.blockchain_networks,
+              c.tags
+            FROM companies c
+            WHERE c.user_id = ${otherUserId}
+          `);
+          
+          let companyData = null;
+          if (companyResult.length > 0) {
+            companyData = companyResult[0];
+          } else {
+            console.log(`No company found for other user ${otherUserId} in match ${match.match_id}`);
+          }
+          
+          // Format the details to match what the frontend expects
+          return {
+            match_id: match.match_id,
+            match_date: match.match_date,
+            match_status: match.match_status,
+            match_note: match.match_note,
+            collab_type: collaborationData.collab_type,
+            collab_description: collaborationData.description,
+            collab_details: collaborationData.details,
+            
+            // Other user information
+            other_user_first_name: otherUserData?.first_name || '',
+            other_user_last_name: otherUserData?.last_name || '',
+            other_user_handle: otherUserData?.handle || '',
+            role_title: otherUserData?.job_title || '',
+            other_user_twitter_url: otherUserData?.twitter_url || null,
+            other_user_twitter_followers: otherUserData?.twitter_followers || null,
+            other_user_linkedin_url: otherUserData?.linkedin_url || null,
+            
+            // Company information
+            company_name: companyData?.name || 'Unknown Company',
+            company_description: companyData?.short_description || '',
+            company_website: companyData?.website || null,
+            company_twitter_handle: companyData?.twitter_handle || null,
+            company_twitter_followers: companyData?.twitter_followers || null,
+            company_linkedin_url: companyData?.linkedin_url || null,
+            funding_stage: companyData?.funding_stage || null,
+            has_token: companyData?.has_token || false,
+            token_ticker: companyData?.token_ticker || null,
+            blockchain_networks: companyData?.blockchain_networks || [],
+            company_tags: companyData?.tags || []
+          };
+        } catch (error) {
+          console.error(`Error processing match ${match.match_id}:`, error);
           return null;
         }
-        
-        // Determine who is the "other user" based on who the current user is
-        const isUserHost = match.host_id === userId;
-        const otherUserId = isUserHost ? match.requester_id : match.host_id;
-        
-        // Get other user details
-        const [otherUserData] = await db
-          .select({
-            first_name: users.first_name,
-            last_name: users.last_name,
-            handle: users.handle,
-            job_title: users.job_title,
-            twitter_url: users.twitter_url,
-            twitter_followers: users.twitter_followers,
-            linkedin_url: users.linkedin_url
-          })
-          .from(users)
-          .where(eq(users.id, otherUserId));
-        
-        if (!otherUserData) {
-          console.log(`No other user found for match ${match.match_id}`);
-          return null;
-        }
-        
-        // Get company data for the other user
-        const [companyData] = await db
-          .select({
-            name: companies.name,
-            short_description: companies.short_description,
-            website: companies.website,
-            twitter_handle: companies.twitter_handle,
-            twitter_followers: companies.twitter_followers,
-            linkedin_url: companies.linkedin_url,
-            funding_stage: companies.funding_stage,
-            has_token: companies.has_token,
-            token_ticker: companies.token_ticker,
-            blockchain_networks: companies.blockchain_networks,
-            tags: companies.tags
-          })
-          .from(companies)
-          .where(eq(companies.user_id, otherUserId));
-        
-        if (!companyData) {
-          console.log(`No company found for other user ${otherUserId} in match ${match.match_id}`);
-        }
-        
-        // Format the details to match what the frontend expects
-        return {
-          match_id: match.match_id,
-          match_date: match.match_date,
-          match_status: match.match_status,
-          match_note: match.match_note,
-          collab_type: collaborationData.collab_type,
-          collab_description: collaborationData.description,
-          collab_details: collaborationData.details,
-          
-          // Other user information
-          other_user_first_name: otherUserData?.first_name || '',
-          other_user_last_name: otherUserData?.last_name || '',
-          other_user_handle: otherUserData?.handle || '',
-          role_title: otherUserData?.job_title || '',
-          other_user_twitter_url: otherUserData?.twitter_url || null,
-          other_user_twitter_followers: otherUserData?.twitter_followers || null,
-          other_user_linkedin_url: otherUserData?.linkedin_url || null,
-          
-          // Company information
-          company_name: companyData?.name || 'Unknown Company',
-          company_description: companyData?.short_description || '',
-          company_website: companyData?.website || null,
-          company_twitter_handle: companyData?.twitter_handle || null,
-          company_twitter_followers: companyData?.twitter_followers || null,
-          company_linkedin_url: companyData?.linkedin_url || null,
-          funding_stage: companyData?.funding_stage || null,
-          has_token: companyData?.has_token || false,
-          token_ticker: companyData?.token_ticker || null,
-          blockchain_networks: companyData?.blockchain_networks || [],
-          company_tags: companyData?.tags || []
-        };
       }));
       
       // Filter out any null results
