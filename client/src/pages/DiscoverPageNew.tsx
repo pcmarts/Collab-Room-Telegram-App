@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Loader2, Filter, SearchX, RefreshCw, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -13,6 +13,7 @@ import { AuthenticationError } from "../components/AuthenticationError";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useMatchContext } from "@/contexts/MatchContext";
+import { useToast } from "@/hooks/use-toast";
 
 // Define props for CardStack component
 interface CardStackProps {
@@ -90,6 +91,32 @@ interface PaginatedResponse {
   nextCursor?: string;
 }
 
+// Define type for marketing preferences response
+interface MarketingPreferencesResponse {
+  id?: string;
+  user_id?: string;
+  collabs_to_discover?: string[];
+  collabs_to_host?: string[];
+  filtered_marketing_topics?: string[];
+  twitter_followers?: string;
+  company_twitter_followers?: string;
+  funding_stage?: string;
+  company_has_token?: boolean;
+  company_token_ticker?: string;
+  company_blockchain_networks?: string[];
+  company_tags?: string[];
+  discovery_filter_enabled?: boolean;
+  discovery_filter_collab_types_enabled?: boolean;
+  discovery_filter_topics_enabled?: boolean;
+  discovery_filter_company_followers_enabled?: boolean;
+  discovery_filter_user_followers_enabled?: boolean;
+  discovery_filter_funding_stages_enabled?: boolean;
+  discovery_filter_token_status_enabled?: boolean;
+  discovery_filter_company_sectors_enabled?: boolean;
+  discovery_filter_blockchain_networks_enabled?: boolean;
+  created_at?: string;
+}
+
 export default function DiscoverPage() {
   // State for UI components
   const [selectedCardDetails, setSelectedCardDetails] = useState<CardData | null>(null);
@@ -100,6 +127,8 @@ export default function DiscoverPage() {
   const [allCardsViewed, setAllCardsViewed] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [authError, setAuthError] = useState<boolean>(false);
+  const [isResettingSwipes, setIsResettingSwipes] = useState(false);
+  const { toast } = useToast();
   
   // State for cards and pagination
   const [cards, setCards] = useState<CardData[]>([]);
