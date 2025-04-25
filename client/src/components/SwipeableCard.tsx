@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, useMotionValue, useTransform, MotionValue } from "framer-motion";
+import { openTelegramLink, createTwitterUrl, createTelegramLinkHandler, isIOSDevice } from "@/utils/TelegramHelper";
 
 // TypeScript definitions for Telegram WebApp API
 interface TelegramWebApp {
@@ -290,28 +291,49 @@ export default function SwipeableCard({
               <div className="flex items-center space-x-1.5">
                 <Twitter className="w-4 h-4 text-[#1DA1F2]" />
                 <button 
+                  type="button"
                   className="text-sm font-medium text-[#1DA1F2] hover:underline pointer-events-auto relative z-50 bg-transparent border-0 p-0 text-left cursor-pointer"
                   onClick={(e) => {
-                    // Stop event propagation to prevent parent handling
-                    e.stopPropagation();
-                    e.preventDefault();
-                    
-                    // Create the Twitter URL
-                    const cleanHandle = data.details?.host_twitter_handle?.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '') || '';
-                    const twitterUrl = `https://twitter.com/${cleanHandle}`;
-                    
+                    // Create the Twitter URL using our utility
+                    const twitterUrl = createTwitterUrl(data.details?.host_twitter_handle || '');
                     console.log("[SwipeableCard] Twitter button clicked, opening URL:", twitterUrl);
                     
-                    // Try using Telegram WebApp API first
-                    if (window.Telegram?.WebApp?.openLink) {
-                      window.Telegram.WebApp.openLink(twitterUrl);
+                    // Use our helper function with better iOS handling
+                    if (isIOSDevice()) {
+                      // Immediate open for iOS (tends to work better than delayed)
+                      e.stopPropagation();
+                      e.preventDefault();
+                      openTelegramLink(twitterUrl, { useTimeout: false });
                     } else {
-                      // Fallback to window.open for desktop
-                      window.open(twitterUrl, '_blank', 'noopener,noreferrer');
+                      // Small delay for other platforms
+                      e.stopPropagation();
+                      e.preventDefault();
+                      openTelegramLink(twitterUrl, { useTimeout: true });
                     }
                   }}
+                  // Special handling for touchstart/touchend events on iOS
+                  onTouchStart={
+                    isIOSDevice() ? 
+                    (e) => {
+                      console.log("[SwipeableCard] Touch start on Twitter handle (iOS)");
+                      // For iOS, preventing default on touchstart helps
+                      e.stopPropagation();
+                      e.preventDefault();
+                    } : undefined
+                  }
+                  onTouchEnd={
+                    isIOSDevice() ? 
+                    (e) => {
+                      console.log("[SwipeableCard] Touch end on Twitter handle (iOS)");
+                      // For iOS, we'll handle the link directly on touchend
+                      e.stopPropagation();
+                      e.preventDefault();
+                      const twitterUrl = createTwitterUrl(data.details?.host_twitter_handle || '');
+                      openTelegramLink(twitterUrl, { useTimeout: false });
+                    } : undefined
+                  }
                 >
-                  @{data.details.host_twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
+                  @{data.details?.host_twitter_handle?.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
                 </button>
               </div>
               
@@ -349,26 +371,47 @@ export default function SwipeableCard({
               <div className="flex items-center space-x-1.5">
                 <Twitter className="w-4 h-4 text-[#1DA1F2]" />
                 <button 
+                  type="button"
                   className="text-sm font-medium text-[#1DA1F2] hover:underline pointer-events-auto relative z-50 bg-transparent border-0 p-0 text-left cursor-pointer"
                   onClick={(e) => {
-                    // Stop event propagation to prevent parent handling
-                    e.stopPropagation();
-                    e.preventDefault();
-                    
-                    // Create the Twitter URL
-                    const cleanHandle = data.details?.twitter_handle?.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '') || '';
-                    const twitterUrl = `https://twitter.com/${cleanHandle}`;
-                    
+                    // Create the Twitter URL using our utility
+                    const twitterUrl = createTwitterUrl(data.details?.twitter_handle || '');
                     console.log("[SwipeableCard] Twitter Spaces button clicked, opening URL:", twitterUrl);
                     
-                    // Try using Telegram WebApp API first
-                    if (window.Telegram?.WebApp?.openLink) {
-                      window.Telegram.WebApp.openLink(twitterUrl);
+                    // Use our helper function with better iOS handling
+                    if (isIOSDevice()) {
+                      // Immediate open for iOS (tends to work better than delayed)
+                      e.stopPropagation();
+                      e.preventDefault();
+                      openTelegramLink(twitterUrl, { useTimeout: false });
                     } else {
-                      // Fallback to window.open for desktop
-                      window.open(twitterUrl, '_blank', 'noopener,noreferrer');
+                      // Small delay for other platforms
+                      e.stopPropagation();
+                      e.preventDefault();
+                      openTelegramLink(twitterUrl, { useTimeout: true });
                     }
                   }}
+                  // Special handling for touchstart/touchend events on iOS
+                  onTouchStart={
+                    isIOSDevice() ? 
+                    (e) => {
+                      console.log("[SwipeableCard] Touch start on Twitter Spaces handle (iOS)");
+                      // For iOS, preventing default on touchstart helps
+                      e.stopPropagation();
+                      e.preventDefault();
+                    } : undefined
+                  }
+                  onTouchEnd={
+                    isIOSDevice() ? 
+                    (e) => {
+                      console.log("[SwipeableCard] Touch end on Twitter Spaces handle (iOS)");
+                      // For iOS, we'll handle the link directly on touchend
+                      e.stopPropagation();
+                      e.preventDefault();
+                      const twitterUrl = createTwitterUrl(data.details?.twitter_handle || '');
+                      openTelegramLink(twitterUrl, { useTimeout: false });
+                    } : undefined
+                  }
                 >
                   {data.details.twitter_handle.includes('@') ? data.details.twitter_handle : '@' + data.details.twitter_handle.replace('https://twitter.com/', '').replace('https://x.com/', '')}
                 </button>
@@ -411,23 +454,43 @@ export default function SwipeableCard({
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                   <Link className="w-3 h-3" />
                   <button 
+                    type="button"
                     className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50 bg-transparent border-0 p-0 text-left cursor-pointer text-xs"
                     onClick={(e) => {
-                      // Stop event propagation to prevent parent handling
+                      const podcastLink = data.details?.podcast_link || '';
+                      if (!podcastLink) return;
+                      
+                      console.log("[SwipeableCard] Podcast button clicked, opening URL:", podcastLink);
                       e.stopPropagation();
                       e.preventDefault();
                       
-                      const podcastLink = data.details?.podcast_link || '';
-                      console.log("[SwipeableCard] Podcast button clicked, opening URL:", podcastLink);
-                      
-                      // Try using Telegram WebApp API first
-                      if (window.Telegram?.WebApp?.openLink && podcastLink) {
-                        window.Telegram.WebApp.openLink(podcastLink);
-                      } else if (podcastLink) {
-                        // Fallback to window.open for desktop
-                        window.open(podcastLink, '_blank', 'noopener,noreferrer');
-                      }
+                      // Use our helper function with iOS-specific handling
+                      openTelegramLink(podcastLink, { 
+                        useTimeout: !isIOSDevice(),
+                        debugLog: true
+                      });
                     }}
+                    // Special handling for touchstart/touchend events on iOS
+                    onTouchStart={
+                      isIOSDevice() ? 
+                      (e) => {
+                        console.log("[SwipeableCard] Touch start on Podcast link (iOS)");
+                        e.stopPropagation();
+                        e.preventDefault();
+                      } : undefined
+                    }
+                    onTouchEnd={
+                      isIOSDevice() ? 
+                      (e) => {
+                        console.log("[SwipeableCard] Touch end on Podcast link (iOS)");
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const podcastLink = data.details?.podcast_link || '';
+                        if (podcastLink) {
+                          openTelegramLink(podcastLink, { useTimeout: false });
+                        }
+                      } : undefined
+                    }
                   >
                     {data.details?.podcast_link}
                   </button>
@@ -471,23 +534,43 @@ export default function SwipeableCard({
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
                   <Link className="w-3 h-3" />
                   <button 
+                    type="button"
                     className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto relative z-50 bg-transparent border-0 p-0 text-left cursor-pointer text-xs"
                     onClick={(e) => {
-                      // Stop event propagation to prevent parent handling
+                      const blogLink = data.details?.blog_link || '';
+                      if (!blogLink) return;
+                      
+                      console.log("[SwipeableCard] Blog button clicked, opening URL:", blogLink);
                       e.stopPropagation();
                       e.preventDefault();
                       
-                      const blogLink = data.details?.blog_link || '';
-                      console.log("[SwipeableCard] Blog button clicked, opening URL:", blogLink);
-                      
-                      // Try using Telegram WebApp API first
-                      if (window.Telegram?.WebApp?.openLink && blogLink) {
-                        window.Telegram.WebApp.openLink(blogLink);
-                      } else if (blogLink) {
-                        // Fallback to window.open for desktop
-                        window.open(blogLink, '_blank', 'noopener,noreferrer');
-                      }
+                      // Use our helper function with iOS-specific handling
+                      openTelegramLink(blogLink, { 
+                        useTimeout: !isIOSDevice(),
+                        debugLog: true
+                      });
                     }}
+                    // Special handling for touchstart/touchend events on iOS
+                    onTouchStart={
+                      isIOSDevice() ? 
+                      (e) => {
+                        console.log("[SwipeableCard] Touch start on Blog link (iOS)");
+                        e.stopPropagation();
+                        e.preventDefault();
+                      } : undefined
+                    }
+                    onTouchEnd={
+                      isIOSDevice() ? 
+                      (e) => {
+                        console.log("[SwipeableCard] Touch end on Blog link (iOS)");
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const blogLink = data.details?.blog_link || '';
+                        if (blogLink) {
+                          openTelegramLink(blogLink, { useTimeout: false });
+                        }
+                      } : undefined
+                    }
                   >
                     {data.details?.blog_link}
                   </button>
