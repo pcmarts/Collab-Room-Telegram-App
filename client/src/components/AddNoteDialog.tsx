@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddNoteDialogProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export default function AddNoteDialog({
 }: AddNoteDialogProps) {
   const [note, setNote] = useState("");
   const [showNoteComposer, setShowNoteComposer] = useState(false);
+  const { toast } = useToast();
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -36,12 +38,26 @@ export default function AddNoteDialog({
     setNote(""); // Reset the note after sending
     setShowNoteComposer(false); // Reset to initial state
     onClose();
+    
+    // Show success toast
+    toast({
+      title: "Request Sent Successfully",
+      description: "Your collaboration request with a personalized note has been sent.",
+      variant: "success",
+    });
   };
 
   const handleJustSend = () => {
     onSendWithNote(""); // Send with empty note
     setShowNoteComposer(false); // Reset to initial state
     onClose();
+    
+    // Show success toast
+    toast({
+      title: "Request Sent Successfully",
+      description: "Your collaboration request has been sent.",
+      variant: "success",
+    });
   };
 
   const handleAddNote = () => {
