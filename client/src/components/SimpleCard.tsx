@@ -125,14 +125,10 @@ export default function SimpleCard({
   const handleSwipe = handleSwipeAction;
 
   const handleButtonClick = (direction: "left" | "right") => {
-    console.log(`[SimpleCard] Button clicked: ${direction === "right" ? "Request" : "Skip"}`);
-    
     try {
       if (direction === "right") {
-        console.log('[SimpleCard] Opening note dialog for Request button');
         setShowNoteDialog(true);
       } else {
-        console.log('[SimpleCard] Directly calling handleSwipeAction for Skip button');
         handleSwipeAction(direction);
       }
     } catch (error) {
@@ -143,7 +139,6 @@ export default function SimpleCard({
   const viewDetailsHandler = () => {
     if (handleDetailsClick && data.id) {
       try {
-        console.log(`[SimpleCard] Navigating to details for collaboration: ${data.id}`);
         handleDetailsClick(data.id);
       } catch (error) {
         console.error(`[SimpleCard] Error navigating to details for collaboration ${data.id}:`, error);
@@ -193,10 +188,7 @@ export default function SimpleCard({
                     {data.isPotentialMatch ? data.potentialMatchData?.company_name : (data.creator_company_name || "Company")}
                   </h3>
                   <div className="flex items-center gap-1.5">
-                    {/* Add debug log to identify missing fields */}
-                    {!data.collab_type && console.log('[SimpleCard] Missing collab_type for card:', data.id)}
-                    
-                    {/* Type Badge - Restored with more defensive handling */}
+                    {/* Type Badge - With defensive handling */}
                     {(data.collab_type?.toLowerCase()?.includes('twitter') || 
                      data.collab_type?.toLowerCase()?.includes('co-marketing')) ? (
                       <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-[#1DA1F2]">
@@ -585,7 +577,6 @@ export default function SimpleCard({
 
           {/* Collaboration Description - with fallbacks and debugging */}
           <div className="mb-3">
-            {!data.description && console.log('[SimpleCard] Missing description for card:', data.id, 'Checking details for fallback')}
             <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
               {data.description || 
                (data.details?.short_description) || 
@@ -605,7 +596,6 @@ export default function SimpleCard({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              console.log("[SimpleCard] Skip button clicked");
               handleButtonClick("left");
             }}
           >
@@ -621,7 +611,6 @@ export default function SimpleCard({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              console.log("[SimpleCard] Info button clicked");
               viewDetailsHandler();
             }}
           >
@@ -636,7 +625,6 @@ export default function SimpleCard({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              console.log("[SimpleCard] Request/Match button clicked");
               handleButtonClick("right");
             }}
           >
@@ -655,7 +643,6 @@ export default function SimpleCard({
         isOpen={showNoteDialog}
         onClose={() => setShowNoteDialog(false)}
         onSendWithNote={(note) => {
-          console.log("Sending request with note from SimpleCard:", note);
           // Give the dialog time to fully close before executing the swipe
           setTimeout(() => {
             handleSwipeAction("right", note);
