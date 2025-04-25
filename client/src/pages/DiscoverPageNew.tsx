@@ -515,13 +515,24 @@ export default function DiscoverPage() {
         // No cards in the response
         console.log('[Discovery] No items in response', response);
         
-        // Only set allCardsViewed=true if we have no cards at all
-        if (cards.length === 0) {
+        // We need to check if there were actually items in the response
+        // but they got filtered out by validation (which might be the issue)
+        if (response && response.items && response.items.length > 0) {
+          console.log('[Discovery] Server returned items but they were filtered out by validation');
+          // Force a reset of pagination to try from the beginning
+          setNextCursor(undefined);
+          setHasMore(true);
+          // Schedule a retry
+          setTimeout(fetchNextBatch, 1000);
+        } else if (cards.length === 0) {
+          // Only set allCardsViewed=true if we have no cards at all
           console.log('[Discovery] No cards available after fetch, setting allCardsViewed=true');
           setAllCardsViewed(true);
+          setHasMore(false);
+        } else {
+          // We still have some cards to show
+          setHasMore(false);
         }
-        
-        setHasMore(false);
       }
     } catch (error) {
       console.error('[Discovery] Error fetching next batch:', error);
@@ -850,8 +861,15 @@ export default function DiscoverPage() {
       setCurrentCardIndex(0);
       
       // If we've just swiped the last card, immediately trigger a fetch for more
-      if (remainingCards.length === 0 && hasMore) {
-        console.log('[Discovery] Just swiped the last card, fetching more immediately');
+      if (remainingCards.length === 0) {
+        console.log('[Discovery] Just swiped the last card, attempting to fetch more immediately');
+        // Force reset pagination state to ensure we can fetch more cards
+        if (!hasMore) {
+          console.log('[Discovery] hasMore is false but we need more cards - forcing pagination reset');
+          setNextCursor(undefined);
+          setHasMore(true);
+          setAllCardsViewed(false);
+        }
         // Reset the cooldown to allow immediate fetch
         requestCooldownTimeRef.current = 0;
         // Fetch more in the next render cycle
