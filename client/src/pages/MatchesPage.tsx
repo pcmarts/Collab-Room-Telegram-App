@@ -727,14 +727,29 @@ export default function MatchesPage() {
     queryKey: ["/api/matches"],
     queryFn: async () => {
       try {
+        console.log("⚡️ Fetching matches from API...");
         // Add cache-busting query parameter only once per request
         const timestamp = new Date().getTime();
 
         // Direct use of queryClient's default queryFn which properly handles JSON parsing
         const response = await apiRequest(`/api/matches?_=${timestamp}`);
+        console.log("⚡️ Matches API response:", response);
+        
+        // Log more detailed information about matches count
+        if (Array.isArray(response)) {
+          console.log(`⚡️ Found ${response.length} matches`);
+          if (response.length > 0) {
+            console.log("⚡️ First match sample:", response[0]);
+          } else {
+            console.log("⚡️ No matches found in response array");
+          }
+        } else {
+          console.log("⚡️ Response is not an array:", typeof response);
+        }
+        
         return response;
       } catch (err) {
-        console.error("Error fetching matches:", err);
+        console.error("⚡️ Error fetching matches:", err);
         throw err;
       }
     },
