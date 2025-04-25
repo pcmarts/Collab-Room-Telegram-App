@@ -191,7 +191,7 @@ export default function SimpleCard({
                 {/* Company Name and Type */}
                 <div>
                   <h3 className="font-bold text-lg line-clamp-1">
-                    {data.isPotentialMatch ? data.potentialMatchData?.company_name : (data.creator_company_name || "Company")}
+                    {data.isPotentialMatch ? "🌟 Potential Match" : (data.creator_company_name || "Company")}
                   </h3>
                   <div className="flex items-center gap-1.5">
                     
@@ -537,7 +537,7 @@ export default function SimpleCard({
               {/* User info with job title and potential match badge */}
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <div className="font-medium">{data.potentialMatchData.job_title || "Professional"}</div>
+                  <div className="font-medium">{data.potentialMatchData.company_name || "Company"}</div>
                   <Badge variant="outline" className="text-xs bg-primary/10 border-primary/20 text-primary">
                     Potential Match
                   </Badge>
