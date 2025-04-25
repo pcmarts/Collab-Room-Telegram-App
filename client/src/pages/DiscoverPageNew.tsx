@@ -1185,7 +1185,7 @@ export default function DiscoverPage() {
           ...card.potentialMatchData,
           job_title: card.potentialMatchData.job_title
         };
-      };
+      }
       
       // Get collaboration details from the embedded collaboration object if available
       if (card.collaboration) {
