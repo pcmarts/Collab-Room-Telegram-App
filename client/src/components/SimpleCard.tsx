@@ -194,13 +194,6 @@ export default function SimpleCard({
                     {data.isPotentialMatch ? data.potentialMatchData?.company_name : (data.creator_company_name || "Company")}
                   </h3>
                   <div className="flex items-center gap-1.5">
-                    {/* Potential Match Badge for clearer highlighting */}
-                    {data.isPotentialMatch ? (
-                      <Badge variant="secondary" className="text-xs bg-primary/20 border-primary/30 text-primary font-medium">
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        Potential Match
-                      </Badge>
-                    ) : null}
                     
                     {/* Type Badge - With defensive handling */}
                     {(data.collab_type?.toLowerCase()?.includes('twitter') || 
