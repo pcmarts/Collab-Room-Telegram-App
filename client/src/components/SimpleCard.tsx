@@ -244,10 +244,10 @@ export default function SimpleCard({
               </Button>
             </div>
             
-            {/* Second row with collaboration title - adjusted for potential matches */}
+            {/* Second row with collaboration title */}
             <div className="mt-3">
               <h3 className="text-xl font-semibold">
-                {data.isPotentialMatch ? "Professional from " + data.potentialMatchData?.company_name : data.title || ""}
+                {data.title || ""}
               </h3>
             </div>
           </div>
@@ -260,7 +260,7 @@ export default function SimpleCard({
           position: "relative"
         }}>
           {/* Twitter Co-Marketing Details */}
-          {(data.collab_type?.toLowerCase().includes('twitter') || 
+          {!data.isPotentialMatch && (data.collab_type?.toLowerCase().includes('twitter') || 
             data.collab_type?.toLowerCase().includes('co-marketing')) && 
            data.details?.host_twitter_handle && (
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
@@ -309,7 +309,7 @@ export default function SimpleCard({
           )}
           
           {/* Twitter Spaces Guest */}
-          {data.collab_type === 'Twitter Spaces Guest' && data.details?.twitter_handle && (
+          {!data.isPotentialMatch && data.collab_type === 'Twitter Spaces Guest' && data.details?.twitter_handle && (
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center space-x-1.5">
@@ -344,7 +344,7 @@ export default function SimpleCard({
           )}
           
           {/* Podcast Guest Appearance */}
-          {data.collab_type === 'Podcast Guest Appearance' && data.details?.podcast_name && (
+          {!data.isPotentialMatch && data.collab_type === 'Podcast Guest Appearance' && data.details?.podcast_name && (
             <div className="flex flex-col space-y-2 p-3 bg-purple-500/5 rounded-md border border-purple-500/10 mb-3">
               <div className="flex items-center space-x-1.5">
                 <Mic className="w-4 h-4 text-purple-500" />
@@ -381,7 +381,7 @@ export default function SimpleCard({
           )}
           
           {/* Blog Post Feature */}
-          {data.collab_type === 'Blog Post Feature' && data.details?.blog_name && (
+          {!data.isPotentialMatch && data.collab_type === 'Blog Post Feature' && data.details?.blog_name && (
             <div className="flex flex-col space-y-2 p-3 bg-emerald-500/5 rounded-md border border-emerald-500/10 mb-3">
               <div className="flex items-center space-x-1.5">
                 <FileText className="w-4 h-4 text-emerald-600" />
@@ -424,7 +424,7 @@ export default function SimpleCard({
           )}
           
           {/* Report & Research Feature */}
-          {data.collab_type === 'Report & Research Feature' && (
+          {!data.isPotentialMatch && data.collab_type === 'Report & Research Feature' && (
             <div className="flex flex-col space-y-2 p-3 bg-amber-500/5 rounded-md border border-amber-500/10 mb-3">
               {data.details?.research_topic && Array.isArray(data.details.research_topic) && data.details.research_topic.length > 0 && (
                 <div className="flex items-center space-x-1.5">
@@ -453,7 +453,7 @@ export default function SimpleCard({
           )}
           
           {/* Newsletter Feature */}
-          {data.collab_type === 'Newsletter Feature' && (
+          {!data.isPotentialMatch && data.collab_type === 'Newsletter Feature' && (
             <div className="flex flex-col space-y-2 p-3 bg-indigo-500/5 rounded-md border border-indigo-500/10 mb-3">
               {data.details?.newsletter_name && (
                 <div className="flex items-center space-x-1.5">
@@ -488,7 +488,7 @@ export default function SimpleCard({
           )}
           
           {/* Live Stream Guest Appearance */}
-          {data.collab_type === 'Live Stream Guest Appearance' && (
+          {!data.isPotentialMatch && data.collab_type === 'Live Stream Guest Appearance' && (
             <div className="flex flex-col space-y-2 p-3 bg-red-500/5 rounded-md border border-red-500/10 mb-3">
               {/* Title for this specific livestream */}
               <div className="flex items-center space-x-1.5 mb-1">
@@ -534,15 +534,13 @@ export default function SimpleCard({
           {/* Potential Match Information */}
           {data.isPotentialMatch && data.potentialMatchData && (
             <div className="flex flex-col space-y-2 p-3 bg-primary/5 rounded-md border border-primary/10 mb-3">
-              {/* User info with name and role */}
-              <div className="flex items-center gap-2">
-                <LetterAvatar 
-                  name={data.potentialMatchData.job_title || "Professional"}
-                  className="h-8 w-8"
-                />
-                <div>
+              {/* User info with job title and potential match badge */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
                   <div className="font-medium">{data.potentialMatchData.job_title || "Professional"}</div>
-                  <div className="text-xs text-muted-foreground">Interested in your collaboration</div>
+                  <Badge variant="outline" className="text-xs bg-primary/10 border-primary/20 text-primary">
+                    Potential Match
+                  </Badge>
                 </div>
               </div>
               
