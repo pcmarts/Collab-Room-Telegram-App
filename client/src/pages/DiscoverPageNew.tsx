@@ -375,15 +375,20 @@ export default function DiscoverPage() {
 
   // Function to AGGRESSIVELY ENSURE we're not showing already swiped cards
   const fetchNextBatch = async () => {
-    // Prevent fetching if already in progress or if no more cards are available
+    // Prevent fetching if already in progress 
     if (isFetchingNextBatchRef.current) {
       console.log('[Discovery] Skipping fetchNextBatch - already fetching');
       return;
     }
     
-    if (!hasMore && cards.length > 0) {
-      console.log('[Discovery] Skipping fetchNextBatch - no more cards available');
-      return;
+    // Only check hasMore if we're requesting with a cursor
+    // If no cursor (initial load or reset), we should always try to fetch
+    if (nextCursor && !hasMore && cards.length > 0) {
+      console.log('[Discovery] Current batch says no more cards available - will try a fresh search without cursor');
+      // Reset pagination to start fresh - this helps when all cards in current batch are swiped
+      // but there might be new cards available from the beginning
+      setNextCursor(undefined);
+      setHasMore(true);
     }
     
     // If we already have more than 10 cards, don't fetch more yet (but allow initial fetch)
@@ -937,6 +942,7 @@ export default function DiscoverPage() {
       setAllCardsViewed(false);
       setNextCursor(undefined);
       setHasMore(true);
+      setCurrentCardIndex(0); // Reset card index when refreshing
       
       // Log session information for debugging
       console.log('[Discovery] Refresh: Session information', {
@@ -1097,8 +1103,11 @@ export default function DiscoverPage() {
     );
   }
   
-  // Render empty state
-  if (allCardsViewed && cards.length === 0) {
+  // Render empty state - but only if all these conditions are true:
+  // 1. allCardsViewed flag is set (server said no more cards)
+  // 2. We have no cards left to show
+  // 3. We're not currently loading or refreshing data
+  if (allCardsViewed && cards.length === 0 && !isLoading && !loadingMore) {
     return (
       <div className="flex flex-col h-full">
         <div className="p-4 border-b flex items-center">
