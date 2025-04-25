@@ -58,3 +58,12 @@ author = 40175426
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "./clear_tables.sh"
+
+[[workflows.workflow]]
+name = "Reset Test User"
+mode = "sequential"
+author = 40175426
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "$ npx tsx reset-test-user.js"
