@@ -1175,10 +1175,12 @@ export class DatabaseStorage implements IStorage {
         ORDER BY m.created_at DESC
       `);
       
-      console.log(`Found ${Array.isArray(matchesResult) ? matchesResult.length : 0} basic matches for user ${userId}`);
+      // SQL queries return a QueryResult object that has rows property
+      const matchesRows = matchesResult.rows || [];
+      console.log(`Found ${matchesRows.length} basic matches for user ${userId}`);
       
-      // Ensure matchesResult is treated as an array
-      const matchesArray = Array.isArray(matchesResult) ? matchesResult : [];
+      // Use the rows property from the SQL result
+      const matchesArray = matchesRows;
       
       if (matchesArray.length === 0) {
         console.log('No matches found for this user');
@@ -1186,7 +1188,7 @@ export class DatabaseStorage implements IStorage {
       }
       
       // Now, enrich the data with collaboration details
-      const enrichedResults = await Promise.all(matchesResult.map(async (match) => {
+      const enrichedResults = await Promise.all(matchesArray.map(async (match) => {
         try {
           // Get collaboration details
           const collaborationResult = await db.execute(sql`
@@ -1199,12 +1201,12 @@ export class DatabaseStorage implements IStorage {
             WHERE c.id = ${match.collaboration_id}
           `);
           
-          if (!collaborationResult.length) {
+          if (!collaborationResult || !collaborationResult.rows || !collaborationResult.rows.length) {
             console.log(`No collaboration found for match ${match.match_id}`);
             return null;
           }
           
-          const collaborationData = collaborationResult[0];
+          const collaborationData = collaborationResult.rows[0];
           
           // Determine who is the "other user" based on who the current user is
           const isUserHost = match.host_id === userId;
@@ -1224,12 +1226,12 @@ export class DatabaseStorage implements IStorage {
             WHERE u.id = ${otherUserId}
           `);
           
-          if (!otherUserResult.length) {
+          if (!otherUserResult || !otherUserResult.rows || !otherUserResult.rows.length) {
             console.log(`No other user found for match ${match.match_id}`);
             return null;
           }
           
-          const otherUserData = otherUserResult[0];
+          const otherUserData = otherUserResult.rows[0];
           
           // Get company data for the other user
           const companyResult = await db.execute(sql`
@@ -1250,8 +1252,8 @@ export class DatabaseStorage implements IStorage {
           `);
           
           let companyData = null;
-          if (companyResult.length > 0) {
-            companyData = companyResult[0];
+          if (companyResult && companyResult.rows && companyResult.rows.length > 0) {
+            companyData = companyResult.rows[0];
           } else {
             console.log(`No company found for other user ${otherUserId} in match ${match.match_id}`);
           }
