@@ -49,6 +49,7 @@ export interface IStorage {
   // Match methods
   createMatch(match: InsertMatch): Promise<Match>;
   getUserMatches(userId: string): Promise<Match[]>;
+  getUserMatchesWithDetails(userId: string): Promise<any[]>; // Get enriched matches with additional data
   getCollaborationMatches(collaborationId: string): Promise<Match[]>;
   getMatchById(id: string): Promise<Match | undefined>;
   updateMatchStatus(id: string, status: string): Promise<Match | undefined>;
@@ -506,6 +507,13 @@ export class DatabaseStorage implements IStorage {
     // Set default limit if not provided
     const limit = filters.limit || 10;
     console.log(`Using limit: ${limit}`);
+    
+    // ENHANCEMENT: First check if there are any active collaborations at all before filtering
+    const totalCollabCount = await db.select({ count: sql`count(*)` })
+      .from(collaborations)
+      .where(eq(collaborations.status, 'active'));
+    
+    console.log(`Total active collaborations in database: ${totalCollabCount[0]?.count || 0}`);
     
     try {
       // Get the cursor collaboration's timestamp if cursor is provided
@@ -1032,6 +1040,43 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(desc(matches.created_at));
+  }
+  
+  async getUserMatchesWithDetails(userId: string): Promise<any[]> {
+    // This is an enriched version of getUserMatches that returns more details
+    // for each match including collaboration and user information
+    console.log(`Getting detailed matches for user ${userId}`);
+    
+    const result = await db
+      .select({
+        match_id: matches.id,
+        match_date: matches.created_at,
+        match_status: matches.status,
+        match_note: matches.note,
+        collaboration_id: collaborations.id,
+        collaboration_title: collaborations.title,
+        collaboration_description: collaborations.description,
+        collaboration_type: collaborations.collab_type,
+        host_id: matches.host_id,
+        host_name: users.name,
+        requester_id: matches.requester_id,
+        company_name: companies.name,
+        company_logo: companies.logo_url
+      })
+      .from(matches)
+      .innerJoin(collaborations, eq(matches.collaboration_id, collaborations.id))
+      .innerJoin(users, eq(collaborations.creator_id, users.id))
+      .innerJoin(companies, eq(users.id, companies.user_id))
+      .where(
+        or(
+          eq(matches.host_id, userId),
+          eq(matches.requester_id, userId)
+        )
+      )
+      .orderBy(desc(matches.created_at));
+      
+    console.log(`Found ${result.length} detailed matches for user ${userId}`);
+    return result;
   }
   
   async getCollaborationMatches(collaborationId: string): Promise<Match[]> {
