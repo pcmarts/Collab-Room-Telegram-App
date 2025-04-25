@@ -504,10 +504,11 @@ export default function DiscoverPage() {
         }
       }
       
-      // If title is missing, use a default or collab_type
+      // Don't set title to collaboration type to avoid duplication in the UI
+      // The collaboration type is already displayed as a badge in the card header
       if (!card.title) {
-        console.log('[Discovery] Adding default title for card:', card.id);
-        card.title = card.collab_type || "Collaboration";
+        console.log('[Discovery] Card has no title, leaving it empty to avoid duplication with the collaboration type badge');
+        card.title = ""; // Set an empty title
       }
       
       return true;
