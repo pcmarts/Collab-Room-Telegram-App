@@ -24,7 +24,7 @@ export function openTelegramLink(url: string, options?: {
   const {
     useTimeout = true,
     timeoutMs = 50,
-    debugLog = true,
+    debugLog = false, // Set default to false for silent mode
     forceWindowOpen = false
   } = options || {};
 
@@ -151,7 +151,7 @@ export function createTelegramLinkHandler(url: string, options?: {
     preventDefault = true,
     useTimeout = true,
     timeoutMs = 50,
-    debugLog = true,
+    debugLog = false, // Set default to false for silent mode
     forceWindowOpen = true // Default to using window.open for more reliable behavior on mobile
   } = options || {};
   
@@ -159,7 +159,7 @@ export function createTelegramLinkHandler(url: string, options?: {
     if (stopPropagation) e.stopPropagation();
     if (preventDefault) e.preventDefault();
     
-    if (debugLog) console.log(`[TelegramHelper] Direct link handler triggered for: ${url}`);
+    // Silent operation
     
     // Important: For iOS we need to force direct location change
     if (/iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase())) {
@@ -180,7 +180,7 @@ export function createTelegramLinkHandler(url: string, options?: {
  */
 export function openTwitterProfile(handle: string) {
   const url = createTwitterUrl(handle);
-  console.log(`[TelegramHelper] Opening Twitter profile directly: ${url}`);
+  // Silent operation
   
   // Force direct browser navigation - most compatible with Telegram iOS
   window.location.href = url;
@@ -200,7 +200,7 @@ export function initTelegramWebApp(options?: {
 }): boolean {
   const { 
     expandApp = true, 
-    debugLog = true 
+    debugLog = false // Set default to false for silent mode
   } = options || {};
   
   try {
