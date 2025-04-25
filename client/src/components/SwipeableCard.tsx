@@ -298,23 +298,33 @@ export default function SwipeableCard({
             data.collab_type?.toLowerCase().includes('co-marketing')) && 
            data.details?.host_twitter_handle && (
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
-              <div className="flex items-center space-x-1.5">
-                <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-                {/* Direct link implementation for maximum compatibility */}
-                <a 
-                  href={createTwitterUrl(data.details?.host_twitter_handle || '')}
-                  className="text-sm font-medium text-[#1DA1F2] hover:underline swipeable-card-content"
-                  style={{ position: 'relative', zIndex: 9999, userSelect: 'text' }}
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-1.5">
+                  <Twitter className="w-4 h-4 text-[#1DA1F2]" />
+                  <span className="text-sm font-medium">
+                    @{data.details?.host_twitter_handle?.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
+                  </span>
+                </div>
+                
+                {/* Separate Twitter button - much more obvious and clickable */}
+                <button
+                  className="telegram-direct-link bg-blue-50 text-blue-600 px-2 py-1 rounded text-sm flex items-center"
+                  style={{ 
+                    position: 'relative', 
+                    zIndex: 9999, 
+                    border: '1px solid rgba(29, 161, 242, 0.3)'
+                  }}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    console.log("Opening twitter link directly");
+                    // Force direct navigation
                     window.location.href = createTwitterUrl(data.details?.host_twitter_handle || '');
                   }}
-                  target="_blank" 
-                  rel="noopener noreferrer"
                 >
-                  @{data.details?.host_twitter_handle?.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
-                </a>
+                  <Twitter className="w-3 h-3 mr-1" />
+                  Open Twitter Profile
+                </button>
               </div>
               
               {data.details?.host_follower_count && (
@@ -348,23 +358,33 @@ export default function SwipeableCard({
           {/* Twitter Spaces Guest */}
           {data.collab_type === 'Twitter Spaces Guest' && data.details?.twitter_handle && (
             <div className="flex flex-col space-y-2 p-3 bg-blue-500/5 rounded-md border border-blue-500/10 mb-3">
-              <div className="flex items-center space-x-1.5">
-                <Twitter className="w-4 h-4 text-[#1DA1F2]" />
-                {/* Direct link implementation for maximum compatibility */}
-                <a 
-                  href={createTwitterUrl(data.details?.twitter_handle || '')}
-                  className="text-sm font-medium text-[#1DA1F2] hover:underline swipeable-card-content"
-                  style={{ position: 'relative', zIndex: 9999, userSelect: 'text' }}
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-1.5">
+                  <Twitter className="w-4 h-4 text-[#1DA1F2]" />
+                  <span className="text-sm font-medium">
+                    {data.details.twitter_handle.includes('@') ? data.details.twitter_handle : '@' + data.details.twitter_handle.replace('https://twitter.com/', '').replace('https://x.com/', '')}
+                  </span>
+                </div>
+                
+                {/* Separate Twitter button - much more obvious and clickable */}
+                <button
+                  className="telegram-direct-link bg-blue-50 text-blue-600 px-2 py-1 rounded text-sm flex items-center"
+                  style={{ 
+                    position: 'relative', 
+                    zIndex: 9999, 
+                    border: '1px solid rgba(29, 161, 242, 0.3)'
+                  }}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    console.log("Opening twitter link directly");
+                    // Force direct navigation
                     window.location.href = createTwitterUrl(data.details?.twitter_handle || '');
                   }}
-                  target="_blank" 
-                  rel="noopener noreferrer"
                 >
-                  {data.details.twitter_handle.includes('@') ? data.details.twitter_handle : '@' + data.details.twitter_handle.replace('https://twitter.com/', '').replace('https://x.com/', '')}
-                </a>
+                  <Twitter className="w-3 h-3 mr-1" />
+                  Open Twitter Profile
+                </button>
               </div>
               
               {data.details?.host_follower_count && (
@@ -401,22 +421,25 @@ export default function SwipeableCard({
               )}
               
               {data.details?.podcast_link && (
-                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
-                  <Link className="w-3 h-3" />
-                  <a 
-                    href={data.details?.podcast_link || ''}
-                    className="truncate text-blue-600 hover:text-blue-800 hover:underline text-xs swipeable-card-content"
-                    style={{ position: 'relative', zIndex: 9999, userSelect: 'text' }}
+                <div className="flex items-center mt-2">
+                  <button
+                    className="telegram-direct-link bg-purple-50 text-purple-600 px-2 py-1 rounded text-sm flex items-center"
+                    style={{ 
+                      position: 'relative', 
+                      zIndex: 9999, 
+                      border: '1px solid rgba(139, 92, 246, 0.3)'
+                    }}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
+                      console.log("Opening podcast link directly");
+                      // Force direct navigation
                       window.location.href = data.details?.podcast_link || '';
                     }}
-                    target="_blank" 
-                    rel="noopener noreferrer"
                   >
-                    {data.details?.podcast_link}
-                  </a>
+                    <Link className="w-3 h-3 mr-1" />
+                    Open Podcast Website
+                  </button>
                 </div>
               )}
               
@@ -454,22 +477,25 @@ export default function SwipeableCard({
               )}
               
               {data.details?.blog_link && (
-                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
-                  <Link className="w-3 h-3" />
-                  <a 
-                    href={data.details?.blog_link || ''}
-                    className="truncate text-blue-600 hover:text-blue-800 hover:underline text-xs swipeable-card-content"
-                    style={{ position: 'relative', zIndex: 9999, userSelect: 'text' }}
+                <div className="flex items-center mt-2">
+                  <button
+                    className="telegram-direct-link bg-emerald-50 text-emerald-600 px-2 py-1 rounded text-sm flex items-center"
+                    style={{ 
+                      position: 'relative', 
+                      zIndex: 9999, 
+                      border: '1px solid rgba(16, 185, 129, 0.3)'
+                    }}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
+                      console.log("Opening blog link directly");
+                      // Force direct navigation
                       window.location.href = data.details?.blog_link || '';
                     }}
-                    target="_blank" 
-                    rel="noopener noreferrer"
                   >
-                    {data.details?.blog_link}
-                  </a>
+                    <FileText className="w-3 h-3 mr-1" />
+                    Read Blog Post
+                  </button>
                 </div>
               )}
               
