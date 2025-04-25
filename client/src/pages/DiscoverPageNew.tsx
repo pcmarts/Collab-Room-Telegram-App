@@ -113,6 +113,7 @@ export default function DiscoverPage() {
   const isFetchingNextBatchRef = useRef(false);
   const initialLoadCompletedRef = useRef(false);
   const lastFetchTimeRef = useRef<number>(0);
+  const requestCooldownTimeRef = useRef<number>(0); // Track time to enforce cooldown between requests
   
   // Get access to the match context
   const { setNewMatchCreated } = useMatchContext();
@@ -381,16 +382,27 @@ export default function DiscoverPage() {
       return;
     }
     
-    // Reset pagination in three scenarios:
-    // 1. We have a cursor but hasMore is false (end of page)
+    // COOLDOWN MECHANISM: Prevent excessive API requests
+    const now = Date.now();
+    const timeSinceLastRequest = now - requestCooldownTimeRef.current;
+    const COOLDOWN_PERIOD_MS = 3000; // 3 seconds cooldown
+    
+    if (timeSinceLastRequest < COOLDOWN_PERIOD_MS) {
+      console.log(`[Discovery] Request cooldown active - need to wait ${(COOLDOWN_PERIOD_MS - timeSinceLastRequest) / 1000}s more`);
+      return;
+    }
+    
+    // Update the cooldown timestamp
+    requestCooldownTimeRef.current = now;
+    
+    // If we have cards available, don't reset pagination too aggressively
+    // Only reset pagination if:
+    // 1. We have a cursor but hasMore is false (end of page), OR
     // 2. We have no cards at all (all swiped or no results yet)
-    // 3. We've swiped almost all cards and are down to the last few
-    if ((nextCursor && !hasMore) || 
-        (cards.length === 0) || 
-        (cards.length <= 3 && !loadingMore && !hasMore)) {
+    // But NOT if we just have a small number of cards
+    if ((nextCursor && !hasMore) || (cards.length === 0 && !loadingMore && !isLoading)) {
       console.log('[Discovery] Resetting pagination to try fresh search', {
-        reason: nextCursor && !hasMore ? 'end of page' : 
-                cards.length === 0 ? 'no cards' : 'almost empty',
+        reason: nextCursor && !hasMore ? 'end of page' : 'no cards',
         nextCursor,
         hasMore,
         cardCount: cards.length
@@ -572,33 +584,38 @@ export default function DiscoverPage() {
   
   // Auto-fetch more cards when we're running low or approaching the end of the batch
   useEffect(() => {
+    // Check cooldown first to avoid excessive API calls
+    const now = Date.now();
+    const timeSinceLastRequest = now - requestCooldownTimeRef.current;
+    const COOLDOWN_PERIOD_MS = 3000; // 3 seconds cooldown
+    
+    if (timeSinceLastRequest < COOLDOWN_PERIOD_MS) {
+      // Still in cooldown period, do nothing
+      return;
+    }
+    
     // Conditions to trigger a fetch:
-    // 1. Overall card count is low (below threshold of 5)
-    const lowCardCount = cards.length > 0 && cards.length < 5;
-    
-    // 2. User is on second-to-last card (to pre-load the next batch)
-    const onSecondToLastCard = cards.length >= 2 && currentCardIndex === cards.length - 2;
-    
-    // 3. User is on the last card (last chance to load more before empty state)
+    // 1. User is on the last card (last chance to load more before empty state)
     const onLastCard = cards.length > 0 && currentCardIndex === cards.length - 1;
     
-    // 4. Zero cards - either initial load or we've run out of cards in current batch
-    const noCardsLeft = cards.length === 0;
+    // 2. Extremely low card count (only 1 card left)
+    const criticallyLowCardCount = cards.length === 1;
     
-    // Combined fetch trigger condition - note: we now try to fetch even if cards.length === 0
-    // This ensures we attempt to load more cards even if we've run out in the current batch
-    const shouldFetchMore = (lowCardCount || onSecondToLastCard || onLastCard || noCardsLeft) && 
-                           !loadingMore && 
-                           !isLoading;
+    // 3. Completely out of cards (but only if hasMore is true so we don't spam when at the end)
+    const noCardsWithMoreAvailable = cards.length === 0 && hasMore;
+    
+    // Much more conservative fetch trigger - only fetch when absolutely necessary
+    const shouldFetchMore = (onLastCard || criticallyLowCardCount || noCardsWithMoreAvailable) && 
+                            !loadingMore && 
+                            !isLoading;
     
     // Only set all cards viewed if server has confirmed no more cards AND we have none locally
     const emptyNoMore = cards.length === 0 && !hasMore && !loadingMore && !isLoading;
     
     if (shouldFetchMore) {
       console.log('[Discovery] Fetching more cards...', {
-        reason: noCardsLeft ? 'no cards left' :
-                lowCardCount ? 'low card count' : 
-                onSecondToLastCard ? 'on second-to-last card' : 
+        reason: cards.length === 0 ? 'no cards left' :
+                criticallyLowCardCount ? 'critically low card count' : 
                 'on last card',
         currentCardIndex,
         totalCards: cards.length,
