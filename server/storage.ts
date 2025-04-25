@@ -1111,42 +1111,64 @@ export class DatabaseStorage implements IStorage {
       console.log("No swipe from Jim found");
     }
     
-    // Transform results to include user and company info
-    const enrichedSwipes = rightSwipes.map(result => {
-      const enriched = {
-        ...result.swipe,
-        user: result.user,
-        company: result.company,
+    // Get collaboration details for each swipe
+    const enrichedSwipes = [];
+    
+    for (const result of rightSwipes) {
+      try {
+        // Fetch the full collaboration data for this swipe
+        const collaborationId = result.swipe.collaboration_id;
+        const collaboration = await this.getCollaboration(collaborationId);
         
-        // Add flattened fields for easier client-side access (new approach)
-        user_id: result.user.id,
-        first_name: result.user.first_name,
-        last_name: result.user.last_name,
-        company_name: result.company.name,
-        company_description: result.company.short_description || '',
-        job_title: result.user.job_title,
-        
-        // Create potentialMatchData field directly with ALL required fields
-        potentialMatchData: {
+        // Create the enriched object with full collaboration data
+        const enriched = {
+          ...result.swipe,
+          user: result.user,
+          company: result.company,
+          
+          // Add the complete collaboration as a nested object
+          collaboration: collaboration,
+          
+          // Add flattened fields for easier client-side access
           user_id: result.user.id,
           first_name: result.user.first_name,
           last_name: result.user.last_name,
-          company_name: result.company.name,
+          company_name: result.company.name, 
           company_description: result.company.short_description || '',
-          company_website: result.company.website,
-          company_twitter: result.company.twitter_handle || '',
-          company_linkedin: result.company.linkedin_url || '',
           job_title: result.user.job_title,
-          twitter_followers: result.user.twitter_followers,
-          company_twitter_followers: result.company.twitter_followers,
-          swipe_created_at: result.swipe.created_at?.toISOString() || new Date().toISOString(),
-          collaboration_id: result.swipe.collaboration_id,
-          note: result.swipe.note || ''
-        }
-      };
-      
-      return enriched;
-    });
+          
+          // Include collaboration data directly on the object for legacy code
+          collab_type: collaboration?.collab_type || "Collaboration",
+          title: collaboration?.title || "",
+          description: collaboration?.description || "",
+          topics: collaboration?.topics || [],
+          details: collaboration?.details || {},
+          
+          // Create potentialMatchData field directly with ALL required fields
+          potentialMatchData: {
+            user_id: result.user.id,
+            first_name: result.user.first_name,
+            last_name: result.user.last_name,
+            company_name: result.company.name,
+            company_description: result.company.short_description || '',
+            company_website: result.company.website,
+            company_twitter: result.company.twitter_handle || '',
+            company_linkedin: result.company.linkedin_url || '',
+            job_title: result.user.job_title,
+            twitter_followers: result.user.twitter_followers,
+            company_twitter_followers: result.company.twitter_followers,
+            swipe_created_at: result.swipe.created_at?.toISOString() || new Date().toISOString(),
+            collaboration_id: result.swipe.collaboration_id,
+            note: result.swipe.note || ''
+          }
+        };
+        
+        enrichedSwipes.push(enriched);
+      } catch (error) {
+        console.error(`Error fetching collaboration ${result.swipe.collaboration_id}:`, error);
+        // Skip this swipe if we couldn't get the collaboration data
+      }
+    }
     
     console.log(`Returning ${enrichedSwipes.length} potential matches with enhanced data structure`);
     

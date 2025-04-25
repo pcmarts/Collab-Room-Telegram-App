@@ -66,6 +66,19 @@ interface CollaborationDetailsDialogProps {
       note?: string;
     };
     type?: string;
+    
+    // Add nested full collaboration data structure for potential matches
+    collaboration?: {
+      id?: string;
+      title?: string;
+      collab_type?: string;
+      description?: string;
+      date?: string;
+      topics?: string[];
+      creator_id?: string;
+      details?: Record<string, any>;
+      creator_company_name?: string;
+    };
   };
 }
 
