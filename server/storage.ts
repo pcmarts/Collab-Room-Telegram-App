@@ -1296,7 +1296,8 @@ export class DatabaseStorage implements IStorage {
               c.has_token,
               c.token_ticker,
               c.blockchain_networks,
-              c.tags
+              c.tags,
+              c.job_title
             FROM companies c
             WHERE c.user_id = ${otherUserId}
           `);
@@ -1322,7 +1323,7 @@ export class DatabaseStorage implements IStorage {
             other_user_first_name: otherUserData?.first_name || '',
             other_user_last_name: otherUserData?.last_name || '',
             other_user_handle: otherUserData?.handle || '',
-            role_title: '', // Default until we add job_title to the user schema
+            role_title: companyData?.job_title || 'Unknown Role', // Using job_title from the company table
             other_user_twitter_url: otherUserData?.twitter_url || null,
             other_user_twitter_followers: otherUserData?.twitter_followers || null,
             other_user_linkedin_url: otherUserData?.linkedin_url || null,
