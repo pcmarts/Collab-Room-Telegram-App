@@ -507,6 +507,17 @@ export default function SimpleCard({
                 </p>
               )}
               
+              {/* Add livestream link if available */}
+              {data.details?.livestream_link && (
+                <div className="flex items-center mt-2">
+                  <DirectButton 
+                    url={data.details?.livestream_link || ''}
+                    label="View Livestream"
+                    type="video"
+                  />
+                </div>
+              )}
+              
               {/* Show date if available */}
               {(data.date || data.specific_date || data.details?.livestream_date) && (
                 <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
