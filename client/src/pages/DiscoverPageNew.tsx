@@ -35,17 +35,16 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, handleDetailsCli
   
   return (
     <>
-      {cards.slice(0, 3).map((card, index) => {
-        return (
-          <SimpleCard
-            key={card.id + "-" + index}
-            data={card}
-            handleSwipe={handleSwipe}
-            onInfoClick={() => handleViewCardDetails(card)}
-            handleDetailsClick={handleDetailsClick}
-          />
-        );
-      })}
+      {/* Only show the top card for now to fix overlapping issues */}
+      {cards.length > 0 && (
+        <SimpleCard
+          key={cards[0].id}
+          data={cards[0]}
+          handleSwipe={handleSwipe}
+          onInfoClick={() => handleViewCardDetails(cards[0])}
+          handleDetailsClick={handleDetailsClick}
+        />
+      )}
     </>
   );
 };

@@ -171,71 +171,39 @@ export default function SimpleCard({
                       ? 'bg-red-500/5'
                       : 'bg-primary/5'
         }`}>
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-3">
-              {/* Display logo if available */}
-              {(data.creator_company_logo_url || data.potentialMatchData?.company_logo_url) && (
-                <LogoAvatar 
-                  src={data.isPotentialMatch ? data.potentialMatchData?.company_logo_url : data.creator_company_logo_url} 
-                  alt={data.isPotentialMatch ? data.potentialMatchData?.company_name : data.creator_company_name}
-                  className="h-10 w-10 rounded-full"
-                />
-              )}
-              
-              {/* Company Name and Type */}
-              <div>
-                <h3 className="font-bold text-lg line-clamp-1">
-                  {data.isPotentialMatch ? data.potentialMatchData?.company_name : (data.creator_company_name || "Company")}
-                </h3>
-                <div className="flex items-center gap-1.5">
-                  {/* Twitter Co-Marketing Badge */}
-                  {(data.collab_type?.toLowerCase().includes('twitter') || 
-                   data.collab_type?.toLowerCase().includes('co-marketing')) ? (
-                  <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-[#1DA1F2]">
-                    <Twitter className="w-3 h-3 mr-1" />
-                    {data.collab_type || "Twitter Co-Marketing"}
-                  </Badge>
-                ) : data.collab_type === 'Podcast Guest Appearance' ? (
-                  <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/20 text-purple-700">
-                    <Mic className="w-3 h-3 mr-1" />
-                    {data.collab_type}
-                  </Badge>
-                ) : data.collab_type === 'Blog Post Feature' ? (
-                  <Badge variant="outline" className="text-xs bg-emerald-500/10 border-emerald-500/20 text-emerald-700">
-                    <FileText className="w-3 h-3 mr-1" />
-                    {data.collab_type}
-                  </Badge>
-                ) : data.collab_type === 'Report & Research Feature' ? (
-                  <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-500/20 text-amber-700">
-                    <FileSearch className="w-3 h-3 mr-1" />
-                    {data.collab_type}
-                  </Badge>
-                ) : data.collab_type === 'Newsletter Feature' ? (
-                  <Badge variant="outline" className="text-xs bg-indigo-500/10 border-indigo-500/20 text-indigo-700">
-                    <Mail className="w-3 h-3 mr-1" />
-                    {data.collab_type}
-                  </Badge>
-                ) : data.collab_type === 'Live Stream Guest Appearance' ? (
-                  <Badge variant="outline" className="text-xs bg-red-500/10 border-red-500/20 text-red-700">
-                    <Video className="w-3 h-3 mr-1" />
-                    {data.collab_type}
-                  </Badge>
-                ) : (
-                  <p className="text-sm text-muted-foreground line-clamp-1">{data.collab_type || "Collaboration"}</p>
+          <div className="flex flex-col">
+            {/* Top row with company info and info button */}
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-3">
+                {/* Display logo if available */}
+                {(data.creator_company_logo_url || data.potentialMatchData?.company_logo_url) && (
+                  <LogoAvatar 
+                    src={data.isPotentialMatch ? data.potentialMatchData?.company_logo_url : data.creator_company_logo_url} 
+                    alt={data.isPotentialMatch ? data.potentialMatchData?.company_name : data.creator_company_name}
+                    className="h-10 w-10 rounded-full"
+                  />
                 )}
+                
+                {/* Company Name and Type */}
+                <div>
+                  <h3 className="font-bold text-lg line-clamp-1">
+                    {data.isPotentialMatch ? data.potentialMatchData?.company_name : (data.creator_company_name || "Company")}
+                  </h3>
+                  {/* Removed the collaboration type label from here */}
                 </div>
               </div>
+              
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="shrink-0 h-8 w-8 text-muted-foreground hover:text-primary relative z-50"
+                onClick={onInfoClick}
+              >
+                <Info className="h-4 w-4" />
+              </Button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="shrink-0 h-8 w-8 text-muted-foreground hover:text-primary relative z-50"
-              onClick={onInfoClick}
-            >
-              <Info className="h-4 w-4" />
-            </Button>
             
-            {/* Add title to header */}
+            {/* Second row with collaboration title */}
             <div className="mt-3">
               <h3 className="text-xl font-semibold">
                 {data.title || (data.isPotentialMatch ? "Potential Collaboration" : "Collaboration")}
