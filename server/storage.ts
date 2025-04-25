@@ -46,6 +46,7 @@ export interface IStorage {
   getUserSwipes(userId: string): Promise<Swipe[]>;
   getCollaborationSwipes(collaborationId: string): Promise<Swipe[]>;
   getPotentialMatchesForHost(userId: string): Promise<any[]>; // Get users who swiped right on host's collaborations
+  deleteLeftSwipes(userId: string): Promise<number>; // Delete left swipes for a user and return count of deleted swipes
   
   // Match methods
   createMatch(match: InsertMatch): Promise<Match>;
@@ -1014,6 +1015,35 @@ export class DatabaseStorage implements IStorage {
       .from(swipes)
       .where(eq(swipes.collaboration_id, collaborationId))
       .orderBy(desc(swipes.created_at));
+  }
+  
+  /**
+   * Delete all left swipes for a user and return the count of deleted records
+   * This allows users to "reset" and see collaborations they previously passed on
+   */
+  async deleteLeftSwipes(userId: string): Promise<number> {
+    console.log(`Deleting left swipes for user ${userId}`);
+    
+    try {
+      // Delete swipes with direction = 'left' for this user
+      const result = await db
+        .delete(swipes)
+        .where(
+          and(
+            eq(swipes.user_id, userId),
+            eq(swipes.direction, 'left')
+          )
+        )
+        .returning();
+      
+      const deletedCount = result.length;
+      console.log(`Successfully deleted ${deletedCount} left swipes for user ${userId}`);
+      
+      return deletedCount;
+    } catch (error) {
+      console.error(`Error deleting left swipes for user ${userId}:`, error);
+      throw error;
+    }
   }
   
   async getPotentialMatchesForHost(userId: string): Promise<any[]> {
