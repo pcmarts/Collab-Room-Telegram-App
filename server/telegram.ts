@@ -2568,15 +2568,50 @@ export async function notifyMatchCreated(
       ],
     };
 
-    // Format the message with handle if available
+    // Get company details for each user
+    const [hostCompany] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.user_id, hostUserId))
+      .limit(1);
+
+    const [requesterCompany] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.user_id, requesterUserId))
+      .limit(1);
+
+    // Generate Twitter links if handles are available
+    const hostTwitterLink = hostCompany?.twitter_handle 
+      ? `<a href="https://twitter.com/${hostCompany.twitter_handle}">@${hostCompany.twitter_handle}</a>` 
+      : "Twitter";
+    
+    const requesterTwitterLink = requesterCompany?.twitter_handle 
+      ? `<a href="https://twitter.com/${requesterCompany.twitter_handle}">@${requesterCompany.twitter_handle}</a>` 
+      : "Twitter";
+
+    // Format the message with enhanced details
+    // Company URLs with preference for Twitter if available (as requested)
+    const requesterCompanyUrl = requesterCompany?.twitter_handle 
+      ? `https://twitter.com/${requesterCompany.twitter_handle}` 
+      : (requesterCompany?.website || '#');
+    
+    const hostCompanyUrl = hostCompany?.twitter_handle 
+      ? `https://twitter.com/${hostCompany.twitter_handle}` 
+      : (hostCompany?.website || '#');
+      
     const matchMessage = 
       `🎉 <b>New Match!</b>\n\n` +
-      `You've matched with <b>${requester.first_name} ${requester.last_name || ""}</b>${requester.handle ? ` (@${requester.handle})` : ''} on your <b>${collaboration.collab_type}</b> collaboration!\n\n` +
+      `You've matched with <b>${requester.first_name} ${requester.last_name || ""}</b>${requester.handle ? ` (@${requester.handle})` : ''} from ` +
+      `<a href="${requesterCompanyUrl}">${requesterCompany?.name || "their company"}</a> ` +
+      `on your <b>${collaboration.collab_type}</b> collaboration!\n\n` +
       `Click below to view the match details and start chatting:`;
 
     const requesterMessage = 
       `🎉 <b>New Match!</b>\n\n` +
-      `<b>${host.first_name} ${host.last_name || ""}</b>${host.handle ? ` (@${host.handle})` : ''} has matched with you on a <b>${collaboration.collab_type}</b> collaboration!\n\n` +
+      `<b>${host.first_name} ${host.last_name || ""}</b>${host.handle ? ` (@${host.handle})` : ''} from ` +
+      `<a href="${hostCompanyUrl}">${hostCompany?.name || "their company"}</a> ` +
+      `has matched with you on a <b>${collaboration.collab_type}</b> collaboration!\n\n` +
       `Click below to view the match details and start chatting:`;
 
     // Send match notifications if enabled
