@@ -275,7 +275,7 @@ export class DatabaseStorage implements IStorage {
         count: sql<number>`count(*)`
       })
       .from(collaborations)
-      .where(eq(collaborations.is_active, true));
+      .where(eq(collaborations.status, 'active'));
     
     return result[0]?.count || 0;
   }
