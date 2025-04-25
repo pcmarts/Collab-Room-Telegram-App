@@ -1,13 +1,12 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion, useMotionValue, useSpring, useTransform, MotionValue } from "framer-motion";
 import { Loader2, Filter, SearchX, RefreshCw, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 // Use relative imports for our custom components
 import { GlowButton } from "../components/ui/glow-button";
-import SwipeableCard from "../components/SwipeableCard";
+import SimpleCard from "../components/SimpleCard";
 import { MatchMoment } from "../components/MatchMoment";
 import { CollaborationDetailsDialog } from "../components/CollaborationDetailsDialog";
 import { AuthenticationError } from "../components/AuthenticationError";
@@ -21,18 +20,10 @@ interface CardStackProps {
   handleSwipe: (direction: "left" | "right", note?: string) => Promise<void>;
   handleViewCardDetails: (card: CardData) => void;
   handleDetailsClick: (id: string) => void;
-  x: MotionValue<number>;
-  rotate: MotionValue<number>;
-  opacity: MotionValue<number>;
 }
 
 // CardStack component to handle rendering cards
-const CardStack = ({ cards, handleSwipe, handleViewCardDetails, handleDetailsClick, x, rotate, opacity }: CardStackProps) => {
-  // Create constrained states for each card position
-  const [constrained0, setConstrained0] = useState(true);
-  const [constrained1, setConstrained1] = useState(true);
-  const [constrained2, setConstrained2] = useState(true);
-
+const CardStack = ({ cards, handleSwipe, handleViewCardDetails, handleDetailsClick }: CardStackProps) => {
   // Log current cards state
   console.log('[CardStack] Rendering with', cards.length, 'cards');
   
@@ -45,27 +36,13 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, handleDetailsCli
   return (
     <>
       {cards.slice(0, 3).map((card, index) => {
-        // Determine z-index and apply scaling
-        const zIndex = cards.length - index;
-        
-        // Select the appropriate constrained state based on index
-        const constrained = index === 0 ? constrained0 : (index === 1 ? constrained1 : constrained2);
-        const setConstrained = index === 0 ? setConstrained0 : (index === 1 ? setConstrained1 : setConstrained2);
-        
-        // Use SwipeableCard for both regular and potential match cards
         return (
-          <SwipeableCard
+          <SimpleCard
             key={card.id + "-" + index}
             data={card}
             handleSwipe={handleSwipe}
             onInfoClick={() => handleViewCardDetails(card)}
             handleDetailsClick={handleDetailsClick}
-            zIndex={zIndex}
-            constrained={constrained}
-            setConstrained={setConstrained}
-            x={index === 0 ? x : undefined}
-            rotate={index === 0 ? rotate : undefined}
-            opacity={opacity}
           />
         );
       })}
@@ -158,19 +135,7 @@ export default function DiscoverPage() {
   // Track previous location to detect navigation
   const prevLocationRef = useRef<string>('');
   
-  // Motion values for card animations
-  const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 0, 200], [-10, 0, 10]);
-  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
-  const background = useTransform(
-    x,
-    [-200, 0, 200],
-    [
-      "rgba(239, 68, 68, 0.1)",
-      "rgba(255, 255, 255, 0)",
-      "rgba(34, 197, 94, 0.1)",
-    ],
-  );
+  // We've removed motion animations since they're not needed without drag functionality
   
   // Get user swipe history to prevent showing already swiped cards
   const { data: serverSwipeHistory } = useQuery({
@@ -1147,9 +1112,6 @@ export default function DiscoverPage() {
             handleSwipe={handleSwipe}
             handleViewCardDetails={handleViewCardDetails}
             handleDetailsClick={handleDetailsClick}
-            x={x}
-            rotate={rotate}
-            opacity={opacity}
           />
           
           {/* Loading More Indicator */}

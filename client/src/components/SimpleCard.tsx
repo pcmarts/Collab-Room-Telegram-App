@@ -15,6 +15,7 @@ declare global {
     }
   }
 }
+
 import {
   Calendar,
   Check,
@@ -46,7 +47,7 @@ import { LetterAvatar } from "@/components/ui/letter-avatar";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
 import AddNoteDialog from "./AddNoteDialog";
 
-export interface SwipeableCardProps {
+export interface SimpleCardProps {
   data: {
     id: string;
     creator_company_name?: string;
@@ -82,38 +83,20 @@ export interface SwipeableCardProps {
   handleSwipe?: (direction: "left" | "right", note?: string) => void; 
   onInfoClick?: () => void;
   handleDetailsClick?: (id: string) => void;
-  
-  // Props for stacked card animation
-  zIndex?: number;
-  constrained?: boolean;
-  setConstrained?: (constrained: boolean) => void;
-  x?: MotionValue<number>;
-  rotate?: MotionValue<number>;
-  opacity?: MotionValue<number>;
 }
 
-export default function SwipeableCard({
+export default function SimpleCard({
   data,
   onSwipe,
   handleSwipe: propHandleSwipe,  // Renamed to avoid conflict
   onInfoClick,
   handleDetailsClick,
-  zIndex,
-  constrained,
-  setConstrained,
-  x: propX,
-  rotate: propRotate,
-  opacity: propOpacity,
-}: SwipeableCardProps) {
+}: SimpleCardProps) {
   const [showNoteDialog, setShowNoteDialog] = useState(false);
-  const x = propX || useMotionValue(0);
-  const rotate = propRotate || useTransform(x, [-200, 0, 200], [-10, 0, 10]);
-  const opacity = propOpacity || useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
-  const dragConstraintsRef = React.useRef(null);
 
   // Use either onSwipe or handleSwipe prop based on which is provided
   const handleSwipeAction = (direction: "left" | "right", note?: string) => {
-    console.log(`[SwipeableCard] Handling swipe action: ${direction}${note ? ' with note' : ''}`, {
+    console.log(`[SimpleCard] Handling swipe action: ${direction}${note ? ' with note' : ''}`, {
       cardId: data.id,
       collaborationType: data.collab_type,
       hasPropHandleSwipe: !!propHandleSwipe,
@@ -122,16 +105,16 @@ export default function SwipeableCard({
     
     try {
       if (propHandleSwipe) {
-        console.log('[SwipeableCard] Calling propHandleSwipe');
+        console.log('[SimpleCard] Calling propHandleSwipe');
         propHandleSwipe(direction, note);
       } else if (onSwipe) {
-        console.log('[SwipeableCard] Calling onSwipe');
+        console.log('[SimpleCard] Calling onSwipe');
         onSwipe(direction, note);
       } else {
-        console.warn('[SwipeableCard] No swipe handler provided (neither onSwipe nor handleSwipe)');
+        console.warn('[SimpleCard] No swipe handler provided (neither onSwipe nor handleSwipe)');
       }
     } catch (error) {
-      console.error('[SwipeableCard] Error in swipe handler:', error);
+      console.error('[SimpleCard] Error in swipe handler:', error);
     }
   };
   
@@ -139,101 +122,39 @@ export default function SwipeableCard({
   const handleSwipe = handleSwipeAction;
 
   const handleButtonClick = (direction: "left" | "right") => {
-    console.log(`[SwipeableCard] Button clicked: ${direction === "right" ? "Request" : "Skip"}`);
+    console.log(`[SimpleCard] Button clicked: ${direction === "right" ? "Request" : "Skip"}`);
     
     try {
       if (direction === "right") {
-        console.log('[SwipeableCard] Opening note dialog for Request button');
+        console.log('[SimpleCard] Opening note dialog for Request button');
         setShowNoteDialog(true);
       } else {
-        console.log('[SwipeableCard] Directly calling handleSwipeAction for Skip button');
+        console.log('[SimpleCard] Directly calling handleSwipeAction for Skip button');
         handleSwipeAction(direction);
       }
     } catch (error) {
-      console.error('[SwipeableCard] Error in button click handler:', error);
+      console.error('[SimpleCard] Error in button click handler:', error);
     }
   };
 
   const viewDetailsHandler = () => {
     if (handleDetailsClick && data.id) {
       try {
-        console.log(`[SwipeableCard] Navigating to details for collaboration: ${data.id}`);
+        console.log(`[SimpleCard] Navigating to details for collaboration: ${data.id}`);
         handleDetailsClick(data.id);
       } catch (error) {
-        console.error(`[SwipeableCard] Error navigating to details for collaboration ${data.id}:`, error);
+        console.error(`[SimpleCard] Error navigating to details for collaboration ${data.id}:`, error);
       }
     } else {
-      console.warn(`[SwipeableCard] Cannot navigate to details: ${!handleDetailsClick ? 'handleDetailsClick is not defined' : 'data.id is not available'}`);
+      console.warn(`[SimpleCard] Cannot navigate to details: ${!handleDetailsClick ? 'handleDetailsClick is not defined' : 'data.id is not available'}`);
     }
   };
 
   return (
-    <motion.div 
-      className="w-full h-full absolute inset-0"
-      style={{ 
-        zIndex: zIndex || 1,
-        x,
-        rotate,
-        opacity,
-        touchAction: "none", // Disable default touch actions to prevent scrolling
-        pointerEvents: "auto" // Ensure pointer events are enabled
-      }}
-      // Explicitly make this non-draggable to prevent interference with button clicks
-      drag={false}
-      // Make sure all child elements receive pointer events
-      initial={{ pointerEvents: "auto" }}
-      // Add debug logging for swipe events
-      onTouchStart={(e) => {
-        console.log("[SwipeableCard] Touch start");
-        // Don't stop propagation here - we want touch events to be detected
-      }}
-      onTouchEnd={(e) => {
-        console.log("[SwipeableCard] Touch end");
-        // Don't stop propagation here either
-      }}
-      onClick={(e) => {
-        console.log("[SwipeableCard] Div clicked");
-        // Don't prevent default here - we want clicks to work
-      }}
-    >
+    <div className="w-full h-full absolute inset-0">
       <Card 
-        className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl swipeable-card-content" 
-        style={{ 
-          touchAction: "pan-y", // Allow vertical scrolling but not horizontal
-          pointerEvents: "auto", // Ensure pointer events pass through
-          position: "relative", // Ensure positioning context
-          zIndex: 10 // Keep above motion overlays
-        }}
-        onClick={(e) => {
-          console.log("[SwipeableCard] Card clicked");
-        }}
-        onTouchStart={(e) => {
-          console.log("[SwipeableCard] Card touch start");
-          // Don't stop propagation - we want the parent to know about touches
-        }}
-        onTouchEnd={(e) => {
-          console.log("[SwipeableCard] Card touch end");
-          // Don't stop propagation - we need touch events to reach the parent
-        }}>
-        {/* Overlay effects for swipe direction */}
-        <motion.div 
-          className="absolute inset-0 bg-red-500/20 z-20" 
-          style={{ opacity: useTransform(x || useMotionValue(0), [-200, -5, 0], [0.8, 0, 0]) }} 
-        >
-          <div className="absolute right-4 top-4 bg-red-500 text-white p-2 rounded-full">
-            <X className="h-6 w-6" />
-          </div>
-        </motion.div>
-        
-        <motion.div 
-          className="absolute inset-0 bg-green-500/20 z-20" 
-          style={{ opacity: useTransform(x || useMotionValue(0), [0, 5, 200], [0, 0, 0.8]) }} 
-        >
-          <div className="absolute left-4 top-4 bg-green-500 text-white p-2 rounded-full">
-            <Check className="h-6 w-6" />
-          </div>
-        </motion.div>
-        
+        className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl no-drag" 
+      >
         {/* Card header with company info */}
         <div className={`px-4 py-3 border-b relative z-30 ${
           data.collab_type?.toLowerCase().includes('twitter') || data.collab_type?.toLowerCase().includes('co-marketing')
@@ -252,7 +173,14 @@ export default function SwipeableCard({
         }`}>
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">
-              {/* Company Logo Removed */}
+              {/* Display logo if available */}
+              {(data.creator_company_logo_url || data.potentialMatchData?.company_logo_url) && (
+                <LogoAvatar 
+                  src={data.isPotentialMatch ? data.potentialMatchData?.company_logo_url : data.creator_company_logo_url} 
+                  alt={data.isPotentialMatch ? data.potentialMatchData?.company_name : data.creator_company_name}
+                  className="h-10 w-10 rounded-full"
+                />
+              )}
               
               {/* Company Name and Type */}
               <div>
@@ -310,7 +238,7 @@ export default function SwipeableCard({
         </div>
         
         {/* Card content */}
-        <div className="p-4 flex-grow overflow-auto swipeable-card-content" style={{ 
+        <div className="p-4 flex-grow overflow-auto no-drag" style={{ 
           pointerEvents: "auto", 
           touchAction: "auto", 
           position: "relative"
@@ -328,7 +256,7 @@ export default function SwipeableCard({
                   </span>
                 </div>
                 
-                {/* Using the direct anchor approach for maximum mobile compatibility */}
+                {/* Using DirectButton for maximum mobile compatibility */}
                 <DirectButton 
                   url={createTwitterUrl(data.details?.host_twitter_handle || '')}
                   label="View on Twitter"
@@ -375,8 +303,8 @@ export default function SwipeableCard({
                   </span>
                 </div>
                 
-                {/* Using the isolated link button component for maximum mobile compatibility */}
-                <IsolatedLinkButton 
+                {/* Using DirectButton for maximum mobile compatibility */}
+                <DirectButton 
                   url={createTwitterUrl(data.details?.twitter_handle || '')}
                   label="View on Twitter"
                   type="twitter"
@@ -418,7 +346,7 @@ export default function SwipeableCard({
               
               {data.details?.podcast_link && (
                 <div className="flex items-center mt-2">
-                  <IsolatedLinkButton 
+                  <DirectButton 
                     url={data.details?.podcast_link || ''}
                     label="Open Podcast"
                     type="podcast"
@@ -461,7 +389,7 @@ export default function SwipeableCard({
               
               {data.details?.blog_link && (
                 <div className="flex items-center mt-2">
-                  <IsolatedLinkButton 
+                  <DirectButton 
                     url={data.details?.blog_link || ''}
                     label="Read Blog Post"
                     type="blog"
@@ -579,7 +507,7 @@ export default function SwipeableCard({
           )}
           
           {/* Collaboration Description */}
-          <div className="mb-3 swipeable-card-content">
+          <div className="mb-3">
             <div className="mb-2">
               <h3 className="font-bold text-sm">
                 {data.title || (data.isPotentialMatch ? "Potential Collaboration" : "Collaboration Details")}
@@ -592,15 +520,15 @@ export default function SwipeableCard({
         </div>
         
         {/* Action buttons */}
-        <div className="p-3 border-t flex justify-between items-center gap-3 relative z-50 pointer-events-auto">
+        <div className="p-3 border-t flex justify-between items-center gap-3 relative z-50">
           <Button 
             size="default"
             variant="outline"
-            className="flex-1 bg-transparent border-red-500/20 text-red-500 hover:bg-red-500/5 pointer-events-auto"
+            className="flex-1 bg-transparent border-red-500/20 text-red-500 hover:bg-red-500/5"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              console.log("[SwipeableCard] Skip button clicked");
+              console.log("[SimpleCard] Skip button clicked");
               handleButtonClick("left");
             }}
           >
@@ -612,11 +540,11 @@ export default function SwipeableCard({
           <Button 
             size="default"
             variant="outline"
-            className="flex-1 pointer-events-auto relative z-50 border-blue-500/20 text-blue-600 hover:bg-blue-500/5"
+            className="flex-1 relative z-50 border-blue-500/20 text-blue-600 hover:bg-blue-500/5"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              console.log("[SwipeableCard] Info button clicked");
+              console.log("[SimpleCard] Info button clicked");
               viewDetailsHandler();
             }}
           >
@@ -627,11 +555,11 @@ export default function SwipeableCard({
           <Button 
             size="default"
             variant={data.isPotentialMatch ? "secondary" : "default"}
-            className={`flex-1 pointer-events-auto ${data.isPotentialMatch ? 'bg-primary/10 text-primary hover:bg-primary/20' : ''}`}
+            className={`flex-1 ${data.isPotentialMatch ? 'bg-primary/10 text-primary hover:bg-primary/20' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              console.log("[SwipeableCard] Request/Match button clicked");
+              console.log("[SimpleCard] Request/Match button clicked");
               handleButtonClick("right");
             }}
           >
@@ -650,13 +578,13 @@ export default function SwipeableCard({
         isOpen={showNoteDialog}
         onClose={() => setShowNoteDialog(false)}
         onSendWithNote={(note) => {
-          console.log("Sending request with note from SwipeableCard:", note);
+          console.log("Sending request with note from SimpleCard:", note);
           // Give the dialog time to fully close before executing the swipe
           setTimeout(() => {
             handleSwipeAction("right", note);
           }, 300);
         }}
       />
-    </motion.div>
+    </div>
   );
 }

@@ -309,6 +309,44 @@ body.scrollable-page {
   opacity: 0.9 !important;
 }
 
+/* New direct button approach */
+.direct-button {
+  position: relative !important;
+  z-index: 9999 !important;
+  min-height: 48px !important; /* Larger hit target for mobile */
+  cursor: pointer !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+  -webkit-touch-callout: none !important;
+  touch-action: manipulation !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+  transition: transform 0.1s ease-in-out !important;
+  transform: translateZ(0) !important;
+  outline: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  margin: 8px 0 !important;
+}
+
+/* Visual feedback on press */
+.direct-button:active {
+  transform: scale(0.98) translateZ(0) !important;
+  opacity: 0.9 !important;
+}
+
+/* Remove drag functionality from cards */
+.no-drag {
+  touch-action: auto !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  cursor: default !important;
+}
+
 @layer base {
   * {
     @apply border-border;
