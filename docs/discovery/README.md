@@ -14,6 +14,7 @@ The discovery system is responsible for helping users find relevant collaboratio
 - [Authentication Timing Fix](./authentication-timing-fix.md) - Fix for blank discovery page on initial load
 - [Twitter Engagement Display](./twitter-engagement-display.md) - Improved display of Twitter engagement types in collaboration details
 - [UI Improvements](./ui-improvements.md) - Documentation of SwipeableCard button fixes and Discovery page UI enhancements
+- [Reset Left Swipes](./reset-left-swipes.md) - Feature to allow users to see previously rejected collaborations again
 
 ## Key Features
 
@@ -151,6 +152,7 @@ When a match is created through the discovery system, a match moment dialog is d
 - **Version 1.8.4**: Improved Twitter engagement types display in collaboration details with proper formatting
 - **Version 1.8.8**: Enhanced SwipeableCard component with improved button functionality, updated Filter button to include text label, and modified bottom panel to only show Refresh button when no cards are available
 - **Version 1.9.7**: Added detailed swipe count diagnostics to investigate discrepancies between swipe counts and available collaborations
+- **Version 1.10.1**: Added Reset Left Swipes feature to allow users to see previously rejected collaborations again, and made the Adjust Filters button only appear when filters are actually active
 
 ## Related Documentation
 

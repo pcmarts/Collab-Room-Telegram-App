@@ -5,6 +5,20 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.1] - 2025-04-25
+
+### Enhanced
+- Improved "No more cards" empty state UI in the Discovery page with more helpful options
+- Added "Reset Left Swipes" button to allow users to see previously skipped collaborations again
+- Made the "Adjust Filters" button only appear when filters are actually active
+- Added loading state for the reset action to provide visual feedback
+
+### Technical Details
+- Added new deleteLeftSwipes method to database storage interface that preserves right swipes
+- Created new API endpoint /api/reset-left-swipes to handle the reset functionality
+- Implemented marketing preferences query to detect active filters in the Discovery UI
+- Conditionally rendered filter buttons based on actual filter state for improved user experience
+
 ## [Version 1.10.0] - 2025-04-25
 
 ### Fixed
