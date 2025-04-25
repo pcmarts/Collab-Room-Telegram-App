@@ -1522,8 +1522,8 @@ bot.on("callback_query", async (callbackQuery) => {
     else if (action.startsWith("approve_user_")) {
       await handleApproveUserCallback(callbackQuery);
     }
-    // Handle swipe actions
-    else if (action.startsWith("swipe_")) {
+    // Handle swipe actions (supports both old format "swipe_" and new shortened format "sr_"/"sl_")
+    else if (action.startsWith("swipe_") || action.startsWith("sr_") || action.startsWith("sl_")) {
       await handleSwipeCallback(callbackQuery);
     }
     // Handle match actions
@@ -2024,11 +2024,65 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
     }
 
     // Extract the action and data from the callback
-    // Format: swipe_<direction>_<collabID>_<userID>
+    // Two possible formats:
+    // 1. Legacy format: swipe_<direction>_<collabID>_<userID>
+    // 2. New shortened format: s<direction-initial>_<short-collabID>_<short-userID>
     const parts = callbackQuery.data.split("_");
-    const direction = parts[1]; // "right" or "left"
-    const collaborationId = parts[2];
-    const requesterId = parts[3];
+    
+    let direction: string;
+    let collaborationId: string;
+    let requesterId: string;
+    
+    // Handle shortened format (sr_ or sl_)
+    if (callbackQuery.data.startsWith("sr_") || callbackQuery.data.startsWith("sl_")) {
+      direction = callbackQuery.data.startsWith("sr_") ? "right" : "left";
+      const shortCollabId = parts[1];
+      const shortRequesterId = parts[2];
+      
+      console.log(`[SWIPE_CALLBACK] Processing shortened callback: direction=${direction}, shortCollabId=${shortCollabId}, shortRequesterId=${shortRequesterId}`);
+      
+      // Find the full collaboration ID using the shortened version
+      const [collaboration] = await db
+        .select()
+        .from(collaborations)
+        .where(sql`STARTS_WITH(${collaborations.id}::text, ${shortCollabId})`);
+      
+      if (!collaboration) {
+        console.error(`[SWIPE_CALLBACK] Collaboration with short ID ${shortCollabId} not found`);
+        await bot.answerCallbackQuery(callbackQuery.id, {
+          text: "Collaboration not found.",
+          show_alert: true
+        });
+        return;
+      }
+      
+      // Find the full requester ID using the shortened version
+      const [requester] = await db
+        .select()
+        .from(users)
+        .where(sql`STARTS_WITH(${users.id}::text, ${shortRequesterId})`);
+        
+      if (!requester) {
+        console.error(`[SWIPE_CALLBACK] Requester with short ID ${shortRequesterId} not found`);
+        await bot.answerCallbackQuery(callbackQuery.id, {
+          text: "Requester not found.",
+          show_alert: true
+        });
+        return;
+      }
+      
+      // Use the full IDs
+      collaborationId = collaboration.id;
+      requesterId = requester.id;
+      
+      console.log(`[SWIPE_CALLBACK] Resolved to full IDs: collaborationId=${collaborationId}, requesterId=${requesterId}`);
+    } 
+    // Handle legacy format
+    else {
+      direction = parts[1]; // "right" or "left"
+      collaborationId = parts[2];
+      requesterId = parts[3];
+    }
     const chatId = callbackQuery.message?.chat.id;
     const fromTelegramId = callbackQuery.from.id.toString();
 
@@ -2317,16 +2371,20 @@ export async function notifyNewCollabRequest(
     }
 
     // Create inline keyboard with swipe options
+    // Use shortened versions of UUIDs to respect Telegram's callback_data length limit (64 bytes)
+    const shortCollabId = collaborationId.substring(0, 8);
+    const shortRequesterId = requesterUserId.substring(0, 8);
+    
     const keyboard = {
       inline_keyboard: [
         [
           {
             text: "✅ Yes, Let's Collab!",
-            callback_data: `swipe_right_${collaborationId}_${requesterUserId}`,
+            callback_data: `sr_${shortCollabId}_${shortRequesterId}`,
           },
           {
             text: "❌ Not Interested",
-            callback_data: `swipe_left_${collaborationId}_${requesterUserId}`,
+            callback_data: `sl_${shortCollabId}_${shortRequesterId}`,
           },
         ],
         [
