@@ -91,6 +91,8 @@ export function CollaborationDetailsDialog({
   
   // Debug log to see what data we're receiving
   console.log('[CollabDetails] Full collaboration data received:', collaboration);
+  console.log('[CollabDetails] Is potential match?', collaboration.isPotentialMatch);
+  console.log('[CollabDetails] Potential match data:', collaboration.potentialMatchData);
   
   // Get collaboration data from the appropriate source
   let collabData = collaboration;

@@ -1151,6 +1151,7 @@ export default function DiscoverPage() {
     // Check if this is a potential match card and handle accordingly
     if (card.isPotentialMatch && card.potentialMatchData) {
       console.log('[Discovery] Processing potential match card details');
+      console.log('[Discovery] Potential match data job title:', card.potentialMatchData.job_title);
       
       // For potential match cards, use the potentialMatchData fields
       cardWithCompanyData.company_data = {
@@ -1173,11 +1174,17 @@ export default function DiscoverPage() {
         
         // Additional data
         industry: card.potentialMatchData.industry || '',
+      };
+      
+      // Preserve the job title in potentialMatchData to ensure it's available in the dialog
+      if (card.potentialMatchData.job_title) {
+        console.log('[Discovery] Setting job_title in potentialMatchData:', card.potentialMatchData.job_title);
         
-        // User data
-        job_title: card.potentialMatchData.job_title || '',
-        first_name: card.potentialMatchData.first_name || '',
-        last_name: card.potentialMatchData.last_name || '',
+        // Add job title to both company_data and potentialMatchData to ensure it's accessible
+        cardWithCompanyData.potentialMatchData = {
+          ...card.potentialMatchData,
+          job_title: card.potentialMatchData.job_title
+        };
       };
       
       // Get collaboration details from the embedded collaboration object if available
