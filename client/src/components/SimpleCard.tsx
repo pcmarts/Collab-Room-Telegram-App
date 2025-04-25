@@ -485,6 +485,14 @@ export default function SimpleCard({
           {/* Live Stream Guest Appearance */}
           {data.collab_type === 'Live Stream Guest Appearance' && (
             <div className="flex flex-col space-y-2 p-3 bg-red-500/5 rounded-md border border-red-500/10 mb-3">
+              {/* Title for this specific livestream */}
+              <div className="flex items-center space-x-1.5 mb-1">
+                <Video className="w-4 h-4 text-red-600" />
+                <span className="text-sm font-medium text-red-700">
+                  Bondex Talks
+                </span>
+              </div>
+              
               {/* Audience size - specific for this collab */}
               <p className="text-xs text-muted-foreground">
                 <Users className="w-3 h-3 inline mr-1" />
