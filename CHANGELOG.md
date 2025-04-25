@@ -5,6 +5,25 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.9.8] - 2025-04-25
+
+### Enhanced
+- Improved collaboration request flow with a two-step dialog (Just Send or Add a Note options)
+- Added success toast notifications to provide confirmation feedback when requests are sent
+- Created a dedicated green "success" variant for toast notifications
+- Improved toast notification styling with better spacing and text formatting
+
+### Fixed
+- Fixed overlapping text issue in toast notifications with improved styling
+- Improved positioning of note dialog to prevent keyboard overlap on mobile devices
+- Resolved text readability issues in toast notifications with dedicated styling for success messages
+
+### Technical Details
+- Updated AddNoteDialog.tsx to include a two-step decision flow for sending requests
+- Enhanced toast component in toast.tsx to include a new "success" variant with green styling
+- Improved toaster.tsx with conditional styling for better text visibility and spacing
+- Positioned note dialog higher on screen to avoid keyboard overlap when typing
+
 ## [Version 1.9.7] - 2025-04-25
 
 ### Enhanced

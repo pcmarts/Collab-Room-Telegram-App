@@ -157,6 +157,70 @@ Each card type implements specialized UI elements based on its content type:
 
 ## Dialog Components
 
+### AddNoteDialog (v1.9.8 Update)
+
+The AddNoteDialog component provides a two-step flow for adding an optional note to collaboration requests. When a user requests a collaboration, they are presented with a choice to either "Just Send" the request or "Add a Note" for a more personalized approach.
+
+**Implementation**
+
+Located at `client/src/components/AddNoteDialog.tsx`, this component handles both the initial prompt and the note composer views.
+
+```typescript
+interface AddNoteDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSendWithNote: (note: string) => void;
+}
+```
+
+**Key Features**
+- Two-step dialog flow with initial decision prompt and optional note composer
+- Improved positioning with top-[30%] and top-[20%] placements to avoid keyboard overlap
+- Optimized for mobile usage with proper spacing and keyboard handling
+- Success toast notifications provide confirmation when requests are sent
+- Clear navigation options with "Just Send" and "Add a Note" buttons
+
+**Usage Example**
+
+```jsx
+<AddNoteDialog
+  isOpen={showAddNoteDialog}
+  onClose={() => setShowAddNoteDialog(false)}
+  onSendWithNote={(note) => handleSendRequest(selectedCollaboration.id, note)}
+/>
+```
+
+### Toast Notifications (v1.9.8 Update)
+
+The toast notification system was enhanced in version 1.9.8 to provide better visual feedback to users when collaboration requests are sent. The improvements include:
+
+- Added a dedicated "success" variant with green background and white text
+- Improved spacing and padding in toast notifications for better readability
+- Fixed overlapping text issues with enhanced styling and layout
+- Enhanced toast visibility with appropriate contrast and spacing
+
+**Implementation**
+
+Located in the following files:
+- `client/src/components/ui/toast.tsx`: Core toast component with variants
+- `client/src/components/ui/toaster.tsx`: Toast display logic and styling
+
+**Usage Example**
+
+```jsx
+import { useToast } from "@/hooks/use-toast";
+
+// In your component:
+const { toast } = useToast();
+
+// Display a success toast:
+toast({
+  title: "Request Sent Successfully",
+  description: "Your collaboration request has been sent.",
+  variant: "success" as any,
+});
+```
+
 ### Collaboration Details Dialog (v1.9.6 Update)
 
 The CollaborationDetailsDialog component displays detailed information about a collaboration when a user taps the "Info" button on a discovery card. In version 1.9.6, this component was enhanced with the following improvements:
