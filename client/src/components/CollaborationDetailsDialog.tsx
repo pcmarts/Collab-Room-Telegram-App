@@ -151,6 +151,158 @@ export function CollaborationDetailsDialog({
                 {companyName}
               </h3>
               
+              {/* Job title - Enhanced for potential matches */}
+              {isPotentialMatch && potentialMatchData.job_title && (
+                <div className="flex items-center mt-1 text-sm text-primary font-medium">
+                  <Briefcase className="h-4 w-4 mr-1 text-primary/70" />
+                  <span>
+                    {potentialMatchData.job_title}
+                  </span>
+                </div>
+              )}
+              
+              <Separator className="my-3" />
+              
+              {/* Company description - highlighted and more prominent */}
+              {companyData.short_description && (
+                <div className="mt-3 p-3 bg-secondary/10 rounded-md border border-secondary/20">
+                  <h4 className="text-sm font-medium mb-1 flex items-center gap-1">
+                    <Info className="h-3.5 w-3.5" />
+                    About {companyName}
+                  </h4>
+                  <p className="text-sm">{companyData.short_description}</p>
+                </div>
+              )}
+              
+              {/* Show personalized note if exists */}
+              {isPotentialMatch && potentialMatchData.note && (
+                <div className="mt-3 bg-primary/5 p-3 rounded-md border border-primary/10">
+                  <h4 className="text-sm font-medium text-primary mb-1">Personalized Note</h4>
+                  <p className="text-sm italic">{potentialMatchData.note}</p>
+                </div>
+              )}
+              
+              {/* Company social links and details */}
+              <div className="grid grid-cols-2 gap-2 mt-3">
+                {companyData.website && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Globe className="h-3 w-3 text-muted-foreground" />
+                    <a 
+                      href={companyData.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      {companyData.website.replace(/https?:\/\/(www\.)?/, "")}
+                    </a>
+                  </div>
+                )}
+                
+                {companyData.twitter_handle && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Twitter className="h-3 w-3 text-[#1DA1F2]" />
+                    <a 
+                      href={companyData.twitter_handle.startsWith('https://') 
+                        ? companyData.twitter_handle 
+                        : `https://x.com/${companyData.twitter_handle.replace('@', '')}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      @{companyData.twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
+                    </a>
+                  </div>
+                )}
+                
+                {companyData.linkedin_url && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Linkedin className="h-3 w-3 text-[#0077B5]" />
+                    <a 
+                      href={companyData.linkedin_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      LinkedIn
+                    </a>
+                  </div>
+                )}
+                
+                {companyData.twitter_followers && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Users className="h-3 w-3 text-muted-foreground" />
+                    <span>{companyData.twitter_followers} Twitter followers</span>
+                  </div>
+                )}
+                
+                {companyData.funding_stage && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <DollarSign className="h-3 w-3 text-muted-foreground" />
+                    <span>{companyData.funding_stage}</span>
+                  </div>
+                )}
+                
+                {companyData.has_token && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Coins className="h-3 w-3 text-muted-foreground" />
+                    <span>
+                      Token {companyData.token_ticker ? `(${companyData.token_ticker})` : ""}
+                    </span>
+                  </div>
+                )}
+                
+                {companyData.blockchain_networks && companyData.blockchain_networks.length > 0 && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Layers className="h-3 w-3 text-muted-foreground" />
+                    <span>
+                      {Array.isArray(companyData.blockchain_networks) 
+                        ? companyData.blockchain_networks.join(', ') 
+                        : companyData.blockchain_networks}
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              {companyData.tags && companyData.tags.length > 0 && (
+                <div className="mt-3">
+                  <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
+                    <Tag className="h-3 w-3" />
+                    Tags
+                  </h4>
+                  <div className="flex flex-wrap gap-1">
+                    {Array.isArray(companyData.tags) 
+                      ? companyData.tags.map((tag, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))
+                      : (
+                        <Badge variant="outline" className="text-xs">
+                          {String(companyData.tags)}
+                        </Badge>
+                      )
+                    }
+                  </div>
+                </div>
+              )}
+            </Card>
+            
+            {/* Collaboration details section - NOW SECOND */}
+            <Card className="p-4 bg-card/50 border shadow-sm">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Info className="h-5 w-5 text-muted-foreground" />
+                Collaboration Details
+              </h3>
+              
               <Separator className="my-3" />
               
               {/* Collaboration Type as Pill/Badge */}
