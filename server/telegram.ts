@@ -2461,19 +2461,20 @@ export async function notifyNewCollabRequest(
     }
     
     // Handle Twitter and LinkedIn links
+    const twitterHandle = requester.twitter_handle ? requester.twitter_handle.replace('@', '') : '';
     const twitterLink = requester.twitter_handle ? 
-      `<a href="https://twitter.com/${requester.twitter_handle.replace('@', '')}">Twitter</a>` : 
+      `<a href="https://twitter.com/${twitterHandle}">Twitter</a>` : 
       "Twitter";
     
     const linkedinLink = requesterCompany?.linkedin_url ? 
       `<a href="${requesterCompany.linkedin_url}">LinkedIn</a>` : 
       "LinkedIn";
     
-    // Host username (if available) - make sure to display properly
-    const hostUsername = host.username || host.first_name;
+    // Host handle (if available) - make sure to display properly
+    const hostHandle = host.handle || host.first_name;
     
     const message = 
-      `🔥 ${host.username ? `@${host.username}` : host.first_name} - <b>New Collab Request from ${requesterCompany?.name || requester.first_name + "'s company"}</b>` +
+      `🔥 ${host.handle ? `@${host.handle}` : host.first_name} - <b>New Collab Request from ${requesterCompany?.name || requester.first_name + "'s company"}</b>` +
       
       // Include note if available
       `${noteSection}` +
@@ -2486,13 +2487,14 @@ export async function notifyNewCollabRequest(
       
       // Collaboration details
       `\n\n🤝 <b>Your Collab:</b> ${collaboration.collab_type}` +
-      `\n✏️ <b>${collaboration.description ? collaboration.description : "diving deep into other projects"}</b>` +
+      `\n✏️ ${collaboration.description ? collaboration.description : "diving deep into other projects"}` +
       `\n${collaboration.topics?.length ? "🏷️ " + collaboration.topics.join(", ") : ""}`;
 
-    // Send notification to host
+    // Send notification to host with link preview disabled
     await sendDirectFormattedMessage(parseInt(host.telegram_id), message, {
       parse_mode: "HTML",
       reply_markup: keyboard,
+      disable_web_page_preview: true
     });
 
     console.log(`Sent collaboration request notification to host ${hostUserId}`);
@@ -2586,6 +2588,7 @@ export async function notifyMatchCreated(
       await sendDirectFormattedMessage(parseInt(host.telegram_id), matchMessage, {
         parse_mode: "HTML",
         reply_markup: keyboard,
+        disable_web_page_preview: true
       });
       hostNotified = true;
     }
@@ -2595,6 +2598,7 @@ export async function notifyMatchCreated(
       await sendDirectFormattedMessage(parseInt(requester.telegram_id), requesterMessage, {
         parse_mode: "HTML",
         reply_markup: keyboard,
+        disable_web_page_preview: true
       });
       requesterNotified = true;
     }
