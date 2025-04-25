@@ -126,7 +126,13 @@ export default function SimpleCard({
   const handleButtonClick = (direction: "left" | "right") => {
     try {
       if (direction === "right") {
-        setShowNoteDialog(true);
+        // For potential matches, skip the note dialog and directly create the match
+        if (data.isPotentialMatch) {
+          handleSwipeAction(direction);
+        } else {
+          // For regular collaborations, show the note dialog as before
+          setShowNoteDialog(true);
+        }
       } else {
         handleSwipeAction(direction);
       }
