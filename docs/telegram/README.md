@@ -13,6 +13,8 @@ The application uses two main aspects of Telegram's platform:
 
 - [Haptic Feedback Integration](./haptic-feedback.md): Details on implementing mobile vibration feedback through Telegram's WebApp API
 - [Notification Updates](./notificationUpdates.md): Information about the enhanced notification system
+- [Notification Fixes](./notification-fixes.md): Details about fixes to the Telegram notification delivery system
+- [Mobile Link Compatibility](./mobile-link-compatibility.md): Information about making links work properly in the Telegram mobile interface
 
 ## Telegram Bot
 

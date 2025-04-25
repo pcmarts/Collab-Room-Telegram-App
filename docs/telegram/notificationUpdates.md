@@ -4,6 +4,8 @@
 
 The Collab Room has enhanced the Telegram notification system with multiple improvements, including personalized notes for collaboration requests and an improved admin broadcast system. This document details all notification-related enhancements.
 
+> **Important Update**: For information about recent fixes to the notification delivery system, including solutions for callback data length limits and chat ID validation, see [Notification Fixes](./notification-fixes.md).
+
 ## Admin Broadcast System (v1.8.0 and v1.8.1)
 
 The admin broadcast feature allows administrators to send formatted announcements to all approved users who have notifications enabled.

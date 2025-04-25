@@ -121,41 +121,47 @@ export async function setupBotCommands() {
     await bot.setMyCommands(regularCommands);
     console.log("[BOT_SETUP] Set regular commands as default for all users");
     
-    // Get all admin users from the database
-    const adminUsers = await db
-      .select()
-      .from(users)
-      .where(eq(users.is_admin, true));
-    
-    console.log(`[BOT_SETUP] Found ${adminUsers.length} admin users`);
-    
-    // Set admin commands for each admin user instead of using chat_administrators scope
-    for (const admin of adminUsers) {
-      if (!admin.telegram_id) {
-        console.warn(`[BOT_SETUP] Admin ${admin.id} has no Telegram ID, skipping`);
-        continue;
-      }
+    try {
+      // Get all admin users from the database
+      const adminUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.is_admin, true));
       
-      try {
-        // Check if this is a valid chat_id - can't set commands for users the bot hasn't interacted with
-        const chatExists = await isValidChatId(parseInt(admin.telegram_id));
-        
-        if (chatExists) {
-          // Create a chat scope for this specific admin user
-          const adminScope = {
-            type: 'chat',
-            chat_id: parseInt(admin.telegram_id)
-          };
-          
-          // Set admin-specific commands
-          await bot.setMyCommands(adminCommands, { scope: adminScope });
-          console.log(`[BOT_SETUP] Set admin commands for ${admin.first_name} (${admin.telegram_id})`);
-        } else {
-          console.log(`[BOT_SETUP] Admin ${admin.first_name} (${admin.telegram_id}) hasn't interacted with the bot yet, skipping command setup`);
+      console.log(`[BOT_SETUP] Found ${adminUsers.length} admin users`);
+      
+      // Set admin commands for each admin user instead of using chat_administrators scope
+      for (const admin of adminUsers) {
+        if (!admin.telegram_id) {
+          console.warn(`[BOT_SETUP] Admin ${admin.id} has no Telegram ID, skipping`);
+          continue;
         }
-      } catch (error) {
-        console.error(`[BOT_SETUP] Failed to set commands for admin ${admin.telegram_id}:`, error);
+        
+        try {
+          // Check if this is a valid chat_id - can't set commands for users the bot hasn't interacted with
+          const chatExists = await isValidChatId(parseInt(admin.telegram_id));
+          
+          if (chatExists) {
+            // Create a chat scope for this specific admin user
+            const adminScope = {
+              type: 'chat',
+              chat_id: parseInt(admin.telegram_id)
+            };
+            
+            // Set admin-specific commands
+            await bot.setMyCommands(adminCommands, { scope: adminScope });
+            console.log(`[BOT_SETUP] Set admin commands for ${admin.first_name} (${admin.telegram_id})`);
+          } else {
+            console.log(`[BOT_SETUP] Admin ${admin.first_name} (${admin.telegram_id}) hasn't interacted with the bot yet, skipping command setup`);
+          }
+        } catch (error) {
+          console.error(`[BOT_SETUP] Failed to set commands for admin ${admin.telegram_id}:`, error);
+        }
       }
+    } catch (dbError) {
+      // If there's a DB error, we can continue with just the regular commands
+      console.error("[BOT_SETUP] Database error when fetching admin users:", dbError);
+      console.log("[BOT_SETUP] Continuing with just regular commands setup");
     }
     
     return true;
@@ -2025,11 +2031,20 @@ async function sendDirectFormattedMessage(
   options?: TelegramBot.SendMessageOptions
 ) {
   try {
-    await bot.sendMessage(chatId, text, options);
-    console.log(`Successfully sent formatted message to ${chatId}`);
+    console.log(`[TELEGRAM] Attempting to send message to chat ID: ${chatId}`);
+    console.log(`[TELEGRAM] Message preview: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
+    console.log(`[TELEGRAM] Message options:`, JSON.stringify(options || {}));
+    
+    const result = await bot.sendMessage(chatId, text, options);
+    console.log(`[TELEGRAM] Successfully sent formatted message to ${chatId}, message ID: ${result.message_id}`);
     return true;
   } catch (error) {
-    console.error(`Failed to send message to ${chatId}:`, error);
+    console.error(`[TELEGRAM] Failed to send message to ${chatId}:`, error);
+    // More detailed error logging for troubleshooting
+    if (error instanceof Error) {
+      console.error(`[TELEGRAM] Error name: ${error.name}, message: ${error.message}`);
+      console.error(`[TELEGRAM] Error stack: ${error.stack}`);
+    }
     return false;
   }
 }
@@ -2161,9 +2176,10 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
     }
 
     // Check if this is a valid swipe (user owns the collaboration)
-    if (collaboration.user_id !== user.id) {
+    // Note: Collaboration creator is in creator_id field, not user_id
+    if (collaboration.creator_id !== user.id) {
       console.error(
-        `[SWIPE_ACTION] User ${user.id} does not own collaboration ${collaborationId}`
+        `[SWIPE_ACTION] User ${user.id} does not own collaboration ${collaborationId}, creator is ${collaboration.creator_id}`
       );
       await bot.answerCallbackQuery(callbackQuery.id, {
         text: "You can only respond to requests for your own collaborations.",

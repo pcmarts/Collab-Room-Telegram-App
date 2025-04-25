@@ -872,6 +872,7 @@ export class DatabaseStorage implements IStorage {
     // If this is a right swipe (application), check for a potential match
     if (swipe.direction === 'right') {
       console.log("Right swipe detected - checking for potential match");
+      console.log(`DEBUG: User ${swipe.user_id} swiped right on collaboration ${swipe.collaboration_id}`);
       
       try {
         // Get the collaboration
@@ -882,6 +883,22 @@ export class DatabaseStorage implements IStorage {
         
         if (collaboration) {
           console.log("Found collaboration by:", collaboration.creator_id);
+          
+          // Get host details for debugging
+          const [host] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, collaboration.creator_id));
+            
+          console.log(`DEBUG: Collab host: ${host ? host.id : 'unknown'} (telegram_id: ${host?.telegram_id || 'none'})`);
+          
+          // Get notification preferences for debugging
+          const [preferences] = await db
+            .select()
+            .from(notification_preferences)
+            .where(eq(notification_preferences.user_id, collaboration.creator_id));
+            
+          console.log(`DEBUG: Host notification preferences: ${preferences ? (preferences.notifications_enabled ? 'enabled' : 'disabled') : 'not set'}`);
           
           // Check if the collaboration creator has swiped right on any of this user's collaborations
           const creatorSwipes = await db

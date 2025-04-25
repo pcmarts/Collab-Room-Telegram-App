@@ -5,6 +5,27 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.9.9] - 2025-04-25
+
+### Fixed
+- Fixed notification delivery issues when users swipe right on collaborations
+- Resolved "BUTTON_DATA_INVALID" errors with Telegram callback data
+- Fixed "Bad Request: chat not found" errors during bot command setup
+- Added validation checks for Telegram chat IDs to prevent notification failures
+- Improved UUID handling in Telegram callback data to comply with length limitations
+
+### Enhanced
+- Added comprehensive error logging for Telegram notification system
+- Improved bot initialization reliability with database connection retries
+- Added diagnostic tools for testing notification delivery paths
+
+### Technical Details
+- Implemented shortened UUIDs (first 8 characters) for Telegram callback data
+- Fixed SQL query format for UUID substring casting in Telegram handlers
+- Corrected field reference in collaboration ownership check (creator_id vs user_id)
+- Enhanced database connection handling in bot command setup process
+- Added detailed notification delivery logging for troubleshooting
+
 ## [Version 1.9.8] - 2025-04-25
 
 ### Enhanced
