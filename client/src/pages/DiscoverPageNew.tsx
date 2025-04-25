@@ -1094,7 +1094,7 @@ export default function DiscoverPage() {
       // Check if we created a match and show match moment if needed
       if (direction === 'right' && (isPotentialMatch || swipeResult.match_created)) {
         setMatchData({
-          title: card.collab_type,
+          title: isPotentialMatch ? "Potential Match" : "New Match",
           companyName: isPotentialMatch ? card.potentialMatchData?.company_name || '' : card.creator_company_name || '',
           collaborationType: card.collab_type || 'Collaboration',
           userName: isPotentialMatch ? card.potentialMatchData?.first_name || '' : ''

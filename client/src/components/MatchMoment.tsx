@@ -76,7 +76,9 @@ export function MatchMoment({
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                <h3 className="font-semibold text-lg">{collaborationType}</h3>
+                <h3 className="font-semibold text-lg">
+                  Collaboration Opportunity
+                </h3>
               </motion.div>
               
               <motion.div 
