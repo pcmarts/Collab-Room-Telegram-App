@@ -3896,7 +3896,44 @@ export async function registerRoutes(app: Express) {
       
       // Get all swipes for this user (both left and right)
       const userSwipes = await storage.getUserSwipes(user.id);
+      
+      // Enhanced debugging for swipe discrepancy investigation
       console.log(`Found ${userSwipes.length} swipes for user ${user.id}`);
+      
+      // Get collaboration details for debugging
+      const activeCollabsCount = await storage.getActiveCollaborationsCount();
+      console.log(`Total active collaborations in database: ${activeCollabsCount}`);
+      
+      // Log detailed information about each swipe for investigation
+      if (userSwipes.length > 0) {
+        console.log(`===== SWIPE DETAIL INVESTIGATION =====`);
+        console.log(`Swipe count (${userSwipes.length}) vs Active collabs (${activeCollabsCount})`);
+        
+        // Group swipes by collaboration ID to check for duplicates
+        const swipesByCollab = userSwipes.reduce((acc, swipe) => {
+          const collabId = swipe.collaboration_id;
+          if (!acc[collabId]) {
+            acc[collabId] = [];
+          }
+          acc[collabId].push({
+            id: swipe.id,
+            direction: swipe.direction,
+            created_at: swipe.created_at
+          });
+          return acc;
+        }, {});
+        
+        // Log the grouped swipes
+        console.log(`Swipes grouped by collaboration (${Object.keys(swipesByCollab).length} unique collaborations):`);
+        for (const [collabId, swipes] of Object.entries(swipesByCollab)) {
+          console.log(`Collaboration ${collabId}: ${swipes.length} swipe(s)`);
+          if (swipes.length > 1) {
+            console.log(`  Possible duplicate swipes for collab ${collabId}:`);
+            swipes.forEach(s => console.log(`    ${s.id} - ${s.direction} - ${s.created_at}`));
+          }
+        }
+        console.log(`========================================`);
+      }
       
       // Return swipes
       return res.json(userSwipes);
