@@ -234,6 +234,13 @@ export default function SimpleCard({
             >
               <Info className="h-4 w-4" />
             </Button>
+            
+            {/* Add title to header */}
+            <div className="mt-3">
+              <h3 className="text-xl font-semibold">
+                {data.title || (data.isPotentialMatch ? "Potential Collaboration" : "Collaboration")}
+              </h3>
+            </div>
           </div>
         </div>
         
