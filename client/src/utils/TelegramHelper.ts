@@ -9,20 +9,23 @@
 
 /**
  * Opens a link in the Telegram WebApp environment
- * This function handles both desktop and mobile (iOS/Android) environments
+ * This function handles both desktop and mobile environments
+ * with consistent behavior across platforms
  * 
  * @param url The URL to open
  * @param options Optional configuration
  */
 export function openTelegramLink(url: string, options?: {
-  useTimeout?: boolean; // Whether to use a timeout (helps with iOS)
+  useTimeout?: boolean; // Whether to use a timeout (helps with mobile devices)
   timeoutMs?: number;   // Timeout in milliseconds
   debugLog?: boolean;   // Whether to log debug information
+  forceWindowOpen?: boolean; // Force using window.open instead of Telegram API
 }) {
   const {
     useTimeout = true,
     timeoutMs = 50,
-    debugLog = true
+    debugLog = true,
+    forceWindowOpen = false
   } = options || {};
 
   // Clean up and validate URL
@@ -36,22 +39,51 @@ export function openTelegramLink(url: string, options?: {
   if (debugLog) {
     console.log(`[TelegramHelper] Opening URL: ${validUrl}`);
     console.log(`[TelegramHelper] Telegram WebApp available: ${!!window.Telegram?.WebApp}`);
+    console.log(`[TelegramHelper] Is mobile device: ${/android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent.toLowerCase())}`);
+    console.log(`[TelegramHelper] Force window.open: ${forceWindowOpen}`);
   }
   
   // Function to actually open the link
   const openLink = () => {
-    // Try using Telegram WebApp API first
-    if (window.Telegram?.WebApp?.openLink) {
-      if (debugLog) console.log('[TelegramHelper] Opening via Telegram.WebApp.openLink()');
-      window.Telegram.WebApp.openLink(validUrl);
-    } else {
-      // Fallback to window.open for desktop or non-Telegram environments
+    // Try all methods sequentially until one works
+    // This is our best approach for cross-platform compatibility
+    try {
+      // Method 1: Use window.open directly (often works best for mobile)
+      if (forceWindowOpen) {
+        if (debugLog) console.log('[TelegramHelper] Using forced window.open');
+        try {
+          window.open(validUrl, '_blank');
+          return; // Exit if successful
+        } catch (err) {
+          if (debugLog) console.log('[TelegramHelper] Initial window.open failed, continuing to next method');
+        }
+      }
+
+      // Method 2: Try Telegram WebApp API if available
+      if (window.Telegram?.WebApp?.openLink) {
+        if (debugLog) console.log('[TelegramHelper] Opening via Telegram.WebApp.openLink()');
+        window.Telegram.WebApp.openLink(validUrl);
+        return; // Exit if this method is attempted (no way to detect success/failure)
+      }
+      
+      // Method 3: Fallback to window.open with various targets
       if (debugLog) console.log('[TelegramHelper] Falling back to window.open()');
-      window.open(validUrl, '_blank', 'noopener,noreferrer');
+      window.open(validUrl, '_blank');
+      
+    } catch (err) {
+      if (debugLog) console.error('[TelegramHelper] Error opening URL:', err);
+      
+      // Method 4: Last resort - try changing location
+      try {
+        if (debugLog) console.log('[TelegramHelper] Attempting to change window.location as last resort');
+        window.location.href = validUrl;
+      } catch (finalErr) {
+        console.error('[TelegramHelper] All link opening methods failed:', finalErr);
+      }
     }
   };
   
-  // Use timeout if requested (helps with iOS touch events)
+  // Use timeout if requested (helps with touch events on mobile)
   if (useTimeout) {
     setTimeout(openLink, timeoutMs);
   } else {
