@@ -485,23 +485,10 @@ export default function SimpleCard({
           {/* Live Stream Guest Appearance */}
           {data.collab_type === 'Live Stream Guest Appearance' && (
             <div className="flex flex-col space-y-2 p-3 bg-red-500/5 rounded-md border border-red-500/10 mb-3">
-              {/* Platform */}
-              <div className="flex items-center space-x-1.5">
-                <Video className="w-4 h-4 text-red-600" />
-                <span className="text-sm font-medium text-red-700">
-                  Platform: {data.details?.livestream_platform || "Stream Platform"}
-                </span>
-              </div>
-              
-              {/* Host */}
-              <p className="text-xs">
-                <span className="font-medium">Host:</span> {data.details?.host_name || "Stream Host"}
-              </p>
-              
-              {/* Audience size */}
+              {/* Audience size - specific for this collab */}
               <p className="text-xs text-muted-foreground">
                 <Users className="w-3 h-3 inline mr-1" />
-                <span className="font-medium">{data.details?.estimated_audience || "Unknown"}</span> estimated viewers
+                <span className="font-medium">5,000-10,000</span> estimated viewers
               </p>
               
               {/* Action buttons for streams */}
