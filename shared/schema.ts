@@ -596,9 +596,7 @@ export const swipes = pgTable("swipes", {
     // Composite index for user_id + collaboration_id for the NOT EXISTS query
     userCollabIdx: index("swipe_user_collab_idx").on(table.user_id, table.collaboration_id),
     // Composite index for direction + user_id for finding matches
-    directionUserIdx: index("swipe_direction_user_idx").on(table.direction, table.user_id),
-    // Add unique constraint to prevent duplicate swipes on the same collaboration by the same user
-    userCollabUniqueIdx: uniqueIndex("user_collab_unique_idx").on(table.user_id, table.collaboration_id)
+    directionUserIdx: index("swipe_direction_user_idx").on(table.direction, table.user_id)
   };
 });
 
