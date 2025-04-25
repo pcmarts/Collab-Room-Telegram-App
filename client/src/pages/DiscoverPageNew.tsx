@@ -1146,13 +1146,47 @@ export default function DiscoverPage() {
     // First, make a copy of the card data to avoid modifying the original
     const cardWithCompanyData = { ...card };
     
-    // Ensure company_data is properly structured for the details dialog
-    if (!cardWithCompanyData.company_data) {
+    // Check if this is a potential match card and handle accordingly
+    if (card.isPotentialMatch && card.potentialMatchData) {
+      // For potential match cards, use the potentialMatchData fields
+      cardWithCompanyData.company_data = {
+        // Basic company information
+        id: card.potentialMatchData.id || '',
+        name: card.potentialMatchData.company_name || '',
+        logo_url: card.potentialMatchData.company_logo_url || '',
+        description: card.potentialMatchData.company_description || '',
+        short_description: card.potentialMatchData.company_description || '',
+        website: card.potentialMatchData.company_website || '',
+        
+        // Social media links
+        twitter_handle: card.potentialMatchData.company_twitter || '',
+        twitter_followers: card.potentialMatchData.company_twitter_followers || '',
+        linkedin_url: card.potentialMatchData.company_linkedin || '',
+        
+        // Classification information
+        funding_stage: '',
+        tags: [],
+        
+        // Additional data
+        industry: card.potentialMatchData.industry || '',
+        
+        // User data
+        job_title: card.potentialMatchData.job_title || '',
+        first_name: card.potentialMatchData.first_name || '',
+        last_name: card.potentialMatchData.last_name || '',
+      };
+      
+      // Set the company name for compatibility
+      cardWithCompanyData.companyName = card.potentialMatchData.company_name || '';
+      cardWithCompanyData.creator_company_name = card.potentialMatchData.company_name || '';
+    } 
+    // Regular collaboration card
+    else if (!cardWithCompanyData.company_data) {
       // Create a complete company_data object with all fields the dialog might need
       cardWithCompanyData.company_data = {
         // Basic company information
         name: card.creator_company_name,
-        logo_url: card.company_logo_url,
+        logo_url: card.company_logo_url || card.creator_company_logo_url,
         description: card.company_description,
         short_description: card.company_description,
         website: card.company_website,
@@ -1174,11 +1208,11 @@ export default function DiscoverPage() {
         // Job information
         job_title: card.creator_role || card.job_title,
       };
-    }
-    
-    // Also set companyName for backward compatibility
-    if (!cardWithCompanyData.companyName && cardWithCompanyData.creator_company_name) {
-      cardWithCompanyData.companyName = cardWithCompanyData.creator_company_name;
+      
+      // Also set companyName for backward compatibility
+      if (!cardWithCompanyData.companyName && cardWithCompanyData.creator_company_name) {
+        cardWithCompanyData.companyName = cardWithCompanyData.creator_company_name;
+      }
     }
     
     console.log('[Discovery] Opening details dialog with data:', cardWithCompanyData);

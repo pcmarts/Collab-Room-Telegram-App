@@ -1,7 +1,8 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, X, MessageCircle, Users } from "lucide-react";
+import { Sparkles, X, MessageCircle, Users, Twitter, Mic, FileText, FileSearch, Mail, Video } from "lucide-react";
 import { LuCopy } from "react-icons/lu";
 import { useLocation } from "wouter";
 
@@ -76,9 +77,43 @@ export function MatchMoment({
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                <h3 className="font-semibold text-lg">
-                  Collaboration Opportunity
-                </h3>
+                <div className="flex items-center justify-center">
+                  {/* Different badge styles based on collaboration type, matching the pill styling in SimpleCard */}
+                  {(collaborationType?.toLowerCase()?.includes('twitter') || 
+                    collaborationType?.toLowerCase()?.includes('co-marketing')) ? (
+                    <Badge variant="outline" className="text-md bg-blue-500/10 border-blue-500/20 text-[#1DA1F2] py-2 px-3">
+                      <Twitter className="w-4 h-4 mr-2" />
+                      {collaborationType}
+                    </Badge>
+                  ) : collaborationType === 'Podcast Guest Appearance' ? (
+                    <Badge variant="outline" className="text-md bg-purple-500/10 border-purple-500/20 text-purple-700 py-2 px-3">
+                      <Mic className="w-4 h-4 mr-2" />
+                      {collaborationType}
+                    </Badge>
+                  ) : collaborationType === 'Blog Post Feature' ? (
+                    <Badge variant="outline" className="text-md bg-emerald-500/10 border-emerald-500/20 text-emerald-700 py-2 px-3">
+                      <FileText className="w-4 h-4 mr-2" />
+                      {collaborationType}
+                    </Badge>
+                  ) : collaborationType === 'Report & Research Feature' ? (
+                    <Badge variant="outline" className="text-md bg-amber-500/10 border-amber-500/20 text-amber-700 py-2 px-3">
+                      <FileSearch className="w-4 h-4 mr-2" />
+                      {collaborationType}
+                    </Badge>
+                  ) : collaborationType === 'Newsletter Feature' ? (
+                    <Badge variant="outline" className="text-md bg-indigo-500/10 border-indigo-500/20 text-indigo-700 py-2 px-3">
+                      <Mail className="w-4 h-4 mr-2" />
+                      {collaborationType}
+                    </Badge>
+                  ) : collaborationType === 'Live Stream Guest Appearance' ? (
+                    <Badge variant="outline" className="text-md bg-red-500/10 border-red-500/20 text-red-700 py-2 px-3">
+                      <Video className="w-4 h-4 mr-2" />
+                      {collaborationType}
+                    </Badge>
+                  ) : (
+                    <h3 className="font-semibold text-lg">{collaborationType}</h3>
+                  )}
+                </div>
               </motion.div>
               
               <motion.div 
