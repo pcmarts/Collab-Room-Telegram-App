@@ -1,6 +1,9 @@
 import React, { useState, Children } from "react";
-import SwipeableCard from "./SwipeableCard";
+import SimpleCard from "./SimpleCard";
 
+// Note: This Stack component is kept for backward compatibility 
+// But is no longer used in the application since we migrated to SimpleCard 
+// which shows only one card at a time
 export const Stack = ({ onVote, children, ...props }) => {
   const [stack, setStack] = useState(Children.toArray(children));
   const [originalStack] = useState(Children.toArray(children)); // Keep original array
@@ -25,23 +28,22 @@ export const Stack = ({ onVote, children, ...props }) => {
     onVote(item, vote);
   };
 
+  // Only show one card at a time (similar to DiscoverPageNew approach)
+  const topCard = stack.length > 0 ? stack[stack.length - 1] : null;
+
   return (
     <div className="w-full overflow-hidden flex justify-center items-center relative" {...props}>
-      {stack.map((item, index) => {
-        let isTop = index === stack.length - 1;
-        return (
-          <SwipeableCard
-            key={item.key || index}
-            data={item.props.data || {}}
-            onSwipe={(direction, note) => {
-              console.log("Stack received swipe:", direction, note);
-              handleVote(item, direction);
-            }}
-            onInfoClick={() => console.log("Info clicked for", item)}
-            zIndex={index * 10}
-          />
-        );
-      })}
+      {topCard && (
+        <SimpleCard
+          key={topCard.key || 0}
+          data={topCard.props.data || {}}
+          handleSwipe={(direction, note) => {
+            console.log("Stack received swipe:", direction, note);
+            handleVote(topCard, direction);
+          }}
+          onInfoClick={() => console.log("Info clicked for", topCard)}
+        />
+      )}
     </div>
   );
 };
