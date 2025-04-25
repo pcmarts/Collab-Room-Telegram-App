@@ -1,11 +1,12 @@
 import { memo } from "react";
 
-// Using memo to prevent unnecessary re-renders
+// Ultra-lightweight splash screen component that visually matches the HTML splash screen
+// Using memo to prevent unnecessary re-renders for absolute optimal performance
 const SplashScreen = memo(() => {
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-background z-50 animate-fade-in">
-      <div className="w-24 h-24 mb-4">
-        {/* Simple, lightweight SVG logo */}
+      <div className="w-20 h-20 mb-5">
+        {/* Identical simple SVG to match the HTML splash screen */}
         <svg 
           viewBox="0 0 100 100" 
           fill="none" 
@@ -26,6 +27,7 @@ const SplashScreen = memo(() => {
   );
 });
 
+// Add displayName for better debugging in React DevTools
 SplashScreen.displayName = "SplashScreen";
 
 export default SplashScreen;

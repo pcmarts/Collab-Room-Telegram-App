@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import SplashScreen from "@/components/SplashScreen";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { MatchProvider } from "@/contexts/MatchContext";
 import { initTelegramButtonFix } from "./utils/telegram-button-fix";
@@ -212,63 +213,71 @@ export const applyButtonFix = () => {
 };
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-
+  // Two-phase loading state
+  const [appPhase, setAppPhase] = useState<'splash' | 'loading' | 'ready'>('splash');
+  
+  // Immediately render the splash screen and transition to loading phase
   useEffect(() => {
-    console.log('[App] Initializing app with disabled auto-refresh');
-    
-    // Import our improved TelegramHelper initialization
-    import('./utils/TelegramHelper').then(({ initTelegramWebApp }) => {
-      // Initialize with our improved Telegram WebApp helper
-      const webAppInitialized = initTelegramWebApp({
-        expandApp: true,
-        debugLog: true
+    // This first phase transition happens extremely quickly (within ~50ms)
+    // just enough time to ensure the splash screen rendered
+    const splashTimer = setTimeout(() => {
+      setAppPhase('loading');
+      
+      // Begin actual app initialization in the background
+      console.log('[App] Initializing app with ultra-light splash screen');
+      
+      // Dynamic import for the Telegram helper to keep initial load fast
+      import('./utils/TelegramHelper').then(({ initTelegramWebApp }) => {
+        // Initialize with our improved Telegram WebApp helper
+        const webAppInitialized = initTelegramWebApp({
+          expandApp: true,
+          debugLog: false // Set to false to reduce console noise on startup
+        });
+        
+        if (!webAppInitialized) {
+          console.warn('[App] Not running in Telegram WebApp environment.');
+        }
+      }).catch(err => {
+        console.error('[App] Failed to load TelegramHelper:', err);
       });
-      
-      console.log(`[App] Telegram WebApp initialized: ${webAppInitialized}`);
-      
-      // If not running in Telegram WebApp, log a warning for development
-      if (!webAppInitialized) {
-        console.warn('[App] Not running in Telegram WebApp environment. Some features may not work correctly.');
-      }
-    }).catch(err => {
-      console.error('[App] Failed to load TelegramHelper:', err);
-    });
+    }, 50); // Ultra short timeout to ensure splash screen renders first
     
-    // Initialize Telegram button visibility fix (legacy code)
+    return () => clearTimeout(splashTimer);
+  }, []);
+  
+  // Once the loading phase starts, begin more intensive initialization
+  useEffect(() => {
+    if (appPhase !== 'loading') return;
+    
+    // Initialize Telegram button visibility fix
     const cleanupButtonFix = initTelegramButtonFix();
-    
-    // Apply button fix once, but don't set up intervals
-    // This prevents constant background activity that could trigger re-renders
     applyButtonFix();
     
-    // Disable the interval-based button fix
-    // const fixInterval = setInterval(applyButtonFix, 500); // <-- DISABLED
-
-    // Skip prefetching data to prevent authentication prompts
-    // This allows the app to start without requiring authentication immediately
-    console.log('[App] Auto data prefetching has been disabled to prevent authentication issues');
+    // Transition to the fully loaded app after initialization
+    const loadingTimer = setTimeout(() => {
+      setAppPhase('ready');
+    }, 800); // Adjust this time as needed for good UX
     
-    // Just complete loading after a minimal delay
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    
-    // Cleanup function for useEffect
     return () => {
+      clearTimeout(loadingTimer);
       if (typeof cleanupButtonFix === 'function') {
         cleanupButtonFix();
       }
-      // clearInterval(fixInterval); // <-- No interval to clear
     };
-  }, []);
-
+  }, [appPhase]);
+  
+  // Render different UI based on the loading phase
   return (
     <QueryClientProvider client={queryClient}>
       <MatchProvider>
-        {isLoading ? (
+        {appPhase === 'splash' ? (
+          // Phase 1: Ultra-light splash screen (renders in <100ms)
+          <SplashScreen />
+        ) : appPhase === 'loading' ? (
+          // Phase 2: Full loading screen with progress indicator
           <LoadingScreen />
         ) : (
+          // Phase 3: Main application
           <MobileCheck>
             <Router />
           </MobileCheck>
