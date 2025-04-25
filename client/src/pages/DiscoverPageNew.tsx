@@ -1143,11 +1143,15 @@ export default function DiscoverPage() {
   
   // View card details
   const handleViewCardDetails = (card: CardData) => {
+    console.log('[Discovery] Viewing card details, full card data:', JSON.stringify(card, null, 2));
+    
     // First, make a copy of the card data to avoid modifying the original
     const cardWithCompanyData = { ...card };
     
     // Check if this is a potential match card and handle accordingly
     if (card.isPotentialMatch && card.potentialMatchData) {
+      console.log('[Discovery] Processing potential match card details');
+      
       // For potential match cards, use the potentialMatchData fields
       cardWithCompanyData.company_data = {
         // Basic company information
@@ -1176,18 +1180,37 @@ export default function DiscoverPage() {
         last_name: card.potentialMatchData.last_name || '',
       };
       
-      // Add the collaboration details for potential match cards
-      cardWithCompanyData.title = card.title || '';
-      cardWithCompanyData.description = card.description || '';
-      cardWithCompanyData.collab_type = card.collab_type || 'Collaboration';
-      cardWithCompanyData.topics = card.topics || [];
-      cardWithCompanyData.details = card.details || {};
-      
-      // Add additional fields from the match that might be useful
+      // Get collaboration details from the embedded collaboration object if available
       if (card.collaboration) {
-        cardWithCompanyData.description = card.collaboration.description || cardWithCompanyData.description;
-        cardWithCompanyData.details = card.collaboration.details || cardWithCompanyData.details;
-        cardWithCompanyData.topics = card.collaboration.topics || cardWithCompanyData.topics;
+        console.log('[Discovery] Using nested collaboration data from potential match card');
+        
+        // Add a properly formed collaboration property that will be used in the details dialog
+        cardWithCompanyData.collaboration = {
+          id: card.collaboration.id,
+          title: card.collaboration.title || '',
+          collab_type: card.collaboration.collab_type || card.collab_type || 'Collaboration',
+          description: card.collaboration.description || '',
+          topics: card.collaboration.topics || [],
+          details: card.collaboration.details || {},
+          creator_id: card.collaboration.creator_id || '',
+          creator_company_name: card.collaboration.creator_company_name || ''
+        };
+        
+        // Also add direct fields for backward compatibility
+        cardWithCompanyData.title = card.collaboration.title || card.title || '';
+        cardWithCompanyData.description = card.collaboration.description || card.description || '';
+        cardWithCompanyData.collab_type = card.collaboration.collab_type || card.collab_type || 'Collaboration';
+        cardWithCompanyData.topics = card.collaboration.topics || card.topics || [];
+        cardWithCompanyData.details = card.collaboration.details || card.details || {};
+      } else {
+        // Fallback to direct card properties if no embedded collaboration object
+        console.log('[Discovery] Using direct card properties for potential match (no embedded collaboration)');
+        
+        cardWithCompanyData.title = card.title || '';
+        cardWithCompanyData.description = card.description || '';
+        cardWithCompanyData.collab_type = card.collab_type || 'Collaboration';
+        cardWithCompanyData.topics = card.topics || [];
+        cardWithCompanyData.details = card.details || {};
       }
       
       // Set the company name for compatibility
