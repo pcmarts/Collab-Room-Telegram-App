@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, useMotionValue, useTransform, MotionValue } from "framer-motion";
 import { openTelegramLink, createTwitterUrl, createTelegramLinkHandler, isIOSDevice } from "@/utils/TelegramHelper";
 import { TelegramLink } from "@/components/ui/telegram-link";
+import { IsolatedLinkButton } from "@/components/ui/isolated-link-button";
 
 // TypeScript definitions for Telegram WebApp API
 interface TelegramWebApp {
@@ -329,58 +330,12 @@ export default function SwipeableCard({
                   </span>
                 </div>
                 
-                {/* Separate Twitter button - much more obvious and clickable */}
-                <button
-                  className="telegram-direct-link bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm flex items-center justify-center font-medium"
-                  style={{ 
-                    position: 'relative', 
-                    zIndex: 9999, 
-                    border: '1px solid rgba(29, 161, 242, 0.3)',
-                    WebkitTapHighlightColor: 'rgba(0,0,0,0)',
-                    margin: '5px 0',
-                    width: '100%',
-                    maxWidth: '200px',
-                    cursor: 'pointer'
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log("Opening twitter link directly");
-                    
-                    // Try multiple approaches to ensure link opening works on mobile
-                    try {
-                      const url = createTwitterUrl(data.details?.host_twitter_handle || '');
-                      console.log(`[SwipeableCard] Opening Twitter URL: ${url}`);
-                      
-                      // Method 1: Use Telegram WebApp if available
-                      if (window.Telegram?.WebApp?.openLink) {
-                        console.log("[SwipeableCard] Using Telegram.WebApp.openLink");
-                        window.Telegram.WebApp.openLink(url);
-                      } 
-                      // Method 2: Direct location change as fallback
-                      else {
-                        console.log("[SwipeableCard] Using window.location.href");
-                        window.location.href = url;
-                      }
-                    } catch (error) {
-                      console.error("[SwipeableCard] Error opening link:", error);
-                      // Final fallback
-                      window.open(createTwitterUrl(data.details?.host_twitter_handle || ''), '_blank');
-                    }
-                  }}
-                  // Add explicit touch events for mobile
-                  onTouchStart={(e) => {
-                    console.log("[SwipeableCard] Button touchstart");
-                    e.stopPropagation();
-                  }}
-                  onTouchEnd={(e) => {
-                    console.log("[SwipeableCard] Button touchend");
-                    e.stopPropagation();
-                  }}
-                >
-                  <Twitter className="w-4 h-4 mr-2" />
-                  <span>View on Twitter</span>
-                </button>
+                {/* Using the isolated link button component for maximum mobile compatibility */}
+                <IsolatedLinkButton 
+                  url={createTwitterUrl(data.details?.host_twitter_handle || '')}
+                  label="View on Twitter"
+                  type="twitter"
+                />
               </div>
               
               {data.details?.host_follower_count && (
@@ -422,25 +377,12 @@ export default function SwipeableCard({
                   </span>
                 </div>
                 
-                {/* Separate Twitter button - much more obvious and clickable */}
-                <button
-                  className="telegram-direct-link bg-blue-50 text-blue-600 px-2 py-1 rounded text-sm flex items-center"
-                  style={{ 
-                    position: 'relative', 
-                    zIndex: 9999, 
-                    border: '1px solid rgba(29, 161, 242, 0.3)'
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log("Opening twitter link directly");
-                    // Force direct navigation
-                    window.location.href = createTwitterUrl(data.details?.twitter_handle || '');
-                  }}
-                >
-                  <Twitter className="w-3 h-3 mr-1" />
-                  Open Twitter Profile
-                </button>
+                {/* Using the isolated link button component for maximum mobile compatibility */}
+                <IsolatedLinkButton 
+                  url={createTwitterUrl(data.details?.twitter_handle || '')}
+                  label="View on Twitter"
+                  type="twitter"
+                />
               </div>
               
               {data.details?.host_follower_count && (
@@ -478,24 +420,11 @@ export default function SwipeableCard({
               
               {data.details?.podcast_link && (
                 <div className="flex items-center mt-2">
-                  <button
-                    className="telegram-direct-link bg-purple-50 text-purple-600 px-2 py-1 rounded text-sm flex items-center"
-                    style={{ 
-                      position: 'relative', 
-                      zIndex: 9999, 
-                      border: '1px solid rgba(139, 92, 246, 0.3)'
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log("Opening podcast link directly");
-                      // Force direct navigation
-                      window.location.href = data.details?.podcast_link || '';
-                    }}
-                  >
-                    <Link className="w-3 h-3 mr-1" />
-                    Open Podcast Website
-                  </button>
+                  <IsolatedLinkButton 
+                    url={data.details?.podcast_link || ''}
+                    label="Open Podcast"
+                    type="podcast"
+                  />
                 </div>
               )}
               
@@ -534,24 +463,11 @@ export default function SwipeableCard({
               
               {data.details?.blog_link && (
                 <div className="flex items-center mt-2">
-                  <button
-                    className="telegram-direct-link bg-emerald-50 text-emerald-600 px-2 py-1 rounded text-sm flex items-center"
-                    style={{ 
-                      position: 'relative', 
-                      zIndex: 9999, 
-                      border: '1px solid rgba(16, 185, 129, 0.3)'
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log("Opening blog link directly");
-                      // Force direct navigation
-                      window.location.href = data.details?.blog_link || '';
-                    }}
-                  >
-                    <FileText className="w-3 h-3 mr-1" />
-                    Read Blog Post
-                  </button>
+                  <IsolatedLinkButton 
+                    url={data.details?.blog_link || ''}
+                    label="Read Blog Post"
+                    type="blog"
+                  />
                 </div>
               )}
               
