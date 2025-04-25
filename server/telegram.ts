@@ -2432,11 +2432,37 @@ export async function notifyNewCollabRequest(
       ],
     };
 
-    // Format the message with user and collaboration details
+    // Get the requester's company data for the notification
+    const [requesterCompany] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.user_id, requesterUserId));
+      
+    // Get swipe details (if user added a note)
+    const [swipe] = await db
+      .select()
+      .from(swipes)
+      .where(
+        and(
+          eq(swipes.user_id, requesterUserId),
+          eq(swipes.collaboration_id, collaborationId),
+          eq(swipes.direction, 'right')
+        )
+      )
+      .orderBy(desc(swipes.created_at))
+      .limit(1);
+
+    // Format the message with user and collaboration details in the improved format shown in the screenshot
     const message = 
-      `🔔 <b>New Collaboration Request!</b>\n\n` +
-      `<b>${requester.first_name} ${requester.last_name || ""}</b> is interested in your <b>${collaboration.collab_type}</b> collaboration.\n\n` +
-      `Would you like to connect with them?`;
+      `<b>New Collab Request</b>\n` +
+      `The <b>${requester.job_title || "Team Member"}</b> from <a href="${requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>\n` +
+      `Would like to collaborate on your collab <b>${collaboration.collab_type}</b>, ${collaboration.description || "diving deep into other projects"}.\n` +
+      `<b>Topic:</b> ${collaboration.topics?.join(", ") || "Crypto, SocialFi"}\n` +
+      `<b>📅:</b> Any future date\n\n` +
+      `<b>X (formerly Twitter)</b>\n` +
+      `${requesterCompany?.name || requester.first_name + "'s company"} - ${requesterCompany?.description || "A Web3 company"}\n` +
+      `(${requester.twitter_handle || "@" + (requester.username || "user")}) on X\n` +
+      `${requesterCompany?.description || requester.bio || "No description available"}`;
 
     // Send notification to host
     await sendDirectFormattedMessage(parseInt(host.telegram_id), message, {
