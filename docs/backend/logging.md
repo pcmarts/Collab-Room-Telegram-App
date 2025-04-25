@@ -11,6 +11,7 @@ The application uses a comprehensive structured logging system that provides:
 3. Consistent log formatting with timestamps
 4. Request and error logging middleware
 5. Fine-grained control through environment variables
+6. Enhanced silent mode with minimal output (as of v1.10.2)
 
 ## Log Levels
 
@@ -186,6 +187,18 @@ This prevents accidental logging of sensitive information like:
 - Production environments default to only logging warnings and errors
 - Test environments default to only logging errors
 - Development environments log everything by default
+
+### 4. Enhanced Silent Mode (v1.10.2)
+
+In version 1.10.2, the application received significant silent mode improvements:
+
+- Server-side logging is limited to a single "Silent mode activated" message
+- Client-side console output is minimized by removing non-essential console.log statements
+- TelegramHelper component sets all debugLog options to false by default
+- Only critical errors (console.warn and console.error) are preserved
+- Twitter URL handling standardized to use x.com domain
+
+These improvements ensure minimal console noise in production while maintaining essential error reporting.
 
 ## Usage Examples
 

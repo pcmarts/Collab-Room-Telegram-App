@@ -16,6 +16,17 @@ The system uses the following log levels, from least to most verbose:
 | HTTP  | 3 | API requests and responses | API debugging |
 | DEBUG | 4 | Verbose development logs | Detailed debugging |
 
+## Enhanced Silent Mode
+
+As of version 1.10.2, the application includes comprehensive silent mode improvements:
+
+1. **Server-side logging**: The server displays "Silent mode activated" message when LOG_LEVEL=0 is set
+2. **Client-side console**: All non-critical console.log statements have been removed from the codebase
+3. **TelegramHelper**: All debug logging is disabled by default (debugLog=false) in all helper functions
+4. **Critical errors preserved**: Console.warn and console.error statements are still active for essential error reporting
+
+The combination of these improvements ensures minimal console output and optimized performance in production environments while maintaining critical error reporting capabilities.
+
 ## Configuration Methods
 
 There are multiple ways to set the logging level in order of precedence:
