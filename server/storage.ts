@@ -944,7 +944,13 @@ export class DatabaseStorage implements IStorage {
               
               // Notify both users
               try {
-                await notifyMatchCreated(match);
+                // Pass the correct parameters in the right order: hostUserId, requesterUserId, collaborationId, matchId
+                await notifyMatchCreated(
+                  match.host_id,          // Host user ID
+                  match.requester_id,     // Requester user ID
+                  match.collaboration_id, // Collaboration ID
+                  match.id                // Match ID
+                );
                 console.log("Match notification sent");
               } catch (notifyError) {
                 console.error("Error sending match notification:", notifyError);
@@ -957,7 +963,12 @@ export class DatabaseStorage implements IStorage {
             
             // Notify collaboration creator of new right swipe
             try {
-              await notifyNewCollabRequest(collaboration, newSwipe);
+              // Pass the correct parameters in the right order: hostUserId, requesterUserId, collaborationId
+              await notifyNewCollabRequest(
+                collaboration.creator_id, // Host user ID (collaboration creator)
+                newSwipe.user_id,        // Requester user ID (who swiped right)
+                collaboration.id         // Collaboration ID
+              );
               console.log("Collaboration request notification sent");
             } catch (notifyError) {
               console.error("Error sending collaboration request notification:", notifyError);
