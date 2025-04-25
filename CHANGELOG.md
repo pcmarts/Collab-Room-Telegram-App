@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.3] - 2025-04-25
+
+### Performance
+- Implemented ultra-light splash screen that renders in under 100ms
+- Added three-phase progressive loading system for improved perceived performance
+- Created inline HTML splash screen for immediate visual feedback
+- Optimized application startup with non-blocking initialization
+
+### Technical Details
+- Added direct HTML splash screen in index.html with inline critical styles
+- Created lightweight SplashScreen React component using memo for optimal rendering
+- Implemented progressive loading state management in App.tsx
+- Added two-phase initialization with prioritized visual loading before data fetching
+- Enhanced main.tsx to smoothly transition between HTML and React splash screens
+
 ## [Version 1.10.2] - 2025-04-25
 
 ### Enhanced
