@@ -1180,6 +1180,8 @@ export class DatabaseStorage implements IStorage {
         )
         .orderBy(desc(matches.created_at));
       
+      console.log(`Found ${matchesResult.length} basic matches for user ${userId}`);
+      
       // Now, enrich the data with collaboration details
       const enrichedResults = await Promise.all(matchesResult.map(async (match) => {
         // Get collaboration details
@@ -1198,59 +1200,94 @@ export class DatabaseStorage implements IStorage {
           return null;
         }
         
-        // Get creator (host) details
-        const [hostData] = await db
+        // Determine who is the "other user" based on who the current user is
+        const isUserHost = match.host_id === userId;
+        const otherUserId = isUserHost ? match.requester_id : match.host_id;
+        
+        // Get other user details
+        const [otherUserData] = await db
           .select({
             first_name: users.first_name,
             last_name: users.last_name,
-            job_title: users.job_title
+            handle: users.handle,
+            job_title: users.job_title,
+            twitter_url: users.twitter_url,
+            twitter_followers: users.twitter_followers,
+            linkedin_url: users.linkedin_url
           })
           .from(users)
-          .where(eq(users.id, collaborationData.creator_id));
+          .where(eq(users.id, otherUserId));
         
-        if (!hostData) {
-          console.log(`No host user found for match ${match.match_id}`);
+        if (!otherUserData) {
+          console.log(`No other user found for match ${match.match_id}`);
           return null;
         }
         
-        // Get requester details
-        const [requesterData] = await db
-          .select({
-            first_name: users.first_name,
-            last_name: users.last_name,
-            job_title: users.job_title
-          })
-          .from(users)
-          .where(eq(users.id, match.requester_id));
-        
-        // Get company data for both users
-        const [hostCompany] = await db
+        // Get company data for the other user
+        const [companyData] = await db
           .select({
             name: companies.name,
-            short_description: companies.short_description
+            short_description: companies.short_description,
+            website: companies.website,
+            twitter_handle: companies.twitter_handle,
+            twitter_followers: companies.twitter_followers,
+            linkedin_url: companies.linkedin_url,
+            funding_stage: companies.funding_stage,
+            has_token: companies.has_token,
+            token_ticker: companies.token_ticker,
+            blockchain_networks: companies.blockchain_networks,
+            tags: companies.tags
           })
           .from(companies)
-          .where(eq(companies.user_id, collaborationData.creator_id));
+          .where(eq(companies.user_id, otherUserId));
         
-        // Format and return the enriched match data
+        if (!companyData) {
+          console.log(`No company found for other user ${otherUserId} in match ${match.match_id}`);
+        }
+        
+        // Format the details to match what the frontend expects
         return {
-          id: match.match_id,
-          matchDate: match.match_date ? new Date(match.match_date).toLocaleDateString() : 'Unknown',
-          status: match.match_status,
-          note: match.match_note,
-          collaborationType: collaborationData.collab_type,
-          description: collaborationData.description,
-          details: collaborationData.details,
-          matchedPerson: `${hostData.first_name} ${hostData.last_name || ''}`.trim(),
-          companyName: hostCompany?.name || 'Unknown',
-          roleTitle: hostData.job_title || 'Unknown',
-          companyDescription: hostCompany?.short_description || '',
+          match_id: match.match_id,
+          match_date: match.match_date,
+          match_status: match.match_status,
+          match_note: match.match_note,
+          collab_type: collaborationData.collab_type,
+          collab_description: collaborationData.description,
+          collab_details: collaborationData.details,
+          
+          // Other user information
+          other_user_first_name: otherUserData?.first_name || '',
+          other_user_last_name: otherUserData?.last_name || '',
+          other_user_handle: otherUserData?.handle || '',
+          role_title: otherUserData?.job_title || '',
+          other_user_twitter_url: otherUserData?.twitter_url || null,
+          other_user_twitter_followers: otherUserData?.twitter_followers || null,
+          other_user_linkedin_url: otherUserData?.linkedin_url || null,
+          
+          // Company information
+          company_name: companyData?.name || 'Unknown Company',
+          company_description: companyData?.short_description || '',
+          company_website: companyData?.website || null,
+          company_twitter_handle: companyData?.twitter_handle || null,
+          company_twitter_followers: companyData?.twitter_followers || null,
+          company_linkedin_url: companyData?.linkedin_url || null,
+          funding_stage: companyData?.funding_stage || null,
+          has_token: companyData?.has_token || false,
+          token_ticker: companyData?.token_ticker || null,
+          blockchain_networks: companyData?.blockchain_networks || [],
+          company_tags: companyData?.tags || []
         };
       }));
       
       // Filter out any null results
       const validResults = enrichedResults.filter(result => result !== null);
       console.log(`Found ${validResults.length} detailed matches for user ${userId}`);
+      
+      // Log a sample result for debugging
+      if (validResults.length > 0) {
+        console.log("Sample match details:", JSON.stringify(validResults[0], null, 2));
+      }
+      
       return validResults;
     } catch (error) {
       console.error("Failed to fetch matches:", error);
