@@ -101,9 +101,11 @@ export function CollaborationDetailsDialog({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <DialogTitle className="pt-2">{title}</DialogTitle>
-          <DialogDescription>
-            {isPotentialMatch ? "This user is interested in your collaboration" : "Collaboration details"}
-          </DialogDescription>
+          {isPotentialMatch && (
+            <DialogDescription>
+              This user is interested in your collaboration
+            </DialogDescription>
+          )}
         </DialogHeader>
         
         <ScrollArea className="max-h-[70vh]">
@@ -117,29 +119,61 @@ export function CollaborationDetailsDialog({
               
               <Separator className="my-3" />
               
-              {/* Collaboration Type */}
+              {/* Collaboration Type as Pill/Badge */}
               <div className="mb-3">
                 <h4 className="text-sm font-medium">Type</h4>
-                <p className="text-sm">
-                  {collabType?.includes('Co-Marketing on Twitter')
-                    ? (
-                        <>
-                          Co-Marketing on Twitter:
-                          {details?.twittercomarketing_type && (
-                            <span className="ml-1">
-                              {typeof details.twittercomarketing_type === 'string' 
-                                ? details.twittercomarketing_type
-                                : Array.isArray(details.twittercomarketing_type) 
-                                  ? details.twittercomarketing_type.join(', ') 
-                                  : String(details.twittercomarketing_type)
-                              }
-                            </span>
-                          )}
-                        </>
-                      )
-                    : collabType
-                  }
-                </p>
+                <div className="mt-1">
+                  {collabType?.includes('Twitter Co-Marketing') || collabType?.includes('Co-Marketing on Twitter') ? (
+                    <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-blue-700">
+                      <Twitter className="w-3 h-3 mr-1" />
+                      Twitter Co-Marketing
+                      {details?.twittercomarketing_type && (
+                        <span className="ml-1">
+                          ({typeof details.twittercomarketing_type === 'string' 
+                            ? details.twittercomarketing_type
+                            : Array.isArray(details.twittercomarketing_type) 
+                              ? details.twittercomarketing_type.join(', ') 
+                              : String(details.twittercomarketing_type)
+                          })
+                        </span>
+                      )}
+                    </Badge>
+                  ) : collabType === 'Twitter Spaces Guest' ? (
+                    <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-blue-700">
+                      <Twitter className="w-3 h-3 mr-1" />
+                      Twitter Spaces Guest
+                    </Badge>
+                  ) : collabType === 'Podcast Guest Appearance' ? (
+                    <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/20 text-purple-700">
+                      <Mic className="w-3 h-3 mr-1" />
+                      Podcast Guest Appearance
+                    </Badge>
+                  ) : collabType === 'Live Stream Guest Appearance' ? (
+                    <Badge variant="outline" className="text-xs bg-red-500/10 border-red-500/20 text-red-700">
+                      <Video className="w-3 h-3 mr-1" />
+                      Live Stream Guest Appearance
+                    </Badge>
+                  ) : collabType === 'Blog Post Feature' ? (
+                    <Badge variant="outline" className="text-xs bg-emerald-500/10 border-emerald-500/20 text-emerald-700">
+                      <FileText className="w-3 h-3 mr-1" />
+                      Blog Post Feature
+                    </Badge>
+                  ) : collabType === 'Newsletter Feature' ? (
+                    <Badge variant="outline" className="text-xs bg-indigo-500/10 border-indigo-500/20 text-indigo-700">
+                      <Mail className="w-3 h-3 mr-1" />
+                      Newsletter Feature
+                    </Badge>
+                  ) : collabType === 'Report & Research Feature' ? (
+                    <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-500/20 text-amber-700">
+                      <FileSearch className="w-3 h-3 mr-1" />
+                      Report & Research Feature
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs">
+                      {collabType}
+                    </Badge>
+                  )}
+                </div>
               </div>
               
               {/* Collaboration Description */}
