@@ -89,8 +89,7 @@ export function IsolatedLinkButton({
   return (
     <button
       className={cn(
-        `telegram-direct-link ${config.bgColor} ${config.textColor} px-4 py-3 rounded-lg 
-        text-sm flex items-center justify-center font-medium w-full my-2`,
+        `isolated-link-button telegram-direct-link ${config.bgColor} ${config.textColor}`,
         className
       )}
       style={{
@@ -107,6 +106,10 @@ export function IsolatedLinkButton({
       }}
       onTouchEnd={(e) => {
         console.log("[IsolatedLinkButton] Button touchend");
+        e.stopPropagation();
+      }}
+      onTouchMove={(e) => {
+        // Prevent touch move events from affecting parent components
         e.stopPropagation();
       }}
     >

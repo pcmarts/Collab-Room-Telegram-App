@@ -262,6 +262,12 @@ body.scrollable-page {
   display: inline-flex !important;
   align-items: center !important;
   gap: 2px !important;
+  -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+  touch-action: manipulation !important;
+  transform: translateZ(0) !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
 }
 
 /* Special visual indicator for clickable links */
@@ -271,6 +277,36 @@ body.scrollable-page {
   vertical-align: super;
   margin-left: 1px;
   opacity: 0.8;
+}
+
+/* Isolated Link Button Specific Styles */
+.isolated-link-button {
+  /* Emphasize the link buttons visually */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+  /* Ensure they have maximum clickability on mobile */
+  min-height: 44px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  /* Add some visual feedback for touch */
+  transition: all 150ms ease-in-out !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 500 !important;
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+  margin: 5px 0 !important;
+  -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+  -webkit-touch-callout: none !important;
+  touch-action: manipulation !important;
+}
+
+.isolated-link-button:active {
+  /* Visual feedback for being pressed */
+  transform: scale(0.98) !important;
+  opacity: 0.9 !important;
 }
 
 @layer base {
