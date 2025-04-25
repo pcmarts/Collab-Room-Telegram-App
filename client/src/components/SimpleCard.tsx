@@ -251,10 +251,10 @@ export default function SimpleCard({
               </Button>
             </div>
             
-            {/* Second row with collaboration title - removed "Potential Match" text */}
+            {/* Second row with collaboration title - removed "Collaboration" text */}
             <div className="mt-3">
               <h3 className="text-xl font-semibold">
-                {data.isPotentialMatch ? "" : data.title || ""}
+                {data.title || (data.isPotentialMatch ? "Potential Match" : "")}
               </h3>
             </div>
           </div>
@@ -541,19 +541,17 @@ export default function SimpleCard({
           {/* Potential Match Information */}
           {data.isPotentialMatch && data.potentialMatchData && (
             <div className="flex flex-col space-y-2 p-3 bg-primary/5 rounded-md border border-primary/10 mb-3">
-              {/* User info with job title only (not name for privacy) */}
+              {/* User info with name and role */}
               <div className="flex items-center gap-2">
                 <LetterAvatar 
-                  name={`${data.potentialMatchData.company_name || ''}`}
+                  name={`${data.potentialMatchData.first_name || ''} ${data.potentialMatchData.last_name || ''}`}
                   className="h-8 w-8"
                 />
                 <div>
-                  {data.potentialMatchData.job_title ? (
-                    <div className="font-medium">{data.potentialMatchData.job_title}</div>
-                  ) : (
-                    <div className="font-medium">Professional</div>
+                  <div className="font-medium">{data.potentialMatchData.first_name} {data.potentialMatchData.last_name}</div>
+                  {data.potentialMatchData.job_title && (
+                    <div className="text-xs text-muted-foreground">{data.potentialMatchData.job_title}</div>
                   )}
-                  <div className="text-xs text-muted-foreground">from {data.potentialMatchData.company_name}</div>
                 </div>
               </div>
               

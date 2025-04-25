@@ -140,6 +140,11 @@ export function CollaborationDetailsDialog({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <DialogTitle className="pt-2">{title}</DialogTitle>
+          {isPotentialMatch && (
+            <DialogDescription>
+              This user is interested in your collaboration
+            </DialogDescription>
+          )}
         </DialogHeader>
         
         <ScrollArea className="max-h-[70vh]">
