@@ -548,19 +548,45 @@ export default function DiscoverPage() {
   
 
   
-  // Auto-fetch more cards when we're running low
+  // Track the current card index for optimal pre-loading
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  
+  // Auto-fetch more cards when we're running low or approaching the end of the batch
   useEffect(() => {
-    const shouldFetchMore = cards.length > 0 && cards.length < 5 && hasMore && !loadingMore && !isLoading;
+    // Conditions to trigger a fetch:
+    // 1. Overall card count is low (below threshold of 5)
+    const lowCardCount = cards.length > 0 && cards.length < 5;
+    
+    // 2. User is on second-to-last card (to pre-load the next batch)
+    const onSecondToLastCard = cards.length >= 2 && currentCardIndex === cards.length - 2;
+    
+    // 3. User is on the last card (last chance to load more before empty state)
+    const onLastCard = cards.length > 0 && currentCardIndex === cards.length - 1;
+    
+    // Combined fetch trigger condition
+    const shouldFetchMore = (lowCardCount || onSecondToLastCard || onLastCard) && 
+                           hasMore && 
+                           !loadingMore && 
+                           !isLoading;
+    
+    // No more cards to fetch
     const emptyNoMore = cards.length === 0 && !hasMore && !loadingMore && !isLoading;
     
     if (shouldFetchMore) {
-      console.log('[Discovery] Card count below threshold, fetching more cards...');
+      console.log('[Discovery] Fetching more cards...', {
+        reason: lowCardCount ? 'low card count' : 
+                onSecondToLastCard ? 'on second-to-last card' : 
+                'on last card',
+        currentCardIndex,
+        totalCards: cards.length,
+        hasMore
+      });
       fetchNextBatch();
     } else if (emptyNoMore) {
       console.log('[Discovery] No more cards available to fetch');
       setAllCardsViewed(true);
     }
-  }, [cards.length, hasMore, loadingMore, isLoading]);
+  }, [cards.length, hasMore, loadingMore, isLoading, currentCardIndex]);
   
   // Update the refs whenever the state changes
   useEffect(() => {
@@ -748,6 +774,13 @@ export default function DiscoverPage() {
       
       // Remove the card from the stack
       setCards(cards.slice(1));
+      
+      // Update current card index for pagination tracking
+      // Since we're removing the first card, the current index is now 0 again
+      setCurrentCardIndex(0);
+      
+      // Log the new current card index
+      console.log(`[Discovery] Card swiped, new current index: 0, remaining cards: ${cards.length - 1}`);
       
       // RELIABILITY ENHANCEMENT: Store this swiped card ID in localStorage
       // This ensures we never show it again, even if the server call fails or session expires
