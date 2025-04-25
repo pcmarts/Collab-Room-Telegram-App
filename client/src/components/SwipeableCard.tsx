@@ -176,7 +176,7 @@ export default function SwipeableCard({
         x,
         rotate,
         opacity,
-        touchAction: "auto", // Enable default touch actions
+        touchAction: "none", // Disable default touch actions to prevent scrolling
         pointerEvents: "auto" // Ensure pointer events are enabled
       }}
       // Explicitly make this non-draggable to prevent interference with button clicks
@@ -184,14 +184,37 @@ export default function SwipeableCard({
       // Make sure all child elements receive pointer events
       initial={{ pointerEvents: "auto" }}
       // Add debug logging for swipe events
-      onTouchStart={(e) => console.log("[SwipeableCard] Touch start")}
-      onTouchEnd={(e) => console.log("[SwipeableCard] Touch end")}
-      onClick={(e) => console.log("[SwipeableCard] Div clicked")}
+      onTouchStart={(e) => {
+        console.log("[SwipeableCard] Touch start");
+        // Don't stop propagation here - we want touch events to be detected
+      }}
+      onTouchEnd={(e) => {
+        console.log("[SwipeableCard] Touch end");
+        // Don't stop propagation here either
+      }}
+      onClick={(e) => {
+        console.log("[SwipeableCard] Div clicked");
+        // Don't prevent default here - we want clicks to work
+      }}
     >
-      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl swipeable-card-content" 
+      <Card 
+        className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl swipeable-card-content" 
         style={{ 
-          touchAction: "auto", // Enable touch actions on the card
-          pointerEvents: "auto" // Ensure pointer events pass through
+          touchAction: "pan-y", // Allow vertical scrolling but not horizontal
+          pointerEvents: "auto", // Ensure pointer events pass through
+          position: "relative", // Ensure positioning context
+          zIndex: 10 // Keep above motion overlays
+        }}
+        onClick={(e) => {
+          console.log("[SwipeableCard] Card clicked");
+        }}
+        onTouchStart={(e) => {
+          console.log("[SwipeableCard] Card touch start");
+          // Don't stop propagation - we want the parent to know about touches
+        }}
+        onTouchEnd={(e) => {
+          console.log("[SwipeableCard] Card touch end");
+          // Don't stop propagation - we need touch events to reach the parent
         }}>
         {/* Overlay effects for swipe direction */}
         <motion.div 
@@ -308,22 +331,55 @@ export default function SwipeableCard({
                 
                 {/* Separate Twitter button - much more obvious and clickable */}
                 <button
-                  className="telegram-direct-link bg-blue-50 text-blue-600 px-2 py-1 rounded text-sm flex items-center"
+                  className="telegram-direct-link bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm flex items-center justify-center font-medium"
                   style={{ 
                     position: 'relative', 
                     zIndex: 9999, 
-                    border: '1px solid rgba(29, 161, 242, 0.3)'
+                    border: '1px solid rgba(29, 161, 242, 0.3)',
+                    WebkitTapHighlightColor: 'rgba(0,0,0,0)',
+                    margin: '5px 0',
+                    width: '100%',
+                    maxWidth: '200px',
+                    cursor: 'pointer'
                   }}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log("Opening twitter link directly");
-                    // Force direct navigation
-                    window.location.href = createTwitterUrl(data.details?.host_twitter_handle || '');
+                    
+                    // Try multiple approaches to ensure link opening works on mobile
+                    try {
+                      const url = createTwitterUrl(data.details?.host_twitter_handle || '');
+                      console.log(`[SwipeableCard] Opening Twitter URL: ${url}`);
+                      
+                      // Method 1: Use Telegram WebApp if available
+                      if (window.Telegram?.WebApp?.openLink) {
+                        console.log("[SwipeableCard] Using Telegram.WebApp.openLink");
+                        window.Telegram.WebApp.openLink(url);
+                      } 
+                      // Method 2: Direct location change as fallback
+                      else {
+                        console.log("[SwipeableCard] Using window.location.href");
+                        window.location.href = url;
+                      }
+                    } catch (error) {
+                      console.error("[SwipeableCard] Error opening link:", error);
+                      // Final fallback
+                      window.open(createTwitterUrl(data.details?.host_twitter_handle || ''), '_blank');
+                    }
+                  }}
+                  // Add explicit touch events for mobile
+                  onTouchStart={(e) => {
+                    console.log("[SwipeableCard] Button touchstart");
+                    e.stopPropagation();
+                  }}
+                  onTouchEnd={(e) => {
+                    console.log("[SwipeableCard] Button touchend");
+                    e.stopPropagation();
                   }}
                 >
-                  <Twitter className="w-3 h-3 mr-1" />
-                  Open Twitter Profile
+                  <Twitter className="w-4 h-4 mr-2" />
+                  <span>View on Twitter</span>
                 </button>
               </div>
               
