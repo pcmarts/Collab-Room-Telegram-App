@@ -111,6 +111,12 @@ When a match is created through the discovery system, a Match Moment dialog is d
 
 ## Recent Enhancements
 
+**Version 1.10.0 (2025-04-25):**
+- Fixed Twitter handle URLs to properly use the x.com domain instead of twitter.com
+- Updated job title display to show user's actual role from company table instead of "Unknown Role"
+- Enhanced data consistency by correctly retrieving job titles from company records
+- Improved social media links for better external connectivity to both user and company profiles
+
 **Version 1.8.7 (2025-04-16):**
 - Improved match card UI to prevent text truncation issues for long company names and titles
 - Redesigned card layout with proper text wrapping for complete information visibility

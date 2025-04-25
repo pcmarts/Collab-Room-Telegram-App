@@ -2,7 +2,32 @@
 
 ## Overview
 
-This document describes the fix implemented to correctly display user Twitter handles in the match details view instead of incorrectly showing the company Twitter handle.
+This document describes the fixes implemented to correctly display and link Twitter handles throughout the application.
+
+## Latest Update (Version 1.10.0)
+
+The latest update addresses two issues:
+
+1. Twitter handle URLs now correctly use the x.com domain instead of the outdated twitter.com domain
+2. Job titles are now properly displayed from the company database record instead of showing "Unknown Role"
+
+### X.com Domain Migration Fix
+
+When Twitter rebranded to X, all twitter.com URLs needed to be updated to use the x.com domain. The fix ensures all Twitter handle links are properly formatted with the current domain.
+
+**Implementation Details:**
+- Updated Twitter URL construction to use "https://x.com/[username]" pattern
+- Modified URL handling for both user and company Twitter handles to maintain consistency
+- Ensured compatibility with existing Twitter handles stored in the database
+
+### Job Title Display Fix
+
+Previously, the application was displaying "Unknown Role" for user job titles in the matches page. The fix properly retrieves and displays the actual job title from the company table.
+
+**Implementation Details:**
+- Updated SQL query in `getUserMatchesWithDetails` to include `job_title` field from company table
+- Modified `role_title` field mapping to use the retrieved job title with a fallback to "Unknown Role"
+- Enhanced data consistency by using actual company record data instead of placeholder text
 
 ## Problem Description
 
@@ -45,11 +70,19 @@ This change ensures that:
 
 ## Testing
 
-The fix was tested by:
+### Original Fix Testing
+The original fix was tested by:
 1. Viewing match details for users who have Twitter profiles
 2. Verifying that the user's personal Twitter handle is displayed in the "About [User]" section
 3. Confirming that the company Twitter handle continues to display correctly in the "About [Company]" section
 4. Testing the fallback behavior when Twitter URL is not available
+
+### Latest Fix Testing (Version 1.10.0)
+The latest fixes were tested by:
+1. Verifying Twitter links correctly redirect to x.com domain for both user and company profiles
+2. Checking that all Twitter handle URLs use the format "https://x.com/[username]" instead of "https://twitter.com/[username]"
+3. Confirming job titles from company database records appear correctly instead of "Unknown Role"
+4. Testing edge cases where job_title might be null to ensure the fallback text displays properly
 
 ## Benefits
 

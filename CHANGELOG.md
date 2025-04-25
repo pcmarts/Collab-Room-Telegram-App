@@ -5,6 +5,20 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.0] - 2025-04-25
+
+### Fixed
+- Fixed Twitter handle URLs in Matches page to correctly use the x.com domain instead of twitter.com
+- Updated job title display in Matches page to show user's actual role from company table instead of "Unknown Role"
+- Improved match details with accurate social media links for both user and company profiles
+- Enhanced data consistency by properly retrieving job titles from company database record
+
+### Technical Details
+- Modified Twitter handle link generation in MatchesPage.tsx to use https://x.com/[username] format
+- Updated SQL query in getUserMatchesWithDetails to retrieve job_title from companies table
+- Fixed role_title field mapping to show proper job titles instead of default "Unknown Role" value
+- Ensured consistent social media linking for Twitter handles across all parts of the application
+
 ## [Version 1.9.9] - 2025-04-25
 
 ### Fixed
