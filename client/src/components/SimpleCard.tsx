@@ -189,7 +189,43 @@ export default function SimpleCard({
                   <h3 className="font-bold text-lg line-clamp-1">
                     {data.isPotentialMatch ? data.potentialMatchData?.company_name : (data.creator_company_name || "Company")}
                   </h3>
-                  {/* Removed the collaboration type label from here */}
+                  <div className="flex items-center gap-1.5">
+                    {/* Type Badge - Restored */}
+                    {(data.collab_type?.toLowerCase().includes('twitter') || 
+                     data.collab_type?.toLowerCase().includes('co-marketing')) ? (
+                      <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-[#1DA1F2]">
+                        <Twitter className="w-3 h-3 mr-1" />
+                        {data.collab_type}
+                      </Badge>
+                    ) : data.collab_type === 'Podcast Guest Appearance' ? (
+                      <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/20 text-purple-700">
+                        <Mic className="w-3 h-3 mr-1" />
+                        {data.collab_type}
+                      </Badge>
+                    ) : data.collab_type === 'Blog Post Feature' ? (
+                      <Badge variant="outline" className="text-xs bg-emerald-500/10 border-emerald-500/20 text-emerald-700">
+                        <FileText className="w-3 h-3 mr-1" />
+                        {data.collab_type}
+                      </Badge>
+                    ) : data.collab_type === 'Report & Research Feature' ? (
+                      <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-500/20 text-amber-700">
+                        <FileSearch className="w-3 h-3 mr-1" />
+                        {data.collab_type}
+                      </Badge>
+                    ) : data.collab_type === 'Newsletter Feature' ? (
+                      <Badge variant="outline" className="text-xs bg-indigo-500/10 border-indigo-500/20 text-indigo-700">
+                        <Mail className="w-3 h-3 mr-1" />
+                        {data.collab_type}
+                      </Badge>
+                    ) : data.collab_type === 'Live Stream Guest Appearance' ? (
+                      <Badge variant="outline" className="text-xs bg-red-500/10 border-red-500/20 text-red-700">
+                        <Video className="w-3 h-3 mr-1" />
+                        {data.collab_type}
+                      </Badge>
+                    ) : data.collab_type ? (
+                      <p className="text-sm text-muted-foreground line-clamp-1">{data.collab_type}</p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
               
@@ -203,10 +239,10 @@ export default function SimpleCard({
               </Button>
             </div>
             
-            {/* Second row with collaboration title */}
+            {/* Second row with collaboration title - removed "Collaboration" text */}
             <div className="mt-3">
               <h3 className="text-xl font-semibold">
-                {data.title || (data.isPotentialMatch ? "Potential Collaboration" : "Collaboration")}
+                {data.title || (data.isPotentialMatch ? "Potential Match" : "")}
               </h3>
             </div>
           </div>
