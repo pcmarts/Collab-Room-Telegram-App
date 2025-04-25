@@ -156,7 +156,7 @@ export function CollaborationDetailsDialog({
                   ) : collabType === 'Live Stream Guest Appearance' ? (
                     <Badge variant="outline" className="text-xs bg-red-500/10 border-red-500/20 text-red-700">
                       <Video className="w-3 h-3 mr-1" />
-                      Live Stream Guest Appearance
+                      {collabType}
                     </Badge>
                   ) : collabType === 'Blog Post Feature' ? (
                     <Badge variant="outline" className="text-xs bg-emerald-500/10 border-emerald-500/20 text-emerald-700">

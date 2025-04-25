@@ -216,7 +216,7 @@ export default function SimpleCard({
                     ) : data.collab_type === 'Live Stream Guest Appearance' ? (
                       <Badge variant="outline" className="text-xs bg-red-500/10 border-red-500/20 text-red-700">
                         <Video className="w-3 h-3 mr-1" />
-                        Live Stream Guest Appearance
+                        {data.collab_type}
                       </Badge>
                     ) : data.collab_type ? (
                       <p className="text-sm text-muted-foreground line-clamp-1">{data.collab_type}</p>
