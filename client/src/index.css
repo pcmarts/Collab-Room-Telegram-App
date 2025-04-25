@@ -228,6 +228,29 @@ body.scrollable-page {
   }
 }
 
+/* Text selection in Telegram WebApp */
+.telegram-app p,
+.telegram-app h1,
+.telegram-app h2,
+.telegram-app h3,
+.telegram-app h4,
+.telegram-app span,
+.telegram-app div {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Enable user selection in cards */
+.swipeable-card-content {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  pointer-events: auto !important;
+}
+
 @layer base {
   * {
     @apply border-border;

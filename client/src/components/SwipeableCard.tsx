@@ -188,7 +188,7 @@ export default function SwipeableCard({
       onTouchEnd={(e) => console.log("[SwipeableCard] Touch end")}
       onClick={(e) => console.log("[SwipeableCard] Div clicked")}
     >
-      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl isolate" 
+      <Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl swipeable-card-content" 
         style={{ 
           touchAction: "auto", // Enable touch actions on the card
           pointerEvents: "auto" // Ensure pointer events pass through
@@ -288,7 +288,11 @@ export default function SwipeableCard({
         </div>
         
         {/* Card content */}
-        <div className="p-4 flex-grow overflow-auto" style={{ pointerEvents: "auto", touchAction: "auto", position: "relative" }}>
+        <div className="p-4 flex-grow overflow-auto swipeable-card-content" style={{ 
+          pointerEvents: "auto", 
+          touchAction: "auto", 
+          position: "relative"
+        }}>
           {/* Twitter Co-Marketing Details */}
           {(data.collab_type?.toLowerCase().includes('twitter') || 
             data.collab_type?.toLowerCase().includes('co-marketing')) && 
@@ -553,7 +557,7 @@ export default function SwipeableCard({
           )}
           
           {/* Collaboration Description */}
-          <div className="mb-3">
+          <div className="mb-3 swipeable-card-content">
             <div className="mb-2">
               <h3 className="font-bold text-sm">
                 {data.title || (data.isPotentialMatch ? "Potential Collaboration" : "Collaboration Details")}
