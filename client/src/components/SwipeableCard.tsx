@@ -118,11 +118,10 @@ export default function SwipeableCard({
         propHandleSwipe(direction, note);
       } else if (onSwipe) {
         onSwipe(direction, note);
-      } else {
-        console.warn('[SwipeableCard] No swipe handler provided (neither onSwipe nor handleSwipe)');
       }
+      // Silent failure if no handler provided
     } catch (error) {
-      console.error('[SwipeableCard] Error in swipe handler:', error);
+      // Silent error handling in production
     }
   };
   
@@ -137,7 +136,7 @@ export default function SwipeableCard({
         handleSwipeAction(direction);
       }
     } catch (error) {
-      console.error('[SwipeableCard] Error in button click handler:', error);
+      // Silent error handling
     }
   };
 
