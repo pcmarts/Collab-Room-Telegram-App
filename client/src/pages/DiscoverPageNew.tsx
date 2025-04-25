@@ -147,6 +147,83 @@ export default function DiscoverPage() {
   // Get access to the match context
   const { setNewMatchCreated } = useMatchContext();
   
+  // Fetch marketing preferences to detect active filters
+  const { data: marketingPrefs = {} as MarketingPreferencesResponse } = useQuery<MarketingPreferencesResponse>({
+    queryKey: ['/api/marketing-preferences'],
+    staleTime: 60000, // Consider stale after 1 minute
+    refetchOnWindowFocus: false,
+    refetchOnMount: true
+  });
+  
+  // Mutation for resetting left swipes
+  const resetLeftSwipesMutation = useMutation({
+    mutationFn: async () => {
+      setIsResettingSwipes(true);
+      try {
+        const response = await apiRequest('/api/reset-left-swipes', 'POST');
+        return response;
+      } catch (error) {
+        throw error;
+      } finally {
+        setIsResettingSwipes(false);
+      }
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Swipes Reset",
+        description: `Successfully reset ${data.deleted_count} left swipe(s). You'll now see cards you previously skipped.`,
+        duration: 5000,
+      });
+      
+      // Reset pagination to trigger a fresh data load
+      setNextCursor(undefined);
+      setHasMore(true);
+      setAllCardsViewed(false);
+      
+      // Clear cached data
+      queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
+      
+      // Reset any local storage swipe records
+      try {
+        localStorage.removeItem('swipedCardIds');
+      } catch (e) {
+        console.warn('[Discovery] Failed to clear localStorage swipes:', e);
+      }
+      
+      // Force a fetch of new cards
+      fetchNextBatch();
+    },
+    onError: (error) => {
+      toast({
+        title: "Reset Failed",
+        description: "Failed to reset swipes. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      setIsResettingSwipes(false);
+    }
+  });
+  
+  // Check if any filters are active based on marketing preferences
+  const hasActiveFilters = useMemo(() => {
+    // If the main discovery_filter_enabled flag is set, filters are active
+    if (marketingPrefs?.discovery_filter_enabled) {
+      return true;
+    }
+    
+    // Check individual filter toggles
+    return !!(
+      marketingPrefs?.discovery_filter_collab_types_enabled ||
+      marketingPrefs?.discovery_filter_topics_enabled ||
+      marketingPrefs?.discovery_filter_company_followers_enabled ||
+      marketingPrefs?.discovery_filter_user_followers_enabled ||
+      marketingPrefs?.discovery_filter_funding_stages_enabled ||
+      marketingPrefs?.discovery_filter_token_status_enabled ||
+      marketingPrefs?.discovery_filter_company_sectors_enabled ||
+      marketingPrefs?.discovery_filter_blockchain_networks_enabled
+    );
+  }, [marketingPrefs]);
+  
   // Match data for the match moment dialog
   const [matchData, setMatchData] = useState<{
     title: string;
@@ -1358,13 +1435,36 @@ export default function DiscoverPage() {
             <p className="text-muted-foreground mb-6">You've viewed all available collaborations that match your criteria.</p>
             
             <div className="flex flex-col gap-2 w-full max-w-xs">
-              <GlowButton 
-                onClick={handleOpenFilters}
-                icon={<Filter className="h-4 w-4" />}
-                variant="default"
+              {/* Only show Adjust Filters button when filters are actually active */}
+              {hasActiveFilters && (
+                <GlowButton 
+                  onClick={handleOpenFilters}
+                  icon={<Filter className="h-4 w-4" />}
+                  variant="default"
+                >
+                  Adjust Filters
+                </GlowButton>
+              )}
+              
+              {/* Add Reset Swipes button */}
+              <Button 
+                variant="secondary"
+                onClick={() => resetLeftSwipesMutation.mutate()}
+                disabled={isResettingSwipes}
+                className="flex items-center justify-center gap-2"
               >
-                Adjust Filters
-              </GlowButton>
+                {isResettingSwipes ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Resetting...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4" />
+                    Reset Left Swipes
+                  </>
+                )}
+              </Button>
               
               <Button 
                 variant="outline" 
