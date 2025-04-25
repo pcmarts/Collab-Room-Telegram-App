@@ -2568,15 +2568,15 @@ export async function notifyMatchCreated(
       ],
     };
 
-    // Format the message
+    // Format the message with handle if available
     const matchMessage = 
       `🎉 <b>New Match!</b>\n\n` +
-      `You've matched with <b>${requester.first_name} ${requester.last_name || ""}</b> on your <b>${collaboration.collab_type}</b> collaboration!\n\n` +
+      `You've matched with <b>${requester.first_name} ${requester.last_name || ""}</b>${requester.handle ? ` (@${requester.handle})` : ''} on your <b>${collaboration.collab_type}</b> collaboration!\n\n` +
       `Click below to view the match details and start chatting:`;
 
     const requesterMessage = 
       `🎉 <b>New Match!</b>\n\n` +
-      `<b>${host.first_name} ${host.last_name || ""}</b> has matched with you on a <b>${collaboration.collab_type}</b> collaboration!\n\n` +
+      `<b>${host.first_name} ${host.last_name || ""}</b>${host.handle ? ` (@${host.handle})` : ''} has matched with you on a <b>${collaboration.collab_type}</b> collaboration!\n\n` +
       `Click below to view the match details and start chatting:`;
 
     // Send match notifications if enabled
