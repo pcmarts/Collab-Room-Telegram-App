@@ -4,9 +4,17 @@
 
 This document describes the fixes implemented to correctly display and link Twitter handles throughout the application.
 
-## Latest Update (Version 1.10.0)
+## Latest Update (Version 1.10.4)
 
-The latest update addresses two issues:
+The latest update (Version 1.10.4) addresses job title display in potential match dialogs:
+
+1. Fixed job title display in potential match dialogs to consistently show the user's role
+2. Improved data flow to ensure job title information is properly preserved through component chains
+3. Added strategic debugging logs to track job title data throughout the application
+
+## Previous Update (Version 1.10.0)
+
+A previous update (Version 1.10.0) addressed two issues:
 
 1. Twitter handle URLs now correctly use the x.com domain instead of the outdated twitter.com domain
 2. Job titles are now properly displayed from the company database record instead of showing "Unknown Role"
@@ -77,8 +85,43 @@ The original fix was tested by:
 3. Confirming that the company Twitter handle continues to display correctly in the "About [Company]" section
 4. Testing the fallback behavior when Twitter URL is not available
 
+### Job Title Fix in Potential Match Dialogs (Version 1.10.4)
+
+In potential match dialogs, job titles were not being consistently displayed due to issues with how the data was being passed between components. This fix ensures that job titles properly appear in the potential match dialog.
+
+**Implementation Details:**
+- Fixed potentialMatchData structure in the handleViewCardDetails function to properly preserve job_title
+- Enhanced CollaborationDetailsDialog.tsx to prioritize job title display from potentialMatchData
+- Added strategic debug logging to trace the flow of job title data through the application
+- Ensured consistent display of job titles across both regular and potential match dialogs
+
+**Technical Changes:**
+```javascript
+// Modified in DiscoverPageNew.tsx handleViewCardDetails function
+// Now preserves the original potentialMatchData structure including job_title
+const formattedData = {
+  ...collaboration,
+  isPotentialMatch: true,
+  potentialMatchData: {
+    user_id: potentialMatch.user_id,
+    first_name: potentialMatch.first_name,
+    last_name: potentialMatch.last_name,
+    company_name: potentialMatch.company_name,
+    job_title: potentialMatch.job_title, // Properly preserving job title
+    note: potentialMatch.note
+  }
+};
+```
+
+### Fix Testing (Version 1.10.4)
+The job title fix was tested by:
+1. Verifying job titles appear correctly in potential match dialogs
+2. Checking console logs to confirm the correct data flow
+3. Testing with different job title values to ensure consistent display
+4. Confirming the fix works across different browser environments
+
 ### Latest Fix Testing (Version 1.10.0)
-The latest fixes were tested by:
+The previous fixes were tested by:
 1. Verifying Twitter links correctly redirect to x.com domain for both user and company profiles
 2. Checking that all Twitter handle URLs use the format "https://x.com/[username]" instead of "https://twitter.com/[username]"
 3. Confirming job titles from company database records appear correctly instead of "Unknown Role"
@@ -86,9 +129,11 @@ The latest fixes were tested by:
 
 ## Benefits
 
-1. **Improved User Experience**: Users now see the correct Twitter handle information
-2. **Data Integrity**: Social media information is now properly associated with the correct entity (user vs. company)
-3. **Consistent Data Display**: The fix maintains consistency in how social media information is displayed
+1. **Improved User Experience**: Users now see the correct Twitter handle information and job titles
+2. **Data Integrity**: Social media information and professional roles are now properly associated with the correct entity (user vs. company)
+3. **Consistent Data Display**: The fix maintains consistency in how information is displayed across different parts of the application
+4. **Enhanced Professional Context**: Properly displayed job titles provide important context about potential matches
+5. **Better Decision Making**: Users can make more informed decisions about potential collaborations with clear professional role information
 
 ## Related Documentation
 

@@ -5,6 +5,18 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.4] - 2025-04-25
+
+### Fixed
+- Fixed job title display in potential match dialogs to correctly show users' roles
+- Improved data flow to ensure job title information is properly passed to dialog components
+- Enhanced debugging capabilities with additional logging for data tracking
+
+### Technical Details
+- Fixed potentialMatchData structure in handleViewCardDetails function to properly preserve job_title
+- Added strategic debug logging to track the flow of job title data throughout the application
+- Maintained consistent data structure by ensuring potentialMatchData is correctly preserved in card details
+
 ## [Version 1.10.3] - 2025-04-25
 
 ### Performance

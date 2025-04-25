@@ -55,7 +55,7 @@ Potential matches use a comprehensive multi-layered filtering approach to ensure
 Potential match cards include comprehensive data about both the potential match and their company:
 
 ```typescript
-// As of version 1.5.2
+// As of version 1.10.4
 interface PotentialMatchData {
   // User information
   user_id: string;
@@ -65,7 +65,7 @@ interface PotentialMatchData {
   // Company information
   company_name: string;
   company_description?: string;
-  job_title?: string;
+  job_title?: string;  // Fixed in v1.10.4 - properly preserved through data flow
   
   // Social media and metrics
   twitter_handle?: string;
@@ -82,6 +82,7 @@ interface PotentialMatchData {
   swipe_created_at?: string;
   collaboration_id: string;
   swipe_id: string;      // Unique ID of the swipe record (used for filtering)
+  note?: string;         // Optional personalized note from the user
 }
 ```
 
