@@ -1021,9 +1021,11 @@ export class DatabaseStorage implements IStorage {
     
     // 1. Get host's collaborations
     const hostCollaborations = await this.getUserCollaborations(userId);
+    console.log(`Found ${hostCollaborations.length} collaborations created by host ${userId}`);
     
     // 2. Get all right swipes on the host's collaborations
     const collabIds = hostCollaborations.map(collab => collab.id);
+    console.log(`Collaboration IDs for host ${userId}:`, collabIds);
     
     if (collabIds.length === 0) {
       console.log("Host has no collaborations to match");
@@ -1050,12 +1052,71 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`Found ${rightSwipes.length} right swipes on host's collaborations`);
     
+    // Add debugging for each potential match
+    if (rightSwipes.length > 0) {
+      console.log("Right swipes detail:");
+      rightSwipes.forEach((swipe, index) => {
+        console.log(`[${index + 1}] Swipe ID: ${swipe.swipe.id}`);
+        console.log(`    Collaboration ID: ${swipe.swipe.collaboration_id}`);
+        console.log(`    User: ${swipe.user.first_name} ${swipe.user.last_name || ''} (${swipe.user.id})`);
+        console.log(`    Company: ${swipe.company.name}`);
+      });
+    }
+    
+    // Look for specific users like Jim
+    const jimSwipe = rightSwipes.find(swipe => 
+      swipe.user.first_name.toLowerCase() === 'jim' || 
+      swipe.user.first_name.toLowerCase().includes('jim')
+    );
+    
+    if (jimSwipe) {
+      console.log("Found Jim's potential match:", {
+        swipeId: jimSwipe.swipe.id,
+        userId: jimSwipe.user.id,
+        firstName: jimSwipe.user.first_name,
+        lastName: jimSwipe.user.last_name,
+        company: jimSwipe.company.name
+      });
+    } else {
+      console.log("No swipe from Jim found");
+    }
+    
     // Transform results to include user and company info
-    const enrichedSwipes = rightSwipes.map(result => ({
-      ...result.swipe,
-      user: result.user,
-      company: result.company,
-    }));
+    const enrichedSwipes = rightSwipes.map(result => {
+      const enriched = {
+        ...result.swipe,
+        user: result.user,
+        company: result.company,
+        
+        // Add flattened fields for easier client-side access (new approach)
+        user_id: result.user.id,
+        first_name: result.user.first_name,
+        last_name: result.user.last_name,
+        company_name: result.company.name,
+        company_description: result.company.description,
+        job_title: result.user.job_title,
+        
+        // Create potentialMatchData field directly (alternative approach)
+        potentialMatchData: {
+          user_id: result.user.id,
+          first_name: result.user.first_name,
+          last_name: result.user.last_name,
+          company_name: result.company.name,
+          company_description: result.company.description,
+          company_website: result.company.website,
+          job_title: result.user.job_title
+        }
+      };
+      
+      return enriched;
+    });
+    
+    console.log(`Returning ${enrichedSwipes.length} potential matches with enhanced data structure`);
+    
+    if (enrichedSwipes.length > 0) {
+      // Log the first entry as a sample of the data structure
+      console.log("Sample potential match data structure:", JSON.stringify(enrichedSwipes[0], null, 2));
+    }
     
     return enrichedSwipes;
   }

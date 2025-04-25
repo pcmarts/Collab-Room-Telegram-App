@@ -1158,6 +1158,13 @@ export default function DiscoverPage() {
         const potentialMatchesData = await apiRequest('/api/potential-matches') as any[];
         console.log(`[Discovery] Refresh: Got ${potentialMatchesData?.length || 0} potential matches`);
         
+        // Log the raw data to understand its exact structure
+        if (potentialMatchesData && potentialMatchesData.length > 0) {
+          console.log('[Discovery] Raw potential match data:', JSON.stringify(potentialMatchesData, null, 2));
+        } else {
+          console.log('[Discovery] No potential matches returned from server');
+        }
+        
         if (potentialMatchesData && potentialMatchesData.length > 0) {
           // Transform and add potential matches to the card stack
           const formattedMatches = potentialMatchesData.map((match: any) => {
