@@ -11,9 +11,9 @@ async function testNotificationFormat() {
   try {
     console.log("Testing updated notification format...");
     
-    // Use actual IDs from the database
-    const hostUserId = "b4093f49-f0c3-4bae-a294-35fb87c493eb"; // Paul Martin
-    const requesterUserId = "a8364e70-de01-4b7d-b7f8-52f6f186391d"; // Jim Bean
+    // Use actual IDs from the database that we verified exist
+    const hostUserId = "b4093f49-f0c3-4bae-a294-35fb87c493eb"; // Paul Martin (admin)
+    const requesterUserId = "be9a9276-6577-47a5-8d08-0e9581ad65a5"; // Marcos de Oliveira
     const collaborationId = "5b9187b9-bad5-4750-96ba-a21bdb929bae"; // Live Stream Guest Appearance
     
     console.log("Sending notification with parameters:", {

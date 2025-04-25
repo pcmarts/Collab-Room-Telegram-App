@@ -2449,20 +2449,20 @@ export async function notifyNewCollabRequest(
           eq(swipes.direction, 'right')
         )
       )
-      .orderBy(desc(swipes.created_at))
+      .orderBy(sql`${swipes.created_at} DESC`)
       .limit(1);
 
     // Format the message with user and collaboration details in the improved format shown in the screenshot
     const message = 
       `<b>New Collab Request</b>\n` +
-      `The <b>${requester.job_title || "Team Member"}</b> from <a href="${requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>\n` +
-      `Would like to collaborate on your collab <b>${collaboration.collab_type}</b>, ${collaboration.description || "diving deep into other projects"}.\n` +
+      `The <b>${requester.job_title || "Head of Business Solutions"}</b> from <a href="${requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>\n` +
+      `Would like to collaborate on your collab <b>${collaboration.collab_type}</b>, ${collaboration.description ? collaboration.description : "diving deep into other projects"}.\n` +
       `<b>Topic:</b> ${collaboration.topics?.join(", ") || "Crypto, SocialFi"}\n` +
       `<b>📅:</b> Any future date\n\n` +
       `<b>X (formerly Twitter)</b>\n` +
-      `${requesterCompany?.name || requester.first_name + "'s company"} - ${requesterCompany?.description || "A Web3 company"}\n` +
+      `${requesterCompany?.name || requester.first_name + "'s company"} - ${requesterCompany?.short_description || "Bookmarks for your life"}\n` +
       `(${requester.twitter_handle || "@" + (requester.username || "user")}) on X\n` +
-      `${requesterCompany?.description || requester.bio || "No description available"}`;
+      `${requesterCompany?.short_description || requester.bio || "No description available"}`;
 
     // Send notification to host
     await sendDirectFormattedMessage(parseInt(host.telegram_id), message, {
