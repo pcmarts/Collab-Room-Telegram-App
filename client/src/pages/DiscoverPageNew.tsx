@@ -1176,6 +1176,20 @@ export default function DiscoverPage() {
         last_name: card.potentialMatchData.last_name || '',
       };
       
+      // Add the collaboration details for potential match cards
+      cardWithCompanyData.title = card.title || '';
+      cardWithCompanyData.description = card.description || '';
+      cardWithCompanyData.collab_type = card.collab_type || 'Collaboration';
+      cardWithCompanyData.topics = card.topics || [];
+      cardWithCompanyData.details = card.details || {};
+      
+      // Add additional fields from the match that might be useful
+      if (card.collaboration) {
+        cardWithCompanyData.description = card.collaboration.description || cardWithCompanyData.description;
+        cardWithCompanyData.details = card.collaboration.details || cardWithCompanyData.details;
+        cardWithCompanyData.topics = card.collaboration.topics || cardWithCompanyData.topics;
+      }
+      
       // Set the company name for compatibility
       cardWithCompanyData.companyName = card.potentialMatchData.company_name || '';
       cardWithCompanyData.creator_company_name = card.potentialMatchData.company_name || '';
