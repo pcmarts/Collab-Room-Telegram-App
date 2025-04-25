@@ -580,11 +580,6 @@ export default function SwipeableCard({
           
           {/* Collaboration Description */}
           <div className="mb-3 swipeable-card-content">
-            <div className="mb-2">
-              <h3 className="font-bold text-sm">
-                {data.title || (data.isPotentialMatch ? "Potential Collaboration" : "Collaboration Details")}
-              </h3>
-            </div>
             <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
               {data.description || "No description available."}
             </p>
