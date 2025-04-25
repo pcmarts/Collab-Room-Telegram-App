@@ -2220,10 +2220,10 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
         `[SWIPE_ACTION] Match already exists for collab ${collaborationId} and user ${requesterId}`
       );
       
-      // Update the original message to show match already exists
+      // Update the original message to show match already exists with enhanced format
       if (callbackQuery.message) {
         await bot.editMessageText(
-          `✅ You've already matched with ${requester.first_name} ${requester.last_name || ''} on this collaboration.`,
+          `✅ You've already matched with ${requester.first_name} ${requester.last_name || ''}${requester.handle ? ` (@${requester.handle})` : ''} on this collaboration.`,
           {
             chat_id: chatId,
             message_id: callbackQuery.message.message_id,
@@ -2231,12 +2231,14 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
               inline_keyboard: [
                 [
                   {
-                    text: "View Match Details",
-                    callback_data: `match_info_${existingMatches[0].id}`,
+                    text: "🎉 View Matches",
+                    web_app: { url: `${WEBAPP_URL}/matches` },
                   },
                 ],
               ],
             },
+            parse_mode: "HTML",
+            disable_web_page_preview: true
           }
         );
       }
@@ -2271,13 +2273,25 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       if (requester.telegram_id) {
         const requesterChatId = parseInt(requester.telegram_id);
         
-        // Create custom keyboard for the matched user to view the match
+        // Get company details for the host user
+        const [hostCompany] = await db
+          .select()
+          .from(companies)
+          .where(eq(companies.user_id, user.id))
+          .limit(1);
+          
+        // Create company URL with preference for Twitter
+        const hostCompanyUrl = hostCompany?.twitter_handle 
+          ? `https://twitter.com/${hostCompany.twitter_handle}` 
+          : (hostCompany?.website || '#');
+          
+        // Create custom keyboard for the matched user to view their matches
         const keyboard = {
           inline_keyboard: [
             [
               {
-                text: "🎉 View Match Details",
-                web_app: { url: `${WEBAPP_URL}/matches/${match.id}` },
+                text: "🎉 View Matches",
+                web_app: { url: `${WEBAPP_URL}/matches` },
               },
             ],
           ],
@@ -2285,20 +2299,30 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
 
         await sendDirectFormattedMessage(
           requesterChatId,
-          `🎉 <b>Match Alert!</b>\n\n` +
-          `${user.first_name} ${user.last_name || ''} just matched with you on a ${collaboration.collab_type} collaboration!\n\n` +
-          `Click below to view the match details and start chatting:`,
+          `🎉 <b>New Match!</b>\n\n` +
+          `<b>${user.first_name} ${user.last_name || ""}</b>${user.handle ? ` (@${user.handle})` : ''} from ` +
+          `<a href="${hostCompanyUrl}">${hostCompany?.name || "their company"}</a> ` +
+          `has matched with you on a <b>${collaboration.collab_type}</b> collaboration!\n\n` +
+          `Click below to view your matches and start chatting:`,
           {
             parse_mode: "HTML",
             reply_markup: keyboard,
+            disable_web_page_preview: true
           }
         );
       }
 
-      // Update the original message
+      // Get requester's company details to include in match notification
+      const [requesterCompany] = await db
+        .select()
+        .from(companies)
+        .where(eq(companies.user_id, requesterId))
+        .limit(1);
+
+      // Update the original message with more details about the match
       if (callbackQuery.message) {
         await bot.editMessageText(
-          `✅ You matched with ${requester.first_name} ${requester.last_name || ''}!`,
+          `✅ You matched with ${requester.first_name} ${requester.last_name || ''}${requester.handle ? ` (@${requester.handle})` : ''} from ${requesterCompany?.name || "their company"}!`,
           {
             chat_id: chatId,
             message_id: callbackQuery.message.message_id,
@@ -2306,12 +2330,14 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
               inline_keyboard: [
                 [
                   {
-                    text: "View Match Details",
-                    callback_data: `match_info_${match.id}`,
+                    text: "🎉 View Matches",
+                    web_app: { url: `${WEBAPP_URL}/matches` },
                   },
                 ],
               ],
             },
+            parse_mode: "HTML",
+            disable_web_page_preview: true
           }
         );
       }
