@@ -139,7 +139,7 @@ export function CollaborationDetailsDialog({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <DialogTitle className="pt-2">{title}</DialogTitle>
+          <DialogTitle className="pt-2">{isPotentialMatch ? "🌟 Potential Match Details" : title}</DialogTitle>
         </DialogHeader>
         
         <ScrollArea className="max-h-[70vh]">
@@ -386,7 +386,7 @@ export function CollaborationDetailsDialog({
                 </div>
               )}
               
-              {/* Date Information */}
+              {/* Date Information - Only show if an actual date exists */}
               {(collaboration.date || details?.specific_date || details?.date) && (
                 <div className="mb-3">
                   <h4 className="text-sm font-medium flex items-center gap-1">
@@ -395,18 +395,6 @@ export function CollaborationDetailsDialog({
                   </h4>
                   <p className="text-sm text-muted-foreground">
                     {collaboration.date || details?.specific_date || details?.date}
-                  </p>
-                </div>
-              )}
-              
-              {/* Date Flexibility */}
-              {details?.date_selection && (
-                <div className="mb-3">
-                  <h4 className="text-sm font-medium">Date Flexibility</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {details.date_selection === 'specific_date' 
-                      ? 'Specific date requested'
-                      : 'Flexible date'}
                   </p>
                 </div>
               )}
