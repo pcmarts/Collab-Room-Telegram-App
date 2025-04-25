@@ -22,7 +22,12 @@ import {
   Info,
   Link,
   ArrowUpRight,
-  ExternalLink
+  ExternalLink,
+  FileSearch,
+  FileText,
+  Mic,
+  Video,
+  Mail
 } from "lucide-react";
 
 interface CollaborationDetailsDialogProps {
