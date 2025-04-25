@@ -350,16 +350,21 @@ export default function DiscoverPage() {
       });
     }
     
-    // Filter out cards with missing essential data - SIMPLIFIED VALIDATION
+    // ENHANCED VALIDATION: Accept all cards with ID and fix missing fields
     const validCards = cards.filter(card => {
-      // ONLY require id - all other fields are now optional
-      // We'll show placeholders for missing fields in the UI
-      const hasValidId = !!card.id;
-      
-      // For potential matches
-      if (card.isPotentialMatch) {
-        return hasValidId;
+      // Card structure validation and debug logging
+      if (!card) {
+        console.log('[Discovery] Filtering out null/undefined card');
+        return false;
       }
+      
+      // Log the complete structure of any problematic card
+      if (!card.id || typeof card !== 'object') {
+        console.log('[Discovery] Problem card structure:', JSON.stringify(card, null, 2));
+      }
+      
+      // ONLY require id - all other fields are now optional
+      const hasValidId = !!card.id;
       
       // Basic validation - just require an ID
       if (!hasValidId) {
@@ -367,16 +372,27 @@ export default function DiscoverPage() {
         return false;
       }
       
+      // Enhanced field checking with detailed logs for debugging
+      console.log(`[Discovery] Processing card ${card.id} - isPotentialMatch: ${!!card.isPotentialMatch}, hasType: ${!!card.collab_type}`);
+      
       // If collab_type is missing, provide a default
       if (!card.collab_type) {
         console.log('[Discovery] Adding default collab_type for card:', card.id);
         card.collab_type = "Collaboration";
       }
       
-      // If creator_company_name is missing, provide a default
+      // If creator_company_name is missing, provide a default or extract from potentialMatchData if available
       if (!card.creator_company_name) {
-        console.log('[Discovery] Adding default company name for card:', card.id);
-        card.creator_company_name = "Company";
+        if (card.isPotentialMatch && card.potentialMatchData?.company_name) {
+          console.log('[Discovery] Using company name from potentialMatchData for card:', card.id);
+          card.creator_company_name = card.potentialMatchData.company_name;
+        } else if (card.company_data?.name) {
+          console.log('[Discovery] Using company name from company_data for card:', card.id);
+          card.creator_company_name = card.company_data.name;
+        } else {
+          console.log('[Discovery] Adding default company name for card:', card.id);
+          card.creator_company_name = "Company";
+        }
       }
       
       // If title is missing, use a default or collab_type
@@ -756,6 +772,8 @@ export default function DiscoverPage() {
   // Add error handling for API authentication errors
   useEffect(() => {
     const errorHandler = (event: ErrorEvent) => {
+      console.error('[Discovery] Unhandled error:', event.error);
+      
       // Check if the error is an authentication error
       if (event.error && (
         event.error.name === 'AuthenticationError' ||
@@ -764,10 +782,27 @@ export default function DiscoverPage() {
         console.log('[Auth] Authentication error detected:', event.error);
         setAuthError(true);
       }
+      
+      // If we hit an error while displaying cards, try to recover gracefully
+      if (cards.length === 0 && !isLoading && !loadingMore) {
+        console.log('[Discovery] Attempting recovery from error by resetting state');
+        
+        // Reset state to trigger a fresh load
+        setTimeout(() => {
+          setNextCursor(undefined);
+          setHasMore(true);
+          setAllCardsViewed(false);
+          
+          // Try reloading cards after a short delay
+          setTimeout(fetchNextBatch, 1000);
+        }, 500);
+      }
     };
     
     // Handle unhandled rejections as well (for async errors)
     const rejectionHandler = (event: PromiseRejectionEvent) => {
+      console.error('[Discovery] Unhandled promise rejection:', event.reason);
+      
       if (event.reason && (
         (event.reason.name === 'AuthenticationError') ||
         (event.reason.message && event.reason.message.includes('Unauthorized'))
