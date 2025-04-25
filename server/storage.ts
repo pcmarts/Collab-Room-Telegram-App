@@ -33,6 +33,7 @@ export interface IStorage {
   searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]>;
   searchCollaborationsPaginated(userId: string, filters: CollaborationFilters): Promise<PaginatedCollaborations>;
   updateCollaborationStatus(id: string, status: string): Promise<Collaboration | undefined>;
+  getActiveCollaborationsCount(): Promise<number>;
   
   // Collaboration applications
   applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication>;
@@ -262,6 +263,21 @@ export class DatabaseStorage implements IStorage {
       .from(collaborations)
       .where(eq(collaborations.creator_id, userId))
       .orderBy(desc(collaborations.created_at));
+  }
+  
+  /**
+   * Get the total count of active collaborations in the database
+   * This helps identify discrepancies between swipe counts and available collaborations
+   */
+  async getActiveCollaborationsCount(): Promise<number> {
+    const result = await db
+      .select({
+        count: sql<number>`count(*)`
+      })
+      .from(collaborations)
+      .where(eq(collaborations.is_active, true));
+    
+    return result[0]?.count || 0;
   }
   
   async searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]> {
