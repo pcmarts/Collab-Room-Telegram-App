@@ -634,6 +634,26 @@ export default function DiscoverPage() {
     } else if (emptyNoMore) {
       console.log('[Discovery] No more cards available to fetch');
       setAllCardsViewed(true);
+      
+      // Set up an interval to periodically check for new cards when all have been viewed
+      // This replaces the need for a manual refresh button
+      const AUTO_RETRY_DELAY_MS = 5000; // 5 seconds
+      console.log(`[Discovery] Setting up auto-retry in ${AUTO_RETRY_DELAY_MS/1000}s`);
+      
+      const retryTimer = setTimeout(() => {
+        console.log('[Discovery] Auto-retry: Attempting to find new cards');
+        // Reset pagination to start fresh
+        setNextCursor(undefined);
+        setHasMore(true);
+        setAllCardsViewed(false);
+        // Reset cooldown to allow immediate fetch
+        requestCooldownTimeRef.current = 0;
+        // Trigger a fetch
+        fetchNextBatch();
+      }, AUTO_RETRY_DELAY_MS);
+      
+      // Clean up timer if the component unmounts or dependencies change
+      return () => clearTimeout(retryTimer);
     }
   }, [cards.length, hasMore, loadingMore, isLoading, currentCardIndex]);
   
@@ -822,11 +842,21 @@ export default function DiscoverPage() {
       setSwipeHistory(updatedHistory);
       
       // Remove the card from the stack
-      setCards(cards.slice(1));
+      const remainingCards = cards.slice(1);
+      setCards(remainingCards);
       
       // Update current card index for pagination tracking
       // Since we're removing the first card, the current index is now 0 again
       setCurrentCardIndex(0);
+      
+      // If we've just swiped the last card, immediately trigger a fetch for more
+      if (remainingCards.length === 0 && hasMore) {
+        console.log('[Discovery] Just swiped the last card, fetching more immediately');
+        // Reset the cooldown to allow immediate fetch
+        requestCooldownTimeRef.current = 0;
+        // Fetch more in the next render cycle
+        setTimeout(() => fetchNextBatch(), 0);
+      }
       
       // Log the new current card index
       console.log(`[Discovery] Card swiped, new current index: 0, remaining cards: ${cards.length - 1}`);
@@ -1224,9 +1254,19 @@ export default function DiscoverPage() {
           />
           
           {/* Loading More Indicator */}
-          {loadingMore && cards.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center">
+          {(loadingMore || isLoading) && cards.length === 0 && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
               <Loader2 className="h-8 w-8 text-primary animate-spin" />
+              <p className="text-sm text-muted-foreground">Finding collaborations for you...</p>
+            </div>
+          )}
+          
+          {/* No Cards Available */}
+          {!loadingMore && !isLoading && cards.length === 0 && !hasMore && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+              <SearchX className="h-12 w-12 text-muted-foreground" />
+              <p className="text-base text-muted-foreground">No more collaborations available.</p>
+              <p className="text-xs text-muted-foreground">Automatically checking for new collaborations...</p>
             </div>
           )}
         </div>
@@ -1244,19 +1284,9 @@ export default function DiscoverPage() {
           Filters
         </Button>
         
+        {/* Refresh button removed per user request */}
         <div className="flex gap-2">
-          {/* Only show refresh button when no cards are available */}
-          {cards.length === 0 && (
-            <Button 
-              variant="outline" 
-              onClick={handleRefresh}
-              size="sm"
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-          )}
+          {/* Empty div to maintain layout */}
         </div>
       </div>
       
