@@ -228,6 +228,16 @@ body.scrollable-page {
   }
 }
 
+/* Ultra-light splash screen animation */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-in-out;
+}
+
 /* Text selection in Telegram WebApp */
 .telegram-app p,
 .telegram-app h1,
