@@ -513,13 +513,8 @@ export default function SimpleCard({
             </div>
           )}
           
-          {/* Collaboration Description */}
+          {/* Collaboration Description - title moved to header */}
           <div className="mb-3">
-            <div className="mb-2">
-              <h3 className="font-bold text-sm">
-                {data.title || (data.isPotentialMatch ? "Potential Collaboration" : "Collaboration Details")}
-              </h3>
-            </div>
             <p className="text-sm text-muted-foreground line-clamp-3 mb-2">
               {data.description || "No description available."}
             </p>
