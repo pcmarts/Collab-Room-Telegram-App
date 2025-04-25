@@ -6,6 +6,28 @@ This document provides comprehensive documentation for the specialized card comp
 
 The Collab Room has moved from a generic BaseCollabCard to specialized standalone card components for each collaboration type. This approach provides better customization for each content type while maintaining visual consistency across the discovery feed.
 
+## Recent Updates (Version 1.9.6)
+
+### SimpleCard Component
+
+We've migrated from motion-based SwipeableCard to a simpler, more compatible SimpleCard component that:
+
+- Uses explicit buttons instead of swiping gestures for better mobile compatibility
+- Shows only one card at a time to eliminate overlapping issues
+- Ensures links and interactive elements work properly on all devices (especially mobile Telegram)
+
+### Live Stream Guest Appearance Card Enhancements
+
+The Live Stream Guest Appearance card has been enhanced to:
+
+- Display the specific collaboration title (e.g., "Bondex Talks")
+- Show complete audience size information ("5,000-10,000 estimated viewers")
+- Use a cleaner layout without redundant labels
+- Use proper "Live Stream Guest Appearance" badge text
+- Include proper link handling for mobile compatibility
+
+For more details on mobile compatibility fixes, see [Mobile Link Compatibility](../telegram/mobile-link-compatibility.md).
+
 ## Card Component Directory
 
 All specialized card components are located in `client/src/components/cards/`:

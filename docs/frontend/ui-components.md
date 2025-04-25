@@ -155,6 +155,48 @@ Each card type implements specialized UI elements based on its content type:
 />
 ```
 
+## Dialog Components
+
+### Collaboration Details Dialog (v1.9.6 Update)
+
+The CollaborationDetailsDialog component displays detailed information about a collaboration when a user taps the "Info" button on a discovery card. In version 1.9.6, this component was enhanced with the following improvements:
+
+- Added a highlighted "About Company" section showing the company's short description
+- Enhanced company information visibility with card-like formatting
+- Implemented consistent badge/pill styling for collaboration types matching card styles
+- Fixed missing icon imports (FileSearch, FileText, Mic, Video, Mail)
+- Removed redundant "Collaboration details" text for a cleaner header
+- Improved information hierarchy with better spacing and organization
+
+**Implementation**
+
+Located at `client/src/components/CollaborationDetailsDialog.tsx`, this component presents collaboration details in a modal dialog format.
+
+```typescript
+interface CollaborationDetailsDialogProps {
+  collaboration: Collaboration;
+  isOpen: boolean;
+  onClose: () => void;
+}
+```
+
+**Usage Example**
+
+```jsx
+<CollaborationDetailsDialog
+  collaboration={selectedCollaboration}
+  isOpen={detailsDialogOpen}
+  onClose={() => setDetailsDialogOpen(false)}
+/>
+```
+
+**Key Features**
+- Consistent badge styling with the specialized card components
+- Dedicated "About [Company Name]" section with highlighted box
+- Type-specific details presentation based on collaboration type
+- External link handling with proper button formatting
+- Company logo display when available
+
 ## Glow Button
 
 Enhanced buttons with animated glow effects for important call-to-action elements. Used for primary actions throughout the application.

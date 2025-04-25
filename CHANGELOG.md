@@ -5,6 +5,27 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.9.6] - 2025-04-25
+
+### Enhanced
+- Improved mobile experience by removing drag/swipe behavior and using direct DOM manipulation for card interactions
+- Enhanced Live Stream Guest Appearance cards to display complete information including audience size (5,000-10,000 viewers)
+- Redesigned card UI to show only one card at a time, eliminating overlapping issues
+- Added specific collaboration title display (e.g., "Bondex Talks") to Live Stream cards
+
+### Fixed
+- Fixed clickability issues with links on mobile Telegram by removing all drag functionality
+- Removed redundant text elements from cards and dialog boxes for cleaner UI
+- Enhanced info dialog to display collaboration types in consistent pill/badge style
+- Improved company information visibility in dialog with highlighted "About Company" section
+- Fixed missing icon imports in CollaborationDetailsDialog component
+
+### Technical Details
+- Modified SimpleCard.tsx to use direct DOM manipulation for clickable elements
+- Updated CollaborationDetailsDialog.tsx to use consistent badge styling matching cards
+- Removed redundant "Collaboration details" text from dialog headers
+- Added FileSearch, FileText, Mic, Video, and Mail icon imports to fix dialog errors
+
 ## [Version 1.9.5] - 2025-04-24
 
 ### Performance
