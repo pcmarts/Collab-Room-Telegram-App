@@ -220,7 +220,7 @@ export default function SimpleCard({
                     ) : data.collab_type === 'Live Stream Guest Appearance' ? (
                       <Badge variant="outline" className="text-xs bg-red-500/10 border-red-500/20 text-red-700">
                         <Video className="w-3 h-3 mr-1" />
-                        {data.collab_type}
+                        Live Stream
                       </Badge>
                     ) : data.collab_type ? (
                       <p className="text-sm text-muted-foreground line-clamp-1">{data.collab_type}</p>
@@ -485,11 +485,6 @@ export default function SimpleCard({
           {/* Live Stream Guest Appearance */}
           {data.collab_type === 'Live Stream Guest Appearance' && (
             <div className="flex flex-col space-y-2 p-3 bg-red-500/5 rounded-md border border-red-500/10 mb-3">
-              {/* Debug section - always show */}
-              <p className="text-xs text-slate-500">
-                Collab Type: {data.collab_type}
-              </p>
-              
               {/* Platform */}
               <div className="flex items-center space-x-1.5">
                 <Video className="w-4 h-4 text-red-600" />
@@ -503,42 +498,36 @@ export default function SimpleCard({
                 <span className="font-medium">Host:</span> {data.details?.host_name || "Stream Host"}
               </p>
               
-              {/* Audience size always shown */}
+              {/* Audience size */}
               <p className="text-xs text-muted-foreground">
                 <Users className="w-3 h-3 inline mr-1" />
                 <span className="font-medium">{data.details?.estimated_audience || "Unknown"}</span> estimated viewers
               </p>
               
-              {/* Previous streams */}
-              {data.details?.previous_stream_link && (
-                <div className="flex items-center mt-2">
+              {/* Action buttons for streams */}
+              <div className="flex flex-col gap-2 mt-1">
+                {data.details?.previous_stream_link && (
                   <DirectButton 
                     url={data.details.previous_stream_link}
                     label="View Previous Stream"
                     type="stream"
                   />
-                </div>
-              )}
-              
-              {/* Add livestream link - always show button */}
-              <div className="flex items-center mt-2">
-                <DirectButton 
-                  url={data.details?.livestream_link || '#'}
-                  label="View Livestream"
-                  type="stream"
-                />
+                )}
+                
+                {data.details?.livestream_link && (
+                  <DirectButton 
+                    url={data.details.livestream_link}
+                    label="View Livestream"
+                    type="stream"
+                  />
+                )}
               </div>
               
-              {/* Show date if available - always show */}
+              {/* Date */}
               <div className="flex items-center space-x-1.5 text-xs text-muted-foreground mt-1">
                 <Calendar className="w-3 h-3" />
                 <span>{data.date || data.specific_date || data.details?.livestream_date || "Date TBD"}</span>
               </div>
-              
-              {/* Debug details - uncomment for debugging */}
-              {/* <pre className="text-xs text-slate-500 mt-2 overflow-auto max-h-24">
-                {JSON.stringify(data.details, null, 2)}
-              </pre> */}
             </div>
           )}
           
