@@ -139,7 +139,7 @@ export function CollaborationDetailsDialog({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <DialogTitle className="pt-2">{isPotentialMatch ? "🌟 Potential Match Details" : title}</DialogTitle>
+          <DialogTitle className="pt-2 pl-8">{isPotentialMatch ? "🌟 Potential Match Details" : title}</DialogTitle>
         </DialogHeader>
         
         <ScrollArea className="max-h-[70vh]">
@@ -151,15 +151,22 @@ export function CollaborationDetailsDialog({
                 {companyName}
               </h3>
               
-              {/* Job title - Enhanced for potential matches */}
-              {isPotentialMatch && potentialMatchData.job_title && (
+              {/* Job title - Show for potential matches or from company data */}
+              {(isPotentialMatch && potentialMatchData.job_title) ? (
                 <div className="flex items-center mt-1 text-sm text-primary font-medium">
                   <Briefcase className="h-4 w-4 mr-1 text-primary/70" />
                   <span>
                     {potentialMatchData.job_title}
                   </span>
                 </div>
-              )}
+              ) : companyData.job_title ? (
+                <div className="flex items-center mt-1 text-sm font-medium">
+                  <Briefcase className="h-4 w-4 mr-1 text-muted-foreground" />
+                  <span>
+                    {companyData.job_title}
+                  </span>
+                </div>
+              ) : null}
               
               <Separator className="my-3" />
               
