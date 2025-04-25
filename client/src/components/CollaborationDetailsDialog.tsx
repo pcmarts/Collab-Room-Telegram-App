@@ -264,7 +264,9 @@ export function CollaborationDetailsDialog({
                       <Twitter className="h-3 w-3 text-muted-foreground" />
                       <span>Host: </span>
                       <a 
-                        href={`https://twitter.com/${details.host_twitter_handle.replace('@', '')}`}
+                        href={details.host_twitter_handle.startsWith('https://') 
+                          ? details.host_twitter_handle 
+                          : `https://x.com/${details.host_twitter_handle.replace('@', '')}`}
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
@@ -421,7 +423,7 @@ export function CollaborationDetailsDialog({
                     <a 
                       href={companyData.twitter_handle.startsWith("http") 
                         ? companyData.twitter_handle 
-                        : `https://twitter.com/${companyData.twitter_handle.replace('@', '')}`}
+                        : `https://x.com/${companyData.twitter_handle.replace('@', '')}`}
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
@@ -430,7 +432,9 @@ export function CollaborationDetailsDialog({
                         // Don't prevent default so the link works normally
                       }}
                     >
-                      {companyData.twitter_handle.replace(/https?:\/\/(www\.)?twitter\.com\//, "@")}
+                      {companyData.twitter_handle.startsWith("http") 
+                        ? companyData.twitter_handle 
+                        : "@" + companyData.twitter_handle.replace('@', '')}
                     </a>
                   </div>
                 )}
