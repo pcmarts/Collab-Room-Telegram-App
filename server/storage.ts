@@ -1142,25 +1142,64 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUserMatches(userId: string): Promise<Match[]> {
-    return db
-      .select()
-      .from(matches)
-      .where(
-        or(
-          eq(matches.host_id, userId),
-          eq(matches.requester_id, userId)
+    console.log(`🧩 getUserMatches - Finding basic matches for user ${userId}`);
+    
+    try {
+      const results = await db
+        .select()
+        .from(matches)
+        .where(
+          or(
+            eq(matches.host_id, userId),
+            eq(matches.requester_id, userId)
+          )
         )
-      )
-      .orderBy(desc(matches.created_at));
+        .orderBy(desc(matches.created_at));
+      
+      console.log(`🧩 getUserMatches - Found ${results.length} matches`);
+      if (results.length > 0) {
+        // Get the status distribution for debugging
+        const statusCounts: Record<string, number> = {};
+        results.forEach(match => {
+          statusCounts[match.status] = (statusCounts[match.status] || 0) + 1;
+        });
+        console.log(`🧩 getUserMatches - Match status distribution:`, statusCounts);
+        
+        // Print sample of the first match 
+        console.log(`🧩 getUserMatches - First match sample:`, JSON.stringify(results[0], null, 2));
+      } else {
+        console.log(`🧩 getUserMatches - No matches found in database`);
+      }
+      
+      return results;
+    } catch (error) {
+      console.error(`🧩 getUserMatches - Error fetching matches:`, error);
+      throw error;
+    }
   }
   
   async getUserMatchesWithDetails(userId: string): Promise<any[]> {
     // This is an enriched version of getUserMatches that returns more details
     // for each match including collaboration and user information
-    console.log(`Getting detailed matches for user ${userId}`);
+    console.log(`🔍 getUserMatchesWithDetails - Getting enriched matches for user ${userId}`);
     
     try {
-      // First, get the basic match data using a simpler query to avoid Drizzle errors
+      // First, directly check if there are active matches in the DB for this user
+      try {
+        const activeMatchesCount = await db.execute(sql`
+          SELECT COUNT(*) as count
+          FROM matches m
+          WHERE (m.host_id = ${userId} OR m.requester_id = ${userId})
+          AND m.status = 'active'
+        `);
+        
+        const count = activeMatchesCount.rows?.[0]?.count || '0';
+        console.log(`🔍 getUserMatchesWithDetails - Found ${count} active matches in database for user ${userId}`);
+      } catch (countError) {
+        console.error(`🔍 getUserMatchesWithDetails - Error counting active matches:`, countError);
+      }
+      
+      // Get the basic match data using a simpler query to avoid Drizzle errors
       const matchesResult = await db.execute(sql`
         SELECT 
           m.id as match_id,
@@ -1171,13 +1210,25 @@ export class DatabaseStorage implements IStorage {
           m.host_id,
           m.requester_id
         FROM matches m
-        WHERE m.host_id = ${userId} OR m.requester_id = ${userId}
+        WHERE (m.host_id = ${userId} OR m.requester_id = ${userId})
         ORDER BY m.created_at DESC
       `);
       
       // SQL queries return a QueryResult object that has rows property
       const matchesRows = matchesResult.rows || [];
-      console.log(`Found ${matchesRows.length} basic matches for user ${userId}`);
+      console.log(`🔍 getUserMatchesWithDetails - Found ${matchesRows.length} basic matches for user ${userId} from raw SQL query`);
+      
+      // Debug: print the first match details if available
+      if (matchesRows.length > 0) {
+        console.log(`🔍 getUserMatchesWithDetails - First match: ${JSON.stringify(matchesRows[0], null, 2)}`);
+        
+        // Print status distribution for debugging
+        const statusCounts: Record<string, number> = {};
+        matchesRows.forEach((match: any) => {
+          statusCounts[match.match_status || 'unknown'] = (statusCounts[match.match_status || 'unknown'] || 0) + 1;
+        });
+        console.log(`🔍 getUserMatchesWithDetails - Match status distribution:`, statusCounts);
+      }
       
       // Use the rows property from the SQL result
       const matchesArray = matchesRows;
@@ -1218,7 +1269,6 @@ export class DatabaseStorage implements IStorage {
               u.first_name,
               u.last_name,
               u.handle,
-              u.job_title,
               u.twitter_url,
               u.twitter_followers,
               u.linkedin_url
@@ -1272,7 +1322,7 @@ export class DatabaseStorage implements IStorage {
             other_user_first_name: otherUserData?.first_name || '',
             other_user_last_name: otherUserData?.last_name || '',
             other_user_handle: otherUserData?.handle || '',
-            role_title: otherUserData?.job_title || '',
+            role_title: '', // Default until we add job_title to the user schema
             other_user_twitter_url: otherUserData?.twitter_url || null,
             other_user_twitter_followers: otherUserData?.twitter_followers || null,
             other_user_linkedin_url: otherUserData?.linkedin_url || null,

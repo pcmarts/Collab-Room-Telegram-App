@@ -3235,25 +3235,47 @@ export async function registerRoutes(app: Express) {
   // Get user matches
   app.get("/api/matches", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: User Matches Endpoint ============');
+    console.log('Request URL:', req.url);
+    console.log('Request Query:', req.query);
+    console.log('Request Method:', req.method);
     console.log('Headers:', req.headers);
     
     try {
       // Get user from request
       const telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
-        console.log('No Telegram user found');
+        console.log('❌ No Telegram user found in request');
         return res.status(401).json({ error: 'Unauthorized' });
       }
+      console.log('✅ Found Telegram user:', telegramUser.id, telegramUser.username || '(no username)');
       
       // Get user from database - no development fallbacks
       const user = await storage.getUserByTelegramId(telegramUser.id.toString());
       if (!user) {
-        console.log('User not found for Telegram ID:', telegramUser.id);
+        console.log('❌ User not found in database for Telegram ID:', telegramUser.id);
         return res.status(404).json({ error: 'User not found' });
       }
+      console.log('✅ Found database user:', user.id);
       
       // Get user matches with all details in a single query
-      console.log(`Fetching matches with details for user ${user.id}`);
+      console.log(`🔍 Fetching matches with details for user ${user.id}`);
+      
+      // For diagnostic purposes, fetch raw matches first to see if they exist
+      try {
+        const rawMatches = await storage.getUserMatches(user.id);
+        console.log(`📊 Raw matches count: ${rawMatches.length}`);
+        
+        if (rawMatches.length > 0) {
+          console.log('📋 First raw match sample:', JSON.stringify(rawMatches[0], null, 2));
+          console.log('📊 Match statuses:', rawMatches.map(m => m.status).join(', '));
+          console.log('📊 Match created dates:', rawMatches.map(m => m.created_at).join(', '));
+        } else {
+          console.log('⚠️ No raw matches found in the database!');
+        }
+      } catch (rawMatchError) {
+        console.error('❌ Error fetching raw matches:', rawMatchError);
+      }
+      
       const startTime = Date.now();
       
       try {
