@@ -381,10 +381,21 @@ export default function DiscoverPage() {
       return;
     }
     
-    // Only check hasMore if we're requesting with a cursor
-    // If no cursor (initial load or reset), we should always try to fetch
-    if (nextCursor && !hasMore && cards.length > 0) {
-      console.log('[Discovery] Current batch says no more cards available - will try a fresh search without cursor');
+    // Reset pagination in three scenarios:
+    // 1. We have a cursor but hasMore is false (end of page)
+    // 2. We have no cards at all (all swiped or no results yet)
+    // 3. We've swiped almost all cards and are down to the last few
+    if ((nextCursor && !hasMore) || 
+        (cards.length === 0) || 
+        (cards.length <= 3 && !loadingMore && !hasMore)) {
+      console.log('[Discovery] Resetting pagination to try fresh search', {
+        reason: nextCursor && !hasMore ? 'end of page' : 
+                cards.length === 0 ? 'no cards' : 'almost empty',
+        nextCursor,
+        hasMore,
+        cardCount: cards.length
+      });
+      
       // Reset pagination to start fresh - this helps when all cards in current batch are swiped
       // but there might be new cards available from the beginning
       setNextCursor(undefined);
@@ -571,24 +582,37 @@ export default function DiscoverPage() {
     // 3. User is on the last card (last chance to load more before empty state)
     const onLastCard = cards.length > 0 && currentCardIndex === cards.length - 1;
     
-    // Combined fetch trigger condition
-    const shouldFetchMore = (lowCardCount || onSecondToLastCard || onLastCard) && 
-                           hasMore && 
+    // 4. Zero cards - either initial load or we've run out of cards in current batch
+    const noCardsLeft = cards.length === 0;
+    
+    // Combined fetch trigger condition - note: we now try to fetch even if cards.length === 0
+    // This ensures we attempt to load more cards even if we've run out in the current batch
+    const shouldFetchMore = (lowCardCount || onSecondToLastCard || onLastCard || noCardsLeft) && 
                            !loadingMore && 
                            !isLoading;
     
-    // No more cards to fetch
+    // Only set all cards viewed if server has confirmed no more cards AND we have none locally
     const emptyNoMore = cards.length === 0 && !hasMore && !loadingMore && !isLoading;
     
     if (shouldFetchMore) {
       console.log('[Discovery] Fetching more cards...', {
-        reason: lowCardCount ? 'low card count' : 
+        reason: noCardsLeft ? 'no cards left' :
+                lowCardCount ? 'low card count' : 
                 onSecondToLastCard ? 'on second-to-last card' : 
                 'on last card',
         currentCardIndex,
         totalCards: cards.length,
         hasMore
       });
+      
+      // If we have no cards and hasMore is false, we need to reset pagination
+      // to try a completely fresh search (this helps when server pagination is off)
+      if (cards.length === 0 && !hasMore) {
+        console.log('[Discovery] No cards left and hasMore is false - resetting pagination');
+        setNextCursor(undefined);
+        setHasMore(true);
+      }
+      
       fetchNextBatch();
     } else if (emptyNoMore) {
       console.log('[Discovery] No more cards available to fetch');
@@ -857,12 +881,29 @@ export default function DiscoverPage() {
       }
       
       // Invalidate queries to ensure fresh data
+      // For user swipes, we need this data to be up-to-date
       queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
+      
+      try {
+        // Invalidate matches data - but wrapped in try/catch to prevent any errors
+        // from the `/api/matches` endpoint from breaking the card flow
+        queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
+      } catch (matchError) {
+        // Silently handle any error with the matches invalidation
+        // This prevents the 500 error in /api/matches from affecting the card flow
+        console.warn("[Discovery] Error invalidating matches query - ignoring:", matchError);
+      }
       
       // Check if we need to load more cards
-      if (cards.length < 3 && hasMore) {
-        console.log('[Discovery] Cards running low, fetching next batch...');
+      if (cards.length < 3) {
+        console.log('[Discovery] Cards running low after swipe, fetching next batch...');
+        // Always try to fetch more regardless of hasMore flag
+        // This helps recover from pagination state inconsistencies
+        if (!hasMore) {
+          console.log('[Discovery] hasMore was false, but resetting pagination to try anyway');
+          setNextCursor(undefined);
+          setHasMore(true);
+        }
         fetchNextBatch();
       }
     } catch (error) {
@@ -954,6 +995,13 @@ export default function DiscoverPage() {
       // Invalidate and refetch queries to ensure we have fresh data
       await queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
+      
+      try {
+        // Handle matches invalidation separately to prevent errors from /api/matches from breaking the card flow
+        await queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
+      } catch (matchError) {
+        console.warn("[Discovery] Error invalidating matches query during refresh - ignoring:", matchError);
+      }
       
       try {
         // Reset cards array completely for a fresh start
