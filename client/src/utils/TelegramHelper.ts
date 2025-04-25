@@ -119,6 +119,11 @@ export function isIOSDevice(): boolean {
 export function createTwitterUrl(handle: string): string {
   if (!handle) return '';
   
+  // If it's already a full URL, just return it
+  if (handle.startsWith('https://x.com/') || handle.startsWith('https://twitter.com/')) {
+    return handle;
+  }
+  
   // Clean the handle - remove @ prefix, twitter.com URLs, etc.
   const cleanHandle = handle
     .replace('@', '')
@@ -126,7 +131,7 @@ export function createTwitterUrl(handle: string): string {
     .replace('https://x.com/', '')
     .trim();
     
-  return `https://twitter.com/${cleanHandle}`;
+  return `https://x.com/${cleanHandle}`;
 }
 
 /**
