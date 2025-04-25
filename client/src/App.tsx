@@ -217,16 +217,25 @@ function App() {
   useEffect(() => {
     console.log('[App] Initializing app with disabled auto-refresh');
     
-    // Initialize Telegram WebApp
-    if (window.Telegram?.WebApp) {
-      // Tell Telegram web app that we're ready
-      window.Telegram.WebApp.ready();
-
-      // Expand to full screen
-      window.Telegram.WebApp.expand();
-    }
+    // Import our improved TelegramHelper initialization
+    import('./utils/TelegramHelper').then(({ initTelegramWebApp }) => {
+      // Initialize with our improved Telegram WebApp helper
+      const webAppInitialized = initTelegramWebApp({
+        expandApp: true,
+        debugLog: true
+      });
+      
+      console.log(`[App] Telegram WebApp initialized: ${webAppInitialized}`);
+      
+      // If not running in Telegram WebApp, log a warning for development
+      if (!webAppInitialized) {
+        console.warn('[App] Not running in Telegram WebApp environment. Some features may not work correctly.');
+      }
+    }).catch(err => {
+      console.error('[App] Failed to load TelegramHelper:', err);
+    });
     
-    // Initialize Telegram button visibility fix
+    // Initialize Telegram button visibility fix (legacy code)
     const cleanupButtonFix = initTelegramButtonFix();
     
     // Apply button fix once, but don't set up intervals

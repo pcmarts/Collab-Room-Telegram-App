@@ -3,6 +3,8 @@
  * 
  * This utility provides a reliable way to open links in Telegram WebApp
  * with special handling for iOS devices.
+ * 
+ * Call initTelegramWebApp() when your app first loads to ensure proper WebApp initialization.
  */
 
 /**
@@ -114,4 +116,53 @@ export function createTelegramLinkHandler(url: string, options?: {
     
     openTelegramLink(url, { useTimeout, timeoutMs, debugLog });
   };
+}
+
+/**
+ * Initialize the Telegram WebApp 
+ * 
+ * This should be called when your application first loads to ensure proper
+ * WebApp functionality, especially on iOS devices.
+ * 
+ * @param options Configuration options
+ */
+export function initTelegramWebApp(options?: {
+  expandApp?: boolean; 
+  debugLog?: boolean;
+}): boolean {
+  const { 
+    expandApp = true, 
+    debugLog = true 
+  } = options || {};
+  
+  try {
+    // Check if we're in a Telegram WebApp environment
+    if (!window.Telegram?.WebApp) {
+      if (debugLog) console.log("[TelegramHelper] Not running inside Telegram WebApp");
+      return false;
+    }
+    
+    if (debugLog) console.log("[TelegramHelper] Initializing Telegram WebApp");
+    
+    // Signal to Telegram that the WebApp is ready to display
+    window.Telegram.WebApp.ready();
+    
+    // Optionally expand the app to take up the entire available space
+    if (expandApp) {
+      if (debugLog) console.log("[TelegramHelper] Expanding WebApp");
+      window.Telegram.WebApp.expand();
+    }
+    
+    if (debugLog) {
+      console.log(`[TelegramHelper] WebApp platform: ${window.Telegram.WebApp.platform}`);
+      console.log(`[TelegramHelper] WebApp version: ${window.Telegram.WebApp.version}`);
+      console.log(`[TelegramHelper] WebApp viewport height: ${window.Telegram.WebApp.viewportHeight}`);
+      console.log(`[TelegramHelper] WebApp viewport stable height: ${window.Telegram.WebApp.viewportStableHeight}`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("[TelegramHelper] Error initializing Telegram WebApp:", error);
+    return false;
+  }
 }
