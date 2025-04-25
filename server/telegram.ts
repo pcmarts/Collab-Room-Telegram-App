@@ -2469,24 +2469,24 @@ export async function notifyNewCollabRequest(
       `<a href="${requesterCompany.linkedin_url}">LinkedIn</a>` : 
       "LinkedIn";
     
-    // Host username (if available)
-    const hostUsername = host.username ? `@${host.username}` : host.first_name;
+    // Host username (if available) - make sure to display properly
+    const hostUsername = host.username || host.first_name;
     
     const message = 
-      `🔥 ${hostUsername} - <b>New Collab Request from ${requesterCompany?.name || requester.first_name + "'s company"}</b>` +
+      `🔥 ${host.username ? `@${host.username}` : host.first_name} - <b>New Collab Request from ${requesterCompany?.name || requester.first_name + "'s company"}</b>` +
       
       // Include note if available
       `${noteSection}` +
       
       // Company information section
-      `\n💼 <a href="${requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>` +
+      `\n\n💼 <a href="${requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>` +
       `\n❓ <i>${requesterCompany?.short_description || "Web3 company focusing on blockchain solutions"}</i>` +
       `\n🔗 ${twitterLink} | ${linkedinLink}` +
       `\n👤 ${requester.job_title || "Head of Business Solutions"}` +
       
       // Collaboration details
       `\n\n🤝 <b>Your Collab:</b> ${collaboration.collab_type}` +
-      `\n✏️ <b>Your Collab Description:</b> ${collaboration.description ? collaboration.description : "diving deep into other projects"}` +
+      `\n✏️ <b>${collaboration.description ? collaboration.description : "diving deep into other projects"}</b>` +
       `\n${collaboration.topics?.length ? "🏷️ " + collaboration.topics.join(", ") : ""}`;
 
     // Send notification to host
