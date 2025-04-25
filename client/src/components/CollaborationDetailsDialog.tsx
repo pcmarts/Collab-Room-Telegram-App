@@ -144,11 +144,11 @@ export function CollaborationDetailsDialog({
         
         <ScrollArea className="max-h-[70vh]">
           <div className="space-y-4 p-4">
-            {/* Collaboration details section - NOW FIRST */}
+            {/* Company info section - NOW FIRST */}
             <Card className="p-4 bg-card/50 border shadow-sm">
               <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Info className="h-5 w-5 text-muted-foreground" />
-                Collaboration Details
+                <Building className="h-5 w-5 text-muted-foreground" />
+                {companyName}
               </h3>
               
               <Separator className="my-3" />
