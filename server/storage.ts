@@ -616,47 +616,26 @@ export class DatabaseStorage implements IStorage {
         ...(filters.excludeIds || []) // Add any explicitly provided IDs
       ];
       
-      // First, get all left-swiped collaboration IDs for this user
-      // This is a direct approach that's more reliable than the NOT EXISTS
-      const leftSwipedQuery = db
-        .select({ id: swipes.collaboration_id })
-        .from(swipes)
-        .where(and(
-          eq(swipes.user_id, userId),
-          eq(swipes.direction, 'left')
-        ));
-        
-      const leftSwipedResults = await leftSwipedQuery;
-      const leftSwipedIds = leftSwipedResults.map(result => result.id);
+      // Exclude user's own collaborations and ALL previously swiped ones using SQL expressions
+      // Don't just exclude left swipes - exclude ALL swipes to ensure that no previously swiped collaboration shows up
       
-      console.log(`DIRECT SWIPE CHECK: Found ${leftSwipedIds.length} left-swiped collaborations for user ${userId}`);
-      if (leftSwipedIds.length > 0) {
-        console.log(`Left-swiped collaboration IDs: ${leftSwipedIds.join(', ')}`);
-      }
-      
-      // Add left-swiped IDs to the exclusion list
-      const completeExcludeIds = [
-        ...allExcludeIds,
-        ...leftSwipedIds
-      ];
-      
-      // Exclude user's own collaborations and previously swiped ones using SQL expressions
-      // Also include any explicit exclusions from filters.excludeIds
+      // ROBUST APPROACH: Use a single NOT EXISTS clause to exclude ANY collaboration 
+      // that has been swiped on in any direction
       const excludeConditions = and(
         // Never show user's own collaborations
         not(eq(collaborations.creator_id, userId)),
         
-        // Exclude all IDs that should be filtered out (user's own, explicitly excluded, and left-swiped)
-        completeExcludeIds.length > 0 
-          ? not(inArray(collaborations.id, completeExcludeIds))
+        // Exclude explicit IDs (belt-and-suspenders approach)
+        allExcludeIds.length > 0 
+          ? not(inArray(collaborations.id, allExcludeIds))
           : undefined,
           
-        // Extra safety: Also use the NOT EXISTS approach as backup
+        // Exclude ANY collaboration that has already been swiped on (regardless of direction)
+        // This ensures nothing shows up twice and is much more robust
         sql`NOT EXISTS (
           SELECT 1 FROM ${swipes}
           WHERE ${swipes.collaboration_id} = ${collaborations.id}
           AND ${swipes.user_id} = ${userId}
-          AND ${swipes.direction} = 'left'
         )`
       );
       
