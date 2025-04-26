@@ -885,6 +885,12 @@ export class DatabaseStorage implements IStorage {
         if (collaboration) {
           console.log("Found collaboration by:", collaboration.creator_id);
           
+          // CRITICAL SAFETY CHECK: Don't process matches if user is swiping on their own collaboration
+          if (swipe.user_id === collaboration.creator_id) {
+            console.log(`User ${swipe.user_id} is swiping on their own collaboration ${swipe.collaboration_id} - skipping match check`);
+            return newSwipe;
+          }
+          
           // Get host details for debugging
           const [host] = await db
             .select()
@@ -932,49 +938,33 @@ export class DatabaseStorage implements IStorage {
             // Take the first matching swipe (simplest case)
             const matchingSwipe = matchingSwipes[0];
             
-            // Create a match record
-            const matchData: InsertMatch = {
-              collaboration_id: matchingSwipe.collaboration_id,
-              host_id: swipe.user_id, // The user is the host of their own collaboration
-              requester_id: collaboration.creator_id, // The creator requested to collaborate
+            // Create a match record - ONLY create one match for the collaboration that was actually swiped on
+            // Note: We don't create a match for the user's collaboration here as that will happen
+            // when the host swipes right on it directly
+            const reverseMatchData: InsertMatch = {
+              collaboration_id: swipe.collaboration_id,
+              host_id: collaboration.creator_id, // The creator is the host of their own collaboration
+              requester_id: swipe.user_id, // The user requested to collaborate
               status: 'active',
-              note: matchingSwipe.note,
+              note: swipe.note,
             };
             
-            console.log("Creating match:", matchData);
+            console.log("Creating match record:", reverseMatchData);
+            const match = await this.createMatch(reverseMatchData);
+            console.log("Match created:", match.id);
             
+            // Notify both users
             try {
-              const match = await this.createMatch(matchData);
-              console.log("Match created:", match.id);
-              
-              // Also create a match for this swipe
-              const reverseMatchData: InsertMatch = {
-                collaboration_id: swipe.collaboration_id,
-                host_id: collaboration.creator_id, // The creator is the host of their own collaboration
-                requester_id: swipe.user_id, // The user requested to collaborate
-                status: 'active',
-                note: swipe.note,
-              };
-              
-              console.log("Creating reverse match:", reverseMatchData);
-              const reverseMatch = await this.createMatch(reverseMatchData);
-              console.log("Reverse match created:", reverseMatch.id);
-              
-              // Notify both users
-              try {
-                // Pass the correct parameters in the right order: hostUserId, requesterUserId, collaborationId, matchId
-                await notifyMatchCreated(
-                  match.host_id,          // Host user ID
-                  match.requester_id,     // Requester user ID
-                  match.collaboration_id, // Collaboration ID
-                  match.id                // Match ID
-                );
-                console.log("Match notification sent");
-              } catch (notifyError) {
-                console.error("Error sending match notification:", notifyError);
-              }
-            } catch (matchError) {
-              console.error("Error creating match:", matchError);
+              // Pass the correct parameters in the right order: hostUserId, requesterUserId, collaborationId, matchId
+              await notifyMatchCreated(
+                match.host_id,          // Host user ID
+                match.requester_id,     // Requester user ID
+                match.collaboration_id, // Collaboration ID
+                match.id                // Match ID
+              );
+              console.log("Match notification sent");
+            } catch (notifyError) {
+              console.error("Error sending match notification:", notifyError);
             }
           } else {
             console.log("No match found yet");
