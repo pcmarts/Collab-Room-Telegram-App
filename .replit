@@ -51,10 +51,10 @@ task = "shell.exec"
 args = "npm run dev"
 
 [[workflows.workflow]]
-name = "Clear Matching, Swipes & Notifications Tables"
+name = "Remove Test User Swipes, Matches, Collabs"
 mode = "sequential"
 author = 40175426
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./clear_tables.sh"
+args = "$ npx tsx remove-user-data.ts"
