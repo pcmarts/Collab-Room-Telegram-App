@@ -1115,6 +1115,31 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
     
+    // 3. Get existing matches for the host's collaborations
+    // We'll use this to exclude users who have already matched with the host
+    const existingMatches = await db
+      .select({
+        collaboration_id: matches.collaboration_id,
+        requester_id: matches.requester_id,
+      })
+      .from(matches)
+      .where(
+        and(
+          inArray(matches.collaboration_id, collabIds),
+          eq(matches.status, 'active')
+        )
+      );
+    
+    console.log(`Found ${existingMatches.length} existing matches for host collaborations`);
+    
+    // Create a Set of user IDs who have already matched with the host
+    // in the format "userId_collaborationId" to ensure uniqueness by collaboration
+    const matchedUserCollabPairs = new Set(
+      existingMatches.map(match => `${match.requester_id}_${match.collaboration_id}`)
+    );
+    
+    console.log(`Excluding ${matchedUserCollabPairs.size} user-collaboration pairs that already have matches`);
+    
     // Find all right swipes on host's collaborations
     // IMPORTANT: Exclude the host's own swipes, which would create a false "potential match" 
     const rightSwipes = await db
@@ -1176,6 +1201,13 @@ export class DatabaseStorage implements IStorage {
         // Fetch the full collaboration data for this swipe
         const collaborationId = result.swipe.collaboration_id;
         const collaboration = await this.getCollaboration(collaborationId);
+        
+        // Check if this user-collaboration pair already has a match
+        const userCollabPair = `${result.user.id}_${collaborationId}`;
+        if (matchedUserCollabPairs.has(userCollabPair)) {
+          console.log(`Skipping already matched user-collaboration pair: ${userCollabPair}`);
+          continue; // Skip this swipe as it already has a match
+        }
         
         // Create the enriched object with full collaboration data
         const enriched = {

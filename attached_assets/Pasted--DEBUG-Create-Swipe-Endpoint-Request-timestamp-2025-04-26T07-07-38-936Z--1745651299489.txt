@@ -1,0 +1,1111 @@
+
+============ DEBUG: Create Swipe Endpoint ============
+Request timestamp: 2025-04-26T07:07:38.936Z
+Headers: {
+  "host": "4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+  "content-length": "97",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en;q=0.9",
+  "cache-control": "max-age=0",
+  "content-type": "application/json",
+  "cookie": "connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0",
+  "origin": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev",
+  "referer": "https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover",
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "x-forwarded-for": "85.244.246.144, 10.82.8.132",
+  "x-forwarded-proto": "https",
+  "x-replit-user-bio": "",
+  "x-replit-user-id": "",
+  "x-replit-user-name": "",
+  "x-replit-user-profile-image": "",
+  "x-replit-user-roles": "",
+  "x-replit-user-teams": "",
+  "x-replit-user-url": "",
+  "x-telegram-init-data": "query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9"
+}
+Body: {
+  "is_potential_match": true,
+  "swipe_id": "b7765145-cb58-4772-aed5-608375e8fcad",
+  "direction": "right"
+}
+Parsed request parameters: {
+  collaboration_id: undefined,
+  swipe_id: 'b7765145-cb58-4772-aed5-608375e8fcad',
+  direction: 'right',
+  is_potential_match: true,
+  note: undefined
+}
+Attempting to extract telegram user data from request...
+Authentication success: Found Telegram ID: 1211030693
+User details: first_name=Paul, last_name=Martin, username=thisispaulm
+Looking up user by Telegram ID: 1211030693...
+Database success: Found user b4093f49-f0c3-4bae-a294-35fb87c493eb (Paul Martin)
+Processing potential match with swipe ID: b7765145-cb58-4772-aed5-608375e8fcad
+Found original swipe with collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+Original swipe was from user ID: 3c784ed0-2322-4f06-91c6-83f1ede9b944
+Creating swipe: {
+  user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  collaboration_id: 'b82d25de-4a89-41b4-b803-053569d9d58f',
+  direction: 'right',
+  note: undefined
+}
+Right swipe detected - checking for potential match
+DEBUG: User b4093f49-f0c3-4bae-a294-35fb87c493eb swiped right on collaboration b82d25de-4a89-41b4-b803-053569d9d58f
+Found collaboration by: b4093f49-f0c3-4bae-a294-35fb87c493eb
+DEBUG: Collab host: b4093f49-f0c3-4bae-a294-35fb87c493eb (telegram_id: 1211030693)
+DEBUG: Host notification preferences: enabled
+Found 1 right swipes by collaboration creator
+Found 2 collaborations by swiper
+No match found yet
+[TELEGRAM] Attempting to send message to chat ID: 1211030693
+[TELEGRAM] Message preview: 🔥 @thisispaulm - <b>New Collab Request from Bonde...
+[TELEGRAM] Message options: {"parse_mode":"HTML","reply_markup":{"inline_keyboard":[[{"text":"❌ Pass","callback_data":"sl_b82d25de_b4093f49"},{"text":"✅ Match","callback_data":"sr_b82d25de_b4093f49"}],[{"text":"🚀 Launch Collab Room","web_app":{"url":"https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover"}}]]},"disable_web_page_preview":true}
+[TELEGRAM] Successfully sent formatted message to 1211030693, message ID: 652
+Sent collaboration request notification to host b4093f49-f0c3-4bae-a294-35fb87c493eb
+Collaboration request notification sent
+Success: Created swipe record with ID: 661ac5ab-438b-4384-b762-483f097da293
+Details: right swipe for collaboration b82d25de-4a89-41b4-b803-053569d9d58f by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+MATCH CREATED! Both users swiped right.
+Collaboration details for notification: {
+  id: 'b82d25de-4a89-41b4-b803-053569d9d58f',
+  creator_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  collab_type: 'Live Stream Guest Appearance'
+}
+Match roles: {
+  current_user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  collaboration_creator_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  original_swiper_id: '3c784ed0-2322-4f06-91c6-83f1ede9b944',
+  is_user_the_host: true,
+  other_user_id: '3c784ed0-2322-4f06-91c6-83f1ede9b944'
+}
+Creating match record with parameters: {
+  collaboration_id: 'b82d25de-4a89-41b4-b803-053569d9d58f',
+  host_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+  requester_id: '3c784ed0-2322-4f06-91c6-83f1ede9b944'
+}
+Success: Created match record with ID: a7a1a142-6f2f-428d-9d76-6ddade50fe79
+Created match notifications: {
+  hostNotification: {
+    id: '20d15a95-d4e9-4f62-a752-27e9f87c8bac',
+    user_id: 'b4093f49-f0c3-4bae-a294-35fb87c493eb',
+    collaboration_id: 'b82d25de-4a89-41b4-b803-053569d9d58f',
+    type: 'match',
+    content: 'Jim Test matched with your Live Stream Guest Appearance collaboration!',
+    is_read: false,
+    is_sent: false,
+    created_at: 2025-04-26T07:07:39.425Z
+  },
+  requesterNotification: {
+    id: 'dc865fbb-579c-4dff-8537-2d62fcae7b1d',
+    user_id: '3c784ed0-2322-4f06-91c6-83f1ede9b944',
+    collaboration_id: 'b82d25de-4a89-41b4-b803-053569d9d58f',
+    type: 'match',
+    content: "You matched with Paul Martin's Live Stream Guest Appearance collaboration!",
+    is_read: false,
+    is_sent: false,
+    created_at: 2025-04-26T07:07:39.447Z
+  }
+}
+Sending enhanced Telegram notifications via notifyMatchCreated function
+[TELEGRAM] Attempting to send message to chat ID: 1211030693
+[TELEGRAM] Message preview: 🎉 <b>New Match!</b>
+
+You've matched with <b>Jim T...
+[TELEGRAM] Message options: {"parse_mode":"HTML","reply_markup":{"inline_keyboard":[[{"text":"🎉 View Matches","web_app":{"url":"https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/matches"}}]]},"disable_web_page_preview":true}
+[TELEGRAM] Successfully sent formatted message to 1211030693, message ID: 653
+[TELEGRAM] Attempting to send message to chat ID: 7892486659
+[TELEGRAM] Message preview: 🎉 <b>New Match!</b>
+
+<b>Paul Martin</b> (@thisisp...
+[TELEGRAM] Message options: {"parse_mode":"HTML","reply_markup":{"inline_keyboard":[[{"text":"🎉 View Matches","web_app":{"url":"https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/matches"}}]]},"disable_web_page_preview":true}
+[TELEGRAM] Successfully sent formatted message to 7892486659, message ID: 654
+Match notifications sent - Host: true, Requester: true
+Enhanced Telegram notifications sent to both users
+[2025-04-26T07:07:39.961Z] [HTTP] POST /api/swipes 201 in 1025ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.8.132',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+============ DEBUG: User Matches Endpoint ============
+Request URL: /api/matches
+Request Query: {}
+Request Method: GET
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  'if-modified-since': 'Sat, 26 Apr 2025 07:07:13 GMT',
+  'if-none-match': 'W/"3-1745651233701"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.215',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+✅ Found Telegram user: 1211030693 thisispaulm
+✅ Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 Fetching matches with details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🧩 getUserMatches - Finding basic matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🧩 getUserMatches - Found 4 matches
+🧩 getUserMatches - Match status distribution: { active: 4 }
+🧩 getUserMatches - First match sample: {
+  "id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+  "status": "active",
+  "note": null,
+  "host_accepted": true,
+  "requester_accepted": true,
+  "created_at": "2025-04-26T07:07:39.000Z",
+  "updated_at": "2025-04-26T07:07:39.000Z"
+}
+📊 Raw matches count: 4
+📋 First raw match sample: {
+  "id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+  "status": "active",
+  "note": null,
+  "host_accepted": true,
+  "requester_accepted": true,
+  "created_at": "2025-04-26T07:07:39.000Z",
+  "updated_at": "2025-04-26T07:07:39.000Z"
+}
+📊 Match statuses: active, active, active, active
+📊 Match created dates: Sat Apr 26 2025 07:07:39 GMT+0000 (Coordinated Universal Time), Wed Apr 16 2025 09:07:44 GMT+0000 (Coordinated Universal Time), Tue Apr 15 2025 07:25:13 GMT+0000 (Coordinated Universal Time), Mon Apr 14 2025 18:32:27 GMT+0000 (Coordinated Universal Time)
+🔍 getUserMatchesWithDetails - Getting enriched matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 1 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 getUserMatchesWithDetails - Found 4 active matches in database for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total active collaborations in database: 13
+===== SWIPE DETAIL INVESTIGATION =====
+Swipe count (1) vs Active collabs (13)
+Swipes grouped by collaboration (1 unique collaborations):
+Collaboration b82d25de-4a89-41b4-b803-053569d9d58f: 1 swipe(s)
+========================================
+[2025-04-26T07:07:40.164Z] [HTTP] GET /api/user-swipes 200 in 53ms
+🔍 getUserMatchesWithDetails - Found 4 basic matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb from raw SQL query
+🔍 getUserMatchesWithDetails - First match: {
+  "match_id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "match_date": "2025-04-26 07:07:39+00",
+  "match_status": "active",
+  "match_note": null,
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944"
+}
+🔍 getUserMatchesWithDetails - Match status distribution: { active: 4 }
+Found 4 detailed matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Sample match details: {
+  "match_id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "match_date": "2025-04-26 07:07:39+00",
+  "match_status": "active",
+  "match_note": null,
+  "collab_type": "Live Stream Guest Appearance",
+  "collab_description": "Bondex Talks is a podcast format live stream, diving deep into other projects, with the intersect of professional networks, ID, privacy, socialfi and talent.",
+  "collab_details": {
+    "title": "Bondex Talks",
+    "specific_date": "",
+    "date_selection": "any_future_date",
+    "previous_stream_link": "https://www.youtube.com/watch?v=gHMhXS9Lwog&list=PL7mYvDknc_lJdvxEkZ8RG3Tq35RYNzY2L&index=11",
+    "expected_audience_size": "5,000-10,000"
+  },
+  "other_user_first_name": "Jim",
+  "other_user_last_name": "Test",
+  "other_user_handle": "jimtesting",
+  "role_title": "Marketing Leader",
+  "other_user_twitter_url": "https://x.com/jimtest",
+  "other_user_twitter_followers": "0-1K",
+  "other_user_linkedin_url": "https://linkedin.com/in/asdf",
+  "company_name": "ACME Company",
+  "company_description": "ACME is the leading L2",
+  "company_website": "https://www.acme.com",
+  "company_twitter_handle": "acme",
+  "company_twitter_followers": "1K-10K",
+  "company_linkedin_url": "https://linkedin.com/company/asdf",
+  "funding_stage": "Series A",
+  "has_token": false,
+  "token_ticker": null,
+  "blockchain_networks": [],
+  "company_tags": [
+    "L2 & Scaling Solutions"
+  ]
+}
+Found 4 matches in 82ms
+[2025-04-26T07:07:40.229Z] [HTTP] GET /api/matches 200 in 116ms
+============ DEBUG: User Matches Endpoint ============
+Request URL: /api/matches?_=1745651262750
+Request Query: { _: '1745651262750' }
+Request Method: GET
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/matches',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.8.132',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+✅ Found Telegram user: 1211030693 thisispaulm
+✅ Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 Fetching matches with details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🧩 getUserMatches - Finding basic matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🧩 getUserMatches - Found 4 matches
+🧩 getUserMatches - Match status distribution: { active: 4 }
+🧩 getUserMatches - First match sample: {
+  "id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+  "status": "active",
+  "note": null,
+  "host_accepted": true,
+  "requester_accepted": true,
+  "created_at": "2025-04-26T07:07:39.000Z",
+  "updated_at": "2025-04-26T07:07:39.000Z"
+}
+📊 Raw matches count: 4
+📋 First raw match sample: {
+  "id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+  "status": "active",
+  "note": null,
+  "host_accepted": true,
+  "requester_accepted": true,
+  "created_at": "2025-04-26T07:07:39.000Z",
+  "updated_at": "2025-04-26T07:07:39.000Z"
+}
+📊 Match statuses: active, active, active, active
+📊 Match created dates: Sat Apr 26 2025 07:07:39 GMT+0000 (Coordinated Universal Time), Wed Apr 16 2025 09:07:44 GMT+0000 (Coordinated Universal Time), Tue Apr 15 2025 07:25:13 GMT+0000 (Coordinated Universal Time), Mon Apr 14 2025 18:32:27 GMT+0000 (Coordinated Universal Time)
+🔍 getUserMatchesWithDetails - Getting enriched matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 getUserMatchesWithDetails - Found 4 active matches in database for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 getUserMatchesWithDetails - Found 4 basic matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb from raw SQL query
+🔍 getUserMatchesWithDetails - First match: {
+  "match_id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "match_date": "2025-04-26 07:07:39+00",
+  "match_status": "active",
+  "match_note": null,
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944"
+}
+🔍 getUserMatchesWithDetails - Match status distribution: { active: 4 }
+Found 4 detailed matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Sample match details: {
+  "match_id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "match_date": "2025-04-26 07:07:39+00",
+  "match_status": "active",
+  "match_note": null,
+  "collab_type": "Live Stream Guest Appearance",
+  "collab_description": "Bondex Talks is a podcast format live stream, diving deep into other projects, with the intersect of professional networks, ID, privacy, socialfi and talent.",
+  "collab_details": {
+    "title": "Bondex Talks",
+    "specific_date": "",
+    "date_selection": "any_future_date",
+    "previous_stream_link": "https://www.youtube.com/watch?v=gHMhXS9Lwog&list=PL7mYvDknc_lJdvxEkZ8RG3Tq35RYNzY2L&index=11",
+    "expected_audience_size": "5,000-10,000"
+  },
+  "other_user_first_name": "Jim",
+  "other_user_last_name": "Test",
+  "other_user_handle": "jimtesting",
+  "role_title": "Marketing Leader",
+  "other_user_twitter_url": "https://x.com/jimtest",
+  "other_user_twitter_followers": "0-1K",
+  "other_user_linkedin_url": "https://linkedin.com/in/asdf",
+  "company_name": "ACME Company",
+  "company_description": "ACME is the leading L2",
+  "company_website": "https://www.acme.com",
+  "company_twitter_handle": "acme",
+  "company_twitter_followers": "1K-10K",
+  "company_linkedin_url": "https://linkedin.com/company/asdf",
+  "funding_stage": "Series A",
+  "has_token": false,
+  "token_ticker": null,
+  "blockchain_networks": [],
+  "company_tags": [
+    "L2 & Scaling Solutions"
+  ]
+}
+Found 4 matches in 85ms
+[2025-04-26T07:07:43.002Z] [HTTP] GET /api/matches 200 in 121ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.215',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+[2025-04-26T07:07:45.111Z] [HTTP] GET /api/collaborations/my 200 in 39ms
+Found 1 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total active collaborations in database: 13
+===== SWIPE DETAIL INVESTIGATION =====
+Swipe count (1) vs Active collabs (13)
+Swipes grouped by collaboration (1 unique collaborations):
+Collaboration b82d25de-4a89-41b4-b803-053569d9d58f: 1 swipe(s)
+========================================
+[2025-04-26T07:07:45.140Z] [HTTP] GET /api/user-swipes 200 in 65ms
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '55',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.8.132',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+Query: { limit: '10' }
+Body: { excludeIds: [ 'b82d25de-4a89-41b4-b803-053569d9d58f' ] }
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 1 additional IDs from body: [ 'b82d25de-4a89-41b4-b803-053569d9d58f' ]
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Optimized) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: [ 'b82d25de-4a89-41b4-b803-053569d9d58f' ]
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Total active collaborations in database: 13
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.215',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+Found 2 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+User collaboration IDs: b82d25de-4a89-41b4-b803-053569d9d58f, 5b9187b9-bad5-4750-96ba-a21bdb929bae
+Using optimized join structure with marketing preferences included
+Finding potential matches for host: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 2 collaborations created by host b4093f49-f0c3-4bae-a294-35fb87c493eb
+Collaboration IDs for host b4093f49-f0c3-4bae-a294-35fb87c493eb: [
+  'b82d25de-4a89-41b4-b803-053569d9d58f',
+  '5b9187b9-bad5-4750-96ba-a21bdb929bae'
+]
+Found marketing preferences - applying any enabled filters
+Query execution time: 86ms
+Found 11 initial results, 11 after filtering
+Returning 10 collaborations, hasMore: true, nextCursor: 330effe3-41e6-4411-aa87-180c3159012e
+Found 10 collaborations, hasMore: true
+[2025-04-26T07:07:45.432Z] [HTTP] POST /api/collaborations/search 200 in 137ms
+Found 6 right swipes on host's collaborations
+Right swipes detail:
+[1] Swipe ID: b7765145-cb58-4772-aed5-608375e8fcad
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Jim Test (3c784ed0-2322-4f06-91c6-83f1ede9b944)
+    Company: ACME Company
+[2] Swipe ID: c14a5918-b428-4eb2-a237-eb3e961936fc
+    Collaboration ID: 5b9187b9-bad5-4750-96ba-a21bdb929bae
+    User: Krystyna Kozak-Kornacka (1c63719c-779d-43e9-a52b-2bf4e7fce8ce)
+    Company: Cookie3 🍪
+[3] Swipe ID: 69bc68de-95d9-45b6-a188-5fb103f83f1f
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Stephanie Figueroa (06e0ab06-05d6-4362-96fa-1a84a3d33275)
+    Company: Re
+[4] Swipe ID: bab269d2-a883-405a-9759-650d6d634437
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Jye Sandiford (cd7d3290-4da8-478e-ac5c-cdd0be8836f3)
+    Company: POAP
+[5] Swipe ID: 17df7bfb-2816-4a06-886e-0aaddb6e8e78
+    Collaboration ID: 5b9187b9-bad5-4750-96ba-a21bdb929bae
+    User: Yulia  Khaver (fd3035a6-287d-4d13-8f9a-19d3e89522e2)
+    Company: Rumors
+[6] Swipe ID: 74b82274-d103-46bf-b9bb-45ddfc63acee
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Yulia  Khaver (fd3035a6-287d-4d13-8f9a-19d3e89522e2)
+    Company: Rumors
+Found Jim's potential match: {
+  swipeId: 'b7765145-cb58-4772-aed5-608375e8fcad',
+  userId: '3c784ed0-2322-4f06-91c6-83f1ede9b944',
+  firstName: 'Jim',
+  lastName: 'Test',
+  company: 'ACME Company'
+}
+Returning 6 potential matches with enhanced data structure
+Sample potential match data structure: {
+  "id": "b7765145-cb58-4772-aed5-608375e8fcad",
+  "user_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "direction": "right",
+  "note": "",
+  "details": {
+    "title": "Bondex Talks",
+    "specific_date": "",
+    "date_selection": "any_future_date",
+    "previous_stream_link": "https://www.youtube.com/watch?v=gHMhXS9Lwog&list=PL7mYvDknc_lJdvxEkZ8RG3Tq35RYNzY2L&index=11",
+    "expected_audience_size": "5,000-10,000"
+  },
+  "created_at": "2025-04-26T07:06:18.260Z",
+  "user": {
+    "id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+    "telegram_id": "7892486659",
+    "first_name": "Jim",
+    "last_name": "Test",
+    "handle": "jimtesting",
+    "linkedin_url": "https://linkedin.com/in/asdf",
+    "email": "asdf@asdf.vp",
+    "referral_code": "r_7892486659_f4044b27",
+    "twitter_url": "https://x.com/jimtest",
+    "twitter_followers": "0-1K",
+    "is_approved": true,
+    "is_admin": false,
+    "applied_at": "2025-04-23T17:23:44.000Z",
+    "created_at": "2025-04-23T17:23:44.891Z",
+    "referred_by": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "approved_at": "2025-04-24T07:59:23.000Z"
+  },
+  "company": {
+    "id": "20721f60-b097-4f2d-acc7-4fb1287c0a64",
+    "user_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+    "name": "ACME Company",
+    "short_description": "ACME is the leading L2",
+    "long_description": "",
+    "website": "https://www.acme.com",
+    "job_title": "Marketing Leader",
+    "twitter_handle": "acme",
+    "twitter_followers": "1K-10K",
+    "linkedin_url": "https://linkedin.com/company/asdf",
+    "funding_stage": "Series A",
+    "has_token": false,
+    "token_ticker": null,
+    "blockchain_networks": [],
+    "tags": [
+      "L2 & Scaling Solutions"
+    ],
+    "created_at": "2025-04-23T17:23:44.891Z"
+  },
+  "collaboration": {
+    "id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+    "creator_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "collab_type": "Live Stream Guest Appearance",
+    "status": "active",
+    "description": "Bondex Talks is a podcast format live stream, diving deep into other projects, with the intersect of professional networks, ID, privacy, socialfi and talent.",
+    "topics": [
+      "Crypto",
+      "SocialFi"
+    ],
+    "twitter_followers": "0-1K",
+    "company_twitter_followers": "0-1K",
+    "funding_stage": null,
+    "company_has_token": false,
+    "company_token_ticker": null,
+    "company_blockchain_networks": [],
+    "company_tags": [],
+    "filter_company_sectors_enabled": false,
+    "filter_company_followers_enabled": true,
+    "filter_user_followers_enabled": true,
+    "filter_funding_stages_enabled": false,
+    "filter_token_status_enabled": false,
+    "filter_blockchain_networks_enabled": false,
+    "required_company_sectors": [],
+    "required_funding_stages": [],
+    "required_token_status": false,
+    "required_blockchain_networks": [],
+    "min_company_followers": "0-1K",
+    "min_user_followers": "0-1K",
+    "is_free_collab": true,
+    "details": {
+      "title": "Bondex Talks",
+      "specific_date": "",
+      "date_selection": "any_future_date",
+      "previous_stream_link": "https://www.youtube.com/watch?v=gHMhXS9Lwog&list=PL7mYvDknc_lJdvxEkZ8RG3Tq35RYNzY2L&index=11",
+      "expected_audience_size": "5,000-10,000"
+    },
+    "date_type": "any_future_date",
+    "specific_date": null,
+    "created_at": "2025-04-14T15:51:48.000Z",
+    "updated_at": "2025-04-14T19:35:42.000Z"
+  },
+  "first_name": "Jim",
+  "last_name": "Test",
+  "company_name": "ACME Company",
+  "company_description": "ACME is the leading L2",
+  "collab_type": "Live Stream Guest Appearance",
+  "title": "",
+  "description": "Bondex Talks is a podcast format live stream, diving deep into other projects, with the intersect of professional networks, ID, privacy, socialfi and talent.",
+  "topics": [
+    "Crypto",
+    "SocialFi"
+  ],
+  "potentialMatchData": {
+    "user_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+    "first_name": "Jim",
+    "last_name": "Test",
+    "company_name": "ACME Company",
+    "company_description": "ACME is the leading L2",
+    "company_website": "https://www.acme.com",
+    "company_twitter": "acme",
+    "company_linkedin": "https://linkedin.com/company/asdf",
+    "twitter_followers": "0-1K",
+    "company_twitter_followers": "1K-10K",
+    "swipe_created_at": "2025-04-26T07:06:18.260Z",
+    "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+    "note": ""
+  }
+}
+Found 6 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-26T07:07:45.649Z] [HTTP] GET /api/potential-matches 200 in 276ms
+[2025-04-26T07:07:46.019Z] [HTTP] GET /api/collaborations/my 200 in 35ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.8.132',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+Found 1 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total active collaborations in database: 13
+===== SWIPE DETAIL INVESTIGATION =====
+Swipe count (1) vs Active collabs (13)
+Swipes grouped by collaboration (1 unique collaborations):
+Collaboration b82d25de-4a89-41b4-b803-053569d9d58f: 1 swipe(s)
+========================================
+[2025-04-26T07:07:46.224Z] [HTTP] GET /api/user-swipes 200 in 56ms
+============ DEBUG: User Matches Endpoint ============
+Request URL: /api/matches
+Request Query: {}
+Request Method: GET
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  'if-modified-since': 'Sat, 26 Apr 2025 07:07:40 GMT',
+  'if-none-match': 'W/"4-1745651260228"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.8.132',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+✅ Found Telegram user: 1211030693 thisispaulm
+✅ Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 Fetching matches with details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🧩 getUserMatches - Finding basic matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🧩 getUserMatches - Found 4 matches
+🧩 getUserMatches - Match status distribution: { active: 4 }
+🧩 getUserMatches - First match sample: {
+  "id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+  "status": "active",
+  "note": null,
+  "host_accepted": true,
+  "requester_accepted": true,
+  "created_at": "2025-04-26T07:07:39.000Z",
+  "updated_at": "2025-04-26T07:07:39.000Z"
+}
+📊 Raw matches count: 4
+📋 First raw match sample: {
+  "id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+  "status": "active",
+  "note": null,
+  "host_accepted": true,
+  "requester_accepted": true,
+  "created_at": "2025-04-26T07:07:39.000Z",
+  "updated_at": "2025-04-26T07:07:39.000Z"
+}
+📊 Match statuses: active, active, active, active
+📊 Match created dates: Sat Apr 26 2025 07:07:39 GMT+0000 (Coordinated Universal Time), Wed Apr 16 2025 09:07:44 GMT+0000 (Coordinated Universal Time), Tue Apr 15 2025 07:25:13 GMT+0000 (Coordinated Universal Time), Mon Apr 14 2025 18:32:27 GMT+0000 (Coordinated Universal Time)
+🔍 getUserMatchesWithDetails - Getting enriched matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 getUserMatchesWithDetails - Found 4 active matches in database for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 getUserMatchesWithDetails - Found 4 basic matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb from raw SQL query
+🔍 getUserMatchesWithDetails - First match: {
+  "match_id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "match_date": "2025-04-26 07:07:39+00",
+  "match_status": "active",
+  "match_note": null,
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944"
+}
+🔍 getUserMatchesWithDetails - Match status distribution: { active: 4 }
+Found 4 detailed matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Sample match details: {
+  "match_id": "a7a1a142-6f2f-428d-9d76-6ddade50fe79",
+  "match_date": "2025-04-26 07:07:39+00",
+  "match_status": "active",
+  "match_note": null,
+  "collab_type": "Live Stream Guest Appearance",
+  "collab_description": "Bondex Talks is a podcast format live stream, diving deep into other projects, with the intersect of professional networks, ID, privacy, socialfi and talent.",
+  "collab_details": {
+    "title": "Bondex Talks",
+    "specific_date": "",
+    "date_selection": "any_future_date",
+    "previous_stream_link": "https://www.youtube.com/watch?v=gHMhXS9Lwog&list=PL7mYvDknc_lJdvxEkZ8RG3Tq35RYNzY2L&index=11",
+    "expected_audience_size": "5,000-10,000"
+  },
+  "other_user_first_name": "Jim",
+  "other_user_last_name": "Test",
+  "other_user_handle": "jimtesting",
+  "role_title": "Marketing Leader",
+  "other_user_twitter_url": "https://x.com/jimtest",
+  "other_user_twitter_followers": "0-1K",
+  "other_user_linkedin_url": "https://linkedin.com/in/asdf",
+  "company_name": "ACME Company",
+  "company_description": "ACME is the leading L2",
+  "company_website": "https://www.acme.com",
+  "company_twitter_handle": "acme",
+  "company_twitter_followers": "1K-10K",
+  "company_linkedin_url": "https://linkedin.com/company/asdf",
+  "funding_stage": "Series A",
+  "has_token": false,
+  "token_ticker": null,
+  "blockchain_networks": [],
+  "company_tags": [
+    "L2 & Scaling Solutions"
+  ]
+}
+Found 4 matches in 98ms
+[2025-04-26T07:07:46.508Z] [HTTP] GET /api/matches 200 in 135ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.8.132',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+Found 1 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total active collaborations in database: 13
+===== SWIPE DETAIL INVESTIGATION =====
+Swipe count (1) vs Active collabs (13)
+Swipes grouped by collaboration (1 unique collaborations):
+Collaboration b82d25de-4a89-41b4-b803-053569d9d58f: 1 swipe(s)
+========================================
+[2025-04-26T07:07:46.732Z] [HTTP] GET /api/user-swipes 200 in 64ms
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.8.132',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+Finding potential matches for host: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 2 collaborations created by host b4093f49-f0c3-4bae-a294-35fb87c493eb
+Collaboration IDs for host b4093f49-f0c3-4bae-a294-35fb87c493eb: [
+  'b82d25de-4a89-41b4-b803-053569d9d58f',
+  '5b9187b9-bad5-4750-96ba-a21bdb929bae'
+]
+Found 6 right swipes on host's collaborations
+Right swipes detail:
+[1] Swipe ID: b7765145-cb58-4772-aed5-608375e8fcad
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Jim Test (3c784ed0-2322-4f06-91c6-83f1ede9b944)
+    Company: ACME Company
+[2] Swipe ID: c14a5918-b428-4eb2-a237-eb3e961936fc
+    Collaboration ID: 5b9187b9-bad5-4750-96ba-a21bdb929bae
+    User: Krystyna Kozak-Kornacka (1c63719c-779d-43e9-a52b-2bf4e7fce8ce)
+    Company: Cookie3 🍪
+[3] Swipe ID: 69bc68de-95d9-45b6-a188-5fb103f83f1f
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Stephanie Figueroa (06e0ab06-05d6-4362-96fa-1a84a3d33275)
+    Company: Re
+[4] Swipe ID: bab269d2-a883-405a-9759-650d6d634437
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Jye Sandiford (cd7d3290-4da8-478e-ac5c-cdd0be8836f3)
+    Company: POAP
+[5] Swipe ID: 17df7bfb-2816-4a06-886e-0aaddb6e8e78
+    Collaboration ID: 5b9187b9-bad5-4750-96ba-a21bdb929bae
+    User: Yulia  Khaver (fd3035a6-287d-4d13-8f9a-19d3e89522e2)
+    Company: Rumors
+[6] Swipe ID: 74b82274-d103-46bf-b9bb-45ddfc63acee
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Yulia  Khaver (fd3035a6-287d-4d13-8f9a-19d3e89522e2)
+    Company: Rumors
+Found Jim's potential match: {
+  swipeId: 'b7765145-cb58-4772-aed5-608375e8fcad',
+  userId: '3c784ed0-2322-4f06-91c6-83f1ede9b944',
+  firstName: 'Jim',
+  lastName: 'Test',
+  company: 'ACME Company'
+}
+Returning 6 potential matches with enhanced data structure
+Sample potential match data structure: {
+  "id": "b7765145-cb58-4772-aed5-608375e8fcad",
+  "user_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+  "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+  "direction": "right",
+  "note": "",
+  "details": {
+    "title": "Bondex Talks",
+    "specific_date": "",
+    "date_selection": "any_future_date",
+    "previous_stream_link": "https://www.youtube.com/watch?v=gHMhXS9Lwog&list=PL7mYvDknc_lJdvxEkZ8RG3Tq35RYNzY2L&index=11",
+    "expected_audience_size": "5,000-10,000"
+  },
+  "created_at": "2025-04-26T07:06:18.260Z",
+  "user": {
+    "id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+    "telegram_id": "7892486659",
+    "first_name": "Jim",
+    "last_name": "Test",
+    "handle": "jimtesting",
+    "linkedin_url": "https://linkedin.com/in/asdf",
+    "email": "asdf@asdf.vp",
+    "referral_code": "r_7892486659_f4044b27",
+    "twitter_url": "https://x.com/jimtest",
+    "twitter_followers": "0-1K",
+    "is_approved": true,
+    "is_admin": false,
+    "applied_at": "2025-04-23T17:23:44.000Z",
+    "created_at": "2025-04-23T17:23:44.891Z",
+    "referred_by": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "approved_at": "2025-04-24T07:59:23.000Z"
+  },
+  "company": {
+    "id": "20721f60-b097-4f2d-acc7-4fb1287c0a64",
+    "user_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+    "name": "ACME Company",
+    "short_description": "ACME is the leading L2",
+    "long_description": "",
+    "website": "https://www.acme.com",
+    "job_title": "Marketing Leader",
+    "twitter_handle": "acme",
+    "twitter_followers": "1K-10K",
+    "linkedin_url": "https://linkedin.com/company/asdf",
+    "funding_stage": "Series A",
+    "has_token": false,
+    "token_ticker": null,
+    "blockchain_networks": [],
+    "tags": [
+      "L2 & Scaling Solutions"
+    ],
+    "created_at": "2025-04-23T17:23:44.891Z"
+  },
+  "collaboration": {
+    "id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+    "creator_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "collab_type": "Live Stream Guest Appearance",
+    "status": "active",
+    "description": "Bondex Talks is a podcast format live stream, diving deep into other projects, with the intersect of professional networks, ID, privacy, socialfi and talent.",
+    "topics": [
+      "Crypto",
+      "SocialFi"
+    ],
+    "twitter_followers": "0-1K",
+    "company_twitter_followers": "0-1K",
+    "funding_stage": null,
+    "company_has_token": false,
+    "company_token_ticker": null,
+    "company_blockchain_networks": [],
+    "company_tags": [],
+    "filter_company_sectors_enabled": false,
+    "filter_company_followers_enabled": true,
+    "filter_user_followers_enabled": true,
+    "filter_funding_stages_enabled": false,
+    "filter_token_status_enabled": false,
+    "filter_blockchain_networks_enabled": false,
+    "required_company_sectors": [],
+    "required_funding_stages": [],
+    "required_token_status": false,
+    "required_blockchain_networks": [],
+    "min_company_followers": "0-1K",
+    "min_user_followers": "0-1K",
+    "is_free_collab": true,
+    "details": {
+      "title": "Bondex Talks",
+      "specific_date": "",
+      "date_selection": "any_future_date",
+      "previous_stream_link": "https://www.youtube.com/watch?v=gHMhXS9Lwog&list=PL7mYvDknc_lJdvxEkZ8RG3Tq35RYNzY2L&index=11",
+      "expected_audience_size": "5,000-10,000"
+    },
+    "date_type": "any_future_date",
+    "specific_date": null,
+    "created_at": "2025-04-14T15:51:48.000Z",
+    "updated_at": "2025-04-14T19:35:42.000Z"
+  },
+  "first_name": "Jim",
+  "last_name": "Test",
+  "company_name": "ACME Company",
+  "company_description": "ACME is the leading L2",
+  "collab_type": "Live Stream Guest Appearance",
+  "title": "",
+  "description": "Bondex Talks is a podcast format live stream, diving deep into other projects, with the intersect of professional networks, ID, privacy, socialfi and talent.",
+  "topics": [
+    "Crypto",
+    "SocialFi"
+  ],
+  "potentialMatchData": {
+    "user_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+    "first_name": "Jim",
+    "last_name": "Test",
+    "company_name": "ACME Company",
+    "company_description": "ACME is the leading L2",
+    "company_website": "https://www.acme.com",
+    "company_twitter": "acme",
+    "company_linkedin": "https://linkedin.com/company/asdf",
+    "twitter_followers": "0-1K",
+    "company_twitter_followers": "1K-10K",
+    "swipe_created_at": "2025-04-26T07:06:18.260Z",
+    "collaboration_id": "b82d25de-4a89-41b4-b803-053569d9d58f",
+    "note": ""
+  }
+}
+Found 6 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-26T07:07:47.054Z] [HTTP] GET /api/potential-matches 200 in 173ms
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '55',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3Agh4ArSFh10lixbTYxvWbY73DnDrsS6rj.kgOCal9jr4uMYoV8wXvkfYKutUhDF5AwqSNoccaPCu0',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.8.132',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkidxz1d&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745651222&signature=zKi_mzNtshWEVvM65PK0eGsCB_amfu3FEkCBJonJiFXMeV-k0NeF7FmGI68jixLskeaMUSsk8ub7JF13pgr0Aw&hash=529a62175c61be989829605d24013b95780a1a8b40d5f69aa672a2b1f63512c9'
+}
+Query: { limit: '10' }
+Body: { excludeIds: [ 'b82d25de-4a89-41b4-b803-053569d9d58f' ] }
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 1 additional IDs from body: [ 'b82d25de-4a89-41b4-b803-053569d9d58f' ]
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Optimized) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: [ 'b82d25de-4a89-41b4-b803-053569d9d58f' ]
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Total active collaborations in database: 13
+Found 2 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+User collaboration IDs: b82d25de-4a89-41b4-b803-053569d9d58f, 5b9187b9-bad5-4750-96ba-a21bdb929bae
+Using optimized join structure with marketing preferences included
+Found marketing preferences - applying any enabled filters
+Query execution time: 126ms
+Found 11 initial results, 11 after filtering
+Returning 10 collaborations, hasMore: true, nextCursor: 330effe3-41e6-4411-aa87-180c3159012e
+Found 10 collaborations, hasMore: true
+[2025-04-26T07:07:47.518Z] [HTTP] POST /api/collaborations/search 200 in 149ms
