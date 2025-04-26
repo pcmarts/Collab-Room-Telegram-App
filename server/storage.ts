@@ -551,6 +551,12 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
+      // Retrieve user's own collaborations to DOUBLE-CHECK they are excluded
+      const userCollaborations = await this.getUserCollaborations(userId);
+      const userCollaborationIds = userCollaborations.map(collab => collab.id);
+      console.log(`Found ${userCollaborations.length} collaborations created by user ${userId}`);
+      console.log(`User collaboration IDs: ${userCollaborationIds.join(', ')}`);
+      
       // Prepare the base query with necessary joins
       let query = db
         .select({
@@ -580,23 +586,29 @@ export class DatabaseStorage implements IStorage {
       // Log to verify the join structure
       console.log('Using optimized join structure with marketing preferences included');
       
+      // Build the full list of IDs to exclude (user's own collaborations + explicit exclude IDs)
+      const allExcludeIds = [
+        ...userCollaborationIds,  // Always exclude user's own collaborations
+        ...(filters.excludeIds || []) // Add any explicitly provided IDs
+      ];
+      
       // Exclude user's own collaborations and previously swiped ones using SQL expressions
       // Also include any explicit exclusions from filters.excludeIds
       const excludeConditions = and(
-        // Never show user's own collaborations
+        // Never show user's own collaborations (using both approaches for extra safety)
         not(eq(collaborations.creator_id, userId)),
+        
+        // Also exclude user's own collaborations by ID (belt and suspenders approach)
+        allExcludeIds.length > 0 
+          ? not(inArray(collaborations.id, allExcludeIds))
+          : undefined,
         
         // Exclude previously swiped collaborations using NOT EXISTS
         sql`NOT EXISTS (
           SELECT 1 FROM ${swipes}
           WHERE ${swipes.collaboration_id} = ${collaborations.id}
           AND ${swipes.user_id} = ${userId}
-        )`,
-        
-        // Exclude any explicitly provided IDs
-        filters.excludeIds && filters.excludeIds.length > 0
-          ? not(inArray(collaborations.id, filters.excludeIds))
-          : undefined
+        )`
       );
       
       query = query.where(excludeConditions);
@@ -747,6 +759,23 @@ export class DatabaseStorage implements IStorage {
       // Determine if there are more results and extract the proper limit
       const hasMore = collaborationResults.length > limit;
       const items = hasMore ? collaborationResults.slice(0, limit) : collaborationResults;
+      
+      // FINAL SAFETY CHECK - ensure no user's own collaborations remain in the results
+      // This should never happen, but we add this as a defensive measure
+      if (userCollaborationIds.length > 0) {
+        const finalItems = items.filter(item => !userCollaborationIds.includes(item.id));
+        
+        // If we filtered out any items, log a warning - this indicates a bug
+        if (finalItems.length < items.length) {
+          console.warn(`CRITICAL BUG: Found ${items.length - finalItems.length} of user's own collaborations that weren't filtered out earlier!`);
+          console.warn(`User's own collaboration IDs: ${userCollaborationIds.join(', ')}`);
+          console.warn(`IDs that slipped through: ${items.filter(item => userCollaborationIds.includes(item.id)).map(item => item.id).join(', ')}`);
+          
+          // Replace the items
+          items.length = 0;
+          items.push(...finalItems);
+        }
+      }
       
       // Determine the next cursor (if there are more results)
       const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].id : undefined;
