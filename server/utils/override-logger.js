@@ -8,6 +8,10 @@
  * import './utils/override-logger.js';
  */
 
+// Import dotenv to make sure .env variables are loaded
+import { config } from 'dotenv';
+config();
+
 // Store original console methods
 const originalConsole = {
   log: console.log,
@@ -17,12 +21,18 @@ const originalConsole = {
   debug: console.debug,
 };
 
-// Flag to enable silent mode
-const SILENT_MODE = true;
+// Print environment variables for debugging
+originalConsole.log(`[DEBUG] Current process.env.LOG_LEVEL: ${process.env.LOG_LEVEL}`);
+
+// Check if LOG_LEVEL is set to 4 (DEBUG) to disable silent mode
+const LOG_LEVEL = parseInt(process.env.LOG_LEVEL || "1", 10);
+const SILENT_MODE = LOG_LEVEL < 4;
 
 // Print a single startup message
 if (SILENT_MODE) {
   originalConsole.log('[OVERRIDE] Silent mode activated - all non-error logs suppressed');
+} else {
+  originalConsole.log('[OVERRIDE] Debug mode (LOG_LEVEL=4) - all logs will be shown');
 }
 
 // Override console methods to implement silent mode
