@@ -616,34 +616,47 @@ export class DatabaseStorage implements IStorage {
         ...(filters.excludeIds || []) // Add any explicitly provided IDs
       ];
       
+      // First, get all left-swiped collaboration IDs for this user
+      // This is a direct approach that's more reliable than the NOT EXISTS
+      const leftSwipedQuery = db
+        .select({ id: swipes.collaboration_id })
+        .from(swipes)
+        .where(and(
+          eq(swipes.user_id, userId),
+          eq(swipes.direction, 'left')
+        ));
+        
+      const leftSwipedResults = await leftSwipedQuery;
+      const leftSwipedIds = leftSwipedResults.map(result => result.id);
+      
+      console.log(`DIRECT SWIPE CHECK: Found ${leftSwipedIds.length} left-swiped collaborations for user ${userId}`);
+      if (leftSwipedIds.length > 0) {
+        console.log(`Left-swiped collaboration IDs: ${leftSwipedIds.join(', ')}`);
+      }
+      
+      // Add left-swiped IDs to the exclusion list
+      const completeExcludeIds = [
+        ...allExcludeIds,
+        ...leftSwipedIds
+      ];
+      
       // Exclude user's own collaborations and previously swiped ones using SQL expressions
       // Also include any explicit exclusions from filters.excludeIds
       const excludeConditions = and(
-        // Never show user's own collaborations (using both approaches for extra safety)
+        // Never show user's own collaborations
         not(eq(collaborations.creator_id, userId)),
         
-        // Also exclude user's own collaborations by ID (belt and suspenders approach)
-        allExcludeIds.length > 0 
-          ? not(inArray(collaborations.id, allExcludeIds))
+        // Exclude all IDs that should be filtered out (user's own, explicitly excluded, and left-swiped)
+        completeExcludeIds.length > 0 
+          ? not(inArray(collaborations.id, completeExcludeIds))
           : undefined,
-        
-        // IMPROVED SWIPE EXCLUSION LOGIC:
-        // 1. Explicitly exclude left swipes (user passed on these collaborations)
-        // 2. Keep right swipes that haven't resulted in matches
-        sql`(
-          NOT EXISTS (
-            SELECT 1 FROM ${swipes}
-            WHERE ${swipes.collaboration_id} = ${collaborations.id}
-            AND ${swipes.user_id} = ${userId}
-            AND ${swipes.direction} = 'left'
-          )
-          AND
-          COALESCE((
-            SELECT count(*) FROM ${swipes} 
-            WHERE ${swipes.collaboration_id} = ${collaborations.id}
-            AND ${swipes.user_id} = ${userId}
-            AND ${swipes.direction} = 'left'
-          ), 0) = 0
+          
+        // Extra safety: Also use the NOT EXISTS approach as backup
+        sql`NOT EXISTS (
+          SELECT 1 FROM ${swipes}
+          WHERE ${swipes.collaboration_id} = ${collaborations.id}
+          AND ${swipes.user_id} = ${userId}
+          AND ${swipes.direction} = 'left'
         )`
       );
       
