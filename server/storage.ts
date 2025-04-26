@@ -302,11 +302,14 @@ export class DatabaseStorage implements IStorage {
     // First get the user's marketing preferences to apply any filtering
     const marketingPrefs = await this.getUserMarketingPreferences(userId);
     
-    // Get user's previous swipes to exclude already swiped collaborations
+    // Get user's previous left swipes to exclude already rejected collaborations
     const userSwipes = await this.getUserSwipes(userId);
-    const swipedCollaborationIds = userSwipes.map(swipe => swipe.collaboration_id);
+    // Only exclude left swipes (not right swipes that haven't matched yet)
+    const leftSwipedCollaborationIds = userSwipes
+      .filter(swipe => swipe.direction === 'left')
+      .map(swipe => swipe.collaboration_id);
     
-    console.log(`Found ${userSwipes.length} previous swipes by user ${userId}`);
+    console.log(`Found ${userSwipes.length} previous swipes by user ${userId}, of which ${leftSwipedCollaborationIds.length} are left swipes`);
     
     // Get user's own collaborations to ensure they're properly excluded
     const userCollaborations = await this.getUserCollaborations(userId);
@@ -315,16 +318,16 @@ export class DatabaseStorage implements IStorage {
     console.log(`Found ${userCollaborations.length} collaborations created by user ${userId}`);
     console.log(`User collaboration IDs: ${userCollaborationIds.join(', ')}`);
     
-    // Create a combined array of IDs to exclude (both user's own and previously swiped)
+    // Create a combined array of IDs to exclude (both user's own and previously swiped left)
     // Also include any additional excludeIds from the request (for discovery page)
     // Use simple concatenation and filtering to remove duplicates
     const allIds = [
       ...userCollaborationIds, 
-      ...swipedCollaborationIds,
+      ...leftSwipedCollaborationIds,
       ...(filters.excludeIds || []) // Add any additional excluded IDs from the request
     ];
     const excludeIds = allIds.filter((id, index) => allIds.indexOf(id) === index);
-    console.log(`Total IDs to exclude: ${excludeIds.length} (${userCollaborationIds.length} own + ${swipedCollaborationIds.length} swiped + ${filters.excludeIds?.length || 0} additional)`);
+    console.log(`Total IDs to exclude: ${excludeIds.length} (${userCollaborationIds.length} own + ${leftSwipedCollaborationIds.length} left swiped + ${filters.excludeIds?.length || 0} additional)`);
     
     // Build the base query with joins to users and companies
     // The relationship is: collaborations.creator_id -> users.id -> companies.user_id
@@ -625,10 +628,13 @@ export class DatabaseStorage implements IStorage {
           : undefined,
         
         // Exclude previously swiped collaborations using NOT EXISTS
+        // Note: We intentionally don't exclude right swipes that didn't result in matches
+        // since those could potentially match in the future
         sql`NOT EXISTS (
           SELECT 1 FROM ${swipes}
           WHERE ${swipes.collaboration_id} = ${collaborations.id}
           AND ${swipes.user_id} = ${userId}
+          AND ${swipes.direction} = 'left'
         )`
       );
       
