@@ -627,14 +627,23 @@ export class DatabaseStorage implements IStorage {
           ? not(inArray(collaborations.id, allExcludeIds))
           : undefined,
         
-        // Exclude previously swiped collaborations using NOT EXISTS
-        // Note: We intentionally don't exclude right swipes that didn't result in matches
-        // since those could potentially match in the future
-        sql`NOT EXISTS (
-          SELECT 1 FROM ${swipes}
-          WHERE ${swipes.collaboration_id} = ${collaborations.id}
-          AND ${swipes.user_id} = ${userId}
-          AND ${swipes.direction} = 'left'
+        // IMPROVED SWIPE EXCLUSION LOGIC:
+        // 1. Explicitly exclude left swipes (user passed on these collaborations)
+        // 2. Keep right swipes that haven't resulted in matches
+        sql`(
+          NOT EXISTS (
+            SELECT 1 FROM ${swipes}
+            WHERE ${swipes.collaboration_id} = ${collaborations.id}
+            AND ${swipes.user_id} = ${userId}
+            AND ${swipes.direction} = 'left'
+          )
+          AND
+          COALESCE((
+            SELECT count(*) FROM ${swipes} 
+            WHERE ${swipes.collaboration_id} = ${collaborations.id}
+            AND ${swipes.user_id} = ${userId}
+            AND ${swipes.direction} = 'left'
+          ), 0) = 0
         )`
       );
       

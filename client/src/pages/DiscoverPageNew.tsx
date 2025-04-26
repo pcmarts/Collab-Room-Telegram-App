@@ -168,30 +168,47 @@ export default function DiscoverPage() {
         setIsResettingSwipes(false);
       }
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: "Swipes Reset",
         description: `Successfully reset ${data.deleted_count} left swipe(s). You'll now see cards you previously skipped.`,
         duration: 5000,
       });
       
-      // Reset pagination to trigger a fresh data load
+      console.log('[Discovery] Reset left swipes successful, performing complete state reset');
+      
+      // Reset all local state
+      setCards([]);
       setNextCursor(undefined);
       setHasMore(true);
       setAllCardsViewed(false);
       
-      // Clear cached data
-      queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
+      // Also reset session swipe history
+      setSwipeHistory([]);
       
       // Reset any local storage swipe records
       try {
         localStorage.removeItem('swipedCardIds');
+        console.log('[Discovery] Cleared localStorage swipe cache');
       } catch (e) {
         console.warn('[Discovery] Failed to clear localStorage swipes:', e);
       }
       
-      // Force a fetch of new cards
-      fetchNextBatch();
+      // Invalidate ALL relevant queries to force fresh data fetches
+      await queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/collaborations/search'] });
+      
+      // Explicitly fetch fresh swipe data before getting new cards
+      try {
+        const updatedSwipes = await apiRequest('/api/user-swipes');
+        console.log(`[Discovery] Fetched ${updatedSwipes.length} swipes after reset`);
+      } catch (refreshError) {
+        console.warn('[Discovery] Error refreshing swipes after reset:', refreshError);
+      }
+      
+      // Force a fetch of new cards with slight delay to ensure database consistency
+      setTimeout(() => fetchNextBatch(), 100);
     },
     onError: (error) => {
       toast({

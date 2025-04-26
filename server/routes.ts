@@ -3939,10 +3939,15 @@ export async function registerRoutes(app: Express) {
       
       console.log(`Success: Deleted ${deletedCount} left swipes for user ${user.id}`);
       
+      // Clear client-side cache to ensure next discovery feed load is fresh
+      // This sets a header that the client can check to know it should reset local state
+      res.setHeader('X-Reset-Swipes', 'true');
+      
       return res.status(200).json({ 
         success: true,
         deleted_count: deletedCount,
-        message: `Successfully reset ${deletedCount} left swipes` 
+        message: `Successfully reset ${deletedCount} left swipes`,
+        should_clear_local_cache: true
       });
       
     } catch (error) {
