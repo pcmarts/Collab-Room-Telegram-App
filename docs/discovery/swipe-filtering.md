@@ -48,6 +48,46 @@ export async function searchCollaborationsPaginated(
 }
 ```
 
+### Preventing Self-Swipes in Potential Matches (v1.10.5)
+
+A critical enhancement was added in v1.10.5 to fix an edge case where users could see their own collaborations in the discovery feed through potential matches. The issue occurred when a user right-swiped on their own collaboration, creating a "potential match" that would appear in their discovery feed.
+
+The fix adds a database-level filter in the `getPotentialMatchesForHost` function:
+
+```typescript
+// In server/storage.ts (v1.10.5+)
+async getPotentialMatchesForHost(userId: string): Promise<any[]> {
+  // Get host's collaborations
+  const hostCollaborations = await this.getUserCollaborations(userId);
+  const collabIds = hostCollaborations.map(collab => collab.id);
+  
+  // Find all right swipes on host's collaborations
+  const rightSwipes = await db
+    .select({
+      swipe: swipes,
+      user: users,
+      company: companies,
+    })
+    .from(swipes)
+    .innerJoin(users, eq(swipes.user_id, users.id))
+    .innerJoin(companies, eq(users.id, companies.user_id))
+    .where(
+      and(
+        inArray(swipes.collaboration_id, collabIds),
+        eq(swipes.direction, 'right'),
+        // CRITICAL FIX: Exclude swipes made by the host themselves
+        // This prevents users from seeing their own swipes as potential matches
+        not(eq(swipes.user_id, userId))
+      )
+    )
+    .orderBy(desc(swipes.created_at));
+    
+  // Process results...
+}
+```
+
+This ensures users never see their own collaborations as potential matches, even if they accidentally swiped right on them.
+
 ## Enhanced Secondary Safety Filter
 
 To ensure 100% reliability, an enhanced secondary in-memory filter is applied to the results. This filter checks both collaboration IDs and creator IDs in a single pass:
