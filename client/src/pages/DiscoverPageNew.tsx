@@ -334,8 +334,23 @@ export default function DiscoverPage() {
         
         console.log(`[Discovery] Filtering potential matches with ${persistentSwipedIds.length} locally stored swiped IDs`);
         
-        // Filter out any potential matches for cards the user has already swiped on
-        // Also remove any potential matches where collaboration_id is missing
+        // Get user's own collaborations to exclude them from being shown as potential matches
+        let userOwnCollaborations: string[] = [];
+        try {
+          const userCollabResponse = await apiRequest('/api/collaborations/my');
+          if (userCollabResponse && Array.isArray(userCollabResponse)) {
+            userOwnCollaborations = userCollabResponse.map((collab: any) => collab.id);
+            console.log(`[Discovery] Found ${userOwnCollaborations.length} collaborations created by user, excluding from potential matches`);
+            console.log(`[Discovery] User collaboration IDs: ${userOwnCollaborations.join(', ')}`);
+          }
+        } catch (e) {
+          console.warn('[Discovery] Failed to fetch user collaborations for filtering:', e);
+        }
+
+        // Filter out:
+        // 1. Any potential matches for cards the user has already swiped on
+        // 2. Any potential matches where collaboration_id is missing
+        // 3. Any potential matches that ARE the user's own collaborations (CRITICAL FIX)
         const filteredMatches = data.filter((match: any) => {
           const matchId = match.id;
           const swipeId = match.swipe_id;
@@ -345,8 +360,16 @@ export default function DiscoverPage() {
           const alreadySwiped = 
             (matchId && persistentSwipedIds.includes(matchId)) || 
             (swipeId && persistentSwipedIds.includes(swipeId));
+          
+          // Check if this potential match is for one of the user's own collaborations
+          const isUsersOwnCollaboration = 
+            collabId && userOwnCollaborations.includes(collabId);
+          
+          if (isUsersOwnCollaboration) {
+            console.log(`[Discovery] Filtering out potential match for user's own collaboration: ${collabId}`);
+          }
             
-          return matchId && !alreadySwiped && collabId;
+          return matchId && !alreadySwiped && collabId && !isUsersOwnCollaboration;
         });
         
         console.log(`[Discovery] After filtering, ${filteredMatches.length} potential matches remain`);
@@ -441,6 +464,28 @@ export default function DiscoverPage() {
     retry: false
   });
   
+  // Cache for user's own collaborations, to avoid multiple API calls
+  const [userOwnCollaborationIds, setUserOwnCollaborationIds] = useState<string[]>([]);
+  
+  // Load user's collaborations for filtering
+  useEffect(() => {
+    const loadUserCollaborations = async () => {
+      try {
+        console.log('[Discovery] Fetching user collaborations for validation...');
+        const userCollabResponse = await apiRequest('/api/collaborations/my');
+        if (userCollabResponse && Array.isArray(userCollabResponse)) {
+          const ids = userCollabResponse.map((collab: any) => collab.id);
+          setUserOwnCollaborationIds(ids);
+          console.log(`[Discovery] Loaded ${ids.length} user collaborations for filtering: ${ids.join(', ')}`);
+        }
+      } catch (e) {
+        console.warn('[Discovery] Failed to load user collaborations:', e);
+      }
+    };
+    
+    loadUserCollaborations();
+  }, []);
+  
   // Helper function to validate card data and filter out incomplete cards
   const validateCardData = (cards: CardData[]): CardData[] => {
     if (!cards || !Array.isArray(cards)) return [];
@@ -479,6 +524,21 @@ export default function DiscoverPage() {
       if (!hasValidId) {
         console.log('[Discovery] Filtering out card without ID');
         return false;
+      }
+      
+      // Check if this card belongs to the user (should never happen with server filters, but adding defense-in-depth)
+      if (userOwnCollaborationIds.includes(card.id)) {
+        console.warn(`[Discovery] CRITICAL: Filtering out user's own collaboration that wasn't caught by server filters: ${card.id}`);
+        return false;
+      }
+      
+      // If this is a potential match, check if it's for the user's own collaboration
+      if (card.isPotentialMatch && card.potentialMatchData?.collaboration_id) {
+        const collabId = card.potentialMatchData.collaboration_id;
+        if (userOwnCollaborationIds.includes(collabId)) {
+          console.warn(`[Discovery] Filtering out potential match for user's own collaboration: ${collabId}`);
+          return false;
+        }
       }
       
       // Enhanced field checking with detailed logs for debugging
