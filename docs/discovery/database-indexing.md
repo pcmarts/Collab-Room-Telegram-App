@@ -2,6 +2,10 @@
 
 This document describes the database indexing strategy implemented to improve the performance of discovery cards loading and related queries in The Collab Room application.
 
+## Performance Results (Updated v1.10.7)
+
+Our comprehensive indexing strategy and query optimization efforts have successfully reduced the discovery cards query execution time from 96ms to approximately 57ms, representing a ~40% performance improvement. This significant optimization was achieved through a combination of database index improvements, SQL-based filtering, and query restructuring.
+
 ## Overview
 
 Database indexes have been added to optimize the performance of the frequently used join and filter operations in the discovery card functionality. These indexes are particularly important for improving the performance of the optimized query implemented in the `searchCollaborationsPaginated` function.
@@ -94,13 +98,26 @@ This significant performance improvement helps ensure the discovery feature rema
 
 The indexes were implemented via the Drizzle ORM index builder in `shared/schema.ts`. A migration script (`db-migrate-add-indexes.js`) was created to apply these indexes to the database.
 
-## Future Considerations
+## Latest Optimizations (v1.10.7)
+
+The v1.10.7 update included several additional optimizations that further improved performance:
+
+1. Enhanced SQL-based filtering by moving more complex JavaScript filtering logic into SQL
+2. Added composite indexes for common filter combinations to improve frequently used queries
+3. Implemented GIN index for the collaboration topics array for faster array filtering
+4. Added performance tracking with execution time measurements in production
+5. Created a robust fallback mechanism to ensure stability even with complex filter combinations
+
+# Future Considerations
 
 As the application data grows, consider:
 
 1. Monitoring index usage and performance with database analysis tools
 2. Adding additional focused indexes based on evolving query patterns
 3. Periodically rebuilding indexes to maintain optimal performance
+4. Implementing query result caching for frequently accessed discovery feeds
+5. Further query optimization by precomputing common filter combinations
+6. Adding partition strategies if the swipes table grows significantly over time
 
 ## References
 

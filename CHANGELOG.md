@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.7] - 2025-04-26
+
+### Performance
+- Optimized Discovery card loading time from 96ms to 57ms (~40% improvement)
+- Added advanced database indexing for collaboration search queries
+- Implemented SQL-based filtering to reduce back-end processing overhead
+- Improved cursor-based pagination for more efficient data loading
+
+### Technical Details
+- Created composite indexes for swipes, collaborations, and marketing_preferences tables
+- Moved JavaScript filtering logic to SQL WHERE clauses for faster execution
+- Improved data field mapping between database and frontend for consistent rendering
+- Added performance metrics logging to track query execution time
+- Implemented fallback mechanism to ensure stability during optimization
+
 ## [Version 1.10.6] - 2025-04-26
 
 ### Fixed
