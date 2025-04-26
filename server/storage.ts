@@ -976,7 +976,10 @@ export class DatabaseStorage implements IStorage {
           const userCollabIds = userCollaborations.map(collab => collab.id);
           const matchingSwipes = creatorSwipes.filter(s => userCollabIds.includes(s.collaboration_id));
           
-          if (matchingSwipes.length > 0) {
+          // Verify that this is not a self-match (user is different from collaboration creator)
+          const isSelfMatch = swipe.user_id === collaboration.creator_id;
+          
+          if (matchingSwipes.length > 0 && !isSelfMatch) {
             console.log("Found potential match! Creator swiped right on user's collaboration");
             
             // Take the first matching swipe (simplest case)
