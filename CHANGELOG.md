@@ -5,6 +5,20 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.6] - 2025-04-26
+
+### Fixed
+- Fixed persistent issue where previously swiped collaborations were still appearing in the discovery feed
+- Enhanced all database queries to properly exclude any collaborations the user has already interacted with
+- Improved potential matches API to respect previous user actions across all query paths
+- Added bidirectional match checking to ensure consistent behavior across host and requester roles
+
+### Technical Details
+- Updated getPotentialMatchesForHost with robust alreadySwipedCollabIds filtering mechanism
+- Enhanced SQL queries to exclude ALL previously swiped collaborations regardless of direction
+- Implemented bidirectional pair tracking (host-collaboration and requester-collaboration) in existing matches
+- Added detailed console logging for easier debugging of swipe histories and potential match logic
+
 ## [Version 1.10.5] - 2025-04-26
 
 ### Fixed

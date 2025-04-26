@@ -153,6 +153,8 @@ When a match is created through the discovery system, a match moment dialog is d
 - **Version 1.8.8**: Enhanced SwipeableCard component with improved button functionality, updated Filter button to include text label, and modified bottom panel to only show Refresh button when no cards are available
 - **Version 1.9.7**: Added detailed swipe count diagnostics to investigate discrepancies between swipe counts and available collaborations
 - **Version 1.10.1**: Added Reset Left Swipes feature to allow users to see previously rejected collaborations again, and made the Adjust Filters button only appear when filters are actually active
+- **Version 1.10.5**: Fixed critical issue where users could see their own collaborations in the discovery feed, improved server-side filtering to prevent self-swipes
+- **Version 1.10.6**: Enhanced all database queries to properly exclude any previously swiped collaborations with bidirectional match checking across host and requester roles
 
 ## Related Documentation
 

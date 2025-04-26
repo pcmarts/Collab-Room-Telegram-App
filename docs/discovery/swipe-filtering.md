@@ -48,6 +48,109 @@ export async function searchCollaborationsPaginated(
 }
 ```
 
+### Enhanced Swipe Filtering (v1.10.6)
+
+In version 1.10.6, a major enhancement was implemented to fix persistent issues with previously swiped collaborations still appearing in potential matches. This update addressed several edge cases where users would still see collaborations they had already interacted with.
+
+The enhancement includes multiple layers of filtering:
+
+1. Explicit alreadySwipedCollabIds filtering in all database queries
+2. Bidirectional match checking (in both host and requester directions)
+3. Improved matchedUserCollabPairs tracking for comprehensive exclusion
+
+```typescript
+// In server/storage.ts (v1.10.6+)
+async getPotentialMatchesForHost(userId: string): Promise<any[]> {
+  // Get host's collaborations
+  const hostCollaborations = await this.getUserCollaborations(userId);
+  const collabIds = hostCollaborations.map(collab => collab.id);
+  
+  // 1. Get all collaborations the user has ALREADY swiped on
+  const userSwipes = await db
+    .select({
+      collaboration_id: swipes.collaboration_id,
+      direction: swipes.direction,
+    })
+    .from(swipes)
+    .where(eq(swipes.user_id, userId));
+  
+  const alreadySwipedCollabIds = userSwipes.map(s => s.collaboration_id);
+  console.log(`Found ${alreadySwipedCollabIds.length} collaborations already swiped on by user ${userId}`);
+  
+  // 2. Get existing matches for the host's collaborations in BOTH directions
+  const existingMatches = await db
+    .select({
+      collaboration_id: matches.collaboration_id,
+      requester_id: matches.requester_id,
+      host_id: matches.host_id,
+    })
+    .from(matches)
+    .where(
+      and(
+        or(
+          // Match where the user's collaboration was matched with
+          inArray(matches.collaboration_id, collabIds),
+          // Also match where the user was a requester
+          eq(matches.requester_id, userId)
+        ),
+        eq(matches.status, 'active')
+      )
+    );
+  
+  // 3. Create a Set of bi-directional user-collaboration pairs to check for matches
+  const matchedUserCollabPairs = new Set();
+  
+  existingMatches.forEach(match => {
+    // Add the requester-collaboration pair
+    matchedUserCollabPairs.add(`${match.requester_id}_${match.collaboration_id}`);
+    
+    // Also add the host-collaboration pair
+    matchedUserCollabPairs.add(`${match.host_id}_${match.collaboration_id}`);
+  });
+  
+  // 4. Find all right swipes with comprehensive filtering
+  const rightSwipes = await db
+    .select({
+      swipe: swipes,
+      user: users,
+      company: companies,
+    })
+    .from(swipes)
+    .innerJoin(users, eq(swipes.user_id, users.id))
+    .innerJoin(companies, eq(users.id, companies.user_id))
+    .where(
+      and(
+        inArray(swipes.collaboration_id, collabIds),
+        eq(swipes.direction, 'right'),
+        // CRITICAL FIX: Exclude swipes made by the host themselves
+        // This prevents users from seeing their own swipes as potential matches
+        not(eq(swipes.user_id, userId)),
+        
+        // ROBUST FILTERING: Exclude any collaborations the user has already swiped on
+        alreadySwipedCollabIds.length > 0
+          ? not(inArray(swipes.collaboration_id, alreadySwipedCollabIds))
+          : undefined
+      )
+    )
+    .orderBy(desc(swipes.created_at));
+    
+  // 5. Process results with additional bi-directional match checking
+  for (const result of rightSwipes) {
+    const collaborationId = result.swipe.collaboration_id;
+    
+    // Check if this user-collaboration pair already has a match in EITHER direction
+    const userCollabPair = `${result.user.id}_${collaborationId}`;
+    const reverseUserCollabPair = `${userId}_${collaborationId}`;
+    if (matchedUserCollabPairs.has(userCollabPair) || matchedUserCollabPairs.has(reverseUserCollabPair)) {
+      console.log(`Skipping already matched user-collaboration pair: ${userCollabPair} or ${reverseUserCollabPair}`);
+      continue; // Skip this swipe as it already has a match
+    }
+    
+    // Process valid potential match...
+  }
+}
+```
+
 ### Preventing Self-Swipes in Potential Matches (v1.10.5)
 
 A critical enhancement was added in v1.10.5 to fix an edge case where users could see their own collaborations in the discovery feed through potential matches. The issue occurred when a user right-swiped on their own collaboration, creating a "potential match" that would appear in their discovery feed.
