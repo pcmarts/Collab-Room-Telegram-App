@@ -14,7 +14,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, isNull, not, desc, sql, ilike, lt, gt, exists } from "drizzle-orm";
-import { arrayContained, arrayContains, arrayOverlaps } from "drizzle-orm/pg-core";
+// Using SQL array operators directly with sql tag instead of importing helpers
 // Use console.log for logging to match the existing style
 const logger = {
   info: (...args: any[]) => console.log(...args),
@@ -96,13 +96,14 @@ export async function searchCollaborationsPaginatedOptimized(
         },
         company: {
           name: companies.name,
-          logo_url: companies.logo_url,
-          description: companies.description,
+          // Use appropriate company fields
+          short_description: companies.short_description,
+          long_description: companies.long_description,
           website: companies.website,
           twitter_handle: companies.twitter_handle,
           twitter_followers: companies.twitter_followers,
           linkedin_url: companies.linkedin_url,
-          short_description: companies.short_description,
+          job_title: companies.job_title,
           has_token: companies.has_token,
           token_ticker: companies.token_ticker,
           blockchain_networks: companies.blockchain_networks,
@@ -176,7 +177,7 @@ export async function searchCollaborationsPaginatedOptimized(
           marketingPrefs.filtered_marketing_topics && 
           marketingPrefs.filtered_marketing_topics.length > 0) {
         baseConditions.push(
-          sql`NOT (${collaborations.topics} && ${sql.array(marketingPrefs.filtered_marketing_topics, 'text')})`
+          sql`NOT (${collaborations.topics} && ARRAY[${marketingPrefs.filtered_marketing_topics.map(t => `'${t}'`).join(',')}]::text[])`
         );
       }
       
@@ -211,7 +212,7 @@ export async function searchCollaborationsPaginatedOptimized(
       if (marketingPrefs.discovery_filter_enabled && 
           marketingPrefs.discovery_filter_token_status_enabled) {
         baseConditions.push(
-          eq(collaborations.company_has_token, marketingPrefs.company_has_token)
+          sql`${collaborations.company_has_token} = ${marketingPrefs.company_has_token ? 'true' : 'false'}`
         );
       }
       
@@ -221,7 +222,7 @@ export async function searchCollaborationsPaginatedOptimized(
           marketingPrefs.company_tags && 
           marketingPrefs.company_tags.length > 0) {
         baseConditions.push(
-          sql`${collaborations.company_tags} && ${sql.array(marketingPrefs.company_tags, 'text')}`
+          sql`${collaborations.company_tags} && ARRAY[${marketingPrefs.company_tags.map(t => `'${t}'`).join(',')}]::text[]`
         );
       }
       
@@ -231,7 +232,7 @@ export async function searchCollaborationsPaginatedOptimized(
           marketingPrefs.company_blockchain_networks && 
           marketingPrefs.company_blockchain_networks.length > 0) {
         baseConditions.push(
-          sql`${collaborations.company_blockchain_networks} && ${sql.array(marketingPrefs.company_blockchain_networks, 'text')}`
+          sql`${collaborations.company_blockchain_networks} && ARRAY[${marketingPrefs.company_blockchain_networks.map(t => `'${t}'`).join(',')}]::text[]`
         );
       }
     }
@@ -273,8 +274,8 @@ export async function searchCollaborationsPaginatedOptimized(
         ...r.collaboration,
         // Include these important fields from company that the frontend expects
         creator_company_name: r.company.name,
-        company_logo_url: r.company.logo_url,
-        company_description: r.company.description,
+        // Map company fields to the expected frontend fields
+        company_description: r.company.long_description || r.company.short_description,
         company_website: r.company.website,
         
         // Additional company fields to support the details dialog

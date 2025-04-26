@@ -45,7 +45,7 @@ async function main() {
     await db.execute(sql`
       CREATE INDEX IF NOT EXISTS idx_users_companies_join 
       ON companies (user_id) 
-      INCLUDE (name, logo_url, description, website, twitter_handle, twitter_followers);
+      INCLUDE (name, short_description, long_description, website, twitter_handle, twitter_followers);
     `);
     
     // 5. Add composite index for the marketing preferences
