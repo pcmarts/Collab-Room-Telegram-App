@@ -2486,15 +2486,23 @@ export async function notifyNewCollabRequest(
       noteSection = `\n📝 <b>Note:</b> ${swipe.note}\n`;
     }
     
-    // Handle Twitter and LinkedIn links
-    const twitterHandle = requester.twitter_handle ? requester.twitter_handle.replace('@', '') : '';
-    const twitterLink = requester.twitter_handle ? 
+    // Handle Twitter, LinkedIn, and Website links
+    // For Twitter, get from company's twitter_handle if available, fallback to user's handle
+    const companyTwitterHandle = requesterCompany?.twitter_handle ? requesterCompany.twitter_handle.replace('@', '') : '';
+    const userTwitterHandle = requester.twitter_handle ? requester.twitter_handle.replace('@', '') : '';
+    const twitterHandle = companyTwitterHandle || userTwitterHandle;
+    
+    const twitterLink = twitterHandle ? 
       `<a href="https://twitter.com/${twitterHandle}">Twitter</a>` : 
       "Twitter";
     
     const linkedinLink = requesterCompany?.linkedin_url ? 
       `<a href="${requesterCompany.linkedin_url}">LinkedIn</a>` : 
       "LinkedIn";
+    
+    const websiteLink = requesterCompany?.website ? 
+      `<a href="${requesterCompany.website}">Website</a>` : 
+      "Website";
     
     // Host handle (if available) - make sure to display properly
     const hostHandle = host.handle || host.first_name;
@@ -2506,10 +2514,10 @@ export async function notifyNewCollabRequest(
       `${noteSection}` +
       
       // Company information section
-      `\n\n💼 <a href="${requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>` +
+      `\n\n💼 <a href="${requesterCompany?.website || requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>` +
       `\n❓ <i>${requesterCompany?.short_description || "Web3 company focusing on blockchain solutions"}</i>` +
-      `\n🔗 ${twitterLink} | ${linkedinLink}` +
-      `\n👤 ${requester.job_title || "Head of Business Solutions"}` +
+      `\n🔗 ${twitterLink} | ${linkedinLink} | ${websiteLink}` +
+      `\n👤 ${requesterCompany?.role_title || requester.job_title || "Unknown Role"}` +
       
       // Collaboration details
       `\n\n🤝 <b>Your Collab:</b> ${collaboration.collab_type}` +
