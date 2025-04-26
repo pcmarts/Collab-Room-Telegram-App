@@ -214,8 +214,8 @@ app.use('/api', (req, res, next) => {
       serveStatic(app);
     }
 
-    // Try a different port to avoid conflicts
-    const port = process.env.PORT || 5001;
+    // Use the default port to work with the workflow
+    const port = process.env.PORT || 5000;
     server.listen({
       port,
       host: "0.0.0.0",

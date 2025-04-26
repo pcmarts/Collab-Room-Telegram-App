@@ -18,6 +18,7 @@ import { db } from "./db";
 import { eq, and, or, inArray, isNull, not, desc, sql, ilike, lt } from "drizzle-orm";
 import { notifyMatchCreated, notifyNewCollabRequest } from "./telegram";
 import crypto from 'crypto';
+import { searchCollaborationsPaginatedOptimized } from './storage.optimized';
 
 export interface IStorage {
   // User methods
@@ -535,10 +536,29 @@ export class DatabaseStorage implements IStorage {
   
   /**
    * Optimized implementation of search collaborations paginated that combines multiple database calls
-   * into a single operation with subqueries to improve performance
+   * into a single operation with subqueries to improve performance.
+   * 
+   * Updated to use the highly optimized implementation that leverages custom database indexes
+   * to significantly improve query performance for discovery cards.
    */
   async searchCollaborationsPaginated(userId: string, filters: CollaborationFilters): Promise<PaginatedCollaborations> {
-    console.log('============ DEBUG: Search Collaborations Paginated (Optimized) ============');
+    console.log('============ DEBUG: Search Collaborations Paginated (Super Optimized) ============');
+    
+    // Check if an environment flag is set to toggle between implementations
+    // Default to using the highly optimized version
+    const useHighlyOptimized = process.env.USE_OPTIMIZED_DISCOVERY !== 'false';
+    
+    if (useHighlyOptimized) {
+      console.log('Using HIGHLY optimized implementation with advanced database indexing');
+      try {
+        return await searchCollaborationsPaginatedOptimized(userId, filters);
+      } catch (error) {
+        console.error('Error in highly optimized implementation, falling back to previous version:', error);
+        // Fall through to previous implementation
+      }
+    }
+    
+    console.log('Using standard optimized implementation');
     console.log('Filters:', filters);
     console.log('User ID:', userId);
     

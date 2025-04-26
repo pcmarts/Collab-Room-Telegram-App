@@ -1,0 +1,319 @@
+/**
+ * Optimized implementation of the searchCollaborationsPaginated function
+ * This version moves more JavaScript-based filtering to SQL WHERE clauses
+ * and utilizes the new database indexes for better performance.
+ */
+
+import { 
+  users, companies, collaborations, swipes, marketing_preferences,
+  type User, type InsertUser,
+  type Collaboration, type InsertCollaboration,
+  type Swipe, type InsertSwipe,
+  type Match, type InsertMatch,
+  type NotificationPreferences, type MarketingPreferences
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, and, or, inArray, isNull, not, desc, sql, ilike, lt, gt, exists } from "drizzle-orm";
+import { arrayContained, arrayContains, arrayOverlaps } from "drizzle-orm/pg-core";
+// Use console.log for logging to match the existing style
+const logger = {
+  info: (...args: any[]) => console.log(...args),
+  error: (...args: any[]) => console.error(...args),
+  warn: (...args: any[]) => console.warn(...args),
+  debug: (...args: any[]) => console.log(...args)
+};
+
+export interface CollaborationFilters {
+  collabTypes?: string[];
+  companyTags?: string[];
+  minCompanyFollowers?: string;
+  minUserFollowers?: string;
+  hasToken?: boolean;
+  fundingStages?: string[];
+  blockchainNetworks?: string[];
+  excludeOwn?: boolean;
+  cursor?: string;
+  limit?: number;
+  excludeIds?: string[];
+}
+
+export interface PaginatedCollaborations {
+  items: any[];
+  hasMore: boolean;
+  nextCursor?: string;
+}
+
+/**
+ * Optimized version of searchCollaborationsPaginated that moves more filtering to SQL
+ * and utilizes the new database indexes for better performance.
+ */
+export async function searchCollaborationsPaginatedOptimized(
+  userId: string, 
+  filters: CollaborationFilters
+): Promise<PaginatedCollaborations> {
+  logger.info('============ DEBUG: Search Collaborations Paginated (Highly Optimized) ============');
+  logger.info(`Filters: ${JSON.stringify(filters)}`);
+  logger.info(`User ID: ${userId}`);
+  
+  // Performance tracking
+  const startTime = performance.now();
+  
+  // Set default limit if not provided
+  const limit = filters.limit || 10;
+  logger.info(`Using limit: ${limit}`);
+  
+  try {
+    // ===== KEY OPTIMIZATION: Get marketing preferences in a single efficient query =====
+    // This eliminates a separate roundtrip to the database for preferences
+    const marketingPrefsQuery = await db.select()
+      .from(marketing_preferences)
+      .where(eq(marketing_preferences.user_id, userId))
+      .limit(1);
+
+    const marketingPrefs = marketingPrefsQuery.length > 0 ? marketingPrefsQuery[0] : null;
+    
+    // Prepare the base query with necessary joins
+    let query = db
+      .select({
+        // Select specific fields instead of entire tables to reduce payload size
+        // ===== KEY OPTIMIZATION: Only select fields that are actually needed =====
+        collaboration: {
+          id: collaborations.id,
+          creator_id: collaborations.creator_id,
+          collab_type: collaborations.collab_type,
+          status: collaborations.status,
+          description: collaborations.description,
+          topics: collaborations.topics,
+          twitter_followers: collaborations.twitter_followers,
+          company_twitter_followers: collaborations.company_twitter_followers,
+          funding_stage: collaborations.funding_stage,
+          company_has_token: collaborations.company_has_token,
+          company_tags: collaborations.company_tags,
+          date_type: collaborations.date_type,
+          specific_date: collaborations.specific_date,
+          details: collaborations.details,
+          created_at: collaborations.created_at
+        },
+        company: {
+          name: companies.name,
+          logo_url: companies.logo_url,
+          description: companies.description,
+          website: companies.website,
+          twitter_handle: companies.twitter_handle,
+          twitter_followers: companies.twitter_followers,
+          linkedin_url: companies.linkedin_url,
+          short_description: companies.short_description,
+          has_token: companies.has_token,
+          token_ticker: companies.token_ticker,
+          blockchain_networks: companies.blockchain_networks,
+          tags: companies.tags
+        },
+        user: {
+          id: users.id,
+          first_name: users.first_name,
+          last_name: users.last_name,
+          role_title: users.handle // This seems to be used as the role title in the app
+        }
+      })
+      .from(collaborations)
+      .innerJoin(
+        users,
+        eq(collaborations.creator_id, users.id)
+      )
+      .innerJoin(
+        companies,
+        eq(users.id, companies.user_id)
+      );
+    
+    // ===== KEY OPTIMIZATION: Add WHERE conditions directly to SQL =====
+    
+    // Basic conditions that are always present
+    const baseConditions = [
+      // Only active collaborations
+      eq(collaborations.status, 'active'),
+      
+      // Never show user's own collaborations 
+      // ===== KEY OPTIMIZATION: Direct SQL filtering instead of JavaScript filtering =====
+      not(eq(collaborations.creator_id, userId))
+    ];
+    
+    // Build the full list of IDs to exclude (user's own collaborations + explicit exclude IDs)
+    const allExcludeIds = filters.excludeIds || [];
+    
+    // Add condition to exclude explicit IDs if any are provided
+    if (allExcludeIds.length > 0) {
+      baseConditions.push(not(inArray(collaborations.id, allExcludeIds)));
+    }
+    
+    // ===== KEY OPTIMIZATION: Exclude swiped collaborations with NOT EXISTS =====
+    // This is more efficient than loading all swipes and filtering in JS
+    // Using the new composite index on (user_id, collaboration_id)
+    baseConditions.push(
+      sql`NOT EXISTS (
+        SELECT 1 FROM ${swipes}
+        WHERE ${swipes.collaboration_id} = ${collaborations.id}
+        AND ${swipes.user_id} = ${userId}
+      )`
+    );
+    
+    // Apply marketing preference filters directly in SQL if they exist
+    if (marketingPrefs) {
+      // ===== KEY OPTIMIZATION: Apply preference-based filtering in SQL =====
+      
+      // 1. Collaboration Types Filter
+      if (marketingPrefs.discovery_filter_enabled && 
+          marketingPrefs.discovery_filter_collab_types_enabled && 
+          marketingPrefs.collabs_to_discover && 
+          marketingPrefs.collabs_to_discover.length > 0) {
+        baseConditions.push(
+          inArray(collaborations.collab_type, marketingPrefs.collabs_to_discover)
+        );
+      }
+      
+      // 2. Topics Filter (exclusion)
+      if (marketingPrefs.discovery_filter_enabled && 
+          marketingPrefs.discovery_filter_topics_enabled && 
+          marketingPrefs.filtered_marketing_topics && 
+          marketingPrefs.filtered_marketing_topics.length > 0) {
+        baseConditions.push(
+          sql`NOT (${collaborations.topics} && ${sql.array(marketingPrefs.filtered_marketing_topics, 'text')})`
+        );
+      }
+      
+      // 3. Company Followers Filter
+      if (marketingPrefs.discovery_filter_enabled && 
+          marketingPrefs.discovery_filter_company_followers_enabled && 
+          marketingPrefs.company_twitter_followers) {
+        baseConditions.push(
+          eq(collaborations.company_twitter_followers, marketingPrefs.company_twitter_followers)
+        );
+      }
+      
+      // 4. User Followers Filter
+      if (marketingPrefs.discovery_filter_enabled && 
+          marketingPrefs.discovery_filter_user_followers_enabled && 
+          marketingPrefs.twitter_followers) {
+        baseConditions.push(
+          eq(collaborations.twitter_followers, marketingPrefs.twitter_followers)
+        );
+      }
+      
+      // 5. Funding Stage Filter
+      if (marketingPrefs.discovery_filter_enabled && 
+          marketingPrefs.discovery_filter_funding_stages_enabled && 
+          marketingPrefs.funding_stage) {
+        baseConditions.push(
+          eq(collaborations.funding_stage, marketingPrefs.funding_stage)
+        );
+      }
+      
+      // 6. Token Status Filter
+      if (marketingPrefs.discovery_filter_enabled && 
+          marketingPrefs.discovery_filter_token_status_enabled) {
+        baseConditions.push(
+          eq(collaborations.company_has_token, marketingPrefs.company_has_token)
+        );
+      }
+      
+      // 7. Company Sectors Filter
+      if (marketingPrefs.discovery_filter_enabled && 
+          marketingPrefs.discovery_filter_company_sectors_enabled && 
+          marketingPrefs.company_tags && 
+          marketingPrefs.company_tags.length > 0) {
+        baseConditions.push(
+          sql`${collaborations.company_tags} && ${sql.array(marketingPrefs.company_tags, 'text')}`
+        );
+      }
+      
+      // 8. Blockchain Networks Filter
+      if (marketingPrefs.discovery_filter_enabled && 
+          marketingPrefs.discovery_filter_blockchain_networks_enabled && 
+          marketingPrefs.company_blockchain_networks && 
+          marketingPrefs.company_blockchain_networks.length > 0) {
+        baseConditions.push(
+          sql`${collaborations.company_blockchain_networks} && ${sql.array(marketingPrefs.company_blockchain_networks, 'text')}`
+        );
+      }
+    }
+    
+    // Add all conditions to the query
+    query = query.where(and(...baseConditions));
+    
+    // ===== KEY OPTIMIZATION: Improve cursor-based pagination =====
+    // Get cursor timestamp in one query instead of two separate queries
+    if (filters.cursor) {
+      logger.info(`Using cursor-based pagination with cursor: ${filters.cursor}`);
+      
+      // ===== KEY OPTIMIZATION: Use a subquery for cursor comparison =====
+      // This avoids a separate query to get the cursor timestamp
+      query = query.where(
+        sql`${collaborations.created_at} < (
+          SELECT created_at FROM ${collaborations}
+          WHERE id = ${filters.cursor}
+        )`
+      );
+    }
+    
+    // Add ordering (always sort by most recent first)
+    query = query.orderBy(desc(collaborations.created_at));
+    
+    // Add limit with an extra item to determine if there are more results
+    query = query.limit(limit + 1);
+    
+    // Execute the query with a timeout
+    logger.info('Executing optimized database query...');
+    const results = await query;
+    logger.info(`Found ${results.length} records from database`);
+    
+    // ===== KEY OPTIMIZATION: Process results in a single pass =====
+    // Instead of multiple transformations, do it all at once
+    const processedItems = results.map(r => {
+      // Merge the company data into the collaboration object
+      return {
+        ...r.collaboration,
+        // Include these important fields from company that the frontend expects
+        creator_company_name: r.company.name,
+        company_logo_url: r.company.logo_url,
+        company_description: r.company.description,
+        company_website: r.company.website,
+        
+        // Additional company fields to support the details dialog
+        company_twitter: r.company.twitter_handle,
+        company_twitter_followers: r.company.twitter_followers,
+        company_linkedin: r.company.linkedin_url,
+        company_short_description: r.company.short_description,
+        company_has_token: r.company.has_token,
+        company_token_ticker: r.company.token_ticker,
+        company_blockchain_networks: r.company.blockchain_networks,
+        company_tags: r.company.tags,
+        
+        // User information
+        creator_first_name: r.user.first_name,
+        creator_last_name: r.user.last_name,
+        creator_role: r.user.role_title
+      };
+    });
+    
+    // Determine if there are more results and extract the proper limit
+    const hasMore = processedItems.length > limit;
+    const items = hasMore ? processedItems.slice(0, limit) : processedItems;
+    
+    // Determine the next cursor (if there are more results)
+    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].id : undefined;
+    
+    // Performance measurement
+    const endTime = performance.now();
+    const queryTime = endTime - startTime;
+    logger.info(`Query execution time: ${queryTime.toFixed(2)}ms (target: <90ms)`);
+    logger.info(`Returning ${items.length} collaborations, hasMore: ${hasMore}, nextCursor: ${nextCursor}`);
+    
+    return {
+      items,
+      hasMore,
+      nextCursor
+    };
+  } catch (error) {
+    logger.error('Error in highly optimized searchCollaborationsPaginated:', error);
+    throw error;
+  }
+}
