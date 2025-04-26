@@ -636,8 +636,15 @@ export default function DiscoverPage() {
       try {
         const latestSwipes = await apiRequest('/api/user-swipes') as any[];
         if (latestSwipes && latestSwipes.length > 0) {
+          // Extract all collaboration IDs from swipes regardless of direction
+          // This ensures we filter out ALL cards the user has interacted with
           serverSwipedIds = latestSwipes.map(swipe => swipe.collaboration_id);
           console.log(`[Discovery] Server reports ${serverSwipedIds.length} swipes`);
+          
+          // Log the directions of swipes for debugging
+          const leftSwipes = latestSwipes.filter(swipe => swipe.direction === 'left').length;
+          const rightSwipes = latestSwipes.filter(swipe => swipe.direction === 'right').length;
+          console.log(`[Discovery] Swipe directions - Left: ${leftSwipes}, Right: ${rightSwipes}`);
         } else {
           console.log('[Discovery] Server returned no swipes');
         }
@@ -1170,7 +1177,16 @@ export default function DiscoverPage() {
       
       // Invalidate queries to ensure fresh data
       // For user swipes, we need this data to be up-to-date
-      queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
+      
+      // Force a refresh of the user swipes to ensure they're in memory before the next batch fetch
+      try {
+        console.log('[Discovery] Explicitly fetching updated swipe data after swipe');
+        const updatedSwipes = await apiRequest('/api/user-swipes');
+        console.log(`[Discovery] Fetched ${updatedSwipes.length} swipes after recording swipe`);
+      } catch (swipeRefreshError) {
+        console.warn('[Discovery] Error refreshing swipes - continuing anyway:', swipeRefreshError);
+      }
       
       try {
         // Invalidate matches data - but wrapped in try/catch to prevent any errors
