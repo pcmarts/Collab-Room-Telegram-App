@@ -1129,7 +1129,7 @@ export class DatabaseStorage implements IStorage {
           eq(swipes.direction, 'right'),
           // CRITICAL FIX: Exclude swipes made by the host themselves
           // This prevents users from seeing their own swipes as potential matches
-          ne(swipes.user_id, userId)
+          not(eq(swipes.user_id, userId))
         )
       )
       .orderBy(desc(swipes.created_at));

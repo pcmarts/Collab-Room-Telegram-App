@@ -5,6 +5,18 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.5] - 2025-04-26
+
+### Fixed
+- Fixed critical issue where users could see their own collaborations in the discovery feed
+- Improved server-side filtering to prevent self-swipes from appearing as potential matches
+- Enhanced potential matches query to exclude any swipes made by the host themselves
+
+### Technical Details
+- Updated getPotentialMatchesForHost function to add not(eq(swipes.user_id, userId)) filter
+- Created complete server-side solution that prevents self-swipes from creating potential matches
+- Added code comments to document the filtering logic for future maintenance
+
 ## [Version 1.10.4] - 2025-04-25
 
 ### Fixed

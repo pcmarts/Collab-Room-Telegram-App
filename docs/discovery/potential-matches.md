@@ -21,19 +21,21 @@ Potential match cards have a distinct visual appearance to clearly indicate thei
 
 ## Enhanced Filtering Mechanism
 
-Potential matches use a comprehensive multi-layered filtering approach to ensure consistency and reliability (updated in version 1.5.2):
+Potential matches use a comprehensive multi-layered filtering approach to ensure consistency and reliability (updated in version 1.10.5):
 
 1. **Server-side primary filtering:** The `/api/potential-matches` endpoint returns potential matches while excluding those the user has already interacted with:
    - Filters based on user_id and collaboration_id combinations in the database query
    - Also filters based on swipe_id to ensure comprehensive exclusion
    - Uses a Set data structure to efficiently track and filter swipe IDs
    - **NEW in v1.5.2:** Checks the matches table to exclude collaborations that already have a match
+   - **NEW in v1.10.5:** Excludes self-swipes (swipes made by the user on their own collaborations) by adding not(eq(swipes.user_id, userId)) filter to the database query
 
 2. **Server-side secondary safety filter:** After the database query returns results, a secondary in-memory filter is applied:
    - Checks each result against the excluded IDs list and user's own collaborations
    - Provides detailed logging about any items that should have been excluded but weren't
    - Logs the specific reason for exclusion (user's own, previously swiped, already matched, etc.)
    - **NEW in v1.5.2:** Provides specific logging for matches that are excluded due to already existing in the matches table
+   - **NEW in v1.10.5:** Improved logging of self-swipe exclusions for better debugging
 
 3. **Enhanced client-side filtering:** Multiple layers of client-side filtering ensure any recently swiped cards are properly excluded:
    - Uses both React state and localStorage to track excluded IDs
