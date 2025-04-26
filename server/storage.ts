@@ -1122,17 +1122,34 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
     
+    // Get all collaborations that the user has already swiped on (any direction)
+    // This ensures we never show potential matches for collaborations the user has already interacted with
+    const userSwipes = await db
+      .select({ collaboration_id: swipes.collaboration_id })
+      .from(swipes)
+      .where(eq(swipes.user_id, userId));
+    
+    const alreadySwipedCollabIds = userSwipes.map(s => s.collaboration_id);
+    console.log(`Found ${alreadySwipedCollabIds.length} collaborations already swiped on by user ${userId}`);
+    
     // 3. Get existing matches for the host's collaborations
     // We'll use this to exclude users who have already matched with the host
+    // Get matches in both directions (host->requester and requester->host)
     const existingMatches = await db
       .select({
         collaboration_id: matches.collaboration_id,
         requester_id: matches.requester_id,
+        host_id: matches.host_id,
       })
       .from(matches)
       .where(
         and(
-          inArray(matches.collaboration_id, collabIds),
+          or(
+            // Match where the user's collaboration was matched with
+            inArray(matches.collaboration_id, collabIds),
+            // Also match where the user was a requester
+            eq(matches.requester_id, userId)
+          ),
           eq(matches.status, 'active')
         )
       );
@@ -1141,14 +1158,23 @@ export class DatabaseStorage implements IStorage {
     
     // Create a Set of user IDs who have already matched with the host
     // in the format "userId_collaborationId" to ensure uniqueness by collaboration
-    const matchedUserCollabPairs = new Set(
-      existingMatches.map(match => `${match.requester_id}_${match.collaboration_id}`)
-    );
+    // Include BOTH host-requester pairs and requester-host pairs for bidirectional checking
+    const matchedUserCollabPairs = new Set();
+    
+    existingMatches.forEach(match => {
+      // Add the requester-collaboration pair
+      matchedUserCollabPairs.add(`${match.requester_id}_${match.collaboration_id}`);
+      
+      // Also add the host-collaboration pair
+      matchedUserCollabPairs.add(`${match.host_id}_${match.collaboration_id}`);
+    });
     
     console.log(`Excluding ${matchedUserCollabPairs.size} user-collaboration pairs that already have matches`);
     
     // Find all right swipes on host's collaborations
-    // IMPORTANT: Exclude the host's own swipes, which would create a false "potential match" 
+    // IMPORTANT: 
+    // 1. Exclude the host's own swipes (which would create a false "potential match")
+    // 2. Exclude collaborations the user has already swiped on (any direction)
     const rightSwipes = await db
       .select({
         swipe: swipes,
@@ -1164,7 +1190,12 @@ export class DatabaseStorage implements IStorage {
           eq(swipes.direction, 'right'),
           // CRITICAL FIX: Exclude swipes made by the host themselves
           // This prevents users from seeing their own swipes as potential matches
-          not(eq(swipes.user_id, userId))
+          not(eq(swipes.user_id, userId)),
+          
+          // ROBUST FILTERING: Exclude any collaborations the user has already swiped on
+          alreadySwipedCollabIds.length > 0
+            ? not(inArray(swipes.collaboration_id, alreadySwipedCollabIds))
+            : undefined
         )
       )
       .orderBy(desc(swipes.created_at));
@@ -1209,10 +1240,11 @@ export class DatabaseStorage implements IStorage {
         const collaborationId = result.swipe.collaboration_id;
         const collaboration = await this.getCollaboration(collaborationId);
         
-        // Check if this user-collaboration pair already has a match
+        // Check if this user-collaboration pair already has a match in EITHER direction
         const userCollabPair = `${result.user.id}_${collaborationId}`;
-        if (matchedUserCollabPairs.has(userCollabPair)) {
-          console.log(`Skipping already matched user-collaboration pair: ${userCollabPair}`);
+        const reverseUserCollabPair = `${userId}_${collaborationId}`;
+        if (matchedUserCollabPairs.has(userCollabPair) || matchedUserCollabPairs.has(reverseUserCollabPair)) {
+          console.log(`Skipping already matched user-collaboration pair: ${userCollabPair} or ${reverseUserCollabPair}`);
           continue; // Skip this swipe as it already has a match
         }
         
