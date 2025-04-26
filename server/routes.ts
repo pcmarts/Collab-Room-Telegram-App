@@ -3600,26 +3600,14 @@ export async function registerRoutes(app: Express) {
           
           console.log(`Found original swipe with collaboration ID: ${actualCollaborationId}`);
           console.log(`Original swipe was from user ID: ${otherUserId}`);
-
-          // IMPORTANT: Check if the collaboration belongs to the current user
-          // This prevents creating matches with the user's own collaborations
-          if (originalSwipe.collaboration.creator_id === user.id) {
-            console.log(`Warning: User ${user.id} attempted to match with their own collaboration ${actualCollaborationId}`);
-            return res.status(400).json({ error: 'Cannot match with your own collaboration' });
-          }
           
           // Create a swipe record for the current user
-          // Use a direct DB insert instead of storage.createSwipe to avoid triggering 
-          // the automatic match creation logic which can create unwanted matches
-          const [swipe] = await db
-            .insert(swipes)
-            .values({
-              user_id: user.id,
-              collaboration_id: actualCollaborationId,
-              direction,
-              note
-            })
-            .returning();
+          const swipe = await storage.createSwipe({
+            user_id: user.id,
+            collaboration_id: actualCollaborationId,
+            direction,
+            note
+          });
           
           console.log(`Success: Created swipe record with ID: ${swipe.id}`);
           console.log(`Details: ${direction} swipe for collaboration ${actualCollaborationId} by user ${user.id}`);
@@ -3640,19 +3628,22 @@ export async function registerRoutes(app: Express) {
             });
             
             // Determine who is the host and who is the requester
-            // In potential match case, the collaboration creator is always the host
-            const hostId = collaboration.creator_id;
-            const requesterId = user.id;
+            const isUserTheHost = user.id === collaboration.creator_id;
+            const otherUserId = isUserTheHost ? originalSwipe.user.id : collaboration.creator_id;
             
             console.log("Match roles:", {
               current_user_id: user.id,
               collaboration_creator_id: collaboration.creator_id,
               original_swiper_id: originalSwipe.user.id,
-              host_id: hostId,
-              requester_id: requesterId
+              is_user_the_host: isUserTheHost,
+              other_user_id: otherUserId
             });
             
-            // Create a match record in the database ONLY for the current collaboration
+            // If current user is the host, the other user is the requester. Otherwise, the current user is the requester.
+            const hostId = isUserTheHost ? user.id : collaboration.creator_id;
+            const requesterId = isUserTheHost ? originalSwipe.user.id : user.id;
+            
+            // Create a match record in the database
             console.log('Creating match record with parameters:', {
               collaboration_id: actualCollaborationId,
               host_id: hostId,
@@ -3660,7 +3651,7 @@ export async function registerRoutes(app: Express) {
             });
             
             // Copy the note from the original swipe if available
-            const matchNote = note || originalSwipe.swipe.note;
+            const note = originalSwipe.note;
             
             const match = await storage.createMatch({
               collaboration_id: actualCollaborationId,
@@ -3669,7 +3660,7 @@ export async function registerRoutes(app: Express) {
               status: 'active',
               host_accepted: true,
               requester_accepted: true,
-              note: matchNote
+              note: note
             });
             
             console.log(`Success: Created match record with ID: ${match.id}`);
@@ -3679,7 +3670,7 @@ export async function registerRoutes(app: Express) {
               user_id: hostId,
               collaboration_id: actualCollaborationId,
               type: 'match',
-              content: `${user.first_name} ${user.last_name || ''} matched with your ${collaborationType} collaboration!`,
+              content: `${isUserTheHost ? originalSwipe.user.first_name : user.first_name} ${isUserTheHost ? (originalSwipe.user.last_name || '') : (user.last_name || '')} matched with your ${collaborationType} collaboration!`,
               is_read: false
             });
             
@@ -3688,7 +3679,7 @@ export async function registerRoutes(app: Express) {
               user_id: requesterId,
               collaboration_id: actualCollaborationId,
               type: 'match',
-              content: `You matched with ${collaboration.creator_id === originalSwipe.user.id ? originalSwipe.user.first_name : ''} ${collaboration.creator_id === originalSwipe.user.id ? (originalSwipe.user.last_name || '') : ''}'s ${collaborationType} collaboration!`,
+              content: `You matched with ${isUserTheHost ? user.first_name : originalSwipe.user.first_name} ${isUserTheHost ? (user.last_name || '') : (originalSwipe.user.last_name || '')}'s ${collaborationType} collaboration!`,
               is_read: false
             });
             
@@ -3698,7 +3689,7 @@ export async function registerRoutes(app: Express) {
             try {
               // Use the enhanced notification function from telegram.ts
               console.log('Sending enhanced Telegram notifications via notifyMatchCreated function');
-              await notifyMatchCreated(hostId, requesterId, actualCollaborationId, matchNote);
+              await notifyMatchCreated(hostId, requesterId, actualCollaborationId, note);
               console.log('Enhanced Telegram notifications sent to both users');
             } catch (telegramError) {
               console.error('Error sending Telegram notifications:', telegramError);
@@ -3711,7 +3702,7 @@ export async function registerRoutes(app: Express) {
               match: true,
               matchData: match,
               matchedUser: {
-                id: collaboration.creator_id,
+                id: otherUserId,
                 name: `${originalSwipe.user.first_name} ${originalSwipe.user.last_name || ''}`,
                 collaboration: originalSwipe.collaboration
               }
