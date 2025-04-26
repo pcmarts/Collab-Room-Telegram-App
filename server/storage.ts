@@ -1113,6 +1113,7 @@ export class DatabaseStorage implements IStorage {
     }
     
     // Find all right swipes on host's collaborations
+    // IMPORTANT: Exclude the host's own swipes, which would create a false "potential match" 
     const rightSwipes = await db
       .select({
         swipe: swipes,
@@ -1125,7 +1126,10 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           inArray(swipes.collaboration_id, collabIds),
-          eq(swipes.direction, 'right')
+          eq(swipes.direction, 'right'),
+          // CRITICAL FIX: Exclude swipes made by the host themselves
+          // This prevents users from seeing their own swipes as potential matches
+          ne(swipes.user_id, userId)
         )
       )
       .orderBy(desc(swipes.created_at));

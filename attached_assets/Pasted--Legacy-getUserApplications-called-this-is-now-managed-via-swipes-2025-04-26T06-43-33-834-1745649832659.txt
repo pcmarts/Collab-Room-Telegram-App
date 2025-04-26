@@ -1,0 +1,775 @@
+
+
+
+
+
+
+
+
+
+Legacy getUserApplications called - this is now managed via swipes
+[2025-04-26T06:43:33.834Z] [HTTP] GET /api/collaborations/my 200 in 146ms
+[2025-04-26T06:43:33.860Z] [HTTP] GET /api/my-applications 200 in 170ms
+[2025-04-26T06:43:36.120Z] [HTTP] GET /api/marketing-preferences 200 in 34ms
+[2025-04-26T06:43:36.121Z] [HTTP] GET /api/collaborations/my 200 in 37ms
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AjQ1UZ5cthiBIuQSwTeri2LGqT5qpHs7M.NqRdqid9oQSH2nxMVEf19AKTXx0DYijZbHtrPKhUY4M',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.215',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkhmKYqp&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745649738&signature=r-UqL_s0nweT0L5scbxbAUkNRvVHErQ5OUQ62RUQffFSSu0DaLrqR80N_3FBsi-DdFuZWJWScpZKytbWzVwPAA&hash=7a5db8e75eac261c270cb47a4f6ef3764dbe87f6667f656f2bda632c14c65d27'
+}
+Finding potential matches for host: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 2 collaborations created by host b4093f49-f0c3-4bae-a294-35fb87c493eb
+Collaboration IDs for host b4093f49-f0c3-4bae-a294-35fb87c493eb: [
+  'b82d25de-4a89-41b4-b803-053569d9d58f',
+  '5b9187b9-bad5-4750-96ba-a21bdb929bae'
+]
+Found 7 right swipes on host's collaborations
+Right swipes detail:
+[1] Swipe ID: f50d1b8d-742c-4098-bb41-f0eeb990ea02
+    Collaboration ID: 5b9187b9-bad5-4750-96ba-a21bdb929bae
+    User: Paul Martin (b4093f49-f0c3-4bae-a294-35fb87c493eb)
+    Company: Bondex
+[2] Swipe ID: c14a5918-b428-4eb2-a237-eb3e961936fc
+    Collaboration ID: 5b9187b9-bad5-4750-96ba-a21bdb929bae
+    User: Krystyna Kozak-Kornacka (1c63719c-779d-43e9-a52b-2bf4e7fce8ce)
+    Company: Cookie3 🍪
+[3] Swipe ID: 2690573d-9862-490d-83d9-3707833f9598
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Paul Martin (b4093f49-f0c3-4bae-a294-35fb87c493eb)
+    Company: Bondex
+[4] Swipe ID: 69bc68de-95d9-45b6-a188-5fb103f83f1f
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Stephanie Figueroa (06e0ab06-05d6-4362-96fa-1a84a3d33275)
+    Company: Re
+[5] Swipe ID: bab269d2-a883-405a-9759-650d6d634437
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Jye Sandiford (cd7d3290-4da8-478e-ac5c-cdd0be8836f3)
+    Company: POAP
+[6] Swipe ID: 17df7bfb-2816-4a06-886e-0aaddb6e8e78
+    Collaboration ID: 5b9187b9-bad5-4750-96ba-a21bdb929bae
+    User: Yulia  Khaver (fd3035a6-287d-4d13-8f9a-19d3e89522e2)
+    Company: Rumors
+[7] Swipe ID: 74b82274-d103-46bf-b9bb-45ddfc63acee
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Yulia  Khaver (fd3035a6-287d-4d13-8f9a-19d3e89522e2)
+    Company: Rumors
+No swipe from Jim found
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AjQ1UZ5cthiBIuQSwTeri2LGqT5qpHs7M.NqRdqid9oQSH2nxMVEf19AKTXx0DYijZbHtrPKhUY4M',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.9.34',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkhmKYqp&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745649738&signature=r-UqL_s0nweT0L5scbxbAUkNRvVHErQ5OUQ62RUQffFSSu0DaLrqR80N_3FBsi-DdFuZWJWScpZKytbWzVwPAA&hash=7a5db8e75eac261c270cb47a4f6ef3764dbe87f6667f656f2bda632c14c65d27'
+}
+Found 2 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Returning 7 potential matches with enhanced data structure
+Sample potential match data structure: {
+  "id": "f50d1b8d-742c-4098-bb41-f0eeb990ea02",
+  "user_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "collaboration_id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+  "direction": "right",
+  "note": null,
+  "details": {
+    "research_topic": [],
+    "target_audience": "Web3 professionals, job seekers ",
+    "estimated_release_date": "2025-06-02"
+  },
+  "created_at": "2025-04-16T09:07:43.000Z",
+  "user": {
+    "id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "telegram_id": "1211030693",
+    "first_name": "Paul",
+    "last_name": "Martin",
+    "handle": "thisispaulm",
+    "linkedin_url": "https://www.linkedin.com/in/thisispaulm",
+    "email": "paul@bondex.app",
+    "referral_code": "1211030693_853d8dbe",
+    "twitter_url": "https://x.com/pcmarts",
+    "twitter_followers": "100K-500K",
+    "is_approved": true,
+    "is_admin": true,
+    "applied_at": "2025-03-20T19:13:37.000Z",
+    "created_at": "2025-03-20T19:13:37.974Z",
+    "referred_by": null,
+    "approved_at": null
+  },
+  "company": {
+    "id": "4c95f244-d5c1-4369-9531-834401fdce12",
+    "user_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "name": "Bondex",
+    "short_description": "Building the leading Web3 professional network ",
+    "long_description": "",
+    "website": "https://bondex.app",
+    "job_title": "VP Marketing",
+    "twitter_handle": "bondexapp",
+    "twitter_followers": "500K+",
+    "linkedin_url": "https://www.linkedin.com/company/bondexapp",
+    "funding_stage": "Not Applicable",
+    "has_token": true,
+    "token_ticker": "BDXN",
+    "blockchain_networks": [
+      "Ethereum",
+      "zkSync"
+    ],
+    "tags": [
+      "L2 & Scaling Solutions",
+      "AI",
+      "Identity & Privacy",
+      "SocialFi"
+    ],
+    "created_at": "2025-03-20T19:13:37.974Z"
+  },
+  "collaboration": {
+    "id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+    "creator_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "collab_type": "Report & Research Feature",
+    "status": "active",
+    "description": "Looking for contributors for a report. Looking at the state of Web3 talent in 2025, salary insights, etc. Current contributors are BitGet, Bondex, and web3.career. LMK if you want to collab on this! ",
+    "topics": [
+      "Memes & Culture",
+      "Creator Economy",
+      "Crypto"
+    ],
+    "twitter_followers": "0-1K",
+    "company_twitter_followers": "0-1K",
+    "funding_stage": null,
+    "company_has_token": false,
+    "company_token_ticker": null,
+    "company_blockchain_networks": [],
+    "company_tags": [],
+    "filter_company_sectors_enabled": false,
+    "filter_company_followers_enabled": true,
+    "filter_user_followers_enabled": true,
+    "filter_funding_stages_enabled": false,
+    "filter_token_status_enabled": false,
+    "filter_blockchain_networks_enabled": false,
+    "required_company_sectors": [],
+    "required_funding_stages": [],
+    "required_token_status": false,
+    "required_blockchain_networks": [],
+    "min_company_followers": "0-1K",
+    "min_user_followers": "0-1K",
+    "is_free_collab": true,
+    "details": {
+      "research_topic": [],
+      "target_audience": "Web3 professionals, job seekers ",
+      "estimated_release_date": "2025-06-02"
+    },
+    "date_type": "specific_date",
+    "specific_date": "2025-06-03",
+    "created_at": "2025-04-14T15:48:21.000Z",
+    "updated_at": "2025-04-16T19:56:58.000Z"
+  },
+  "first_name": "Paul",
+  "last_name": "Martin",
+  "company_name": "Bondex",
+  "company_description": "Building the leading Web3 professional network ",
+  "collab_type": "Report & Research Feature",
+  "title": "",
+  "description": "Looking for contributors for a report. Looking at the state of Web3 talent in 2025, salary insights, etc. Current contributors are BitGet, Bondex, and web3.career. LMK if you want to collab on this! ",
+  "topics": [
+    "Memes & Culture",
+    "Creator Economy",
+    "Crypto"
+  ],
+  "potentialMatchData": {
+    "user_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "first_name": "Paul",
+    "last_name": "Martin",
+    "company_name": "Bondex",
+    "company_description": "Building the leading Web3 professional network ",
+    "company_website": "https://bondex.app",
+    "company_twitter": "bondexapp",
+    "company_linkedin": "https://www.linkedin.com/company/bondexapp",
+    "twitter_followers": "100K-500K",
+    "company_twitter_followers": "500K+",
+    "swipe_created_at": "2025-04-16T09:07:43.000Z",
+    "collaboration_id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+    "note": ""
+  }
+}
+Found 7 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-26T06:43:36.565Z] [HTTP] GET /api/potential-matches 200 in 180ms
+Total active collaborations in database: 13
+===== SWIPE DETAIL INVESTIGATION =====
+Swipe count (2) vs Active collabs (13)
+Swipes grouped by collaboration (2 unique collaborations):
+Collaboration 5b9187b9-bad5-4750-96ba-a21bdb929bae: 1 swipe(s)
+Collaboration b82d25de-4a89-41b4-b803-053569d9d58f: 1 swipe(s)
+========================================
+[2025-04-26T06:43:36.579Z] [HTTP] GET /api/user-swipes 200 in 48ms
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '94',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AjQ1UZ5cthiBIuQSwTeri2LGqT5qpHs7M.NqRdqid9oQSH2nxMVEf19AKTXx0DYijZbHtrPKhUY4M',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.8.132',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkhmKYqp&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745649738&signature=r-UqL_s0nweT0L5scbxbAUkNRvVHErQ5OUQ62RUQffFSSu0DaLrqR80N_3FBsi-DdFuZWJWScpZKytbWzVwPAA&hash=7a5db8e75eac261c270cb47a4f6ef3764dbe87f6667f656f2bda632c14c65d27'
+}
+Query: { limit: '10' }
+Body: {
+  excludeIds: [
+    '5b9187b9-bad5-4750-96ba-a21bdb929bae',
+    'b82d25de-4a89-41b4-b803-053569d9d58f'
+  ]
+}
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 2 additional IDs from body: [
+  '5b9187b9-bad5-4750-96ba-a21bdb929bae',
+  'b82d25de-4a89-41b4-b803-053569d9d58f'
+]
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Optimized) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: [
+    '5b9187b9-bad5-4750-96ba-a21bdb929bae',
+    'b82d25de-4a89-41b4-b803-053569d9d58f'
+  ]
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Total active collaborations in database: 13
+Found 2 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+User collaboration IDs: b82d25de-4a89-41b4-b803-053569d9d58f, 5b9187b9-bad5-4750-96ba-a21bdb929bae
+Using optimized join structure with marketing preferences included
+Found marketing preferences - applying any enabled filters
+Query execution time: 67ms
+Found 11 initial results, 11 after filtering
+Returning 10 collaborations, hasMore: true, nextCursor: 330effe3-41e6-4411-aa87-180c3159012e
+Found 10 collaborations, hasMore: true
+[2025-04-26T06:43:36.815Z] [HTTP] POST /api/collaborations/search 200 in 85ms
+[2025-04-26T06:43:36.949Z] [HTTP] GET /api/collaborations/my 200 in 32ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AjQ1UZ5cthiBIuQSwTeri2LGqT5qpHs7M.NqRdqid9oQSH2nxMVEf19AKTXx0DYijZbHtrPKhUY4M',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.215',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkhmKYqp&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745649738&signature=r-UqL_s0nweT0L5scbxbAUkNRvVHErQ5OUQ62RUQffFSSu0DaLrqR80N_3FBsi-DdFuZWJWScpZKytbWzVwPAA&hash=7a5db8e75eac261c270cb47a4f6ef3764dbe87f6667f656f2bda632c14c65d27'
+}
+Found 2 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total active collaborations in database: 13
+===== SWIPE DETAIL INVESTIGATION =====
+Swipe count (2) vs Active collabs (13)
+Swipes grouped by collaboration (2 unique collaborations):
+Collaboration 5b9187b9-bad5-4750-96ba-a21bdb929bae: 1 swipe(s)
+Collaboration b82d25de-4a89-41b4-b803-053569d9d58f: 1 swipe(s)
+========================================
+[2025-04-26T06:43:37.152Z] [HTTP] GET /api/user-swipes 200 in 47ms
+============ DEBUG: User Matches Endpoint ============
+Request URL: /api/matches
+Request Query: {}
+Request Method: GET
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AjQ1UZ5cthiBIuQSwTeri2LGqT5qpHs7M.NqRdqid9oQSH2nxMVEf19AKTXx0DYijZbHtrPKhUY4M',
+  'if-modified-since': 'Sat, 26 Apr 2025 06:42:26 GMT',
+  'if-none-match': 'W/"3-1745649746223"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.215',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkhmKYqp&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745649738&signature=r-UqL_s0nweT0L5scbxbAUkNRvVHErQ5OUQ62RUQffFSSu0DaLrqR80N_3FBsi-DdFuZWJWScpZKytbWzVwPAA&hash=7a5db8e75eac261c270cb47a4f6ef3764dbe87f6667f656f2bda632c14c65d27'
+}
+✅ Found Telegram user: 1211030693 thisispaulm
+✅ Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 Fetching matches with details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🧩 getUserMatches - Finding basic matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🧩 getUserMatches - Found 3 matches
+🧩 getUserMatches - Match status distribution: { active: 3 }
+🧩 getUserMatches - First match sample: {
+  "id": "fd593110-98dc-48ec-8688-b3135daf9042",
+  "collaboration_id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "1c63719c-779d-43e9-a52b-2bf4e7fce8ce",
+  "status": "active",
+  "note": null,
+  "host_accepted": false,
+  "requester_accepted": false,
+  "created_at": "2025-04-16T09:07:44.000Z",
+  "updated_at": "2025-04-16T09:07:44.298Z"
+}
+📊 Raw matches count: 3
+📋 First raw match sample: {
+  "id": "fd593110-98dc-48ec-8688-b3135daf9042",
+  "collaboration_id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "1c63719c-779d-43e9-a52b-2bf4e7fce8ce",
+  "status": "active",
+  "note": null,
+  "host_accepted": false,
+  "requester_accepted": false,
+  "created_at": "2025-04-16T09:07:44.000Z",
+  "updated_at": "2025-04-16T09:07:44.298Z"
+}
+📊 Match statuses: active, active, active
+📊 Match created dates: Wed Apr 16 2025 09:07:44 GMT+0000 (Coordinated Universal Time), Tue Apr 15 2025 07:25:13 GMT+0000 (Coordinated Universal Time), Mon Apr 14 2025 18:32:27 GMT+0000 (Coordinated Universal Time)
+🔍 getUserMatchesWithDetails - Getting enriched matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 getUserMatchesWithDetails - Found 3 active matches in database for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 getUserMatchesWithDetails - Found 3 basic matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb from raw SQL query
+🔍 getUserMatchesWithDetails - First match: {
+  "match_id": "fd593110-98dc-48ec-8688-b3135daf9042",
+  "match_date": "2025-04-16 09:07:44+00",
+  "match_status": "active",
+  "match_note": null,
+  "collaboration_id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "1c63719c-779d-43e9-a52b-2bf4e7fce8ce"
+}
+🔍 getUserMatchesWithDetails - Match status distribution: { active: 3 }
+Found 3 detailed matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Sample match details: {
+  "match_id": "fd593110-98dc-48ec-8688-b3135daf9042",
+  "match_date": "2025-04-16 09:07:44+00",
+  "match_status": "active",
+  "match_note": null,
+  "collab_type": "Report & Research Feature",
+  "collab_description": "Looking for contributors for a report. Looking at the state of Web3 talent in 2025, salary insights, etc. Current contributors are BitGet, Bondex, and web3.career. LMK if you want to collab on this! ",
+  "collab_details": {
+    "research_topic": [],
+    "target_audience": "Web3 professionals, job seekers ",
+    "estimated_release_date": "2025-06-02"
+  },
+  "other_user_first_name": "Krystyna",
+  "other_user_last_name": "Kozak-Kornacka",
+  "other_user_handle": "krystynakozak",
+  "role_title": "CMO",
+  "other_user_twitter_url": "https://x.com/krysiakozak",
+  "other_user_twitter_followers": "1K-10K",
+  "other_user_linkedin_url": "https://linkedin.com/in/krystyna-kozak-kornacka/",
+  "company_name": "Cookie3 🍪",
+  "company_description": "AI Data Layer for crypto enterprise analytics across the whole funnel | Used by 300+ top projects",
+  "company_website": "https://www.cookie3.com",
+  "company_twitter_handle": "cookie3_com",
+  "company_twitter_followers": "100K-500K",
+  "company_linkedin_url": "https://linkedin.com/company/cookie3",
+  "funding_stage": "Seed",
+  "has_token": true,
+  "token_ticker": "$COOKIE",
+  "blockchain_networks": [
+    "Ethereum",
+    "Binance Smart Chain (BSC)",
+    "Base"
+  ],
+  "company_tags": [
+    "AI",
+    "AI Agents",
+    "DeFAI",
+    "SocialFi",
+    "Marketing & Growth Platforms"
+  ]
+}
+Found 3 matches in 191ms
+[2025-04-26T06:43:37.534Z] [HTTP] GET /api/matches 200 in 224ms
+============ DEBUG: Get User Swipes Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AjQ1UZ5cthiBIuQSwTeri2LGqT5qpHs7M.NqRdqid9oQSH2nxMVEf19AKTXx0DYijZbHtrPKhUY4M',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.215',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkhmKYqp&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745649738&signature=r-UqL_s0nweT0L5scbxbAUkNRvVHErQ5OUQ62RUQffFSSu0DaLrqR80N_3FBsi-DdFuZWJWScpZKytbWzVwPAA&hash=7a5db8e75eac261c270cb47a4f6ef3764dbe87f6667f656f2bda632c14c65d27'
+}
+Found 2 swipes for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Total active collaborations in database: 13
+===== SWIPE DETAIL INVESTIGATION =====
+Swipe count (2) vs Active collabs (13)
+Swipes grouped by collaboration (2 unique collaborations):
+Collaboration 5b9187b9-bad5-4750-96ba-a21bdb929bae: 1 swipe(s)
+Collaboration b82d25de-4a89-41b4-b803-053569d9d58f: 1 swipe(s)
+========================================
+[2025-04-26T06:43:37.741Z] [HTTP] GET /api/user-swipes 200 in 49ms
+============ DEBUG: Potential Matches Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AjQ1UZ5cthiBIuQSwTeri2LGqT5qpHs7M.NqRdqid9oQSH2nxMVEf19AKTXx0DYijZbHtrPKhUY4M',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.215',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkhmKYqp&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745649738&signature=r-UqL_s0nweT0L5scbxbAUkNRvVHErQ5OUQ62RUQffFSSu0DaLrqR80N_3FBsi-DdFuZWJWScpZKytbWzVwPAA&hash=7a5db8e75eac261c270cb47a4f6ef3764dbe87f6667f656f2bda632c14c65d27'
+}
+Finding potential matches for host: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Found 2 collaborations created by host b4093f49-f0c3-4bae-a294-35fb87c493eb
+Collaboration IDs for host b4093f49-f0c3-4bae-a294-35fb87c493eb: [
+  'b82d25de-4a89-41b4-b803-053569d9d58f',
+  '5b9187b9-bad5-4750-96ba-a21bdb929bae'
+]
+Found 7 right swipes on host's collaborations
+Right swipes detail:
+[1] Swipe ID: f50d1b8d-742c-4098-bb41-f0eeb990ea02
+    Collaboration ID: 5b9187b9-bad5-4750-96ba-a21bdb929bae
+    User: Paul Martin (b4093f49-f0c3-4bae-a294-35fb87c493eb)
+    Company: Bondex
+[2] Swipe ID: c14a5918-b428-4eb2-a237-eb3e961936fc
+    Collaboration ID: 5b9187b9-bad5-4750-96ba-a21bdb929bae
+    User: Krystyna Kozak-Kornacka (1c63719c-779d-43e9-a52b-2bf4e7fce8ce)
+    Company: Cookie3 🍪
+[3] Swipe ID: 2690573d-9862-490d-83d9-3707833f9598
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Paul Martin (b4093f49-f0c3-4bae-a294-35fb87c493eb)
+    Company: Bondex
+[4] Swipe ID: 69bc68de-95d9-45b6-a188-5fb103f83f1f
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Stephanie Figueroa (06e0ab06-05d6-4362-96fa-1a84a3d33275)
+    Company: Re
+[5] Swipe ID: bab269d2-a883-405a-9759-650d6d634437
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Jye Sandiford (cd7d3290-4da8-478e-ac5c-cdd0be8836f3)
+    Company: POAP
+[6] Swipe ID: 17df7bfb-2816-4a06-886e-0aaddb6e8e78
+    Collaboration ID: 5b9187b9-bad5-4750-96ba-a21bdb929bae
+    User: Yulia  Khaver (fd3035a6-287d-4d13-8f9a-19d3e89522e2)
+    Company: Rumors
+[7] Swipe ID: 74b82274-d103-46bf-b9bb-45ddfc63acee
+    Collaboration ID: b82d25de-4a89-41b4-b803-053569d9d58f
+    User: Yulia  Khaver (fd3035a6-287d-4d13-8f9a-19d3e89522e2)
+    Company: Rumors
+No swipe from Jim found
+Returning 7 potential matches with enhanced data structure
+Sample potential match data structure: {
+  "id": "f50d1b8d-742c-4098-bb41-f0eeb990ea02",
+  "user_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "collaboration_id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+  "direction": "right",
+  "note": null,
+  "details": {
+    "research_topic": [],
+    "target_audience": "Web3 professionals, job seekers ",
+    "estimated_release_date": "2025-06-02"
+  },
+  "created_at": "2025-04-16T09:07:43.000Z",
+  "user": {
+    "id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "telegram_id": "1211030693",
+    "first_name": "Paul",
+    "last_name": "Martin",
+    "handle": "thisispaulm",
+    "linkedin_url": "https://www.linkedin.com/in/thisispaulm",
+    "email": "paul@bondex.app",
+    "referral_code": "1211030693_853d8dbe",
+    "twitter_url": "https://x.com/pcmarts",
+    "twitter_followers": "100K-500K",
+    "is_approved": true,
+    "is_admin": true,
+    "applied_at": "2025-03-20T19:13:37.000Z",
+    "created_at": "2025-03-20T19:13:37.974Z",
+    "referred_by": null,
+    "approved_at": null
+  },
+  "company": {
+    "id": "4c95f244-d5c1-4369-9531-834401fdce12",
+    "user_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "name": "Bondex",
+    "short_description": "Building the leading Web3 professional network ",
+    "long_description": "",
+    "website": "https://bondex.app",
+    "job_title": "VP Marketing",
+    "twitter_handle": "bondexapp",
+    "twitter_followers": "500K+",
+    "linkedin_url": "https://www.linkedin.com/company/bondexapp",
+    "funding_stage": "Not Applicable",
+    "has_token": true,
+    "token_ticker": "BDXN",
+    "blockchain_networks": [
+      "Ethereum",
+      "zkSync"
+    ],
+    "tags": [
+      "L2 & Scaling Solutions",
+      "AI",
+      "Identity & Privacy",
+      "SocialFi"
+    ],
+    "created_at": "2025-03-20T19:13:37.974Z"
+  },
+  "collaboration": {
+    "id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+    "creator_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "collab_type": "Report & Research Feature",
+    "status": "active",
+    "description": "Looking for contributors for a report. Looking at the state of Web3 talent in 2025, salary insights, etc. Current contributors are BitGet, Bondex, and web3.career. LMK if you want to collab on this! ",
+    "topics": [
+      "Memes & Culture",
+      "Creator Economy",
+      "Crypto"
+    ],
+    "twitter_followers": "0-1K",
+    "company_twitter_followers": "0-1K",
+    "funding_stage": null,
+    "company_has_token": false,
+    "company_token_ticker": null,
+    "company_blockchain_networks": [],
+    "company_tags": [],
+    "filter_company_sectors_enabled": false,
+    "filter_company_followers_enabled": true,
+    "filter_user_followers_enabled": true,
+    "filter_funding_stages_enabled": false,
+    "filter_token_status_enabled": false,
+    "filter_blockchain_networks_enabled": false,
+    "required_company_sectors": [],
+    "required_funding_stages": [],
+    "required_token_status": false,
+    "required_blockchain_networks": [],
+    "min_company_followers": "0-1K",
+    "min_user_followers": "0-1K",
+    "is_free_collab": true,
+    "details": {
+      "research_topic": [],
+      "target_audience": "Web3 professionals, job seekers ",
+      "estimated_release_date": "2025-06-02"
+    },
+    "date_type": "specific_date",
+    "specific_date": "2025-06-03",
+    "created_at": "2025-04-14T15:48:21.000Z",
+    "updated_at": "2025-04-16T19:56:58.000Z"
+  },
+  "first_name": "Paul",
+  "last_name": "Martin",
+  "company_name": "Bondex",
+  "company_description": "Building the leading Web3 professional network ",
+  "collab_type": "Report & Research Feature",
+  "title": "",
+  "description": "Looking for contributors for a report. Looking at the state of Web3 talent in 2025, salary insights, etc. Current contributors are BitGet, Bondex, and web3.career. LMK if you want to collab on this! ",
+  "topics": [
+    "Memes & Culture",
+    "Creator Economy",
+    "Crypto"
+  ],
+  "potentialMatchData": {
+    "user_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+    "first_name": "Paul",
+    "last_name": "Martin",
+    "company_name": "Bondex",
+    "company_description": "Building the leading Web3 professional network ",
+    "company_website": "https://bondex.app",
+    "company_twitter": "bondexapp",
+    "company_linkedin": "https://www.linkedin.com/company/bondexapp",
+    "twitter_followers": "100K-500K",
+    "company_twitter_followers": "500K+",
+    "swipe_created_at": "2025-04-16T09:07:43.000Z",
+    "collaboration_id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+    "note": ""
+  }
+}
+Found 7 potential matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-04-26T06:43:38.055Z] [HTTP] GET /api/potential-matches 200 in 160ms
+============ DEBUG: Search Collaborations POST Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '94',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AjQ1UZ5cthiBIuQSwTeri2LGqT5qpHs7M.NqRdqid9oQSH2nxMVEf19AKTXx0DYijZbHtrPKhUY4M',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.6.215',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkhmKYqp&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1745649738&signature=r-UqL_s0nweT0L5scbxbAUkNRvVHErQ5OUQ62RUQffFSSu0DaLrqR80N_3FBsi-DdFuZWJWScpZKytbWzVwPAA&hash=7a5db8e75eac261c270cb47a4f6ef3764dbe87f6667f656f2bda632c14c65d27'
+}
+Query: { limit: '10' }
+Body: {
+  excludeIds: [
+    '5b9187b9-bad5-4750-96ba-a21bdb929bae',
+    'b82d25de-4a89-41b4-b803-053569d9d58f'
+  ]
+}
+Found Telegram user: 1211030693
+Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Excluding 2 additional IDs from body: [
+  '5b9187b9-bad5-4750-96ba-a21bdb929bae',
+  'b82d25de-4a89-41b4-b803-053569d9d58f'
+]
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10
+}
+============ DEBUG: Search Collaborations Paginated (Optimized) ============
+Filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 10,
+  excludeIds: [
+    '5b9187b9-bad5-4750-96ba-a21bdb929bae',
+    'b82d25de-4a89-41b4-b803-053569d9d58f'
+  ]
+}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 10
+Total active collaborations in database: 13
+Found 2 collaborations created by user b4093f49-f0c3-4bae-a294-35fb87c493eb
+User collaboration IDs: b82d25de-4a89-41b4-b803-053569d9d58f, 5b9187b9-bad5-4750-96ba-a21bdb929bae
+Using optimized join structure with marketing preferences included
+Found marketing preferences - applying any enabled filters
+Query execution time: 66ms
+Found 11 initial results, 11 after filtering
+Returning 10 collaborations, hasMore: true, nextCursor: 330effe3-41e6-4411-aa87-180c3159012e
+Found 10 collaborations, hasMore: true
+[2025-04-26T06:43:38.453Z] [HTTP] POST /api/collaborations/search 200 in 82ms
