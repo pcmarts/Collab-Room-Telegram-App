@@ -313,6 +313,7 @@ export class DatabaseStorage implements IStorage {
     const userCollaborationIds = userCollaborations.map(collab => collab.id);
     
     console.log(`Found ${userCollaborations.length} collaborations created by user ${userId}`);
+    console.log(`User collaboration IDs: ${userCollaborationIds.join(', ')}`);
     
     // Create a combined array of IDs to exclude (both user's own and previously swiped)
     // Also include any additional excludeIds from the request (for discovery page)
@@ -496,6 +497,26 @@ export class DatabaseStorage implements IStorage {
     // Determine if there are more results and extract the proper limit
     const hasMore = collaborationResults.length > limit;
     const items = hasMore ? collaborationResults.slice(0, limit) : collaborationResults;
+    
+    // FINAL SAFETY CHECK - ensure no user's own collaborations remain in the results
+    // This should never happen with both SQL filtering and explicit ID exclusions, but we add this as a defensive measure
+    if (userCollaborationIds.length > 0) {
+      const finalItems = items.filter(item => !userCollaborationIds.includes(item.id));
+      
+      // If we filtered out any items, log a warning - this indicates a bug
+      if (finalItems.length < items.length) {
+        console.warn(`CRITICAL BUG: Found ${items.length - finalItems.length} of user's own collaborations in LEGACY implementation that weren't filtered out earlier!`);
+        console.warn(`User's own collaboration IDs: ${userCollaborationIds.join(', ')}`);
+        console.warn(`IDs that slipped through: ${items.filter(item => userCollaborationIds.includes(item.id)).map(item => item.id).join(', ')}`);
+        
+        // Replace the items
+        items.length = 0;
+        items.push(...finalItems);
+      }
+    }
+    
+    // Log the user's collaboration IDs for debugging
+    console.log(`User collaboration IDs for reference: ${userCollaborationIds.join(', ')}`);
     
     // Determine the next cursor (if there are more results)
     const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].id : undefined;
