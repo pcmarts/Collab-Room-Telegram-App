@@ -947,9 +947,18 @@ export class DatabaseStorage implements IStorage {
               const match = await this.createMatch(matchData);
               console.log("Match created:", match.id);
               
-              // We no longer create a redundant "reverse match" as it causes duplicates
-              // Instead, we'll use a single match record and properly filter potential matches
-              console.log("Note: Skipping creation of redundant reverse match");
+              // Also create a match for this swipe
+              const reverseMatchData: InsertMatch = {
+                collaboration_id: swipe.collaboration_id,
+                host_id: collaboration.creator_id, // The creator is the host of their own collaboration
+                requester_id: swipe.user_id, // The user requested to collaborate
+                status: 'active',
+                note: swipe.note,
+              };
+              
+              console.log("Creating reverse match:", reverseMatchData);
+              const reverseMatch = await this.createMatch(reverseMatchData);
+              console.log("Reverse match created:", reverseMatch.id);
               
               // Notify both users
               try {
@@ -1053,30 +1062,7 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
     
-    // 3. Get all existing matches that involve this user (to exclude swipes that already have matches)
-    const existingMatches = await this.getUserMatches(userId);
-    console.log(`Found ${existingMatches.length} existing matches for user ${userId}`);
-    
-    // 4. Create a set of collaboration IDs and user IDs that are already matched 
-    // to efficiently exclude them later
-    const matchedCollaborationIds = new Set<string>();
-    const matchedUserIds = new Set<string>();
-    
-    existingMatches.forEach(match => {
-      // Add the collaboration ID
-      matchedCollaborationIds.add(match.collaboration_id);
-      
-      // Add the user ID of the other user in the match
-      if (match.host_id === userId) {
-        matchedUserIds.add(match.requester_id);
-      } else {
-        matchedUserIds.add(match.host_id);
-      }
-      
-      console.log(`Excluding matched collaboration: ${match.collaboration_id} with user: ${match.host_id === userId ? match.requester_id : match.host_id}`);
-    });
-    
-    // Find all right swipes on host's collaborations that don't already have matches
+    // Find all right swipes on host's collaborations
     const rightSwipes = await db
       .select({
         swipe: swipes,
@@ -1094,33 +1080,12 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(desc(swipes.created_at));
     
-    console.log(`Found ${rightSwipes.length} right swipes on host's collaborations (before filtering out matches)`);
-    
-    // 5. Filter out swipes from users who already have matches with this host
-    const filteredSwipes = rightSwipes.filter(swipe => {
-      // Check if this user is already matched with the host
-      const isUserMatched = matchedUserIds.has(swipe.user.id);
-      if (isUserMatched) {
-        console.log(`Filtering out swipe from user ${swipe.user.id} who already has a match with host ${userId}`);
-        return false;
-      }
-      
-      // Check if this collaboration already has a match
-      const isCollaborationMatched = matchedCollaborationIds.has(swipe.swipe.collaboration_id);
-      if (isCollaborationMatched) {
-        console.log(`Filtering out swipe on collaboration ${swipe.swipe.collaboration_id} which already has a match`);
-        return false;
-      }
-      
-      return true;
-    });
-    
-    console.log(`After filtering out existing matches, ${filteredSwipes.length} potential matches remain`);
+    console.log(`Found ${rightSwipes.length} right swipes on host's collaborations`);
     
     // Add debugging for each potential match
-    if (filteredSwipes.length > 0) {
-      console.log("Filtered right swipes detail:");
-      filteredSwipes.forEach((swipe, index) => {
+    if (rightSwipes.length > 0) {
+      console.log("Right swipes detail:");
+      rightSwipes.forEach((swipe, index) => {
         console.log(`[${index + 1}] Swipe ID: ${swipe.swipe.id}`);
         console.log(`    Collaboration ID: ${swipe.swipe.collaboration_id}`);
         console.log(`    User: ${swipe.user.first_name} ${swipe.user.last_name || ''} (${swipe.user.id})`);
@@ -1129,7 +1094,7 @@ export class DatabaseStorage implements IStorage {
     }
     
     // Look for specific users like Jim
-    const jimSwipe = filteredSwipes.find(swipe => 
+    const jimSwipe = rightSwipes.find(swipe => 
       swipe.user.first_name.toLowerCase() === 'jim' || 
       swipe.user.first_name.toLowerCase().includes('jim')
     );
@@ -1143,13 +1108,13 @@ export class DatabaseStorage implements IStorage {
         company: jimSwipe.company.name
       });
     } else {
-      console.log("No swipe from Jim found after filtering");
+      console.log("No swipe from Jim found");
     }
     
-    // Get collaboration details for each swipe (using the filtered swipes, not original rightSwipes)
+    // Get collaboration details for each swipe
     const enrichedSwipes = [];
     
-    for (const result of filteredSwipes) {
+    for (const result of rightSwipes) {
       try {
         // Fetch the full collaboration data for this swipe
         const collaborationId = result.swipe.collaboration_id;
