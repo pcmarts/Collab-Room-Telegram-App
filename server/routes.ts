@@ -875,7 +875,7 @@ export async function registerRoutes(app: Express) {
         return { user };
       });
 
-      // If this is a new user application (not a profile update), notify admins
+      // If this is a new user application (not a profile update), notify admins and the user
       if (!isProfileUpdate && result.user) {
         try {
           // Get company data for the notification
@@ -898,6 +898,19 @@ export async function registerRoutes(app: Express) {
               company_twitter_handle: company.twitter_handle
             });
             console.log('Admin notification sent for new user application');
+            
+            // Send confirmation to the user with their telegram handle
+            try {
+              const telegramId = parseInt(result.user.telegram_id);
+              if (!isNaN(telegramId)) {
+                await sendApplicationConfirmation(telegramId, result.user.handle);
+                console.log(`Application confirmation sent to user ${result.user.first_name} (${result.user.telegram_id})`);
+              } else {
+                console.error(`Invalid Telegram ID for user confirmation: ${result.user.telegram_id}`);
+              }
+            } catch (userNotifyError) {
+              console.error('Failed to send user application confirmation:', userNotifyError);
+            }
           } else {
             console.error('Could not find company data for admin notification');
           }
