@@ -2,9 +2,54 @@
 
 ## Overview
 
-The Collab Room has enhanced the Telegram notification system with multiple improvements, including personalized notes for collaboration requests and an improved admin broadcast system. This document details all notification-related enhancements.
+The Collab Room has enhanced the Telegram notification system with multiple improvements, including application confirmation notifications, personalized notes for collaboration requests, and an improved admin broadcast system. This document details all notification-related enhancements.
 
 > **Important Update**: For information about recent fixes to the notification delivery system, including solutions for callback data length limits and chat ID validation, see [Notification Fixes](./notification-fixes.md).
+
+## Application Confirmation Notifications (v1.10.8)
+
+The system now sends immediate notification messages to users when they submit their application to join the platform.
+
+### Features
+
+- **Immediate Application Feedback**: Users receive a Telegram message immediately after submitting their application
+- **Telegram Handle Integration**: The notification includes the user's Telegram handle (@username) in the message
+- **Interactive Application Status Button**: Each notification includes a button to check application status
+- **Improved User Experience**: Provides immediate confirmation that the application was received successfully
+
+### Implementation Details
+
+When a user submits an application, the following process occurs:
+
+1. The application data is saved to the database as before
+2. Admin notification is sent to all admin users as before
+3. A new confirmation notification is sent directly to the applicant with their Telegram handle
+4. The notification includes an interactive button to check application status
+
+#### Telegram Notification Format
+
+```
+🎉 Application Submitted Successfully! @username
+
+Thank you for applying to join Collab Room. Click below to check your application status anytime.
+```
+
+#### Button Integration
+
+Each notification includes a button that opens the application status page:
+
+```typescript
+const keyboard = {
+  inline_keyboard: [
+    [
+      {
+        text: "Check Application Status",
+        web_app: { url: `${WEBAPP_URL}/application-status` },
+      },
+    ],
+  ],
+};
+```
 
 ## Admin Broadcast System (v1.8.0 and v1.8.1)
 
