@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.9] - 2025-04-27
+
+### Enhanced
+- Improved admin notification system with enriched user details and inline approval functionality
+- Added hyperlinked company websites and Telegram handles in admin notifications
+- Enhanced message formatting with HTML styling for better readability
+- Improved notification reliability with robust error handling for invalid Telegram IDs
+
+### Technical Details
+- Refactored `notifyAdminsNewUser` function with HTML formatting and inline keyboard buttons
+- Added proper error handling and validation for Telegram ID conversion
+- Implemented callback data processing for direct user approval from Telegram
+- Enhanced logging for admin notifications with dedicated log records
+- Added message update functionality to prevent duplicate approvals
+
 ## [Version 1.10.8] - 2025-04-27
 
 ### Enhanced
