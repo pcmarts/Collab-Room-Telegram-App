@@ -16,7 +16,7 @@ import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, n
 import { storage } from "./storage";
 import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
-import twitterRoutes from './routes/twitter-routes.js';
+// Twitter routes removed to fix deployment issues
 import referralRoutes from './routes/referral-routes';
 
 // Store active SSE connections for application status updates
