@@ -636,30 +636,7 @@ export async function registerRoutes(app: Express) {
         logger.info(`User ${userId} approved. Status update would be sent if SSE was implemented.`);
       }
 
-      // Enrich the company with Twitter data (async, don't wait for completion)
-      if (user && user.company_id) {
-        try {
-          // Import the Twitter enrichment utility (using dynamic import for ESM)
-          import('./utils/twitter-enrichment.js').then(({ enrichCompanyOnUserApproval }) => {
-            // Run Twitter enrichment in the background
-            enrichCompanyOnUserApproval(userId)
-              .then(result => {
-                if (result.success) {
-                  console.log(`Successfully enriched company Twitter data after user approval: ${result.message}`);
-                } else {
-                  console.warn(`Failed to enrich company Twitter data after user approval: ${result.error}`);
-                }
-              })
-              .catch(err => {
-                console.error('Error during company Twitter enrichment after user approval:', err);
-              });
-          }).catch(importErr => {
-            console.error('Failed to import Twitter enrichment utility:', importErr);
-          });
-        } catch (err) {
-          console.error('Error initializing Twitter enrichment process:', err);
-        }
-      }
+      // Twitter enrichment functionality removed for deployment
 
       return res.json({
         success: true,
