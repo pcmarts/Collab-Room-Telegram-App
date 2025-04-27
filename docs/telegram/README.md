@@ -118,10 +118,25 @@ async function handleStart(msg: TelegramBot.Message) {
 The bot sends notifications to users about important events:
 
 ```typescript
-export async function sendApplicationConfirmation(chatId: number) {
+export async function sendApplicationConfirmation(chatId: number, telegramHandle?: string) {
+  // Include the telegram handle in the message if available
+  const handleText = telegramHandle ? ` @${telegramHandle}` : '';
+  
   await bot.sendMessage(
     chatId,
-    "Your application has been received! We'll notify you when there's an update."
+    `🎉 Application Submitted Successfully!${handleText}\n\nThank you for applying to join Collab Room. Click below to check your application status anytime.`,
+    { 
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "Check Application Status",
+              web_app: { url: `${WEBAPP_URL}/application-status` }
+            }
+          ]
+        ]
+      }
+    }
   );
 }
 

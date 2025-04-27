@@ -5,6 +5,19 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.8] - 2025-04-27
+
+### Enhanced
+- Added Telegram notifications for users when they submit their application
+- Improved user experience by including Telegram handle (@username) in application confirmation messages
+- Enhanced notification system to provide immediate feedback to users during the application process
+
+### Technical Details
+- Updated `sendApplicationConfirmation` function to accept and display Telegram handles
+- Modified user application process to send confirmation messages after submission
+- Implemented error handling for notification delivery to ensure reliability
+- Added detailed logging of application confirmation messages for monitoring
+
 ## [Version 1.10.7] - 2025-04-26
 
 ### Performance
