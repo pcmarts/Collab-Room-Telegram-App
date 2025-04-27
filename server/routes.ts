@@ -4022,8 +4022,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Register Twitter API routes
-  app.use('/api', twitterRoutes);
+  // Twitter API routes removed
 
   // Register Referral API routes
   app.use('/api/referrals', referralRoutes);
