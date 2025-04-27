@@ -433,7 +433,7 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
 }
 
 // Send application confirmation message
-export async function sendApplicationConfirmation(chatId: number) {
+export async function sendApplicationConfirmation(chatId: number, telegramHandle?: string) {
   const keyboard = {
     inline_keyboard: [
       [
@@ -446,18 +446,21 @@ export async function sendApplicationConfirmation(chatId: number) {
   };
 
   try {
+    // Include the telegram handle in the message if available
+    const handleText = telegramHandle ? ` @${telegramHandle}` : '';
+    
     await bot.sendMessage(
       chatId,
-      "🎉 Application Submitted Successfully!\n\nThank you for applying to join Collab Room. Click below to check your application status anytime.",
+      `🎉 Application Submitted Successfully!${handleText}\n\nThank you for applying to join Collab Room. Click below to check your application status anytime.`,
       { reply_markup: keyboard },
     );
-    console.log("Application confirmation message sent successfully");
+    console.log(`Application confirmation message sent successfully to user${handleText}`);
 
     // Log application confirmation message
     logAdminMessage(
       "SYSTEM",
       "APPLICATION_CONFIRMATION",
-      `Sent application confirmation to user with chat ID ${chatId}`,
+      `Sent application confirmation to user with chat ID ${chatId}${handleText ? ' ' + handleText : ''}`,
       `New user application received`,
     );
   } catch (error) {
