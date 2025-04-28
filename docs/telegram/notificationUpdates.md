@@ -2,9 +2,95 @@
 
 ## Overview
 
-The Collab Room has enhanced the Telegram notification system with multiple improvements, including application confirmation notifications, personalized notes for collaboration requests, and an improved admin broadcast system. This document details all notification-related enhancements.
+The Collab Room has enhanced the Telegram notification system with multiple improvements, including enhanced admin notifications with inline approval functionality, application confirmation notifications, personalized notes for collaboration requests, and an improved admin broadcast system. This document details all notification-related enhancements.
 
 > **Important Update**: For information about recent fixes to the notification delivery system, including solutions for callback data length limits and chat ID validation, see [Notification Fixes](./notification-fixes.md).
+
+## Enhanced Admin Notifications (v1.10.9)
+
+The system now provides administrators with rich, interactive notifications about new user applications with direct approval capabilities.
+
+### Features
+
+- **Enriched User Information**: Displays applicant's name, Telegram handle, company details, and role
+- **Hyperlinked Company Information**: Company name is hyperlinked to the company website for quick validation
+- **HTML Formatted Messages**: Improved message readability with proper formatting and emphasis
+- **Interactive Approval Button**: Allows admins to approve applications directly from Telegram
+- **Improved Telegram ID Handling**: Robust error handling for various Telegram ID formats
+- **Dedicated Admin Notification Logging**: Comprehensive logging of admin notification events
+
+### Implementation Details
+
+When a new user submits an application, the following process occurs:
+
+1. The application data is saved to the database
+2. An enhanced notification is sent to all admin users with the following information:
+   - User's full name with Telegram handle
+   - Hyperlinked company name with website URL
+   - User's role/job title
+   - Interactive approval button
+   - Link to view application details
+3. Admin can approve the application directly from Telegram
+4. The notification message is updated after approval to prevent duplicate approvals
+
+#### Telegram Notification Format
+
+```
+🆕 New User Application!
+
+Name: John Smith (@johnsmith)
+Company: Blockchain Innovations (hyperlinked to company website)
+Role: Chief Technology Officer
+
+Use the buttons below to take action:
+```
+
+#### Interactive Button Integration
+
+Each notification includes buttons for direct actions:
+
+```typescript
+const keyboard = {
+  inline_keyboard: [
+    [
+      {
+        text: "✅ Approve Application",
+        callback_data: `approve_user_${userData.telegram_id}`,
+      },
+    ],
+    [
+      {
+        text: "👁️ View Application",
+        web_app: { url: `${WEBAPP_URL}/admin/applications` },
+      },
+    ],
+  ],
+};
+```
+
+#### Telegram ID Validation
+
+The system now includes robust validation for Telegram IDs to prevent notification failures:
+
+```typescript
+// Try multiple ways to convert the ID to a proper number
+if (typeof admin.telegram_id === 'number') {
+  telegramId = admin.telegram_id;
+} else if (typeof admin.telegram_id === 'string') {
+  // Remove any non-numeric characters and parse as integer
+  const cleanId = admin.telegram_id.replace(/[^0-9]/g, '');
+  telegramId = parseInt(cleanId, 10);
+} else {
+  console.error(`[ADMIN_NOTIFICATION] Invalid admin Telegram ID format`);
+  continue; // Skip this admin
+}
+
+// Double-check that we have a valid number
+if (isNaN(telegramId) || telegramId <= 0) {
+  console.error(`[ADMIN_NOTIFICATION] Invalid admin Telegram ID after conversion`);
+  continue; // Skip this admin
+}
+```
 
 ## Application Confirmation Notifications (v1.10.8)
 

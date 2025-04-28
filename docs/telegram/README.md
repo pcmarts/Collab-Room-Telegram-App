@@ -184,9 +184,20 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
 }
 ```
 
-### Admin Notifications
+### Admin Notifications (Enhanced in v1.10.9)
 
-The bot sends enhanced notifications to administrators about new user applications with interactive buttons for immediate actions:
+The bot sends enhanced notifications to administrators about new user applications with interactive buttons for immediate actions. The latest enhancements (v1.10.9) include:
+
+1. **Enriched User Information** - More comprehensive applicant details including Telegram handle
+2. **Hyperlinked Company Information** - Company names are now hyperlinked to websites for quick validation 
+3. **Robust Telegram ID Handling** - Improved validation and error handling for various Telegram ID formats
+4. **HTML Formatted Messages** - Better readability with proper formatting and emphasis
+5. **Direct Approval Functionality** - Admin can approve applications directly through interactive buttons
+6. **Message Update After Approval** - Original notification is updated to prevent duplicate approvals
+
+For complete details on the enhanced admin notification system, see [Notification Updates](./notificationUpdates.md#enhanced-admin-notifications-v1109).
+
+The implementation:
 
 ```typescript
 interface NewUserNotification {
@@ -256,11 +267,39 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
     // Send notification to each admin
     for (const admin of adminUsers) {
       try {
-        const result = await bot.sendMessage(parseInt(admin.telegram_id), message, {
-          parse_mode: "HTML",
-          disable_web_page_preview: false, // Allow website previews
-          reply_markup: keyboard,
-        });
+        // Make sure we have a valid numeric Telegram ID
+        let telegramId: number;
+        
+        // Try multiple ways to convert the ID to a proper number
+        if (typeof admin.telegram_id === 'number') {
+          telegramId = admin.telegram_id;
+        } else if (typeof admin.telegram_id === 'string') {
+          // Remove any non-numeric characters and parse as integer
+          const cleanId = admin.telegram_id.replace(/[^0-9]/g, '');
+          telegramId = parseInt(cleanId, 10);
+        } else {
+          console.error(`[ADMIN_NOTIFICATION] Invalid admin Telegram ID format: ${admin.telegram_id}`);
+          continue; // Skip this admin
+        }
+        
+        // Double-check that we have a valid number
+        if (isNaN(telegramId) || telegramId <= 0) {
+          console.error(`[ADMIN_NOTIFICATION] Invalid admin Telegram ID after conversion: ${telegramId}`);
+          continue; // Skip this admin
+        }
+        
+        console.log(`[ADMIN_NOTIFICATION] Sending notification to admin Telegram ID: ${telegramId}`);
+        
+        const result = await bot.sendMessage(
+          telegramId,
+          message,
+          {
+            parse_mode: "HTML",
+            disable_web_page_preview: false, // Keep website previews for admin notifications
+            reply_markup: keyboard,
+          },
+        );
+        
         console.log(`Enhanced notification sent to admin ${admin.telegram_id}`);
         
         // Log the admin notification
