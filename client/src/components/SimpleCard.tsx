@@ -193,7 +193,47 @@ export default function SimpleCard({
                   <h3 className="font-bold text-lg line-clamp-1">
                     {data.isPotentialMatch ? "🌟 Potential Match" : (data.creator_company_name || "Company")}
                   </h3>
-                  {/* Removed the collaboration type badges from here */}
+                  {/* Collaboration type badge */}
+                  {!data.isPotentialMatch && data.collab_type && (
+                    <div className="mt-1">
+                      {data.collab_type.toLowerCase().includes('twitter') || data.collab_type.toLowerCase().includes('co-marketing') ? (
+                        <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-[#1DA1F2] font-medium">
+                          <Twitter className="w-3 h-3 mr-1" />
+                          {data.collab_type}
+                        </Badge>
+                      ) : data.collab_type.toLowerCase().includes('podcast') ? (
+                        <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/20 text-purple-700 font-medium">
+                          <Mic className="w-3 h-3 mr-1" />
+                          {data.collab_type}
+                        </Badge>
+                      ) : data.collab_type.toLowerCase().includes('blog') ? (
+                        <Badge variant="outline" className="text-xs bg-emerald-500/10 border-emerald-500/20 text-emerald-700 font-medium">
+                          <FileText className="w-3 h-3 mr-1" />
+                          {data.collab_type}
+                        </Badge>
+                      ) : data.collab_type.toLowerCase().includes('research') || data.collab_type.toLowerCase().includes('report') ? (
+                        <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-500/20 text-amber-700 font-medium">
+                          <FileSearch className="w-3 h-3 mr-1" />
+                          {data.collab_type}
+                        </Badge>
+                      ) : data.collab_type.toLowerCase().includes('newsletter') ? (
+                        <Badge variant="outline" className="text-xs bg-indigo-500/10 border-indigo-500/20 text-indigo-700 font-medium">
+                          <Mail className="w-3 h-3 mr-1" />
+                          {data.collab_type}
+                        </Badge>
+                      ) : data.collab_type.toLowerCase().includes('live') ? (
+                        <Badge variant="outline" className="text-xs bg-red-500/10 border-red-500/20 text-red-700 font-medium">
+                          <Video className="w-3 h-3 mr-1" />
+                          {data.collab_type}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs bg-primary/10 border-primary/20 text-primary font-medium">
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          {data.collab_type}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               
