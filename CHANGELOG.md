@@ -5,6 +5,20 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.10] - 2025-04-28
+
+### Enhanced
+- Restored collaboration type pills on discovery cards for improved content classification
+- Implemented enhanced visual styling with color-coded badges unique to each collab type
+- Added collaboration-specific icons to all type badges for better visual recognition
+- Improved hierarchy and readability with consistent font weight and color contrast
+
+### Technical Details
+- Updated SimpleCard.tsx to display collaboration type badges under company name
+- Implemented conditional rendering based on collaboration type for appropriate styling
+- Added icon integration from Lucide React library for each collaboration type
+- Used a consistent styling pattern for badges across the application
+
 ## [Version 1.10.9] - 2025-04-27
 
 ### Enhanced

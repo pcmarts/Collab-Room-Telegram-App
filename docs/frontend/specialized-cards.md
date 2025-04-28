@@ -6,9 +6,18 @@ This document provides comprehensive documentation for the specialized card comp
 
 The Collab Room has moved from a generic BaseCollabCard to specialized standalone card components for each collaboration type. This approach provides better customization for each content type while maintaining visual consistency across the discovery feed.
 
-## Recent Updates (Version 1.9.6)
+## Recent Updates (Version 1.10.10)
 
-### SimpleCard Component
+### Enhanced Collaboration Type Indicators
+
+We've restored and improved the collaboration type pill indicators that appear under the company name:
+
+- Added color-coded badges that match the collaboration type (blue for Twitter, purple for Podcast, etc.)
+- Implemented matching icons for each collaboration type for better visual recognition
+- Enhanced visibility with improved font weight and color contrast
+- Maintained consistent styling with the rest of the application
+
+### SimpleCard Component (Version 1.9.6)
 
 We've migrated from motion-based SwipeableCard to a simpler, more compatible SimpleCard component that:
 
@@ -124,17 +133,48 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ collaboration, onSwipe, onVie
 
 ## Component Structure
 
-Each specialized card component follows this general structure:
+Each card uses the SimpleCard component which now follows this improved structure:
 
 ```jsx
-<div className="relative flex flex-col h-full rounded-xl overflow-hidden border border-border/40 bg-card transition-all duration-300 hover:border-primary/40 shadow-md">
-  {/* Card Header */}
-  <div className="p-4 bg-gradient-to-b from-card-foreground/10 to-transparent">
-    <div className="flex items-center justify-between">
-      <Badge variant="outline" className="bg-card-foreground/5 text-xs">
-        {collaborationType}
-      </Badge>
-      <CompanyBadge name={collaboration.creator_company_name} />
+<Card className="h-full w-full overflow-hidden flex flex-col p-0 relative border-2 shadow-xl rounded-xl">
+  {/* Card header with company info */}
+  <div className="px-4 py-3 border-b relative z-30 bg-blue-500/5">
+    <div className="flex flex-col">
+      {/* Top row with company info and info button */}
+      <div className="flex justify-between items-start">
+        <div className="flex items-center gap-3">
+          {/* Company logo if available */}
+          <LogoAvatar 
+            src={data.creator_company_logo_url} 
+            alt={data.creator_company_name}
+            className="h-10 w-10 rounded-full"
+          />
+          
+          {/* Company Name and Type */}
+          <div>
+            <h3 className="font-bold text-lg line-clamp-1">
+              {data.creator_company_name || "Company"}
+            </h3>
+            
+            {/* Collaboration type badge - Enhanced in v1.10.10 */}
+            <div className="mt-1">
+              <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-blue-700 font-medium">
+                <Twitter className="w-3 h-3 mr-1" />
+                {data.collab_type}
+              </Badge>
+            </div>
+          </div>
+        </div>
+        
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="shrink-0 h-8 w-8 text-muted-foreground hover:text-primary"
+          onClick={onInfoClick}
+        >
+          <Info className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   </div>
   
@@ -391,17 +431,36 @@ return <CardComponent data={cardData} />;
 
 1. **Consistency First**: While each card type has specialized content, maintain consistent styling, spacing, and interaction patterns across all cards.
 
-2. **Component Isolation**: Each card component should be fully independent and not rely on a base component or shared utilities that could create coupling.
+2. **Semantic Color Coding**: Use consistent color palettes for different collaboration types:
+   - Blue for Twitter-related collaborations
+   - Purple for Podcast appearances
+   - Emerald for Blog posts
+   - Amber for Research reports
+   - Indigo for Newsletter features
+   - Red for Live streams
 
-3. **Performance Optimization**: Keep card components lightweight, especially for the discovery feed where many cards may be rendered.
+3. **Visual Hierarchy**: Display the collaboration type badge prominently under the company name to ensure users can immediately understand what type of collaboration they're looking at.
 
-4. **Adding New Card Types**:
+4. **Icon Consistency**: Use consistent icons for each type of collaboration that align with their purpose:
+   - Twitter icon for Twitter spaces
+   - Mic icon for Podcasts
+   - FileText icon for Blog posts
+   - FileSearch icon for Research reports
+   - Mail icon for Newsletters
+   - Video icon for Live streams
+
+5. **Component Isolation**: Each card component should be fully independent and not rely on a base component or shared utilities that could create coupling.
+
+6. **Performance Optimization**: Keep card components lightweight, especially for the discovery feed where many cards may be rendered.
+
+7. **Adding New Card Types**:
    - Create a new component in the `cards` directory following the same interface
    - Follow the established pattern for layout and styling
    - Add specialized UI elements relevant to the collaboration type
    - Update the renderCard function in DiscoverPage.tsx to handle the new type
+   - Use consistent badge styling for the new type
 
-5. **Maintaining Cards**:
+8. **Maintaining Cards**:
    - When making changes, ensure they're applied consistently across all card types
    - Test changes thoroughly in both the discovery feed and detail views
    - Document significant changes in CHANGELOG.md
