@@ -46,11 +46,39 @@ const CollaborationFormContent: React.FC = () => {
     handleSubmit();
   };
   
+  // Helper functions to get step information
+  const getStepTitle = () => {
+    if (!currentStepId || currentStepId === "collab_type") return InitialStep.title;
+    
+    // Find selected type
+    const selectedType = availableTypes.find(type => type.id === selectedTypeId);
+    if (!selectedType) return selectedTypeId || "";
+    
+    // Find step in type's steps
+    const step = selectedType.steps.find(s => s.id === currentStepId);
+    return step?.title || selectedTypeId || "";
+  };
+  
+  const getStepDescription = () => {
+    if (!currentStepId || currentStepId === "collab_type") return InitialStep.description;
+    
+    // Find selected type
+    const selectedType = availableTypes.find(type => type.id === selectedTypeId);
+    if (!selectedType) return "";
+    
+    // Find step in type's steps
+    const step = selectedType.steps.find(s => s.id === currentStepId);
+    return step?.description || "";
+  };
+  
   // Handle collaboration type selection
   const handleTypeSelected = () => {
     // Get the selected type and set its steps
     const selectedType = availableTypes.find(type => type.id === form.getValues("collab_type"));
     if (selectedType && selectedType.steps) {
+      console.log("Selected type:", selectedType.id);
+      console.log("Setting steps:", selectedType.steps);
+      
       // Set steps to type-specific steps
       setSteps([
         InitialStep,  // Keep the initial step 
