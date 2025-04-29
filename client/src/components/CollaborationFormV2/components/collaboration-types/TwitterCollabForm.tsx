@@ -12,6 +12,7 @@ import {
 import { useFormWizard } from "../../contexts/FormWizardContext";
 import { LimitedTopicSelector } from "../fields/LimitedTopicSelector";
 import { CharLimitedTextarea } from "../fields/CharLimitedTextarea";
+import { DateSelector } from "../fields/DateSelector";
 import { COLLAB_TOPICS, TWITTER_COLLAB_TYPES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { useCollaborationType } from "../../contexts/CollaborationTypeContext";
 import { Step } from "../../contexts/FormWizardContext";
@@ -46,6 +47,11 @@ export const twitterCollabSteps: Step[] = [
     id: "twitter_description",
     title: "Description",
     description: "Add a short description (max 280 characters)",
+  },
+  {
+    id: "twitter_date",
+    title: "Timing",
+    description: "When would you like to collaborate?",
   }
 ];
 
@@ -216,6 +222,9 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ form }) =>
             required
           />
         );
+        
+      case "twitter_date":
+        return <DateSelector form={form} />;
         
       default:
         return (
