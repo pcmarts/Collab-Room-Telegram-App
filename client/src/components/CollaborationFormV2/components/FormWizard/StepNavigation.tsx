@@ -45,7 +45,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     let isStepValid = true;
     
     // For Twitter collaboration type steps, validate only the relevant fields
-    if (currentStepId === "twitter_topics") {
+    if (currentStepId === "twitter_topics" || currentStepId === "podcast_topics") {
       isStepValid = await form.trigger("topics");
     } else if (currentStepId === "twitter_handle") {
       isStepValid = await form.trigger("twitter_handle");
@@ -53,10 +53,17 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       isStepValid = await form.trigger("twitter_collab_types");
     } else if (currentStepId === "twitter_followers") {
       isStepValid = await form.trigger("follower_count");
-    } else if (currentStepId === "twitter_description") {
+    } else if (currentStepId === "twitter_description" || currentStepId === "podcast_description") {
       isStepValid = await form.trigger("description");
     } else if (currentStepId === "collab_type") {
       isStepValid = await form.trigger("collab_type");
+    } else if (currentStepId === "podcast_details") {
+      // For podcast details step, validate both podcast name and link
+      const nameValid = await form.trigger("podcast_name");
+      const linkValid = await form.trigger("podcast_link");
+      isStepValid = nameValid && linkValid;
+    } else if (currentStepId === "podcast_audience") {
+      isStepValid = await form.trigger("estimated_reach");
     } else {
       // If we don't recognize the step, do a general validation
       isStepValid = await form.trigger();

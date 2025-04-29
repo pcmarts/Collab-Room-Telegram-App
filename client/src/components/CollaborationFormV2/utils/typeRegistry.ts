@@ -2,6 +2,7 @@ import { twitterCollabSchema, twitterCollabDefaults } from "../schemas/twitterSc
 import { podcastCollabSchema, podcastCollabDefaults } from "../schemas/podcastSchema";
 import { CollaborationTypeDefinition } from "../contexts/CollaborationTypeContext";
 import { twitterCollabSteps } from "../components/collaboration-types/TwitterCollabForm";
+import { podcastCollabSteps } from "../components/collaboration-types/PodcastCollabForm";
 
 /**
  * Registry of available collaboration types
@@ -21,28 +22,7 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
     name: "Podcast Guest Appearance",
     schema: podcastCollabSchema,
     defaultValues: podcastCollabDefaults,
-    steps: [
-      {
-        id: "podcast_topics",
-        title: "Topics",
-        description: "What topics will this podcast cover?",
-      },
-      {
-        id: "podcast_details",
-        title: "Podcast Details",
-        description: "Tell us about your podcast",
-      },
-      {
-        id: "podcast_audience",
-        title: "Audience Size",
-        description: "How many listeners does the podcast have?",
-      },
-      {
-        id: "podcast_description",
-        title: "Description",
-        description: "Add a short description (max 280 characters)",
-      }
-    ]
+    steps: podcastCollabSteps
   }
 ];
 

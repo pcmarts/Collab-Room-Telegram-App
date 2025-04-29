@@ -8,6 +8,7 @@ import { StepContainer } from "./components/FormWizard/StepContainer";
 import { StepNavigation } from "./components/FormWizard/StepNavigation";
 import { TypeSelector } from "./components/collaboration-types/TypeSelector";
 import { TwitterCollabForm } from "./components/collaboration-types/TwitterCollabForm";
+import { PodcastCollabForm } from "./components/collaboration-types/PodcastCollabForm";
 import { useCollaborationForm } from "./hooks/useCollaborationForm";
 import { collaborationTypes } from "./utils/typeRegistry";
 
@@ -97,9 +98,11 @@ const CollaborationFormContent: React.FC = () => {
       return <TypeSelector form={form} onTypeSelected={handleTypeSelected} />;
     }
     
-    // For other steps, render the appropriate type-specific form
+    // For other steps, render the appropriate type-specific form based on selected type
     if (selectedTypeId === "Co-Marketing on Twitter") {
       return <TwitterCollabForm form={form} />;
+    } else if (selectedTypeId === "Podcast Guest Appearance") {
+      return <PodcastCollabForm form={form} />;
     }
     
     // Fallback when no collaboration type is selected or supported
