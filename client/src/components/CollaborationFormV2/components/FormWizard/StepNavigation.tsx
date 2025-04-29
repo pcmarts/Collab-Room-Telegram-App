@@ -141,12 +141,23 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       {/* Empty div to maintain flex spacing when back button is hidden */}
       {isFirstStep && <div></div>}
       
-      {/* On last step, show Submit button (enabled only when type selected) */}
-      {isLastStep ? (
+      {/* Special case for collaboration type selection page */}
+      {currentStepId === "collab_type" ? (
+        /* Show Next button on type selection page, disabled until selection is made */
+        <Button 
+          type="button" 
+          onClick={handleNextClick}
+          disabled={isSubmitting || !collabTypeSelected}
+        >
+          Next
+          <ChevronRight className="w-4 h-4 ml-2" />
+        </Button>
+      ) : isLastStep ? (
+        /* On other last steps, show Submit button */
         <Button
           type="button"
           onClick={handleSubmitClick}
-          disabled={isSubmitting || !collabTypeSelected}
+          disabled={isSubmitting}
         >
           {isSubmitting ? (
             <>
@@ -164,11 +175,11 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
           )}
         </Button>
       ) : (
-        /* Always show Next button but disable it until type is selected */
+        /* On other intermediate steps, show Next button */
         <Button 
           type="button" 
           onClick={handleNextClick}
-          disabled={isSubmitting || (isFirstStep && !collabTypeSelected)}
+          disabled={isSubmitting}
         >
           Next
           <ChevronRight className="w-4 h-4 ml-2" />
