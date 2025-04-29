@@ -60,54 +60,56 @@ interface TwitterCollabFormProps {
 export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ form }) => {
   const { currentStepId } = useFormWizard();
   
-  // Validate current field when step changes
+  // Initialize all form values on component mount
   useEffect(() => {
-    console.log("Current step ID:", currentStepId);
-    console.log("Current form values:", form.getValues());
+    console.log("Initializing Twitter collaboration form with default values");
     
-    // Ensure we have default values for all fields when each step loads
-    const ensureDefaultValues = () => {
-      // For topics step
-      if (currentStepId === "twitter_topics" && (!form.getValues("topics") || form.getValues("topics").length === 0)) {
-        form.setValue("topics", [], { shouldValidate: false });
-      }
-      
-      // For Twitter handle step
-      if (currentStepId === "twitter_handle" && !form.getValues("twitter_handle")) {
-        form.setValue("twitter_handle", "https://x.com/", { shouldValidate: false });
-      }
-      
-      // For Twitter collab types step
-      if (currentStepId === "twitter_collab_types" && (!form.getValues("twitter_collab_types") || form.getValues("twitter_collab_types").length === 0)) {
-        form.setValue("twitter_collab_types", [], { shouldValidate: false });
-      }
-      
-      // For followers step
-      if (currentStepId === "twitter_followers" && !form.getValues("follower_count")) {
-        form.setValue("follower_count", TWITTER_FOLLOWER_COUNTS[0], { shouldValidate: false });
-      }
-      
-      // For description step
-      if (currentStepId === "twitter_description" && !form.getValues("description")) {
-        form.setValue("description", "", { shouldValidate: false });
-      }
+    // Get current form values
+    const currentValues = form.getValues();
+    
+    // Create a complete default values object
+    const completeDefaults = {
+      collab_type: "Co-Marketing on Twitter",
+      topics: currentValues.topics || [],
+      twitter_handle: currentValues.twitter_handle || "https://x.com/",
+      twitter_collab_types: currentValues.twitter_collab_types || [],
+      follower_count: currentValues.follower_count || TWITTER_FOLLOWER_COUNTS[0],
+      description: currentValues.description || "",
+      date_type: currentValues.date_type || "specific_date",
+      specific_date: currentValues.specific_date || new Date().toISOString().split("T")[0],
+      is_free_collab: currentValues.is_free_collab !== undefined ? currentValues.is_free_collab : true,
+      details: currentValues.details || {}
     };
     
-    // Set default values first
-    ensureDefaultValues();
+    // Set defaults all at once to ensure all required fields exist
+    Object.entries(completeDefaults).forEach(([key, value]) => {
+      if (form.getValues(key as any) === undefined) {
+        form.setValue(key as any, value, { shouldValidate: false });
+      }
+    });
     
-    // Then validate the current field
-    if (currentStepId === "twitter_topics") {
-      form.trigger("topics");
-    } else if (currentStepId === "twitter_handle") {
-      form.trigger("twitter_handle");
-    } else if (currentStepId === "twitter_collab_types") {
-      form.trigger("twitter_collab_types");
-    } else if (currentStepId === "twitter_followers") {
-      form.trigger("follower_count");
-    } else if (currentStepId === "twitter_description") {
-      form.trigger("description");
-    }
+    console.log("Form initialized with:", completeDefaults);
+  }, [form]);
+  
+  // Validate only the current field whenever the step changes
+  useEffect(() => {
+    console.log("Current step ID:", currentStepId);
+    
+    // Wait a short moment to ensure fields are set before validating
+    setTimeout(() => {
+      // Then validate only the current field
+      if (currentStepId === "twitter_topics") {
+        form.trigger("topics");
+      } else if (currentStepId === "twitter_handle") {
+        form.trigger("twitter_handle");
+      } else if (currentStepId === "twitter_collab_types") {
+        form.trigger("twitter_collab_types");
+      } else if (currentStepId === "twitter_followers") {
+        form.trigger("follower_count");
+      } else if (currentStepId === "twitter_description") {
+        form.trigger("description");
+      }
+    }, 100);
   }, [currentStepId, form]);
 
   // Render the current step content

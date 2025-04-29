@@ -41,9 +41,28 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     
     console.log("Validating current step:", currentStepId);
     
-    // Check if fields in current step are valid
-    const isStepValid = await form.trigger();
-    console.log("Form validation result:", isStepValid);
+    // Only validate the field(s) for the current step to avoid cross-step validation issues
+    let isStepValid = true;
+    
+    // For Twitter collaboration type steps, validate only the relevant fields
+    if (currentStepId === "twitter_topics") {
+      isStepValid = await form.trigger("topics");
+    } else if (currentStepId === "twitter_handle") {
+      isStepValid = await form.trigger("twitter_handle");
+    } else if (currentStepId === "twitter_collab_types") {
+      isStepValid = await form.trigger("twitter_collab_types");
+    } else if (currentStepId === "twitter_followers") {
+      isStepValid = await form.trigger("follower_count");
+    } else if (currentStepId === "twitter_description") {
+      isStepValid = await form.trigger("description");
+    } else if (currentStepId === "collab_type") {
+      isStepValid = await form.trigger("collab_type");
+    } else {
+      // If we don't recognize the step, do a general validation
+      isStepValid = await form.trigger();
+    }
+    
+    console.log("Step-specific validation result:", isStepValid);
     
     if (!isStepValid) {
       // Log form errors to help debug the issue
