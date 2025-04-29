@@ -18,15 +18,22 @@ export const baseCollabFields = {
   specific_date: z
     .string()
     .optional()
-    .refine((val, ctx) => {
-      // Only validate if date_type is 'specific_date'
-      if (ctx.parent.date_type !== 'specific_date') {
-        return true;
+    .superRefine((val, ctx) => {
+      // Get the date_type from the parent object
+      const dateType = ctx.parent?.date_type;
+      
+      // If we can't determine date_type, or it's not specific_date, skip validation
+      if (!dateType || dateType !== 'specific_date') {
+        return;
       }
       
       // If date_type is specific_date, ensure a valid date is provided
       if (val === undefined || val === "") {
-        return false;
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please select a date",
+        });
+        return;
       }
       
       // Check that the date is in the future
@@ -34,8 +41,13 @@ export const baseCollabFields = {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Reset time to start of day
       
-      return selectedDate >= today;
-    }, "Please select a future date"),
+      if (selectedDate < today) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please select a future date",
+        });
+      }
+    }),
   is_free_collab: z.boolean()
     .refine(val => val === true, {
       message: "You must confirm this is a free collaboration with no payments involved"
