@@ -9,7 +9,7 @@ import {
  */
 export const baseCollabFields = {
   topics: z.array(z.string())
-    .min(1)
+    .min(1, " ") // Empty space to prevent default zod message
     .max(3, "Maximum 3 topics allowed"),
   description: z.string()
     .min(10, "Description must be at least 10 characters")
