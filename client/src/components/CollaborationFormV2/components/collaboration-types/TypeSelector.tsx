@@ -1,6 +1,15 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { CheckIcon } from "lucide-react";
+import { 
+  CheckIcon, 
+  Twitter, 
+  Headphones, 
+  FileText, 
+  Video, 
+  Mail, 
+  BarChart,
+  Megaphone 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   FormField,
@@ -20,6 +29,33 @@ interface TypeSelectorProps {
  * Component for selecting the collaboration type
  * Updates form context when type is selected
  */
+/**
+ * Helper function to get the appropriate icon for a collaboration type
+ */
+const getCollaborationTypeIcon = (type: string) => {
+  if (!type) return Megaphone;
+  
+  const typeLower = type.toLowerCase();
+  
+  if (typeLower.includes('twitter') && (typeLower.includes('co-marketing') || typeLower.includes('comarketing'))) {
+    return Twitter;
+  } else if (typeLower.includes('twitter')) {
+    return Twitter;
+  } else if (typeLower.includes('podcast')) {
+    return Headphones;
+  } else if (typeLower.includes('blog')) {
+    return FileText;
+  } else if (typeLower.includes('livestream') || typeLower.includes('live stream')) {
+    return Video;
+  } else if (typeLower.includes('newsletter')) {
+    return Mail;
+  } else if (typeLower.includes('research') || typeLower.includes('report')) {
+    return BarChart;
+  }
+  
+  return Megaphone;
+};
+
 export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected }) => {
   const { availableTypes, selectType } = useCollaborationType();
 
@@ -83,7 +119,13 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
                   onClick={() => handleTypeSelect(type)}
                   disabled={!isTypeAvailable && !isSelected}
                 >
-                  {isSelected && <CheckIcon className="mr-2 h-4 w-4" />}
+                  {isSelected ? (
+                    <CheckIcon className="mr-2 h-4 w-4" />
+                  ) : (
+                    <div className="mr-2 h-4 w-4 flex items-center justify-center">
+                      {React.createElement(getCollaborationTypeIcon(type), { size: 16 })}
+                    </div>
+                  )}
                   {type}
                   {!isTypeAvailable && !isSelected && (
                     <span className="ml-auto text-xs text-muted-foreground">
