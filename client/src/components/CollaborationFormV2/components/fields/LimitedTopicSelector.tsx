@@ -43,7 +43,7 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
         <FormItem>
           <div className="flex items-center justify-between">
             <FormLabel className="text-sm">
-              {label}
+              {label} <span className="text-muted-foreground font-normal">(min 1, max {maxSelections})</span>
               {required && <span className="text-destructive ml-1">*</span>}
             </FormLabel>
             <span 
@@ -55,7 +55,7 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
                     : 'text-muted-foreground'
               }`}
             >
-              {selections.length}/{maxSelections} selected
+              {selections.length}/{maxSelections}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2">
@@ -83,7 +83,7 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
                     } else {
                       // Show toast that max selections reached
                       toast({
-                        title: `Maximum ${maxSelections} selections allowed`,
+                        title: `Maximum ${maxSelections} topics`,
                         description: `Please remove a selection before adding a new one.`,
                         variant: "destructive"
                       });
@@ -97,7 +97,8 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
               );
             })}
           </div>
-          <FormMessage />
+          {/* Only show error message if there's truly an error */}
+          {form.formState.errors[name] && <FormMessage />}
         </FormItem>
       )}
     />
