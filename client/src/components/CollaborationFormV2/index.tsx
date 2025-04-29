@@ -23,7 +23,7 @@ import { collaborationTypes } from "./utils/typeRegistry";
 const InitialStep = {
   id: "collab_type",
   title: "Collaboration Type",
-  description: "What type of collaboration are you looking to host?",
+  description: "", // Removed duplicate text
 };
 
 /**
