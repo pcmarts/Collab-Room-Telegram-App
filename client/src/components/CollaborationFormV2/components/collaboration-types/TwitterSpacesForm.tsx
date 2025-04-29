@@ -114,10 +114,10 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
         <div className="space-y-4">
           <FormField
             control={form.control}
-            name="space_topic"
+            name="topics"
             render={() => (
               <LimitedTopicSelector 
-                name="space_topic"
+                name="topics"
                 label="Space Topics"
                 maxSelections={3}
                 form={form}
