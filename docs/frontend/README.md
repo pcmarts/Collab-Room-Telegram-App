@@ -24,6 +24,7 @@ The frontend of The Collab Room is built with React and modern web technologies.
 - [Form Field Isolation](./form-field-isolation.md) - Guide to preventing data bleeding between form fields in multi-step forms
 - [Navigation Updates](./navigation-updates.md) - Documentation of bottom navigation simplification and dashboard button improvements
 - [Splash Screen Implementation](./splash-screen.md) - Guide to the ultra-light splash screen that renders in under 100ms
+- [Code Splitting Implementation](./code-splitting.md) - Documentation of route-based code splitting for performance optimization
 
 ## Technology Stack
 

@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.11] - 2025-04-29
+
+### Performance
+- Implemented complete code splitting for all routes to reduce initial bundle size
+- Added Suspense boundaries with loading indicators for improved UX during lazy loading
+- Enhanced dynamic imports with proper TypeScript typings for route components
+- Optimized component loading to reduce initial JavaScript payload
+
+### Technical Details
+- Converted all page component imports to use lazy loading in App.tsx
+- Added Suspense wrapper with LoadingScreen fallback for all routes
+- Implemented proper route component type handling for components with custom props
+- Enhanced route components that require parameters (such as Apply component)
+- Fixed cleanup handling for Telegram button fix functionality
+
 ## [Version 1.10.10] - 2025-04-28
 
 ### Enhanced
