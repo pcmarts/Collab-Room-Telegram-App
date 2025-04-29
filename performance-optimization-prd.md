@@ -1,8 +1,16 @@
-# Performance Optimization PRD
+# Performance Optimization PRD for The Collab Room
 
 ## Executive Summary
 
-This document outlines specific performance optimization recommendations for The Collab Room web application, focusing on improvements that will have the highest impact on application speed and user experience. Based on a comprehensive code review and analysis of the application's documentation, these recommendations are prioritized by their expected impact on performance, taking into account recent optimizations documented in the CHANGELOG.
+The Collab Room is a Web3 professional networking platform that requires exceptional performance to provide a seamless user experience within the Telegram WebApp environment. This document presents a comprehensive performance optimization strategy based on a thorough analysis of the existing codebase, application architecture, and documented optimization history.
+
+Our analysis reveals that while significant optimizations have already been implemented - including a three-phase progressive loading system and database query optimizations that reduced response times by 40% - several opportunities remain to further enhance performance. The most impactful optimization areas identified include:
+
+1. **Frontend Rendering Optimization**: Completing code splitting implementation, optimizing component rendering, and improving Telegram WebApp integration.
+2. **Data Fetching Enhancements**: Further database query optimization using CTEs, implementing selective HTTP caching, and response compression.
+3. **Asset Delivery Improvements**: Implementing proper image loading strategies, component virtualization, and build optimizations.
+
+This PRD presents detailed, code-level recommendations organized into three implementation phases, with predicted performance improvements for each recommendation. By implementing these optimizations, we target a 30% reduction in initial bundle size, >40% reduction in critical API response times, and significant improvements in key Web Vitals metrics.
 
 ## Current Application State and Optimizations
 
@@ -422,58 +430,266 @@ The recommendations are prioritized based on expected performance impact, taking
 
 ## Testing and Validation
 
-Unlike many performance optimization projects that start from intuition, we should use a data-driven approach to validate improvements:
+To ensure effective implementation and impact measurement of our optimizations, we'll utilize a combination of automated testing and performance monitoring tools. This approach builds on existing testing capabilities while incorporating new measurement methodologies.
 
-1. **Create a performance testing utility** that builds on the existing `test-query-performance.js` script:
-   ```javascript
-   export async function measureApiPerformance(endpoint, iterations = 5) {
-     console.log(`Testing performance for ${endpoint}`);
-     let totalTimeMs = 0;
-     
-     for (let i = 0; i < iterations; i++) {
-       const startTime = performance.now();
-       const response = await fetch(endpoint);
-       await response.json();
-       const endTime = performance.now();
-       
-       const executionTimeMs = endTime - startTime;
-       totalTimeMs += executionTimeMs;
-       console.log(`Iteration ${i+1}: ${executionTimeMs.toFixed(2)}ms`);
-     }
-     
-     return {
-       averageTimeMs: totalTimeMs / iterations,
-       totalIterations: iterations
-     };
-   }
-   ```
+### Performance Measurement Strategy
 
-2. **Front-end performance monitoring** using the Web Vitals API:
-   ```javascript
-   import { getCLS, getFID, getLCP } from 'web-vitals';
+#### 1. Establish Baseline Metrics
+Before implementing any optimizations, capture baseline performance metrics using:
+- Laboratory tests (controlled environment measurements)
+- Real user monitoring (RUM) where possible
+- Specific API response time measurements
 
-   function sendToAnalytics(metric) {
-     // Log or send to analytics service
-     console.log(metric);
-   }
+#### 2. Create Performance Test Suite
+Building on the existing `test-query-performance.js` script, develop a comprehensive test suite that covers all critical paths:
 
-   getCLS(sendToAnalytics); // Cumulative Layout Shift
-   getFID(sendToAnalytics); // First Input Delay
-   getLCP(sendToAnalytics); // Largest Contentful Paint
-   ```
+```javascript
+// performance-test-suite.js
+import { performance } from 'perf_hooks';
 
-3. **Database query monitoring** with automatic query timing:
-   ```typescript
-   // Create a query timing wrapper
-   async function timeQuery(queryFn, queryName) {
-     const startTime = performance.now();
-     const result = await queryFn();
-     const endTime = performance.now();
-     
-     logger.info(`Query "${queryName}" completed in ${(endTime - startTime).toFixed(2)}ms`);
-     return result;
-   }
-   ```
+// Measure API endpoint performance
+export async function measureApiPerformance(endpoint, iterations = 5) {
+  console.log(`Testing performance for ${endpoint}`);
+  const results = [];
+  let totalTimeMs = 0;
+  
+  for (let i = 0; i < iterations; i++) {
+    const startTime = performance.now();
+    const response = await fetch(endpoint);
+    await response.json();
+    const endTime = performance.now();
+    
+    const executionTimeMs = endTime - startTime;
+    results.push(executionTimeMs);
+    totalTimeMs += executionTimeMs;
+    console.log(`Iteration ${i+1}: ${executionTimeMs.toFixed(2)}ms`);
+  }
+  
+  // Calculate statistics
+  results.sort((a, b) => a - b);
+  const median = results[Math.floor(results.length / 2)];
+  const min = results[0];
+  const max = results[results.length - 1];
+  const avg = totalTimeMs / iterations;
+  
+  return {
+    averageTimeMs: avg,
+    medianTimeMs: median,
+    minTimeMs: min,
+    maxTimeMs: max,
+    totalIterations: iterations,
+    rawResults: results
+  };
+}
+
+// Test multiple endpoints in sequence and generate report
+export async function runPerformanceTest() {
+  const criticalEndpoints = [
+    '/api/potential-matches',
+    '/api/user-swipes',
+    '/api/profile',
+    '/api/network-stats'
+  ];
+  
+  console.log('Starting performance test suite');
+  const results = {};
+  
+  for (const endpoint of criticalEndpoints) {
+    results[endpoint] = await measureApiPerformance(endpoint);
+  }
+  
+  console.table(Object.entries(results).map(([endpoint, data]) => ({
+    Endpoint: endpoint,
+    'Avg (ms)': data.averageTimeMs.toFixed(2),
+    'Median (ms)': data.medianTimeMs.toFixed(2),
+    'Min (ms)': data.minTimeMs.toFixed(2),
+    'Max (ms)': data.maxTimeMs.toFixed(2)
+  })));
+  
+  return results;
+}
+```
+
+#### 3. Implement Web Vitals Monitoring
+Integrate Web Vitals measurement to track real user experience metrics:
+
+```javascript
+// web-vitals-monitor.js
+import { getCLS, getFID, getLCP, getTTFB, getFCP } from 'web-vitals';
+
+// Set up persistent logging of metrics
+export function initWebVitalsMonitoring(appVersion) {
+  // Function to send metrics to analysis endpoint
+  function sendToAnalytics(metric) {
+    const data = {
+      name: metric.name,
+      value: metric.value,
+      id: metric.id,
+      appVersion: appVersion,
+      timestamp: Date.now()
+    };
+    
+    // Log to console during development
+    console.log('[WebVitals]', data);
+    
+    // Only in production, send to analytics endpoint
+    if (process.env.NODE_ENV === 'production') {
+      fetch('/api/analytics/web-vitals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        keepalive: true
+      }).catch(err => {
+        console.error('[WebVitals] Error sending metric:', err);
+      });
+    }
+  }
+  
+  // Monitor all Core Web Vitals plus TTFB
+  getCLS(sendToAnalytics);  // Cumulative Layout Shift
+  getFID(sendToAnalytics);  // First Input Delay
+  getLCP(sendToAnalytics);  // Largest Contentful Paint
+  getTTFB(sendToAnalytics); // Time To First Byte
+  getFCP(sendToAnalytics);  // First Contentful Paint
+}
+```
+
+#### 4. Database Query Performance Monitoring
+Implement a comprehensive database performance monitoring system to track all queries:
+
+```typescript
+// db-performance-monitor.ts
+import { performance } from 'perf_hooks';
+import { logger } from './logger';
+
+// Track slow queries based on configurable threshold
+const SLOW_QUERY_THRESHOLD_MS = 50; // Queries taking longer than 50ms are considered slow
+
+// Create a performance monitoring decorator for database functions
+export function monitorQueryPerformance<T extends Function>(
+  queryFn: T, 
+  queryName: string
+): T {
+  return (async function(...args: any[]) {
+    const startTime = performance.now();
+    try {
+      // Execute the original query function
+      const result = await queryFn(...args);
+      const endTime = performance.now();
+      const durationMs = endTime - startTime;
+      
+      // Log all query execution times in development
+      if (process.env.NODE_ENV !== 'production') {
+        logger.debug(`[DB Query] ${queryName} completed in ${durationMs.toFixed(2)}ms`);
+      }
+      
+      // In all environments, log slow queries as warnings
+      if (durationMs > SLOW_QUERY_THRESHOLD_MS) {
+        logger.warn(`[Slow Query] ${queryName} took ${durationMs.toFixed(2)}ms to execute`, {
+          queryName,
+          durationMs,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      const endTime = performance.now();
+      logger.error(`[Query Error] ${queryName} failed after ${(endTime - startTime).toFixed(2)}ms`, {
+        error,
+        queryName
+      });
+      throw error;
+    }
+  }) as unknown as T;
+}
+
+// Usage example:
+// searchCollaborationsPaginated = monitorQueryPerformance(
+//   searchCollaborationsPaginated,
+//   'searchCollaborationsPaginated'
+// );
+```
+
+### Automated Performance Regression Testing
+
+To ensure optimizations don't regress over time, implement a CI/CD pipeline step that runs performance tests and compares against baseline metrics:
+
+```typescript
+// performance-regression-test.ts
+import { runPerformanceTest } from './performance-test-suite';
+import fs from 'fs/promises';
+import path from 'path';
+
+const BASELINE_FILE = path.join(__dirname, '../performance-baseline.json');
+const REGRESSION_THRESHOLD = 1.15; // 15% degradation threshold
+
+async function checkPerformanceRegression() {
+  // Read baseline metrics
+  let baseline;
+  try {
+    const baselineData = await fs.readFile(BASELINE_FILE, 'utf-8');
+    baseline = JSON.parse(baselineData);
+  } catch (error) {
+    console.warn('No baseline metrics found. Creating new baseline...');
+    const results = await runPerformanceTest();
+    await fs.writeFile(BASELINE_FILE, JSON.stringify(results, null, 2));
+    console.log('Baseline metrics created. Skipping regression check.');
+    return true;
+  }
+  
+  // Run current performance test
+  const currentResults = await runPerformanceTest();
+  
+  // Compare results
+  let passed = true;
+  const regressions = [];
+  
+  for (const [endpoint, baselineMetrics] of Object.entries(baseline)) {
+    const currentMetrics = currentResults[endpoint];
+    if (!currentMetrics) {
+      console.warn(`Missing current metrics for ${endpoint}`);
+      continue;
+    }
+    
+    // Check if current performance is worse than baseline
+    if (currentMetrics.medianTimeMs > baselineMetrics.medianTimeMs * REGRESSION_THRESHOLD) {
+      passed = false;
+      regressions.push({
+        endpoint,
+        baseline: baselineMetrics.medianTimeMs,
+        current: currentMetrics.medianTimeMs,
+        degradation: ((currentMetrics.medianTimeMs / baselineMetrics.medianTimeMs) - 1) * 100
+      });
+    }
+  }
+  
+  // Report results
+  if (passed) {
+    console.log('✅ Performance regression test passed!');
+  } else {
+    console.error('❌ Performance regression detected!');
+    console.table(regressions.map(r => ({
+      Endpoint: r.endpoint,
+      'Baseline (ms)': r.baseline.toFixed(2),
+      'Current (ms)': r.current.toFixed(2),
+      'Degradation (%)': r.degradation.toFixed(2)
+    })));
+  }
+  
+  return passed;
+}
+
+// Run the check when script is executed directly
+if (require.main === module) {
+  checkPerformanceRegression()
+    .then(passed => process.exit(passed ? 0 : 1))
+    .catch(err => {
+      console.error('Error running performance regression test:', err);
+      process.exit(1);
+    });
+}
+```
 
 ## Success Metrics
 
@@ -500,10 +716,18 @@ To measure the success of these optimizations, track the following metrics:
 
 ## Conclusion
 
-The Collab Room application has already made significant strides in performance optimization, as evidenced by the improvements documented in the changelog. The three-phase progressive loading system and database query optimizations demonstrate a commitment to performance.
+The Collab Room application has already established a solid performance foundation, with the three-phase progressive loading system and strategic database indexing demonstrating a strong commitment to optimization. These existing improvements have delivered measurable benefits, such as reducing database query times by 40% and providing an ultra-fast initial rendering experience.
 
-However, there remain opportunities for further improvement, particularly in the areas of code splitting, component optimization, and HTTP caching. By implementing the recommendations in this PRD, we can build upon the existing performance foundation to deliver an even faster, more responsive user experience.
+However, our comprehensive analysis reveals significant opportunities to further elevate the application's performance profile:
 
-The recommendations in this document follow a pragmatic approach, focusing first on high-impact, low-effort optimizations before moving to more complex implementations. Each optimization not only improves overall performance but also enhances specific aspects of the user experience, from initial page load to interaction responsiveness.
+1. **Building on Database Optimizations**: The existing database indexes provide a strong foundation, but implementing Common Table Expressions (CTEs) and further query restructuring can reduce query execution times from the current ~57ms to under 40ms.
 
-By systematically addressing these performance concerns, we can ensure The Collab Room delivers a lightning-fast experience that meets user expectations for a modern web application.
+2. **Completing the Code Splitting Strategy**: While some code splitting is implemented, expanding this approach to all routes and optimizing the Telegram WebApp integration will significantly reduce the initial bundle size and improve time-to-interactive metrics.
+
+3. **Addressing Component Rendering Inefficiencies**: Implementing proper component memoization, granular state management, and event handler optimization will eliminate unnecessary re-renders and improve interactive performance.
+
+4. **Implementing Robust Measurement Systems**: The proposed performance testing and monitoring tools will provide ongoing visibility into application performance and prevent regressions as the codebase evolves.
+
+The optimization strategy outlined in this document takes a pragmatic, measured approach - starting with high-impact, low-effort improvements before progressing to more complex implementations. Each recommendation is designed to target specific performance bottlenecks while maintaining compatibility with the application's existing architecture.
+
+By systematically implementing these optimizations, The Collab Room can achieve a truly exceptional performance profile that will translate directly into improved user engagement, satisfaction, and retention. Most importantly, these optimizations will maintain the application's responsive experience even as user numbers grow and feature complexity increases.
