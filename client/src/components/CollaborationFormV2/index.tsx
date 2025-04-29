@@ -135,8 +135,6 @@ const CollaborationFormContent: React.FC = () => {
     <div className="w-full max-w-3xl mx-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <StepIndicator />
-          
           <StepContainer
             title={currentStep === 0 ? InitialStep.title : getStepTitle()}
             description={currentStep === 0 ? InitialStep.description : getStepDescription()}
@@ -149,6 +147,11 @@ const CollaborationFormContent: React.FC = () => {
             onSubmit={onSubmit}
             isSubmitting={isSubmitting} 
           />
+          
+          {/* Progress indicator moved to bottom of form */}
+          <div className="mt-3">
+            <StepIndicator />
+          </div>
         </form>
       </Form>
     </div>
