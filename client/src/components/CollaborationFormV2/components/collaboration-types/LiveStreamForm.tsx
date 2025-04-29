@@ -1,6 +1,12 @@
 import React from "react";
-import { FormField } from "@/components/ui/form";
-import { FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormDescription
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { 
   Select,
@@ -75,10 +81,13 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
             name="stream_link"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Stream Link</FormLabel>
+                <FormLabel>Previous Stream Link</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://your-stream-link.com" {...field} />
+                  <Input placeholder="https://www.youtube.com/watch?v=" {...field} />
                 </FormControl>
+                <FormDescription className="text-xs">
+                  Share a link to a previous livestream you've hosted
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
