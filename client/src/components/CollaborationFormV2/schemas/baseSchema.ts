@@ -18,7 +18,12 @@ export const baseCollabFields = {
   specific_date: z
     .string()
     .optional()
-    .refine((val) => {
+    .refine((val, ctx) => {
+      // Only validate if date_type is 'specific_date'
+      if (ctx.parent.date_type !== 'specific_date') {
+        return true;
+      }
+      
       // If date_type is specific_date, ensure a valid date is provided
       if (val === undefined || val === "") {
         return false;

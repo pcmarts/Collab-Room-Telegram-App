@@ -44,8 +44,29 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     // Only validate the field(s) for the current step to avoid cross-step validation issues
     let isStepValid = true;
     
+    // For Twitter Spaces specific steps
+    if (currentStepId === "basic_info") {
+      // Validate Twitter handle, follower count, and description
+      const handleValid = await form.trigger("twitter_handle");
+      const followerValid = await form.trigger("host_follower_count");
+      const descriptionValid = await form.trigger("description");
+      isStepValid = handleValid && followerValid && descriptionValid;
+    } else if (currentStepId === "topics_and_date") {
+      // Validate topics, date and free collab confirmation
+      const topicsValid = await form.trigger("topics");
+      const dateTypeValid = await form.trigger("date_type");
+      const freeCollabValid = await form.trigger("is_free_collab");
+      
+      // If specific date is selected, also validate that field
+      let specificDateValid = true;
+      if (form.getValues("date_type") === "specific_date") {
+        specificDateValid = await form.trigger("specific_date");
+      }
+      
+      isStepValid = topicsValid && dateTypeValid && specificDateValid && freeCollabValid;
+    }
     // For Twitter collaboration type steps, validate only the relevant fields
-    if (currentStepId === "twitter_topics" || currentStepId === "podcast_topics") {
+    else if (currentStepId === "twitter_topics" || currentStepId === "podcast_topics") {
       isStepValid = await form.trigger("topics");
     } else if (currentStepId === "twitter_handle") {
       isStepValid = await form.trigger("twitter_handle");
@@ -76,10 +97,22 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     }
     
     console.log("Step-specific validation result:", isStepValid);
+    console.log("Current form values:", form.getValues());
     
     if (!isStepValid) {
       // Log form errors to help debug the issue
       console.log("Form errors:", form.formState.errors);
+      console.log("Field states:", Object.keys(form.getFieldState));
+      
+      // Log specific field validations for Twitter Spaces form
+      if (currentStepId === "topics_and_date") {
+        console.log("Topics field validation:", form.getFieldState("topics"));
+        console.log("Date type validation:", form.getFieldState("date_type"));
+        console.log("Is free collab validation:", form.getFieldState("is_free_collab"));
+        if (form.getValues("date_type") === "specific_date") {
+          console.log("Specific date validation:", form.getFieldState("specific_date"));
+        }
+      }
       
       toast({
         title: "Invalid fields",
