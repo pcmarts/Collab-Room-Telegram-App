@@ -45,6 +45,15 @@ export const twitterSpacesSteps: Step[] = [
 export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
   const form = useFormContext();
   
+  // Initialize topics if needed
+  React.useEffect(() => {
+    // Check if we're on the topics step
+    if (step === "topics" && !form.getValues().topics) {
+      form.setValue("topics", [], { shouldValidate: false, shouldDirty: false });
+      console.log("Initialized topics array for Twitter Spaces form:", form.getValues());
+    }
+  }, [step, form]);
+  
   switch (step) {
     case "basic_info":
       return (

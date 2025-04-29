@@ -40,6 +40,15 @@ export const reportSteps: Step[] = [
 export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
   const form = useFormContext();
   
+  // Initialize topics if needed
+  React.useEffect(() => {
+    // Check if we're on the topics step
+    if (step === "topics_and_date" && !form.getValues().topics) {
+      form.setValue("topics", [], { shouldValidate: false, shouldDirty: false });
+      console.log("Initialized topics array for Report form:", form.getValues());
+    }
+  }, [step, form]);
+  
   switch (step) {
     case "report_info":
       return (
@@ -63,7 +72,7 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
             name="report_link"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Report Link</FormLabel>
+                <FormLabel>Report Link <span className="text-xs text-muted-foreground">(optional)</span></FormLabel>
                 <FormControl>
                   <Input placeholder="https://your-report-link.com" {...field} />
                 </FormControl>
@@ -161,6 +170,7 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
                 maxSelections={3}
                 form={form}
                 options={COLLAB_TOPICS as unknown as string[]}
+                required
               />
             )}
           />

@@ -11,7 +11,9 @@ export const reportSchema = z.object({
   report_name: z.string()
     .min(2, "Report name is required"),
   report_link: z.string()
-    .url("Please enter a valid report link"),
+    .url("Please enter a valid report link")
+    .or(z.literal("")) // Make it optional by allowing empty string
+    .optional(),
   audience_reach: z.enum(AUDIENCE_SIZE_RANGES),
   report_type: z.enum(["Market Report", "Technical Analysis", "Industry Research", "Company Insights", "Other"]),
   // Include details field for backward compatibility with existing data
