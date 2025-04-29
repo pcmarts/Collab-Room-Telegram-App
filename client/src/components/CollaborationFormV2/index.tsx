@@ -104,21 +104,23 @@ const CollaborationFormContent: React.FC = () => {
     }
     
     // For other steps, render the appropriate type-specific form based on selected type
+    const stepId = currentStepId || "";
+    
     switch (selectedTypeId) {
       case "Co-Marketing on Twitter":
-        return <TwitterCollabForm step={currentStepId} />;
+        return <TwitterCollabForm step={stepId} />;
       case "Podcast Guest Appearance":
-        return <PodcastCollabForm step={currentStepId} />;
+        return <PodcastCollabForm step={stepId} />;
       case "Twitter Spaces Guest":
-        return <TwitterSpacesForm step={currentStepId} />;
+        return <TwitterSpacesForm step={stepId} />;
       case "Live Stream Guest Appearance":
-        return <LiveStreamForm step={currentStepId} />;
+        return <LiveStreamForm step={stepId} />;
       case "Report & Research Feature":
-        return <ReportForm step={currentStepId} />;
+        return <ReportForm step={stepId} />;
       case "Newsletter Feature":
-        return <NewsletterForm step={currentStepId} />;
+        return <NewsletterForm step={stepId} />;
       case "Blog Post Feature":
-        return <BlogPostForm step={currentStepId} />;
+        return <BlogPostForm step={stepId} />;
       default:
         // Fallback when no collaboration type is selected or supported
         return (

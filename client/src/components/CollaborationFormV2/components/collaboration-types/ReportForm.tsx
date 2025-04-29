@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { AUDIENCE_SIZE_RANGES } from "@shared/schema";
+import { AUDIENCE_SIZE_RANGES, COLLAB_TOPICS } from "@shared/schema";
 import { useFormContext } from "react-hook-form";
 import { LimitedTopicSelector } from "../fields/LimitedTopicSelector";
 import { DateSelector } from "../fields/DateSelector";
@@ -151,17 +151,21 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
             )}
           />
           
-          <LimitedTopicSelector 
+          <FormField
+            control={form.control}
             name="topics"
-            label="Report Topics"
-            maxTopics={3}
-            helperText="Select 1-3 topics for your report"
+            render={() => (
+              <LimitedTopicSelector 
+                name="topics"
+                label="Report Topics"
+                maxSelections={3}
+                form={form}
+                options={COLLAB_TOPICS as unknown as string[]}
+              />
+            )}
           />
           
-          <DateSelector 
-            dateTypeName="date_type"
-            specificDateName="specific_date"
-          />
+          <DateSelector form={form} />
           
           <FormField
             control={form.control}

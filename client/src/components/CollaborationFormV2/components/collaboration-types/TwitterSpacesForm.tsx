@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
+import { TWITTER_FOLLOWER_COUNTS, COLLAB_TOPICS } from "@shared/schema";
 import { useFormContext } from "react-hook-form";
 import { LimitedTopicSelector } from "../fields/LimitedTopicSelector";
 import { DateSelector } from "../fields/DateSelector";
@@ -112,17 +112,21 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
     case "topics_and_date":
       return (
         <div className="space-y-4">
-          <LimitedTopicSelector 
+          <FormField
+            control={form.control}
             name="space_topic"
-            label="Space Topics"
-            maxTopics={3}
-            helperText="Select 1-3 topics for your Space"
+            render={() => (
+              <LimitedTopicSelector 
+                name="space_topic"
+                label="Space Topics"
+                maxSelections={3}
+                form={form}
+                options={COLLAB_TOPICS as unknown as string[]}
+              />
+            )}
           />
           
-          <DateSelector 
-            dateTypeName="date_type"
-            specificDateName="specific_date"
-          />
+          <DateSelector form={form} />
           
           <FormField
             control={form.control}
