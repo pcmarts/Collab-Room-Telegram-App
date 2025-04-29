@@ -62,6 +62,41 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ form }) =>
   
   // Validate current field when step changes
   useEffect(() => {
+    console.log("Current step ID:", currentStepId);
+    console.log("Current form values:", form.getValues());
+    
+    // Ensure we have default values for all fields when each step loads
+    const ensureDefaultValues = () => {
+      // For topics step
+      if (currentStepId === "twitter_topics" && (!form.getValues("topics") || form.getValues("topics").length === 0)) {
+        form.setValue("topics", [], { shouldValidate: false });
+      }
+      
+      // For Twitter handle step
+      if (currentStepId === "twitter_handle" && !form.getValues("twitter_handle")) {
+        form.setValue("twitter_handle", "https://x.com/", { shouldValidate: false });
+      }
+      
+      // For Twitter collab types step
+      if (currentStepId === "twitter_collab_types" && (!form.getValues("twitter_collab_types") || form.getValues("twitter_collab_types").length === 0)) {
+        form.setValue("twitter_collab_types", [], { shouldValidate: false });
+      }
+      
+      // For followers step
+      if (currentStepId === "twitter_followers" && !form.getValues("follower_count")) {
+        form.setValue("follower_count", TWITTER_FOLLOWER_COUNTS[0], { shouldValidate: false });
+      }
+      
+      // For description step
+      if (currentStepId === "twitter_description" && !form.getValues("description")) {
+        form.setValue("description", "", { shouldValidate: false });
+      }
+    };
+    
+    // Set default values first
+    ensureDefaultValues();
+    
+    // Then validate the current field
     if (currentStepId === "twitter_topics") {
       form.trigger("topics");
     } else if (currentStepId === "twitter_handle") {

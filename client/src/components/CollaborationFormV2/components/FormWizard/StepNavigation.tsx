@@ -39,9 +39,16 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     // 1. Form validation via React Hook Form
     // 2. Custom step validation via the wizard context
     
+    console.log("Validating current step:", currentStepId);
+    
     // Check if fields in current step are valid
     const isStepValid = await form.trigger();
+    console.log("Form validation result:", isStepValid);
+    
     if (!isStepValid) {
+      // Log form errors to help debug the issue
+      console.log("Form errors:", form.formState.errors);
+      
       toast({
         title: "Invalid fields",
         description: "Please fix the errors before continuing.",

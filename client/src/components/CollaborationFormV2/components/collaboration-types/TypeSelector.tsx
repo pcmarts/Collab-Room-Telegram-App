@@ -23,13 +23,16 @@ interface TypeSelectorProps {
 export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected }) => {
   const { availableTypes, selectType } = useCollaborationType();
 
-  const handleTypeSelect = (typeId: string) => {
-    form.setValue("collab_type", typeId);
+  const handleTypeSelect = async (typeId: string) => {
+    console.log("Selected collaboration type:", typeId);
+    
+    // Set the value and validate it
+    form.setValue("collab_type", typeId, { shouldValidate: true });
+    await form.trigger("collab_type");
     
     // Reset form fields when changing types to prevent field bleeding
     // We preserve only the type field to avoid complete form reset
-    const currentValue = form.getValues("collab_type");
-    form.reset({ collab_type: currentValue });
+    form.reset({ collab_type: typeId });
     
     // Update the selected type in context
     selectType(typeId);
@@ -37,6 +40,8 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
     // Populate default values for the selected type
     const selectedType = availableTypes.find(type => type.id === typeId);
     if (selectedType && selectedType.defaultValues) {
+      console.log("Applying default values for type:", typeId, selectedType.defaultValues);
+      
       // Apply default values for this type
       form.reset({ 
         collab_type: typeId,
