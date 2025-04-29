@@ -27,6 +27,11 @@ export const twitterSpacesSteps: Step[] = [
     description: "Tell us about your Twitter Spaces collaboration"
   },
   {
+    id: "description",
+    title: "Description",
+    description: "Provide a brief description of your Twitter Space"
+  },
+  {
     id: "topics",
     title: "Topics",
     description: "Select topics for your Twitter Space"
@@ -96,7 +101,12 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
               </FormItem>
             )}
           />
-          
+        </div>
+      );
+      
+    case "description":
+      return (
+        <div className="space-y-4">
           <FormField
             control={form.control}
             name="description"

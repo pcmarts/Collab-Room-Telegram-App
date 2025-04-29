@@ -46,11 +46,10 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     
     // For Twitter Spaces specific steps
     if (currentStepId === "basic_info") {
-      // Validate Twitter handle, follower count, and description
+      // Validate Twitter handle and follower count
       const handleValid = await form.trigger("twitter_handle");
       const followerValid = await form.trigger("host_follower_count");
-      const descriptionValid = await form.trigger("description");
-      isStepValid = handleValid && followerValid && descriptionValid;
+      isStepValid = handleValid && followerValid;
     } 
     // When topics are on a separate page
     else if (currentStepId === "topics") {
@@ -85,10 +84,18 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
         isStepValid = await form.trigger("report_link") && isStepValid;
       }
     }
-    else if (currentStepId === "topics_and_date") {
-      // For report form's topics and date page
-      const descriptionValid = await form.trigger("description");
-      const topicsValid = await form.trigger("topics");
+    else if (currentStepId === "description") {
+      // For report form's description page
+      isStepValid = await form.trigger("description");
+      console.log("Description validation:", isStepValid);
+    }
+    else if (currentStepId === "topics") {
+      // For report form's topics page
+      isStepValid = await form.trigger("topics");
+      console.log("Topics validation:", isStepValid, "Topics value:", form.getValues("topics"));
+    }
+    else if (currentStepId === "date") {
+      // For report form's date page
       const dateTypeValid = await form.trigger("date_type");
       const freeCollabValid = await form.trigger("is_free_collab");
       
@@ -98,11 +105,8 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
         specificDateValid = await form.trigger("specific_date");
       }
       
-      isStepValid = descriptionValid && topicsValid && dateTypeValid && specificDateValid && freeCollabValid;
-      
-      console.log("Topics and date validation:", {
-        description: descriptionValid,
-        topics: topicsValid,
+      isStepValid = dateTypeValid && specificDateValid && freeCollabValid;
+      console.log("Date validation:", {
         dateType: dateTypeValid,
         specificDate: specificDateValid,
         freeCollab: freeCollabValid,

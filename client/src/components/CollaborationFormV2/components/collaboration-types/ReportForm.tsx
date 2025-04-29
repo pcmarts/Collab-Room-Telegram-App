@@ -27,9 +27,19 @@ export const reportSteps: Step[] = [
     description: "Tell us about the report or research you're looking to feature"
   },
   {
-    id: "topics_and_date",
-    title: "Topics & Date",
-    description: "Select topics and preferred date for your feature"
+    id: "description",
+    title: "Description",
+    description: "Provide a brief description of your report"
+  },
+  {
+    id: "topics",
+    title: "Topics",
+    description: "Select topics for your report feature"
+  },
+  {
+    id: "date",
+    title: "Date",
+    description: "Select your preferred date for the feature"
   }
 ];
 
@@ -43,7 +53,7 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
   // Initialize topics if needed
   React.useEffect(() => {
     // Check if we're on the topics step
-    if (step === "topics_and_date" && !form.getValues().topics) {
+    if (step === "topics" && !form.getValues().topics) {
       form.setValue("topics", [], { shouldValidate: false, shouldDirty: false });
       console.log("Initialized topics array for Report form:", form.getValues());
     }
@@ -133,7 +143,7 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
         </div>
       );
     
-    case "topics_and_date":
+    case "description":
       return (
         <div className="space-y-4">
           <FormField
@@ -159,7 +169,12 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
               </FormItem>
             )}
           />
-          
+        </div>
+      );
+      
+    case "topics":
+      return (
+        <div className="space-y-4">
           <FormField
             control={form.control}
             name="topics"
@@ -174,7 +189,12 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
               />
             )}
           />
-          
+        </div>
+      );
+      
+    case "date":
+      return (
+        <div className="space-y-4">
           <DateSelector form={form} />
           
           <FormField
