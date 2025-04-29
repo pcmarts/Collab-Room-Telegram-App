@@ -10,6 +10,7 @@ import SplashScreen from "@/components/SplashScreen";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { MatchProvider } from "@/contexts/MatchContext";
 import { initTelegramButtonFix } from "./utils/telegram-button-fix";
+import { useTelegramInit } from "@/hooks/useTelegramInit";
 import AuthTest from "@/components/AuthTest";
 
 // Import RouteComponentProps type for proper router component typing
@@ -239,6 +240,9 @@ function App() {
   // Two-phase loading state
   const [appPhase, setAppPhase] = useState<'splash' | 'loading' | 'ready'>('splash');
   
+  // Use the optimized Telegram WebApp initialization hook
+  const telegramInitialized = useTelegramInit();
+  
   // Immediately render the splash screen and transition to loading phase
   useEffect(() => {
     // This first phase transition happens extremely quickly (within ~50ms)
@@ -249,24 +253,14 @@ function App() {
       // Begin actual app initialization in the background
       console.log('[App] Initializing app with ultra-light splash screen');
       
-      // Dynamic import for the Telegram helper to keep initial load fast
-      import('./utils/TelegramHelper').then(({ initTelegramWebApp }) => {
-        // Initialize with our improved Telegram WebApp helper
-        const webAppInitialized = initTelegramWebApp({
-          expandApp: true,
-          debugLog: false // Set to false to reduce console noise on startup
-        });
-        
-        if (!webAppInitialized) {
-          console.warn('[App] Not running in Telegram WebApp environment.');
-        }
-      }).catch(err => {
-        console.error('[App] Failed to load TelegramHelper:', err);
-      });
+      // Telegram initialization now handled by useTelegramInit hook
+      if (!telegramInitialized) {
+        console.warn('[App] Telegram WebApp initialization pending...');
+      }
     }, 50); // Ultra short timeout to ensure splash screen renders first
     
     return () => clearTimeout(splashTimer);
-  }, []);
+  }, [telegramInitialized]);
   
   // Once the loading phase starts, begin more intensive initialization
   useEffect(() => {
