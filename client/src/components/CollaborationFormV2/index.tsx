@@ -25,7 +25,7 @@ const InitialStep = {
  * Handles rendering type-specific forms based on the selected type
  */
 const CollaborationFormContent: React.FC = () => {
-  const { currentStepId, setSteps, currentStep } = useFormWizard();
+  const { currentStepId, setSteps, currentStep, goToNextStep, visibleSteps } = useFormWizard();
   const { availableTypes, selectedTypeId, registerType, selectType } = useCollaborationType();
   const { form, isSubmitting, handleSubmit } = useCollaborationForm();
   
@@ -46,11 +46,27 @@ const CollaborationFormContent: React.FC = () => {
     handleSubmit();
   };
   
+  // Handle collaboration type selection
+  const handleTypeSelected = () => {
+    // Get the selected type and set its steps
+    const selectedType = availableTypes.find(type => type.id === form.getValues("collab_type"));
+    if (selectedType && selectedType.steps) {
+      // Set steps to type-specific steps
+      setSteps([
+        InitialStep,  // Keep the initial step 
+        ...selectedType.steps // Add the type-specific steps
+      ]);
+      
+      // Move to next step
+      setTimeout(() => goToNextStep(), 0);
+    }
+  };
+  
   // Render the current step content
   const renderStepContent = () => {
     // First step is always the collaboration type selector
     if (currentStepId === "collab_type") {
-      return <TypeSelector form={form} />;
+      return <TypeSelector form={form} onTypeSelected={handleTypeSelected} />;
     }
     
     // For other steps, render the appropriate type-specific form
@@ -73,8 +89,8 @@ const CollaborationFormContent: React.FC = () => {
           <StepIndicator />
           
           <StepContainer
-            title={currentStep === 0 ? InitialStep.title : (selectedTypeId || "")}
-            description={currentStep === 0 ? InitialStep.description : undefined}
+            title={currentStep === 0 ? InitialStep.title : getStepTitle()}
+            description={currentStep === 0 ? InitialStep.description : getStepDescription()}
           >
             {renderStepContent()}
           </StepContainer>

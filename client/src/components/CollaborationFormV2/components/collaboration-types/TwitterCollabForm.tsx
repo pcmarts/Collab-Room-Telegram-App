@@ -58,12 +58,7 @@ interface TwitterCollabFormProps {
  * Implements the 3 topics and 3 Twitter collab types limit
  */
 export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ form }) => {
-  const { currentStepId, setSteps } = useFormWizard();
-  
-  // Register steps when component mounts
-  useEffect(() => {
-    setSteps(twitterCollabSteps);
-  }, [setSteps]);
+  const { currentStepId } = useFormWizard();
 
   // Render the current step content
   const renderStepContent = () => {

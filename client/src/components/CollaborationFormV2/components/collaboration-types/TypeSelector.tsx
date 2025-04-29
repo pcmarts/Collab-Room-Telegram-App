@@ -13,13 +13,14 @@ import { COLLAB_TYPES } from "@shared/schema";
 
 interface TypeSelectorProps {
   form: UseFormReturn<any>;
+  onTypeSelected?: () => void;
 }
 
 /**
  * Component for selecting the collaboration type
  * Updates form context when type is selected
  */
-export const TypeSelector: React.FC<TypeSelectorProps> = ({ form }) => {
+export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected }) => {
   const { availableTypes, selectType } = useCollaborationType();
 
   const handleTypeSelect = (typeId: string) => {
@@ -41,6 +42,11 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form }) => {
         collab_type: typeId,
         ...selectedType.defaultValues 
       });
+      
+      // Call the callback if provided to move to next step
+      if (onTypeSelected) {
+        onTypeSelected();
+      }
     }
   };
 
