@@ -120,10 +120,9 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     }
   };
 
-  // Get current collab_type value to determine if a type is selected on the first page
+  // Get current collab_type value to determine if a type is selected
   const collabTypeSelected = form.watch("collab_type");
-  const showNextButton = !isFirstStep || !!collabTypeSelected;
-
+  
   return (
     <div className="flex justify-between pt-6 mt-4 border-t">
       {/* Hide back button on first step */}
@@ -142,12 +141,12 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       {/* Empty div to maintain flex spacing when back button is hidden */}
       {isFirstStep && <div></div>}
       
-      {/* Show submit button only on last step */}
+      {/* On last step, show Submit button (enabled only when type selected) */}
       {isLastStep ? (
         <Button
           type="button"
           onClick={handleSubmitClick}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !collabTypeSelected}
         >
           {isSubmitting ? (
             <>
@@ -165,17 +164,15 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
           )}
         </Button>
       ) : (
-        /* Show Next button only if not on first step OR a collaboration type is selected */
-        showNextButton && (
-          <Button 
-            type="button" 
-            onClick={handleNextClick}
-            disabled={isSubmitting}
-          >
-            Next
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </Button>
-        )
+        /* Always show Next button but disable it until type is selected */
+        <Button 
+          type="button" 
+          onClick={handleNextClick}
+          disabled={isSubmitting || (isFirstStep && !collabTypeSelected)}
+        >
+          Next
+          <ChevronRight className="w-4 h-4 ml-2" />
+        </Button>
       )}
     </div>
   );
