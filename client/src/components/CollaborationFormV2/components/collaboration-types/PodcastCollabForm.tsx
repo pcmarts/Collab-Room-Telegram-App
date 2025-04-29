@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import {
   FormField,
@@ -50,18 +50,22 @@ export const podcastCollabSteps: Step[] = [
 ];
 
 interface PodcastCollabFormProps {
-  form: UseFormReturn<any>;
+  step: string;
 }
 
 /**
  * Podcast Guest Appearance collaboration form component
  * Implements the topic selection and podcast details forms
  */
-export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ form }) => {
+export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) => {
+  const form = useFormContext();
   const { currentStepId } = useFormWizard();
+  const currentStep = step || currentStepId;
   
   // Initialize all form values on component mount
   useEffect(() => {
+    if (!form) return;
+    
     console.log("Initializing Podcast collaboration form with default values");
     
     // Get current form values
@@ -93,32 +97,36 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ form }) =>
   
   // Validate only the current field whenever the step changes
   useEffect(() => {
-    console.log("Current step ID:", currentStepId);
+    if (!form) return;
+    
+    console.log("Current step ID:", currentStep);
     
     // Wait a short moment to ensure fields are set before validating
     setTimeout(() => {
       // Then validate only the current field
-      if (currentStepId === "podcast_topics") {
+      if (currentStep === "podcast_topics") {
         form.trigger("topics");
-      } else if (currentStepId === "podcast_details") {
+      } else if (currentStep === "podcast_details") {
         form.trigger("podcast_name");
         form.trigger("podcast_link");
-      } else if (currentStepId === "podcast_audience") {
+      } else if (currentStep === "podcast_audience") {
         form.trigger("estimated_reach");
-      } else if (currentStepId === "podcast_description") {
+      } else if (currentStep === "podcast_description") {
         form.trigger("description");
-      } else if (currentStepId === "podcast_date") {
+      } else if (currentStep === "podcast_date") {
         form.trigger("date_type");
         if (form.getValues("date_type") === "specific_date") {
           form.trigger("specific_date");
         }
       }
     }, 100);
-  }, [currentStepId, form]);
+  }, [currentStep, form]);
 
   // Render the current step content
   const renderStepContent = () => {
-    switch (currentStepId) {
+    if (!form) return null;
+    
+    switch (currentStep) {
       case "podcast_topics":
         return (
           <LimitedTopicSelector
