@@ -22,6 +22,13 @@ import { blogPostSteps } from "../components/collaboration-types/BlogPostForm";
  */
 export const collaborationTypes: CollaborationTypeDefinition[] = [
   {
+    id: "Twitter Spaces Guest",
+    name: "Twitter Spaces Guest",
+    schema: twitterSpacesSchema,
+    defaultValues: twitterSpacesDefaults,
+    steps: twitterSpacesSteps
+  },
+  {
     id: "Co-Marketing on Twitter",
     name: "Co-Marketing on Twitter",
     schema: twitterCollabSchema,
@@ -34,13 +41,6 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
     schema: podcastCollabSchema,
     defaultValues: podcastCollabDefaults,
     steps: podcastCollabSteps
-  },
-  {
-    id: "Twitter Spaces Guest",
-    name: "Twitter Spaces Guest",
-    schema: twitterSpacesSchema,
-    defaultValues: twitterSpacesDefaults,
-    steps: twitterSpacesSteps
   },
   {
     id: "Live Stream Guest Appearance",

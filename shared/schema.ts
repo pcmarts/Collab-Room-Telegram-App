@@ -13,9 +13,9 @@ import { z } from "zod";
 
 // Constants for form options
 export const COLLAB_TYPES = [
+  "Twitter Spaces Guest",
   "Co-Marketing on Twitter",
   "Podcast Guest Appearance",
-  "Twitter Spaces Guest",
   "Live Stream Guest Appearance",
   "Report & Research Feature",
   "Newsletter Feature",
