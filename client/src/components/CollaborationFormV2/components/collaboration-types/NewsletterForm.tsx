@@ -121,7 +121,7 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
                 <FormLabel>
                   Description{" "}
                   <span className="text-xs text-muted-foreground">
-                    ({field.value.length}/280)
+                    ({field.value ? field.value.length : 0}/280)
                   </span>
                 </FormLabel>
                 <FormControl>
