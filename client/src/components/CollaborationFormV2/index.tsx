@@ -9,6 +9,11 @@ import { StepNavigation } from "./components/FormWizard/StepNavigation";
 import { TypeSelector } from "./components/collaboration-types/TypeSelector";
 import { TwitterCollabForm } from "./components/collaboration-types/TwitterCollabForm";
 import { PodcastCollabForm } from "./components/collaboration-types/PodcastCollabForm";
+import { TwitterSpacesForm } from "./components/collaboration-types/TwitterSpacesForm";
+import { LiveStreamForm } from "./components/collaboration-types/LiveStreamForm";
+import { ReportForm } from "./components/collaboration-types/ReportForm";
+import { NewsletterForm } from "./components/collaboration-types/NewsletterForm";
+import { BlogPostForm } from "./components/collaboration-types/BlogPostForm";
 import { useCollaborationForm } from "./hooks/useCollaborationForm";
 import { collaborationTypes } from "./utils/typeRegistry";
 
@@ -99,18 +104,29 @@ const CollaborationFormContent: React.FC = () => {
     }
     
     // For other steps, render the appropriate type-specific form based on selected type
-    if (selectedTypeId === "Co-Marketing on Twitter") {
-      return <TwitterCollabForm form={form} />;
-    } else if (selectedTypeId === "Podcast Guest Appearance") {
-      return <PodcastCollabForm form={form} />;
+    switch (selectedTypeId) {
+      case "Co-Marketing on Twitter":
+        return <TwitterCollabForm step={currentStepId} />;
+      case "Podcast Guest Appearance":
+        return <PodcastCollabForm step={currentStepId} />;
+      case "Twitter Spaces Guest":
+        return <TwitterSpacesForm step={currentStepId} />;
+      case "Live Stream Guest Appearance":
+        return <LiveStreamForm step={currentStepId} />;
+      case "Report & Research Feature":
+        return <ReportForm step={currentStepId} />;
+      case "Newsletter Feature":
+        return <NewsletterForm step={currentStepId} />;
+      case "Blog Post Feature":
+        return <BlogPostForm step={currentStepId} />;
+      default:
+        // Fallback when no collaboration type is selected or supported
+        return (
+          <div className="p-4 text-center text-muted-foreground">
+            Please select a collaboration type first or go back to the previous step.
+          </div>
+        );
     }
-    
-    // Fallback when no collaboration type is selected or supported
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        Please select a collaboration type first or go back to the previous step.
-      </div>
-    );
   };
   
   return (
