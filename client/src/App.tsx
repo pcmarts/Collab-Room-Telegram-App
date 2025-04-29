@@ -11,44 +11,55 @@ import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { MatchProvider } from "@/contexts/MatchContext";
 import { initTelegramButtonFix } from "./utils/telegram-button-fix";
 import AuthTest from "@/components/AuthTest";
-import Dashboard from "@/pages/dashboard";
-import DiscoverPage from "@/pages/DiscoverPageNew";
-import MatchesPage from "@/pages/MatchesPage";
-import AuthTestPage from "@/pages/auth-test";
-import Welcome from "@/pages/welcome";
-import PersonalInfo from "@/pages/personal-info";
-import CompanyBasics from "@/pages/company-basics";
-import CompanySector from "@/pages/company-sector";
-import CompanyDetails from "@/pages/company-details";
-import CompanyInfo from "@/pages/company-info";
-import ApplicationStatus from "@/pages/application-status";
 
-import MarketingCollabsNew from "@/pages/marketing-collabs-new";
-import DiscoveryFilters from "@/pages/discovery-filters";
+// Import RouteComponentProps type for proper router component typing
+import type { RouteComponentProps } from "wouter";
+
+// Lazy load all page components
+const Dashboard = lazy(() => import("@/pages/dashboard"));
+const DiscoverPage = lazy(() => import("@/pages/DiscoverPageNew"));
+const MatchesPage = lazy(() => import("@/pages/MatchesPage"));
+const AuthTestPage = lazy(() => import("@/pages/auth-test"));
+const Welcome = lazy(() => import("@/pages/welcome"));
+const PersonalInfo = lazy(() => import("@/pages/personal-info"));
+const CompanyBasics = lazy(() => import("@/pages/company-basics"));
+const CompanySector = lazy(() => import("@/pages/company-sector"));
+const CompanyDetails = lazy(() => import("@/pages/company-details"));
+const CompanyInfo = lazy(() => import("@/pages/company-info"));
+const ApplicationStatus = lazy(() => import("@/pages/application-status"));
+
+const MarketingCollabsNew = lazy(() => import("@/pages/marketing-collabs-new"));
+const DiscoveryFilters = lazy(() => import("@/pages/discovery-filters"));
 // Conference coffee feature removed
-import ProfileOverview from "@/pages/profile-overview";
-import AdminDashboard from "@/pages/admin/dashboard";
-import AdminUsers from "@/pages/admin/users";
-import CreateCollaborationFixed from "@/pages/create-collaboration-fixed";
-import CreateCollaborationSteps from "@/pages/create-collaboration-steps";
-import EditCollaborationSteps from "@/pages/edit-collaboration-steps";
-import CreateCollaboration from "@/pages/create-collaboration";
-import MyCollaborations from "@/pages/my-collaborations";
-import Apply from "@/pages/apply";
-import NotFound from "@/pages/not-found";
-import AdminApplications from "@/pages/admin/applications";
-import AdminReferralsPage from "@/pages/admin/referrals";
-import ReferralsPage from "@/pages/referrals";
-// Import filter sub-pages
-import FiltersDashboard from "@/pages/filters/dashboard";
-import CollabTypesFilter from "@/pages/filters/collab-types";
-import TopicsFilter from "@/pages/filters/topics";
-import CompanySectorsFilter from "@/pages/filters/company-sectors";
-import CompanyFollowersFilter from "@/pages/filters/company-followers";
-import UserFollowersFilter from "@/pages/filters/user-followers";
-import FundingStagesFilter from "@/pages/filters/funding-stages";
-import TokenStatusFilter from "@/pages/filters/token-status";
-import BlockchainNetworksFilter from "@/pages/filters/blockchain-networks";
+const ProfileOverview = lazy(() => import("@/pages/profile-overview"));
+const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
+const AdminUsers = lazy(() => import("@/pages/admin/users"));
+const CreateCollaborationFixed = lazy(() => import("@/pages/create-collaboration-fixed"));
+const CreateCollaborationSteps = lazy(() => import("@/pages/create-collaboration-steps"));
+const EditCollaborationSteps = lazy(() => import("@/pages/edit-collaboration-steps"));
+const CreateCollaborationComponent = lazy(() => import("@/pages/create-collaboration"));
+const MyCollaborationsComponent = lazy(() => import("@/pages/my-collaborations"));
+const ApplyComponent = lazy(() => import("@/pages/apply"));
+const NotFound = lazy(() => import("@/pages/not-found"));
+const AdminApplications = lazy(() => import("@/pages/admin/applications"));
+const AdminReferralsPage = lazy(() => import("@/pages/admin/referrals"));
+const ReferralsPage = lazy(() => import("@/pages/referrals"));
+
+// Lazy load filter sub-pages
+const FiltersDashboard = lazy(() => import("@/pages/filters/dashboard"));
+const CollabTypesFilter = lazy(() => import("@/pages/filters/collab-types"));
+const TopicsFilter = lazy(() => import("@/pages/filters/topics"));
+const CompanySectorsFilter = lazy(() => import("@/pages/filters/company-sectors"));
+const CompanyFollowersFilter = lazy(() => import("@/pages/filters/company-followers"));
+const UserFollowersFilter = lazy(() => import("@/pages/filters/user-followers"));
+const FundingStagesFilter = lazy(() => import("@/pages/filters/funding-stages"));
+const TokenStatusFilter = lazy(() => import("@/pages/filters/token-status"));
+const BlockchainNetworksFilter = lazy(() => import("@/pages/filters/blockchain-networks"));
+
+// Create wrapper components for components with custom props
+// These wrapper components convert RouteComponentProps to the specific props each component needs
+const MyCollaborations = (props: RouteComponentProps) => <MyCollaborationsComponent />;
+const CreateCollaboration = (props: RouteComponentProps) => <CreateCollaborationComponent />;
 
 
 // Application form routes that should not show bottom navigation
@@ -81,78 +92,80 @@ function Router() {
     <div className="min-h-screen bg-background w-full">
       <ImpersonationBanner />
       <div className={`w-full ${showBottomNav ? 'pb-24' : ''}`}>
-        <Switch>
-          {/* Welcome and Application Flow */}
-          <Route path="/welcome" component={Welcome} />
-          <Route path="/personal-info" component={PersonalInfo} />
-          <Route path="/company-basics" component={CompanyBasics} />
-          <Route path="/company-sector" component={CompanySector} />
-          <Route path="/company-details" component={CompanyDetails} />
-          <Route path="/application-status" component={ApplicationStatus} />
+        <Suspense fallback={<LoadingScreen />}>
+          <Switch>
+            {/* Welcome and Application Flow */}
+            <Route path="/welcome" component={Welcome} />
+            <Route path="/personal-info" component={PersonalInfo} />
+            <Route path="/company-basics" component={CompanyBasics} />
+            <Route path="/company-sector" component={CompanySector} />
+            <Route path="/company-details" component={CompanyDetails} />
+            <Route path="/application-status" component={ApplicationStatus} />
 
-          <Route path="/apply/:id">
-            {(params) => <Apply id={params.id} />}
-          </Route>
+            <Route path="/apply/:id">
+              {(params) => <ApplyComponent id={params.id} />}
+            </Route>
 
-          {/* Main App Routes */}
-          <Route path="/">
-            <Redirect to="/discover" />
-          </Route>
+            {/* Main App Routes */}
+            <Route path="/">
+              <Redirect to="/discover" />
+            </Route>
 
-          {/* New Tab Routes */}
-          <Route path="/discover" component={DiscoverPage} />
-          <Route path="/my-collaborations" component={MyCollaborations} />
-          <Route path="/matches" component={MatchesPage} />
-          <Route path="/settings">
-            <Redirect to="/dashboard" />
-          </Route>
+            {/* New Tab Routes */}
+            <Route path="/discover" component={DiscoverPage} />
+            <Route path="/my-collaborations" component={MyCollaborations} />
+            <Route path="/matches" component={MatchesPage} />
+            <Route path="/settings">
+              <Redirect to="/dashboard" />
+            </Route>
 
-          {/* Existing Routes */}
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/discovery-filters" component={DiscoveryFilters} />
-          <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
-          
-          {/* Filter Routes (New) */}
-          <Route path="/filters" component={FiltersDashboard} />
-          <Route path="/filters/collab-types" component={CollabTypesFilter} />
-          <Route path="/filters/topics" component={TopicsFilter} />
-          <Route path="/filters/company-sectors" component={CompanySectorsFilter} />
-          <Route path="/filters/company-followers" component={CompanyFollowersFilter} />
-          <Route path="/filters/user-followers" component={UserFollowersFilter} />
-          <Route path="/filters/funding-stages" component={FundingStagesFilter} />
-          <Route path="/filters/token-status" component={TokenStatusFilter} />
-          <Route path="/filters/blockchain-networks" component={BlockchainNetworksFilter} />
-          
-          {/* Conference coffee route removed 
-          <Route path="/conference-coffees" component={null} /> 
-          */}
+            {/* Existing Routes */}
+            <Route path="/dashboard" component={Dashboard} />
+            <Route path="/discovery-filters" component={DiscoveryFilters} />
+            <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
+            
+            {/* Filter Routes (New) */}
+            <Route path="/filters" component={FiltersDashboard} />
+            <Route path="/filters/collab-types" component={CollabTypesFilter} />
+            <Route path="/filters/topics" component={TopicsFilter} />
+            <Route path="/filters/company-sectors" component={CompanySectorsFilter} />
+            <Route path="/filters/company-followers" component={CompanyFollowersFilter} />
+            <Route path="/filters/user-followers" component={UserFollowersFilter} />
+            <Route path="/filters/funding-stages" component={FundingStagesFilter} />
+            <Route path="/filters/token-status" component={TokenStatusFilter} />
+            <Route path="/filters/blockchain-networks" component={BlockchainNetworksFilter} />
+            
+            {/* Conference coffee route removed 
+            <Route path="/conference-coffees" component={null} /> 
+            */}
 
-          {/* Admin Routes */}
-          <Route path="/admin">
-            <Redirect to="/admin/dashboard" />
-          </Route>
-          <Route path="/admin/dashboard" component={AdminDashboard} />
-          <Route path="/admin/users" component={AdminUsers} />
-          <Route path="/admin/applications" component={AdminApplications} />
-          <Route path="/admin/referrals" component={AdminReferralsPage} />
+            {/* Admin Routes */}
+            <Route path="/admin">
+              <Redirect to="/admin/dashboard" />
+            </Route>
+            <Route path="/admin/dashboard" component={AdminDashboard} />
+            <Route path="/admin/users" component={AdminUsers} />
+            <Route path="/admin/applications" component={AdminApplications} />
+            <Route path="/admin/referrals" component={AdminReferralsPage} />
 
-          {/* Collaboration Routes */}
-          <Route path="/create-collaboration-steps" component={CreateCollaborationSteps} />
-          <Route path="/create-collaboration" component={CreateCollaboration} />
-          
-          {/* Profile Routes */}
-          <Route path="/profile-overview" component={ProfileOverview} />
-          <Route path="/company-info" component={CompanyInfo} />
-          
-          {/* Referral Routes */}
-          <Route path="/referrals" component={ReferralsPage} />
-          
-          {/* Testing Routes */}
-          <Route path="/auth-test" component={AuthTestPage} />
+            {/* Collaboration Routes */}
+            <Route path="/create-collaboration-steps" component={CreateCollaborationSteps} />
+            <Route path="/create-collaboration" component={CreateCollaboration} />
+            
+            {/* Profile Routes */}
+            <Route path="/profile-overview" component={ProfileOverview} />
+            <Route path="/company-info" component={CompanyInfo} />
+            
+            {/* Referral Routes */}
+            <Route path="/referrals" component={ReferralsPage} />
+            
+            {/* Testing Routes */}
+            <Route path="/auth-test" component={AuthTestPage} />
 
-          <Route path="/not-found" component={NotFound} />
-          <Route path="*" component={NotFound} />
-        </Switch>
+            <Route path="/not-found" component={NotFound} />
+            <Route path="*" component={NotFound} />
+          </Switch>
+        </Suspense>
         {showBottomNav && <BottomNavigation />}
       </div>
     </div>
