@@ -103,7 +103,9 @@ function Router() {
             <Route path="/application-status" component={ApplicationStatus} />
 
             <Route path="/apply/:id">
-              {(params) => <ApplyComponent id={params.id} />}
+              {(params) => <Suspense fallback={<LoadingScreen />}>
+                <ApplyComponent id={params.id} />
+              </Suspense>}
             </Route>
 
             {/* Main App Routes */}
@@ -149,8 +151,16 @@ function Router() {
             <Route path="/admin/referrals" component={AdminReferralsPage} />
 
             {/* Collaboration Routes */}
-            <Route path="/create-collaboration-steps" component={CreateCollaborationSteps} />
-            <Route path="/create-collaboration" component={CreateCollaboration} />
+            <Route path="/create-collaboration-steps">
+              {() => <Suspense fallback={<LoadingScreen />}>
+                <CreateCollaborationSteps />
+              </Suspense>}
+            </Route>
+            <Route path="/create-collaboration">
+              {() => <Suspense fallback={<LoadingScreen />}>
+                <CreateCollaborationComponent />
+              </Suspense>}
+            </Route>
             
             {/* Profile Routes */}
             <Route path="/profile-overview" component={ProfileOverview} />

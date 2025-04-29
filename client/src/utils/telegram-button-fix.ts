@@ -6,7 +6,7 @@
  * CSS rules into the document head.
  */
 
-export function initTelegramButtonFix(): void {
+export function initTelegramButtonFix(): (() => void) | void {
   if (typeof window === 'undefined') return;
 
   // Inject a global CSS to enforce styles
@@ -200,7 +200,7 @@ export function initTelegramButtonFix(): void {
   };
 
   // Immediately try to apply fixes
-  initFixes();
+  const cleanup = initFixes();
   
   // Also apply when DOM is ready
   if (document.readyState === 'loading') {
@@ -209,4 +209,7 @@ export function initTelegramButtonFix(): void {
   
   // Final fallback - apply after window load
   window.addEventListener('load', initFixes);
+  
+  // Return the cleanup function
+  return cleanup;
 }
