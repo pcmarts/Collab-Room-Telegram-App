@@ -12,8 +12,6 @@ export const liveStreamSchema = z.object({
     .min(2, "Platform name is required"),
   stream_link: z.string()
     .url("Please enter a valid stream link"),
-  channel_name: z.string()
-    .min(2, "Channel name is required"),
   audience_size: z.enum(AUDIENCE_SIZE_RANGES),
   // Include details field for backward compatibility with existing data
   details: z.record(z.any()).optional()
@@ -26,7 +24,6 @@ export const liveStreamDefaults = {
   collab_type: "Live Stream Guest Appearance",
   platform_name: "",
   stream_link: "",
-  channel_name: "",
   audience_size: AUDIENCE_SIZE_RANGES[0],
   details: {} // Empty details object for compatibility
 };

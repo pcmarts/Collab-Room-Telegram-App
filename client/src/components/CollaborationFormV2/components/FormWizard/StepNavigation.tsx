@@ -51,12 +51,12 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       const followerValid = await form.trigger("host_follower_count");
       isStepValid = handleValid && followerValid;
     } 
-    // When topics are on a separate page
+    // When topics are on a separate page (works for all collaboration types)
     else if (currentStepId === "topics") {
       // Validate only topics on this step
       isStepValid = await form.trigger("topics");
       console.log("Topics validation result:", isStepValid, "Topics value:", form.getValues("topics"));
-    } 
+    }
     // When date is on a separate page
     else if (currentStepId === "date_selection") {
       // Validate date and free collab confirmation
@@ -85,17 +85,12 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       }
     }
     else if (currentStepId === "description") {
-      // For report form's description page
+      // For form's description page (works for all collaboration types)
       isStepValid = await form.trigger("description");
       console.log("Description validation:", isStepValid);
     }
-    else if (currentStepId === "topics") {
-      // For report form's topics page
-      isStepValid = await form.trigger("topics");
-      console.log("Topics validation:", isStepValid, "Topics value:", form.getValues("topics"));
-    }
     else if (currentStepId === "date") {
-      // For report form's date page
+      // For any form's date page
       const dateTypeValid = await form.trigger("date_type");
       const freeCollabValid = await form.trigger("is_free_collab");
       

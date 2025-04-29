@@ -27,9 +27,19 @@ export const liveStreamSteps: Step[] = [
     description: "Tell us about the livestream you're looking to host"
   },
   {
-    id: "topics_and_date",
-    title: "Topics & Date",
-    description: "Select topics and preferred date for your livestream"
+    id: "description",
+    title: "Description",
+    description: "Provide a brief description of your livestream"
+  },
+  {
+    id: "topics",
+    title: "Topics",
+    description: "Select topics for your livestream"
+  },
+  {
+    id: "date",
+    title: "Date",
+    description: "Select your preferred date for the livestream"
   }
 ];
 
@@ -58,19 +68,7 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
             )}
           />
           
-          <FormField
-            control={form.control}
-            name="channel_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Channel Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Your channel name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
           
           <FormField
             control={form.control}
@@ -113,7 +111,7 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
         </div>
       );
     
-    case "topics_and_date":
+    case "description":
       return (
         <div className="space-y-4">
           <FormField
@@ -139,7 +137,12 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
               </FormItem>
             )}
           />
-          
+        </div>
+      );
+    
+    case "topics":
+      return (
+        <div className="space-y-4">
           <FormField
             control={form.control}
             name="topics"
@@ -150,10 +153,16 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
                 maxSelections={3}
                 form={form}
                 options={COLLAB_TOPICS as unknown as string[]}
+                required
               />
             )}
           />
-          
+        </div>
+      );
+      
+    case "date":
+      return (
+        <div className="space-y-4">
           <DateSelector form={form} />
           
           <FormField
