@@ -124,11 +124,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
       );
     
     case "topics":
-      // Initialize topics to an empty array if it's not already set
-      if (!form.getValues().topics) {
-        form.setValue("topics", [], { shouldValidate: false, shouldDirty: false });
-      }
-      
+      // Log current values for debugging
       console.log("Rendering topics step with current values:", {
         topics: form.getValues().topics,
         formValues: form.getValues()
