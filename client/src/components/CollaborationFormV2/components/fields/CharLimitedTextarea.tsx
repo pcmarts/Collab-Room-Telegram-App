@@ -1,0 +1,94 @@
+import React, { useState, useEffect } from "react";
+import { UseFormReturn } from "react-hook-form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+
+interface CharLimitedTextareaProps {
+  name: string;
+  label: string;
+  placeholder: string;
+  description?: string;
+  maxLength: number;
+  form: UseFormReturn<any>;
+  required?: boolean;
+}
+
+/**
+ * Textarea component with built-in character limit
+ * Shows character count with color-coding as limit is approached
+ */
+export const CharLimitedTextarea: React.FC<CharLimitedTextareaProps> = ({
+  name,
+  label,
+  placeholder,
+  description,
+  maxLength,
+  form,
+  required = false,
+}) => {
+  const [charCount, setCharCount] = useState(0);
+  const value = form.watch(name) || "";
+  
+  // Update character count when value changes
+  useEffect(() => {
+    if (typeof value === 'string') {
+      setCharCount(value.length);
+    }
+  }, [value]);
+  
+  // Determine color based on character count
+  const getCountColor = () => {
+    const percentage = (charCount / maxLength) * 100;
+    if (percentage >= 100) return "text-destructive font-bold";
+    if (percentage >= 80) return "text-warning-foreground font-medium";
+    if (percentage > 0) return "text-primary";
+    return "text-muted-foreground";
+  };
+  
+  return (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <div className="flex items-center justify-between">
+            <FormLabel className="text-sm">
+              {label}
+              {required && <span className="text-destructive ml-1">*</span>}
+            </FormLabel>
+            <span className={`text-xs ${getCountColor()}`}>
+              {charCount}/{maxLength}
+            </span>
+          </div>
+          <FormControl>
+            <Textarea
+              placeholder={placeholder}
+              className="min-h-[120px] text-sm resize-y"
+              maxLength={maxLength}
+              {...field}
+              onChange={(e) => {
+                // Use substring to enforce the character limit in case maxLength doesn't work
+                const limitedValue = e.target.value.substring(0, maxLength);
+                field.onChange(limitedValue);
+                setCharCount(limitedValue.length);
+              }}
+            />
+          </FormControl>
+          {description && (
+            <FormDescription className="text-xs">
+              {description}
+            </FormDescription>
+          )}
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};

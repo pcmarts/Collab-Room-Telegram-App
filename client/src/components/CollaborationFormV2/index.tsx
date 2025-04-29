@@ -1,0 +1,107 @@
+import React, { useEffect } from "react";
+import { Form } from "@/components/ui/form";
+import { FormWizardProvider, useFormWizard } from "./contexts/FormWizardContext";
+import { CollaborationTypeProvider, useCollaborationType } from "./contexts/CollaborationTypeContext";
+import { FormPersistenceProvider } from "./contexts/FormPersistenceContext";
+import { StepIndicator } from "./components/FormWizard/StepIndicator";
+import { StepContainer } from "./components/FormWizard/StepContainer";
+import { StepNavigation } from "./components/FormWizard/StepNavigation";
+import { TypeSelector } from "./components/collaboration-types/TypeSelector";
+import { TwitterCollabForm } from "./components/collaboration-types/TwitterCollabForm";
+import { useCollaborationForm } from "./hooks/useCollaborationForm";
+import { collaborationTypes } from "./utils/typeRegistry";
+
+/**
+ * The type selector step shown first
+ */
+const InitialStep = {
+  id: "collab_type",
+  title: "Collaboration Type",
+  description: "What type of collaboration are you looking to host?",
+};
+
+/**
+ * Main form content component
+ * Handles rendering type-specific forms based on the selected type
+ */
+const CollaborationFormContent: React.FC = () => {
+  const { currentStepId, setSteps, currentStep } = useFormWizard();
+  const { availableTypes, selectedTypeId, registerType, selectType } = useCollaborationType();
+  const { form, isSubmitting, handleSubmit } = useCollaborationForm();
+  
+  // Register all available collaboration types
+  useEffect(() => {
+    collaborationTypes.forEach(type => {
+      registerType(type);
+    });
+  }, [registerType]);
+  
+  // Set up the initial step
+  useEffect(() => {
+    setSteps([InitialStep]);
+  }, [setSteps]);
+  
+  // Handle form submission
+  const onSubmit = () => {
+    handleSubmit();
+  };
+  
+  // Render the current step content
+  const renderStepContent = () => {
+    // First step is always the collaboration type selector
+    if (currentStepId === "collab_type") {
+      return <TypeSelector form={form} />;
+    }
+    
+    // For other steps, render the appropriate type-specific form
+    if (selectedTypeId === "Co-Marketing on Twitter") {
+      return <TwitterCollabForm form={form} />;
+    }
+    
+    // Fallback when no collaboration type is selected or supported
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        Please select a collaboration type first or go back to the previous step.
+      </div>
+    );
+  };
+  
+  return (
+    <div className="w-full max-w-3xl mx-auto">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <StepIndicator />
+          
+          <StepContainer
+            title={currentStep === 0 ? InitialStep.title : (selectedTypeId || "")}
+            description={currentStep === 0 ? InitialStep.description : undefined}
+          >
+            {renderStepContent()}
+          </StepContainer>
+          
+          <StepNavigation 
+            form={form} 
+            onSubmit={onSubmit}
+            isSubmitting={isSubmitting} 
+          />
+        </form>
+      </Form>
+    </div>
+  );
+};
+
+/**
+ * Main Collaboration Form V2 component
+ * Wraps all necessary providers for form functionality
+ */
+export const CollaborationFormV2: React.FC = () => {
+  return (
+    <FormPersistenceProvider>
+      <CollaborationTypeProvider>
+        <FormWizardProvider>
+          <CollaborationFormContent />
+        </FormWizardProvider>
+      </CollaborationTypeProvider>
+    </FormPersistenceProvider>
+  );
+};

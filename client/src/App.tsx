@@ -37,6 +37,7 @@ const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
 const AdminUsers = lazy(() => import("@/pages/admin/users"));
 const CreateCollaborationFixed = lazy(() => import("@/pages/create-collaboration-fixed"));
 const CreateCollaborationSteps = lazy(() => import("@/pages/create-collaboration-steps"));
+const CreateCollaborationV2 = lazy(() => import("@/pages/create-collaboration-v2"));
 const EditCollaborationSteps = lazy(() => import("@/pages/edit-collaboration-steps"));
 const CreateCollaborationComponent = lazy(() => import("@/pages/create-collaboration"));
 const MyCollaborationsComponent = lazy(() => import("@/pages/my-collaborations"));
@@ -155,6 +156,11 @@ function Router() {
             <Route path="/create-collaboration-steps">
               {() => <Suspense fallback={<LoadingScreen />}>
                 <CreateCollaborationSteps />
+              </Suspense>}
+            </Route>
+            <Route path="/create-collaboration-v2">
+              {() => <Suspense fallback={<LoadingScreen />}>
+                <CreateCollaborationV2 />
               </Suspense>}
             </Route>
             <Route path="/create-collaboration">
