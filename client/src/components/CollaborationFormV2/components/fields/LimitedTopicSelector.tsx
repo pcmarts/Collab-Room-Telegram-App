@@ -37,6 +37,15 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
   const fieldValue = form.watch(name);
   const selections = Array.isArray(fieldValue) ? fieldValue : [];
   
+  // Ensure the field is an array in the form
+  React.useEffect(() => {
+    // If field value is not an array, initialize it
+    if (!Array.isArray(fieldValue)) {
+      console.log(`Initializing ${name} field as empty array`);
+      form.setValue(name, [], { shouldValidate: false });
+    }
+  }, [name, fieldValue, form]);
+  
   // Calculate if max selections is reached
   const atMaxSelections = selections.length >= maxSelections;
   

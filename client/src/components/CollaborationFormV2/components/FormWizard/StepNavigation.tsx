@@ -56,6 +56,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     else if (currentStepId === "topics") {
       // Validate only topics on this step
       isStepValid = await form.trigger("topics");
+      console.log("Topics validation result:", isStepValid, "Topics value:", form.getValues("topics"));
     } 
     // When date is on a separate page
     else if (currentStepId === "date_selection") {
@@ -70,6 +71,43 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       }
       
       isStepValid = dateTypeValid && specificDateValid && freeCollabValid;
+    }
+    // Report form steps
+    else if (currentStepId === "report_info") {
+      // Validate report name, type, and audience reach (report link is optional)
+      const nameValid = await form.trigger("report_name");
+      const typeValid = await form.trigger("report_type");
+      const audienceValid = await form.trigger("audience_reach");
+      isStepValid = nameValid && typeValid && audienceValid;
+      
+      // Skip link validation if empty (optional field)
+      if (form.getValues("report_link")) {
+        isStepValid = await form.trigger("report_link") && isStepValid;
+      }
+    }
+    else if (currentStepId === "topics_and_date") {
+      // For report form's topics and date page
+      const descriptionValid = await form.trigger("description");
+      const topicsValid = await form.trigger("topics");
+      const dateTypeValid = await form.trigger("date_type");
+      const freeCollabValid = await form.trigger("is_free_collab");
+      
+      // If specific date is selected, also validate that field
+      let specificDateValid = true;
+      if (form.getValues("date_type") === "specific_date") {
+        specificDateValid = await form.trigger("specific_date");
+      }
+      
+      isStepValid = descriptionValid && topicsValid && dateTypeValid && specificDateValid && freeCollabValid;
+      
+      console.log("Topics and date validation:", {
+        description: descriptionValid,
+        topics: topicsValid,
+        dateType: dateTypeValid,
+        specificDate: specificDateValid,
+        freeCollab: freeCollabValid,
+        overall: isStepValid
+      });
     }
     // For Twitter collaboration type steps, validate only the relevant fields
     else if (currentStepId === "twitter_topics" || currentStepId === "podcast_topics") {
