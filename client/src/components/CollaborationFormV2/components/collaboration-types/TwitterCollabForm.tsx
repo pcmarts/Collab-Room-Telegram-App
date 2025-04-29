@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import {
   FormField,
@@ -56,18 +56,22 @@ export const twitterCollabSteps: Step[] = [
 ];
 
 interface TwitterCollabFormProps {
-  form: UseFormReturn<any>;
+  step: string;
 }
 
 /**
  * Twitter Co-Marketing collaboration form component
  * Implements the 3 topics and 3 Twitter collab types limit
  */
-export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ form }) => {
+export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) => {
+  const form = useFormContext();
   const { currentStepId } = useFormWizard();
+  const currentStep = step || currentStepId;
   
   // Initialize all form values on component mount
   useEffect(() => {
+    if (!form) return;
+    
     console.log("Initializing Twitter collaboration form with default values");
     
     // Get current form values
@@ -99,33 +103,37 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ form }) =>
   
   // Validate only the current field whenever the step changes
   useEffect(() => {
-    console.log("Current step ID:", currentStepId);
+    if (!form) return;
+    
+    console.log("Current step ID:", currentStep);
     
     // Wait a short moment to ensure fields are set before validating
     setTimeout(() => {
       // Then validate only the current field
-      if (currentStepId === "twitter_topics") {
+      if (currentStep === "twitter_topics") {
         form.trigger("topics");
-      } else if (currentStepId === "twitter_handle") {
+      } else if (currentStep === "twitter_handle") {
         form.trigger("twitter_handle");
-      } else if (currentStepId === "twitter_collab_types") {
+      } else if (currentStep === "twitter_collab_types") {
         form.trigger("twitter_collab_types");
-      } else if (currentStepId === "twitter_followers") {
+      } else if (currentStep === "twitter_followers") {
         form.trigger("follower_count");
-      } else if (currentStepId === "twitter_description") {
+      } else if (currentStep === "twitter_description") {
         form.trigger("description");
-      } else if (currentStepId === "twitter_date") {
+      } else if (currentStep === "twitter_date") {
         form.trigger("date_type");
         if (form.getValues("date_type") === "specific_date") {
           form.trigger("specific_date");
         }
       }
     }, 100);
-  }, [currentStepId, form]);
+  }, [currentStep, form]);
 
   // Render the current step content
   const renderStepContent = () => {
-    switch (currentStepId) {
+    if (!form) return null;
+    
+    switch (currentStep) {
       case "twitter_topics":
         return (
           <LimitedTopicSelector
