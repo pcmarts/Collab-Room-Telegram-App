@@ -11,7 +11,6 @@ export const twitterSpacesSchema = z.object({
   twitter_handle: z.string()
     .min(1, "Twitter handle is required")
     .regex(/^https:\/\/x\.com\/[a-zA-Z0-9_]{1,15}$/, "Must be a valid Twitter/X URL (https://x.com/username)"),
-  // We use 'topics' from baseCollabFields instead of a separate 'space_topic' field
   host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS),
   // Include details field for backward compatibility with existing data
   details: z.record(z.any()).optional()

@@ -51,9 +51,15 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       const followerValid = await form.trigger("host_follower_count");
       const descriptionValid = await form.trigger("description");
       isStepValid = handleValid && followerValid && descriptionValid;
-    } else if (currentStepId === "topics_and_date") {
-      // Validate topics, date and free collab confirmation
-      const topicsValid = await form.trigger("topics");
+    } 
+    // When topics are on a separate page
+    else if (currentStepId === "topics") {
+      // Validate only topics on this step
+      isStepValid = await form.trigger("topics");
+    } 
+    // When date is on a separate page
+    else if (currentStepId === "date_selection") {
+      // Validate date and free collab confirmation
       const dateTypeValid = await form.trigger("date_type");
       const freeCollabValid = await form.trigger("is_free_collab");
       
@@ -63,7 +69,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
         specificDateValid = await form.trigger("specific_date");
       }
       
-      isStepValid = topicsValid && dateTypeValid && specificDateValid && freeCollabValid;
+      isStepValid = dateTypeValid && specificDateValid && freeCollabValid;
     }
     // For Twitter collaboration type steps, validate only the relevant fields
     else if (currentStepId === "twitter_topics" || currentStepId === "podcast_topics") {

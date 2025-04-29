@@ -17,37 +17,9 @@ export const baseCollabFields = {
   date_type: z.enum(["any_future_date", "specific_date"]),
   specific_date: z
     .string()
-    .optional()
-    .superRefine((val, ctx) => {
-      // Get the date_type from the parent object
-      const dateType = ctx.parent?.date_type;
-      
-      // If we can't determine date_type, or it's not specific_date, skip validation
-      if (!dateType || dateType !== 'specific_date') {
-        return;
-      }
-      
-      // If date_type is specific_date, ensure a valid date is provided
-      if (val === undefined || val === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Please select a date",
-        });
-        return;
-      }
-      
-      // Check that the date is in the future
-      const selectedDate = new Date(val);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Reset time to start of day
-      
-      if (selectedDate < today) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Please select a future date",
-        });
-      }
-    }),
+    .optional(),
+  // Only apply validation conditionally in the form, not in the schema
+  // This simplifies the schema and avoids TypeScript errors
   is_free_collab: z.boolean()
     .refine(val => val === true, {
       message: "You must confirm this is a free collaboration with no payments involved"

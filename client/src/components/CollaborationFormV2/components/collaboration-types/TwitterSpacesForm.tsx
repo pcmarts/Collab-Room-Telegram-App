@@ -27,9 +27,14 @@ export const twitterSpacesSteps: Step[] = [
     description: "Tell us about your Twitter Spaces collaboration"
   },
   {
-    id: "topics_and_date",
-    title: "Topics & Date",
-    description: "Select topics and preferred date for your Space"
+    id: "topics",
+    title: "Topics",
+    description: "Select topics for your Twitter Space"
+  },
+  {
+    id: "date_selection",
+    title: "Date",
+    description: "Select your preferred date for the Space"
   }
 ];
 
@@ -109,7 +114,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
         </div>
       );
     
-    case "topics_and_date":
+    case "topics":
       return (
         <div className="space-y-4">
           <FormField
@@ -125,7 +130,12 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
               />
             )}
           />
-          
+        </div>
+      );
+      
+    case "date_selection":
+      return (
+        <div className="space-y-4">
           <DateSelector form={form} />
           
           <FormField
