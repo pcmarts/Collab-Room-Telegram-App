@@ -370,25 +370,38 @@ useEffect(() => {
 - **Solution**: Enhance build configuration:
 ```typescript
 // vite.config.ts
+import { defineConfig } from "vite";
+import path from 'path';
+import { visualizer } from "rollup-plugin-visualizer";
+
 export default defineConfig({
+  plugins: [
+    visualizer({
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+    }),
+  ],
   build: {
-    target: 'es2015', // Modern browsers for smaller bundle
+    outDir: path.resolve(__dirname, "dist/public"),
+    emptyOutDir: true,
+    target: 'es2020', // Adjust target based on browser support needs
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true, // Remove console logs in production
-        passes: 2 // More aggressive minification
+        drop_console: true,
+        passes: 2
       }
     },
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'wouter'],
+          vendor: ['react', 'react-dom', 'wouter', '@tanstack/react-query'],
           ui: [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            // Other UI dependencies
-          ]
+            '@radix-ui/react-dialog', 
+            '@radix-ui/react-dropdown-menu', 
+            'lucide-react',
+          ],
         }
       }
     }
@@ -731,3 +744,22 @@ However, our comprehensive analysis reveals significant opportunities to further
 The optimization strategy outlined in this document takes a pragmatic, measured approach - starting with high-impact, low-effort improvements before progressing to more complex implementations. Each recommendation is designed to target specific performance bottlenecks while maintaining compatibility with the application's existing architecture.
 
 By systematically implementing these optimizations, The Collab Room can achieve a truly exceptional performance profile that will translate directly into improved user engagement, satisfaction, and retention. Most importantly, these optimizations will maintain the application's responsive experience even as user numbers grow and feature complexity increases.
+
+## Example Standard Success Response:
+{
+  "success": true,
+  "data": { /* Actual payload */ },
+  "message": "Operation successful" // Optional success message
+}
+
+## Example Standard Error Response:
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR", // Or AUTH_ERROR, NOT_FOUND, SERVER_ERROR etc.
+    "message": "Invalid input provided.",
+    "details": { /* Optional field-specific errors */ }
+  }
+}
+
+## Implement helper functions in the backend to create these responses consistently.
