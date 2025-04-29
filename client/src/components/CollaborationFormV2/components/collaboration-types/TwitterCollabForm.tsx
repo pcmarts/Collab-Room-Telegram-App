@@ -114,6 +114,11 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ form }) =>
         form.trigger("follower_count");
       } else if (currentStepId === "twitter_description") {
         form.trigger("description");
+      } else if (currentStepId === "twitter_date") {
+        form.trigger("date_type");
+        if (form.getValues("date_type") === "specific_date") {
+          form.trigger("specific_date");
+        }
       }
     }, 100);
   }, [currentStepId, form]);

@@ -15,7 +15,22 @@ export const baseCollabFields = {
     .min(10, "Description must be at least 10 characters")
     .max(280, "Description cannot exceed 280 characters"),
   date_type: z.enum(["any_future_date", "specific_date"]),
-  specific_date: z.string().optional(),
+  specific_date: z
+    .string()
+    .optional()
+    .refine((val) => {
+      // If date_type is specific_date, ensure a valid date is provided
+      if (val === undefined || val === "") {
+        return false;
+      }
+      
+      // Check that the date is in the future
+      const selectedDate = new Date(val);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time to start of day
+      
+      return selectedDate >= today;
+    }, "Please select a future date"),
   is_free_collab: z.boolean()
     .refine(val => val === true, {
       message: "You must confirm this is a free collaboration with no payments involved"

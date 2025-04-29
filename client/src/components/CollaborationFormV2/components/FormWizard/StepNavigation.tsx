@@ -55,6 +55,12 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       isStepValid = await form.trigger("follower_count");
     } else if (currentStepId === "twitter_description" || currentStepId === "podcast_description") {
       isStepValid = await form.trigger("description");
+    } else if (currentStepId === "twitter_date" || currentStepId === "podcast_date") {
+      // Validate date fields
+      isStepValid = await form.trigger("date_type");
+      if (form.getValues("date_type") === "specific_date") {
+        isStepValid = await form.trigger("specific_date") && isStepValid;
+      }
     } else if (currentStepId === "collab_type") {
       isStepValid = await form.trigger("collab_type");
     } else if (currentStepId === "podcast_details") {

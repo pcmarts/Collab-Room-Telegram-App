@@ -12,6 +12,7 @@ import {
 import { useFormWizard } from "../../contexts/FormWizardContext";
 import { LimitedTopicSelector } from "../fields/LimitedTopicSelector";
 import { CharLimitedTextarea } from "../fields/CharLimitedTextarea";
+import { DateSelector } from "../fields/DateSelector";
 import { COLLAB_TOPICS, AUDIENCE_SIZE_RANGES } from "@shared/schema";
 import { Step } from "../../contexts/FormWizardContext";
 
@@ -40,6 +41,11 @@ export const podcastCollabSteps: Step[] = [
     id: "podcast_description",
     title: "Description",
     description: "Add a short description (max 280 characters)",
+  },
+  {
+    id: "podcast_date",
+    title: "Timing",
+    description: "When would you like to collaborate?",
   }
 ];
 
@@ -101,6 +107,11 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ form }) =>
         form.trigger("estimated_reach");
       } else if (currentStepId === "podcast_description") {
         form.trigger("description");
+      } else if (currentStepId === "podcast_date") {
+        form.trigger("date_type");
+        if (form.getValues("date_type") === "specific_date") {
+          form.trigger("specific_date");
+        }
       }
     }, 100);
   }, [currentStepId, form]);
@@ -220,6 +231,9 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ form }) =>
             required
           />
         );
+        
+      case "podcast_date":
+        return <DateSelector form={form} />;
         
       default:
         return (
