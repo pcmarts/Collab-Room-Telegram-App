@@ -305,7 +305,7 @@ export function CollaborationDetailsDialog({
             <Card className="p-4 bg-card/50 border shadow-sm">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Info className="h-5 w-5 text-muted-foreground" />
-                Your Collab Details
+                Collab Details
               </h3>
               
               <Separator className="my-3" />
