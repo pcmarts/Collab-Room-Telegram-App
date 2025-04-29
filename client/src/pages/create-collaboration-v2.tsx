@@ -11,23 +11,11 @@ import { CollaborationFormV2 } from "@/components/CollaborationFormV2";
 export default function CreateCollaborationV2() {
   return (
     <div className="container py-6 max-w-5xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6">
         <PageHeader
           title="Create Collaboration V2"
           subtitle="Find collaborators for your next web3 project"
         />
-        <div className="flex space-x-2">
-          <Button variant="outline" asChild>
-            <Link href="/create-collaboration-steps">
-              Use Original Form
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/collaborations">
-              My Collaborations
-            </Link>
-          </Button>
-        </div>
       </div>
       
       <div className="bg-card rounded-lg border shadow p-6">
