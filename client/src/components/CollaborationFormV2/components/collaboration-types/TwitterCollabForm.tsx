@@ -59,6 +59,21 @@ interface TwitterCollabFormProps {
  */
 export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ form }) => {
   const { currentStepId } = useFormWizard();
+  
+  // Validate current field when step changes
+  useEffect(() => {
+    if (currentStepId === "twitter_topics") {
+      form.trigger("topics");
+    } else if (currentStepId === "twitter_handle") {
+      form.trigger("twitter_handle");
+    } else if (currentStepId === "twitter_collab_types") {
+      form.trigger("twitter_collab_types");
+    } else if (currentStepId === "twitter_followers") {
+      form.trigger("follower_count");
+    } else if (currentStepId === "twitter_description") {
+      form.trigger("description");
+    }
+  }, [currentStepId, form]);
 
   // Render the current step content
   const renderStepContent = () => {
