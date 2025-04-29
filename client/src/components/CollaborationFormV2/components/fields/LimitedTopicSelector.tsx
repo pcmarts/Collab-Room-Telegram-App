@@ -32,12 +32,23 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
   required = false,
 }) => {
   const { toast } = useToast();
-  const selections = form.watch(name) || [];
+  
+  // Make sure we get a proper array or initialize an empty one
+  const fieldValue = form.watch(name);
+  const selections = Array.isArray(fieldValue) ? fieldValue : [];
+  
+  // Calculate if max selections is reached
   const atMaxSelections = selections.length >= maxSelections;
   
   // Add debugging to help troubleshoot
   console.log(`LimitedTopicSelector for field "${name}"`, {
-    currentValue: form.watch(name),
+    currentValue: selections,
+    rawValue: fieldValue,
+    valueType: typeof fieldValue,
+    isArray: Array.isArray(fieldValue),
+    selectionsLength: selections.length,
+    maxSelections,
+    atMaxSelections,
     formValues: form.getValues(),
     hasError: !!form.formState.errors[name],
     error: form.formState.errors[name]
@@ -117,7 +128,7 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
                         });
                       }
                     }}
-                    disabled={!isSelected && atMaxSelections}
+                    disabled={false} // Removed disabled state to ensure buttons are always clickable
                   >
                     {isSelected && <CheckIcon className="mr-2 h-4 w-4" />}
                     {option}
