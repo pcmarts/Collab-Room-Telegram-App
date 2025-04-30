@@ -58,15 +58,6 @@ export const CharLimitedTextarea: React.FC<CharLimitedTextareaProps> = ({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <div className="flex items-center justify-between">
-            <FormLabel className="text-sm">
-              {label}
-              {required && <span className="text-destructive ml-1">*</span>}
-            </FormLabel>
-            <span className={`text-xs ${getCountColor()}`}>
-              {charCount}/{maxLength}
-            </span>
-          </div>
           <FormControl>
             <Textarea
               placeholder={placeholder}
@@ -81,6 +72,12 @@ export const CharLimitedTextarea: React.FC<CharLimitedTextareaProps> = ({
               }}
             />
           </FormControl>
+          {/* Display character count below the description if it exists, otherwise above the input */}
+          <div className="text-right">
+            <span className={`text-xs ${getCountColor()}`}>
+              {charCount}/{maxLength}
+            </span>
+          </div>
           {description && (
             <FormDescription className="text-xs">
               {description}

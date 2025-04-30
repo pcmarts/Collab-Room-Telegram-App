@@ -112,16 +112,16 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  Description{" "}
+                <div className="flex items-center justify-between">
+                  <FormLabel>Provide a brief description of your Twitter Space</FormLabel>
                   <span className="text-xs text-muted-foreground">
                     ({field.value ? field.value.length : 0}/280)
                   </span>
-                </FormLabel>
+                </div>
                 <FormControl>
                   <textarea
                     className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    placeholder="Brief description of your Twitter Space"
+                    placeholder="What topics will you discuss in this Twitter Space?"
                     {...field}
                     maxLength={280}
                   />
