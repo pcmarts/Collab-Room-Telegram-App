@@ -6,19 +6,28 @@ import { useLocation } from "wouter";
 import { queryClient } from "@/lib/queryClient";
 import { useFormWizard } from "../contexts/FormWizardContext";
 import { useCollaborationType } from "../contexts/CollaborationTypeContext";
-import { useFormPersistence } from "../contexts/FormPersistenceContext";
+import { useFormPersistence, createFormId } from "../contexts/FormPersistenceContext";
 
 /**
  * Custom hook for collaboration form operations
  */
 export const useCollaborationForm = <T extends Record<string, any>>(
-  formId: string = "collaboration_form"
+  providedFormId?: string
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { getSelectedType } = useCollaborationType();
+  const { getSelectedType, selectedTypeId } = useCollaborationType();
   const { loadFormState, saveFormState, clearFormState } = useFormPersistence();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  
+  // Create a unique form ID for this collaboration type to prevent state bleeding
+  const [formId] = useState(() => {
+    if (providedFormId) return providedFormId;
+    // If no type is selected yet, use a generic ID
+    if (!selectedTypeId) return `generic_form_${Date.now()}`;
+    // Otherwise, create a type-specific ID
+    return createFormId(selectedTypeId);
+  });
   
   // Get the currently selected type's schema and default values
   const selectedType = getSelectedType();
