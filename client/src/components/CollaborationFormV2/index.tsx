@@ -91,6 +91,9 @@ const CollaborationFormContent: React.FC = () => {
         ...selectedType.steps // Add the type-specific steps
       ]);
       
+      // Select the collaboration type in the context to trigger form state isolation
+      selectType(selectedType.id);
+      
       // Move to next step
       setTimeout(() => goToNextStep(), 0);
     }
