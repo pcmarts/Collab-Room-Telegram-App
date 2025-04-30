@@ -62,62 +62,33 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
   const handleTypeSelect = async (typeId: string) => {
     console.log("Selected collaboration type:", typeId);
     
-    // Get the selected type
-    const selectedType = availableTypes.find(type => type.id === typeId);
-    if (!selectedType) return;
+    // Set the value and validate it
+    form.setValue("collab_type", typeId, { shouldValidate: true });
+    await form.trigger("collab_type");
     
-    // ANTI-BLEEDING MEASURES:
-    // A more aggressive approach to prevent any type of field bleeding
+    // Reset form fields when changing types to prevent field bleeding
+    // We preserve only the type field to avoid complete form reset
+    form.reset({ collab_type: typeId });
     
-    // 1. First completely unregister ALL form fields to fully reset the form state
-    const allFields = Object.keys(form.getValues());
-    
-    // Make sure collab_type is the only field that remains registered 
-    for (const field of allFields) {
-      if (field !== "collab_type") {
-        // Unregister the field completely from the form
-        form.unregister(field);
-      }
-    }
-    
-    // 2. Set only the collaboration type and clear any validation errors
-    form.setValue("collab_type", typeId, { shouldValidate: false });
-    form.clearErrors();
-    
-    // 3. Update the selected type in context
+    // Update the selected type in context
     selectType(typeId);
     
-    // 4. Create a completely new form state using the default values
-    console.log(`Creating clean form state for ${typeId}...`);
-    
-    // Force a complete form reset with clean default values
-    setTimeout(() => {
-      if (selectedType.defaultValues) {
-        // Apply default values for this type - critical for preventing bleeding
-        console.log("Applying clean default values:", selectedType.defaultValues);
-        
-        // Reset with initial values and clean validation state
-        form.reset({ 
-          collab_type: typeId,
-          ...selectedType.defaultValues 
-        }, { 
-          keepDefaultValues: false // Don't keep any previous default values
-        });
-        
-        // Create a unique instance key for the form to fully isolate it
-        form.setValue("__instanceId", `${typeId}_${Date.now()}`, { shouldValidate: false });
-        
-        // Apply validation after a brief delay to ensure reset is complete
-        setTimeout(() => {
-          form.trigger("collab_type");
-          
-          // Call the callback to move to next step
-          if (onTypeSelected) {
-            onTypeSelected();
-          }
-        }, 100);
+    // Populate default values for the selected type
+    const selectedType = availableTypes.find(type => type.id === typeId);
+    if (selectedType && selectedType.defaultValues) {
+      console.log("Applying default values for type:", typeId, selectedType.defaultValues);
+      
+      // Apply default values for this type
+      form.reset({ 
+        collab_type: typeId,
+        ...selectedType.defaultValues 
+      });
+      
+      // Call the callback if provided to move to next step
+      if (onTypeSelected) {
+        onTypeSelected();
       }
-    }, 150); // Wait longer to ensure complete reset
+    }
   };
 
   return (

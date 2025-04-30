@@ -33,10 +33,7 @@ const InitialStep = {
 const CollaborationFormContent: React.FC = () => {
   const { currentStepId, setSteps, currentStep, goToNextStep, visibleSteps } = useFormWizard();
   const { availableTypes, selectedTypeId, registerType, selectType } = useCollaborationType();
-  
-  // Create a unique form ID for each form instance - this is crucial to prevent form bleeding
-  const [formInstanceId] = React.useState(() => `form_instance_${Date.now()}`);
-  const { form, isSubmitting, handleSubmit } = useCollaborationForm(formInstanceId);
+  const { form, isSubmitting, handleSubmit } = useCollaborationForm();
   
   // Register all available collaboration types
   useEffect(() => {
@@ -94,43 +91,6 @@ const CollaborationFormContent: React.FC = () => {
         ...selectedType.steps // Add the type-specific steps
       ]);
       
-      // Select the collaboration type in the context to trigger form state isolation
-      selectType(selectedType.id);
-      
-      // MUCH MORE CAREFUL APPROACH: Only set default values for fields that don't exist yet
-      // This preserves any existing user input while still initializing required fields
-      const currentValues = form.getValues();
-      const defaultsToApply = { ...selectedType.defaultValues };
-      
-      // Apply defaults while preserving any existing values
-      // This prevents wiping out user input accidentally
-      const preservedValues: Record<string, any> = {
-        collab_type: currentValues.collab_type
-      };
-      
-      // Apply defaults for only fields that don't have values yet
-      Object.keys(defaultsToApply).forEach(key => {
-        // Check if the field already has a value that should be preserved
-        if (currentValues[key] !== undefined && currentValues[key] !== null && 
-            currentValues[key] !== '') {
-          // Preserve existing user input
-          preservedValues[key] = currentValues[key];
-          console.log(`Preserving existing value for ${key}:`, currentValues[key]);
-        } else {
-          // Set default value for this field
-          preservedValues[key] = defaultsToApply[key];
-        }
-      });
-      
-      // Apply our carefully crafted mix of preserved values and defaults
-      form.reset(preservedValues, {
-        keepDirty: true,         // Keep fields marked as dirty  
-        keepTouched: true,       // Keep track of which fields user has interacted with
-        keepIsValid: false,      // Re-validate all fields
-        keepErrors: false,       // Clear any existing errors
-        keepDefaultValues: false // Don't keep previous default values
-      });
-      
       // Move to next step
       setTimeout(() => goToNextStep(), 0);
     }
@@ -146,101 +106,21 @@ const CollaborationFormContent: React.FC = () => {
     // For other steps, render the appropriate type-specific form based on selected type
     const stepId = currentStepId || "";
     
-    // ANTI-BLEEDING: Create a completely unique instance key on EVERY render
-    // This forces React to create a new component instance each time,
-    // completely isolating state and preventing any value bleeding
-    const timestampKey = Date.now();
-    const formInstanceKey = `${selectedTypeId || "unknown"}_${timestampKey}`;
-    
-    // Cache buster component to fully reset before rendering any form
-    const TypeWrapper = ({ children }: { children: React.ReactNode }) => {
-      // Use a useEffect to reset any potential field bleeding when the wrapper mounts
-      React.useEffect(() => {
-        // Safety: Get current form type to preserve
-        const currentType = form.getValues("collab_type");
-        
-        // Get values we want to preserve by type
-        const preserveByType: Record<string, string[]> = {
-          "Twitter Spaces Guest": ["twitter_handle", "host_follower_count"],
-          "Co-Marketing on Twitter": ["twitter_collaboration_types", "handle_url"],
-          "Live Stream Guest Appearance": ["previous_stream_link", "expected_audience_size"],
-          "Podcast Guest Appearance": ["podcast_name", "podcast_link"],
-          "Report & Research Feature": ["report_link"],
-          // Add more fields to preserve for other types as needed
-        };
-        
-        const fieldsToPreserve = ["collab_type"];
-        
-        // Add type-specific fields to preserve
-        if (selectedTypeId && preserveByType[selectedTypeId]) {
-          fieldsToPreserve.push(...preserveByType[selectedTypeId]);
-        }
-        
-        console.log(`TypeWrapper preserving fields for ${selectedTypeId}:`, fieldsToPreserve);
-        
-        // MUCH LESS AGGRESSIVE - Only unregister fields we don't want to preserve
-        // This prevents accidental deletion of field values
-        const allFields = Object.keys(form.getValues());
-        allFields.forEach(field => {
-          if (!fieldsToPreserve.includes(field)) {
-            // Only clear fields that we don't want to preserve
-            form.setValue(field, undefined, { shouldValidate: false });
-          }
-        });
-        
-        // Ensure collab_type is still set
-        form.setValue("collab_type", currentType, { shouldValidate: false });
-        
-        console.log(`TypeWrapper mounted for ${selectedTypeId} with unique key ${formInstanceKey}`);
-      }, []);
-      
-      return <>{children}</>;
-    };
-    
-    // Render the appropriate form type with a TypeWrapper to ensure clean state
     switch (selectedTypeId) {
       case "Co-Marketing on Twitter":
-        return (
-          <TypeWrapper key={formInstanceKey}>
-            <TwitterCollabForm step={stepId} />
-          </TypeWrapper>
-        );
+        return <TwitterCollabForm step={stepId} />;
       case "Podcast Guest Appearance":
-        return (
-          <TypeWrapper key={formInstanceKey}>
-            <PodcastCollabForm step={stepId} />
-          </TypeWrapper>
-        );
+        return <PodcastCollabForm step={stepId} />;
       case "Twitter Spaces Guest":
-        return (
-          <TypeWrapper key={formInstanceKey}>
-            <TwitterSpacesForm step={stepId} />
-          </TypeWrapper>
-        );
+        return <TwitterSpacesForm step={stepId} />;
       case "Live Stream Guest Appearance":
-        return (
-          <TypeWrapper key={formInstanceKey}>
-            <LiveStreamForm step={stepId} />
-          </TypeWrapper>
-        );
+        return <LiveStreamForm step={stepId} />;
       case "Report & Research Feature":
-        return (
-          <TypeWrapper key={formInstanceKey}>
-            <ReportForm step={stepId} />
-          </TypeWrapper>
-        );
+        return <ReportForm step={stepId} />;
       case "Newsletter Feature":
-        return (
-          <TypeWrapper key={formInstanceKey}>
-            <NewsletterForm step={stepId} />
-          </TypeWrapper>
-        );
+        return <NewsletterForm step={stepId} />;
       case "Blog Post Feature":
-        return (
-          <TypeWrapper key={formInstanceKey}>
-            <BlogPostForm step={stepId} />
-          </TypeWrapper>
-        );
+        return <BlogPostForm step={stepId} />;
       default:
         // Fallback when no collaboration type is selected or supported
         return (
@@ -281,20 +161,12 @@ const CollaborationFormContent: React.FC = () => {
 /**
  * Main Collaboration Form V2 component
  * Wraps all necessary providers for form functionality
- * 
- * We use a key on the FormWizardProvider to force a complete
- * re-render and state reset whenever the page is loaded
- * This ensures no form state bleeds between page visits
  */
 export const CollaborationFormV2: React.FC = () => {
-  // Generate a unique key when this component mounts
-  // This forces a complete reset of all child components and their state
-  const [instanceKey] = React.useState(() => `form_wizard_${Date.now()}`);
-  
   return (
     <FormPersistenceProvider>
       <CollaborationTypeProvider>
-        <FormWizardProvider key={instanceKey}>
+        <FormWizardProvider>
           <CollaborationFormContent />
         </FormWizardProvider>
       </CollaborationTypeProvider>

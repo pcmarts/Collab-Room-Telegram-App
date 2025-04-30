@@ -50,30 +50,6 @@ export const twitterSpacesSteps: Step[] = [
 export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
   const form = useFormContext();
   
-  // Create a component instance ID to force complete isolation
-  const [instanceId] = React.useState(() => `twitter_spaces_${Date.now()}`);
-  
-  // Much simpler initialization that doesn't interfere with user input
-  React.useEffect(() => {
-    console.log("TwitterSpacesForm initialized with instance ID:", instanceId);
-    
-    // Just set default values for twitter_handle if it's empty
-    if (!form.getValues("twitter_handle")) {
-      form.setValue("twitter_handle", twitterSpacesDefaults.twitter_handle, { 
-        shouldDirty: false, 
-        shouldValidate: false 
-      });
-    }
-    
-    // Set follower count default if not set
-    if (!form.getValues("host_follower_count")) {
-      form.setValue("host_follower_count", twitterSpacesDefaults.host_follower_count, {
-        shouldDirty: false,
-        shouldValidate: false
-      });
-    }
-  }, [instanceId, form]);
-  
   // Initialize topics if needed
   React.useEffect(() => {
     // Check if we're on the topics step
@@ -94,11 +70,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
               <FormItem>
                 <FormLabel>Twitter URL</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="https://x.com/yourhandle" 
-                    {...field}
-                    // Don't do any special validation here
-                  />
+                  <Input placeholder="https://x.com/yourhandle" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

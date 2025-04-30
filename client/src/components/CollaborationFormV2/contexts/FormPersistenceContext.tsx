@@ -15,15 +15,6 @@ const FormPersistenceContext = createContext<FormPersistenceContextType | null>(
 const STORAGE_PREFIX = "collab_form_v2_";
 
 /**
- * Creates a unique form ID for each form type to prevent state bleeding
- * @param collabType The collaboration type (e.g., "Twitter Spaces Guest")
- * @returns A unique ID for the form
- */
-export const createFormId = (collabType: string): string => {
-  return `${collabType.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`;
-};
-
-/**
  * Provider component for form persistence functionality
  */
 export const FormPersistenceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
