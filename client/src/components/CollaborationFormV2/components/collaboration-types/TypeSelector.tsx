@@ -62,32 +62,43 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
   const handleTypeSelect = async (typeId: string) => {
     console.log("Selected collaboration type:", typeId);
     
-    // Set the value and validate it
+    // Get the selected type
+    const selectedType = availableTypes.find(type => type.id === typeId);
+    if (!selectedType) return;
+    
+    // ANTI-BLEEDING MEASURES:
+    // 1. Clear all field values and errors first
+    Object.keys(form.getValues()).forEach(field => {
+      if (field !== "collab_type") {
+        form.setValue(field, undefined, { shouldValidate: false });
+        form.clearErrors(field);
+      }
+    });
+    
+    // 2. Set only the collaboration type
     form.setValue("collab_type", typeId, { shouldValidate: true });
     await form.trigger("collab_type");
     
-    // Reset form fields when changing types to prevent field bleeding
-    // We preserve only the type field to avoid complete form reset
-    form.reset({ collab_type: typeId });
-    
-    // Update the selected type in context
+    // 3. Update the selected type in context
     selectType(typeId);
     
-    // Populate default values for the selected type
-    const selectedType = availableTypes.find(type => type.id === typeId);
-    if (selectedType && selectedType.defaultValues) {
+    // 4. Apply the default values from this specific type
+    if (selectedType.defaultValues) {
       console.log("Applying default values for type:", typeId, selectedType.defaultValues);
       
-      // Apply default values for this type
+      // Apply default values for this type - critical for preventing bleeding
       form.reset({ 
         collab_type: typeId,
         ...selectedType.defaultValues 
       });
       
-      // Call the callback if provided to move to next step
-      if (onTypeSelected) {
-        onTypeSelected();
-      }
+      // 5. Allow form to completely reset before proceeding
+      setTimeout(() => {
+        // Call the callback to move to next step
+        if (onTypeSelected) {
+          onTypeSelected();
+        }
+      }, 50);
     }
   };
 

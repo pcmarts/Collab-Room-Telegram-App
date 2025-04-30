@@ -33,7 +33,10 @@ const InitialStep = {
 const CollaborationFormContent: React.FC = () => {
   const { currentStepId, setSteps, currentStep, goToNextStep, visibleSteps } = useFormWizard();
   const { availableTypes, selectedTypeId, registerType, selectType } = useCollaborationType();
-  const { form, isSubmitting, handleSubmit } = useCollaborationForm();
+  
+  // Create a unique form ID for each form instance - this is crucial to prevent form bleeding
+  const [formInstanceId] = React.useState(() => `form_instance_${Date.now()}`);
+  const { form, isSubmitting, handleSubmit } = useCollaborationForm(formInstanceId);
   
   // Register all available collaboration types
   useEffect(() => {
@@ -94,6 +97,14 @@ const CollaborationFormContent: React.FC = () => {
       // Select the collaboration type in the context to trigger form state isolation
       selectType(selectedType.id);
       
+      // CRITICAL FIX: Reset all form values EXCEPT the collab_type
+      // This prevents bleeding between different form types
+      const currentType = form.getValues("collab_type");
+      form.reset({ 
+        collab_type: currentType,
+        ...selectedType.defaultValues
+      });
+      
       // Move to next step
       setTimeout(() => goToNextStep(), 0);
     }
@@ -109,21 +120,25 @@ const CollaborationFormContent: React.FC = () => {
     // For other steps, render the appropriate type-specific form based on selected type
     const stepId = currentStepId || "";
     
+    // Create a unique form instance key for each type
+    // This ensures form state is completely isolated between different types
+    const formInstanceKey = `${formInstanceId}_${selectedTypeId || "unknown"}`;
+    
     switch (selectedTypeId) {
       case "Co-Marketing on Twitter":
-        return <TwitterCollabForm step={stepId} />;
+        return <TwitterCollabForm key={formInstanceKey} step={stepId} />;
       case "Podcast Guest Appearance":
-        return <PodcastCollabForm step={stepId} />;
+        return <PodcastCollabForm key={formInstanceKey} step={stepId} />;
       case "Twitter Spaces Guest":
-        return <TwitterSpacesForm step={stepId} />;
+        return <TwitterSpacesForm key={formInstanceKey} step={stepId} />;
       case "Live Stream Guest Appearance":
-        return <LiveStreamForm step={stepId} />;
+        return <LiveStreamForm key={formInstanceKey} step={stepId} />;
       case "Report & Research Feature":
-        return <ReportForm step={stepId} />;
+        return <ReportForm key={formInstanceKey} step={stepId} />;
       case "Newsletter Feature":
-        return <NewsletterForm step={stepId} />;
+        return <NewsletterForm key={formInstanceKey} step={stepId} />;
       case "Blog Post Feature":
-        return <BlogPostForm step={stepId} />;
+        return <BlogPostForm key={formInstanceKey} step={stepId} />;
       default:
         // Fallback when no collaboration type is selected or supported
         return (
@@ -164,12 +179,20 @@ const CollaborationFormContent: React.FC = () => {
 /**
  * Main Collaboration Form V2 component
  * Wraps all necessary providers for form functionality
+ * 
+ * We use a key on the FormWizardProvider to force a complete
+ * re-render and state reset whenever the page is loaded
+ * This ensures no form state bleeds between page visits
  */
 export const CollaborationFormV2: React.FC = () => {
+  // Generate a unique key when this component mounts
+  // This forces a complete reset of all child components and their state
+  const [instanceKey] = React.useState(() => `form_wizard_${Date.now()}`);
+  
   return (
     <FormPersistenceProvider>
       <CollaborationTypeProvider>
-        <FormWizardProvider>
+        <FormWizardProvider key={instanceKey}>
           <CollaborationFormContent />
         </FormWizardProvider>
       </CollaborationTypeProvider>
