@@ -16,6 +16,7 @@ import { NewsletterForm } from "./components/collaboration-types/NewsletterForm"
 import { BlogPostForm } from "./components/collaboration-types/BlogPostForm";
 import { useCollaborationForm } from "./hooks/useCollaborationForm";
 import { collaborationTypes } from "./utils/typeRegistry";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 /**
  * The type selector step shown first
@@ -135,12 +136,14 @@ const CollaborationFormContent: React.FC = () => {
     <div className="w-full max-w-3xl mx-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <StepContainer
-            title={currentStep === 0 ? InitialStep.title : getStepTitle()}
-            description={currentStep === 0 ? InitialStep.description : getStepDescription()}
-          >
-            {renderStepContent()}
-          </StepContainer>
+          <ScrollArea className="h-full max-h-[60vh]">
+            <StepContainer
+              title={currentStep === 0 ? InitialStep.title : getStepTitle()}
+              description={currentStep === 0 ? InitialStep.description : getStepDescription()}
+            >
+              {renderStepContent()}
+            </StepContainer>
+          </ScrollArea>
           
           <StepNavigation 
             form={form} 

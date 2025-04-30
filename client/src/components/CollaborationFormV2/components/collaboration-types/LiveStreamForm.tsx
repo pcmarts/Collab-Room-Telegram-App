@@ -35,7 +35,6 @@ export const liveStreamSteps: Step[] = [
   {
     id: "description",
     title: "Description",
-    description: "Provide a brief description of your livestream"
   },
   {
     id: "topics",
