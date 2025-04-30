@@ -97,12 +97,38 @@ const CollaborationFormContent: React.FC = () => {
       // Select the collaboration type in the context to trigger form state isolation
       selectType(selectedType.id);
       
-      // CRITICAL FIX: Reset all form values EXCEPT the collab_type
-      // This prevents bleeding between different form types
-      const currentType = form.getValues("collab_type");
-      form.reset({ 
-        collab_type: currentType,
-        ...selectedType.defaultValues
+      // MUCH MORE CAREFUL APPROACH: Only set default values for fields that don't exist yet
+      // This preserves any existing user input while still initializing required fields
+      const currentValues = form.getValues();
+      const defaultsToApply = { ...selectedType.defaultValues };
+      
+      // Apply defaults while preserving any existing values
+      // This prevents wiping out user input accidentally
+      const preservedValues: Record<string, any> = {
+        collab_type: currentValues.collab_type
+      };
+      
+      // Apply defaults for only fields that don't have values yet
+      Object.keys(defaultsToApply).forEach(key => {
+        // Check if the field already has a value that should be preserved
+        if (currentValues[key] !== undefined && currentValues[key] !== null && 
+            currentValues[key] !== '') {
+          // Preserve existing user input
+          preservedValues[key] = currentValues[key];
+          console.log(`Preserving existing value for ${key}:`, currentValues[key]);
+        } else {
+          // Set default value for this field
+          preservedValues[key] = defaultsToApply[key];
+        }
+      });
+      
+      // Apply our carefully crafted mix of preserved values and defaults
+      form.reset(preservedValues, {
+        keepDirty: true,         // Keep fields marked as dirty  
+        keepTouched: true,       // Keep track of which fields user has interacted with
+        keepIsValid: false,      // Re-validate all fields
+        keepErrors: false,       // Clear any existing errors
+        keepDefaultValues: false // Don't keep previous default values
       });
       
       // Move to next step
@@ -133,10 +159,32 @@ const CollaborationFormContent: React.FC = () => {
         // Safety: Get current form type to preserve
         const currentType = form.getValues("collab_type");
         
-        // Unregister all fields except collab_type to ensure clean form
-        Object.keys(form.getValues()).forEach(field => {
-          if (field !== "collab_type") {
-            form.unregister(field);
+        // Get values we want to preserve by type
+        const preserveByType: Record<string, string[]> = {
+          "Twitter Spaces Guest": ["twitter_handle", "host_follower_count"],
+          "Co-Marketing on Twitter": ["twitter_collaboration_types", "handle_url"],
+          "Live Stream Guest Appearance": ["previous_stream_link", "expected_audience_size"],
+          "Podcast Guest Appearance": ["podcast_name", "podcast_link"],
+          "Report & Research Feature": ["report_link"],
+          // Add more fields to preserve for other types as needed
+        };
+        
+        const fieldsToPreserve = ["collab_type"];
+        
+        // Add type-specific fields to preserve
+        if (selectedTypeId && preserveByType[selectedTypeId]) {
+          fieldsToPreserve.push(...preserveByType[selectedTypeId]);
+        }
+        
+        console.log(`TypeWrapper preserving fields for ${selectedTypeId}:`, fieldsToPreserve);
+        
+        // MUCH LESS AGGRESSIVE - Only unregister fields we don't want to preserve
+        // This prevents accidental deletion of field values
+        const allFields = Object.keys(form.getValues());
+        allFields.forEach(field => {
+          if (!fieldsToPreserve.includes(field)) {
+            // Only clear fields that we don't want to preserve
+            form.setValue(field, undefined, { shouldValidate: false });
           }
         });
         

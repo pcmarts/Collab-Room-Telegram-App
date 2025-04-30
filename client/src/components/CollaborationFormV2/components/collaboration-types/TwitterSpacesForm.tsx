@@ -53,39 +53,25 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
   // Create a component instance ID to force complete isolation
   const [instanceId] = React.useState(() => `twitter_spaces_${Date.now()}`);
   
-  // On component mount, ensure we're always starting with clean values specific to Twitter Spaces
+  // Much simpler initialization that doesn't interfere with user input
   React.useEffect(() => {
-    // Hard reset for this specific form type to prevent ANY bleeding
-    // We preserve only the collab_type to ensure validation works
-    const currentType = form.getValues("collab_type");
+    console.log("TwitterSpacesForm initialized with instance ID:", instanceId);
     
-    // Also preserve any existing twitter_handle value to avoid erasing user input
-    const existingHandle = form.getValues("twitter_handle");
+    // Just set default values for twitter_handle if it's empty
+    if (!form.getValues("twitter_handle")) {
+      form.setValue("twitter_handle", twitterSpacesDefaults.twitter_handle, { 
+        shouldDirty: false, 
+        shouldValidate: false 
+      });
+    }
     
-    const defaultValues = {
-      ...twitterSpacesDefaults,
-      collab_type: currentType,
-      // If user has input a Twitter handle, preserve it
-      twitter_handle: existingHandle || twitterSpacesDefaults.twitter_handle
-    };
-    
-    // Apply Twitter Spaces-specific defaults to fields EXCEPT the ones we want to preserve
-    Object.keys(defaultValues).forEach(key => {
-      // Skip these specific fields to prevent overwriting user input
-      if (key === "twitter_handle" && existingHandle) {
-        return;
-      }
-      
-      // Don't reset description field once set
-      if (key === "description" && form.getValues("description")) {
-        return;
-      }
-      
-      const value = defaultValues[key as keyof typeof defaultValues];
-      form.setValue(key, value, { shouldDirty: false, shouldValidate: false });
-    });
-    
-    console.log("Twitter Spaces form initialized with defaults:", defaultValues);
+    // Set follower count default if not set
+    if (!form.getValues("host_follower_count")) {
+      form.setValue("host_follower_count", twitterSpacesDefaults.host_follower_count, {
+        shouldDirty: false,
+        shouldValidate: false
+      });
+    }
   }, [instanceId, form]);
   
   // Initialize topics if needed
