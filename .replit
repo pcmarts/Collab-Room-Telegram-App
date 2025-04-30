@@ -62,3 +62,6 @@ author = 40175426
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "$ npx tsx remove-user-data.ts"
+
+[objectStorage]
+defaultBucketID = "replit-objstore-21544d8e-d1bc-4014-9fcf-788e69614efc"

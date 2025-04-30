@@ -78,7 +78,7 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
           <FormItem>
             <div className="flex items-center justify-between">
               <FormLabel className="text-sm">
-                {label} <span className="text-muted-foreground font-normal">(min 1, max {maxSelections})</span>
+                {label} (min 1, max {maxSelections})
                 {required && <span className="text-destructive ml-1">*</span>}
               </FormLabel>
               <span 
@@ -146,10 +146,7 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
               })}
             </div>
             
-            {/* Only show error message for exceeded max count */}
-            {form.formState.errors[name]?.message && 
-             form.formState.errors[name]?.message !== " " && 
-             <FormMessage />}
+            {/* Error messages removed per requirement */}
           </FormItem>
         );
       }}
