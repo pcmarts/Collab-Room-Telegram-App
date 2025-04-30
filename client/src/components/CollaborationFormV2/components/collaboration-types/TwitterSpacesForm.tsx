@@ -50,6 +50,32 @@ export const twitterSpacesSteps: Step[] = [
 export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
   const form = useFormContext();
   
+  // Create a component instance ID to force complete isolation
+  const [instanceId] = React.useState(() => `twitter_spaces_${Date.now()}`);
+  
+  // On component mount, ensure we're always starting with clean values specific to Twitter Spaces
+  React.useEffect(() => {
+    // Hard reset for this specific form type to prevent ANY bleeding
+    // We preserve only the collab_type to ensure validation works
+    const currentType = form.getValues("collab_type");
+    const defaultValues = {
+      ...twitterSpacesDefaults,
+      collab_type: currentType
+    };
+    
+    // Apply Twitter Spaces-specific defaults to ALL fields
+    Object.keys(defaultValues).forEach(key => {
+      const value = defaultValues[key as keyof typeof defaultValues];
+      // Don't reset description field once set
+      if (key === "description" && form.getValues("description")) {
+        return;
+      }
+      form.setValue(key, value, { shouldDirty: false, shouldValidate: false });
+    });
+    
+    console.log("Twitter Spaces form initialized with defaults:", defaultValues);
+  }, [instanceId, form]);
+  
   // Initialize topics if needed
   React.useEffect(() => {
     // Check if we're on the topics step
@@ -105,6 +131,17 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
       );
       
     case "description":
+      // CRITICAL: Sanitize field value to prevent leaking URLs into description
+      React.useEffect(() => {
+        const descValue = form.getValues("description") || "";
+        // Check if description contains URL content (likely leaked from another form)
+        if (descValue.includes("https://x.com") || descValue.includes("http://x.com")) {
+          // Clear the description if it contains a Twitter URL
+          console.log("Detected URL in description field, clearing:", descValue);
+          form.setValue("description", "", { shouldValidate: false });
+        }
+      }, [form]);
+      
       return (
         <div className="space-y-4">
           <FormField
@@ -124,6 +161,15 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
                     placeholder="Brief description of your Twitter Space"
                     {...field}
                     maxLength={280}
+                    // Extra prevention: Clean URL content on input
+                    onChange={(e) => {
+                      // Remove any URL content from pasted text
+                      let value = e.target.value;
+                      if (value.includes("https://x.com") || value.includes("http://x.com")) {
+                        value = value.replace(/https?:\/\/x\.com\/[^\s]+/g, "");
+                      }
+                      field.onChange(value);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
