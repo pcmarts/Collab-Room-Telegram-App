@@ -11,7 +11,9 @@ export const liveStreamSchema = z.object({
   platform_name: z.string()
     .min(2, "Platform name is required"),
   stream_link: z.string()
-    .url("Please enter a valid previous stream link"),
+    .url("Please enter a valid URL for the stream link")
+    .optional()
+    .or(z.literal('')),
   audience_size: z.enum(AUDIENCE_SIZE_RANGES),
   // Include details field for backward compatibility with existing data
   details: z.record(z.any()).optional()

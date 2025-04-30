@@ -43,7 +43,7 @@ export const BlogPostForm: React.FC<{ step: string }> = ({ step }) => {
   switch (step) {
     case "blog_info":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="blog_name"
@@ -126,7 +126,7 @@ export const BlogPostForm: React.FC<{ step: string }> = ({ step }) => {
     
     case "topics_and_date":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="description"
@@ -157,10 +157,12 @@ export const BlogPostForm: React.FC<{ step: string }> = ({ step }) => {
             render={() => (
               <LimitedTopicSelector 
                 name="topics"
-                label="Blog Topics"
+                label="Post Topics"
                 maxSelections={3}
                 form={form}
                 options={COLLAB_TOPICS as unknown as string[]}
+                required
+                hideDetails={true}
               />
             )}
           />

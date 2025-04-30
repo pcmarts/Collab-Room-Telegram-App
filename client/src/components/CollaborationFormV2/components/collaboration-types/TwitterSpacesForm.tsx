@@ -62,7 +62,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
   switch (step) {
     case "basic_info":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="twitter_handle"
@@ -106,7 +106,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
       
     case "description":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="description"
@@ -141,7 +141,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
       });
       
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="topics"
@@ -153,6 +153,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
                 form={form}
                 options={COLLAB_TOPICS as unknown as string[]}
                 required
+                hideDetails={true}
               />
             )}
           />
@@ -161,7 +162,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
       
     case "date_selection":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <DateSelector form={form} />
           
           <FormField

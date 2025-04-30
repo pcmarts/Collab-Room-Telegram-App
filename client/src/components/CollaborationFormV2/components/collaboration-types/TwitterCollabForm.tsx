@@ -136,19 +136,26 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) =>
     switch (currentStep) {
       case "twitter_topics":
         return (
-          <LimitedTopicSelector
-            options={TOPICS}
-            name="topics"
-            label="Select Topics"
-            maxSelections={3}
-            form={form}
-            required
+          <FormField key={currentStep}
+            control={form.control}
+            name="host_topics"
+            render={() => (
+              <LimitedTopicSelector 
+                name="host_topics"
+                label="Topics your audience cares about"
+                maxSelections={3}
+                form={form}
+                options={COLLAB_TOPICS as unknown as string[]}
+                required
+                hideDetails={true}
+              />
+            )}
           />
         );
         
       case "twitter_handle":
         return (
-          <FormField
+          <FormField key={currentStep}
             control={form.control}
             name="twitter_handle"
             render={({ field }) => (
@@ -175,19 +182,26 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) =>
         
       case "twitter_collab_types":
         return (
-          <LimitedTopicSelector
-            options={COLLAB_TYPES}
-            name="twitter_collab_types"
-            label="Type of Twitter Collaboration"
-            maxSelections={3}
-            form={form}
-            required
+          <FormField key={currentStep}
+            control={form.control}
+            name="guest_topics"
+            render={() => (
+              <LimitedTopicSelector 
+                name="guest_topics"
+                label="Topics you want to talk about"
+                maxSelections={3}
+                form={form}
+                options={COLLAB_TOPICS as unknown as string[]}
+                required
+                hideDetails={true}
+              />
+            )}
           />
         );
         
       case "twitter_followers":
         return (
-          <FormField
+          <FormField key={currentStep}
             control={form.control}
             name="follower_count"
             render={({ field }) => (
@@ -225,7 +239,7 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) =>
         
       case "twitter_description":
         return (
-          <CharLimitedTextarea
+          <CharLimitedTextarea key={currentStep}
             name="description"
             label="Short Description"
             placeholder="Describe your collaboration idea"
@@ -237,7 +251,7 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) =>
         );
         
       case "twitter_date":
-        return <DateSelector form={form} />;
+        return <DateSelector form={form} key={currentStep} />;
         
       default:
         return (

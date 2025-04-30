@@ -43,7 +43,7 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
   switch (step) {
     case "newsletter_info":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="newsletter_name"
@@ -112,7 +112,7 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
     
     case "topics_and_date":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="description"
@@ -147,6 +147,8 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
                 maxSelections={3}
                 form={form}
                 options={COLLAB_TOPICS as unknown as string[]}
+                required
+                hideDetails={true}
               />
             )}
           />

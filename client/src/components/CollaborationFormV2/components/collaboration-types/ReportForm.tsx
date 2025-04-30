@@ -62,7 +62,7 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
   switch (step) {
     case "report_info":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="report_name"
@@ -145,7 +145,7 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
     
     case "description":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="description"
@@ -174,18 +174,19 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
       
     case "topics":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="topics"
             render={() => (
-              <LimitedTopicSelector 
+              <LimitedTopicSelector
                 name="topics"
-                label="Report Topics"
+                label="Relevant Topics"
                 maxSelections={3}
                 form={form}
                 options={COLLAB_TOPICS as unknown as string[]}
                 required
+                hideDetails={true}
               />
             )}
           />
@@ -194,7 +195,7 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
       
     case "date":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <DateSelector form={form} />
           
           <FormField

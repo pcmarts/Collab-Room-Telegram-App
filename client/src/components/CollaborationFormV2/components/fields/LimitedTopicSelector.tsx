@@ -17,6 +17,7 @@ interface LimitedTopicSelectorProps {
   maxSelections: number;
   form: UseFormReturn<any>;
   required?: boolean;
+  hideDetails?: boolean;
 }
 
 /**
@@ -30,6 +31,7 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
   maxSelections,
   form,
   required = false,
+  hideDetails = false,
 }) => {
   const { toast } = useToast();
   
@@ -76,40 +78,50 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
         
         return (
           <FormItem>
-            <div className="flex items-center justify-between">
-              <FormLabel className="text-sm">
-                {label} <span className="text-muted-foreground font-normal">(min 1, max {maxSelections})</span>
-                {required && <span className="text-destructive ml-1">*</span>}
-              </FormLabel>
-              <span 
-                className={`text-xs ${
-                  atMaxSelections 
-                    ? 'text-destructive font-medium' 
-                    : selections.length > 0 
-                      ? 'text-primary' 
-                      : 'text-muted-foreground'
-                }`}
-              >
-                {selections.length}/{maxSelections}
-              </span>
-            </div>
+            {/* Conditionally render the label and count */}
+            {!hideDetails && (
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-sm">
+                  {label} <span className="text-muted-foreground font-normal">(min 1, max {maxSelections})</span>
+                  {required && <span className="text-destructive ml-1">*</span>}
+                </FormLabel>
+                <span 
+                  className={`text-xs ${
+                    atMaxSelections 
+                      ? 'text-destructive font-medium' 
+                      : selections.length > 0 
+                        ? 'text-primary' 
+                        : 'text-muted-foreground'
+                  }`}
+                >
+                  {selections.length}/{maxSelections}
+                </span>
+              </div>
+            )}
             
             <div className="grid grid-cols-2 gap-2 mt-2">
               {options.map(option => {
                 // Make sure field.value is an array before checking includes
                 const isSelected = Array.isArray(field.value) && field.value.includes(option);
+                // Determine if the button should be disabled
+                const isDisabled = atMaxSelections && !isSelected;
                 
                 return (
                   <Button
                     key={option}
                     type="button"
                     variant={isSelected ? "default" : "outline"}
-                    className={`h-auto py-2 text-xs justify-start text-left ${
+                    className={`h-auto py-2 text-xs justify-start text-left transition-opacity ${
                       isSelected 
                         ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-accent/20'
+                        : isDisabled
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:bg-accent/20'
                     }`}
                     onClick={() => {
+                      // Prevent click action if disabled
+                      if (isDisabled) return;
+                      
                       console.log(`Button clicked for option "${option}"`, {
                         isSelected,
                         currentValue: field.value,
@@ -137,7 +149,7 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
                         });
                       }
                     }}
-                    disabled={false} // Removed disabled state to ensure buttons are always clickable
+                    disabled={isDisabled}
                   >
                     {isSelected && <CheckIcon className="mr-2 h-4 w-4" />}
                     {option}

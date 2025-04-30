@@ -129,19 +129,26 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) =>
     switch (currentStep) {
       case "podcast_topics":
         return (
-          <LimitedTopicSelector
-            options={TOPICS}
+          <FormField key={currentStep}
+            control={form.control}
             name="topics"
-            label="Select Topics"
-            maxSelections={3}
-            form={form}
-            required
+            render={() => (
+              <LimitedTopicSelector
+                name="topics"
+                label="Podcast Topics"
+                maxSelections={3}
+                form={form}
+                options={COLLAB_TOPICS as unknown as string[]}
+                required
+                hideDetails={true}
+              />
+            )}
           />
         );
         
       case "podcast_details":
         return (
-          <div className="space-y-4">
+          <div className="space-y-4" key={currentStep}>
             <FormField
               control={form.control}
               name="podcast_name"
@@ -191,7 +198,7 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) =>
         
       case "podcast_audience":
         return (
-          <FormField
+          <FormField key={currentStep}
             control={form.control}
             name="estimated_reach"
             render={({ field }) => (
@@ -229,7 +236,7 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) =>
         
       case "podcast_description":
         return (
-          <CharLimitedTextarea
+          <CharLimitedTextarea key={currentStep}
             name="description"
             label="Short Description"
             placeholder="Describe what topics or questions you'd like to cover"
@@ -241,7 +248,7 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) =>
         );
         
       case "podcast_date":
-        return <DateSelector form={form} />;
+        return <DateSelector form={form} key={currentStep} />;
         
       default:
         return (

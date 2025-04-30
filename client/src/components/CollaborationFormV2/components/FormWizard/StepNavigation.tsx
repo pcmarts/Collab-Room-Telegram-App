@@ -134,6 +134,26 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       isStepValid = nameValid && linkValid;
     } else if (currentStepId === "podcast_audience") {
       isStepValid = await form.trigger("estimated_reach");
+    }
+    // For LiveStream stream_info step
+    else if (currentStepId === "stream_info") {
+      const platformNameValid = await form.trigger("platform_name");
+      const audienceSizeValid = await form.trigger("audience_size");
+      
+      // Stream link is optional, so only validate if there's a value
+      let streamLinkValid = true;
+      const streamLink = form.getValues("stream_link");
+      if (streamLink && streamLink.length > 0) {
+        streamLinkValid = await form.trigger("stream_link");
+      }
+      
+      isStepValid = platformNameValid && audienceSizeValid && streamLinkValid;
+      console.log("LiveStream info validation:", {
+        platformName: platformNameValid,
+        streamLink: streamLinkValid,
+        audienceSize: audienceSizeValid,
+        overall: isStepValid
+      });
     } else {
       // If we don't recognize the step, do a general validation
       isStepValid = await form.trigger();

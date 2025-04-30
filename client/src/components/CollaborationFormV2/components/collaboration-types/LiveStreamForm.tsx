@@ -59,7 +59,7 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
   switch (step) {
     case "stream_info":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="platform_name"
@@ -81,12 +81,12 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
             name="stream_link"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Previous Stream Link</FormLabel>
+                <FormLabel>Previous Stream Link <span className="text-xs text-muted-foreground">(optional)</span></FormLabel>
                 <FormControl>
                   <Input placeholder="https://www.youtube.com/watch?v=" {...field} />
                 </FormControl>
                 <FormDescription className="text-xs">
-                  Share a link to a previous livestream you've hosted
+                  Share a link to a previous livestream you've hosted (if available)
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -122,7 +122,7 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
     
     case "description":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="description"
@@ -151,7 +151,7 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
     
     case "topics":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <FormField
             control={form.control}
             name="topics"
@@ -163,6 +163,7 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
                 form={form}
                 options={COLLAB_TOPICS as unknown as string[]}
                 required
+                hideDetails={true}
               />
             )}
           />
@@ -171,7 +172,7 @@ export const LiveStreamForm: React.FC<{ step: string }> = ({ step }) => {
       
     case "date":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" key={step}>
           <DateSelector form={form} />
           
           <FormField
