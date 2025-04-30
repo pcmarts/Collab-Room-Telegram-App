@@ -29,6 +29,7 @@ export const twitterSpacesSteps: Step[] = [
   {
     id: "description",
     title: "Description",
+    description: "Provide a brief description for your Twitter Space"
   },
   {
     id: "topics",

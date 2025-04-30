@@ -29,6 +29,7 @@ export const reportSteps: Step[] = [
   {
     id: "description",
     title: "Description",
+    description: "Provide a brief description of your report"
   },
   {
     id: "topics",
