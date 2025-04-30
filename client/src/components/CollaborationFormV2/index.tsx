@@ -120,25 +120,79 @@ const CollaborationFormContent: React.FC = () => {
     // For other steps, render the appropriate type-specific form based on selected type
     const stepId = currentStepId || "";
     
-    // Create a unique form instance key for each type
-    // This ensures form state is completely isolated between different types
-    const formInstanceKey = `${formInstanceId}_${selectedTypeId || "unknown"}`;
+    // ANTI-BLEEDING: Create a completely unique instance key on EVERY render
+    // This forces React to create a new component instance each time,
+    // completely isolating state and preventing any value bleeding
+    const timestampKey = Date.now();
+    const formInstanceKey = `${selectedTypeId || "unknown"}_${timestampKey}`;
     
+    // Cache buster component to fully reset before rendering any form
+    const TypeWrapper = ({ children }: { children: React.ReactNode }) => {
+      // Use a useEffect to reset any potential field bleeding when the wrapper mounts
+      React.useEffect(() => {
+        // Safety: Get current form type to preserve
+        const currentType = form.getValues("collab_type");
+        
+        // Unregister all fields except collab_type to ensure clean form
+        Object.keys(form.getValues()).forEach(field => {
+          if (field !== "collab_type") {
+            form.unregister(field);
+          }
+        });
+        
+        // Ensure collab_type is still set
+        form.setValue("collab_type", currentType, { shouldValidate: false });
+        
+        console.log(`TypeWrapper mounted for ${selectedTypeId} with unique key ${formInstanceKey}`);
+      }, []);
+      
+      return <>{children}</>;
+    };
+    
+    // Render the appropriate form type with a TypeWrapper to ensure clean state
     switch (selectedTypeId) {
       case "Co-Marketing on Twitter":
-        return <TwitterCollabForm key={formInstanceKey} step={stepId} />;
+        return (
+          <TypeWrapper key={formInstanceKey}>
+            <TwitterCollabForm step={stepId} />
+          </TypeWrapper>
+        );
       case "Podcast Guest Appearance":
-        return <PodcastCollabForm key={formInstanceKey} step={stepId} />;
+        return (
+          <TypeWrapper key={formInstanceKey}>
+            <PodcastCollabForm step={stepId} />
+          </TypeWrapper>
+        );
       case "Twitter Spaces Guest":
-        return <TwitterSpacesForm key={formInstanceKey} step={stepId} />;
+        return (
+          <TypeWrapper key={formInstanceKey}>
+            <TwitterSpacesForm step={stepId} />
+          </TypeWrapper>
+        );
       case "Live Stream Guest Appearance":
-        return <LiveStreamForm key={formInstanceKey} step={stepId} />;
+        return (
+          <TypeWrapper key={formInstanceKey}>
+            <LiveStreamForm step={stepId} />
+          </TypeWrapper>
+        );
       case "Report & Research Feature":
-        return <ReportForm key={formInstanceKey} step={stepId} />;
+        return (
+          <TypeWrapper key={formInstanceKey}>
+            <ReportForm step={stepId} />
+          </TypeWrapper>
+        );
       case "Newsletter Feature":
-        return <NewsletterForm key={formInstanceKey} step={stepId} />;
+        return (
+          <TypeWrapper key={formInstanceKey}>
+            <NewsletterForm step={stepId} />
+          </TypeWrapper>
+        );
       case "Blog Post Feature":
-        return <BlogPostForm key={formInstanceKey} step={stepId} />;
+        return (
+          <TypeWrapper key={formInstanceKey}>
+            <BlogPostForm step={stepId} />
+          </TypeWrapper>
+        );
       default:
         // Fallback when no collaboration type is selected or supported
         return (
