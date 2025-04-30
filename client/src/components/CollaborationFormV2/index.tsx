@@ -136,14 +136,14 @@ const CollaborationFormContent: React.FC = () => {
     <div className="w-full max-w-3xl mx-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <ScrollArea className="h-full max-h-[60vh]">
+          <div className="scrollable-container">
             <StepContainer
               title={currentStep === 0 ? InitialStep.title : getStepTitle()}
               description={currentStep === 0 ? InitialStep.description : getStepDescription()}
             >
               {renderStepContent()}
             </StepContainer>
-          </ScrollArea>
+          </div>
           
           <StepNavigation 
             form={form} 

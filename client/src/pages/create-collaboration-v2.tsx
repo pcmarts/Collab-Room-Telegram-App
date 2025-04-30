@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { CollaborationFormV2 } from "@/components/CollaborationFormV2";
+import "./scroll-styles.css";
 
 /**
  * Create Collaboration V2 Page
@@ -16,23 +17,30 @@ export default function CreateCollaborationV2() {
   
   // Set up scrolling behavior on mount
   useEffect(() => {
-    // This disables the default fixed positioning and overflow hidden
-    // that Telegram's WebApp applies to the document body
-    rootElementRef.current = document.documentElement;
-    originalOverflowRef.current = document.body.style.overflow;
+    // Store original values
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPosition = document.body.style.position;
+    const originalBodyTop = document.body.style.top;
+    const originalBodyWidth = document.body.style.width;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
     
-    // Enable smooth scrolling for the page
+    // Apply scrolling fixes
     document.body.style.overflow = "auto";
-    if (rootElementRef.current) {
-      rootElementRef.current.style.overflow = "auto";
-    }
+    document.body.style.position = "static";
+    document.body.style.top = "0";
+    document.body.style.width = "100%";
+    document.documentElement.style.overflow = "auto";
+    
+    // Make sure the page can scroll
+    window.scrollTo(0, 0);
     
     // Clean up and restore original settings on unmount
     return () => {
-      document.body.style.overflow = originalOverflowRef.current;
-      if (rootElementRef.current) {
-        rootElementRef.current.style.overflow = "";
-      }
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.position = originalBodyPosition;
+      document.body.style.top = originalBodyTop;
+      document.body.style.width = originalBodyWidth;
+      document.documentElement.style.overflow = originalHtmlOverflow;
     };
   }, []);
   

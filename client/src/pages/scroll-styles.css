@@ -1,0 +1,30 @@
+/* Custom scrolling styles for collaboration form */
+html, body {
+  overflow: auto !important;
+  height: auto !important;
+  position: static !important;
+  touch-action: auto !important;
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+}
+
+/* Ensure smooth scrolling */
+.scrollable-container {
+  overflow-y: auto;
+  max-height: 55vh;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+  padding-right: 8px;
+}
