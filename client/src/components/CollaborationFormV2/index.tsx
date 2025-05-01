@@ -136,6 +136,11 @@ const CollaborationFormContent: React.FC = () => {
     <div className="w-full max-w-3xl mx-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Progress indicator stays outside the scrollable area */}
+          <div className="mb-3">
+            <StepIndicator />
+          </div>
+          
           <div className="scrollable-container">
             <StepContainer
               title={currentStep === 0 ? InitialStep.title : getStepTitle()}
@@ -143,17 +148,13 @@ const CollaborationFormContent: React.FC = () => {
             >
               {renderStepContent()}
             </StepContainer>
-          </div>
-          
-          <StepNavigation 
-            form={form} 
-            onSubmit={onSubmit}
-            isSubmitting={isSubmitting} 
-          />
-          
-          {/* Progress indicator moved to bottom of form */}
-          <div className="mt-3">
-            <StepIndicator />
+            
+            {/* Navigation buttons now inside the scrollable area */}
+            <StepNavigation 
+              form={form} 
+              onSubmit={onSubmit}
+              isSubmitting={isSubmitting} 
+            />
           </div>
         </form>
       </Form>
