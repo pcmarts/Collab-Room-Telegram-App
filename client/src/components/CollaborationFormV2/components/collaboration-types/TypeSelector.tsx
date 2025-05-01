@@ -103,8 +103,11 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
           </FormLabel>
           <div className="flex flex-col gap-2">
             {COLLAB_TYPES
-              // Filter out the Newsletter Feature option completely
-              .filter(type => type !== "Newsletter Feature")
+              // Filter out unavailable collaboration types completely
+              .filter(type => 
+                type !== "Newsletter Feature" && 
+                type !== "Blog Post Feature"
+              )
               .map((type) => {
                 const isSelected = field.value === type;
                 const isTypeAvailable = availableTypes.some(t => t.id === type);

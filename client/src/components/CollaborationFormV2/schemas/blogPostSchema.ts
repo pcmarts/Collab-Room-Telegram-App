@@ -13,7 +13,6 @@ export const blogPostSchema = z.object({
   blog_url: z.string()
     .url("Please enter a valid blog URL"),
   monthly_visitors: z.enum(AUDIENCE_SIZE_RANGES),
-  post_type: z.enum(["Guest Post", "Feature", "Interview", "Review", "Tutorial", "Other"]),
   // Include details field for backward compatibility with existing data
   details: z.record(z.any()).optional()
 });
@@ -26,6 +25,5 @@ export const blogPostDefaults = {
   blog_name: "",
   blog_url: "",
   monthly_visitors: AUDIENCE_SIZE_RANGES[0],
-  post_type: "Feature",
   details: {} // Empty details object for compatibility
 };

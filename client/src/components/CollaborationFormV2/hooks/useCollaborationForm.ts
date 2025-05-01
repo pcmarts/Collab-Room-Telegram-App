@@ -219,9 +219,7 @@ export const useCollaborationForm = <T extends Record<string, any>>(
           blog_link: values.blog_url || "",
           blog_name: values.blog_name || "",
           est_readers: values.monthly_visitors || "Under 100",
-          estimated_release_date: values.date_type === "specific_date" ? values.specific_date : "",
-          // Additional fields from the form
-          post_type: values.post_type || "Feature"
+          estimated_release_date: values.date_type === "specific_date" ? values.specific_date : ""
         };
         
       default:

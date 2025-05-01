@@ -96,31 +96,6 @@ export const BlogPostForm: React.FC<{ step: string }> = ({ step }) => {
               </FormItem>
             )}
           />
-          
-          <FormField
-            control={form.control}
-            name="post_type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Post Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select post type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {["Guest Post", "Feature", "Interview", "Review", "Tutorial", "Other"].map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
       );
     
