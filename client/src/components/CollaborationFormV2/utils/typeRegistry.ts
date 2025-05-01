@@ -56,6 +56,7 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
     defaultValues: reportDefaults,
     steps: reportSteps
   },
+  /* Temporarily hidden while fixing validation issues
   {
     id: "Newsletter Feature",
     name: "Newsletter Feature",
@@ -63,6 +64,7 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
     defaultValues: newsletterDefaults,
     steps: newsletterSteps
   },
+  */
   {
     id: "Blog Post Feature",
     name: "Blog Post Feature",
