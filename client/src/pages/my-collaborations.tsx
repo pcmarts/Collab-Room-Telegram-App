@@ -937,7 +937,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             <div>
               <div className="my-8 py-4 flex justify-center">
                 <GlowButton 
-                  onClick={() => setLocation('/create-collaboration-steps')}
+                  onClick={() => setLocation('/create-collaboration-v2')}
                   className="w-full max-w-md py-6"
                 >
                   Create New Collab
@@ -997,7 +997,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               
               {/* Bottom CTA Button */}
               <Button 
-                onClick={() => setLocation('/create-collaboration-steps')}
+                onClick={() => setLocation('/create-collaboration-v2')}
                 className="w-full max-w-xs py-3 mx-auto mb-6 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Create Your First Collab
