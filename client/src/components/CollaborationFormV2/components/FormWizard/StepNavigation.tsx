@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useFormWizard } from "../../contexts/FormWizardContext";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { TWITTER_COLLAB_TYPES } from "@shared/schema";
 
 interface StepNavigationProps {
   form: UseFormReturn<any>;
@@ -115,6 +116,14 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       isStepValid = await form.trigger("twitter_handle");
     } else if (currentStepId === "twitter_collab_types") {
       isStepValid = await form.trigger("twitter_collab_types");
+      console.log("Twitter collab types validation:", isStepValid);
+      console.log("Twitter collab types value:", form.getValues("twitter_collab_types"));
+      console.log("Twitter collab types field state:", form.getFieldState("twitter_collab_types"));
+      console.log("TWITTER_COLLAB_TYPES schema values:", TWITTER_COLLAB_TYPES);
+      
+      // Show the exact validation schema zod is using
+      const selectedType = form.getValues("collab_type");
+      console.log("Selected collaboration type:", selectedType);
     } else if (currentStepId === "twitter_followers") {
       isStepValid = await form.trigger("follower_count");
     } else if (currentStepId === "twitter_description" || currentStepId === "podcast_description") {

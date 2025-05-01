@@ -17,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface DateSelectorProps {
   form: UseFormReturn<any>;
+  step?: string;
 }
 
 /**
@@ -24,14 +25,14 @@ interface DateSelectorProps {
  * Allows selection between "Any Future Date" or a specific date
  * Uses a user-friendly calendar picker that works well on mobile
  */
-export const DateSelector: React.FC<DateSelectorProps> = ({ form }) => {
+export const DateSelector: React.FC<DateSelectorProps> = ({ form, step }) => {
   const dateType = form.watch("date_type");
   
   // Get today's date to use as the minimum selectable date
   const today = new Date();
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" key={step}>
       <FormField
         control={form.control}
         name="date_type"
@@ -86,7 +87,7 @@ export const DateSelector: React.FC<DateSelectorProps> = ({ form }) => {
                       )}
                     >
                       {field.value ? (
-                        format(new Date(field.value), "PPP")
+                        format(typeof field.value === 'string' ? new Date(field.value) : field.value, "PPP")
                       ) : (
                         <span>Pick a date</span>
                       )}
@@ -97,8 +98,15 @@ export const DateSelector: React.FC<DateSelectorProps> = ({ form }) => {
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={field.onChange}
+                    selected={field.value ? (typeof field.value === 'string' ? new Date(field.value) : field.value) : undefined}
+                    onSelect={(date) => {
+                      // Convert date to string in ISO format before setting in form
+                      if (date) {
+                        field.onChange(date.toISOString().split('T')[0]);
+                      } else {
+                        field.onChange(null);
+                      }
+                    }}
                     disabled={(date) => date < today}
                     initialFocus
                   />

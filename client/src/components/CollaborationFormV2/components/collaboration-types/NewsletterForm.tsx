@@ -60,6 +60,20 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
           
           <FormField
             control={form.control}
+            name="newsletter_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Newsletter URL <span className="text-xs text-muted-foreground">(optional)</span></FormLabel>
+                <FormControl>
+                  <Input placeholder="https://newsletter-url.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
             name="subscriber_count"
             render={({ field }) => (
               <FormItem>
@@ -74,31 +88,6 @@ export const NewsletterForm: React.FC<{ step: string }> = ({ step }) => {
                     {AUDIENCE_SIZE_RANGES.map((size) => (
                       <SelectItem key={size} value={size}>
                         {size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="format"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Feature Format</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select feature format" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {["feature", "interview", "review", "guest post", "other"].map((format) => (
-                      <SelectItem key={format} value={format}>
-                        {format.charAt(0).toUpperCase() + format.slice(1)}
                       </SelectItem>
                     ))}
                   </SelectContent>

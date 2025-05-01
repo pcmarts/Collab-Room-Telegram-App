@@ -95,31 +95,26 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) =>
     console.log("Form initialized with:", completeDefaults);
   }, [form]);
   
-  // Validate only the current field whenever the step changes
+  // Modify the validation effect to avoid pre-emptive validation
   useEffect(() => {
     if (!form) return;
     
     console.log("Current step ID:", currentStep);
     
-    // Wait a short moment to ensure fields are set before validating
-    setTimeout(() => {
-      // Then validate only the current field
-      if (currentStep === "podcast_topics") {
-        form.trigger("topics");
-      } else if (currentStep === "podcast_details") {
-        form.trigger("podcast_name");
-        form.trigger("podcast_link");
-      } else if (currentStep === "podcast_audience") {
-        form.trigger("estimated_reach");
-      } else if (currentStep === "podcast_description") {
-        form.trigger("description");
-      } else if (currentStep === "podcast_date") {
-        form.trigger("date_type");
-        if (form.getValues("date_type") === "specific_date") {
-          form.trigger("specific_date");
-        }
+    // Don't immediately validate fields when step changes
+    // Instead, only set up the form for the current step
+    
+    // For fields that should have default values, we can set them here
+    if (currentStep === "podcast_audience" && !form.getValues("estimated_reach")) {
+      form.setValue("estimated_reach", AUDIENCE_SIZES[0], { shouldValidate: false });
+    } else if (currentStep === "podcast_date" && !form.getValues("date_type")) {
+      form.setValue("date_type", "specific_date", { shouldValidate: false });
+      if (!form.getValues("specific_date")) {
+        form.setValue("specific_date", new Date().toISOString().split("T")[0], { shouldValidate: false });
       }
-    }, 100);
+    }
+    
+    // Don't trigger validation on step change - validation will happen on blur, change, or when Next is clicked
   }, [currentStep, form]);
 
   // Render the current step content

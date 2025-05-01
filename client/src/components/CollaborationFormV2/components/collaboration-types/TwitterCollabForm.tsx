@@ -21,8 +21,16 @@ import { Step } from "../../contexts/FormWizardContext";
 const TOPICS = [...COLLAB_TOPICS];
 const COLLAB_TYPES = [...TWITTER_COLLAB_TYPES];
 
+// Add debugging to see available types
+console.log("Available Twitter collab types:", COLLAB_TYPES);
+
 // Define the steps for Twitter collaboration form
 export const twitterCollabSteps: Step[] = [
+  {
+    id: "twitter_collab_types",
+    title: "Collaboration Types",
+    description: "What type of Twitter collaboration?",
+  },
   {
     id: "twitter_topics",
     title: "Topics",
@@ -32,11 +40,6 @@ export const twitterCollabSteps: Step[] = [
     id: "twitter_handle",
     title: "Twitter Handle",
     description: "What's the X profile hosting the collab?",
-  },
-  {
-    id: "twitter_collab_types",
-    title: "Collaboration Types",
-    description: "What type of Twitter collaboration?",
   },
   {
     id: "twitter_followers",
@@ -138,10 +141,10 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) =>
         return (
           <FormField key={currentStep}
             control={form.control}
-            name="host_topics"
+            name="topics"
             render={() => (
               <LimitedTopicSelector 
-                name="host_topics"
+                name="topics"
                 label="Topics your audience cares about"
                 maxSelections={3}
                 form={form}
@@ -184,16 +187,16 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) =>
         return (
           <FormField key={currentStep}
             control={form.control}
-            name="guest_topics"
+            name="twitter_collab_types"
             render={() => (
               <LimitedTopicSelector 
-                name="guest_topics"
-                label="Topics you want to talk about"
+                name="twitter_collab_types"
+                label="Collaboration types"
                 maxSelections={3}
                 form={form}
-                options={COLLAB_TOPICS as unknown as string[]}
+                options={TWITTER_COLLAB_TYPES as unknown as string[]}
                 required
-                hideDetails={true}
+                hideDetails={false}
               />
             )}
           />

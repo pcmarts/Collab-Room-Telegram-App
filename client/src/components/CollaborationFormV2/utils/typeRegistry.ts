@@ -30,7 +30,7 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
   },
   {
     id: "Co-Marketing on Twitter",
-    name: "Co-Marketing on Twitter",
+    name: "Twitter Co-marketing",
     schema: twitterCollabSchema,
     defaultValues: twitterCollabDefaults,
     steps: twitterCollabSteps
