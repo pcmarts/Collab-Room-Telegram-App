@@ -17,8 +17,8 @@ export const StepContainer: React.FC<StepContainerProps> = ({
   children,
 }) => {
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-4">
+    <Card className="shadow-sm border-0">
+      <CardHeader className="pb-2">
         <CardTitle className="text-lg">{title}</CardTitle>
         {description && (
           <CardDescription className="text-sm">{description}</CardDescription>
