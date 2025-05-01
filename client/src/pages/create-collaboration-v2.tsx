@@ -45,14 +45,14 @@ export default function CreateCollaborationV2() {
   }, []);
   
   return (
-    <div className="container py-6 max-w-5xl">
-      <div className="mb-3">
+    <div className="container py-4 max-w-5xl">
+      <div className="mb-2">
         <PageHeader
           title="🤝 Create Your Collab"
         />
       </div>
       
-      <div className="bg-card rounded-lg shadow p-6">
+      <div className="bg-card rounded-lg shadow p-4">
         <CollaborationFormV2 />
       </div>
     </div>
