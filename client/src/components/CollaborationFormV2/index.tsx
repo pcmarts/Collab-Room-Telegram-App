@@ -150,11 +150,6 @@ const CollaborationFormContent: React.FC = () => {
             onSubmit={onSubmit}
             isSubmitting={isSubmitting} 
           />
-          
-          {/* Progress indicator moved to bottom of form */}
-          <div className="mt-3">
-            <StepIndicator />
-          </div>
         </form>
       </Form>
     </div>
