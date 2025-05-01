@@ -275,7 +275,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
   const collabTypeSelected = form.watch("collab_type");
   
   return (
-    <div className="flex justify-between pt-6 mt-6 mb-2 border-t">
+    <div className="flex justify-between pt-6 mt-4 border-t">
       {/* Hide back button on first step */}
       {!isFirstStep && (
         <Button
