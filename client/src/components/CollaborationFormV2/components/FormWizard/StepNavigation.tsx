@@ -144,6 +144,27 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     } else if (currentStepId === "podcast_audience") {
       isStepValid = await form.trigger("estimated_reach");
     }
+    // For Newsletter newsletter_info step
+    else if (currentStepId === "newsletter_info") {
+      // Validate newsletter name and subscriber count (URL is optional)
+      const nameValid = await form.trigger("newsletter_name");
+      const subscriberValid = await form.trigger("subscriber_count");
+      
+      // Newsletter URL is optional, only validate if non-empty
+      let urlValid = true;
+      const newsletterUrl = form.getValues("newsletter_url");
+      if (newsletterUrl && newsletterUrl.length > 0) {
+        urlValid = await form.trigger("newsletter_url");
+      }
+      
+      isStepValid = nameValid && subscriberValid && urlValid;
+      console.log("Newsletter info validation:", {
+        name: nameValid,
+        subscriber: subscriberValid,
+        url: urlValid,
+        overall: isStepValid
+      });
+    }
     // For LiveStream stream_info step
     else if (currentStepId === "stream_info") {
       const platformNameValid = await form.trigger("platform_name");
@@ -176,13 +197,38 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       console.log("Form errors:", form.formState.errors);
       console.log("Field states:", Object.keys(form.getFieldState));
       
-      // Log specific field validations for Twitter Spaces form
+      // Log specific field validations for forms with topics_and_date step
       if (currentStepId === "topics_and_date") {
         console.log("Topics field validation:", form.getFieldState("topics"));
         console.log("Date type validation:", form.getFieldState("date_type"));
         console.log("Is free collab validation:", form.getFieldState("is_free_collab"));
+        console.log("Description validation:", form.getFieldState("description"));
         if (form.getValues("date_type") === "specific_date") {
           console.log("Specific date validation:", form.getFieldState("specific_date"));
+        }
+        
+        // Check if this is the newsletter form by testing for newsletter fields
+        if (form.getValues("newsletter_name") !== undefined) {
+          // Add specific validation for the newsletter form's topics_and_date step
+          const topicsValid = await form.trigger("topics");
+          const descriptionValid = await form.trigger("description");
+          const dateTypeValid = await form.trigger("date_type");
+          const freeCollabValid = await form.trigger("is_free_collab");
+          
+          let specificDateValid = true;
+          if (form.getValues("date_type") === "specific_date") {
+            specificDateValid = await form.trigger("specific_date");
+          }
+          
+          isStepValid = topicsValid && descriptionValid && dateTypeValid && freeCollabValid && specificDateValid;
+          console.log("Newsletter topics_and_date validation:", {
+            topics: topicsValid,
+            description: descriptionValid,
+            dateType: dateTypeValid,
+            specificDate: specificDateValid,
+            freeCollab: freeCollabValid,
+            overall: isStepValid
+          });
         }
       }
       
