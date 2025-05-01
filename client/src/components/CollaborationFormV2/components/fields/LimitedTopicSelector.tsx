@@ -1,6 +1,5 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { CheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   FormField,
@@ -151,7 +150,6 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
                     }}
                     disabled={isDisabled}
                   >
-                    {isSelected && <CheckIcon className="mr-2 h-4 w-4" />}
                     {option}
                   </Button>
                 );
