@@ -1656,7 +1656,7 @@ export default function DiscoverPage() {
               
               <Button 
                 variant="outline" 
-                onClick={() => setLocation('/create-collaboration-steps')}
+                onClick={() => setLocation('/create-collaboration-v2')}
                 className="flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
