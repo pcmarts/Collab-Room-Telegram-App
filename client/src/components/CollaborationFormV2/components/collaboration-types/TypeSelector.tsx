@@ -102,39 +102,42 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
             <span className="text-destructive ml-1">*</span>
           </FormLabel>
           <div className="flex flex-col gap-2">
-            {COLLAB_TYPES.map((type) => {
-              const isSelected = field.value === type;
-              const isTypeAvailable = availableTypes.some(t => t.id === type);
-              
-              return (
-                <Button
-                  key={type}
-                  type="button"
-                  variant={isSelected ? "default" : "outline"}
-                  className={`
-                    w-full h-auto py-3 px-3 text-sm justify-start
-                    ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-card'}
-                    ${!isTypeAvailable && !isSelected ? 'opacity-60' : ''}
-                  `}
-                  onClick={() => handleTypeSelect(type)}
-                  disabled={!isTypeAvailable && !isSelected}
-                >
-                  {isSelected ? (
-                    <CheckIcon className="mr-2 h-4 w-4" />
-                  ) : (
-                    <div className="mr-2 h-4 w-4 flex items-center justify-center">
-                      {React.createElement(getCollaborationTypeIcon(type), { size: 16 })}
-                    </div>
-                  )}
-                  {type}
-                  {!isTypeAvailable && !isSelected && (
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      Coming soon
-                    </span>
-                  )}
-                </Button>
-              );
-            })}
+            {COLLAB_TYPES
+              // Filter out the Newsletter Feature option completely
+              .filter(type => type !== "Newsletter Feature")
+              .map((type) => {
+                const isSelected = field.value === type;
+                const isTypeAvailable = availableTypes.some(t => t.id === type);
+                
+                return (
+                  <Button
+                    key={type}
+                    type="button"
+                    variant={isSelected ? "default" : "outline"}
+                    className={`
+                      w-full h-auto py-3 px-3 text-sm justify-start
+                      ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-card'}
+                      ${!isTypeAvailable && !isSelected ? 'opacity-60' : ''}
+                    `}
+                    onClick={() => handleTypeSelect(type)}
+                    disabled={!isTypeAvailable && !isSelected}
+                  >
+                    {isSelected ? (
+                      <CheckIcon className="mr-2 h-4 w-4" />
+                    ) : (
+                      <div className="mr-2 h-4 w-4 flex items-center justify-center">
+                        {React.createElement(getCollaborationTypeIcon(type), { size: 16 })}
+                      </div>
+                    )}
+                    {type}
+                    {!isTypeAvailable && !isSelected && (
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        Coming soon
+                      </span>
+                    )}
+                  </Button>
+                );
+              })}
           </div>
           <FormMessage />
         </FormItem>
