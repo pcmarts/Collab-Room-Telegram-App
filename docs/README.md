@@ -2,6 +2,24 @@
 
 Welcome to the documentation for The Collab Room - a Web3 professional networking platform that transforms digital collaboration through intelligent, blockchain-powered matching technologies.
 
+## Project Organization
+
+The project has been organized into a structured directory layout for better maintainability:
+
+- `/assets` - Images, logos, media files, and logs
+- `/client` - Frontend React application code
+- `/docs` - Project documentation and technical guides
+- `/examples` - Code samples and examples
+- `/public` - Static assets for the web application
+- `/scripts` - Utility scripts, migrations, and tests
+  - `/scripts/migrations` - Database migration scripts
+  - `/scripts/tests` - Test scripts and testing utilities
+  - `/scripts/utils` - Utility scripts and tools
+- `/server` - Backend Express application code
+- `/shared` - Shared code between client and server
+
+Configuration files like package.json, tsconfig.json, and .env remain in the root directory.
+
 ## Documentation Structure
 
 This documentation is organized into the following sections:
@@ -28,7 +46,7 @@ This documentation is organized into the following sections:
 11. [Deployment](./deployment/README.md) - Deployment processes and troubleshooting
    * [SQL Import Fix](./deployment/sql-import-fix.md) - Documentation on fixing SQL import issues
 12. [Security Audit](./security-audit-report.md) - Comprehensive security audit findings and remediations
-13. [Changelog](../CHANGELOG.md) - History of changes to the application
+13. [Changelog](./CHANGELOG.md) - History of changes to the application
 
 ## Quick Start
 
