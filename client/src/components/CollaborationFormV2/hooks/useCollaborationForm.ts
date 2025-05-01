@@ -57,62 +57,13 @@ export const useCollaborationForm = <T extends Record<string, any>>(
       // Validate the form data against the schema
       const values = form.getValues();
       
-      // Create a copy of the values for transformation
-      const submissionData = { ...values };
-      
-      // Extract fields that should be in the details object
-      // Fields that are part of the base schema should stay at the root level
-      const baseFields = ['topics', 'description', 'date_type', 'specific_date', 'is_free_collab', 'collab_type'];
-      const filterFields = [
-        'filter_company_sectors_enabled', 'filter_company_followers_enabled', 
-        'filter_user_followers_enabled', 'filter_funding_stages_enabled', 
-        'filter_token_status_enabled', 'filter_blockchain_networks_enabled',
-        'required_company_sectors', 'required_funding_stages', 'required_token_status',
-        'required_blockchain_networks', 'min_company_followers', 'min_user_followers'
-      ];
-      
-      // Initialize details object if it doesn't exist
-      if (!submissionData.details) {
-        submissionData.details = {};
-      }
-      
-      // Move all non-base, non-filter fields to the details object
-      Object.keys(values).forEach(key => {
-        if (!baseFields.includes(key) && !filterFields.includes(key) && key !== 'details') {
-          submissionData.details[key] = values[key];
-        }
-      });
-      
-      // Add type-specific required fields to details
-      // This ensures backwards compatibility with the backend API
-      switch (values.collab_type) {
-        case "Twitter Spaces Guest":
-          submissionData.details.title = submissionData.description || "";
-          submissionData.details.date_selection = submissionData.date_type || "specific_date";
-          submissionData.details.expected_audience_size = "100-500"; // Default value
-          break;
-        case "Podcast Guest Appearance":
-          submissionData.details.podcast_name = submissionData.podcast_name || "";
-          submissionData.details.podcast_link = submissionData.podcast_link || "";
-          break;
-        case "Co-Marketing on Twitter":
-          submissionData.details.twittercomarketing_type = submissionData.twitter_collab_types || [];
-          submissionData.details.host_twitter_handle = submissionData.twitter_handle || "";
-          submissionData.details.host_follower_count = submissionData.follower_count || "";
-          break;
-        default:
-          break;
-      }
-      
-      console.log("Submitting collaboration data:", submissionData);
-      
       // Make API request to create the collaboration
       const response = await fetch("/api/collaborations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(submissionData),
+        body: JSON.stringify(values),
       });
       
       if (!response.ok) {
