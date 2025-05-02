@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -393,6 +393,174 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     }
   };
   
+  // Return JSX with skeletons instead of loading state
+  return (
+    <MobileCheck>
+      <div className="min-h-[100svh] bg-background">
+        <PageHeader title="My Collabs" />
+        
+        <div className="container mx-auto py-4 px-4">
+          {!collaborations ? (
+            // Show skeletons instead of loading screen
+            <div>
+              {[1, 2, 3].map(i => (
+                <Card key={i} className="mb-4">
+                  <CardHeader className="pb-2">
+                    <Skeleton className="h-5 w-20 mb-2" />
+                    <Skeleton className="h-6 w-48" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2 mb-4" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-5 w-16" />
+                      <Skeleton className="h-5 w-16" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : collaborations.length > 0 ? (
+            <div>
+              <div className="my-8 py-4 flex justify-center">
+                <GlowButton 
+                  onClick={() => setLocation('/create-collaboration-v2')}
+                  className="w-full max-w-md py-6"
+                >
+                  Create New Collab
+                </GlowButton>
+              </div>
+              {collaborations.map(collab => {
+                // Check if there are any pending applications
+                const pendingApplications = collab.applications?.filter(app => app.status === 'pending') || [];
+                const hasApplications = pendingApplications.length > 0;
+                
+                // Get active state from local state or default to true
+                const isActive = activeCollabs[collab.id] !== undefined 
+                  ? activeCollabs[collab.id] 
+                  : collab.status === 'active';
+                
+                return (
+                  <Card key={collab.id} className="mb-4">
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <Badge className="mb-2 flex items-center gap-1">
+                            {getCollabTypeIcon(collab.collab_type)}
+                            {collab.collab_type}
+                          </Badge>
+                          <CardTitle className="text-xl">
+                            {(collab as any).title === "Collaboration" ? collab.collab_type : (collab as any).title}
+                          </CardTitle>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {hasApplications && (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              <Users className="h-3 w-3" /> {pendingApplications.length} application{pendingApplications.length !== 1 ? 's' : ''}
+                            </Badge>
+                          )}
+                          {!hasApplications && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50/50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCollabToDelete(collab.id);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pb-2">
+                      {/* Display short description if available */}
+                      {collab.details && typeof collab.details === 'object' && (
+                        <div className="mb-4">
+                          {/* Podcast guest appearance should show podcast name */}
+                          {collab.collab_type === 'Podcast Guest Appearance' && 'podcast_name' in collab.details && (
+                            <div className="mb-2">
+                              <p className="text-sm font-medium">Podcast: {collab.details.podcast_name}</p>
+                              {'estimated_reach' in collab.details && collab.details.estimated_reach && (
+                                <p className="text-xs text-gray-600 mb-1">Audience: {collab.details.estimated_reach}</p>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Show topics if available */}
+                          {collab.topics && collab.topics.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-xs text-gray-500 mb-1">Topics:</p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {collab.topics.map((topic, idx) => (
+                                  <span 
+                                    key={idx} 
+                                    className="px-2 py-0.5 bg-transparent text-gray-500 border border-[#6B7280] text-xs rounded-full"
+                                  >
+                                    {topic}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Description */}
+                          {(
+                            <p className="text-sm text-gray-600 line-clamp-3">
+                              {'short_description' in collab.details && collab.details.short_description ? 
+                                collab.details.short_description : 
+                                (collab.description || 'No description available')
+                              }
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Active toggle */}
+                      <div className="flex items-center justify-between border-t pt-3">
+                        <div className="flex items-center space-x-2">
+                          <Switch 
+                            checked={isActive}
+                            onCheckedChange={(checked) => handleToggleActive(collab.id, checked)}
+                          />
+                          <span className="text-sm font-medium">
+                            {isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        <div>
+                          <Badge 
+                            variant={isActive ? "default" : "outline"}
+                            className="text-xs"
+                          >
+                            {isActive ? 'Live' : 'Paused'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <div className="flex flex-wrap gap-2 w-full">
+                        {hasApplications && (
+                          <Button 
+                            variant="default"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => setLocation(`/collaboration/${collab.id}/applications`)}
+                          >
+                            <ListChecks className="h-4 w-4 mr-1" /> 
+                            View Applications
+                          </Button>
+                        )}
+                      </div>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+  
   // Handle deleting a collaboration
   const handleDeleteCollaboration = async () => {
     if (!collabToDelete) return;
@@ -425,19 +593,22 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     }
   };
 
-  // Render a collaboration card
-  const renderCollaborationCard = (collab: Collaboration) => {
+  // Memoized collaboration card component for better performance
+  const CollaborationCard = memo(({ 
+    collab, 
+    activeState, 
+    onDelete 
+  }: { 
+    collab: Collaboration, 
+    activeState: boolean,
+    onDelete: (id: string) => void
+  }) => {
     // Check if there are any pending applications
     const pendingApplications = collab.applications?.filter(app => app.status === 'pending') || [];
     const hasApplications = pendingApplications.length > 0;
     
-    // Get active state from local state or default to true
-    const isActive = activeCollabs[collab.id] !== undefined 
-      ? activeCollabs[collab.id] 
-      : collab.status === 'active';
-    
     return (
-      <Card key={collab.id} className="mb-4">
+      <Card className="mb-4">
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
@@ -446,7 +617,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 {collab.collab_type}
               </Badge>
               <CardTitle className="text-xl">
-                {collab.title === "Collaboration" ? collab.collab_type : collab.title}
+                {(collab as any).title === "Collaboration" ? collab.collab_type : (collab as any).title}
               </CardTitle>
             </div>
             <div className="flex items-center gap-2">
@@ -462,7 +633,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50/50"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setCollabToDelete(collab.id);
+                    onDelete(collab.id);
                   }}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -929,30 +1100,58 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   
   // Use the PageHeader component
 
-  return (
-    <MobileCheck>
-      <div className="min-h-[100svh] bg-background">
-        <PageHeader 
-          title="My Collabs" 
-        />
-        
-        <div className="container mx-auto py-4 px-4">
-          
-          {isLoadingCollabs ? (
-            renderSkeletons()
-          ) : collaborations && collaborations.length > 0 ? (
-            <div>
-              <div className="my-8 py-4 flex justify-center">
-                <GlowButton 
-                  onClick={() => setLocation('/create-collaboration-v2')}
-                  className="w-full max-w-md py-6"
-                >
-                  Create New Collab
-                </GlowButton>
-              </div>
-              {collaborations.map(collab => renderCollaborationCard(collab))}
-            </div>
-          ) : (
+  // Memoized function to render the collaboration list
+  const renderCollaborationList = useCallback(() => {
+    // Skip loading state - directly show skeleton or content 
+    if (!collaborations) {
+      // Instead of a full loading screen, show inline skeleton cards
+      return (
+        <div>
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="mb-4">
+              <CardHeader className="pb-2">
+                <Skeleton className="h-5 w-20 mb-2" />
+                <Skeleton className="h-6 w-48" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2 mb-4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-5 w-16" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      );
+    }
+    
+    if (collaborations.length > 0) {
+      return (
+        <div>
+          <div className="my-8 py-4 flex justify-center">
+            <GlowButton 
+              onClick={() => setLocation('/create-collaboration-v2')}
+              className="w-full max-w-md py-6"
+            >
+              Create New Collab
+            </GlowButton>
+          </div>
+          {collaborations.map(collab => (
+            <CollaborationCard 
+              key={collab.id}
+              collab={collab}
+              activeState={activeCollabs[collab.id] !== undefined ? activeCollabs[collab.id] : collab.status === 'active'}
+              onDelete={setCollabToDelete}
+            />
+          ))}
+        </div>
+      );
+    }
+    
+    return (
             <div className="text-center pt-4 pb-4 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
               {/* Collaboration Steps Section */}
               <div className="mb-4 text-left">
