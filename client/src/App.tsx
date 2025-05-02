@@ -11,6 +11,7 @@ import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { MatchProvider } from "@/contexts/MatchContext";
 import { initTelegramButtonFix } from "./utils/telegram-button-fix";
 import { useTelegramInit } from "@/hooks/useTelegramInit";
+import { usePreloadDiscovery } from "@/hooks/usePreloadDiscovery";
 import AuthTest from "@/components/AuthTest";
 
 // Import RouteComponentProps type for proper router component typing
@@ -249,6 +250,18 @@ function App() {
   // Use the optimized Telegram WebApp initialization hook
   const telegramInitialized = useTelegramInit();
   
+  // We'll initialize the preload status here, the actual preloading will happen inside the QueryClientProvider
+  const [preloadStatus, setPreloadStatus] = useState<{
+    swipes: "idle" | "loading" | "success" | "error";
+    potentialMatches: "idle" | "loading" | "success" | "error";
+    collaborations: "idle" | "loading" | "success" | "error";
+  }>({
+    swipes: "idle",
+    potentialMatches: "idle",
+    collaborations: "idle",
+  });
+  const [preloadingComplete, setPreloadingComplete] = useState(false);
+  
   // Immediately render the splash screen and transition to loading phase
   useEffect(() => {
     // This first phase transition happens extremely quickly (within ~50ms)
@@ -276,10 +289,145 @@ function App() {
     const cleanupButtonFix = initTelegramButtonFix();
     applyButtonFix();
     
+    // Log preloading status for debugging
+    console.log('[App] Discovery preloading status:', preloadStatus);
+    
+    // Define the preloading function
+    const preloadDiscoveryData = async () => {
+      try {
+        // Preload user swipe history
+        setPreloadStatus(prev => ({ ...prev, swipes: "loading" }));
+        try {
+          console.log("[Preload] Starting to preload user swipe history...");
+          
+          // Preload the swipe history data into the query cache
+          await queryClient.prefetchQuery({
+            queryKey: ['/api/user-swipes'],
+            queryFn: async () => {
+              try {
+                console.log('[Preload] Fetching user swipe history...');
+                const data = await fetch('/api/user-swipes', { 
+                  credentials: 'include',
+                  headers: {
+                    // Include telegram headers if available
+                    ...(window.Telegram?.WebApp?.initData 
+                      ? { 'x-telegram-init-data': window.Telegram.WebApp.initData } 
+                      : {})
+                  }
+                }).then(res => res.json());
+                console.log(`[Preload] User swipe history fetched, count: ${data.length || 0}`);
+                return data;
+              } catch (err) {
+                console.error('[Preload] User swipe history fetch error:', err);
+                throw err;
+              }
+            },
+            staleTime: Infinity, // Never consider data stale to prevent auto-refresh
+          });
+          
+          setPreloadStatus(prev => ({ ...prev, swipes: "success" }));
+        } catch (error) {
+          console.error("[Preload] Error preloading swipe history:", error);
+          setPreloadStatus(prev => ({ ...prev, swipes: "error" }));
+        }
+        
+        // Preload potential matches
+        setPreloadStatus(prev => ({ ...prev, potentialMatches: "loading" }));
+        try {
+          console.log("[Preload] Starting to preload potential matches...");
+          
+          // Preload the potential matches data into the query cache
+          await queryClient.prefetchQuery({
+            queryKey: ['/api/potential-matches'],
+            queryFn: async () => {
+              try {
+                console.log('[Preload] Fetching potential matches...');
+                const data = await fetch('/api/potential-matches', { 
+                  credentials: 'include',
+                  headers: {
+                    // Include telegram headers if available
+                    ...(window.Telegram?.WebApp?.initData 
+                      ? { 'x-telegram-init-data': window.Telegram.WebApp.initData } 
+                      : {})
+                  }
+                }).then(res => res.json());
+                console.log(`[Preload] Potential matches fetched, count: ${data.length || 0}`);
+                return data;
+              } catch (err) {
+                console.error('[Preload] Potential matches fetch error:', err);
+                throw err;
+              }
+            },
+            staleTime: Infinity, // Never consider data stale to prevent auto-refresh
+          });
+          
+          setPreloadStatus(prev => ({ ...prev, potentialMatches: "success" }));
+        } catch (error) {
+          console.error("[Preload] Error preloading potential matches:", error);
+          setPreloadStatus(prev => ({ ...prev, potentialMatches: "error" }));
+        }
+        
+        // Preload collaboration cards
+        setPreloadStatus(prev => ({ ...prev, collaborations: "loading" }));
+        try {
+          console.log("[Preload] Starting to preload collaboration cards...");
+          
+          // Create the request body with empty excludeIds array
+          const requestBody = { excludeIds: [] };
+          
+          // Preload collaboration cards with a POST request
+          await queryClient.prefetchQuery({
+            queryKey: ['/api/collaborations/search', requestBody],
+            queryFn: async () => {
+              try {
+                console.log('[Preload] Fetching initial collaboration cards...');
+                const data = await fetch('/api/collaborations/search?limit=10', { 
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    // Include telegram headers if available
+                    ...(window.Telegram?.WebApp?.initData 
+                      ? { 'x-telegram-init-data': window.Telegram.WebApp.initData } 
+                      : {})
+                  },
+                  body: JSON.stringify(requestBody),
+                  credentials: 'include'
+                }).then(res => res.json());
+                console.log(`[Preload] Collaboration cards fetched, count: ${data?.items?.length || 0}`);
+                return data;
+              } catch (err) {
+                console.error('[Preload] Collaboration cards fetch error:', err);
+                throw err;
+              }
+            },
+            staleTime: Infinity, // Never consider data stale to prevent auto-refresh
+          });
+          
+          setPreloadStatus(prev => ({ ...prev, collaborations: "success" }));
+        } catch (error) {
+          console.error("[Preload] Error preloading collaborations:", error);
+          setPreloadStatus(prev => ({ ...prev, collaborations: "error" }));
+        }
+        
+        // Mark preloading as complete
+        setPreloadingComplete(true);
+        console.log("[Preload] All discovery data preloading complete");
+        
+      } catch (error) {
+        console.error("[Preload] Unexpected error during preloading:", error);
+      }
+    };
+    
+    // Start preloading
+    preloadDiscoveryData();
+    
     // Transition to the fully loaded app after initialization
+    // We'll use a minimum time of 800ms for good UX, but also wait for preloading
+    // to complete if it's taking longer - up to a maximum of 3 seconds
     const loadingTimer = setTimeout(() => {
+      console.log('[App] Transitioning to ready state, preloading complete:', preloadingComplete);
       setAppPhase('ready');
-    }, 800); // Adjust this time as needed for good UX
+    }, Math.min(preloadingComplete ? 800 : 2000, 3000)); // Slightly longer delay if preloading still in progress
     
     return () => {
       clearTimeout(loadingTimer);
@@ -287,7 +435,7 @@ function App() {
         cleanupButtonFix();
       }
     };
-  }, [appPhase]);
+  }, [appPhase, preloadStatus, preloadingComplete]);
   
   // Render different UI based on the loading phase
   return (
@@ -297,8 +445,11 @@ function App() {
           // Phase 1: Ultra-light splash screen (renders in <100ms)
           <SplashScreen />
         ) : appPhase === 'loading' ? (
-          // Phase 2: Full loading screen with progress indicator
-          <LoadingScreen />
+          // Phase 2: Full loading screen with progress indicator and preload status
+          <LoadingScreen 
+            preloadStatus={preloadStatus}
+            isPreloadingComplete={preloadingComplete}
+          />
         ) : (
           // Phase 3: Main application
           <MobileCheck>

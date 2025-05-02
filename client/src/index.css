@@ -228,7 +228,7 @@ body.scrollable-page {
   }
 }
 
-/* Ultra-light splash screen animation */
+/* Animations for loading screens and transitions */
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -236,6 +236,35 @@ body.scrollable-page {
 
 .animate-fade-in {
   animation: fade-in 0.3s ease-in-out;
+}
+
+.animate-fadeIn {
+  animation: fade-in 0.5s ease-in-out;
+}
+
+@keyframes slide-up {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse 2s ease-in-out infinite;
 }
 
 /* Text selection in Telegram WebApp */
