@@ -189,15 +189,14 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   const [processingApplicationId, setProcessingApplicationId] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   
-  // Fetch user's collaborations
+  // Prefetch strategy: Start loading most important data first
+  // Fetch user's collaborations with optimized options
   const { data: collaborations, isLoading: isLoadingCollabs } = useQuery({
     queryKey: ['/api/collaborations/my'],
     queryFn: async () => {
       try {
-        console.log("Fetching collaborations...");
         // Use the standardized apiRequest function to ensure Telegram headers are included
         const data = await apiRequest('/api/collaborations/my');
-        console.log("Collaborations API response data:", data);
         
         // Initialize activeCollabs state based on fetched data
         const statusMap: Record<string, boolean> = {};
@@ -211,41 +210,49 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         console.error("Error fetching collaborations:", error);
         throw error;
       }
-    }
+    },
+    // Explicitly configure to prevent React Query background updates
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchInterval: false
   });
   
-  // Fetch user's applications
+  // Fetch user's applications with deferred priority
   const { data: applications, isLoading: isLoadingApps } = useQuery({
     queryKey: ['/api/my-applications'],
     queryFn: async () => {
       try {
-        console.log("Fetching applications...");
         // Use the standardized apiRequest function to ensure Telegram headers are included
         const data = await apiRequest('/api/my-applications');
-        console.log("Applications API response data:", data);
         return data as CollabApplication[];
       } catch (error) {
         console.error("Error fetching applications:", error);
         throw error;
       }
-    }
+    },
+    // Configure React Query to load this data only after collaborations are loaded
+    enabled: !isLoadingCollabs,
+    staleTime: Infinity
   });
   
-  // Fetch potential matches (users who swiped right on host's collaborations)
+  // Fetch potential matches with lowest priority
   const { data: potentialMatches, isLoading: isLoadingMatches } = useQuery({
     queryKey: ['/api/potential-matches'],
     queryFn: async () => {
       try {
-        console.log("Fetching potential matches...");
         // Use the standardized apiRequest function to ensure Telegram headers are included
         const data = await apiRequest('/api/potential-matches');
-        console.log("Potential matches API response data:", data);
         return data as PotentialMatch[];
       } catch (error) {
         console.error("Error fetching potential matches:", error);
         return [] as PotentialMatch[]; // Return empty array on error to avoid breaking the UI
       }
-    }
+    },
+    // Configure React Query to load this data only after applications are loaded
+    enabled: !isLoadingApps && !isLoadingCollabs,
+    staleTime: Infinity
   });
   
   // Handle approving an application
