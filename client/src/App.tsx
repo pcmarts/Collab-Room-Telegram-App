@@ -40,7 +40,6 @@ const CreateCollaborationSteps = lazy(() => import("@/pages/create-collaboration
 const CreateCollaborationV2 = lazy(() => import("@/pages/create-collaboration-v2"));
 const EditCollaborationSteps = lazy(() => import("@/pages/edit-collaboration-steps"));
 const CreateCollaborationComponent = lazy(() => import("@/pages/create-collaboration"));
-// Use optimized version that doesn't have a loading screen
 const MyCollaborationsComponent = lazy(() => import("@/pages/my-collaborations"));
 const ApplyComponent = lazy(() => import("@/pages/apply"));
 const NotFound = lazy(() => import("@/pages/not-found"));

@@ -2517,12 +2517,14 @@ export async function registerRoutes(app: Express) {
   });
 
   app.get("/api/collaborations/my", async (req: TelegramRequest, res) => {
-    // Removed excessive logging for performance
+    console.log('============ DEBUG: My Collaborations Endpoint ============');
+    console.log('Headers:', req.headers);
 
     try {
       // Get user from impersonation session or Telegram data
       const telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
+        console.error('No Telegram user ID found');
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
@@ -2532,37 +2534,29 @@ export async function registerRoutes(app: Express) {
         .where(eq(users.telegram_id, telegramUser.id.toString()));
 
       if (!user) {
+        console.error('User not found');
         return res.status(404).json({ error: 'User not found' });
       }
 
-      // Performance optimization:
-      // 1. Use select() with specific columns to reduce data transfer
-      // 2. Limit fields to only what's needed by the client
-      // 3. Remove unnecessary logging of large JSON objects
+      // Get collaborations for this user
       const myCollaborations = await db
-        .select({
-          id: collaborations.id,
-          title: collaborations.title,
-          collab_type: collaborations.collab_type,
-          creator_id: collaborations.creator_id,
-          status: collaborations.status,
-          date_type: collaborations.date_type,
-          details: collaborations.details,
-          topics: collaborations.topics,
-          applications: collaborations.applications,
-          created_at: collaborations.created_at
-        })
+        .select()
         .from(collaborations)
         .where(eq(collaborations.creator_id, user.id))
         .orderBy(desc(collaborations.created_at));
+        
+      console.log('Found collaborations:', myCollaborations.length);
+      console.log('Collaborations data:', JSON.stringify(myCollaborations, null, 2));
       
-      // Cache headers for improved client-side performance
-      res.set('Cache-Control', 'private, max-age=0');
+      // Log the full list of collab types for debugging
+      const collabTypes = myCollaborations.map(collab => collab.collab_type);
+      console.log('Collaboration types:', collabTypes);
       
       // Return found collaborations (empty array if none)
       return res.json(myCollaborations);
 
     } catch (error) {
+      console.error('Failed to fetch user collaborations:', error);
       return res.status(500).json({ 
         error: 'Failed to fetch collaborations', 
         details: error instanceof Error ? error.message : 'Unknown error' 
