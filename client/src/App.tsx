@@ -321,6 +321,8 @@ function App() {
                   // If it's an auth error, we'll handle it gracefully
                   if (response.status === 401) {
                     console.log('[Preload] Authentication required for user swipes');
+                    // Immediately mark as error to trigger faster completion
+                    setPreloadStatus(prev => ({ ...prev, swipes: "error" }));
                     return []; // Return empty array for unauthenticated users
                   }
                   throw new Error(`Server returned ${response.status}`);
@@ -331,6 +333,8 @@ function App() {
                 return data;
               } catch (err) {
                 console.error('[Preload] User swipe history fetch error:', err);
+                // Immediately mark as error to trigger faster completion
+                setPreloadStatus(prev => ({ ...prev, swipes: "error" }));
                 return []; // Return empty array on error to prevent query from failing
               }
             },
@@ -369,6 +373,8 @@ function App() {
                   // If it's an auth error, we'll handle it gracefully
                   if (response.status === 401) {
                     console.log('[Preload] Authentication required for potential matches');
+                    // Immediately mark as error to trigger faster completion
+                    setPreloadStatus(prev => ({ ...prev, potentialMatches: "error" }));
                     return []; // Return empty array for unauthenticated users
                   }
                   throw new Error(`Server returned ${response.status}`);
@@ -379,6 +385,8 @@ function App() {
                 return data;
               } catch (err) {
                 console.error('[Preload] Potential matches fetch error:', err);
+                // Immediately mark as error to trigger faster completion
+                setPreloadStatus(prev => ({ ...prev, potentialMatches: "error" }));
                 return []; // Return empty array on error to prevent query from failing
               }
             },
@@ -423,6 +431,8 @@ function App() {
                   // If it's an auth error, we'll handle it gracefully
                   if (response.status === 401 || response.status === 400) {
                     console.log('[Preload] Authentication required for collaboration cards');
+                    // Immediately mark as error to trigger faster completion
+                    setPreloadStatus(prev => ({ ...prev, collaborations: "error" }));
                     return { items: [], hasMore: false, nextCursor: null }; // Return empty result structure
                   }
                   throw new Error(`Server returned ${response.status}`);
@@ -433,6 +443,8 @@ function App() {
                 return data;
               } catch (err) {
                 console.error('[Preload] Collaboration cards fetch error:', err);
+                // Immediately mark as error to trigger faster completion
+                setPreloadStatus(prev => ({ ...prev, collaborations: "error" }));
                 return { items: [], hasMore: false, nextCursor: null }; // Return empty result structure on error
               }
             },
@@ -447,10 +459,11 @@ function App() {
         
         // Mark preloading as complete
         setPreloadingComplete(true);
-        console.log("[Preload] All discovery data preloading complete");
+        console.log("[Preload] All discovery data preloading complete successfully");
         
       } catch (error) {
         console.error("[Preload] Unexpected error during preloading:", error);
+        setPreloadingComplete(true); // Force preloading to complete even on errors
       }
     };
     
@@ -458,7 +471,7 @@ function App() {
     preloadDiscoveryData();
     
     // Add a fallback timer to ensure we don't get stuck in loading forever
-    const maxLoadingTime = 5000; // 5 seconds maximum loading time
+    const maxLoadingTime = 3500; // 3.5 seconds maximum loading time
     
     // Set a hard timeout to ensure we move to the app regardless of preloading status
     const maxLoadingTimer = setTimeout(() => {
@@ -468,6 +481,20 @@ function App() {
         setAppPhase('ready');
       }
     }, maxLoadingTime);
+    
+    // Check if we've hit authentication errors in any of the three preload calls
+    const hasAuthErrors = 
+      preloadStatus.swipes === "error" ||
+      preloadStatus.potentialMatches === "error" ||
+      preloadStatus.collaborations === "error";
+      
+    if (hasAuthErrors) {
+      console.log('[App] Authentication errors detected, completing preload early');
+      // Use a short timeout to allow error states to be displayed in UI
+      setTimeout(() => {
+        setPreloadingComplete(true);
+      }, 800);
+    }
     
     // Transition to the fully loaded app after initialization
     // We'll use a minimum time of 800ms for good UX, but also wait for preloading
