@@ -423,6 +423,14 @@ export default function MyCollaborationsNew({ collaborationId }: MyCollaboration
       setCollabToDelete(null);
     }
   };
+  
+  // Auto-redirect to collaboration creation form when user has no collaborations
+  useEffect(() => {
+    if (collaborations && collaborations.length === 0) {
+      // Redirect directly to the first page of collaboration creation form
+      setLocation('/create-collaboration-v2');
+    }
+  }, [collaborations, setLocation]);
 
   // Return JSX with skeletons instead of loading screen
   return (
