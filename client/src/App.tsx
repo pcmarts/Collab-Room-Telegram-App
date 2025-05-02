@@ -306,7 +306,7 @@ function App() {
             queryFn: async () => {
               try {
                 console.log('[Preload] Fetching user swipe history...');
-                const data = await fetch('/api/user-swipes', { 
+                const response = await fetch('/api/user-swipes', { 
                   credentials: 'include',
                   headers: {
                     // Include telegram headers if available
@@ -314,12 +314,24 @@ function App() {
                       ? { 'x-telegram-init-data': window.Telegram.WebApp.initData } 
                       : {})
                   }
-                }).then(res => res.json());
+                });
+                
+                // Check if request was successful
+                if (!response.ok) {
+                  // If it's an auth error, we'll handle it gracefully
+                  if (response.status === 401) {
+                    console.log('[Preload] Authentication required for user swipes');
+                    return []; // Return empty array for unauthenticated users
+                  }
+                  throw new Error(`Server returned ${response.status}`);
+                }
+                
+                const data = await response.json();
                 console.log(`[Preload] User swipe history fetched, count: ${data.length || 0}`);
                 return data;
               } catch (err) {
                 console.error('[Preload] User swipe history fetch error:', err);
-                throw err;
+                return []; // Return empty array on error to prevent query from failing
               }
             },
             staleTime: Infinity, // Never consider data stale to prevent auto-refresh
@@ -327,7 +339,7 @@ function App() {
           
           setPreloadStatus(prev => ({ ...prev, swipes: "success" }));
         } catch (error) {
-          console.error("[Preload] Error preloading swipe history:", error);
+          console.warn("[Preload] Error preloading swipe history:", error);
           setPreloadStatus(prev => ({ ...prev, swipes: "error" }));
         }
         
@@ -342,7 +354,7 @@ function App() {
             queryFn: async () => {
               try {
                 console.log('[Preload] Fetching potential matches...');
-                const data = await fetch('/api/potential-matches', { 
+                const response = await fetch('/api/potential-matches', { 
                   credentials: 'include',
                   headers: {
                     // Include telegram headers if available
@@ -350,12 +362,24 @@ function App() {
                       ? { 'x-telegram-init-data': window.Telegram.WebApp.initData } 
                       : {})
                   }
-                }).then(res => res.json());
+                });
+                
+                // Check if request was successful
+                if (!response.ok) {
+                  // If it's an auth error, we'll handle it gracefully
+                  if (response.status === 401) {
+                    console.log('[Preload] Authentication required for potential matches');
+                    return []; // Return empty array for unauthenticated users
+                  }
+                  throw new Error(`Server returned ${response.status}`);
+                }
+                
+                const data = await response.json();
                 console.log(`[Preload] Potential matches fetched, count: ${data.length || 0}`);
                 return data;
               } catch (err) {
                 console.error('[Preload] Potential matches fetch error:', err);
-                throw err;
+                return []; // Return empty array on error to prevent query from failing
               }
             },
             staleTime: Infinity, // Never consider data stale to prevent auto-refresh
@@ -363,7 +387,7 @@ function App() {
           
           setPreloadStatus(prev => ({ ...prev, potentialMatches: "success" }));
         } catch (error) {
-          console.error("[Preload] Error preloading potential matches:", error);
+          console.warn("[Preload] Error preloading potential matches:", error);
           setPreloadStatus(prev => ({ ...prev, potentialMatches: "error" }));
         }
         
@@ -381,7 +405,7 @@ function App() {
             queryFn: async () => {
               try {
                 console.log('[Preload] Fetching initial collaboration cards...');
-                const data = await fetch('/api/collaborations/search?limit=10', { 
+                const response = await fetch('/api/collaborations/search?limit=10', { 
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -392,12 +416,24 @@ function App() {
                   },
                   body: JSON.stringify(requestBody),
                   credentials: 'include'
-                }).then(res => res.json());
+                });
+                
+                // Check if request was successful
+                if (!response.ok) {
+                  // If it's an auth error, we'll handle it gracefully
+                  if (response.status === 401 || response.status === 400) {
+                    console.log('[Preload] Authentication required for collaboration cards');
+                    return { items: [], hasMore: false, nextCursor: null }; // Return empty result structure
+                  }
+                  throw new Error(`Server returned ${response.status}`);
+                }
+                
+                const data = await response.json();
                 console.log(`[Preload] Collaboration cards fetched, count: ${data?.items?.length || 0}`);
                 return data;
               } catch (err) {
                 console.error('[Preload] Collaboration cards fetch error:', err);
-                throw err;
+                return { items: [], hasMore: false, nextCursor: null }; // Return empty result structure on error
               }
             },
             staleTime: Infinity, // Never consider data stale to prevent auto-refresh
@@ -405,7 +441,7 @@ function App() {
           
           setPreloadStatus(prev => ({ ...prev, collaborations: "success" }));
         } catch (error) {
-          console.error("[Preload] Error preloading collaborations:", error);
+          console.warn("[Preload] Error preloading collaborations:", error);
           setPreloadStatus(prev => ({ ...prev, collaborations: "error" }));
         }
         
@@ -421,16 +457,29 @@ function App() {
     // Start preloading
     preloadDiscoveryData();
     
+    // Add a fallback timer to ensure we don't get stuck in loading forever
+    const maxLoadingTime = 5000; // 5 seconds maximum loading time
+    
+    // Set a hard timeout to ensure we move to the app regardless of preloading status
+    const maxLoadingTimer = setTimeout(() => {
+      if (appPhase === 'loading') {
+        console.log('[App] Maximum loading time reached, forcing transition to ready state');
+        setPreloadingComplete(true); // Force preloading to be considered complete
+        setAppPhase('ready');
+      }
+    }, maxLoadingTime);
+    
     // Transition to the fully loaded app after initialization
     // We'll use a minimum time of 800ms for good UX, but also wait for preloading
-    // to complete if it's taking longer - up to a maximum of 3 seconds
+    // to complete if it's taking longer
     const loadingTimer = setTimeout(() => {
       console.log('[App] Transitioning to ready state, preloading complete:', preloadingComplete);
       setAppPhase('ready');
-    }, Math.min(preloadingComplete ? 800 : 2000, 3000)); // Slightly longer delay if preloading still in progress
+    }, preloadingComplete ? 800 : 2500); // Slightly longer delay if preloading still in progress
     
     return () => {
       clearTimeout(loadingTimer);
+      clearTimeout(maxLoadingTimer);
       if (typeof cleanupButtonFix === 'function') {
         cleanupButtonFix();
       }

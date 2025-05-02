@@ -143,7 +143,10 @@ export function LoadingScreen({
               <span>{message}</span>
               
               {/* Show "New!" badge for preloaded discovery feature */}
-              {(message.includes("Discovery cards ready") || message.includes("Preparing discovery")) && (
+              {(message.includes("Discovery cards ready") || 
+                message.includes("Preparing discovery") ||
+                message.includes("Cards will load") ||
+                message.includes("Preparing discovery cards")) && (
                 <Badge variant="outline" className="ml-2 bg-primary/10 text-primary text-xs animate-fadeIn">New!</Badge>
               )}
             </div>
