@@ -1019,6 +1019,120 @@ async function notifyReferrerWithRecord(referrer: any, referralRecord: any, refe
  * @param collaborationId The ID of the newly created collaboration
  * @param creatorId The ID of the user who created the collaboration
  */
+/**
+ * Notifies a user when their collaboration is successfully created
+ * @param userId The ID of the user who created the collaboration
+ * @param collaborationId The ID of the newly created collaboration
+ */
+export async function notifyUserCollabCreated(userId: string, collaborationId: string) {
+  try {
+    // Get user details
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId));
+      
+    if (!user || !user.telegram_id) {
+      console.error(`User ${userId} not found or has no Telegram ID`);
+      return false;
+    }
+
+    // Get collaboration details
+    const [collaboration] = await db
+      .select()
+      .from(collaborations)
+      .where(eq(collaborations.id, collaborationId));
+      
+    if (!collaboration) {
+      console.error(`Collaboration with ID ${collaborationId} not found`);
+      return false;
+    }
+
+    // Format topics as a string if present
+    const topicsText = collaboration.topics && collaboration.topics.length > 0 
+      ? `\n🏷️ <b>Topics:</b> ${collaboration.topics.join(", ")}` 
+      : "";
+
+    // Format funding stages as a string if present
+    const fundingStagesText = collaboration.required_funding_stages && collaboration.required_funding_stages.length > 0
+      ? `\n💰 <b>Required Funding Stages:</b> ${collaboration.required_funding_stages.join(", ")}`
+      : "";
+    
+    // Format blockchain networks as a string if present
+    const blockchainNetworksText = collaboration.required_blockchain_networks && collaboration.required_blockchain_networks.length > 0
+      ? `\n⛓️ <b>Required Blockchain Networks:</b> ${collaboration.required_blockchain_networks.join(", ")}`
+      : "";
+    
+    // Format company sectors as a string if present
+    const companySectorsText = collaboration.required_company_sectors && collaboration.required_company_sectors.length > 0
+      ? `\n🏢 <b>Required Company Sectors:</b> ${collaboration.required_company_sectors.join(", ")}`
+      : "";
+
+    // Build the message with HTML formatting
+    const message =
+      `🎉 <b>Your Collaboration is Live!</b>\n\n` +
+      `Your ${collaboration.collab_type} collaboration has been successfully created and is now visible to other users.\n\n` +
+      `<b>Title:</b> ${collaboration.title || "No title"}\n` +
+      `<b>Description:</b> ${collaboration.description || "No description"}\n` +
+      `${topicsText}` +
+      `${fundingStagesText}` +
+      `${blockchainNetworksText}` +
+      `${companySectorsText}\n\n` +
+      `Your collaboration will be shown to users who match your criteria. You'll receive a notification when someone requests to collaborate with you.`;
+
+    // Create inline keyboard with a button to view their collaborations
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "View My Collaborations",
+            web_app: { url: `${WEBAPP_URL}/marketing-collabs-new?tab=my` },
+          },
+        ],
+      ],
+    };
+
+    // Make sure we have a valid numeric Telegram ID
+    let telegramId: number;
+    
+    // Try multiple ways to convert the ID to a proper number
+    if (typeof user.telegram_id === 'number') {
+      telegramId = user.telegram_id;
+    } else if (typeof user.telegram_id === 'string') {
+      // Remove any non-numeric characters and parse as integer
+      const cleanId = user.telegram_id.replace(/[^0-9]/g, '');
+      telegramId = parseInt(cleanId, 10);
+    } else {
+      console.error(`[COLLAB_NOTIFICATION] Invalid user Telegram ID format: ${user.telegram_id}`);
+      return false;
+    }
+    
+    // Double-check that we have a valid number
+    if (isNaN(telegramId) || telegramId <= 0) {
+      console.error(`[COLLAB_NOTIFICATION] Invalid user Telegram ID after conversion: ${telegramId}`);
+      return false;
+    }
+    
+    console.log(`[COLLAB_NOTIFICATION] Sending creation notification to user Telegram ID: ${telegramId}`);
+    
+    await bot.sendMessage(
+      telegramId,
+      message,
+      {
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+        reply_markup: keyboard,
+      },
+    );
+    
+    console.log(`Collaboration creation notification sent to user ${user.telegram_id}`);
+    return true;
+  } catch (error) {
+    console.error("Failed to notify user about collaboration creation:", error);
+    return false;
+  }
+}
+
 export async function notifyAdminsNewCollaboration(collaborationId: string, creatorId: string) {
   try {
     // Get all admin users
@@ -1060,12 +1174,37 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
       .from(companies)
       .where(eq(companies.id, creator.company_id || ''));
       
+    // Format topics as a string if present
+    const topicsText = collaboration.topics && collaboration.topics.length > 0 
+      ? `\n🏷️ <b>Topics:</b> ${collaboration.topics.join(", ")}` 
+      : "";
+      
+    // Format funding stages as a string if present
+    const fundingStagesText = collaboration.required_funding_stages && collaboration.required_funding_stages.length > 0
+      ? `\n💰 <b>Required Funding Stages:</b> ${collaboration.required_funding_stages.join(", ")}`
+      : "";
+    
+    // Format blockchain networks as a string if present
+    const blockchainNetworksText = collaboration.required_blockchain_networks && collaboration.required_blockchain_networks.length > 0
+      ? `\n⛓️ <b>Required Blockchain Networks:</b> ${collaboration.required_blockchain_networks.join(", ")}`
+      : "";
+    
+    // Format company sectors as a string if present
+    const companySectorsText = collaboration.required_company_sectors && collaboration.required_company_sectors.length > 0
+      ? `\n🏢 <b>Required Company Sectors:</b> ${collaboration.required_company_sectors.join(", ")}`
+      : "";
+      
     // Build the message with HTML formatting
-    // Make sure to include the collaboration type, description, and creator details
+    // Enhanced with more details about the collaboration
     const message =
       `🆕 <b>New Collaboration Created!</b>\n\n` +
+      `<b>Title:</b> ${collaboration.title || "No title"}\n` +
       `<b>Type:</b> ${collaboration.collab_type}\n` +
-      `<b>Description:</b> ${collaboration.description || 'Not provided'}\n\n` +
+      `<b>Description:</b> ${collaboration.description || 'Not provided'}\n` +
+      `${topicsText}` +
+      `${fundingStagesText}` +
+      `${blockchainNetworksText}` +
+      `${companySectorsText}\n\n` +
       `<b>Created by:</b> ${creator.first_name} ${creator.last_name || ''} ${creator.handle ? `(@${creator.handle})` : ''}\n` +
       `<b>Company:</b> ${company?.name || 'Unknown'}\n\n` +
       `Use the button below to view the collaboration:`;

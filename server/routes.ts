@@ -12,7 +12,7 @@ import {
 } from "../shared/schema";
 import { eq, and, not, desc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, notifyReferrerAboutApproval, bot } from "./telegram";
+import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, notifyUserCollabCreated, notifyReferrerAboutApproval, bot } from "./telegram";
 import { storage } from "./storage";
 import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
@@ -2387,13 +2387,22 @@ export async function registerRoutes(app: Express) {
         // Pass data to storage without strict type checking
         const newCollaboration = await storage.createCollaboration(collabData as any);
         
+        // Send notification to the user about their new collaboration
+        try {
+          await notifyUserCollabCreated(newCollaboration.creator_id, newCollaboration.id);
+          console.log(`User notification sent for new collaboration ${newCollaboration.id}`);
+        } catch (userNotifyError) {
+          // Log error but don't fail the overall request
+          console.error('Failed to send user notification for new collaboration:', userNotifyError);
+        }
+        
         // Send notification to admins about new collaboration
         try {
           await notifyAdminsNewCollaboration(newCollaboration.id, newCollaboration.creator_id);
           console.log(`Admin notification sent for new collaboration ${newCollaboration.id}`);
-        } catch (notifyError) {
+        } catch (adminNotifyError) {
           // Log error but don't fail the overall request
-          console.error('Failed to send admin notification for new collaboration:', notifyError);
+          console.error('Failed to send admin notification for new collaboration:', adminNotifyError);
         }
         
         res.status(201);
