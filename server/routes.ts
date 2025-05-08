@@ -2978,9 +2978,9 @@ export async function registerRoutes(app: Express) {
       await db.delete(collaborations)
         .where(eq(collaborations.id, id));
       
-      // Also delete any applications for this collaboration
-      await db.delete(collab_applications)
-        .where(eq(collab_applications.collaboration_id, id));
+      // Also delete any swipes (applications) for this collaboration
+      await db.delete(swipes)
+        .where(eq(swipes.collaboration_id, id));
       
       console.log(`Successfully deleted collaboration ${id}`);
       return res.status(200).json({ success: true, message: 'Collaboration deleted successfully' });
