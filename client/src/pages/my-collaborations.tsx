@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "../components/PageHeader";
+
+// Preload the CreateCollaborationV2 component
+const CreateCollaborationV2 = lazy(() => import("./create-collaboration-v2"));
 
 // Interface for component props
 interface MyCollaborationsProps {
@@ -129,6 +132,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // State to control the preloaded component visibility
+  const [showCreateCollab, setShowCreateCollab] = useState(false);
+  
   // This disables the default fixed positioning and overflow hidden
   // so that we can have a normal scrolling container with a scrollbar
   useEffect(() => {
@@ -156,6 +162,19 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       rootElement.style.position = 'static';
       rootElement.style.width = '100%';
     }
+    
+    // Preload the create collaboration page for faster navigation
+    const preloadCollabPage = async () => {
+      try {
+        await import("./create-collaboration-v2");
+        console.log("Create collaboration page preloaded");
+      } catch (error) {
+        console.error("Failed to preload page:", error);
+      }
+    };
+    
+    // Start preloading
+    preloadCollabPage();
     
     // Restore original style when component unmounts
     return () => {
@@ -424,6 +443,25 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       setCollabToDelete(null);
     }
   };
+
+  // Handle navigation to create collaboration page
+  const handleNavigateToCreateCollab = () => {
+    // Navigate immediately to the create page which is preloaded
+    setLocation('/create-collaboration-v2');
+  };
+
+  // If showing create collab, render that component instead
+  if (showCreateCollab) {
+    return (
+      <Suspense fallback={
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-pulse">Loading form...</div>
+        </div>
+      }>
+        <CreateCollaborationV2 />
+      </Suspense>
+    );
+  }
 
   // Render a collaboration card
   const renderCollaborationCard = (collab: Collaboration) => {
@@ -944,7 +982,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             <div>
               <div className="my-8 py-4 flex justify-center">
                 <GlowButton 
-                  onClick={() => setLocation('/create-collaboration-v2')}
+                  onClick={handleNavigateToCreateCollab}
                   className="w-full max-w-md py-6"
                 >
                   Create New Collab
@@ -1004,7 +1042,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               
               {/* Bottom CTA Button */}
               <Button 
-                onClick={() => setLocation('/create-collaboration-v2')}
+                onClick={handleNavigateToCreateCollab}
                 className="w-full max-w-xs py-3 mx-auto mb-6 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Create Your First Collab
