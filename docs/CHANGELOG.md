@@ -5,6 +5,20 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.13] - 2025-05-08
+
+### Fixed
+- Fixed collaboration deletion functionality on the "My Collaborations" page
+- Corrected the database table reference for collaboration applications (using 'swipes' instead of non-existent 'collab_applications')
+- Fixed "response.json is not a function" error in client-side code when deleting collaborations
+- Improved error handling during collaboration deletion process
+
+### Technical Details
+- Updated DELETE endpoint in server/routes.ts to correctly handle collaboration deletion
+- Updated client-side code to properly handle DELETE operation responses
+- Added proper JSON response formatting for DELETE operations
+- Enhanced error messaging for failed deletion operations
+
 ## [Version 1.10.12] - 2025-05-01
 
 ### Enhanced

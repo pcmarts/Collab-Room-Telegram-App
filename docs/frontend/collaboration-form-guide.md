@@ -405,3 +405,24 @@ if (window.Telegram?.WebApp) {
 ```
 
 This ensures a seamless experience when the form is used within the Telegram mini-app context.
+
+## Collaboration Management
+
+Users can manage their collaborations from the "My Collaborations" page. This includes viewing, editing, and deleting collaborations they have created.
+
+### Deletion Process
+
+The deletion process involves:
+
+1. User clicks the trash icon on a collaboration card in the "My Collaborations" page
+2. A confirmation dialog appears to ensure intentional deletion
+3. Upon confirmation, the client makes a DELETE request to `/api/collaborations/:id`
+4. The server validates ownership and permissions
+5. The server deletes the collaboration and related data from the database
+6. A success message is shown to the user
+
+**Technical Implementation:**
+- The server processes deletion requests in the `deleteCollaboration` function in `server/routes.ts`
+- Deletion process removes both the collaboration record and related application data (stored in the swipes table)
+- Client-side code handles the DELETE request response and updates the UI accordingly
+- Error handling is implemented to provide clear feedback if deletion fails
