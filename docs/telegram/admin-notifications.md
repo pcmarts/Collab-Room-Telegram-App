@@ -47,13 +47,22 @@ The notification system includes robust error handling:
 2. **Null checks**: All database queries include null checks to handle missing data gracefully
 3. **Try/catch blocks**: Each notification is wrapped in a try/catch block to prevent failures from affecting the main flow
 4. **Telegram ID validation**: Multiple checks ensure that Telegram IDs are valid before sending messages
+5. **Message sending errors**: Specific handling for "chat not found" errors when users haven't interacted with the bot
+6. **Nested error handling**: Multi-level try/catch blocks to handle errors at different stages of the notification process
 
 ## Testing
 
-Two test scripts are available to verify the notification functionality:
+Three test scripts are available to verify the notification functionality:
 
 1. `scripts/tests/test-collab-notification.ts` - Tests the user notification system
 2. `scripts/tests/test-admin-collaboration.ts` - Tests the admin notification system
+3. `scripts/tests/test-create-collaboration.ts` - Tests the full collaboration creation flow including notifications
+
+The admin notification test script (`test-admin-collaboration.ts`) now includes:
+- Improved command line argument handling to test specific collaborations
+- Random UUID testing mode to verify error handling
+- Better error reporting and validation
+- Performance timing for notification operations
 
 ## Issues and Solutions
 

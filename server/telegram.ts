@@ -1127,18 +1127,34 @@ export async function notifyUserCollabCreated(userId: string, collaborationId: s
     
     console.log(`[COLLAB_NOTIFICATION] Sending creation notification to user Telegram ID: ${telegramId}`);
     
-    await bot.sendMessage(
-      telegramId,
-      message,
-      {
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-        reply_markup: keyboard,
-      },
-    );
+    try {
+      await bot.sendMessage(
+        telegramId,
+        message,
+        {
+          parse_mode: "HTML",
+          disable_web_page_preview: true,
+          reply_markup: keyboard,
+        },
+      );
+      console.log(`Collaboration creation notification sent to user ${user.telegram_id}`);
+      return true;
+    } catch (error) {
+      // Check specifically for "chat not found" errors which indicate the user hasn't interacted with the bot
+      if (error?.response?.body?.description === "Bad Request: chat not found") {
+        console.log(`[COLLAB_NOTIFICATION] User ${user.first_name} ${user.last_name || ""} (ID: ${telegramId}) hasn't interacted with the bot yet`);
+        
+        // Log this user for tracking (just use console log for now)
+        console.log(`[COLLAB_NOTIFICATION_TRACKING] User ${user.id} needs to interact with the bot to receive notifications`);
+        
+        // In a future update, we could store this in a special table for tracking
+      } else {
+        // For other errors, log the full error
+        console.error("Failed to notify user about collaboration creation:", error);
+      }
+      return false;
+    }
     
-    console.log(`Collaboration creation notification sent to user ${user.telegram_id}`);
-    return true;
   } catch (error) {
     console.error("Failed to notify user about collaboration creation:", error);
     return false;
@@ -1266,25 +1282,35 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
         
         console.log(`[COLLAB_NOTIFICATION] Sending notification to admin Telegram ID: ${telegramId}`);
         
-        await bot.sendMessage(
-          telegramId,
-          message,
-          {
-            parse_mode: "HTML",
-            disable_web_page_preview: true,
-            reply_markup: keyboard,
-          },
-        );
-        
-        console.log(`New collaboration notification sent to admin ${admin.telegram_id}`);
-
-        // Log the admin notification
-        logAdminMessage(
-          admin.telegram_id,
-          "NEW_COLLABORATION",
-          `New collaboration created by ${creator.first_name} ${creator.last_name || ""} (ID: ${collaborationId})`,
-          `${creator.first_name} ${creator.last_name || ""} (${creator.telegram_id || 'No Telegram ID'})`
-        );
+        try {
+          await bot.sendMessage(
+            telegramId,
+            message,
+            {
+              parse_mode: "HTML",
+              disable_web_page_preview: true,
+              reply_markup: keyboard,
+            },
+          );
+          
+          console.log(`New collaboration notification sent to admin ${admin.telegram_id}`);
+  
+          // Log the admin notification
+          logAdminMessage(
+            admin.telegram_id,
+            "NEW_COLLABORATION",
+            `New collaboration created by ${creator.first_name} ${creator.last_name || ""} (ID: ${collaborationId})`,
+            `${creator.first_name} ${creator.last_name || ""} (${creator.telegram_id || 'No Telegram ID'})`
+          );
+        } catch (sendError) {
+          // Check specifically for "chat not found" errors which indicate the admin hasn't interacted with the bot
+          if (sendError?.response?.body?.description === "Bad Request: chat not found") {
+            console.log(`[COLLAB_NOTIFICATION] Admin ${admin.first_name} ${admin.last_name || ""} (ID: ${telegramId}) hasn't interacted with the bot yet`);
+          } else {
+            // For other errors, log the full error
+            console.error(`Failed to send notification to admin ${admin.telegram_id}:`, sendError);
+          }
+        }
       } catch (error) {
         console.error(
           `Failed to send collaboration notification to admin ${admin.telegram_id}:`,
