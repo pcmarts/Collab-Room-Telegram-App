@@ -1,44 +1,64 @@
 /**
- * This script tests the new admin notification system for collaboration creation
- * It simulates a new collaboration being created and sends a notification to all admin users
+ * This script tests the admin notification system for new collaborations
+ * It uses a known admin and collaboration to test if the admin notification works
  * 
  * Run with:
- * npx tsx test-admin-collaboration.ts
+ * npx tsx scripts/tests/test-admin-collaboration.ts
  */
 
-import { db } from "./server/db";
-import { collaborations, users } from "./shared/schema";
+import { db } from "../../server/db";
+import { collaborations, users } from "../../shared/schema";
 import { eq } from "drizzle-orm";
-import { notifyAdminsNewCollaboration } from "./server/telegram";
+import { notifyAdminsNewCollaboration } from "../../server/telegram";
 
-async function testAdminCollaborationNotification() {
+async function testAdminNotificationSystem() {
   try {
-    console.log("Starting test for admin collaboration notification...");
+    console.log("===== Testing Admin Notification System =====");
     
-    // Get an existing collaboration and its creator
+    // Get a sample collaboration
     const [collaboration] = await db
       .select()
       .from(collaborations)
       .limit(1);
       
     if (!collaboration) {
-      console.error("No collaborations found in the database");
+      console.error("⚠️ No collaborations found in the database");
       return;
     }
     
-    console.log(`Using collaboration: ${collaboration.id}`);
+    console.log(`Found collaboration: ${collaboration.id}`);
     console.log(`Creator ID: ${collaboration.creator_id}`);
     
-    // Send the notification
-    await notifyAdminsNewCollaboration(collaboration.id, collaboration.creator_id);
+    // Get admin users
+    const adminUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.is_admin, true));
+      
+    if (adminUsers.length === 0) {
+      console.error("⚠️ No admin users found in the database");
+      return;
+    }
     
-    console.log("✅ Notification sent successfully!");
-    console.log("Check your Telegram to see the message");
+    console.log(`Found ${adminUsers.length} admin users:`);
+    for (const admin of adminUsers) {
+      console.log(`- ${admin.first_name} ${admin.last_name || ""} (Telegram ID: ${admin.telegram_id})`);
+    }
+    
+    // Test admin notification
+    console.log("\nTesting admin notification...");
+    await notifyAdminsNewCollaboration(collaboration.id, collaboration.creator_id);
+    console.log("Admin notification completed");
+    
+    console.log("\n✅ Notification test complete! Check Telegram for the messages.");
     
   } catch (error) {
-    console.error("Test failed:", error);
+    console.error("Error in test:", error);
   }
 }
 
 // Run the test
-testAdminCollaborationNotification();
+testAdminNotificationSystem()
+  .then(() => console.log("Test script completed"))
+  .catch(error => console.error("Unhandled error:", error))
+  .finally(() => process.exit(0));

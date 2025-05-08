@@ -1047,6 +1047,18 @@ export async function notifyUserCollabCreated(userId: string, collaborationId: s
       console.error(`Collaboration with ID ${collaborationId} not found`);
       return false;
     }
+    
+    // Check if user has notifications enabled
+    const [preferences] = await db
+      .select()
+      .from(notification_preferences)
+      .where(eq(notification_preferences.user_id, userId));
+      
+    // Skip notification if user has explicitly disabled notifications
+    if (preferences && preferences.notifications_enabled === false) {
+      console.log(`User ${userId} has notifications disabled, skipping collaboration creation notification`);
+      return false;
+    }
 
     // Format topics as a string if present
     const topicsText = collaboration.topics && collaboration.topics.length > 0 
@@ -1169,10 +1181,17 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
     }
     
     // Get creator's company details
-    const [company] = await db
-      .select()
-      .from(companies)
-      .where(eq(companies.id, creator.company_id || ''));
+    let company = null;
+    if (creator.company_id) {
+      const companies_result = await db
+        .select()
+        .from(companies)
+        .where(eq(companies.id, creator.company_id));
+      
+      if (companies_result.length > 0) {
+        company = companies_result[0];
+      }
+    }
       
     // Format topics as a string if present
     const topicsText = collaboration.topics && collaboration.topics.length > 0 
