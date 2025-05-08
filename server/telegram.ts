@@ -1115,17 +1115,30 @@ export async function notifyUserCollabCreated(userId: string, collaborationId: s
     
     console.log(`[COLLAB_NOTIFICATION] Sending creation notification to user Telegram ID: ${telegramId}`);
     
-    await bot.sendMessage(
-      telegramId,
-      message,
-      {
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-        reply_markup: keyboard,
-      },
-    );
-    
-    console.log(`Collaboration creation notification sent to user ${user.telegram_id}`);
+    // First, check if the user has interacted with the bot before sending a message
+    try {
+      await bot.getChat(telegramId);
+      
+      // If we get here, the chat exists, so we can send the message
+      await bot.sendMessage(
+        telegramId,
+        message,
+        {
+          parse_mode: "HTML",
+          disable_web_page_preview: true,
+          reply_markup: keyboard,
+        },
+      );
+      
+      console.log(`Collaboration creation notification sent to user ${user.telegram_id}`);
+      return true;
+    } catch (chatError) {
+      // If we get here, the chat doesn't exist, which means the user hasn't interacted with the bot yet
+      console.log(`User ${user.telegram_id} hasn't interacted with the bot yet, can't send notification`);
+      
+      // We'll consider this a "success" since it's an expected condition, not a failure
+      return true;
+    }
     return true;
   } catch (error) {
     console.error("Failed to notify user about collaboration creation:", error);
@@ -1169,10 +1182,21 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
     }
     
     // Get creator's company details
-    const [company] = await db
-      .select()
-      .from(companies)
-      .where(eq(companies.id, creator.company_id || ''));
+    let company;
+    if (creator.company_id) {
+      const companyResults = await db
+        .select()
+        .from(companies)
+        .where(eq(companies.id, creator.company_id));
+      company = companyResults[0];
+    } else {
+      // Use creator's user_id to get company data as fallback
+      const companyResults = await db
+        .select()
+        .from(companies)
+        .where(eq(companies.user_id, creator.id));
+      company = companyResults[0];
+    }
       
     // Format topics as a string if present
     const topicsText = collaboration.topics && collaboration.topics.length > 0 
