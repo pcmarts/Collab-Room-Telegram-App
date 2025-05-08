@@ -2975,15 +2975,22 @@ export async function registerRoutes(app: Express) {
       }
       
       // Delete the collaboration
-      await db.delete(collaborations)
-        .where(eq(collaborations.id, id));
+      const deletedCollab = await db.delete(collaborations)
+        .where(eq(collaborations.id, id))
+        .returning();
       
       // Also delete any swipes (applications) for this collaboration
-      await db.delete(swipes)
-        .where(eq(swipes.collaboration_id, id));
+      const deletedSwipes = await db.delete(swipes)
+        .where(eq(swipes.collaboration_id, id))
+        .returning();
       
-      console.log(`Successfully deleted collaboration ${id}`);
-      return res.status(200).json({ success: true, message: 'Collaboration deleted successfully' });
+      console.log(`Successfully deleted collaboration ${id} and ${deletedSwipes.length} related swipes/applications`);
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Collaboration deleted successfully',
+        deletedId: id,
+        deletedSwipesCount: deletedSwipes.length
+      });
       
     } catch (error) {
       console.error('Error deleting collaboration:', error);

@@ -417,7 +417,20 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     if (!collabToDelete) return;
     
     try {
-      const response = await apiRequest(`/api/collaborations/${collabToDelete}`, 'DELETE');
+      // Use direct fetch instead of apiRequest to handle the response manually
+      const headers: Record<string, string> = {};
+      
+      // Add Telegram authentication header if available
+      if (window.Telegram?.WebApp?.initData) {
+        headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
+      }
+      
+      // Make the DELETE request directly
+      const response = await fetch(`/api/collaborations/${collabToDelete}`, {
+        method: 'DELETE',
+        headers,
+        credentials: 'include'
+      });
       
       if (response.ok) {
         toast({
@@ -429,8 +442,24 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         // Refresh the collaborations data
         queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete collaboration');
+        // Try to parse error response if available
+        const errorText = await response.text();
+        let errorMessage = 'Failed to delete collaboration';
+        
+        try {
+          // Only try to parse as JSON if it looks like JSON
+          if (errorText && (errorText.startsWith('{') || errorText.startsWith('['))) {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error || errorMessage;
+          }
+        } catch (parseError) {
+          // If JSON parsing fails, use the raw error text if available
+          if (errorText) {
+            errorMessage = errorText;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
     } catch (error) {
       toast({
