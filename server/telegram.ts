@@ -1026,7 +1026,7 @@ async function notifyReferrerWithRecord(referrer: any, referralRecord: any, refe
  */
 export async function notifyUserCollabCreated(userId: string, collaborationId: string) {
   try {
-    // Get user details
+    // Get user details with company information
     const [user] = await db
       .select()
       .from(users)
@@ -1046,6 +1046,45 @@ export async function notifyUserCollabCreated(userId: string, collaborationId: s
     if (!collaboration) {
       console.error(`Collaboration with ID ${collaborationId} not found`);
       return false;
+    }
+    
+    // Get user's company details for logging
+    let companyName = "Unknown";
+    
+    try {
+      // First try to get company by company_id (if available)
+      if (user.company_id) {
+        const companies_result = await db
+          .select()
+          .from(companies)
+          .where(eq(companies.id, user.company_id));
+        
+        if (companies_result.length > 0) {
+          companyName = companies_result[0].name;
+        }
+      }
+      
+      // If company not found by company_id, try to get by user_id
+      if (companyName === "Unknown") {
+        const companies_by_user = await db
+          .select()
+          .from(companies)
+          .where(eq(companies.user_id, user.id));
+        
+        if (companies_by_user.length > 0) {
+          companyName = companies_by_user[0].name;
+        }
+      }
+      
+      // As a last resort, check if the user has a company_name directly
+      if (companyName === "Unknown" && user.company_name) {
+        companyName = user.company_name;
+      }
+      
+      // Log the company name we found for debugging
+      console.log(`Found company name for user ${user.first_name} (ID: ${user.id}): ${companyName}`);
+    } catch (error) {
+      console.error(`Error retrieving company details for user ${user.id}:`, error);
     }
     
     // Check if user has notifications enabled
@@ -1086,6 +1125,7 @@ export async function notifyUserCollabCreated(userId: string, collaborationId: s
       `Your ${collaboration.collab_type} collaboration has been successfully created and is now visible to other users.\n\n` +
       `<b>Title:</b> ${collaboration.title || "No title"}\n` +
       `<b>Description:</b> ${collaboration.description || "No description"}\n` +
+      `<b>Company:</b> ${companyName}\n` +
       `${topicsText}` +
       `${fundingStagesText}` +
       `${blockchainNetworksText}` +
@@ -1137,7 +1177,7 @@ export async function notifyUserCollabCreated(userId: string, collaborationId: s
           reply_markup: keyboard,
         },
       );
-      console.log(`Collaboration creation notification sent to user ${user.telegram_id}`);
+      console.log(`Collaboration creation notification sent to user ${user.telegram_id} (${user.first_name}, Company: ${companyName})`);
       return true;
     } catch (error) {
       // Check specifically for "chat not found" errors which indicate the user hasn't interacted with the bot
@@ -1198,15 +1238,41 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
     
     // Get creator's company details
     let company = null;
-    if (creator.company_id) {
-      const companies_result = await db
-        .select()
-        .from(companies)
-        .where(eq(companies.id, creator.company_id));
-      
-      if (companies_result.length > 0) {
-        company = companies_result[0];
+    let companyName = 'Unknown';
+    
+    try {
+      // First try to get company by company_id (if available)
+      if (creator.company_id) {
+        const companies_result = await db
+          .select()
+          .from(companies)
+          .where(eq(companies.id, creator.company_id));
+        
+        if (companies_result.length > 0) {
+          company = companies_result[0];
+          companyName = company.name;
+        }
       }
+      
+      // If company not found by company_id, try to get by user_id
+      if (!company) {
+        const companies_by_user = await db
+          .select()
+          .from(companies)
+          .where(eq(companies.user_id, creator.id));
+        
+        if (companies_by_user.length > 0) {
+          company = companies_by_user[0];
+          companyName = company.name;
+        }
+      }
+      
+      // As a last resort, check if the user has a company_name directly
+      if (!company && creator.company_name) {
+        companyName = creator.company_name;
+      }
+    } catch (error) {
+      console.error(`Error retrieving company details for user ${creator.id}:`, error);
     }
       
     // Format topics as a string if present
@@ -1241,7 +1307,7 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
       `${blockchainNetworksText}` +
       `${companySectorsText}\n\n` +
       `<b>Created by:</b> ${creator.first_name} ${creator.last_name || ''} ${creator.handle ? `(@${creator.handle})` : ''}\n` +
-      `<b>Company:</b> ${company?.name || 'Unknown'}\n\n` +
+      `<b>Company:</b> ${companyName}\n\n` +
       `Use the button below to view the collaboration:`;
 
     // Create inline keyboard with a button to view the collaboration
@@ -1293,14 +1359,14 @@ export async function notifyAdminsNewCollaboration(collaborationId: string, crea
             },
           );
           
-          console.log(`New collaboration notification sent to admin ${admin.telegram_id}`);
+          console.log(`New collaboration notification sent to admin ${admin.telegram_id} (${admin.first_name}, Collaboration: ${collaboration.collab_type}, Company: ${companyName})`);
   
           // Log the admin notification
           logAdminMessage(
             admin.telegram_id,
             "NEW_COLLABORATION",
-            `New collaboration created by ${creator.first_name} ${creator.last_name || ""} (ID: ${collaborationId})`,
-            `${creator.first_name} ${creator.last_name || ""} (${creator.telegram_id || 'No Telegram ID'})`
+            `New collaboration created by ${creator.first_name} ${creator.last_name || ""} (ID: ${collaborationId}, Company: ${companyName})`,
+            `${creator.first_name} ${creator.last_name || ""} (${creator.telegram_id || 'No Telegram ID'}) - ${collaboration.collab_type}`
           );
         } catch (sendError) {
           // Check specifically for "chat not found" errors which indicate the admin hasn't interacted with the bot
