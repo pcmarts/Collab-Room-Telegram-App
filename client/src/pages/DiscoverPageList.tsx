@@ -208,23 +208,25 @@ export default function DiscoverPageList() {
   // Scroll event handler for infinite scrolling
   useEffect(() => {
     const handleScroll = () => {
-      const scrollElement = document.querySelector('.overflow-auto');
-      if (!scrollElement) return;
-
-      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 100; // 100px threshold
+      // Check if we're scrolling the window or a specific container
+      const scrollElement = window;
+      const documentElement = document.documentElement;
+      
+      const scrollTop = documentElement.scrollTop || document.body.scrollTop;
+      const scrollHeight = documentElement.scrollHeight || document.body.scrollHeight;
+      const clientHeight = documentElement.clientHeight || window.innerHeight;
+      
+      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 200; // 200px threshold for better UX
 
       if (scrolledToBottom && hasMore && !loadingMore) {
+        console.log('[Discovery] Loading more collaborations due to scroll');
         loadMoreCollaborations();
       }
     };
 
-    const scrollElement = document.querySelector('.overflow-auto');
-    if (scrollElement) {
-      scrollElement.addEventListener('scroll', handleScroll, { passive: true });
-      return () => scrollElement.removeEventListener('scroll', handleScroll);
-    }
-  }, [hasMore, loadingMore, nextCursor]);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasMore, loadingMore, nextCursor, loadMoreCollaborations]);
 
   // Initial data load
   useEffect(() => {
