@@ -35,6 +35,7 @@ export interface CollaborationFilters {
   cursor?: string;
   limit?: number;
   excludeIds?: string[];
+  sortBy?: string;
 }
 
 export interface PaginatedCollaborations {
@@ -246,8 +247,20 @@ export async function searchCollaborationsPaginatedOptimized(
       );
     }
     
-    // Add ordering (always sort by most recent first)
-    query = query.orderBy(desc(collaborations.created_at));
+    // Add ordering based on sortBy parameter
+    const sortBy = filters.sortBy || 'newest';
+    switch (sortBy) {
+      case 'oldest':
+        query = query.orderBy(collaborations.created_at); // Ascending order for oldest first
+        break;
+      case 'collab_type':
+        query = query.orderBy(collaborations.collab_type, desc(collaborations.created_at)); // Sort by type, then by newest
+        break;
+      case 'newest':
+      default:
+        query = query.orderBy(desc(collaborations.created_at)); // Default: newest first
+        break;
+    }
     
     // Add limit with an extra item to determine if there are more results
     query = query.limit(limit + 1);

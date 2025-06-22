@@ -2730,7 +2730,9 @@ export async function registerRoutes(app: Express) {
         excludeOwn: currentUserId ? true : false,
         // Pagination parameters
         cursor: req.query.cursor as string | undefined,
-        limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10
+        limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10,
+        // Sorting parameter
+        sortBy: req.query.sortBy as string | undefined
       };
 
       // Get filtered collaborations with pagination
