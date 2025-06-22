@@ -122,7 +122,7 @@ export function CollaborationListItem({
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -133,7 +133,7 @@ export function CollaborationListItem({
               className="flex items-center gap-1 text-xs px-2 py-1 h-auto border-gray-300 text-gray-700 hover:bg-gray-50 min-w-0 flex-shrink-0"
             >
               <Eye className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">View Details</span>
+              <span className="truncate">Details</span>
             </Button>
             
             {isAuthenticated && onRequestCollaboration && (
