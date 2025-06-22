@@ -235,6 +235,58 @@ export default function DiscoverPageList() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMore, loadingMore, nextCursor]);
 
+  // Apply scroll and style fixes - optimized to run only once
+  useEffect(() => {
+    // Save the original style
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalWidth = document.body.style.width;
+    const originalHeight = document.body.style.height;
+
+    // Modify for this page to allow scrolling - apply all changes in a single batch
+    requestAnimationFrame(() => {
+      document.body.style.cssText = `
+        overflow: auto;
+        position: static;
+        width: auto;
+        height: auto;
+      `;
+      
+      // Add scrollable-page class to html and body
+      document.documentElement.classList.add("scrollable-page");
+      document.body.classList.add("scrollable-page");
+      
+      // Also fix the root element
+      const rootElement = document.getElementById("root");
+      if (rootElement) {
+        rootElement.style.cssText = `
+          overflow: auto;
+          height: auto;
+          position: static;
+          width: 100%;
+        `;
+      }
+    });
+
+    // Restore original style when component unmounts
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.width = originalWidth;
+      document.body.style.height = originalHeight;
+      document.documentElement.classList.remove("scrollable-page");
+      document.body.classList.remove("scrollable-page");
+      
+      const rootElement = document.getElementById("root");
+      if (rootElement) {
+        rootElement.style.overflow = '';
+        rootElement.style.height = '';
+        rootElement.style.position = '';
+        rootElement.style.width = '';
+      }
+    };
+  }, []);
+
   // Initial data load
   useEffect(() => {
     if (!initialLoadCompletedRef.current) {
