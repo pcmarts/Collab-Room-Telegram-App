@@ -1,4 +1,4 @@
-import * as React from "react"
+import { useState, useEffect } from "react"
 import { Link, useLocation } from "wouter"
 import { User, MessageSquare, FolderPlus, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -9,8 +9,22 @@ import { apiRequest } from "@/lib/queryClient"
 
 const BottomNavigation = () => {
   const [location] = useLocation()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   
-  // Fetch actual matches count from API
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await apiRequest('/api/profile');
+        setIsAuthenticated(true);
+      } catch (error) {
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
+  }, []);
+  
+  // Fetch actual matches count from API (only if authenticated)
   const { data: matches } = useQuery({
     queryKey: ['/api/matches'],
     queryFn: async () => {
@@ -22,6 +36,7 @@ const BottomNavigation = () => {
         return [];
       }
     },
+    enabled: isAuthenticated,
     // Optimize to reduce network requests
     staleTime: 5 * 60 * 1000, // 5 minutes - matches don't change frequently enough to need faster updates
     refetchOnWindowFocus: false, // Don't refetch when window gets focus

@@ -424,18 +424,34 @@ export default function DiscoverPageList() {
 
       {/* Dialogs */}
       <CollaborationDetailsDialog
-        open={cardDialogOpen}
-        onOpenChange={setCardDialogOpen}
-        collaboration={selectedCardDetails}
-        isAuthenticated={isAuthenticated}
-        onRequestCollaboration={selectedCardDetails ? () => handleRequestCollaboration(selectedCardDetails) : undefined}
+        isOpen={cardDialogOpen}
+        onClose={() => setCardDialogOpen(false)}
+        collaboration={selectedCardDetails ? {
+          id: selectedCardDetails.id,
+          title: selectedCardDetails.title,
+          collab_type: selectedCardDetails.type,
+          description: selectedCardDetails.short_description,
+          topics: selectedCardDetails.topics,
+          companyName: selectedCardDetails.creator_company_name,
+          details: selectedCardDetails.details,
+          type: selectedCardDetails.type
+        } : undefined}
       />
 
-      <MatchMoment
-        open={showMatch}
-        onOpenChange={setShowMatch}
-        onViewMatches={() => setLocation('/matches')}
-      />
+      {matchData && (
+        <MatchMoment
+          title={matchData.title}
+          companyName={matchData.companyName}
+          collaborationType={matchData.collaborationType}
+          userName={matchData.userName}
+          isOpen={showMatch}
+          onClose={() => {
+            setShowMatch(false);
+            setMatchData(null);
+          }}
+          onMessage={() => setLocation('/matches')}
+        />
+      )}
     </div>
   );
 }
