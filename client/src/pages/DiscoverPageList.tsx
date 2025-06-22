@@ -113,7 +113,7 @@ export default function DiscoverPageList() {
 
     try {
       const params = new URLSearchParams({
-        limit: '20',
+        limit: '5',
       });
       
       if (cursor && cursor !== 'initial') {
@@ -462,7 +462,7 @@ export default function DiscoverPageList() {
           companyName={matchData.companyName}
           collaborationType={matchData.collaborationType}
           userName={matchData.userName}
-          isVisible={showMatch}
+          isOpen={showMatch}
           onClose={() => {
             setShowMatch(false);
             setMatchData(null);

@@ -122,7 +122,7 @@ export async function searchCollaborationsPaginatedOptimized(
         users,
         eq(collaborations.creator_id, users.id)
       )
-      .innerJoin(
+      .leftJoin(
         companies,
         eq(users.id, companies.user_id)
       );
@@ -274,24 +274,25 @@ export async function searchCollaborationsPaginatedOptimized(
     // ===== KEY OPTIMIZATION: Process results in a single pass =====
     // Instead of multiple transformations, do it all at once
     const processedItems = results.map(r => {
-      // Merge the company data into the collaboration object
+      const company = r.company;
+      // Merge the company data into the collaboration object, handling null companies
       return {
         ...r.collaboration,
         // Include these important fields from company that the frontend expects
-        creator_company_name: r.company.name,
+        creator_company_name: company?.name || 'Independent',
         // Map company fields to the expected frontend fields
-        company_description: r.company.long_description || r.company.short_description,
-        company_website: r.company.website,
+        company_description: company ? (company.long_description || company.short_description) : undefined,
+        company_website: company?.website,
         
         // Additional company fields to support the details dialog
-        company_twitter: r.company.twitter_handle,
-        company_twitter_followers: r.company.twitter_followers,
-        company_linkedin: r.company.linkedin_url,
-        company_short_description: r.company.short_description,
-        company_has_token: r.company.has_token,
-        company_token_ticker: r.company.token_ticker,
-        company_blockchain_networks: r.company.blockchain_networks,
-        company_tags: r.company.tags,
+        company_twitter: company?.twitter_handle,
+        company_twitter_followers: company?.twitter_followers,
+        company_linkedin: company?.linkedin_url,
+        company_short_description: company?.short_description,
+        company_has_token: company?.has_token || false,
+        company_token_ticker: company?.token_ticker,
+        company_blockchain_networks: company?.blockchain_networks,
+        company_tags: company?.tags || [],
         
         // User information
         creator_first_name: r.user.first_name,
