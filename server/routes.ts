@@ -10,7 +10,7 @@ import {
   InsertCollaboration, CollabApplication, InsertCollabApplication,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
 } from "../shared/schema";
-import { eq, and, not, desc, inArray } from 'drizzle-orm';
+import { eq, and, not, desc, inArray, or } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, notifyUserCollabCreated, notifyReferrerAboutApproval, bot } from "./telegram";
 import { storage } from "./storage";
@@ -2639,6 +2639,60 @@ export async function registerRoutes(app: Express) {
 
   // Search collaborations with pagination support
   // GET endpoint for collaborations search
+  // Get user collaboration interaction status (requests/matches)
+  app.get("/api/collaborations/interactions", async (req: TelegramRequest, res: Response) => {
+    try {
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get user's swipes (requests)
+      const userSwipes = await db.select()
+        .from(swipes)
+        .where(eq(swipes.user_id, user.id));
+
+      // Get user's matches
+      const userMatches = await db.select()
+        .from(matches)
+        .where(or(
+          eq(matches.host_id, user.id),
+          eq(matches.requester_id, user.id)
+        ));
+
+      // Create a map of collaboration interactions
+      const interactions: Record<string, { status: 'requested' | 'matched', matchId?: string }> = {};
+
+      // Add requests (right swipes)
+      userSwipes.forEach(swipe => {
+        if (swipe.direction === 'right') {
+          interactions[swipe.collaboration_id] = { status: 'requested' };
+        }
+      });
+
+      // Add matches (override requests if there's a match)
+      userMatches.forEach(match => {
+        interactions[match.collaboration_id] = { 
+          status: 'matched', 
+          matchId: match.id 
+        };
+      });
+
+      return res.json(interactions);
+    } catch (error) {
+      console.error('Failed to fetch collaboration interactions:', error);
+      return res.status(500).json({ error: 'Failed to fetch interactions' });
+    }
+  });
+
   app.get("/api/collaborations/search", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Search Collaborations GET Endpoint ============');
     console.log('Headers:', req.headers);
