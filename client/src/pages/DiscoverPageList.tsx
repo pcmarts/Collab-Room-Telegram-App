@@ -143,6 +143,84 @@ export default function DiscoverPageList() {
     }
   };
 
+  // Load more collaborations when scrolling near bottom
+  const loadMoreCollaborations = async () => {
+    if (!hasMore || loadingMore || !nextCursor) return;
+
+    setLoadingMore(true);
+    try {
+      const result = await fetchCollaborations(nextCursor);
+      
+      setCollaborations(prev => [...prev, ...result.items]);
+      setNextCursor(result.nextCursor);
+      setHasMore(result.hasMore);
+    } catch (error) {
+      console.error('[Discovery] Error loading more collaborations:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    setAuthError(false);
+    
+    try {
+      // Check authentication first
+      await checkAuthenticationStatus();
+      
+      // Fetch potential matches and collaborations in parallel
+      const [matchesResult, collabsResult] = await Promise.allSettled([
+        fetchPotentialMatches(),
+        fetchCollaborations('initial')
+      ]);
+
+      // Handle potential matches
+      if (matchesResult.status === 'fulfilled') {
+        setPotentialMatches(matchesResult.value);
+      }
+
+      // Handle collaborations
+      if (collabsResult.status === 'fulfilled') {
+        setCollaborations(collabsResult.value.items || []);
+        setNextCursor(collabsResult.value.nextCursor);
+        setHasMore(collabsResult.value.hasMore || false);
+      } else {
+        console.error('[Discovery] Error fetching collaborations:', collabsResult.reason);
+        setCollaborations([]);
+        setHasMore(false);
+      }
+
+    } catch (error) {
+      console.error('[Discovery] Error during refresh:', error);
+      setAuthError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Scroll event handler for infinite scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollElement = document.querySelector('.overflow-auto');
+      if (!scrollElement) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 100; // 100px threshold
+
+      if (scrolledToBottom && hasMore && !loadingMore) {
+        loadMoreCollaborations();
+      }
+    };
+
+    const scrollElement = document.querySelector('.overflow-auto');
+    if (scrollElement) {
+      scrollElement.addEventListener('scroll', handleScroll, { passive: true });
+      return () => scrollElement.removeEventListener('scroll', handleScroll);
+    }
+  }, [hasMore, loadingMore, nextCursor, loadMoreCollaborations]);
+
   // Initial data load
   useEffect(() => {
     if (!initialLoadCompletedRef.current) {

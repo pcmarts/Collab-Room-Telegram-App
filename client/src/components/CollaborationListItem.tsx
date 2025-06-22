@@ -7,11 +7,13 @@ import { Building2, Eye, MessageSquare } from "lucide-react";
 interface CollaborationListItemProps {
   collaboration: {
     id: string;
-    title: string;
-    type: string;
+    title?: string;
+    type?: string;
+    collab_type?: string;
     creator_company_name?: string;
     company_logo_url?: string;
     short_description?: string;
+    description?: string;
     topics?: string[];
   };
   isAuthenticated: boolean;
@@ -50,78 +52,72 @@ export function CollaborationListItem({
     return "bg-gray-100 text-gray-800";
   };
 
+  const collabType = collaboration.type || collaboration.collab_type || "Collaboration";
+  const description = collaboration.short_description || collaboration.description;
+
   return (
-    <Card className={`p-4 hover:shadow-md transition-shadow cursor-pointer ${
+    <Card className={`p-3 mb-3 hover:shadow-sm transition-shadow ${
       isPotentialMatch ? "ring-2 ring-primary/20 bg-primary/5" : ""
     }`}>
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3">
         {/* Company Logo */}
-        <Avatar className="w-12 h-12 flex-shrink-0">
+        <Avatar className="w-10 h-10 flex-shrink-0">
           <AvatarImage 
             src={collaboration.company_logo_url} 
             alt={collaboration.creator_company_name}
           />
-          <AvatarFallback className="bg-primary/10 text-primary">
-            {collaboration.company_logo_url ? (
-              <Building2 className="w-6 h-6" />
-            ) : (
-              getCompanyInitials(collaboration.creator_company_name)
-            )}
+          <AvatarFallback className="bg-blue-100 text-blue-800 text-sm font-medium">
+            {getCompanyInitials(collaboration.creator_company_name)}
           </AvatarFallback>
         </Avatar>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2 mb-2">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-2 mb-1">
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground truncate">
-                {collaboration.title}
-              </h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="font-semibold text-gray-900 text-base truncate">
                 {collaboration.creator_company_name || "Unknown Company"}
-              </p>
+              </h3>
             </div>
             
             {isPotentialMatch && (
-              <Badge variant="secondary" className="flex-shrink-0">
-                <MessageSquare className="w-3 h-3 mr-1" />
+              <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0">
                 Match
-              </Badge>
+              </span>
             )}
           </div>
 
-          {/* Collaboration Type Badge */}
-          <Badge 
-            className={`mb-2 ${getTypeColor(collaboration.type)}`}
-            variant="secondary"
-          >
-            {collaboration.type || "Collaboration"}
-          </Badge>
+          {/* Collaboration Type as Pill */}
+          <div className="mb-2">
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(collabType)}`}>
+              {collabType}
+            </span>
+          </div>
 
           {/* Topics */}
           {collaboration.topics && collaboration.topics.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-3">
+            <div className="flex flex-wrap gap-1 mb-2">
               {collaboration.topics.slice(0, 3).map((topic) => (
-                <Badge 
+                <span 
                   key={topic} 
-                  variant="outline" 
-                  className="text-xs"
+                  className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-md"
                 >
                   {topic}
-                </Badge>
+                </span>
               ))}
               {collaboration.topics.length > 3 && (
-                <Badge variant="outline" className="text-xs">
+                <span className="text-xs text-gray-500">
                   +{collaboration.topics.length - 3} more
-                </Badge>
+                </span>
               )}
             </div>
           )}
 
           {/* Description */}
-          {collaboration.short_description && (
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-              {collaboration.short_description}
+          {description && (
+            <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+              {description}
             </p>
           )}
 
@@ -134,9 +130,9 @@ export function CollaborationListItem({
                 e.stopPropagation();
                 onViewDetails();
               }}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 text-xs px-3 py-1.5 h-auto border-gray-300 text-gray-700 hover:bg-gray-50"
             >
-              <Eye className="w-4 h-4" />
+              <Eye className="w-3 h-3" />
               View Details
             </Button>
             
@@ -147,10 +143,10 @@ export function CollaborationListItem({
                   e.stopPropagation();
                   onRequestCollaboration();
                 }}
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 text-xs px-3 py-1.5 h-auto bg-blue-600 hover:bg-blue-700 text-white"
               >
-                <MessageSquare className="w-4 h-4" />
-                {isPotentialMatch ? "Accept Match" : "Request Collaboration"}
+                <MessageSquare className="w-3 h-3" />
+                Request Collaboration
               </Button>
             )}
             
@@ -159,9 +155,9 @@ export function CollaborationListItem({
                 size="sm"
                 variant="secondary"
                 disabled
-                className="flex items-center gap-1 opacity-60"
+                className="flex items-center gap-1 text-xs px-3 py-1.5 h-auto opacity-60 bg-gray-100 text-gray-500"
               >
-                <MessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-3 h-3" />
                 Sign in to Request
               </Button>
             )}
