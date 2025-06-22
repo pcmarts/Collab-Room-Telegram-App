@@ -135,10 +135,7 @@ export async function searchCollaborationsPaginatedOptimized(
       eq(collaborations.status, 'active')
     ];
     
-    // Only exclude own collaborations for authenticated users
-    if (userId !== 'anonymous') {
-      baseConditions.push(not(eq(collaborations.creator_id, userId)));
-    }
+    // REMOVED: User's own collaboration exclusion - all collaborations should be visible to all users
     
     // Build the full list of IDs to exclude (user's own collaborations + explicit exclude IDs)
     const allExcludeIds = filters.excludeIds || [];
@@ -148,19 +145,8 @@ export async function searchCollaborationsPaginatedOptimized(
       baseConditions.push(not(inArray(collaborations.id, allExcludeIds)));
     }
     
-    // ===== KEY OPTIMIZATION: Exclude swiped collaborations with NOT EXISTS =====
-    // This is more efficient than loading all swipes and filtering in JS
-    // Using the new composite index on (user_id, collaboration_id)
-    // Only apply swipe filtering for authenticated users
-    if (userId !== 'anonymous') {
-      baseConditions.push(
-        sql`NOT EXISTS (
-          SELECT 1 FROM ${swipes}
-          WHERE ${swipes.collaboration_id} = ${collaborations.id}
-          AND ${swipes.user_id} = ${userId}
-        )`
-      );
-    }
+    // REMOVED: Swipe filtering - all collaborations should always be visible
+    // Users can see collaborations regardless of previous swipe interactions
     
     // Apply marketing preference filters directly in SQL if they exist
     if (marketingPrefs) {

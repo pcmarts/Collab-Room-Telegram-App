@@ -636,27 +636,13 @@ export class DatabaseStorage implements IStorage {
         ...(filters.excludeIds || []) // Add any explicitly provided IDs
       ];
       
-      // Exclude user's own collaborations and ALL previously swiped ones using SQL expressions
-      // Don't just exclude left swipes - exclude ALL swipes to ensure that no previously swiped collaboration shows up
-      
-      // ROBUST APPROACH: Use a single NOT EXISTS clause to exclude ANY collaboration 
-      // that has been swiped on in any direction
+      // UPDATED: Show ALL collaborations to ALL users
+      // Only exclude based on explicit filters, not user ownership or swipe history
       const excludeConditions = and(
-        // Never show user's own collaborations
-        not(eq(collaborations.creator_id, userId)),
-        
-        // Exclude explicit IDs (belt-and-suspenders approach)
-        allExcludeIds.length > 0 
-          ? not(inArray(collaborations.id, allExcludeIds))
-          : undefined,
-          
-        // Exclude ANY collaboration that has already been swiped on (regardless of direction)
-        // This ensures nothing shows up twice and is much more robust
-        sql`NOT EXISTS (
-          SELECT 1 FROM ${swipes}
-          WHERE ${swipes.collaboration_id} = ${collaborations.id}
-          AND ${swipes.user_id} = ${userId}
-        )`
+        // Only exclude explicitly provided IDs (if any)
+        (filters.excludeIds && filters.excludeIds.length > 0) 
+          ? not(inArray(collaborations.id, filters.excludeIds))
+          : undefined
       );
       
       query = query.where(excludeConditions);
