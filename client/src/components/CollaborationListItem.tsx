@@ -122,7 +122,7 @@ export function CollaborationListItem({
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant="outline"
               size="sm"
@@ -130,10 +130,10 @@ export function CollaborationListItem({
                 e.stopPropagation();
                 onViewDetails();
               }}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 h-auto border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="flex items-center gap-1 text-xs px-2 py-1 h-auto border-gray-300 text-gray-700 hover:bg-gray-50 min-w-0 flex-shrink-0"
             >
-              <Eye className="w-3 h-3" />
-              View Details
+              <Eye className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">View Details</span>
             </Button>
             
             {isAuthenticated && onRequestCollaboration && (
@@ -143,10 +143,10 @@ export function CollaborationListItem({
                   e.stopPropagation();
                   onRequestCollaboration();
                 }}
-                className="flex items-center gap-1 text-xs px-3 py-1.5 h-auto bg-blue-600 hover:bg-blue-700 text-white"
+                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-blue-600 hover:bg-blue-700 text-white min-w-0 flex-shrink-0"
               >
-                <MessageSquare className="w-3 h-3" />
-                Request Collaboration
+                <MessageSquare className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">Request Collaboration</span>
               </Button>
             )}
             
@@ -155,10 +155,10 @@ export function CollaborationListItem({
                 size="sm"
                 variant="secondary"
                 disabled
-                className="flex items-center gap-1 text-xs px-3 py-1.5 h-auto opacity-60 bg-gray-100 text-gray-500"
+                className="flex items-center gap-1 text-xs px-2 py-1 h-auto opacity-60 bg-gray-100 text-gray-500 min-w-0 flex-shrink-0"
               >
-                <MessageSquare className="w-3 h-3" />
-                Sign in to Request
+                <MessageSquare className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">Sign up to Request</span>
               </Button>
             )}
           </div>
