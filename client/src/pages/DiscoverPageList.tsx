@@ -7,6 +7,7 @@ import { CollaborationListItem } from "../components/CollaborationListItem";
 import { CollaborationDetailsDialog } from "../components/CollaborationDetailsDialog";
 import { AuthenticationPrompt } from "../components/AuthenticationPrompt";
 import { MatchMoment } from "../components/MatchMoment";
+import { SortByButton, type SortOption } from "../components/SortByButton";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useMatchContext } from "@/contexts/MatchContext";
@@ -52,6 +53,7 @@ export default function DiscoverPageList() {
   const [potentialMatches, setPotentialMatches] = useState<PotentialMatch[]>([]);
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(true);
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
   
   // Refs
   const initialLoadCompletedRef = useRef(false);
@@ -123,6 +125,7 @@ export default function DiscoverPageList() {
     try {
       const params = new URLSearchParams({
         limit: '20',
+        sortBy: sortBy,
       });
       
       if (cursor && cursor !== 'initial') {
@@ -375,6 +378,17 @@ export default function DiscoverPageList() {
     });
   };
 
+  // Handle sort change
+  const handleSortChange = (newSort: SortOption) => {
+    setSortBy(newSort);
+    // Reset pagination and reload data
+    setCollaborations([]);
+    setNextCursor(undefined);
+    setHasMore(true);
+    // Trigger refresh with new sort
+    setTimeout(() => handleRefresh(), 100);
+  };
+
   // Combine potential matches and regular collaborations
   const allItems = [
     ...potentialMatches.map(pm => ({ ...pm.collaboration, isPotentialMatch: true, potentialMatchId: pm.id })),
@@ -422,6 +436,10 @@ export default function DiscoverPageList() {
           </p>
         </div>
         <div className="flex gap-2">
+          <SortByButton 
+            currentSort={sortBy}
+            onSortChange={handleSortChange}
+          />
           <Button variant="outline" size="sm" onClick={handleOpenFilters}>
             <Filter className="w-4 h-4 mr-2" />
             {hasActiveFilters ? "Filters (Active)" : "Filters"}
