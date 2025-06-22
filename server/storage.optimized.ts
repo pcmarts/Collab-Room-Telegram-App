@@ -65,10 +65,11 @@ export async function searchCollaborationsPaginatedOptimized(
   try {
     // ===== KEY OPTIMIZATION: Get marketing preferences in a single efficient query =====
     // This eliminates a separate roundtrip to the database for preferences
-    const marketingPrefsQuery = await db.select()
+    // Skip preferences for anonymous users
+    const marketingPrefsQuery = userId !== 'anonymous' ? await db.select()
       .from(marketing_preferences)
       .where(eq(marketing_preferences.user_id, userId))
-      .limit(1);
+      .limit(1) : [];
 
     const marketingPrefs = marketingPrefsQuery.length > 0 ? marketingPrefsQuery[0] : null;
     
@@ -131,12 +132,13 @@ export async function searchCollaborationsPaginatedOptimized(
     // Basic conditions that are always present
     const baseConditions = [
       // Only active collaborations
-      eq(collaborations.status, 'active'),
-      
-      // Never show user's own collaborations 
-      // ===== KEY OPTIMIZATION: Direct SQL filtering instead of JavaScript filtering =====
-      not(eq(collaborations.creator_id, userId))
+      eq(collaborations.status, 'active')
     ];
+    
+    // Only exclude own collaborations for authenticated users
+    if (userId !== 'anonymous') {
+      baseConditions.push(not(eq(collaborations.creator_id, userId)));
+    }
     
     // Build the full list of IDs to exclude (user's own collaborations + explicit exclude IDs)
     const allExcludeIds = filters.excludeIds || [];
@@ -149,13 +151,16 @@ export async function searchCollaborationsPaginatedOptimized(
     // ===== KEY OPTIMIZATION: Exclude swiped collaborations with NOT EXISTS =====
     // This is more efficient than loading all swipes and filtering in JS
     // Using the new composite index on (user_id, collaboration_id)
-    baseConditions.push(
-      sql`NOT EXISTS (
-        SELECT 1 FROM ${swipes}
-        WHERE ${swipes.collaboration_id} = ${collaborations.id}
-        AND ${swipes.user_id} = ${userId}
-      )`
-    );
+    // Only apply swipe filtering for authenticated users
+    if (userId !== 'anonymous') {
+      baseConditions.push(
+        sql`NOT EXISTS (
+          SELECT 1 FROM ${swipes}
+          WHERE ${swipes.collaboration_id} = ${collaborations.id}
+          AND ${swipes.user_id} = ${userId}
+        )`
+      );
+    }
     
     // Apply marketing preference filters directly in SQL if they exist
     if (marketingPrefs) {

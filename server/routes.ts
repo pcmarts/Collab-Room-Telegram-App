@@ -2662,17 +2662,6 @@ export async function registerRoutes(app: Express) {
       } else {
         console.log('No authenticated user - showing public view');
       }
-      
-      console.log('Found Telegram user:', telegramUser.id);
-
-      // Get user
-      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
-      if (!user) {
-        console.error('Database user not found for Telegram ID:', telegramUser.id);
-        return res.status(404).json({ error: 'User not found' });
-      }
-      
-      console.log('Found database user:', user.id);
 
       // Parse filters from query params
       const filters = {
@@ -2683,19 +2672,18 @@ export async function registerRoutes(app: Express) {
         hasToken: req.query.hasToken ? req.query.hasToken === 'true' : undefined,
         fundingStages: req.query.fundingStages ? (req.query.fundingStages as string).split(',') : undefined,
         blockchainNetworks: req.query.blockchainNetworks ? (req.query.blockchainNetworks as string).split(',') : undefined,
-        // Always exclude user's own collaborations in Regular Collaboration Cards
-        // This is a non-negotiable rule for the application
-        excludeOwn: true,
+        // Only exclude user's own collaborations if user is authenticated
+        excludeOwn: currentUserId ? true : false,
         // Pagination parameters
         cursor: req.query.cursor as string | undefined,
         limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10
       };
 
       // Get filtered collaborations with pagination
-      console.log('Calling searchCollaborationsPaginated with user ID:', user.id);
+      console.log('Calling searchCollaborationsPaginated with user ID:', currentUserId || 'anonymous');
       console.log('Using filters:', filters);
       
-      const paginatedResults = await storage.searchCollaborationsPaginated(user.id, filters);
+      const paginatedResults = await storage.searchCollaborationsPaginated(currentUserId || 'anonymous', filters);
       console.log(`Found ${paginatedResults.items.length} collaborations, hasMore: ${paginatedResults.hasMore}`);
       
       return res.json(paginatedResults);
