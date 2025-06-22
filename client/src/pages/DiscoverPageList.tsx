@@ -208,25 +208,32 @@ export default function DiscoverPageList() {
   // Scroll event handler for infinite scrolling
   useEffect(() => {
     const handleScroll = () => {
-      // Check if we're scrolling the window or a specific container
-      const scrollElement = window;
-      const documentElement = document.documentElement;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
       
-      const scrollTop = documentElement.scrollTop || document.body.scrollTop;
-      const scrollHeight = documentElement.scrollHeight || document.body.scrollHeight;
-      const clientHeight = documentElement.clientHeight || window.innerHeight;
+      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 300; // 300px threshold
       
-      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 200; // 200px threshold for better UX
+      console.log('[Discovery] Scroll debug:', {
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+        threshold: scrollHeight - 300,
+        scrolledToBottom,
+        hasMore,
+        loadingMore,
+        nextCursor
+      });
 
-      if (scrolledToBottom && hasMore && !loadingMore) {
-        console.log('[Discovery] Loading more collaborations due to scroll');
+      if (scrolledToBottom && hasMore && !loadingMore && nextCursor) {
+        console.log('[Discovery] Triggering load more collaborations');
         loadMoreCollaborations();
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMore, loadingMore, nextCursor, loadMoreCollaborations]);
+  }, [hasMore, loadingMore, nextCursor]);
 
   // Initial data load
   useEffect(() => {
@@ -425,6 +432,30 @@ export default function DiscoverPageList() {
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span className="text-sm text-muted-foreground">Loading more...</span>
                 </div>
+              </div>
+            )}
+
+            {/* Debug info for testing */}
+            {hasMore && (
+              <div className="text-center py-4 space-y-2">
+                <div className="text-xs text-muted-foreground">
+                  Scroll down to load more ({allItems.length} of 26+ collaborations)
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={loadMoreCollaborations}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Loading...
+                    </>
+                  ) : (
+                    "Load More"
+                  )}
+                </Button>
               </div>
             )}
 
