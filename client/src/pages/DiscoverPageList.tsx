@@ -208,23 +208,21 @@ export default function DiscoverPageList() {
   // Scroll event handler for infinite scrolling
   useEffect(() => {
     const handleScroll = () => {
-      // Try multiple scroll detection methods for different environments
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-      const clientHeight = window.innerHeight || document.documentElement.clientHeight;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
       
-      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 200; // 200px threshold
+      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 300; // 300px threshold
       
       console.log('[Discovery] Scroll debug:', {
         scrollTop,
         scrollHeight,
         clientHeight,
-        threshold: scrollHeight - 200,
+        threshold: scrollHeight - 300,
         scrolledToBottom,
         hasMore,
         loadingMore,
-        nextCursor,
-        allItemsLength: allItems.length
+        nextCursor
       });
 
       if (scrolledToBottom && hasMore && !loadingMore && nextCursor) {
@@ -233,19 +231,9 @@ export default function DiscoverPageList() {
       }
     };
 
-    // Add scroll listeners to multiple potential scroll containers
     window.addEventListener('scroll', handleScroll, { passive: true });
-    document.addEventListener('scroll', handleScroll, { passive: true });
-    
-    // Also listen for touch events that might trigger scrolling
-    window.addEventListener('touchmove', handleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('touchmove', handleScroll);
-    };
-  }, [hasMore, loadingMore, nextCursor, allItems.length]);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasMore, loadingMore, nextCursor]);
 
   // Initial data load
   useEffect(() => {
@@ -375,7 +363,7 @@ export default function DiscoverPageList() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div>
@@ -406,7 +394,7 @@ export default function DiscoverPageList() {
       )}
 
       {/* Content */}
-      <div className="pb-20">
+      <div className="flex-1 overflow-auto">
         {allItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center p-8">
             <SearchX className="w-12 h-12 text-muted-foreground/50 mb-4" />
@@ -425,7 +413,7 @@ export default function DiscoverPageList() {
             )}
           </div>
         ) : (
-          <div className="p-4 space-y-6">
+          <div className="p-4 space-y-4">
             {allItems.map((item) => (
               <CollaborationListItem
                 key={`${item.isPotentialMatch ? 'match' : 'collab'}-${item.id}`}
@@ -439,7 +427,7 @@ export default function DiscoverPageList() {
 
             {/* Loading more indicator */}
             {loadingMore && (
-              <div className="flex justify-center py-12">
+              <div className="flex justify-center py-8">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span className="text-sm text-muted-foreground">Loading more...</span>
@@ -449,7 +437,7 @@ export default function DiscoverPageList() {
 
             {/* Debug info for testing */}
             {hasMore && (
-              <div className="text-center py-8 space-y-4">
+              <div className="text-center py-4 space-y-2">
                 <div className="text-xs text-muted-foreground">
                   Scroll down to load more ({allItems.length} of 26+ collaborations)
                 </div>
@@ -473,20 +461,12 @@ export default function DiscoverPageList() {
 
             {/* End of list indicator */}
             {!hasMore && allItems.length > 0 && (
-              <div className="text-center py-12">
+              <div className="text-center py-8">
                 <p className="text-sm text-muted-foreground">
                   You've reached the end of available collaborations
                 </p>
               </div>
             )}
-
-            {/* Extra space to ensure scrolling works */}
-            <div className="h-96 flex items-center justify-center">
-              <div className="text-center text-muted-foreground text-sm">
-                <p>Scroll test area</p>
-                <p className="mt-2">If you can see this, scrolling is working!</p>
-              </div>
-            </div>
           </div>
         )}
       </div>
