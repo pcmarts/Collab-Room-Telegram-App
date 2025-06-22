@@ -10,8 +10,8 @@ interface AuthenticationPromptProps {
 }
 
 export function AuthenticationPrompt({
-  title = "Sign in to continue",
-  message = "You need to sign in through Telegram to request collaborations and access all features.",
+  title = "Sign up to continue",
+  message = "You need to sign up through Telegram to request collaborations and access all features.",
   onSignIn,
   compact = false
 }: AuthenticationPromptProps) {
@@ -29,10 +29,10 @@ export function AuthenticationPrompt({
       <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md border">
         <Lock className="w-4 h-4 text-muted-foreground" />
         <span className="text-sm text-muted-foreground flex-1">
-          Sign in to request collaborations
+          Sign up to request
         </span>
         <Button size="sm" onClick={handleSignIn}>
-          Sign In
+          Sign Up
         </Button>
       </div>
     );
@@ -53,12 +53,12 @@ export function AuthenticationPrompt({
         </div>
 
         <Button onClick={handleSignIn} className="flex items-center gap-2">
-          Sign in with Telegram
+          Sign up with Telegram
           <ArrowRight className="w-4 h-4" />
         </Button>
 
         <div className="text-xs text-muted-foreground">
-          You can browse collaborations without signing in
+          You can browse collaborations without signing up
         </div>
       </div>
     </Card>

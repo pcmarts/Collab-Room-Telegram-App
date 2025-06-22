@@ -113,7 +113,7 @@ export default function DiscoverPageList() {
 
     try {
       const params = new URLSearchParams({
-        limit: '5',
+        limit: '20',
       });
       
       if (cursor && cursor !== 'initial') {
@@ -213,20 +213,8 @@ export default function DiscoverPageList() {
       const clientHeight = window.innerHeight;
       
       const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 300; // 300px threshold
-      
-      console.log('[Discovery] Scroll debug:', {
-        scrollTop,
-        scrollHeight,
-        clientHeight,
-        threshold: scrollHeight - 300,
-        scrolledToBottom,
-        hasMore,
-        loadingMore,
-        nextCursor
-      });
 
       if (scrolledToBottom && hasMore && !loadingMore && nextCursor) {
-        console.log('[Discovery] Triggering load more collaborations');
         loadMoreCollaborations();
       }
     };
@@ -300,7 +288,7 @@ export default function DiscoverPageList() {
     if (!isAuthenticated) {
       toast({
         title: "Authentication Required",
-        description: "Please sign in to request collaborations.",
+        description: "Please sign up to request collaborations.",
         variant: "destructive",
       });
       return;
@@ -487,29 +475,7 @@ export default function DiscoverPageList() {
               </div>
             )}
 
-            {/* Debug info for testing */}
-            {hasMore && (
-              <div className="text-center py-4 space-y-2">
-                <div className="text-xs text-muted-foreground">
-                  Scroll down to load more ({allItems.length} of 26+ collaborations)
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={loadMoreCollaborations}
-                  disabled={loadingMore}
-                >
-                  {loadingMore ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Loading...
-                    </>
-                  ) : (
-                    "Load More"
-                  )}
-                </Button>
-              </div>
-            )}
+
 
             {/* End of list indicator */}
             {!hasMore && allItems.length > 0 && (
