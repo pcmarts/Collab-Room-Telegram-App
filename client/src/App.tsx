@@ -18,7 +18,7 @@ import type { RouteComponentProps } from "wouter";
 
 // Lazy load all page components
 const Dashboard = lazy(() => import("@/pages/dashboard"));
-const DiscoverPage = lazy(() => import("@/pages/DiscoverPageNew"));
+const DiscoverPage = lazy(() => import("@/pages/DiscoverPageList"));
 const MatchesPage = lazy(() => import("@/pages/MatchesPage"));
 const AuthTestPage = lazy(() => import("@/pages/auth-test"));
 const Welcome = lazy(() => import("@/pages/welcome"));
