@@ -52,21 +52,25 @@ const BottomNavigation = () => {
       label: "Discover",
       icon: DiscoveryIcon,
       href: "/discover",
+      requiresAuth: false,
     },
     {
       label: "My Collabs",
       icon: FolderPlus,
       href: "/my-collaborations",
+      requiresAuth: true,
     },
     {
       label: "My Account",
       icon: User,
       href: "/dashboard",
+      requiresAuth: true,
     },
     {
       label: "My Matches",
       icon: MessageSquare,
       href: "/matches",
+      requiresAuth: true,
       notificationCount: matchesCount > 0 ? matchesCount : null
     },
   ]
@@ -74,28 +78,59 @@ const BottomNavigation = () => {
   return (
     <nav className="fixed bottom-0 left-0 z-50 w-full h-24 bg-background border-t border-border pb-6">
       <div className="grid h-full grid-cols-4 mx-auto">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex flex-col items-center justify-center px-1 pt-2 hover:bg-accent relative",
-              location === item.href ? "text-[#FAFAFA]" : "text-[#8F8F99]"
-            )}
-          >
-            <div className="relative">
-              <item.icon className="w-5 h-5 mb-1" />
-              {item.notificationCount && (
-                <Badge 
-                  className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center rounded-full text-xs font-bold"
-                >
-                  {item.notificationCount}
-                </Badge>
+        {navItems.map((item) => {
+          const isRestricted = item.requiresAuth && !isAuthenticated;
+          const isActive = location === item.href;
+          
+          if (isRestricted) {
+            // Render as disabled for unauthenticated users
+            return (
+              <div
+                key={item.href}
+                className={cn(
+                  "flex flex-col items-center justify-center px-1 pt-2 relative opacity-50 cursor-not-allowed",
+                  "text-muted-foreground"
+                )}
+              >
+                <div className="relative">
+                  <item.icon className="w-5 h-5 mb-1" />
+                  {item.notificationCount && isAuthenticated && (
+                    <Badge 
+                      className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center rounded-full text-xs font-bold opacity-50"
+                    >
+                      {item.notificationCount}
+                    </Badge>
+                  )}
+                </div>
+                <span className="text-xs">{item.label}</span>
+              </div>
+            );
+          }
+          
+          // Render as normal link for unrestricted items or authenticated users
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center px-1 pt-2 hover:bg-accent relative",
+                isActive ? "text-primary" : "text-muted-foreground"
               )}
-            </div>
-            <span className="text-xs">{item.label}</span>
-          </Link>
-        ))}
+            >
+              <div className="relative">
+                <item.icon className="w-5 h-5 mb-1" />
+                {item.notificationCount && isAuthenticated && (
+                  <Badge 
+                    className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center rounded-full text-xs font-bold"
+                  >
+                    {item.notificationCount}
+                  </Badge>
+                )}
+              </div>
+              <span className="text-xs">{item.label}</span>
+            </Link>
+          );
+        })}
       </div>
     </nav>
   )
