@@ -313,6 +313,12 @@ export default function DiscoverPageList() {
     ...collaborations.map(collab => ({ ...collab, isPotentialMatch: false }))
   ];
 
+  // Debug logging
+  console.log('[Discovery] All items for rendering:', allItems);
+  if (allItems.length > 0) {
+    console.log('[Discovery] First item structure:', allItems[0]);
+  }
+
   // Render loading state
   if (isLoading) {
     return (

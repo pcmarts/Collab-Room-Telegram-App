@@ -2645,11 +2645,22 @@ export async function registerRoutes(app: Express) {
     console.log('Query:', req.query);
 
     try {
-      // Get Telegram user from request
+      // Get Telegram user from request (optional for public browsing)
       const telegramUser = getTelegramUserFromRequest(req);
-      if (!telegramUser) {
-        console.error('No Telegram user found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
+      let currentUserId: string | null = null;
+      
+      if (telegramUser) {
+        // If user is authenticated, get their ID
+        const [user] = await db.select()
+          .from(users)
+          .where(eq(users.telegram_id, telegramUser.id.toString()));
+        
+        if (user) {
+          currentUserId = user.id;
+          console.log('Found authenticated user:', currentUserId);
+        }
+      } else {
+        console.log('No authenticated user - showing public view');
       }
       
       console.log('Found Telegram user:', telegramUser.id);

@@ -38,7 +38,8 @@ export function CollaborationListItem({
   };
 
   // Get collaboration type color
-  const getTypeColor = (type: string) => {
+  const getTypeColor = (type?: string) => {
+    if (!type) return "bg-gray-100 text-gray-800";
     const lowerType = type.toLowerCase();
     if (lowerType.includes("twitter") || lowerType.includes("social")) return "bg-blue-100 text-blue-800";
     if (lowerType.includes("podcast")) return "bg-purple-100 text-purple-800";
@@ -94,7 +95,7 @@ export function CollaborationListItem({
             className={`mb-2 ${getTypeColor(collaboration.type)}`}
             variant="secondary"
           >
-            {collaboration.type}
+            {collaboration.type || "Collaboration"}
           </Badge>
 
           {/* Topics */}
