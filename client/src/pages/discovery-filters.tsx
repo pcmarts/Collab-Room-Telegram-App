@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -49,17 +49,8 @@ import {
   Save
 } from "lucide-react";
 
-// Constants and Types
-import { 
-  COLLAB_TYPES, 
-  COLLAB_TOPICS,
-  COMPANY_TAG_CATEGORIES,
-  ALL_COMPANY_TAGS,
-  TWITTER_FOLLOWER_COUNTS, 
-  FUNDING_STAGES,
-  BLOCKCHAIN_NETWORKS,
-  BLOCKCHAIN_NETWORK_CATEGORIES
-} from "@shared/schema";
+// Lazy import constants to reduce initial bundle size
+const loadConstants = () => import("@shared/schema");
 
 // Define the filter form schema
 const filterFormSchema = z.object({
@@ -91,6 +82,10 @@ export default function DiscoveryFilters() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   const [isSaving, setIsSaving] = useState(false);
+  
+  // State for lazy-loaded constants
+  const [constants, setConstants] = useState<any>(null);
+  const [constantsLoading, setConstantsLoading] = useState(false);
 
   // Filter toggle states
   const [filtersEnabled, setFiltersEnabled] = useState({
@@ -161,77 +156,100 @@ export default function DiscoveryFilters() {
     created_at?: string;
   }
 
-  // Fetch current preferences from API
-  const { data: marketingPrefs = {} as MarketingPreferencesResponse, isLoading, refetch } = useQuery<MarketingPreferencesResponse>({
+  // Fetch current preferences from API with better caching
+  const { data: marketingPrefs = {} as MarketingPreferencesResponse, isLoading } = useQuery<MarketingPreferencesResponse>({
     queryKey: ['/api/marketing-preferences'],
-    staleTime: 0,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false
   });
 
-  // Force refresh when component mounts
+  // Memoized form values to avoid unnecessary recalculations
+  const formValues = useMemo(() => {
+    if (!marketingPrefs) return null;
+    
+    return {
+      collabTypes: Array.isArray(marketingPrefs.collabs_to_discover) ? 
+        marketingPrefs.collabs_to_discover : [],
+      
+      topics: Array.isArray(marketingPrefs.filtered_marketing_topics) ? 
+        marketingPrefs.filtered_marketing_topics : [],
+      
+      companySectors: Array.isArray(marketingPrefs.company_tags) ? 
+        marketingPrefs.company_tags : [],
+      
+      companyFollowers: marketingPrefs.company_twitter_followers || undefined,
+      userFollowers: marketingPrefs.twitter_followers || undefined,
+      
+      // Handle funding_stage as a comma-separated string
+      fundingStages: marketingPrefs.funding_stage ? 
+        marketingPrefs.funding_stage.split(',') : [],
+      
+      hasToken: marketingPrefs.company_has_token === true,
+      
+      blockchainNetworks: Array.isArray(marketingPrefs.company_blockchain_networks) ? 
+        marketingPrefs.company_blockchain_networks : []
+    };
+  }, [marketingPrefs]);
+
+  // Memoized filter states to avoid unnecessary recalculations
+  const filterStates = useMemo(() => {
+    if (!marketingPrefs) return null;
+    
+    return {
+      enabled: {
+        collabTypes: marketingPrefs.discovery_filter_collab_types_enabled || false,
+        topics: marketingPrefs.discovery_filter_topics_enabled || false,
+        companySectors: marketingPrefs.discovery_filter_company_sectors_enabled || false,
+        companyFollowers: marketingPrefs.discovery_filter_company_followers_enabled || false,
+        userFollowers: marketingPrefs.discovery_filter_user_followers_enabled || false,
+        fundingStages: marketingPrefs.discovery_filter_funding_stages_enabled || false,
+        hasToken: marketingPrefs.discovery_filter_token_status_enabled || false,
+        blockchainNetworks: marketingPrefs.discovery_filter_blockchain_networks_enabled || false
+      },
+      expanded: {
+        collabTypes: marketingPrefs.discovery_filter_collab_types_enabled || false,
+        topics: marketingPrefs.discovery_filter_topics_enabled || false,
+        companySectors: marketingPrefs.discovery_filter_company_sectors_enabled || false,
+        companyFollowers: marketingPrefs.discovery_filter_company_followers_enabled || false,
+        userFollowers: marketingPrefs.discovery_filter_user_followers_enabled || false,
+        fundingStages: marketingPrefs.discovery_filter_funding_stages_enabled || false,
+        hasToken: marketingPrefs.discovery_filter_token_status_enabled || false,
+        blockchainNetworks: marketingPrefs.discovery_filter_blockchain_networks_enabled || false
+      }
+    };
+  }, [marketingPrefs]);
+
+  // Load constants when component mounts
   useEffect(() => {
-    console.log("Discovery filters page mounted - refreshing preferences");
-    refetch();
-  }, [refetch]);
+    const loadFilterConstants = async () => {
+      if (!constants && !constantsLoading) {
+        setConstantsLoading(true);
+        try {
+          const schemaModule = await loadConstants();
+          setConstants(schemaModule);
+        } catch (error) {
+          console.error('Failed to load filter constants:', error);
+        } finally {
+          setConstantsLoading(false);
+        }
+      }
+    };
+    
+    loadFilterConstants();
+  }, [constants, constantsLoading]);
 
-  // Load saved preferences into form
+  // Load saved preferences into form - optimized
   useEffect(() => {
-    if (marketingPrefs) {
-      console.log("Loading marketing preferences:", marketingPrefs);
-
-      // Map preferences to form values
-      const formValues: FilterFormValues = {
-        collabTypes: Array.isArray(marketingPrefs.collabs_to_discover) ? 
-          marketingPrefs.collabs_to_discover : [],
-        
-        topics: Array.isArray(marketingPrefs.filtered_marketing_topics) ? 
-          marketingPrefs.filtered_marketing_topics : [],
-        
-        companySectors: Array.isArray(marketingPrefs.company_tags) ? 
-          marketingPrefs.company_tags : [],
-        
-        companyFollowers: marketingPrefs.company_twitter_followers || undefined,
-        userFollowers: marketingPrefs.twitter_followers || undefined,
-        
-        // Handle funding_stage as a comma-separated string
-        fundingStages: marketingPrefs.funding_stage ? 
-          marketingPrefs.funding_stage.split(',') : [],
-        
-        hasToken: marketingPrefs.company_has_token === true,
-        
-        blockchainNetworks: Array.isArray(marketingPrefs.company_blockchain_networks) ? 
-          marketingPrefs.company_blockchain_networks : []
-      };
-
+    if (formValues && filterStates) {
       // Reset form with saved values
       form.reset(formValues);
-
-      // Set filter toggle states
-      setFiltersEnabled({
-        collabTypes: marketingPrefs.discovery_filter_collab_types_enabled || false,
-        topics: marketingPrefs.discovery_filter_topics_enabled || false,
-        companySectors: marketingPrefs.discovery_filter_company_sectors_enabled || false,
-        companyFollowers: marketingPrefs.discovery_filter_company_followers_enabled || false,
-        userFollowers: marketingPrefs.discovery_filter_user_followers_enabled || false,
-        fundingStages: marketingPrefs.discovery_filter_funding_stages_enabled || false,
-        hasToken: marketingPrefs.discovery_filter_token_status_enabled || false,
-        blockchainNetworks: marketingPrefs.discovery_filter_blockchain_networks_enabled || false
-      });
-
-      // Initially expand enabled filters
-      setFiltersExpanded({
-        collabTypes: marketingPrefs.discovery_filter_collab_types_enabled || false,
-        topics: marketingPrefs.discovery_filter_topics_enabled || false,
-        companySectors: marketingPrefs.discovery_filter_company_sectors_enabled || false,
-        companyFollowers: marketingPrefs.discovery_filter_company_followers_enabled || false,
-        userFollowers: marketingPrefs.discovery_filter_user_followers_enabled || false,
-        fundingStages: marketingPrefs.discovery_filter_funding_stages_enabled || false,
-        hasToken: marketingPrefs.discovery_filter_token_status_enabled || false,
-        blockchainNetworks: marketingPrefs.discovery_filter_blockchain_networks_enabled || false
-      });
+      
+      // Set filter states
+      setFiltersEnabled(filterStates.enabled);
+      setFiltersExpanded(filterStates.expanded);
     }
-  }, [marketingPrefs, form]);
+  }, [formValues, filterStates, form]);
 
   // Toggle filter enabled state
   const toggleFilter = (filterName: keyof typeof filtersEnabled) => {
@@ -473,12 +491,33 @@ export default function DiscoveryFilters() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             
-            {/* Loading state */}
+            {/* Optimized loading state */}
             {isLoading && (
               <div className="space-y-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-48 w-full" />
-                <Skeleton className="h-48 w-full" />
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-6 w-48" />
+                      <Skeleton className="h-6 w-12" />
+                    </div>
+                  </CardHeader>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-6 w-32" />
+                      <Skeleton className="h-6 w-12" />
+                    </div>
+                  </CardHeader>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-6 w-40" />
+                      <Skeleton className="h-6 w-12" />
+                    </div>
+                  </CardHeader>
+                </Card>
               </div>
             )}
             
