@@ -92,6 +92,15 @@ export default function DiscoverPageList() {
     refetchOnWindowFocus: false,
   });
 
+  // Query for user collaboration interactions (requests/matches)
+  const { data: collaborationInteractions } = useQuery({
+    queryKey: ['/api/collaborations/interactions'],
+    queryFn: () => apiRequest('/api/collaborations/interactions'),
+    enabled: isAuthenticated,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
   // Check if filters are active
   const hasActiveFilters = marketingPrefs && (
     (marketingPrefs.collaboration_types && marketingPrefs.collaboration_types.length > 0) ||
@@ -462,6 +471,12 @@ export default function DiscoverPageList() {
                 onViewDetails={() => handleViewDetails(item)}
                 onRequestCollaboration={() => handleRequestCollaboration(item, item.isPotentialMatch)}
                 isPotentialMatch={item.isPotentialMatch}
+                collaborationStatus={
+                  collaborationInteractions && collaborationInteractions[item.id]
+                    ? collaborationInteractions[item.id].status
+                    : undefined
+                }
+                onNavigateToMatches={() => setLocation('/matches')}
               />
             ))}
 

@@ -20,6 +20,8 @@ interface CollaborationListItemProps {
   onViewDetails: () => void;
   onRequestCollaboration?: () => void;
   isPotentialMatch?: boolean;
+  collaborationStatus?: 'requested' | 'matched';
+  onNavigateToMatches?: () => void;
 }
 
 export function CollaborationListItem({
@@ -27,7 +29,9 @@ export function CollaborationListItem({
   isAuthenticated,
   onViewDetails,
   onRequestCollaboration,
-  isPotentialMatch = false
+  isPotentialMatch = false,
+  collaborationStatus,
+  onNavigateToMatches
 }: CollaborationListItemProps) {
   // Get company initials for fallback avatar
   const getCompanyInitials = (name?: string) => {
@@ -136,7 +140,33 @@ export function CollaborationListItem({
               <span className="truncate">Details</span>
             </Button>
             
-            {isAuthenticated && onRequestCollaboration && (
+            {isAuthenticated && collaborationStatus === 'matched' && onNavigateToMatches && (
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNavigateToMatches();
+                }}
+                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-green-600 hover:bg-green-700 text-white min-w-0 flex-shrink-0"
+              >
+                <MessageSquare className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">Matched</span>
+              </Button>
+            )}
+            
+            {isAuthenticated && collaborationStatus === 'requested' && (
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled
+                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-orange-100 text-orange-700 min-w-0 flex-shrink-0"
+              >
+                <MessageSquare className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">Requested</span>
+              </Button>
+            )}
+            
+            {isAuthenticated && !collaborationStatus && onRequestCollaboration && (
               <Button
                 size="sm"
                 onClick={(e) => {
