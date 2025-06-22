@@ -15,11 +15,13 @@ import { useToast } from "@/hooks/use-toast";
 // Types
 interface CardData {
   id: string;
-  title: string;
-  type: string;
+  title?: string;
+  type?: string;
+  collab_type?: string;
   creator_company_name?: string;
   company_logo_url?: string;
   short_description?: string;
+  description?: string;
   topics?: string[];
   creator_id?: string;
   details?: any;
@@ -72,7 +74,6 @@ export default function DiscoverPageList() {
       setAuthError(false);
     } catch (error) {
       setIsAuthenticated(false);
-      // Don't set authError for unauthenticated state - this is expected
       console.log('[Discovery] User not authenticated, showing public view');
     }
   };
@@ -179,74 +180,6 @@ export default function DiscoverPageList() {
       // Handle potential matches
       if (matchesResult.status === 'fulfilled') {
         setPotentialMatches(matchesResult.value);
-      }
-
-      // Handle collaborations
-      if (collabsResult.status === 'fulfilled') {
-        setCollaborations(collabsResult.value.items || []);
-        setNextCursor(collabsResult.value.nextCursor);
-        setHasMore(collabsResult.value.hasMore || false);
-      } else {
-        console.error('[Discovery] Error fetching collaborations:', collabsResult.reason);
-        setCollaborations([]);
-        setHasMore(false);
-      }
-
-    } catch (error) {
-      console.error('[Discovery] Error during refresh:', error);
-      setAuthError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Scroll event handler for infinite scrolling
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollElement = document.querySelector('.overflow-auto');
-      if (!scrollElement) return;
-
-      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 100; // 100px threshold
-
-      if (scrolledToBottom && hasMore && !loadingMore) {
-        loadMoreCollaborations();
-      }
-    };
-
-    const scrollElement = document.querySelector('.overflow-auto');
-    if (scrollElement) {
-      scrollElement.addEventListener('scroll', handleScroll, { passive: true });
-      return () => scrollElement.removeEventListener('scroll', handleScroll);
-    }
-  }, [hasMore, loadingMore, nextCursor, loadMoreCollaborations]);
-
-  // Initial data load
-  useEffect(() => {
-    if (!initialLoadCompletedRef.current) {
-      handleRefresh();
-      initialLoadCompletedRef.current = true;
-    }
-  }, []);
-
-  // Handle refresh
-  const handleRefresh = async () => {
-    setIsLoading(true);
-    setAuthError(false);
-    
-    try {
-      // Check authentication first
-      await checkAuthenticationStatus();
-      
-      // Fetch potential matches and collaborations in parallel
-      const [matchesResult, collabsResult] = await Promise.allSettled([
-        fetchPotentialMatches(),
-        fetchCollaborations('initial')
-      ]);
-
-      // Handle potential matches
-      if (matchesResult.status === 'fulfilled') {
-        setPotentialMatches(matchesResult.value);
       } else {
         setPotentialMatches([]);
       }
@@ -272,36 +205,36 @@ export default function DiscoverPageList() {
     }
   };
 
-  // Load more collaborations
-  const loadMoreCollaborations = async () => {
-    if (loadingMore || !hasMore || !nextCursor) return;
-
-    setLoadingMore(true);
-    try {
-      const { items, hasMore: moreAvailable, nextCursor: cursor } = await fetchCollaborations(nextCursor);
-      setCollaborations(prev => [...prev, ...(items || [])]);
-      setHasMore(moreAvailable || false);
-      setNextCursor(cursor);
-    } catch (error) {
-      console.error('[Discovery] Error loading more:', error);
-    } finally {
-      setLoadingMore(false);
-    }
-  };
-
-  // Handle scroll for infinite loading
+  // Scroll event handler for infinite scrolling
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
+      const scrollElement = document.querySelector('.overflow-auto');
+      if (!scrollElement) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+      const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - 100; // 100px threshold
+
+      if (scrolledToBottom && hasMore && !loadingMore) {
         loadMoreCollaborations();
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadingMore, hasMore, nextCursor]);
+    const scrollElement = document.querySelector('.overflow-auto');
+    if (scrollElement) {
+      scrollElement.addEventListener('scroll', handleScroll, { passive: true });
+      return () => scrollElement.removeEventListener('scroll', handleScroll);
+    }
+  }, [hasMore, loadingMore, nextCursor]);
 
-  // Handle collaboration request
+  // Initial data load
+  useEffect(() => {
+    if (!initialLoadCompletedRef.current) {
+      handleRefresh();
+      initialLoadCompletedRef.current = true;
+    }
+  }, []);
+
+  // Handle request collaboration
   const handleRequestCollaboration = async (collaboration: CardData, isPotentialMatch: boolean = false) => {
     if (!isAuthenticated) {
       toast({
@@ -332,9 +265,9 @@ export default function DiscoverPageList() {
       if (result?.match) {
         setNewMatchCreated(true);
         setMatchData({
-          title: collaboration.title,
+          title: collaboration.title || collaboration.collab_type || 'Collaboration',
           companyName: collaboration.creator_company_name || "Unknown Company",
-          collaborationType: collaboration.type,
+          collaborationType: collaboration.type || collaboration.collab_type || 'Collaboration',
           userName: "You"
         });
         setShowMatch(true);
@@ -377,7 +310,6 @@ export default function DiscoverPageList() {
 
   // Handle authentication prompt
   const handleAuthenticationPrompt = () => {
-    // In a real Telegram WebApp, this would trigger the authentication flow
     toast({
       title: "Authentication Required",
       description: "This app must be opened through Telegram to function properly.",
@@ -513,12 +445,12 @@ export default function DiscoverPageList() {
         collaboration={selectedCardDetails ? {
           id: selectedCardDetails.id,
           title: selectedCardDetails.title,
-          collab_type: selectedCardDetails.type,
-          description: selectedCardDetails.short_description,
+          collab_type: selectedCardDetails.type || selectedCardDetails.collab_type,
+          description: selectedCardDetails.short_description || selectedCardDetails.description,
           topics: selectedCardDetails.topics,
           companyName: selectedCardDetails.creator_company_name,
           details: selectedCardDetails.details,
-          type: selectedCardDetails.type
+          type: selectedCardDetails.type || selectedCardDetails.collab_type
         } : undefined}
       />
 
@@ -528,12 +460,11 @@ export default function DiscoverPageList() {
           companyName={matchData.companyName}
           collaborationType={matchData.collaborationType}
           userName={matchData.userName}
-          isOpen={showMatch}
+          isVisible={showMatch}
           onClose={() => {
             setShowMatch(false);
             setMatchData(null);
           }}
-          onMessage={() => setLocation('/matches')}
         />
       )}
     </div>
