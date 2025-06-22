@@ -49,8 +49,17 @@ import {
   Save
 } from "lucide-react";
 
-// Lazy import constants to reduce initial bundle size
-const loadConstants = () => import("@shared/schema");
+// Import constants directly for better performance
+import { 
+  COLLAB_TYPES, 
+  COLLAB_TOPICS,
+  COMPANY_TAG_CATEGORIES,
+  ALL_COMPANY_TAGS,
+  TWITTER_FOLLOWER_COUNTS, 
+  FUNDING_STAGES,
+  BLOCKCHAIN_NETWORKS,
+  BLOCKCHAIN_NETWORK_CATEGORIES
+} from "@shared/schema";
 
 // Define the filter form schema
 const filterFormSchema = z.object({
@@ -83,9 +92,7 @@ export default function DiscoveryFilters() {
   const [, navigate] = useLocation();
   const [isSaving, setIsSaving] = useState(false);
   
-  // State for lazy-loaded constants
-  const [constants, setConstants] = useState<any>(null);
-  const [constantsLoading, setConstantsLoading] = useState(false);
+
 
   // Filter toggle states
   const [filtersEnabled, setFiltersEnabled] = useState({
@@ -220,24 +227,7 @@ export default function DiscoveryFilters() {
     };
   }, [marketingPrefs]);
 
-  // Load constants when component mounts
-  useEffect(() => {
-    const loadFilterConstants = async () => {
-      if (!constants && !constantsLoading) {
-        setConstantsLoading(true);
-        try {
-          const schemaModule = await loadConstants();
-          setConstants(schemaModule);
-        } catch (error) {
-          console.error('Failed to load filter constants:', error);
-        } finally {
-          setConstantsLoading(false);
-        }
-      }
-    };
-    
-    loadFilterConstants();
-  }, [constants, constantsLoading]);
+
 
   // Load saved preferences into form - optimized
   useEffect(() => {
@@ -492,7 +482,7 @@ export default function DiscoveryFilters() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             
             {/* Optimized loading state */}
-            {isLoading && (
+            {(isLoading || constantsLoading || !constants) && (
               <div className="space-y-4">
                 <Card>
                   <CardHeader>
@@ -559,7 +549,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {COLLAB_TYPES.map((type) => (
+                              {constants.COLLAB_TYPES?.map((type) => (
                                 <FormItem key={type} className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
@@ -622,7 +612,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {COLLAB_TOPICS.map((topic) => (
+                              {constants.COLLAB_TOPICS?.map((topic) => (
                                 <FormItem key={topic} className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
