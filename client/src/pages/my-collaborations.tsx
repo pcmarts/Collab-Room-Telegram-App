@@ -1165,6 +1165,8 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   </div>
                 </div>
               </div>
+            </div>
+              )}
             </TabsContent>
 
             {/* Requests Tab */}
