@@ -115,7 +115,7 @@ export default function DiscoverPageList() {
   );
 
   // Fetch collaborations
-  const fetchCollaborations = async (cursor?: string) => {
+  const fetchCollaborations = async (cursor?: string, customSortBy?: SortOption) => {
     const now = Date.now();
     if (now - lastFetchTimeRef.current < 1000) {
       return { items: [], hasMore: false, nextCursor: undefined };
@@ -125,7 +125,7 @@ export default function DiscoverPageList() {
     try {
       const params = new URLSearchParams({
         limit: '20',
-        sortBy: sortBy,
+        sortBy: customSortBy || sortBy,
       });
       
       if (cursor && cursor !== 'initial') {
@@ -379,14 +379,28 @@ export default function DiscoverPageList() {
   };
 
   // Handle sort change
-  const handleSortChange = (newSort: SortOption) => {
+  const handleSortChange = async (newSort: SortOption) => {
     setSortBy(newSort);
-    // Reset pagination and reload data
+    // Reset pagination state immediately
     setCollaborations([]);
     setNextCursor(undefined);
     setHasMore(true);
-    // Trigger refresh with new sort
-    setTimeout(() => handleRefresh(), 100);
+    setIsLoading(true);
+    
+    try {
+      // Fetch fresh data with new sort immediately - pass the new sort value directly
+      const result = await fetchCollaborations('initial', newSort);
+      setCollaborations(result.items || []);
+      setHasMore(result.hasMore || false);
+      setNextCursor(result.nextCursor);
+    } catch (error) {
+      console.error('[Discovery] Error changing sort:', error);
+      setCollaborations([]);
+      setHasMore(false);
+      setNextCursor(undefined);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Combine potential matches and regular collaborations
