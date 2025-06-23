@@ -105,9 +105,11 @@ function Router() {
             <Route path="/application-status" component={ApplicationStatus} />
 
             <Route path="/apply/:id">
-              {(params) => <Suspense fallback={<LoadingScreen />}>
-                <ApplyComponent id={params.id} />
-              </Suspense>}
+              {(params) => (
+                <Suspense fallback={<LoadingScreen />}>
+                  <ApplyComponent id={params.id} />
+                </Suspense>
+              )}
             </Route>
 
             {/* Main App Routes */}

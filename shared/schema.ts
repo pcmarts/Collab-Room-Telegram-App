@@ -557,6 +557,27 @@ export const collaborations = pgTable("collaborations", {
 });
 
 // Collaboration applications
+export const collab_applications = pgTable("collab_applications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  collaboration_id: uuid("collaboration_id")
+    .notNull()
+    .references(() => collaborations.id, { onDelete: "cascade" }),
+  applicant_id: uuid("applicant_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  status: text("status").notNull().default("pending"),
+  details: jsonb("details").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+  return {
+    // Index for collab_applications.collaboration_id for joins
+    appCollabIdIdx: index("collab_app_collab_id_idx").on(table.collaboration_id),
+    // Index for collab_applications.applicant_id for filtering by user
+    appApplicantIdIdx: index("collab_app_applicant_id_idx").on(table.applicant_id),
+    // Index for status field for filtering
+    appStatusIdx: index("collab_app_status_idx").on(table.status)
+  };
+});
 
 // Collaboration matching notifications
 export const collab_notifications = pgTable("collab_notifications", {
@@ -674,6 +695,7 @@ export const insertConferencePreferencesSchema = createInsertSchema(
 export const insertEventSchema = createInsertSchema(events);
 export const insertUserEventSchema = createInsertSchema(user_events);
 export const insertCollaborationSchema = createInsertSchema(collaborations);
+export const insertCollabApplicationSchema = createInsertSchema(collab_applications);
 
 export const insertCollabNotificationSchema =
   createInsertSchema(collab_notifications);
@@ -719,7 +741,6 @@ export type InsertConferencePreferences = z.infer<
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
 export type InsertCollaboration = z.infer<typeof insertCollaborationSchema>;
-
 export type InsertCollabNotification = z.infer<
   typeof insertCollabNotificationSchema
 >;
@@ -798,23 +819,8 @@ export const collabApplicationSchema = z.object({
 
 export type CollabApplicationData = z.infer<typeof collabApplicationSchema>;
 
-// Legacy type for compatibility - replacing the removed table
-export type CollabApplication = {
-  id: string;
-  collaboration_id: string;
-  applicant_id: string;
-  status: string;
-  details: any;
-  created_at: Date;
-};
-
-// Legacy insert type for compatibility
-export type InsertCollabApplication = {
-  collaboration_id: string;
-  applicant_id: string;
-  status?: string;
-  details: any;
-};
+// Use the actual table type
+export type CollabApplication = typeof collab_applications.$inferSelect;
 
 // Collaboration type schemas
 // Podcast Guest Appearance
