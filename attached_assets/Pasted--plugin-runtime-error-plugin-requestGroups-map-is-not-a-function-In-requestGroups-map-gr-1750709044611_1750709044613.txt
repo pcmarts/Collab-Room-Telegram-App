@@ -1,0 +1,307 @@
+[plugin:runtime-error-plugin] requestGroups.map is not a function. (In 'requestGroups.map(
+      (group) => /* @__PURE__ */ jsxDEV(Card, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:213:8", "data-component-name": "Card", children: [
+        /* @__PURE__ */ jsxDEV(CardHeader, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:214:12", "data-component-name": "CardHeader", children: /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:215:14", "data-component-name": "div", className: "flex items-start space-x-3", children: [
+          getCollabTypeIcon(group.collaboration.type),
+          /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:217:16", "data-component-name": "div", className: "flex-1", children: [
+            /* @__PURE__ */ jsxDEV(CardTitle, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:218:18", "data-component-name": "CardTitle", className: "text-lg", children: group.collaboration.title }, void 0, false, {
+              fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+              lineNumber: 218,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV("p", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:219:18", "data-component-name": "p", className: "text-sm text-muted-foreground mt-1", children: group.collaboration.description }, void 0, false, {
+              fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+              lineNumber: 219,
+              columnNumber: 19
+            }, this),
+            group.collaboration.topics && group.collaboration.topics.length > 0 && /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:223:16", "data-component-name": "div", className: "flex flex-wrap gap-1 mt-2", children: group.collaboration.topics.map(
+              (topic) => /* @__PURE__ */ jsxDEV(Badge, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:225:18", "data-component-name": "Badge", variant: "secondary", className: "text-xs", children: topic }, topic, false, {
+                fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                lineNumber: 225,
+                columnNumber: 19
+              }, this)
+            ) }, void 0, false, {
+              fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+              lineNumber: 223,
+              columnNumber: 17
+            }, this)
+          ] }, void 0, true, {
+            fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+            lineNumber: 217,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV(Badge, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:232:16", "data-component-name": "Badge", variant: "outline", children: [
+            group.requests.length,
+            " request",
+            group.requests.length !== 1 ? "s" : ""
+          ] }, void 0, true, {
+            fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+            lineNumber: 232,
+            columnNumber: 17
+          }, this)
+        ] }, void 0, true, {
+          fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+          lineNumber: 215,
+          columnNumber: 15
+        }, this) }, void 0, false, {
+          fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+          lineNumber: 214,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV(CardContent, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:237:12", "data-component-name": "CardContent", children: /* @__PURE__ */ jsxDEV(ScrollArea, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:238:14", "data-component-name": "ScrollArea", className: "max-h-96", children: /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:239:16", "data-component-name": "div", className: "space-y-4", children: group.requests.map(
+          (request, index) => /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:241:16", "data-component-name": "div", children: [
+            /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:242:22", "data-component-name": "div", className: "flex items-start space-x-4", children: [
+              /* @__PURE__ */ jsxDEV(Avatar, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:243:24", "data-component-name": "Avatar", className: "h-12 w-12", children: /* @__PURE__ */ jsxDEV(AvatarFallback, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:244:26", "data-component-name": "AvatarFallback", children: [
+                request.requester.first_name.charAt(0),
+                request.requester.last_name?.charAt(0) || ""
+              ] }, void 0, true, {
+                fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                lineNumber: 244,
+                columnNumber: 27
+              }, this) }, void 0, false, {
+                fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                lineNumber: 243,
+                columnNumber: 25
+              }, this),
+              /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:250:24", "data-component-name": "div", className: "flex-1 space-y-2", children: [
+                /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:251:26", "data-component-name": "div", className: "flex items-center justify-between", children: [
+                  /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:252:28", "data-component-name": "div", children: [
+                    /* @__PURE__ */ jsxDEV("h4", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:253:30", "data-component-name": "h4", className: "font-medium", children: [
+                      request.requester.first_name,
+                      " ",
+                      request.requester.last_name || ""
+                    ] }, void 0, true, {
+                      fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                      lineNumber: 253,
+                      columnNumber: 31
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("p", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:256:30", "data-component-name": "p", className: "text-sm text-muted-foreground", children: [
+                      request.company.job_title,
+                      " at ",
+                      request.company.name
+                    ] }, void 0, true, {
+                      fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                      lineNumber: 256,
+                      columnNumber: 31
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                    lineNumber: 252,
+                    columnNumber: 29
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:260:28", "data-component-name": "div", className: "flex items-center space-x-1 text-xs text-muted-foreground", children: [
+                    /* @__PURE__ */ jsxDEV(Clock, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:261:30", "data-component-name": "Clock", className: "h-3 w-3" }, void 0, false, {
+                      fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                      lineNumber: 261,
+                      columnNumber: 31
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:262:30", "data-component-name": "span", children: formatDistanceToNow(new Date(request.created_at), { addSuffix: true }) }, void 0, false, {
+                      fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                      lineNumber: 262,
+                      columnNumber: 31
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                    lineNumber: 260,
+                    columnNumber: 29
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                  lineNumber: 251,
+                  columnNumber: 27
+                }, this),
+                request.note && /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:269:22", "data-component-name": "div", className: "bg-muted/50 rounded-lg p-3", children: /* @__PURE__ */ jsxDEV("p", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:270:30", "data-component-name": "p", className: "text-sm", children: request.note }, void 0, false, {
+                  fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                  lineNumber: 270,
+                  columnNumber: 31
+                }, this) }, void 0, false, {
+                  fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                  lineNumber: 269,
+                  columnNumber: 23
+                }, this),
+                /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:274:26", "data-component-name": "div", className: "flex items-center justify-between", children: [
+                  /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:275:28", "data-component-name": "div", className: "flex items-center space-x-4 text-sm text-muted-foreground", children: [
+                    request.company.website && /* @__PURE__ */ jsxDEV(
+                      "a",
+                      {
+                        "data-replit-metadata": "client/src/components/requests-management-tab.tsx:277:26",
+                        "data-component-name": "a",
+                        href: request.company.website,
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        className: "flex items-center space-x-1 hover:text-foreground transition-colors",
+                        children: [
+                          /* @__PURE__ */ jsxDEV(ExternalLink, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:283:34", "data-component-name": "ExternalLink", className: "h-3 w-3" }, void 0, false, {
+                            fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                            lineNumber: 283,
+                            columnNumber: 35
+                          }, this),
+                          /* @__PURE__ */ jsxDEV("span", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:284:34", "data-component-name": "span", children: "Website" }, void 0, false, {
+                            fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                            lineNumber: 284,
+                            columnNumber: 35
+                          }, this)
+                        ]
+                      },
+                      void 0,
+                      true,
+                      {
+                        fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                        lineNumber: 277,
+                        columnNumber: 27
+                      },
+                      this
+                    ),
+                    request.company.twitter_handle && /* @__PURE__ */ jsxDEV("span", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:288:26", "data-component-name": "span", className: "flex items-center space-x-1", children: [
+                      /* @__PURE__ */ jsxDEV(Twitter, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:289:34", "data-component-name": "Twitter", className: "h-3 w-3" }, void 0, false, {
+                        fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                        lineNumber: 289,
+                        columnNumber: 35
+                      }, this),
+                      /* @__PURE__ */ jsxDEV("span", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:290:34", "data-component-name": "span", children: [
+                        "@",
+                        request.company.twitter_handle
+                      ] }, void 0, true, {
+                        fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                        lineNumber: 290,
+                        columnNumber: 35
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                      lineNumber: 288,
+                      columnNumber: 27
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                    lineNumber: 275,
+                    columnNumber: 29
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("div", { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:295:28", "data-component-name": "div", className: "flex items-center space-x-2", children: [
+                    /* @__PURE__ */ jsxDEV(
+                      Button,
+                      {
+                        "data-replit-metadata": "client/src/components/requests-management-tab.tsx:296:30",
+                        "data-component-name": "Button",
+                        variant: "ghost",
+                        size: "sm",
+                        onClick: () => handleViewProfile(request.requester),
+                        disabled: !request.requester.twitter_url,
+                        children: [
+                          /* @__PURE__ */ jsxDEV(User, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:302:32", "data-component-name": "User", className: "h-4 w-4 mr-1" }, void 0, false, {
+                            fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                            lineNumber: 302,
+                            columnNumber: 33
+                          }, this),
+                          "View Profile"
+                        ]
+                      },
+                      void 0,
+                      true,
+                      {
+                        fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                        lineNumber: 296,
+                        columnNumber: 31
+                      },
+                      this
+                    ),
+                    /* @__PURE__ */ jsxDEV(
+                      Button,
+                      {
+                        "data-replit-metadata": "client/src/components/requests-management-tab.tsx:305:30",
+                        "data-component-name": "Button",
+                        variant: "outline",
+                        size: "sm",
+                        onClick: () => handleDeclineRequest(request.id),
+                        disabled: declineRequestMutation.isPending,
+                        children: [
+                          /* @__PURE__ */ jsxDEV(XCircle, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:311:32", "data-component-name": "XCircle", className: "h-4 w-4 mr-1" }, void 0, false, {
+                            fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                            lineNumber: 311,
+                            columnNumber: 33
+                          }, this),
+                          "Decline"
+                        ]
+                      },
+                      void 0,
+                      true,
+                      {
+                        fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                        lineNumber: 305,
+                        columnNumber: 31
+                      },
+                      this
+                    ),
+                    /* @__PURE__ */ jsxDEV(
+                      Button,
+                      {
+                        "data-replit-metadata": "client/src/components/requests-management-tab.tsx:314:30",
+                        "data-component-name": "Button",
+                        size: "sm",
+                        onClick: () => handleAcceptRequest(request.id),
+                        disabled: acceptRequestMutation.isPending,
+                        children: [
+                          /* @__PURE__ */ jsxDEV(CheckCircle, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:319:32", "data-component-name": "CheckCircle", className: "h-4 w-4 mr-1" }, void 0, false, {
+                            fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                            lineNumber: 319,
+                            columnNumber: 33
+                          }, this),
+                          "Accept"
+                        ]
+                      },
+                      void 0,
+                      true,
+                      {
+                        fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                        lineNumber: 314,
+                        columnNumber: 31
+                      },
+                      this
+                    )
+                  ] }, void 0, true, {
+                    fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                    lineNumber: 295,
+                    columnNumber: 29
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                  lineNumber: 274,
+                  columnNumber: 27
+                }, this)
+              ] }, void 0, true, {
+                fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+                lineNumber: 250,
+                columnNumber: 25
+              }, this)
+            ] }, void 0, true, {
+              fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+              lineNumber: 242,
+              columnNumber: 23
+            }, this),
+            index < group.requests.length - 1 && /* @__PURE__ */ jsxDEV(Separator, { "data-replit-metadata": "client/src/components/requests-management-tab.tsx:328:18", "data-component-name": "Separator", className: "mt-4" }, void 0, false, {
+              fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+              lineNumber: 328,
+              columnNumber: 19
+            }, this)
+          ] }, request.id, true, {
+            fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+            lineNumber: 241,
+            columnNumber: 17
+          }, this)
+        ) }, void 0, false, {
+          fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+          lineNumber: 239,
+          columnNumber: 17
+        }, this) }, void 0, false, {
+          fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+          lineNumber: 238,
+          columnNumber: 15
+        }, this) }, void 0, false, {
+          fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+          lineNumber: 237,
+          columnNumber: 13
+        }, this)
+      ] }, group.collaboration.id, true, {
+        fileName: "/home/runner/workspace/client/src/components/requests-management-tab.tsx",
+        lineNumber: 213,
+        columnNumber: 9
+      }, this)
+    )', 'requestGroups.map' is undefined)

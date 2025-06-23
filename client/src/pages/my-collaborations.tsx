@@ -297,7 +297,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   });
 
   // Fetch full collaboration requests for the management tab
-  const { data: requestGroups, isLoading: isLoadingRequests, refetch: refetchRequests } = useQuery({
+  const { data: requestsData, isLoading: isLoadingRequests, refetch: refetchRequests } = useQuery({
     queryKey: ['/api/collaboration-requests'],
     queryFn: async () => {
       try {
@@ -305,12 +305,15 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         return data;
       } catch (error) {
         console.error("Error fetching collaboration requests:", error);
-        return [];
+        return { items: [], hasMore: false };
       }
     },
     enabled: false, // Only load when user navigates to requests tab
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
+
+  // Extract the items array from the API response
+  const requestGroups = requestsData?.items || [];
 
   // Handle tab changes to load requests data when needed
   const handleTabChange = (value: string) => {
