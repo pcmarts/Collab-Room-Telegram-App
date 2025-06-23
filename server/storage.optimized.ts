@@ -258,7 +258,7 @@ export async function searchCollaborationsPaginatedOptimized(
         break;
       case 'newest':
       default:
-        query = query.orderBy(desc(collaborations.created_at)); // Default: newest first
+        query = query.orderBy(desc(collaborations.created_at)); // Descending order for newest first
         break;
     }
     
