@@ -37,6 +37,7 @@ export interface IStorage {
   getActiveCollaborationsCount(): Promise<number>;
   
   // Collaboration applications
+  createCollabApplication(collaborationId: string, applicantId: string, details: any): Promise<CollabApplication>;
   applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication>;
   getCollaborationApplications(collaborationId: string): Promise<CollabApplication[]>;
   getUserApplications(userId: string): Promise<CollabApplication[]>;
@@ -851,6 +852,30 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  async createCollabApplication(collaborationId: string, applicantId: string, details: any): Promise<CollabApplication> {
+    console.warn("Legacy createCollabApplication called - this is now managed via swipes");
+    
+    // Create a swipe instead
+    const swipeData: InsertSwipe = {
+      user_id: applicantId,
+      collaboration_id: collaborationId,
+      direction: "right",
+      details: details,
+    };
+    
+    const swipe = await this.createSwipe(swipeData);
+    
+    // Create the legacy compatibility object
+    return {
+      id: swipe.id,
+      collaboration_id: swipe.collaboration_id,
+      applicant_id: swipe.user_id,
+      status: "pending",
+      details: swipe.details as any,
+      created_at: swipe.created_at,
+    };
+  }
+
   // Collaboration applications (Legacy implementation - using swipes now)
   async applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication> {
     console.warn("Legacy applyToCollaboration called - this is now managed via swipes");
