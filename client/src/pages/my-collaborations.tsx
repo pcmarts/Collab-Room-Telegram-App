@@ -39,7 +39,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GlowButton } from "@/components/GlowButton";
+import { RequestsSummaryCard } from "@/components/requests-summary-card";
+import { RequestsManagementTab } from "@/components/requests-management-tab";
 import {
   Dialog,
   DialogContent,
@@ -134,6 +137,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   
   // State to control the preloaded component visibility
   const [showCreateCollab, setShowCreateCollab] = useState(false);
+  
+  // Tab state for managing different views
+  const [activeTab, setActiveTab] = useState('overview');
   
   // This disables the default fixed positioning and overflow hidden
   // so that we can have a normal scrolling container with a scrollbar
@@ -272,6 +278,38 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     // Configure React Query to load this data only after applications are loaded
     enabled: !isLoadingApps && !isLoadingCollabs,
     staleTime: Infinity
+  });
+
+  // Fetch collaboration requests summary for the summary card
+  const { data: requestsSummary } = useQuery({
+    queryKey: ['/api/collaboration-requests/summary'],
+    queryFn: async () => {
+      try {
+        const data = await apiRequest('/api/collaboration-requests/summary');
+        return data;
+      } catch (error) {
+        console.error("Error fetching requests summary:", error);
+        return { recentRequests: [], totalPendingCount: 0 };
+      }
+    },
+    enabled: !isLoadingCollabs,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+
+  // Fetch full collaboration requests for the management tab
+  const { data: requestGroups, isLoading: isLoadingRequests } = useQuery({
+    queryKey: ['/api/collaboration-requests'],
+    queryFn: async () => {
+      try {
+        const data = await apiRequest('/api/collaboration-requests');
+        return data;
+      } catch (error) {
+        console.error("Error fetching collaboration requests:", error);
+        return [];
+      }
+    },
+    enabled: false, // Only load when user navigates to requests tab
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
   
   // Handle approving an application

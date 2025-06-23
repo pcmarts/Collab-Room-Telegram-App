@@ -21,7 +21,7 @@ import {
   MessageSquare,
   ListChecks
 } from "lucide-react";
-import { Twitter } from "react-icons/si";
+import { FaTwitter as Twitter } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -108,7 +108,7 @@ export function RequestsManagementTab({
 
   const acceptRequestMutation = useMutation({
     mutationFn: (requestId: string) => 
-      apiRequest(`/api/collaboration-requests/${requestId}/accept`, { method: 'POST' }),
+      apiRequest(`/api/collaboration-requests/${requestId}/accept`, 'POST'),
     onSuccess: () => {
       toast({
         title: "Request Accepted",
@@ -128,7 +128,7 @@ export function RequestsManagementTab({
 
   const declineRequestMutation = useMutation({
     mutationFn: (requestId: string) => 
-      apiRequest(`/api/collaboration-requests/${requestId}/decline`, { method: 'POST' }),
+      apiRequest(`/api/collaboration-requests/${requestId}/decline`, 'POST'),
     onSuccess: () => {
       toast({
         title: "Request Declined",
