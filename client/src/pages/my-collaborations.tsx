@@ -792,10 +792,20 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   
   // Render an application card
   const renderApplicationCard = (application: CollabApplication) => {
-    // Parse the application data
-    let applicationData: ApplicationData = {} as ApplicationData;
+    // Parse the application data with safe defaults
+    let applicationData: ApplicationData = {
+      reason: '',
+      experience: '',
+      portfolioLinks: '',
+      twitterHandle: '',
+      githubHandle: '',
+      notes: ''
+    } as ApplicationData;
+    
     try {
-      applicationData = application.application_data as unknown as ApplicationData;
+      if (application.application_data && typeof application.application_data === 'object') {
+        applicationData = { ...applicationData, ...(application.application_data as ApplicationData) };
+      }
     } catch (error) {
       console.error("Error parsing application data:", error);
     }
@@ -871,10 +881,20 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   const renderApplicationDetails = () => {
     if (!selectedApplication) return null;
     
-    // Parse the application data
-    let applicationData: ApplicationData = {} as ApplicationData;
+    // Parse the application data with safe defaults
+    let applicationData: ApplicationData = {
+      reason: '',
+      experience: '',
+      portfolioLinks: '',
+      twitterHandle: '',
+      githubHandle: '',
+      notes: ''
+    } as ApplicationData;
+    
     try {
-      applicationData = selectedApplication.application_data as unknown as ApplicationData;
+      if (selectedApplication.application_data && typeof selectedApplication.application_data === 'object') {
+        applicationData = { ...applicationData, ...(selectedApplication.application_data as ApplicationData) };
+      }
     } catch (error) {
       console.error("Error parsing application data:", error);
     }
