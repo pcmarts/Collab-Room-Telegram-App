@@ -4019,6 +4019,103 @@ export async function registerRoutes(app: Express) {
   });
 
   // Endpoint to retrieve a user's swipe history
+  // Collaboration requests endpoints
+  app.get("/api/collaboration-requests/summary", async (req: TelegramRequest, res: Response) => {
+    try {
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUserByTelegramId(telegramUser.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const summary = await storage.getCollaborationRequestsSummary(user.id);
+      res.json(summary);
+    } catch (error) {
+      console.error("Error fetching collaboration requests summary:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/collaboration-requests", async (req: TelegramRequest, res: Response) => {
+    try {
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUserByTelegramId(telegramUser.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const cursor = req.query.cursor as string;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const filter = req.query.filter as string || 'all';
+
+      const requests = await storage.getCollaborationRequests(user.id, { cursor, limit, filter });
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching collaboration requests:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/collaboration-requests/:id/accept", async (req: TelegramRequest, res: Response) => {
+    try {
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUserByTelegramId(telegramUser.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const requestId = req.params.id;
+      const result = await storage.acceptCollaborationRequest(user.id, requestId);
+      
+      if (result.success) {
+        res.json({ success: true, match: result.match });
+      } else {
+        res.status(400).json({ error: result.error });
+      }
+    } catch (error) {
+      console.error("Error accepting collaboration request:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/collaboration-requests/:id/decline", async (req: TelegramRequest, res: Response) => {
+    try {
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const user = await storage.getUserByTelegramId(telegramUser.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const requestId = req.params.id;
+      const result = await storage.declineCollaborationRequest(user.id, requestId);
+      
+      if (result.success) {
+        res.json({ success: true });
+      } else {
+        res.status(400).json({ error: result.error });
+      }
+    } catch (error) {
+      console.error("Error declining collaboration request:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/user-swipes", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Get User Swipes Endpoint ============');
     console.log('Headers:', req.headers);

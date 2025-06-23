@@ -1314,6 +1314,341 @@ export class DatabaseStorage implements IStorage {
     return enrichedSwipes;
   }
   
+  // Collaboration requests methods
+  async getCollaborationRequestsSummary(userId: string): Promise<{
+    recentRequests: any[];
+    totalPendingCount: number;
+  }> {
+    console.log('Getting collaboration requests summary for user:', userId);
+    
+    // Get user's collaborations
+    const userCollaborations = await this.getUserCollaborations(userId);
+    const collabIds = userCollaborations.map(collab => collab.id);
+    
+    if (collabIds.length === 0) {
+      return { recentRequests: [], totalPendingCount: 0 };
+    }
+    
+    // Get all pending requests (right swipes on user's collaborations)
+    const allRequests = await db
+      .select({
+        swipe: swipes,
+        user: users,
+        company: companies,
+        collaboration: collaborations,
+      })
+      .from(swipes)
+      .innerJoin(users, eq(swipes.user_id, users.id))
+      .innerJoin(companies, eq(users.id, companies.user_id))
+      .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
+      .where(
+        and(
+          inArray(swipes.collaboration_id, collabIds),
+          eq(swipes.direction, 'right'),
+          not(eq(swipes.user_id, userId)) // Exclude host's own swipes
+        )
+      )
+      .orderBy(desc(swipes.created_at));
+    
+    // Filter out requests that already have active matches
+    const existingMatches = await db
+      .select({
+        collaboration_id: matches.collaboration_id,
+        requester_id: matches.requester_id,
+      })
+      .from(matches)
+      .where(
+        and(
+          eq(matches.host_id, userId),
+          not(eq(matches.status, 'declined')) // Include only active matches
+        )
+      );
+    
+    const matchedPairs = new Set(
+      existingMatches.map(m => `${m.collaboration_id}_${m.requester_id}`)
+    );
+    
+    const pendingRequests = allRequests.filter(req => 
+      !matchedPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
+    );
+    
+    // Get recent 4 requests
+    const recentRequests = pendingRequests.slice(0, 4).map(req => ({
+      id: req.swipe.id,
+      collaboration_id: req.swipe.collaboration_id,
+      collaboration_type: req.collaboration.collab_type,
+      collaboration_title: req.collaboration.title || req.collaboration.collab_type,
+      requester: {
+        id: req.user.id,
+        first_name: req.user.first_name,
+        last_name: req.user.last_name,
+        avatar_url: null, // Can be enhanced later
+      },
+      company: {
+        name: req.company.name,
+        twitter_handle: req.company.twitter_handle,
+      },
+      note: req.swipe.note,
+      created_at: req.swipe.created_at,
+    }));
+    
+    return {
+      recentRequests,
+      totalPendingCount: pendingRequests.length,
+    };
+  }
+
+  async getCollaborationRequests(userId: string, options: {
+    cursor?: string;
+    limit?: number;
+    filter?: string;
+  }): Promise<{
+    items: any[];
+    hasMore: boolean;
+    nextCursor?: string;
+  }> {
+    console.log('Getting collaboration requests for user:', userId, 'with options:', options);
+    
+    const limit = options.limit || 20;
+    
+    // Get user's collaborations
+    const userCollaborations = await this.getUserCollaborations(userId);
+    const collabIds = userCollaborations.map(collab => collab.id);
+    
+    if (collabIds.length === 0) {
+      return { items: [], hasMore: false };
+    }
+    
+    // Build base query
+    let query = db
+      .select({
+        swipe: swipes,
+        user: users,
+        company: companies,
+        collaboration: collaborations,
+      })
+      .from(swipes)
+      .innerJoin(users, eq(swipes.user_id, users.id))
+      .innerJoin(companies, eq(users.id, companies.user_id))
+      .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
+      .where(
+        and(
+          inArray(swipes.collaboration_id, collabIds),
+          eq(swipes.direction, 'right'),
+          not(eq(swipes.user_id, userId)) // Exclude host's own swipes
+        )
+      );
+    
+    // Handle cursor pagination
+    if (options.cursor) {
+      const [cursorSwipe] = await db
+        .select({ created_at: swipes.created_at })
+        .from(swipes)
+        .where(eq(swipes.id, options.cursor));
+      
+      if (cursorSwipe) {
+        query = query.where(lt(swipes.created_at, cursorSwipe.created_at));
+      }
+    }
+    
+    // Apply ordering and limit
+    query = query.orderBy(desc(swipes.created_at)).limit(limit + 1);
+    
+    const results = await query;
+    
+    // Filter out requests that already have active matches
+    const existingMatches = await db
+      .select({
+        collaboration_id: matches.collaboration_id,
+        requester_id: matches.requester_id,
+      })
+      .from(matches)
+      .where(
+        and(
+          eq(matches.host_id, userId),
+          not(eq(matches.status, 'declined'))
+        )
+      );
+    
+    const matchedPairs = new Set(
+      existingMatches.map(m => `${m.collaboration_id}_${m.requester_id}`)
+    );
+    
+    const pendingResults = results.filter(req => 
+      !matchedPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
+    );
+    
+    // Apply filtering based on options.filter
+    let filteredResults = pendingResults;
+    if (options.filter === 'this_week') {
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      filteredResults = pendingResults.filter(req => 
+        req.swipe.created_at && req.swipe.created_at >= oneWeekAgo
+      );
+    }
+    
+    // Determine pagination
+    const hasMore = filteredResults.length > limit;
+    const items = hasMore ? filteredResults.slice(0, limit) : filteredResults;
+    
+    // Group by collaboration
+    const groupedRequests = new Map();
+    items.forEach(req => {
+      const collabId = req.swipe.collaboration_id;
+      if (!groupedRequests.has(collabId)) {
+        groupedRequests.set(collabId, {
+          collaboration: {
+            id: req.collaboration.id,
+            title: req.collaboration.title || req.collaboration.collab_type,
+            type: req.collaboration.collab_type,
+            description: req.collaboration.description,
+            topics: req.collaboration.topics,
+            created_at: req.collaboration.created_at,
+          },
+          requests: []
+        });
+      }
+      
+      groupedRequests.get(collabId).requests.push({
+        id: req.swipe.id,
+        requester: {
+          id: req.user.id,
+          first_name: req.user.first_name,
+          last_name: req.user.last_name,
+          twitter_url: req.user.twitter_url,
+          avatar_url: null,
+        },
+        company: {
+          name: req.company.name,
+          twitter_handle: req.company.twitter_handle,
+          job_title: req.company.job_title,
+          website: req.company.website,
+        },
+        note: req.swipe.note,
+        created_at: req.swipe.created_at,
+      });
+    });
+    
+    const groupedItems = Array.from(groupedRequests.values());
+    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].swipe.id : undefined;
+    
+    return {
+      items: groupedItems,
+      hasMore,
+      nextCursor,
+    };
+  }
+
+  async acceptCollaborationRequest(userId: string, requestId: string): Promise<{
+    success: boolean;
+    match?: any;
+    error?: string;
+  }> {
+    console.log('Accepting collaboration request:', requestId, 'by user:', userId);
+    
+    try {
+      // Get the swipe record
+      const [swipeRecord] = await db
+        .select({
+          swipe: swipes,
+          collaboration: collaborations,
+        })
+        .from(swipes)
+        .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
+        .where(eq(swipes.id, requestId));
+      
+      if (!swipeRecord) {
+        return { success: false, error: 'Request not found' };
+      }
+      
+      // Verify the collaboration belongs to the user
+      if (swipeRecord.collaboration.creator_id !== userId) {
+        return { success: false, error: 'Unauthorized' };
+      }
+      
+      // Check if match already exists
+      const existingMatch = await db
+        .select()
+        .from(matches)
+        .where(
+          and(
+            eq(matches.collaboration_id, swipeRecord.swipe.collaboration_id),
+            eq(matches.host_id, userId),
+            eq(matches.requester_id, swipeRecord.swipe.user_id)
+          )
+        );
+      
+      if (existingMatch.length > 0) {
+        return { success: false, error: 'Match already exists' };
+      }
+      
+      // Create the match
+      const matchData: InsertMatch = {
+        collaboration_id: swipeRecord.swipe.collaboration_id,
+        host_id: userId,
+        requester_id: swipeRecord.swipe.user_id,
+        status: 'active',
+        note: swipeRecord.swipe.note,
+        host_accepted: true,
+        requester_accepted: false,
+      };
+      
+      const match = await this.createMatch(matchData);
+      
+      return { success: true, match };
+    } catch (error) {
+      console.error('Error accepting collaboration request:', error);
+      return { success: false, error: 'Internal server error' };
+    }
+  }
+
+  async declineCollaborationRequest(userId: string, requestId: string): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    console.log('Declining collaboration request:', requestId, 'by user:', userId);
+    
+    try {
+      // Get the swipe record
+      const [swipeRecord] = await db
+        .select({
+          swipe: swipes,
+          collaboration: collaborations,
+        })
+        .from(swipes)
+        .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
+        .where(eq(swipes.id, requestId));
+      
+      if (!swipeRecord) {
+        return { success: false, error: 'Request not found' };
+      }
+      
+      // Verify the collaboration belongs to the user
+      if (swipeRecord.collaboration.creator_id !== userId) {
+        return { success: false, error: 'Unauthorized' };
+      }
+      
+      // For now, we'll just mark this as handled by creating a declined match record
+      // This prevents the request from appearing again
+      const declinedMatchData: InsertMatch = {
+        collaboration_id: swipeRecord.swipe.collaboration_id,
+        host_id: userId,
+        requester_id: swipeRecord.swipe.user_id,
+        status: 'declined',
+        note: swipeRecord.swipe.note,
+        host_accepted: false,
+        requester_accepted: false,
+      };
+      
+      await this.createMatch(declinedMatchData);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error declining collaboration request:', error);
+      return { success: false, error: 'Internal server error' };
+    }
+  }
+  
   // Match methods
   async createMatch(match: InsertMatch): Promise<Match> {
     const [newMatch] = await db
