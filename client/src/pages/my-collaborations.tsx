@@ -297,7 +297,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   });
 
   // Fetch full collaboration requests for the management tab
-  const { data: requestGroups, isLoading: isLoadingRequests } = useQuery({
+  const { data: requestGroups, isLoading: isLoadingRequests, refetch: refetchRequests } = useQuery({
     queryKey: ['/api/collaboration-requests'],
     queryFn: async () => {
       try {
@@ -311,6 +311,14 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     enabled: false, // Only load when user navigates to requests tab
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
+
+  // Handle tab changes to load requests data when needed
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === 'requests' && !requestGroups) {
+      refetchRequests();
+    }
+  };
   
   // Handle approving an application
   const handleApproveApplication = async (applicationId: string) => {
@@ -1043,21 +1051,49 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         
         <div className="container mx-auto py-4 px-4">
           
-          {isLoadingCollabs ? (
-            renderSkeletons()
-          ) : collaborations && collaborations.length > 0 ? (
-            <div>
-              <div className="my-8 py-4 flex justify-center">
-                <GlowButton 
-                  onClick={handleNavigateToCreateCollab}
-                  className="w-full max-w-md py-6"
-                >
-                  Create New Collab
-                </GlowButton>
-              </div>
-              {collaborations.map(collab => renderCollaborationCard(collab))}
+          {/* Requests Summary Card - Only show if there are pending requests */}
+          {requestsSummary && requestsSummary.totalPendingCount > 0 && (
+            <div className="mb-6">
+              <RequestsSummaryCard
+                recentRequests={requestsSummary.recentRequests}
+                totalPendingCount={requestsSummary.totalPendingCount}
+                onViewAllRequests={() => setActiveTab('requests')}
+              />
             </div>
-          ) : (
+          )}
+
+          {/* Tab Navigation */}
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="requests">
+                Requests
+                {requestsSummary && requestsSummary.totalPendingCount > 0 && (
+                  <Badge variant="destructive" className="ml-2 h-5 w-5 rounded-full p-0 text-xs">
+                    {requestsSummary.totalPendingCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="applications">Applications</TabsTrigger>
+            </TabsList>
+
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="mt-6">
+              {isLoadingCollabs ? (
+                renderSkeletons()
+              ) : collaborations && collaborations.length > 0 ? (
+                <div>
+                  <div className="my-8 py-4 flex justify-center">
+                    <GlowButton 
+                      onClick={handleNavigateToCreateCollab}
+                      className="w-full max-w-md py-6"
+                    >
+                      Create New Collab
+                    </GlowButton>
+                  </div>
+                  {collaborations.map(collab => renderCollaborationCard(collab))}
+                </div>
+              ) : (
             <div className="text-center pt-4 pb-4 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
               {/* Collaboration Steps Section */}
               <div className="mb-4 text-left">
@@ -1129,8 +1165,42 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            </TabsContent>
+
+            {/* Requests Tab */}
+            <TabsContent value="requests" className="mt-6">
+              <RequestsManagementTab
+                requestGroups={requestGroups || []}
+                isLoading={isLoadingRequests}
+                onLoadMore={() => {
+                  // TODO: Implement pagination for requests
+                }}
+                hasMore={false}
+              />
+            </TabsContent>
+
+            {/* Applications Tab */}
+            <TabsContent value="applications" className="mt-6">
+              {isLoadingApps ? (
+                renderSkeletons()
+              ) : applications && applications.length > 0 ? (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Your Applications</h3>
+                  {applications.map(app => renderApplicationCard(app))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                    No Applications Yet
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    When you apply to collaborations, they'll appear here.
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
           
           {/* Application Details Dialog */}
           <Dialog open={applicationDialogOpen} onOpenChange={setApplicationDialogOpen}>
