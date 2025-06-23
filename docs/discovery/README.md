@@ -25,6 +25,7 @@ The latest updates (v1.10.7) have significantly improved Discovery card performa
 - [Twitter Engagement Display](./twitter-engagement-display.md) - Improved display of Twitter engagement types in collaboration details
 - [UI Improvements](./ui-improvements.md) - Documentation of SwipeableCard button fixes and Discovery page UI enhancements
 - [Reset Left Swipes](./reset-left-swipes.md) - Feature to allow users to see previously rejected collaborations again
+- [Sort By Functionality](./sort-by-functionality.md) - Comprehensive documentation of the Sort By feature implementation
 
 ## Key Features
 
@@ -38,17 +39,24 @@ The latest updates (v1.10.7) have significantly improved Discovery card performa
    - Memory-efficient handling of large datasets
    - Cursor tracking to maintain position in the discovery feed
 
-3. **Advanced Filtering**:
+3. **Advanced Filtering & Sorting**:
    - Filter by collaboration type
    - Filter by company attributes
    - Filter by blockchain network
    - Filter by funding stage
    - Combined OR/AND logic for intuitive filtering
+   - Sort By functionality with three options: Newest first, Oldest first, Collab Type
 
 4. **Swipe History Tracking**:
    - Server-side tracking of all swipes
    - Prevention of duplicate card displays
    - Integration with the authentication system for consistent user identity
+
+5. **Sort By Functionality**:
+   - Three sorting options: "Newest first", "Oldest first", "Collab Type"
+   - Dropdown button interface for easy access
+   - Real-time sorting with immediate data refresh
+   - Maintains pagination state when switching sort options
 
 ## Implementation Details
 
@@ -84,8 +92,24 @@ The `searchCollaborationsPaginated` function in `server/storage.ts` implements t
 1. Filters out previously swiped collaborations
 2. Filters out the user's own collaborations
 3. Applies any additional filters (collaboration type, company attributes, etc.)
-4. Returns collaborations sorted by appropriate criteria
-5. Includes a secondary safety filter to ensure no excluded cards appear
+4. Applies sorting based on the selected sort option
+5. Returns collaborations sorted by appropriate criteria
+6. Includes a secondary safety filter to ensure no excluded cards appear
+
+### Sort By Implementation
+
+The Sort By functionality provides users with three distinct sorting options:
+
+**Sort Options:**
+- **Newest first**: Shows most recently created collaborations first (DESC order by created_at)
+- **Oldest first**: Shows oldest collaborations first (ASC order by created_at)
+- **Collab Type**: Groups collaborations by type, then by newest within each group
+
+**Technical Implementation:**
+- Frontend: `SortByButton` component using Radix UI dropdown menu for consistent UX
+- Backend: Dynamic ORDER BY clauses in SQL queries based on sortBy parameter
+- State Management: Immediate data refresh when sort option changes to prevent race conditions
+- Performance: Sorting handled at database level for optimal query performance
 
 ## Integration with Other Systems
 
@@ -166,6 +190,7 @@ When a match is created through the discovery system, a match moment dialog is d
 - **Version 1.10.5**: Fixed critical issue where users could see their own collaborations in the discovery feed, improved server-side filtering to prevent self-swipes
 - **Version 1.10.6**: Enhanced all database queries to properly exclude any previously swiped collaborations with bidirectional match checking across host and requester roles
 - **Version 1.10.7**: Dramatically optimized discovery card loading time by reducing query execution from 96ms to 57ms (~40% improvement) with database indexing, SQL-based filtering, and query restructuring
+- **Version 1.11.0**: Implemented Sort By functionality with three options (Newest first, Oldest first, Collab Type) including dropdown UI component, backend sorting logic, and race condition fixes for consistent behavior
 
 ## Related Documentation
 
