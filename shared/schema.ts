@@ -295,7 +295,6 @@ export const companies = pgTable("companies", {
   twitter_handle: text("twitter_handle"),
   twitter_followers: text("twitter_followers"),
   linkedin_url: text("linkedin_url"),
-  logo_url: text("logo_url"),
   funding_stage: text("funding_stage").notNull(),
   has_token: boolean("has_token").default(false),
   token_ticker: text("token_ticker"),
