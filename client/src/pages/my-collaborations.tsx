@@ -318,7 +318,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   // Handle tab changes to load requests data when needed
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    if (value === 'requests' && !requestGroups) {
+    if (value === 'requests' && !requestsData) {
       refetchRequests();
     }
   };
@@ -1200,7 +1200,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 onLoadMore={() => {
                   // TODO: Implement pagination for requests
                 }}
-                hasMore={false}
+                hasMore={requestsData?.hasMore || false}
               />
             </TabsContent>
 

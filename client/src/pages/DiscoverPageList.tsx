@@ -422,7 +422,6 @@ export default function DiscoverPageList() {
         <div className="p-4 border-b flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold">Discover</h1>
-            <p className="text-sm text-muted-foreground">Find collaboration opportunities</p>
           </div>
           <Button variant="outline" size="sm" onClick={handleOpenFilters}>
             <Filter className="w-4 h-4 mr-2" />
@@ -445,9 +444,6 @@ export default function DiscoverPageList() {
       <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div>
           <h1 className="text-xl font-semibold">Discover</h1>
-          <p className="text-sm text-muted-foreground">
-            {isAuthenticated ? "Find collaboration opportunities" : "Browse collaboration opportunities"}
-          </p>
         </div>
         <div className="flex gap-2">
           <SortByButton 
