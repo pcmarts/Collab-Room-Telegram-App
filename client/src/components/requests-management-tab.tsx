@@ -271,7 +271,7 @@ export function RequestsManagementTab({
                             </div>
                           )}
                           
-                          <div className="flex items-center justify-between">
+                          <div className="space-y-3">
                             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                               {request.company.website && (
                                 <a 
