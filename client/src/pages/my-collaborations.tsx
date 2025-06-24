@@ -1087,7 +1087,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
 
           {/* Tab Navigation */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="requests">
                 Requests
@@ -1097,7 +1097,6 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="applications">Applications</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
@@ -1204,27 +1203,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               />
             </TabsContent>
 
-            {/* Applications Tab */}
-            <TabsContent value="applications" className="mt-6">
-              {isLoadingApps ? (
-                renderSkeletons()
-              ) : applications && applications.length > 0 ? (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Your Applications</h3>
-                  {applications.map(app => renderApplicationCard(app))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                    No Applications Yet
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    When you apply to collaborations, they'll appear here.
-                  </p>
-                </div>
-              )}
-            </TabsContent>
+
           </Tabs>
           
           {/* Application Details Dialog */}
