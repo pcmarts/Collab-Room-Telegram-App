@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 import {
   Calendar,
   Globe,
@@ -148,10 +149,19 @@ export function CollaborationDetailsDialog({
           <div className="space-y-4 p-4">
             {/* Company info section - FIRST */}
             <Card className="p-4 bg-card/50 border shadow-sm">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Building className="h-5 w-5 text-muted-foreground" />
-                {companyName}
-              </h3>
+              <div className="flex items-center gap-3 mb-2">
+                <LogoAvatar 
+                  name={companyName}
+                  logoUrl={potentialMatchData.company_logo_url || companyData.logo_url} 
+                  className="h-12 w-12"
+                  size="lg"
+                />
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {companyName}
+                  </h3>
+                </div>
+              </div>
               
               {/* Job title - Show for potential matches or from company data */}
               {(isPotentialMatch && potentialMatchData.job_title) ? (

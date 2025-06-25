@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { MessageCircle } from "lucide-react";
 
 // Define Match type for API response
