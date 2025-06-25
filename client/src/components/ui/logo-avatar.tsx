@@ -29,10 +29,7 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
 
   // Process the logo URL to get the best possible version
   useEffect(() => {
-    console.log(`🔍 [LogoAvatar] Processing logo for "${name}", logoUrl:`, logoUrl);
-    
     if (!logoUrl) {
-      console.log(`❌ [LogoAvatar] No logo URL provided for "${name}", using fallback`);
       setImageError(true);
       return;
     }
@@ -59,7 +56,7 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
       setFinalUrl(optimizedUrl);
     } else {
       // For other URLs, use as is
-      console.log(`🌐 [LogoAvatar] Using external logo URL: ${logoUrl}`);
+      console.log(`[LogoAvatar] Using original logo URL: ${logoUrl}`);
       setFinalUrl(logoUrl);
     }
   }, [logoUrl, name]);
@@ -85,14 +82,14 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
             src={finalUrl}
             alt={name || "Company"}
             className="h-full w-full object-cover" // Changed to object-cover for better fit
-            // Remove crossOrigin to avoid CORS issues
-            // {...(!finalUrl.startsWith('/') ? { crossOrigin: "anonymous" } : {})}
+            // Only use crossOrigin for external URLs
+            {...(!finalUrl.startsWith('/') ? { crossOrigin: "anonymous" } : {})}
             onLoad={() => {
-              console.log(`✅ [LogoAvatar] Logo loaded successfully for "${name}" from ${finalUrl}`);
+              console.log(`[LogoAvatar] Logo loaded successfully for ${name}`);
               setImageLoaded(true);
             }}
             onError={(e) => {
-              console.error(`❌ [LogoAvatar] Logo failed to load for "${name}" from ${finalUrl}:`, e);
+              console.log(`[LogoAvatar] Logo failed to load for ${name}, falling back to LetterAvatar`);
               setImageError(true);
             }}
           />

@@ -71,8 +71,6 @@ export function CollaborationListItem({
           className="w-10 h-10"
           size="md"
         />
-        {/* Debug logo data */}
-        {console.log(`[CollaborationListItem] Rendering LogoAvatar for ${collaboration.creator_company_name} with logoUrl:`, collaboration.company_logo_url)}
 
         {/* Content */}
         <div className="flex-1 min-w-0">
