@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { LogoAvatar } from '@/components/ui/logo-avatar';
 import { Plus } from 'lucide-react';
 import type { Company } from '@shared/schema';
 
@@ -28,9 +29,12 @@ export default function Companies() {
           <Card key={company.id}>
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
-                {company.logo_url && (
-                  <img src={company.logo_url} alt={company.name} className="w-8 h-8 rounded" />
-                )}
+                <LogoAvatar 
+                  name={company.name}
+                  logoUrl={company.logo_url} 
+                  className="w-8 h-8"
+                  size="sm"
+                />
                 {company.name}
               </CardTitle>
             </CardHeader>

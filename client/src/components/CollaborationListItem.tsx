@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { Building2, Eye, MessageSquare } from "lucide-react";
 
 interface CollaborationListItemProps {
@@ -65,15 +65,12 @@ export function CollaborationListItem({
     }`}>
       <div className="flex items-start gap-3">
         {/* Company Logo */}
-        <Avatar className="w-10 h-10 flex-shrink-0">
-          <AvatarImage 
-            src={collaboration.company_logo_url} 
-            alt={collaboration.creator_company_name}
-          />
-          <AvatarFallback className="bg-blue-100 text-blue-800 text-sm font-medium">
-            {getCompanyInitials(collaboration.creator_company_name)}
-          </AvatarFallback>
-        </Avatar>
+        <LogoAvatar 
+          name={collaboration.creator_company_name || "Company"}
+          logoUrl={collaboration.company_logo_url} 
+          className="w-10 h-10"
+          size="md"
+        />
 
         {/* Content */}
         <div className="flex-1 min-w-0">

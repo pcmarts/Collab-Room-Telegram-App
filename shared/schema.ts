@@ -300,6 +300,7 @@ export const companies = pgTable("companies", {
   token_ticker: text("token_ticker"),
   blockchain_networks: text("blockchain_networks").array(),
   tags: text("tags").array(),
+  logo_url: text("logo_url"),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
 }, (table) => {
   return {

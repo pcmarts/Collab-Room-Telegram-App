@@ -179,14 +179,13 @@ export default function SimpleCard({
             {/* Top row with company info and info button */}
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3">
-                {/* Display logo if available */}
-                {(data.creator_company_logo_url || data.potentialMatchData?.company_logo_url) && (
-                  <LogoAvatar 
-                    src={data.isPotentialMatch ? data.potentialMatchData?.company_logo_url : data.creator_company_logo_url} 
-                    alt={data.isPotentialMatch ? data.potentialMatchData?.company_name : data.creator_company_name}
-                    className="h-10 w-10 rounded-full"
-                  />
-                )}
+                {/* Company Logo */}
+                <LogoAvatar 
+                  name={data.isPotentialMatch ? data.potentialMatchData?.company_name || "Company" : data.creator_company_name || "Company"}
+                  logoUrl={data.isPotentialMatch ? data.potentialMatchData?.company_logo_url : data.creator_company_logo_url} 
+                  className="h-10 w-10"
+                  size="md"
+                />
                 
                 {/* Company Name and Type */}
                 <div>
