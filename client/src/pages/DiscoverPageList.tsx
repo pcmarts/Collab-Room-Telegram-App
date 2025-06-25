@@ -409,12 +409,15 @@ export default function DiscoverPageList() {
     ...collaborations.map(collab => ({ ...collab, isPotentialMatch: false }))
   ];
 
-  // Debug logging
-  console.log('[Discovery] All items for rendering:', allItems);
-  if (allItems.length > 0) {
-    console.log('[Discovery] First item structure:', allItems[0]);
-    console.log('[Discovery] First item company_logo_url:', allItems[0].company_logo_url);
-  }
+  // Debug logging for logo URLs
+  console.log('[Discovery] Total items for rendering:', allItems.length);
+  allItems.slice(0, 3).forEach((item, index) => {
+    console.log(`[Discovery] Item ${index + 1}:`, {
+      name: item.creator_company_name,
+      logoUrl: item.company_logo_url,
+      hasLogo: !!item.company_logo_url
+    });
+  });
 
   // Render loading state
   if (isLoading) {

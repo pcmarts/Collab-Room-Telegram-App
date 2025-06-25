@@ -1,0 +1,534 @@
+
+
+
+
+
+
+
+
+
+[2025-06-25T17:16:53.236Z] [HTTP] GET / 200 in 8ms
+[2025-06-25T17:16:53.400Z] [INFO] GET /@vite/client 304 in 1ms {
+  method: 'GET',
+  url: '/@vite/client',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:53.402Z] [INFO] GET /@react-refresh 304 in 0ms {
+  method: 'GET',
+  url: '/@react-refresh',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:53.405Z] [HTTP] GET /src/main.tsx 200 in 1ms
+[2025-06-25T17:16:53.546Z] [INFO] GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs 304 in 1ms {
+  method: 'GET',
+  url: '/@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:53.553Z] [HTTP] GET /src/App.tsx 200 in 0ms
+[2025-06-25T17:16:53.558Z] [HTTP] GET /src/index.css 200 in 1ms
+[2025-06-25T17:16:54.004Z] [INFO] GET /src/components/MobileCheck.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/MobileCheck.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.005Z] [INFO] GET /src/lib/queryClient.ts 304 in 0ms {
+  method: 'GET',
+  url: '/src/lib/queryClient.ts',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.007Z] [INFO] GET /src/components/LoadingScreen.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/LoadingScreen.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.008Z] [INFO] GET /src/components/ui/toaster.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/ui/toaster.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.009Z] [INFO] GET /src/components/SplashScreen.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/SplashScreen.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.155Z] [INFO] GET /src/components/ui/bottom-navigation.tsx 304 in 1ms {
+  method: 'GET',
+  url: '/src/components/ui/bottom-navigation.tsx',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.155Z] [INFO] GET /src/components/admin/ImpersonationBanner.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/admin/ImpersonationBanner.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.157Z] [INFO] GET /src/contexts/MatchContext.tsx 304 in 1ms {
+  method: 'GET',
+  url: '/src/contexts/MatchContext.tsx',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.173Z] [INFO] GET /src/utils/telegram-button-fix.ts 304 in 1ms {
+  method: 'GET',
+  url: '/src/utils/telegram-button-fix.ts',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.174Z] [INFO] GET /src/hooks/useTelegramInit.ts 304 in 1ms {
+  method: 'GET',
+  url: '/src/hooks/useTelegramInit.ts',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.176Z] [INFO] GET /src/components/ui/progress.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/ui/progress.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.301Z] [INFO] GET /src/hooks/use-toast.ts 304 in 1ms {
+  method: 'GET',
+  url: '/src/hooks/use-toast.ts',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.304Z] [INFO] GET /src/components/ui/button.tsx 304 in 1ms {
+  method: 'GET',
+  url: '/src/components/ui/button.tsx',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.305Z] [INFO] GET /src/components/ui/toast.tsx 304 in 1ms {
+  method: 'GET',
+  url: '/src/components/ui/toast.tsx',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.317Z] [INFO] GET /src/lib/utils.ts 304 in 0ms {
+  method: 'GET',
+  url: '/src/lib/utils.ts',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.322Z] [INFO] GET /src/components/ui/badge.tsx 304 in 1ms {
+  method: 'GET',
+  url: '/src/components/ui/badge.tsx',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.323Z] [INFO] GET /src/components/icons/DiscoveryIcon.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/icons/DiscoveryIcon.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:54.496Z] [INFO] GET /src/utils/TelegramHelper.ts 304 in 0ms {
+  method: 'GET',
+  url: '/src/utils/TelegramHelper.ts',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:55.359Z] [INFO] GET /src/pages/DiscoverPageList.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/pages/DiscoverPageList.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:55.362Z] [DEBUG] ============ DEBUG: Profile Endpoint ============
+[2025-06-25T17:16:55.362Z] [DEBUG] Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  cookie: 'connect.sid=s%3AwHKoh3BA03D-QiGg5EqxmDKdK4D0bugH.tDm1UDNmSPiDu8FcOJpG0Kw35TcyRhHr6mvByz8aqjs',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.10.124',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': ''
+}
+[2025-06-25T17:16:55.365Z] [DEBUG] ============ DEBUG: Profile Endpoint ============
+[2025-06-25T17:16:55.366Z] [DEBUG] Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AwHKoh3BA03D-QiGg5EqxmDKdK4D0bugH.tDm1UDNmSPiDu8FcOJpG0Kw35TcyRhHr6mvByz8aqjs',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.7.49',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkh45Vqe&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1750871196&signature=LOsOrmJ3gRbq9L42VV9yI22qg3-wt3SX1VsYAZbP2upWMO4ONRxLLIGYdp3rtV1BD6K-w0ThSyHpK50JLEkFCg&hash=db7db992f7cfddc03b1794490bb4ba85ea6c8fa3610c7f69f986be3383a3d22c'
+}
+[2025-06-25T17:16:55.452Z] [DEBUG] Notification Preferences Found:
+[2025-06-25T17:16:55.452Z] [DEBUG] - Notifications Enabled: true
+[2025-06-25T17:16:55.452Z] [DEBUG] - Notification Frequency: Daily
+[2025-06-25T17:16:55.452Z] [DEBUG] - Raw Value Type: boolean
+[2025-06-25T17:16:55.452Z] [DEBUG] - Updated At: 2025-04-14T19:36:08.000Z
+[2025-06-25T17:16:55.453Z] [HTTP] GET /api/profile 200 in 91ms
+[2025-06-25T17:16:55.477Z] [DEBUG] Notification Preferences Found:
+[2025-06-25T17:16:55.477Z] [DEBUG] - Notifications Enabled: true
+[2025-06-25T17:16:55.477Z] [DEBUG] - Notification Frequency: Daily
+[2025-06-25T17:16:55.477Z] [DEBUG] - Raw Value Type: boolean
+[2025-06-25T17:16:55.477Z] [DEBUG] - Updated At: 2025-04-14T19:36:08.000Z
+[2025-06-25T17:16:55.478Z] [HTTP] GET /api/profile 200 in 113ms
+[2025-06-25T17:16:55.514Z] [INFO] GET /src/components/CollaborationDetailsDialog.tsx 304 in 1ms {
+  method: 'GET',
+  url: '/src/components/CollaborationDetailsDialog.tsx',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:55.516Z] [INFO] GET /src/components/AuthenticationPrompt.tsx 304 in 2ms {
+  method: 'GET',
+  url: '/src/components/AuthenticationPrompt.tsx',
+  status: 304,
+  responseTime: '2ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:55.519Z] [INFO] GET /src/components/SortByButton.tsx 304 in 1ms {
+  method: 'GET',
+  url: '/src/components/SortByButton.tsx',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:55.522Z] [INFO] GET /src/components/CollaborationListItem.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/CollaborationListItem.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:55.602Z] [INFO] GET /src/components/MatchMoment.tsx 304 in 1ms {
+  method: 'GET',
+  url: '/src/components/MatchMoment.tsx',
+  status: 304,
+  responseTime: '1ms',
+  ip: '172.31.128.98'
+}
+============ DEBUG: User Matches Endpoint ============
+Request URL: /api/matches
+Request Query: {}
+Request Method: GET
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AwHKoh3BA03D-QiGg5EqxmDKdK4D0bugH.tDm1UDNmSPiDu8FcOJpG0Kw35TcyRhHr6mvByz8aqjs',
+  'if-modified-since': 'Wed, 25 Jun 2025 17:16:34 GMT',
+  'if-none-match': 'W/"5-1750871794795"',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.7.49',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkh45Vqe&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1750871196&signature=LOsOrmJ3gRbq9L42VV9yI22qg3-wt3SX1VsYAZbP2upWMO4ONRxLLIGYdp3rtV1BD6K-w0ThSyHpK50JLEkFCg&hash=db7db992f7cfddc03b1794490bb4ba85ea6c8fa3610c7f69f986be3383a3d22c'
+}
+✅ Found Telegram user: 1211030693 thisispaulm
+✅ Found database user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 Fetching matches with details for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🧩 getUserMatches - Finding basic matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-06-25T17:16:55.666Z] [INFO] GET /src/components/ui/card.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/ui/card.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+🧩 getUserMatches - Found 5 matches
+🧩 getUserMatches - Match status distribution: { active: 5 }
+🧩 getUserMatches - First match sample: {
+  "id": "b774cc63-2131-472c-beb0-5f685ac1bd7a",
+  "collaboration_id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+  "status": "active",
+  "note": null,
+  "host_accepted": false,
+  "requester_accepted": false,
+  "created_at": "2025-04-26T12:26:00.000Z",
+  "updated_at": "2025-04-26T12:26:00.280Z"
+}
+📊 Raw matches count: 5
+📋 First raw match sample: {
+  "id": "b774cc63-2131-472c-beb0-5f685ac1bd7a",
+  "collaboration_id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944",
+  "status": "active",
+  "note": null,
+  "host_accepted": false,
+  "requester_accepted": false,
+  "created_at": "2025-04-26T12:26:00.000Z",
+  "updated_at": "2025-04-26T12:26:00.280Z"
+}
+📊 Match statuses: active, active, active, active, active
+📊 Match created dates: Sat Apr 26 2025 12:26:00 GMT+0000 (Coordinated Universal Time), Sat Apr 26 2025 07:07:39 GMT+0000 (Coordinated Universal Time), Wed Apr 16 2025 09:07:44 GMT+0000 (Coordinated Universal Time), Tue Apr 15 2025 07:25:13 GMT+0000 (Coordinated Universal Time), Mon Apr 14 2025 18:32:27 GMT+0000 (Coordinated Universal Time)
+🔍 getUserMatchesWithDetails - Getting enriched matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+[2025-06-25T17:16:55.670Z] [INFO] GET /src/components/ui/dialog.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/ui/dialog.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:55.671Z] [INFO] GET /src/components/ui/separator.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/ui/separator.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:55.672Z] [INFO] GET /src/components/ui/logo-avatar.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/ui/logo-avatar.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+🔍 getUserMatchesWithDetails - Found 5 active matches in database for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+🔍 getUserMatchesWithDetails - Found 5 basic matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb from raw SQL query
+🔍 getUserMatchesWithDetails - First match: {
+  "match_id": "b774cc63-2131-472c-beb0-5f685ac1bd7a",
+  "match_date": "2025-04-26 12:26:00+00",
+  "match_status": "active",
+  "match_note": null,
+  "collaboration_id": "5b9187b9-bad5-4750-96ba-a21bdb929bae",
+  "host_id": "b4093f49-f0c3-4bae-a294-35fb87c493eb",
+  "requester_id": "3c784ed0-2322-4f06-91c6-83f1ede9b944"
+}
+🔍 getUserMatchesWithDetails - Match status distribution: { active: 5 }
+[2025-06-25T17:16:55.748Z] [INFO] GET /src/components/ui/scroll-area.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/ui/scroll-area.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+Found 5 detailed matches for user b4093f49-f0c3-4bae-a294-35fb87c493eb
+Sample match details: {
+  "match_id": "b774cc63-2131-472c-beb0-5f685ac1bd7a",
+  "match_date": "2025-04-26 12:26:00+00",
+  "match_status": "active",
+  "match_note": null,
+  "collab_type": "Report & Research Feature",
+  "collab_description": "Looking for contributors for a report. Looking at the state of Web3 talent in 2025, salary insights, etc. Current contributors are BitGet, Bondex, and web3.career. LMK if you want to collab on this! ",
+  "collab_details": {
+    "research_topic": [],
+    "target_audience": "Web3 professionals, job seekers ",
+    "estimated_release_date": "2025-06-02"
+  },
+  "other_user_first_name": "Jim",
+  "other_user_last_name": "Test",
+  "other_user_handle": "jimtesting",
+  "role_title": "Marketing Leader",
+  "other_user_twitter_url": "https://x.com/jimtest",
+  "other_user_twitter_followers": "0-1K",
+  "other_user_linkedin_url": "https://linkedin.com/in/asdf",
+  "company_name": "ACME Company",
+  "company_description": "ACME is the leading L2",
+  "company_website": "https://www.acme.com",
+  "company_twitter_handle": "acme",
+  "company_twitter_followers": "1K-10K",
+  "company_linkedin_url": "https://linkedin.com/company/asdf",
+  "funding_stage": "Series A",
+  "has_token": false,
+  "token_ticker": null,
+  "blockchain_networks": [],
+  "company_tags": [
+    "L2 & Scaling Solutions"
+  ]
+}
+Found 5 matches in 83ms
+[2025-06-25T17:16:55.752Z] [HTTP] GET /api/matches 200 in 119ms
+[2025-06-25T17:16:55.814Z] [INFO] GET /src/components/ui/dropdown-menu.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/ui/dropdown-menu.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:55.822Z] [INFO] GET /src/components/ui/letter-avatar.tsx 304 in 0ms {
+  method: 'GET',
+  url: '/src/components/ui/letter-avatar.tsx',
+  status: 304,
+  responseTime: '0ms',
+  ip: '172.31.128.98'
+}
+[2025-06-25T17:16:55.985Z] [DEBUG] ============ DEBUG: Profile Endpoint ============
+[2025-06-25T17:16:55.985Z] [DEBUG] Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AwHKoh3BA03D-QiGg5EqxmDKdK4D0bugH.tDm1UDNmSPiDu8FcOJpG0Kw35TcyRhHr6mvByz8aqjs',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.0.61',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkh45Vqe&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1750871196&signature=LOsOrmJ3gRbq9L42VV9yI22qg3-wt3SX1VsYAZbP2upWMO4ONRxLLIGYdp3rtV1BD6K-w0ThSyHpK50JLEkFCg&hash=db7db992f7cfddc03b1794490bb4ba85ea6c8fa3610c7f69f986be3383a3d22c'
+}
+[2025-06-25T17:16:55.990Z] [DEBUG] ============ DEBUG: Profile Endpoint ============
+[2025-06-25T17:16:55.990Z] [DEBUG] Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AwHKoh3BA03D-QiGg5EqxmDKdK4D0bugH.tDm1UDNmSPiDu8FcOJpG0Kw35TcyRhHr6mvByz8aqjs',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.7.49',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkh45Vqe&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1750871196&signature=LOsOrmJ3gRbq9L42VV9yI22qg3-wt3SX1VsYAZbP2upWMO4ONRxLLIGYdp3rtV1BD6K-w0ThSyHpK50JLEkFCg&hash=db7db992f7cfddc03b1794490bb4ba85ea6c8fa3610c7f69f986be3383a3d22c'
+}
+[2025-06-25T17:16:56.024Z] [HTTP] GET /api/marketing-preferences 200 in 35ms
+[2025-06-25T17:16:56.082Z] [DEBUG] Notification Preferences Found:
+[2025-06-25T17:16:56.082Z] [DEBUG] - Notifications Enabled: true
+[2025-06-25T17:16:56.082Z] [DEBUG] - Notification Frequency: Daily
+[2025-06-25T17:16:56.082Z] [DEBUG] - Raw Value Type: boolean
+[2025-06-25T17:16:56.082Z] [DEBUG] - Updated At: 2025-04-14T19:36:08.000Z
+[2025-06-25T17:16:56.083Z] [HTTP] GET /api/profile 200 in 93ms
+[2025-06-25T17:16:56.120Z] [DEBUG] Notification Preferences Found:
+[2025-06-25T17:16:56.120Z] [DEBUG] - Notifications Enabled: true
+[2025-06-25T17:16:56.120Z] [DEBUG] - Notification Frequency: Daily
+[2025-06-25T17:16:56.120Z] [DEBUG] - Raw Value Type: boolean
+[2025-06-25T17:16:56.120Z] [DEBUG] - Updated At: 2025-04-14T19:36:08.000Z
+[2025-06-25T17:16:56.120Z] [HTTP] GET /api/profile 200 in 135ms
+============ DEBUG: Search Collaborations GET Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'cache-control': 'max-age=0',
+  cookie: 'connect.sid=s%3AwHKoh3BA03D-QiGg5EqxmDKdK4D0bugH.tDm1UDNmSPiDu8FcOJpG0Kw35TcyRhHr6mvByz8aqjs',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/discover',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.10.124',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkh45Vqe&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1750871196&signature=LOsOrmJ3gRbq9L42VV9yI22qg3-wt3SX1VsYAZbP2upWMO4ONRxLLIGYdp3rtV1BD6K-w0ThSyHpK50JLEkFCg&hash=db7db992f7cfddc03b1794490bb4ba85ea6c8fa3610c7f69f986be3383a3d22c'
+}
+Query: { limit: '20', sortBy: 'newest' }
+Found authenticated user: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Calling searchCollaborationsPaginated with user ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using filters: {
+  collabTypes: undefined,
+  companyTags: undefined,
+  minCompanyFollowers: undefined,
+  minUserFollowers: undefined,
+  hasToken: undefined,
+  fundingStages: undefined,
+  blockchainNetworks: undefined,
+  excludeOwn: true,
+  cursor: undefined,
+  limit: 20,
+  sortBy: 'newest'
+}
+============ DEBUG: Search Collaborations Paginated (Super Optimized) ============
+Using HIGHLY optimized implementation with advanced database indexing
+============ DEBUG: Search Collaborations Paginated (Highly Optimized) ============
+Filters: {"excludeOwn":true,"limit":20,"sortBy":"newest"}
+User ID: b4093f49-f0c3-4bae-a294-35fb87c493eb
+Using limit: 20
+Executing optimized database query...
+[2025-06-25T17:16:56.298Z] [HTTP] GET /api/collaborations/interactions 200 in 56ms
+Found 21 records from database
+Query execution time: 60.17ms (target: <90ms)
+Returning 20 collaborations, hasMore: true, nextCursor: 74697186-9cc9-48a0-8696-0e025175b47a
+Found 20 collaborations, hasMore: true
+[2025-06-25T17:16:56.326Z] [HTTP] GET /api/collaborations/search 200 in 93ms
