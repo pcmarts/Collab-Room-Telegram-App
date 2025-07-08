@@ -47,6 +47,30 @@ const BottomNavigation = () => {
   // Calculate actual matches count
   const matchesCount = matches && matches.length > 0 ? matches.length : 0;
 
+  // Fetch collaboration requests summary for My Collabs badge (only if authenticated)
+  const { data: requestsSummary } = useQuery({
+    queryKey: ['/api/collaboration-requests/summary'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('/api/collaboration-requests/summary');
+        return response || { totalPendingCount: 0 };
+      } catch (error) {
+        console.error('Error fetching collaboration requests summary:', error);
+        return { totalPendingCount: 0 };
+      }
+    },
+    enabled: isAuthenticated,
+    // Optimize to reduce network requests
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    retry: 1,
+  });
+
+  // Calculate collaboration requests count
+  const collaborationRequestsCount = requestsSummary?.totalPendingCount > 0 ? requestsSummary.totalPendingCount : null;
+
   const navItems = [
     {
       label: "Discover",
@@ -59,6 +83,7 @@ const BottomNavigation = () => {
       icon: FolderPlus,
       href: "/my-collaborations",
       requiresAuth: true,
+      notificationCount: collaborationRequestsCount
     },
     {
       label: "My Account",

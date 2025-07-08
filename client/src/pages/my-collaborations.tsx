@@ -41,7 +41,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GlowButton } from "@/components/GlowButton";
-import { RequestsSummaryCard } from "@/components/requests-summary-card";
+
 import { RequestsManagementTab } from "@/components/requests-management-tab";
 import {
   Dialog,
@@ -1073,18 +1073,6 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         />
         
         <div className="container mx-auto py-4 px-4">
-          
-          {/* Requests Summary Card - Only show if there are pending requests */}
-          {requestsSummary && requestsSummary.totalPendingCount > 0 && (
-            <div className="mb-6">
-              <RequestsSummaryCard
-                recentRequests={requestsSummary.recentRequests}
-                totalPendingCount={requestsSummary.totalPendingCount}
-                onViewAllRequests={() => setActiveTab('requests')}
-              />
-            </div>
-          )}
-
           {/* Tab Navigation */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
