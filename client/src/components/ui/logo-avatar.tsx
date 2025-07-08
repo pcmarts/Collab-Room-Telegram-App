@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { LetterAvatar } from './letter-avatar';
+import { getSupabaseImageUrl, getOptimizedImageUrl } from '@shared/utils/image-url';
 
 interface LogoAvatarProps {
   name: string;
@@ -30,6 +31,7 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
   // Process the logo URL to get the best possible version
   useEffect(() => {
     if (!logoUrl) {
+      console.log(`[LogoAvatar] No logo URL provided for ${name}`);
       setImageError(true);
       return;
     }
@@ -38,26 +40,52 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
     setImageLoaded(false);
     setImageError(false);
     
-    // Priority order:
-    // 1. Local URLs (starting with /)
-    // 2. Twitter URLs (optimize size)
-    // 3. Other external URLs (as-is)
-    
-    // Check if logo is already a local URL
-    if (logoUrl.startsWith('/')) {
-      console.log(`[LogoAvatar] Using local logo URL: ${logoUrl}`);
-      setFinalUrl(logoUrl);
-    }
-    // Handle Twitter URLs specifically
-    else if (logoUrl.includes('pbs.twimg.com')) {
-      // Optimize Twitter image quality
-      const optimizedUrl = logoUrl.replace('_normal', '_400x400');
-      console.log(`[LogoAvatar] Using optimized Twitter URL: ${optimizedUrl}`);
-      setFinalUrl(optimizedUrl);
-    } else {
-      // For other URLs, use as is
-      console.log(`[LogoAvatar] Using original logo URL: ${logoUrl}`);
-      setFinalUrl(logoUrl);
+    try {
+      console.log(`[LogoAvatar] Processing logo URL for ${name}: ${logoUrl}`);
+      
+      // Priority order:
+      // 1. Local URLs (starting with /)
+      // 2. Twitter URLs (optimize size)
+      // 3. Supabase storage URLs
+      // 4. Other external URLs (as-is)
+      
+      // Check if logo is already a full external URL (including Supabase)
+      if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+        // For Twitter URLs, optimize size
+        if (logoUrl.includes('pbs.twimg.com')) {
+          const optimizedUrl = logoUrl.replace('_normal', '_400x400');
+          console.log(`[LogoAvatar] Using optimized Twitter URL: ${optimizedUrl}`);
+          setFinalUrl(optimizedUrl);
+        } else {
+          console.log(`[LogoAvatar] Using external URL: ${logoUrl}`);
+          setFinalUrl(logoUrl);
+        }
+      }
+      // Check if it's a local path that should be converted to Supabase URL
+      else if (logoUrl.startsWith('/company-logos/') || logoUrl.startsWith('/')) {
+        // Convert to Supabase storage URL
+        const supabaseUrl = getSupabaseImageUrl(logoUrl);
+        if (supabaseUrl) {
+          console.log(`[LogoAvatar] Converting local path to Supabase URL: ${logoUrl} -> ${supabaseUrl}`);
+          setFinalUrl(supabaseUrl);
+        } else {
+          console.log(`[LogoAvatar] Failed to convert to Supabase URL, using local: ${logoUrl}`);
+          setFinalUrl(logoUrl);
+        }
+      } else {
+        // Try to treat it as a filename and convert to Supabase URL
+        const supabaseUrl = getSupabaseImageUrl(logoUrl);
+        if (supabaseUrl) {
+          console.log(`[LogoAvatar] Converting filename to Supabase URL: ${logoUrl} -> ${supabaseUrl}`);
+          setFinalUrl(supabaseUrl);
+        } else {
+          console.log(`[LogoAvatar] Failed to convert filename to Supabase URL, using original: ${logoUrl}`);
+          setFinalUrl(logoUrl);
+        }
+      }
+    } catch (error) {
+      console.error(`[LogoAvatar] Error processing logo URL for ${name}:`, error);
+      setImageError(true);
     }
   }, [logoUrl, name]);
 
@@ -85,11 +113,22 @@ export function LogoAvatar({ name, logoUrl, className, size = 'md' }: LogoAvatar
             // Only use crossOrigin for external URLs
             {...(!finalUrl.startsWith('/') ? { crossOrigin: "anonymous" } : {})}
             onLoad={() => {
-              console.log(`[LogoAvatar] Logo loaded successfully for ${name}`);
+              console.log(`[LogoAvatar] ✅ Logo loaded successfully for ${name}: ${finalUrl}`);
               setImageLoaded(true);
             }}
             onError={(e) => {
-              console.log(`[LogoAvatar] Logo failed to load for ${name}, falling back to LetterAvatar`);
+              console.error(`[LogoAvatar] ❌ Logo failed to load for ${name}: ${finalUrl}`);
+              console.error(`[LogoAvatar] Error event:`, e);
+              
+              // Try to fetch the URL manually to get more details
+              fetch(finalUrl, { method: 'HEAD', mode: 'no-cors' })
+                .then(() => {
+                  console.log(`[LogoAvatar] HEAD request successful for ${finalUrl}`);
+                })
+                .catch(fetchError => {
+                  console.error(`[LogoAvatar] HEAD request failed for ${finalUrl}:`, fetchError);
+                });
+              
               setImageError(true);
             }}
           />

@@ -518,8 +518,6 @@ export default function DiscoverPageList() {
               </div>
             )}
 
-
-
             {/* End of list indicator */}
             {!hasMore && allItems.length > 0 && (
               <div className="text-center py-8">

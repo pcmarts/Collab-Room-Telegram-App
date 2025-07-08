@@ -34,8 +34,8 @@ app.use((req, res, next) => {
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' https://telegram.org https://cdn.jsdelivr.net; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-    "img-src 'self' data: https://telegram.org https://*.telegram.org; " +
-    "connect-src 'self' https://api.telegram.org; " +
+    "img-src 'self' data: https://telegram.org https://*.telegram.org https://*.supabase.co; " +
+    "connect-src 'self' https://api.telegram.org https://*.supabase.co; " +
     "font-src 'self' https://fonts.gstatic.com; " +
     "object-src 'none'; " +
     "base-uri 'self'; " +

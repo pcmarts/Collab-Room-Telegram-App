@@ -98,6 +98,7 @@ export async function searchCollaborationsPaginatedOptimized(
         },
         company: {
           name: companies.name,
+          logo_url: companies.logo_url, // FIX: Add missing logo_url field selection
           // Use appropriate company fields
           short_description: companies.short_description,
           long_description: companies.long_description,
@@ -279,6 +280,7 @@ export async function searchCollaborationsPaginatedOptimized(
         ...r.collaboration,
         // Include these important fields from company that the frontend expects
         creator_company_name: company?.name || 'Independent',
+        company_logo_url: company?.logo_url, // FIX: Add missing company logo URL mapping
         // Map company fields to the expected frontend fields
         company_description: company ? (company.long_description || company.short_description) : undefined,
         company_website: company?.website,
