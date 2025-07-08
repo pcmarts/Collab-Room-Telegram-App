@@ -333,6 +333,14 @@ export async function searchCollaborationsPaginatedOptimized(
     logger.info(`Query execution time: ${queryTime.toFixed(2)}ms (target: <90ms)`);
     logger.info(`Returning ${items.length} collaborations, hasMore: ${hasMore}, nextCursor: ${nextCursor}`);
     
+    // DEBUG: Log first item to check company_data structure
+    if (items.length > 0) {
+      logger.info('DEBUG: First collaboration item structure:');
+      logger.info('- Has company_data:', !!items[0].company_data);
+      logger.info('- Company data:', items[0].company_data);
+      logger.info('- Creator company name:', items[0].creator_company_name);
+    }
+    
     return {
       items,
       hasMore,

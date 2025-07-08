@@ -93,6 +93,8 @@ export function CollaborationDetailsDialog({
   console.log('[CollabDetails] Full collaboration data received:', collaboration);
   console.log('[CollabDetails] Is potential match?', collaboration.isPotentialMatch);
   console.log('[CollabDetails] Potential match data:', collaboration.potentialMatchData);
+  console.log('[CollabDetails] Company data structure:', collaboration.company_data);
+  console.log('[CollabDetails] Company name from company_data:', collaboration.company_data?.name);
   
   // Get collaboration data from the appropriate source
   let collabData = collaboration;
