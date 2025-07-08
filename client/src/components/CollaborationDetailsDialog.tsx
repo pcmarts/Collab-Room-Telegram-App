@@ -175,9 +175,9 @@ export function CollaborationDetailsDialog({
               <Separator className="my-3" />
               
               {/* Company description - highlighted and more prominent */}
-              {companyData.short_description && (
+              {(companyData.short_description || companyData.long_description) && (
                 <div className="mt-3 p-3 bg-secondary/10 rounded-md border border-secondary/20">
-                  <p className="text-sm">{companyData.short_description}</p>
+                  <p className="text-sm">{companyData.short_description || companyData.long_description}</p>
                 </div>
               )}
               
