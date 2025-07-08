@@ -310,7 +310,8 @@ export async function searchCollaborationsPaginatedOptimized(
           token_ticker: company.token_ticker,
           blockchain_networks: company.blockchain_networks,
           job_title: company.job_title,
-          tags: company.tags
+          tags: company.tags,
+          logo_url: company.logo_url
         } : null,
         
         // User information

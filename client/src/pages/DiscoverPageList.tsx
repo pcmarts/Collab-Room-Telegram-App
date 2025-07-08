@@ -26,6 +26,22 @@ interface CardData {
   topics?: string[];
   creator_id?: string;
   details?: any;
+  company_data?: {
+    name?: string;
+    short_description?: string;
+    long_description?: string;
+    twitter_handle?: string;
+    twitter_followers?: string;
+    website?: string;
+    linkedin_url?: string;
+    funding_stage?: string;
+    has_token?: boolean;
+    token_ticker?: string;
+    blockchain_networks?: string[];
+    job_title?: string;
+    tags?: string[];
+    logo_url?: string;
+  };
 }
 
 interface PotentialMatch {
@@ -541,8 +557,10 @@ export default function DiscoverPageList() {
           description: selectedCardDetails.short_description || selectedCardDetails.description,
           topics: selectedCardDetails.topics,
           companyName: selectedCardDetails.creator_company_name,
+          company_logo_url: selectedCardDetails.company_logo_url,
           details: selectedCardDetails.details,
-          type: selectedCardDetails.type || selectedCardDetails.collab_type
+          type: selectedCardDetails.type || selectedCardDetails.collab_type,
+          company_data: selectedCardDetails.company_data
         } : undefined}
       />
 

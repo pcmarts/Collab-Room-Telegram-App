@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 import {
   Calendar,
   Globe,
@@ -41,9 +42,11 @@ interface CollaborationDetailsDialogProps {
     date?: string;
     topics?: string[];
     companyName?: string;
+    company_logo_url?: string;
     company_data?: {
       name?: string;
       short_description?: string;
+      long_description?: string;
       twitter_handle?: string;
       twitter_followers?: string;
       website?: string;
@@ -54,6 +57,7 @@ interface CollaborationDetailsDialogProps {
       blockchain_networks?: string[];
       job_title?: string;
       tags?: string[];
+      logo_url?: string;
     };
     details?: Record<string, any>;
     isPotentialMatch?: boolean;
@@ -150,9 +154,14 @@ export function CollaborationDetailsDialog({
           <div className="space-y-4 p-4">
             {/* Company info section - FIRST */}
             <Card className="p-4 bg-card/50 border shadow-sm">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Building className="h-5 w-5 text-muted-foreground" />
-                {companyName}
+              <h3 className="text-lg font-semibold flex items-center gap-3">
+                <LogoAvatar 
+                  name={companyName}
+                  logoUrl={collaboration.company_logo_url || companyData.logo_url} 
+                  className="w-8 h-8"
+                  size="sm"
+                />
+                <span>{companyName}</span>
               </h3>
               
               {/* Job title - Show for potential matches or from company data */}
