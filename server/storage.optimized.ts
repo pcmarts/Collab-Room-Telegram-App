@@ -110,7 +110,8 @@ export async function searchCollaborationsPaginatedOptimized(
           has_token: companies.has_token,
           token_ticker: companies.token_ticker,
           blockchain_networks: companies.blockchain_networks,
-          tags: companies.tags
+          tags: companies.tags,
+          funding_stage: companies.funding_stage
         },
         user: {
           id: users.id,
@@ -294,6 +295,23 @@ export async function searchCollaborationsPaginatedOptimized(
         company_token_ticker: company?.token_ticker,
         company_blockchain_networks: company?.blockchain_networks,
         company_tags: company?.tags || [],
+        
+        // FIX: Add company_data object that the dialog expects
+        company_data: company ? {
+          name: company.name,
+          short_description: company.short_description,
+          long_description: company.long_description,
+          twitter_handle: company.twitter_handle,
+          twitter_followers: company.twitter_followers,
+          website: company.website,
+          linkedin_url: company.linkedin_url,
+          funding_stage: company.funding_stage,
+          has_token: company.has_token,
+          token_ticker: company.token_ticker,
+          blockchain_networks: company.blockchain_networks,
+          job_title: company.job_title,
+          tags: company.tags
+        } : null,
         
         // User information
         creator_first_name: r.user.first_name,
