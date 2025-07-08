@@ -121,7 +121,7 @@ const BottomNavigation = () => {
                   <item.icon className="w-5 h-5 mb-1" />
                   {item.notificationCount && isAuthenticated && (
                     <Badge 
-                      className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center rounded-full text-xs font-bold opacity-50"
+                      className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center rounded-full text-xs font-bold opacity-50 bg-primary text-primary-foreground"
                     >
                       {item.notificationCount}
                     </Badge>
@@ -146,7 +146,7 @@ const BottomNavigation = () => {
                 <item.icon className="w-5 h-5 mb-1" />
                 {item.notificationCount && isAuthenticated && (
                   <Badge 
-                    className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center rounded-full text-xs font-bold"
+                    className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center rounded-full text-xs font-bold bg-primary text-primary-foreground"
                   >
                     {item.notificationCount}
                   </Badge>

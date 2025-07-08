@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -240,12 +240,12 @@ export function RequestsManagementTab({
                   {group.requests.map((request, index) => (
                     <div key={request.id}>
                       <div className="flex items-start space-x-4">
-                        <Avatar className="h-12 w-12">
-                          <AvatarFallback>
-                            {request.requester.first_name.charAt(0)}
-                            {request.requester.last_name?.charAt(0) || ''}
-                          </AvatarFallback>
-                        </Avatar>
+                        <LogoAvatar
+                          name={request.company.name || "Company"}
+                          logoUrl={request.company.logo_url}
+                          size="lg"
+                          className="h-12 w-12"
+                        />
                         
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center justify-between">

@@ -1080,7 +1080,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               <TabsTrigger value="requests">
                 Requests
                 {requestsSummary && requestsSummary.totalPendingCount > 0 && (
-                  <Badge variant="destructive" className="ml-2 h-5 w-5 rounded-full p-0 text-xs">
+                  <Badge className="ml-2 h-5 w-5 rounded-full p-0 text-xs bg-primary text-primary-foreground flex items-center justify-center">
                     {requestsSummary.totalPendingCount}
                   </Badge>
                 )}
