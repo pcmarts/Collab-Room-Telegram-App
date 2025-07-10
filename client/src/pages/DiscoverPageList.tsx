@@ -387,11 +387,7 @@ export default function DiscoverPageList() {
 
   // Handle authentication prompt
   const handleAuthenticationPrompt = () => {
-    toast({
-      title: "Authentication Required",
-      description: "This app must be opened through Telegram to function properly.",
-      variant: "default",
-    });
+    setLocation('/welcome');
   };
 
   // Handle sort change
