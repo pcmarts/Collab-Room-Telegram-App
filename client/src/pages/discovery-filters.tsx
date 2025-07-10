@@ -49,8 +49,15 @@ import {
   Save
 } from "lucide-react";
 
-// Lazy import constants to reduce initial bundle size
-const loadConstants = () => import("@shared/schema");
+// Import constants directly
+import { 
+  COLLAB_TYPES, 
+  COLLAB_TOPICS,
+  COMPANY_TAG_CATEGORIES,
+  BLOCKCHAIN_NETWORK_CATEGORIES,
+  TWITTER_FOLLOWER_COUNTS,
+  FUNDING_STAGES
+} from "@shared/schema";
 
 // Define the filter form schema
 const filterFormSchema = z.object({
@@ -83,9 +90,7 @@ export default function DiscoveryFilters() {
   const [, navigate] = useLocation();
   const [isSaving, setIsSaving] = useState(false);
   
-  // State for lazy-loaded constants
-  const [constants, setConstants] = useState<any>(null);
-  const [constantsLoading, setConstantsLoading] = useState(false);
+  // Constants are now directly imported
 
   // Filter toggle states
   const [filtersEnabled, setFiltersEnabled] = useState({
@@ -220,24 +225,7 @@ export default function DiscoveryFilters() {
     };
   }, [marketingPrefs]);
 
-  // Load constants when component mounts
-  useEffect(() => {
-    const loadFilterConstants = async () => {
-      if (!constants && !constantsLoading) {
-        setConstantsLoading(true);
-        try {
-          const schemaModule = await loadConstants();
-          setConstants(schemaModule);
-        } catch (error) {
-          console.error('Failed to load filter constants:', error);
-        } finally {
-          setConstantsLoading(false);
-        }
-      }
-    };
-    
-    loadFilterConstants();
-  }, [constants, constantsLoading]);
+  // Constants are now directly imported, no need to load them
 
   // Load saved preferences into form - optimized
   useEffect(() => {
@@ -559,7 +547,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {constants?.COLLAB_TYPES?.map((type) => (
+                              {COLLAB_TYPES?.map((type) => (
                                 <FormItem key={type} className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
@@ -577,11 +565,7 @@ export default function DiscoveryFilters() {
                                     {type}
                                   </FormLabel>
                                 </FormItem>
-                              )) || (
-                                <div className="col-span-full">
-                                  <Skeleton className="h-8 w-full" />
-                                </div>
-                              )}
+                              ))}
                             </div>
                           </FormItem>
                         )}
@@ -626,7 +610,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {constants?.COLLAB_TOPICS?.map((topic) => (
+                              {COLLAB_TOPICS?.map((topic) => (
                                 <FormItem key={topic} className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
@@ -644,11 +628,7 @@ export default function DiscoveryFilters() {
                                     {topic}
                                   </FormLabel>
                                 </FormItem>
-                              )) || (
-                                <div className="col-span-full">
-                                  <Skeleton className="h-8 w-full" />
-                                </div>
-                              )}
+                              ))}
                             </div>
                           </FormItem>
                         )}
@@ -693,7 +673,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="space-y-4">
-                              {constants?.COMPANY_TAG_CATEGORIES ? Object.entries(constants.COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+                              {COMPANY_TAG_CATEGORIES ? Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
                                 <div key={category} className="space-y-2">
                                   <div 
                                     className="flex items-center gap-2 cursor-pointer" 
@@ -786,7 +766,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="space-y-4">
-                              {constants?.BLOCKCHAIN_NETWORK_CATEGORIES ? Object.entries(constants.BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
+                              {BLOCKCHAIN_NETWORK_CATEGORIES ? Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
                                 <div key={category} className="space-y-2">
                                   <div 
                                     className="flex items-center gap-2 cursor-pointer" 
@@ -887,13 +867,11 @@ export default function DiscoveryFilters() {
                                 <SelectValue placeholder="Select minimum followers" />
                               </SelectTrigger>
                               <SelectContent>
-                                {constants?.TWITTER_FOLLOWER_COUNTS?.map((count) => (
+                                {TWITTER_FOLLOWER_COUNTS?.map((count) => (
                                   <SelectItem key={count} value={count}>
                                     {count}
                                   </SelectItem>
-                                )) || (
-                                  <SelectItem value="loading" disabled>Loading...</SelectItem>
-                                )}
+                                ))}
                               </SelectContent>
                             </Select>
                           </FormItem>
@@ -947,13 +925,11 @@ export default function DiscoveryFilters() {
                                 <SelectValue placeholder="Select minimum followers" />
                               </SelectTrigger>
                               <SelectContent>
-                                {constants?.TWITTER_FOLLOWER_COUNTS?.map((count) => (
+                                {TWITTER_FOLLOWER_COUNTS?.map((count) => (
                                   <SelectItem key={count} value={count}>
                                     {count}
                                   </SelectItem>
-                                )) || (
-                                  <SelectItem value="loading" disabled>Loading...</SelectItem>
-                                )}
+                                ))}
                               </SelectContent>
                             </Select>
                           </FormItem>
@@ -999,7 +975,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {constants?.FUNDING_STAGES?.map((stage) => (
+                              {FUNDING_STAGES?.map((stage) => (
                                 <FormItem key={stage} className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
@@ -1017,11 +993,7 @@ export default function DiscoveryFilters() {
                                     {stage}
                                   </FormLabel>
                                 </FormItem>
-                              )) || (
-                                <div className="col-span-full">
-                                  <Skeleton className="h-8 w-full" />
-                                </div>
-                              )}
+                              ))}
                             </div>
                           </FormItem>
                         )}
