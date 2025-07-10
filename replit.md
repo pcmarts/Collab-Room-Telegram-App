@@ -119,6 +119,12 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 10, 2025. Implemented backend webhook system for new company signups
+  - Added GET webhook call to n8n endpoint with company ID after successful registration
+  - Webhook fires automatically from `/api/onboarding` endpoint after company creation
+  - Removed frontend webhook code to prevent duplication and race conditions
+  - Webhook URL: `https://paulsworkspace.app.n8n.cloud/webhook/f4798a20-63b4-41e5-b799-749ca660caa4?id=[company_id]`
+  - Expected response: `{"message":"Workflow was started"}`
 - June 23, 2025. Initial setup
 
 ## User Preferences

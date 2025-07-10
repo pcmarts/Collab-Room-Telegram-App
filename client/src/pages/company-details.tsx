@@ -168,38 +168,6 @@ export default function CompanyDetails() {
       }
 
       const responseData = await response.json();
-      
-      // Fire webhook after successful company signup
-      if (responseData.success && !profileData?.user) { // Only for new signups, not profile updates
-        try {
-          // Get the profile data to retrieve the company ID
-          const profileResponse = await fetch("/api/profile", {
-            headers: {
-              "X-Telegram-Init-Data": telegramInitData,
-            },
-          });
-          
-          if (profileResponse.ok) {
-            const profileData = await profileResponse.json();
-            if (profileData.company?.id) {
-              // Send webhook notification
-              await fetch("https://paulsworkspace.app.n8n.cloud/webhook/f4798a20-63b4-41e5-b799-749ca660caa4", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  id: profileData.company.id
-                }),
-              });
-              console.log("Webhook sent successfully for company:", profileData.company.id);
-            }
-          }
-        } catch (webhookError) {
-          // Don't fail the signup if webhook fails
-          console.error("Failed to send webhook:", webhookError);
-        }
-      }
 
       // Clear session storage after successful submission
       sessionStorage.removeItem("userFormData");

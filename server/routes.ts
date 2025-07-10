@@ -876,6 +876,28 @@ export async function registerRoutes(app: Express) {
             });
             console.log('Admin notification sent for new user application');
             
+            // Fire webhook after successful company creation
+            try {
+              const webhookUrl = `https://paulsworkspace.app.n8n.cloud/webhook/f4798a20-63b4-41e5-b799-749ca660caa4?id=${company.id}`;
+              const webhookResponse = await fetch(webhookUrl, {
+                method: 'GET',
+                headers: {
+                  'User-Agent': 'CollabRoom/1.0',
+                  'Content-Type': 'application/json'
+                }
+              });
+              
+              if (webhookResponse.ok) {
+                const webhookData = await webhookResponse.text();
+                logger.info(`Webhook fired successfully for company ${company.id}. Response: ${webhookData}`);
+              } else {
+                logger.error(`Webhook failed for company ${company.id}. Status: ${webhookResponse.status}`);
+              }
+            } catch (webhookError) {
+              // Don't fail the signup process if webhook fails
+              logger.error(`Failed to fire webhook for company ${company.id}:`, webhookError);
+            }
+            
             // Send confirmation to the user with their telegram handle
             try {
               const telegramId = parseInt(result.user.telegram_id);
