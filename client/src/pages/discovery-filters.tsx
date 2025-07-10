@@ -559,7 +559,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {COLLAB_TYPES.map((type) => (
+                              {constants?.COLLAB_TYPES?.map((type) => (
                                 <FormItem key={type} className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
@@ -577,7 +577,11 @@ export default function DiscoveryFilters() {
                                     {type}
                                   </FormLabel>
                                 </FormItem>
-                              ))}
+                              )) || (
+                                <div className="col-span-full">
+                                  <Skeleton className="h-8 w-full" />
+                                </div>
+                              )}
                             </div>
                           </FormItem>
                         )}
@@ -622,7 +626,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {COLLAB_TOPICS.map((topic) => (
+                              {constants?.COLLAB_TOPICS?.map((topic) => (
                                 <FormItem key={topic} className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
@@ -640,7 +644,11 @@ export default function DiscoveryFilters() {
                                     {topic}
                                   </FormLabel>
                                 </FormItem>
-                              ))}
+                              )) || (
+                                <div className="col-span-full">
+                                  <Skeleton className="h-8 w-full" />
+                                </div>
+                              )}
                             </div>
                           </FormItem>
                         )}
@@ -685,7 +693,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="space-y-4">
-                              {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+                              {constants?.COMPANY_TAG_CATEGORIES ? Object.entries(constants.COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
                                 <div key={category} className="space-y-2">
                                   <div 
                                     className="flex items-center gap-2 cursor-pointer" 
@@ -727,7 +735,13 @@ export default function DiscoveryFilters() {
                                     </div>
                                   )}
                                 </div>
-                              ))}
+                              )) : (
+                                <div className="space-y-2">
+                                  <Skeleton className="h-8 w-full" />
+                                  <Skeleton className="h-8 w-full" />
+                                  <Skeleton className="h-8 w-full" />
+                                </div>
+                              )}
                             </div>
                           </FormItem>
                         )}
@@ -772,7 +786,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="space-y-4">
-                              {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
+                              {constants?.BLOCKCHAIN_NETWORK_CATEGORIES ? Object.entries(constants.BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
                                 <div key={category} className="space-y-2">
                                   <div 
                                     className="flex items-center gap-2 cursor-pointer" 
@@ -814,7 +828,13 @@ export default function DiscoveryFilters() {
                                     </div>
                                   )}
                                 </div>
-                              ))}
+                              )) : (
+                                <div className="space-y-2">
+                                  <Skeleton className="h-8 w-full" />
+                                  <Skeleton className="h-8 w-full" />
+                                  <Skeleton className="h-8 w-full" />
+                                </div>
+                              )}
                             </div>
                           </FormItem>
                         )}
@@ -867,11 +887,13 @@ export default function DiscoveryFilters() {
                                 <SelectValue placeholder="Select minimum followers" />
                               </SelectTrigger>
                               <SelectContent>
-                                {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                                {constants?.TWITTER_FOLLOWER_COUNTS?.map((count) => (
                                   <SelectItem key={count} value={count}>
                                     {count}
                                   </SelectItem>
-                                ))}
+                                )) || (
+                                  <SelectItem value="loading" disabled>Loading...</SelectItem>
+                                )}
                               </SelectContent>
                             </Select>
                           </FormItem>
@@ -925,11 +947,13 @@ export default function DiscoveryFilters() {
                                 <SelectValue placeholder="Select minimum followers" />
                               </SelectTrigger>
                               <SelectContent>
-                                {TWITTER_FOLLOWER_COUNTS.map((count) => (
+                                {constants?.TWITTER_FOLLOWER_COUNTS?.map((count) => (
                                   <SelectItem key={count} value={count}>
                                     {count}
                                   </SelectItem>
-                                ))}
+                                )) || (
+                                  <SelectItem value="loading" disabled>Loading...</SelectItem>
+                                )}
                               </SelectContent>
                             </Select>
                           </FormItem>
@@ -975,7 +999,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {FUNDING_STAGES.map((stage) => (
+                              {constants?.FUNDING_STAGES?.map((stage) => (
                                 <FormItem key={stage} className="flex flex-row items-start space-x-3 space-y-0">
                                   <FormControl>
                                     <Checkbox
@@ -993,7 +1017,11 @@ export default function DiscoveryFilters() {
                                     {stage}
                                   </FormLabel>
                                 </FormItem>
-                              ))}
+                              )) || (
+                                <div className="col-span-full">
+                                  <Skeleton className="h-8 w-full" />
+                                </div>
+                              )}
                             </div>
                           </FormItem>
                         )}
