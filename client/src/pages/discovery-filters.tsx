@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -30,7 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -162,7 +162,7 @@ export default function DiscoveryFilters() {
   }
 
   // Fetch current preferences from API with better caching
-  const { data: marketingPrefs = {} as MarketingPreferencesResponse, isLoading } = useQuery<MarketingPreferencesResponse>({
+  const { data: marketingPrefs = {} as MarketingPreferencesResponse } = useQuery<MarketingPreferencesResponse>({
     queryKey: ['/api/marketing-preferences'],
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     refetchOnWindowFocus: false,
@@ -479,38 +479,7 @@ export default function DiscoveryFilters() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             
-            {/* Optimized loading state */}
-            {isLoading && (
-              <div className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-6 w-48" />
-                      <Skeleton className="h-6 w-12" />
-                    </div>
-                  </CardHeader>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-6 w-32" />
-                      <Skeleton className="h-6 w-12" />
-                    </div>
-                  </CardHeader>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-6 w-40" />
-                      <Skeleton className="h-6 w-12" />
-                    </div>
-                  </CardHeader>
-                </Card>
-              </div>
-            )}
-            
-            {!isLoading && (
-              <>
+
                 {/* Filter: Collaboration Types */}
                 <Card>
                   <CardHeader className="pb-3">
@@ -673,7 +642,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="space-y-4">
-                              {COMPANY_TAG_CATEGORIES ? Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
+                              {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
                                 <div key={category} className="space-y-2">
                                   <div 
                                     className="flex items-center gap-2 cursor-pointer" 
@@ -715,13 +684,7 @@ export default function DiscoveryFilters() {
                                     </div>
                                   )}
                                 </div>
-                              )) : (
-                                <div className="space-y-2">
-                                  <Skeleton className="h-8 w-full" />
-                                  <Skeleton className="h-8 w-full" />
-                                  <Skeleton className="h-8 w-full" />
-                                </div>
-                              )}
+                              ))}
                             </div>
                           </FormItem>
                         )}
@@ -766,7 +729,7 @@ export default function DiscoveryFilters() {
                         render={({ field }) => (
                           <FormItem>
                             <div className="space-y-4">
-                              {BLOCKCHAIN_NETWORK_CATEGORIES ? Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
+                              {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
                                 <div key={category} className="space-y-2">
                                   <div 
                                     className="flex items-center gap-2 cursor-pointer" 
@@ -808,13 +771,7 @@ export default function DiscoveryFilters() {
                                     </div>
                                   )}
                                 </div>
-                              )) : (
-                                <div className="space-y-2">
-                                  <Skeleton className="h-8 w-full" />
-                                  <Skeleton className="h-8 w-full" />
-                                  <Skeleton className="h-8 w-full" />
-                                </div>
-                              )}
+                              ))}
                             </div>
                           </FormItem>
                         )}
@@ -1074,8 +1031,6 @@ export default function DiscoveryFilters() {
                     )}
                   </Button>
                 </div>
-              </>
-            )}
           </form>
         </Form>
       </div>
