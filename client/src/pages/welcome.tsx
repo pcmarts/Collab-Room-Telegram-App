@@ -3,8 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { TextLoop } from "@/components/ui/text-loop";
 import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
+import { X } from "lucide-react";
 import { 
   COLLAB_TYPES,
   TWITTER_COLLAB_TYPES
@@ -60,8 +62,22 @@ export default function Welcome() {
     setLocation('/personal-info');
   };
 
+  const handleClose = () => {
+    setLocation('/discover');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4 flex flex-col items-center justify-center relative">
+      {/* Close button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleClose}
+        className="absolute top-4 right-4 z-10 hover:bg-background/20"
+      >
+        <X className="w-5 h-5" />
+      </Button>
+      
       <div className="max-w-md mx-auto space-y-8 w-full">
         <div className="text-center space-y-6">
           <div className="flex flex-col items-center justify-center space-y-8 px-4 py-6">

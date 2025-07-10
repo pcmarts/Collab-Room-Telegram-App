@@ -19,8 +19,8 @@ export function AuthenticationPrompt({
     if (onSignIn) {
       onSignIn();
     } else {
-      // Default behavior - redirect to authentication
-      window.location.href = "/auth";
+      // Default behavior - redirect to welcome/signup page
+      window.location.href = "/welcome";
     }
   };
 
