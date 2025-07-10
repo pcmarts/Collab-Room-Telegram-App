@@ -43,3 +43,25 @@
 2. Check browser console for component debug logs
 3. Verify network requests succeed
 4. Test across all pages using the affected components
+
+## Implementation Details
+
+**Location**: Modified `client/src/pages/company-details.tsx` - this is the final step of the company signup process where the actual company creation happens.
+
+**When it fires**: Right after the successful response from the `/api/onboarding` endpoint, but only for new company signups (not profile updates).
+
+**How it works**:
+1. After successful company creation, it fetches the profile data to get the company ID
+2. Sends a POST request to your webhook URL with the company ID
+3. If the webhook fails, it logs the error but doesn't break the signup process
+
+**Webhook payload**: Sends exactly what you requested:
+```json
+{
+  "id": "4a4fddf8-6357-4bfa-9993-f8610a91e1f7"
+}
+```
+
+**Error handling**: The webhook call is wrapped in try-catch so it won't interfere with the user experience if there's an issue.
+
+The webhook will now fire whenever a new company completes the signup process at `https://paulsworkspace.app.n8n.cloud/webhook/f4798a20-63b4-41e5-b799-749ca660caa4` with the company database ID in the body, just as you specified!

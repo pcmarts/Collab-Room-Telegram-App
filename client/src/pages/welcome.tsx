@@ -16,25 +16,48 @@ import { applyButtonFix } from "@/App";
 export default function Welcome() {
   const [_, setLocation] = useLocation();
   const [referralCode, setReferralCode] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   
   // Combine all collaboration types for the animation
   const allCollabTypes = [
     ...COLLAB_TYPES, 
     ...TWITTER_COLLAB_TYPES.map(type => `Twitter ${type}`)
   ];
+
+  const collaborationIcons = {
+    'Podcast Guest Appearance': '🎙️',
+    'Twitter Spaces Guest': '🐦',
+    'Newsletter Feature': '📰',
+    'Report & Research': '📝',
+    'Twitter Exclusive Announcement': '📣',
+    'Twitter Shoutout': '💬',
+    'Live Stream Guest Appearance': '📺',
+    'Co-Marketing on Twitter': '🤝',
+    // ... add more
+  };
   
   // Apply button fix when component mounts and after any render
   useEffect(() => {
     // Apply immediately on mount
     applyButtonFix();
     
-    // Set up interval to keep applying the fix
-    const fixInterval = setInterval(() => {
+    // Use MutationObserver instead of interval for better performance
+    const observer = new MutationObserver(() => {
       applyButtonFix();
-    }, 300);
+    });
+    
+    // Only observe the button container, not the entire document
+    const buttonContainer = document.querySelector('.telegram-fixed-container');
+    if (buttonContainer) {
+      observer.observe(buttonContainer, {
+        attributes: true,
+        attributeFilter: ['style', 'class'],
+        subtree: true
+      });
+    }
     
     // Cleanup on unmount
-    return () => clearInterval(fixInterval);
+    return () => observer.disconnect();
   }, []);
   
   // Extract referral code from URL when component mounts
@@ -48,6 +71,18 @@ export default function Welcome() {
       setReferralCode(urlReferralCode);
     }
   }, []);
+
+  useEffect(() => {
+    // Simulate content loading
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-gradient-to-b from-background to-background/90 flex items-center justify-center">
+      <div className="animate-pulse text-white">Loading...</div>
+    </div>;
+  }
 
   const handleContinue = () => {
     if (referralCode.trim()) {
@@ -80,16 +115,24 @@ export default function Welcome() {
       
       <div className="max-w-md mx-auto space-y-8 w-full">
         <div className="text-center space-y-6">
-          <div className="flex flex-col items-center justify-center space-y-8 px-4 py-6">
+          <div className="space-y-4">
+            <h1 className="text-xl font-semibold text-gray-900">Welcome to The Collab Room</h1>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Find and post marketing collaborations for your brand
+            </p>
+          </div>
+          
+          <div className="flex flex-col items-center justify-center space-y-6 px-4 py-6">
             <h2 className="text-base tracking-tight" style={{ color: '#8F8F99' }}>Find your next...</h2>
             
             <div className="text-center w-full">
               <TextLoop
-                interval={0.5}
-                className="text-base text-white block min-h-[32px]"
+                interval={2}  // Increased from 0.5 to 2 seconds
+                className="text-lg font-medium text-gray-900 block min-h-[40px]"  // Changed from text-white to text-gray-900
               >
                 {allCollabTypes.map((type) => (
-                  <span key={type} className="block text-center whitespace-normal">
+                  <span key={type} className="block text-center whitespace-normal px-4 flex items-center justify-center gap-2">
+                    <span>{collaborationIcons[type] || '🤝'}</span>
                     {type}
                   </span>
                 ))}
@@ -99,24 +142,25 @@ export default function Welcome() {
         </div>
 
         <Card className="border border-primary/20">
-          <CardContent className="pt-6 space-y-6 pb-16">
-            <div>
-              <Label htmlFor="referral_code" className="text-base flex items-center gap-2">
-                Have a Referral Code?
+          <CardContent className="pt-4 pb-4">
+            {/* Compact referral code section */}
+            <details className="group">
+              <summary className="text-sm text-gray-400 cursor-pointer list-none text-center">
+                Have a referral code? <span className="group-open:hidden">Click to enter</span>
+              </summary>
+              <div className="mt-3 space-y-2">
+                <Input
+                  id="referral_code"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                  placeholder="Enter your referral code"
+                  className={`${referralCode ? 'border-green-500' : ''}`}
+                />
                 {referralCode && (
-                  <span className="text-xs text-green-500 font-normal">
-                    (Referral code applied)
-                  </span>
+                  <span className="text-xs text-green-500">✓ Referral code applied</span>
                 )}
-              </Label>
-              <Input
-                id="referral_code"
-                value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value)}
-                placeholder="Enter your referral code (optional)"
-                className={`mt-2 ${referralCode ? 'border-green-500 focus-visible:ring-green-500' : ''}`}
-              />
-            </div>
+              </div>
+            </details>
           </CardContent>
           
           {/* Use fixed container for better mobile visibility */}
@@ -124,10 +168,48 @@ export default function Welcome() {
             <TelegramButton
               type="button"
               onClick={handleContinue}
-              text="Next"
+              text="Apply for early access →"  // More descriptive than "Next"
             />
           </TelegramFixedButtonContainer>
         </Card>
+
+        <div className="text-center space-y-2 py-4 border-t border-gray-800">
+          <p className="text-xs text-gray-500">
+            Join 50+ Web3 professionals already collaborating
+          </p>
+          <div className="flex justify-center gap-1">
+            <img 
+              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//bondexapp_sd.jpg" 
+              alt="Bondex" 
+              className="w-6 h-6 rounded-full object-cover border border-gray-600"
+            />
+            <img 
+              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//Cookie3_com_sd.jpg" 
+              alt="Cookie3" 
+              className="w-6 h-6 rounded-full object-cover border border-gray-600"
+            />
+            <img 
+              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//poapxyz_sd.jpg" 
+              alt="POAP" 
+              className="w-6 h-6 rounded-full object-cover border border-gray-600"
+            />
+            <img 
+              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//XBorgHQ_sd.jpg" 
+              alt="XBorg" 
+              className="w-6 h-6 rounded-full object-cover border border-gray-600"
+            />
+            <img 
+              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//Flight3official_sd.jpg" 
+              alt="Flight3" 
+              className="w-6 h-6 rounded-full object-cover border border-gray-600"
+            />
+            <img 
+              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//re_sd.jpg" 
+              alt="RE" 
+              className="w-6 h-6 rounded-full object-cover border border-gray-600"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
