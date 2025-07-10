@@ -41,6 +41,7 @@ interface CollaborationRequest {
     twitter_handle?: string;
     job_title?: string;
     website?: string;
+    logo_url?: string; // FIX: Add missing logo_url field
   };
   note?: string;
   created_at: string;

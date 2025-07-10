@@ -43,6 +43,16 @@ To get started with the project, review the documentation files in the following
 3. Follow the **Development Roadmap** to understand the implementation phases
 4. Use the **Implementation Guide** for specific development recommendations and examples
 
+## Quick Reference
+
+### 🚨 Common Issues & Troubleshooting
+- **[Documentation Portal](./docs/index.md)** → Quick access to troubleshooting guides
+- **[Company Logo Loading Issues](./docs/troubleshooting/company-logos.md)** → Fix logos not displaying
+- **[AI Assistant Guides](./docs/ai-assistant-guides/)** → Quick reference guides for AI assistance
+
+### 📝 Project Documentation  
+- **[Complete Documentation](./docs/README.md)** → Full technical documentation
+
 ## Contact
 
 For more information or support, please contact the project maintainers.

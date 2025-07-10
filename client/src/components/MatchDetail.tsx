@@ -2,6 +2,7 @@ import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 
 // Define Match type for API response
 interface Match {
@@ -31,6 +32,7 @@ interface Match {
   companyLinkedinUrl?: string;
   companyTwitterHandle?: string;
   companyTwitterFollowers?: string | number;
+  companyLogoUrl?: string; // FIX: Add missing company logo URL field
   fundingStage?: string;
   hasToken?: boolean;
   tokenTicker?: string;
@@ -416,26 +418,37 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     <div className="space-y-6">
       {/* Header Section with Match Summary */}
       <div className="pb-4 border-b">
-        <div className="flex flex-col mb-2">
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="text-xl font-bold">{match.companyName}</h2>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">
-                {match.matchedPerson}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {match.roleTitle}
-              </p>
+        <div className="flex items-start gap-3 mb-2">
+          {/* Company Logo */}
+          <LogoAvatar
+            name={match.companyName || "Company"}
+            logoUrl={match.companyLogoUrl}
+            className="w-16 h-16"
+            size="xl"
+          />
+          
+          {/* Company info and collaboration details */}
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-xl font-bold">{match.companyName}</h2>
             </div>
-            <div className="flex flex-col items-end">
-              <Badge variant="outline" className="text-primary bg-primary/5 border-primary/10 mb-1 whitespace-nowrap">
-                {match.collaborationType}
-              </Badge>
-              <p className="text-xs text-muted-foreground">
-                Matched on {match.matchDate}
-              </p>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">
+                  {match.matchedPerson}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {match.roleTitle}
+                </p>
+              </div>
+              <div className="flex flex-col items-end">
+                <Badge variant="outline" className="text-primary bg-primary/5 border-primary/10 mb-1 whitespace-nowrap">
+                  {match.collaborationType}
+                </Badge>
+                <p className="text-xs text-muted-foreground">
+                  Matched on {match.matchDate}
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -1412,6 +1412,7 @@ export class DatabaseStorage implements IStorage {
       company: {
         name: req.company.name,
         twitter_handle: req.company.twitter_handle,
+        logo_url: req.company.logo_url, // FIX: Add missing logo_url field
       },
       note: req.swipe.note,
       created_at: req.swipe.created_at,
@@ -1548,6 +1549,7 @@ export class DatabaseStorage implements IStorage {
           twitter_handle: req.company.twitter_handle,
           job_title: req.company.job_title,
           website: req.company.website,
+          logo_url: req.company.logo_url, // FIX: Add missing logo_url field
         },
         note: req.swipe.note,
         created_at: req.swipe.created_at,
@@ -1843,7 +1845,8 @@ export class DatabaseStorage implements IStorage {
               c.token_ticker,
               c.blockchain_networks,
               c.tags,
-              c.job_title
+              c.job_title,
+              c.logo_url
             FROM companies c
             WHERE c.user_id = ${otherUserId}
           `);
@@ -1881,6 +1884,7 @@ export class DatabaseStorage implements IStorage {
             company_twitter_handle: companyData?.twitter_handle || null,
             company_twitter_followers: companyData?.twitter_followers || null,
             company_linkedin_url: companyData?.linkedin_url || null,
+            company_logo_url: companyData?.logo_url || null, // FIX: Add missing company logo URL field
             funding_stage: companyData?.funding_stage || null,
             has_token: companyData?.has_token || false,
             token_ticker: companyData?.token_ticker || null,

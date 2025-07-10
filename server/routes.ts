@@ -3386,6 +3386,7 @@ export async function registerRoutes(app: Express) {
             companyLinkedinUrl: match.company_linkedin_url || null,
             companyTwitterHandle: match.company_twitter_handle || null,
             companyTwitterFollowers: match.company_twitter_followers || null,
+            companyLogoUrl: match.company_logo_url || null, // FIX: Add missing company logo URL field mapping
             fundingStage: match.funding_stage || null,
             hasToken: match.has_token || false,
             tokenTicker: match.token_ticker || null,

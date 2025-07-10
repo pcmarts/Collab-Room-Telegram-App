@@ -1,72 +1,45 @@
-# The Collab Room - Documentation
+# Documentation Index
 
-Welcome to the documentation for The Collab Room - a Web3 professional networking platform that transforms digital collaboration through intelligent, blockchain-powered matching technologies.
+## Troubleshooting Guides
 
-## Project Organization
+### UI & Frontend Issues
+- **[Company Logo Loading Issues](./troubleshooting/company-logos.md)** - Complete guide for fixing company logos not displaying (CSP, backend APIs, field mappings)
 
-The project has been organized into a structured directory layout for better maintainability:
+## AI Assistant Guides
 
-- `/assets` - Images, logos, media files, and logs
-- `/client` - Frontend React application code
-- `/docs` - Project documentation and technical guides
-- `/examples` - Code samples and examples
-- `/public` - Static assets for the web application
-- `/scripts` - Utility scripts, migrations, and tests
-  - `/scripts/migrations` - Database migration scripts
-  - `/scripts/tests` - Test scripts and testing utilities
-  - `/scripts/utils` - Utility scripts and tools
-- `/server` - Backend Express application code
-- `/shared` - Shared code between client and server
+### Quick Fix References
+- **[Logo Loading Fix](./ai-assistant-guides/logo-loading-fix.md)** - Quick reference for AI assistants to identify and fix company logo loading issues
 
-Configuration files like package.json, tsconfig.json, and .env remain in the root directory.
+## Component Documentation
 
-## Documentation Structure
+### UI Components
+- **LogoAvatar** (`client/src/components/ui/logo-avatar.tsx`) - Displays company/user logos with fallback handling
+- **CollaborationListItem** (`client/src/components/CollaborationListItem.tsx`) - Shows collaboration cards with company logos
+- **RequestsManagementTab** (`client/src/components/requests-management-tab.tsx`) - Manages collaboration requests with company logos
 
-This documentation is organized into the following sections:
+## API Documentation
 
-1. [Architecture](./architecture/README.md) - Overview of the system architecture
-2. [Frontend](./frontend/README.md) - Documentation for the React frontend
-   * [Notifications System](./frontend/notifications.md) - Details on the simplified notification system
-   * [Navigation Updates](./frontend/navigation-updates.md) - Documentation of bottom navigation simplification
-3. [Backend](./backend/README.md) - Documentation for the Express backend
-   * [Security Implementation](./backend/security.md) - Comprehensive security measures
-   * [Security Checklist](./backend/security-checklist.md) - Guidelines to maintain application security
-   * [Structured Logging System](./backend/logging.md) - Environment-aware logging with data protection
-   * [Twitter API Integration](./backend/twitter-api-native-fetch.md) - Native fetch implementation for Twitter data
-4. [Database](./database/README.md) - Database schema and data models
-5. [API](./api/README.md) - API endpoints and usage
-6. [Telegram Integration](./telegram/README.md) - Integration with Telegram WebApp
-7. [User Flows](./user-flows/README.md) - End-to-end user journeys
-8. [Authentication System](./auth/README.md) - Multi-layered authentication with fallback mechanisms
-   * [Persistent Authentication](./auth/persistent-auth.md) - How the system maintains user identity
-   * [Authentication Testing](./auth/auth-test.md) - Testing tools for authentication
-9. [Discovery System](./discovery/README.md) - How the collaboration discovery system works
-   * [Swipe Filtering](./discovery/swipe-filtering.md) - Preventing duplicate cards in discovery
-10. [Matches System](./matches/README.md) - Details on the match display and interaction system
-11. [Deployment](./deployment/README.md) - Deployment processes and troubleshooting
-   * [SQL Import Fix](./deployment/sql-import-fix.md) - Documentation on fixing SQL import issues
-12. [Security Audit](./security-audit-report.md) - Comprehensive security audit findings and remediations
-13. [Changelog](./CHANGELOG.md) - History of changes to the application
+### Storage & Database
+- **Search APIs** (`server/storage.optimized.ts`) - Optimized collaboration search with company data
+- **Requests APIs** (`server/storage.ts`) - Collaboration request management with company data
 
-## Quick Start
+## Common Issues & Solutions
 
-For developers getting started with the project:
+### Image Loading
+- **Supabase Storage**: CSP configuration for external image domains
+- **Field Mapping**: Backend to frontend data structure alignment
+- **TypeScript**: Interface definitions for logo URL fields
 
-1. The application uses Node.js and PostgreSQL
-2. Install dependencies with `npm install`
-3. Start the development server with `npm run dev`
-4. Access the application in your web browser at the provided URL
+## Development Workflow
 
-## Key Features
+### Before Making Changes
+1. Check existing troubleshooting guides
+2. Review AI assistant quick fix guides
+3. Verify CSP configuration for external resources
+4. Ensure backend APIs include all required fields
 
-- **Discovery Feed**: Swipeable cards showing collaboration opportunities with dual-layer filtering
-- **Matching System**: Intelligent matching based on user preferences
-- **Matches Page**: View and interact with successful matches
-- **Collaboration Creation**: Create various types of collaboration opportunities
-- **Persistent Authentication**: Multi-layered authentication with Telegram fallback mechanism
-- **Blockchain Integration**: Support for multiple blockchain networks
-- **Telegram Integration**: Seamless login, chat, and notifications via Telegram
-
-## Contact
-
-For more information or support, please contact the project maintainers.
+### Testing Changes
+1. Restart server for CSP changes
+2. Check browser console for component debug logs
+3. Verify network requests succeed
+4. Test across all pages using the affected components

@@ -27,6 +27,7 @@ import { getCollabTypeIcon } from "@/lib/collab-utils";
 import { useMatchContext } from "@/contexts/MatchContext";
 import { useLocation } from "wouter";
 import { PageHeader } from "../components/PageHeader";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 
 // Define Match type for API response
 interface Match {
@@ -56,6 +57,7 @@ interface Match {
   companyLinkedinUrl?: string;
   companyTwitterHandle?: string;
   companyTwitterFollowers?: string | number;
+  companyLogoUrl?: string; // FIX: Add missing company logo URL field
   fundingStage?: string;
   hasToken?: boolean;
   tokenTicker?: string;
@@ -291,21 +293,32 @@ export default function MatchesPage() {
         {matches.map((match) => (
           <Card key={match.id} className="overflow-visible">
             <div className="p-4">
-              {/* Two-column layout with company name and collaboration type */}
-              <div className="flex flex-col mb-3 space-y-2">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
-                  <div className="flex-1">
-                    <h3 className="font-medium text-base break-words pr-2">
-                      {match.companyName}
-                    </h3>
-                  </div>
-                  <div className="flex items-center shrink-0">
-                    <div className="mr-1.5">
-                      {getCollabTypeIcon(match.collaborationType)}
+              {/* Header with company logo, name and collaboration type */}
+              <div className="flex items-start gap-3 mb-3">
+                {/* Company Logo */}
+                <LogoAvatar
+                  name={match.companyName || "Company"}
+                  logoUrl={match.companyLogoUrl}
+                  className="w-12 h-12"
+                  size="lg"
+                />
+                
+                {/* Company name and collaboration type */}
+                <div className="flex-1 space-y-2">
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-base break-words pr-2">
+                        {match.companyName}
+                      </h3>
                     </div>
-                    <Badge className="bg-primary/10 hover:bg-primary/15 text-primary border-0 whitespace-normal text-center">
-                      {match.collaborationType}
-                    </Badge>
+                    <div className="flex items-center shrink-0">
+                      <div className="mr-1.5">
+                        {getCollabTypeIcon(match.collaborationType)}
+                      </div>
+                      <Badge className="bg-primary/10 hover:bg-primary/15 text-primary border-0 whitespace-normal text-center">
+                        {match.collaborationType}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
               </div>
