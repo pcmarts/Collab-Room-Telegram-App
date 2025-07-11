@@ -7,6 +7,7 @@ import { CollaborationListItem } from "../components/CollaborationListItem";
 import { CollaborationDetailsDialog } from "../components/CollaborationDetailsDialog";
 import { AuthenticationPrompt } from "../components/AuthenticationPrompt";
 import { MatchMoment } from "../components/MatchMoment";
+import AddNoteDialog from "../components/AddNoteDialog";
 import { SortByButton, type SortOption } from "../components/SortByButton";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -73,6 +74,10 @@ export default function DiscoverPageList() {
   
   // State for tracking requested collaborations (for immediate UI updates)
   const [requestedCollaborations, setRequestedCollaborations] = useState<Set<string>>(new Set());
+  
+  // State for note dialog
+  const [showNoteDialog, setShowNoteDialog] = useState(false);
+  const [selectedCollaboration, setSelectedCollaboration] = useState<CardData | null>(null);
   
   // Refs
   const initialLoadCompletedRef = useRef(false);
@@ -314,7 +319,7 @@ export default function DiscoverPageList() {
     }
   }, []);
 
-  // Handle request collaboration
+  // Handle request collaboration - show note dialog first
   const handleRequestCollaboration = async (collaboration: CardData, isPotentialMatch: boolean = false) => {
     if (!isAuthenticated) {
       toast({
@@ -325,6 +330,18 @@ export default function DiscoverPageList() {
       return;
     }
 
+    // For potential matches, skip the note dialog and directly send the request
+    if (isPotentialMatch) {
+      await sendCollaborationRequest(collaboration, "Accepting your collaboration request!", isPotentialMatch);
+    } else {
+      // For regular collaborations, show the note dialog
+      setSelectedCollaboration(collaboration);
+      setShowNoteDialog(true);
+    }
+  };
+
+  // Handle sending collaboration request with note
+  const sendCollaborationRequest = async (collaboration: CardData, note: string, isPotentialMatch: boolean = false) => {
     // Immediately update the local state to show "Requested" status
     setRequestedCollaborations(prev => new Set([...prev, collaboration.id]));
 
@@ -335,7 +352,7 @@ export default function DiscoverPageList() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: isPotentialMatch ? "Accepting your collaboration request!" : "I'm interested in this collaboration opportunity.",
+          message: note || (isPotentialMatch ? "Accepting your collaboration request!" : "I'm interested in this collaboration opportunity."),
         }),
       });
       
@@ -591,6 +608,22 @@ export default function DiscoverPageList() {
           }}
         />
       )}
+
+      {/* Add Note Dialog */}
+      <AddNoteDialog
+        isOpen={showNoteDialog}
+        onClose={() => {
+          setShowNoteDialog(false);
+          setSelectedCollaboration(null);
+        }}
+        onSendWithNote={(note) => {
+          if (selectedCollaboration) {
+            sendCollaborationRequest(selectedCollaboration, note);
+          }
+          setShowNoteDialog(false);
+          setSelectedCollaboration(null);
+        }}
+      />
     </div>
   );
 }
