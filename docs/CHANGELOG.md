@@ -5,6 +5,21 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.14] - 2025-07-11
+
+### Fixed
+- Fixed Telegram bot user approval functionality that was not working when admin clicked "Approve Application" button
+- Resolved database schema error where approval handler was trying to update non-existent 'approved_by' field
+- Enhanced callback query handling with comprehensive debugging logs for better monitoring
+- Improved error handling and validation in Telegram bot approval workflow
+
+### Technical Details
+- Corrected database update query in `handleApproveUserCallback` to only update valid schema fields (`is_approved` and `approved_at`)
+- Added detailed logging with `[CALLBACK]` and `[APPROVAL]` tags for debugging callback query processing
+- Enhanced callback query handler with comprehensive error reporting and user feedback
+- Verified bot polling status and callback listener registration for reliable operation
+- Added test scripts for validation of approval functionality and bot status monitoring
+
 ## [Version 1.10.13] - 2025-05-08
 
 ### Fixed

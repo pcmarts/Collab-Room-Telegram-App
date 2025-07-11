@@ -119,6 +119,12 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 11, 2025. Fixed Telegram bot user approval functionality
+  - Resolved database schema error preventing admin approval buttons from working
+  - Fixed `handleApproveUserCallback` function attempting to update non-existent `approved_by` field
+  - Enhanced callback query handling with comprehensive debugging logs (`[CALLBACK]` and `[APPROVAL]` tags)
+  - Improved error handling and validation in Telegram bot approval workflow
+  - Added test scripts for validation of approval functionality and bot status monitoring
 - July 11, 2025. Temporarily disabled discovery filters functionality
   - Hidden filters button on both discover pages (card view and list view) due to lazy loading issues
   - Filters button commented out in `client/src/pages/DiscoverPageList.tsx` and `client/src/pages/DiscoverPageNew.tsx`

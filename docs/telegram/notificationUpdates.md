@@ -10,6 +10,10 @@ The Collab Room has enhanced the Telegram notification system with multiple impr
 
 The system now provides administrators with rich, interactive notifications about new user applications with direct approval capabilities.
 
+### Recent Fix (v1.10.14)
+
+**Fixed Critical Approval Button Issue**: Resolved a database schema error that was preventing the approval button from working correctly. The issue occurred when admins clicked "Approve Application" - the system was attempting to update a non-existent `approved_by` field in the database schema, causing the approval process to fail silently. The fix ensures that only valid schema fields (`is_approved` and `approved_at`) are updated during the approval process.
+
 ### Features
 
 - **Enriched User Information**: Displays applicant's name, Telegram handle, company details, and role
