@@ -1870,6 +1870,7 @@ export class DatabaseStorage implements IStorage {
             match_date: match.match_date,
             match_status: match.match_status,
             match_note: match.match_note,
+            swipe_note: match.swipe_note, // Include the swipe note from the JOIN
             collab_type: collaborationData.collab_type,
             collab_description: collaborationData.description,
             collab_details: collaborationData.details,
