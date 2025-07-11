@@ -1747,7 +1747,7 @@ export class DatabaseStorage implements IStorage {
         console.error(`🔍 getUserMatchesWithDetails - Error counting active matches:`, countError);
       }
       
-      // Get the basic match data using a simpler query to avoid Drizzle errors
+      // Get the basic match data with swipe notes using a join query
       const matchesResult = await db.execute(sql`
         SELECT 
           m.id as match_id,
@@ -1756,8 +1756,14 @@ export class DatabaseStorage implements IStorage {
           m.note as match_note,
           m.collaboration_id,
           m.host_id,
-          m.requester_id
+          m.requester_id,
+          s.note as swipe_note
         FROM matches m
+        LEFT JOIN swipes s ON (
+          s.collaboration_id = m.collaboration_id 
+          AND s.user_id = ${userId} 
+          AND s.direction = 'right'
+        )
         WHERE (m.host_id = ${userId} OR m.requester_id = ${userId})
         ORDER BY m.created_at DESC
       `);

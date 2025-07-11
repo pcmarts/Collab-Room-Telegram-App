@@ -3401,7 +3401,7 @@ export async function registerRoutes(app: Express) {
             twitterHandle: match.other_user_twitter_url ? match.other_user_twitter_url.split('/').pop() : null,
             twitterFollowers: match.other_user_twitter_followers || null,
             email: null, // We don't return email for privacy reasons
-            note: match.match_note || null, // Include the personalized note
+            note: match.swipe_note || match.match_note || null, // Include the personalized note from swipes table
             
             // Additional company information
             companyWebsite: match.company_website || null,
