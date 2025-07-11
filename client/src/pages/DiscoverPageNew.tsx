@@ -1190,6 +1190,12 @@ export default function DiscoverPage() {
         
         // Show match moment after a short delay
         setTimeout(() => setShowMatch(true), 300);
+      } else if (direction === 'right') {
+        // Show request sent notification for right swipes that don't create matches
+        toast({
+          title: "Request Sent!",
+          description: "Your collaboration request has been sent.",
+        });
       }
       
       // Invalidate queries to ensure fresh data

@@ -71,6 +71,9 @@ export default function DiscoverPageList() {
   const [hasMore, setHasMore] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   
+  // State for tracking requested collaborations (for immediate UI updates)
+  const [requestedCollaborations, setRequestedCollaborations] = useState<Set<string>>(new Set());
+  
   // Refs
   const initialLoadCompletedRef = useRef(false);
   const lastFetchTimeRef = useRef<number>(0);
@@ -322,6 +325,9 @@ export default function DiscoverPageList() {
       return;
     }
 
+    // Immediately update the local state to show "Requested" status
+    setRequestedCollaborations(prev => new Set([...prev, collaboration.id]));
+
     try {
       const response = await fetch(`/api/collaborations/${collaboration.id}/apply`, {
         method: 'POST',
@@ -334,6 +340,12 @@ export default function DiscoverPageList() {
       });
       
       if (!response.ok) {
+        // If request fails, remove from requested state
+        setRequestedCollaborations(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(collaboration.id);
+          return newSet;
+        });
         throw new Error('Failed to send collaboration request');
       }
       
@@ -363,6 +375,9 @@ export default function DiscoverPageList() {
       if (isPotentialMatch) {
         setPotentialMatches(prev => prev.filter(pm => pm.collaboration_id !== collaboration.id));
       }
+
+      // Invalidate and refetch interaction data to sync with server
+      queryClient.invalidateQueries({ queryKey: ['/api/collaborations/interactions'] });
 
     } catch (error) {
       console.error('[Discovery] Error requesting collaboration:', error);
@@ -512,7 +527,10 @@ export default function DiscoverPageList() {
                 onRequestCollaboration={() => handleRequestCollaboration(item, item.isPotentialMatch)}
                 isPotentialMatch={item.isPotentialMatch}
                 collaborationStatus={
-                  collaborationInteractions && collaborationInteractions[item.id]
+                  // Check if locally requested first (for immediate UI update)
+                  requestedCollaborations.has(item.id)
+                    ? 'requested'
+                    : collaborationInteractions && collaborationInteractions[item.id]
                     ? collaborationInteractions[item.id].status
                     : undefined
                 }
