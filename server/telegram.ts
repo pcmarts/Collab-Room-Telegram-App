@@ -1787,30 +1787,39 @@ bot.on("callback_query", async (callbackQuery) => {
       return;
     }
     
-    console.log(`Received callback query with action: ${action}`);
+    console.log(`[CALLBACK] Received callback query with action: ${action}`);
+    console.log(`[CALLBACK] From user: ${callbackQuery.from.first_name} (${callbackQuery.from.id})`);
+    console.log(`[CALLBACK] Chat ID: ${callbackQuery.message?.chat.id}`);
+    console.log(`[CALLBACK] Message ID: ${callbackQuery.message?.message_id}`);
     
     // Handle broadcast confirmation
     if (action === "broadcast_confirm") {
+      console.log(`[CALLBACK] Handling broadcast confirmation`);
       await handleBroadcastConfirm(callbackQuery);
     }
     // Handle broadcast cancellation
     else if (action === "broadcast_cancel") {
+      console.log(`[CALLBACK] Handling broadcast cancellation`);
       await handleBroadcastCancel(callbackQuery);
     }
     // Handle user approval
     else if (action.startsWith("approve_user_")) {
+      console.log(`[CALLBACK] Handling user approval: ${action}`);
       await handleApproveUserCallback(callbackQuery);
     }
     // Handle swipe actions (supports both old format "swipe_" and new shortened format "sr_"/"sl_")
     else if (action.startsWith("swipe_") || action.startsWith("sr_") || action.startsWith("sl_")) {
+      console.log(`[CALLBACK] Handling swipe action: ${action}`);
       await handleSwipeCallback(callbackQuery);
     }
     // Handle match actions
     else if (action.startsWith("match_info_")) {
+      console.log(`[CALLBACK] Handling match info: ${action}`);
       await handleMatchInfoCallback(callbackQuery);
     }
     // Handle copy referral code actions
     else if (action.startsWith("copy_referral_code_")) {
+      console.log(`[CALLBACK] Handling copy referral code: ${action}`);
       // Extract the referral code from the callback data
       const referralCode = action.substring("copy_referral_code_".length);
       
@@ -1825,19 +1834,21 @@ bot.on("callback_query", async (callbackQuery) => {
     }
     // Unknown action
     else {
-      console.log(`Unknown callback action: ${action}`);
+      console.log(`[CALLBACK] Unknown callback action: ${action}`);
       await bot.answerCallbackQuery(callbackQuery.id, {
         text: "Unknown action",
       });
     }
   } catch (error) {
-    console.error("Error handling callback query:", error);
+    console.error("[CALLBACK] Error handling callback query:", error);
+    console.error("[CALLBACK] Error details:", error.message);
+    console.error("[CALLBACK] Error stack:", error.stack);
     try {
       await bot.answerCallbackQuery(callbackQuery.id, {
         text: "Sorry, something went wrong. Please try again.",
       });
     } catch (err) {
-      console.error("Error sending callback answer:", err);
+      console.error("[CALLBACK] Error sending callback answer:", err);
     }
   }
 });
@@ -1947,7 +1958,12 @@ async function handleApproveUserCallback(
   callbackQuery: TelegramBot.CallbackQuery
 ) {
   try {
+    console.log(`[APPROVAL] Starting approval handler`);
+    console.log(`[APPROVAL] Callback query data: ${callbackQuery.data}`);
+    console.log(`[APPROVAL] From user: ${callbackQuery.from.first_name} (${callbackQuery.from.id})`);
+    
     if (!callbackQuery.data) {
+      console.error(`[APPROVAL] No callback data provided`);
       return;
     }
 
@@ -1957,8 +1973,15 @@ async function handleApproveUserCallback(
     const adminTelegramId = callbackQuery.from.id.toString();
     const chatId = callbackQuery.message?.chat.id;
 
+    console.log(`[APPROVAL] Parsed data:`);
+    console.log(`[APPROVAL] - Telegram ID to approve: ${telegramIdToApprove}`);
+    console.log(`[APPROVAL] - Admin Telegram ID: ${adminTelegramId}`);
+    console.log(`[APPROVAL] - Chat ID: ${chatId}`);
+
     if (!telegramIdToApprove || !chatId) {
-      console.error("Missing required data for user approval");
+      console.error(`[APPROVAL] Missing required data for user approval`);
+      console.error(`[APPROVAL] - telegramIdToApprove: ${telegramIdToApprove}`);
+      console.error(`[APPROVAL] - chatId: ${chatId}`);
       return;
     }
 
