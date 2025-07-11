@@ -852,15 +852,15 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async createCollabApplication(collaborationId: string, applicantId: string, details: any): Promise<CollabApplication> {
+  async createCollabApplication(collaborationId: string, applicantId: string, message: string): Promise<CollabApplication> {
     console.warn("Legacy createCollabApplication called - this is now managed via swipes");
     
-    // Create a swipe instead
+    // Create a swipe instead with the message saved as note
     const swipeData: InsertSwipe = {
       user_id: applicantId,
       collaboration_id: collaborationId,
       direction: "right",
-      details: details,
+      note: message, // Save the message as note, not details
     };
     
     const swipe = await this.createSwipe(swipeData);
@@ -871,7 +871,7 @@ export class DatabaseStorage implements IStorage {
       collaboration_id: swipe.collaboration_id,
       applicant_id: swipe.user_id,
       status: "pending",
-      details: swipe.details as any,
+      details: { message }, // Keep backward compatibility by putting message in details
       created_at: swipe.created_at,
     };
   }

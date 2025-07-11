@@ -119,6 +119,11 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 11, 2025. Fixed collaboration request note saving functionality
+  - Corrected `createCollabApplication` method to save notes in `swipes.note` field instead of `swipes.details`
+  - Updated parameter type from `details: any` to `message: string` for better type safety
+  - Maintained backward compatibility by still populating `details` field with message for legacy support
+  - Ensured proper note-adding flow works consistently across both list and card discovery interfaces
 - July 11, 2025. Fixed Telegram bot user approval functionality
   - Resolved database schema error preventing admin approval buttons from working
   - Fixed `handleApproveUserCallback` function attempting to update non-existent `approved_by` field
