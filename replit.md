@@ -119,6 +119,11 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 11, 2025. Temporarily disabled discovery filters functionality
+  - Hidden filters button on both discover pages (card view and list view) due to lazy loading issues
+  - Filters button commented out in `client/src/pages/DiscoverPageList.tsx` and `client/src/pages/DiscoverPageNew.tsx`
+  - Discovery page now works without filter-related errors
+  - Filters functionality to be restored after resolving lazy loading and constants import issues
 - July 10, 2025. Implemented backend webhook system for new company signups
   - Added GET webhook call to n8n endpoint with company ID after successful registration
   - Webhook fires automatically from `/api/onboarding` endpoint after company creation
