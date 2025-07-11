@@ -339,6 +339,18 @@ export default function MatchesPage() {
                   <span>Matched on {match.matchDate}</span>
                 </div>
               </div>
+
+              {/* Original note from collaboration request */}
+              {match.note && (
+                <div className="mb-3 p-3 bg-muted/50 rounded-lg border-l-4 border-primary/50">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">
+                    Original message:
+                  </p>
+                  <p className="text-sm break-words">
+                    {match.note}
+                  </p>
+                </div>
+              )}
               
               {/* Action buttons */}
               <div className="flex justify-between gap-3 mt-3 pt-2 border-t border-border/50">
