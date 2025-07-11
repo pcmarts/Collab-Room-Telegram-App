@@ -5,6 +5,26 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.16] - 2025-07-11
+
+### Fixed
+- Fixed swipe note display in matches page where original collaboration request notes were not appearing
+- Corrected SQL JOIN condition in `getUserMatchesWithDetails` to retrieve notes from requester's swipe record
+- Updated JOIN logic to use `s.user_id = m.requester_id` instead of `s.user_id = ${userId}` for proper note retrieval
+- Fixed issue where notes from collaboration requests were showing as null in matches view
+
+### Enhanced
+- Notes now properly display original messages from swipes.note field when viewing matches
+- Improved note handling to show personalized messages from collaboration requesters
+- Enhanced matches page to display full collaboration request context including custom notes
+- Added proper null value handling for matches without notes
+
+### Technical Details
+- Modified SQL query in `getUserMatchesWithDetails` function to JOIN matches table with swipes table using requester ID
+- Updated JOIN condition to `s.user_id = m.requester_id` to retrieve notes from the person who made the collaboration request
+- Verified proper note retrieval for multiple note types and confirmed null handling for matches without notes
+- Maintained existing frontend UI configuration for note display in matches page
+
 ## [Version 1.10.15] - 2025-07-11
 
 ### Fixed

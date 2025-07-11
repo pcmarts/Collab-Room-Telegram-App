@@ -160,6 +160,21 @@ export const matches = pgTable('matches', {
 
 The `swipes` table records when a user swipes left or right on a collaboration, while the `matches` table is created when both users have swiped right on each other's collaborations.
 
+#### Note Display in Matches
+
+When users view their matches, the system displays the original collaboration request notes from the swipes table. The `getUserMatchesWithDetails` function uses a SQL JOIN to retrieve these notes:
+
+```sql
+-- Join matches with swipes to get original collaboration request notes
+LEFT JOIN swipes s ON (
+  s.collaboration_id = m.collaboration_id 
+  AND s.user_id = m.requester_id -- Note from the person who made the collaboration request
+  AND s.direction = 'right'
+)
+```
+
+This ensures that when viewing matches, users see the personalized messages that were sent with the original collaboration requests.
+
 ## Relationships
 
 Key relationships in the database:

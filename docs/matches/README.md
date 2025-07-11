@@ -172,7 +172,7 @@ Version 1.7.0 enhanced the match system with personalized notes that persist thr
 - **Note Field in Match Data**: The match data structure now includes an optional note field from the original swipe
 - **Note Display in Match Details**: When viewing match details, any personalized note sent with the original request is displayed
 - **Consistent Formatting**: Notes are displayed with consistent styling across the application
-- **Data Persistence**: Notes are copied from swipes to matches to ensure they remain accessible
+- **Data Persistence**: Notes are retrieved from swipes table to ensure they remain accessible
 
 ### Technical Implementation
 
@@ -180,3 +180,10 @@ Version 1.7.0 enhanced the match system with personalized notes that persist thr
 - Enhanced match creation logic to preserve notes when creating matches from swipes
 - Updated the CollaborationDetailsDialog component to display notes when present
 - Implemented proper data validation to handle both defined and undefined note values
+
+### Recent Fix (Version 1.10.16)
+
+- **Fixed Note Retrieval**: Corrected SQL JOIN condition to properly retrieve notes from the original collaboration requester
+- **Updated JOIN Logic**: Changed from `s.user_id = ${userId}` to `s.user_id = m.requester_id` to get notes from the person who made the collaboration request
+- **Improved Note Display**: Notes now properly display original messages from swipes.note field when viewing matches
+- **Enhanced Data Integrity**: Verified proper note retrieval for multiple note types and confirmed null handling for matches without notes
