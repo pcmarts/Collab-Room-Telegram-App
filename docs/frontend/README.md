@@ -25,6 +25,30 @@ The frontend of The Collab Room is built with React and modern web technologies.
 - [Navigation Updates](./navigation-updates.md) - Documentation of bottom navigation simplification and dashboard button improvements
 - [Splash Screen Implementation](./splash-screen.md) - Guide to the ultra-light splash screen that renders in under 100ms
 - [Code Splitting Implementation](./code-splitting.md) - Documentation of route-based code splitting for performance optimization
+- [Collaboration Request System](./collaboration-request-system.md) - Comprehensive documentation of the note-adding workflow and collaboration request functionality
+
+## Collaboration Request System
+
+The collaboration request system has been enhanced with a comprehensive note-adding workflow that provides a LinkedIn-style "Add a note to your invitation" experience.
+
+### Note-Adding Flow
+
+The system uses a two-step dialog process:
+
+1. **Initial Prompt**: When users click "Request Collaboration" on a regular collaboration, they are presented with a dialog asking if they want to add a personalized note
+2. **Note Composition**: If they choose to add a note, a text area appears for composing the personalized message
+3. **Request Sending**: The note is then saved to the database and included in notifications
+
+### Implementation Details
+
+- **AddNoteDialog Component**: Handles the two-step note composition flow with proper state management
+- **Button State Management**: Buttons show "Requested" state immediately after sending to prevent duplicate requests
+- **Consistent Interface**: Both list view (DiscoverPageList) and card view (SimpleCard) use the same note-adding workflow
+- **Special Handling**: Potential matches bypass the note dialog and send requests directly
+
+### Database Storage
+
+Notes are properly saved to the `swipes.note` field in the database, ensuring they persist through the collaboration lifecycle and appear in match details and notifications.
 
 ## Technology Stack
 

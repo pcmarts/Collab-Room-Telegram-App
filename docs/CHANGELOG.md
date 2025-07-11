@@ -5,6 +5,27 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.15] - 2025-07-11
+
+### Fixed
+- Fixed collaboration request note saving functionality where notes were incorrectly saved to `swipes.details` instead of `swipes.note`
+- Restored proper note-adding dialog flow in list discovery interface with two-step process (ask for note → compose note → send)
+- Enhanced button state management to show "Requested" state immediately after collaboration request is sent
+- Ensured consistent collaboration request handling across both list and card discovery interfaces
+
+### Enhanced
+- Improved type safety by updating `createCollabApplication` parameter from `details: any` to `message: string`
+- Maintained backward compatibility by populating both `swipes.note` and `swipes.details` fields
+- Enhanced user experience with proper visual feedback during collaboration request process
+- Added comprehensive error handling for collaboration request state management
+
+### Technical Details
+- Updated `createCollabApplication` method in `server/storage.ts` to save notes to correct database field
+- Restored AddNoteDialog component integration in `DiscoverPageList.tsx` with proper state management
+- Enhanced collaboration request workflow with immediate UI feedback and proper error handling
+- Maintained existing SimpleCard component note dialog functionality for card-based discovery
+- Added local state tracking to prevent duplicate collaboration requests across interfaces
+
 ## [Version 1.10.14] - 2025-07-11
 
 ### Fixed

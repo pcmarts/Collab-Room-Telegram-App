@@ -191,6 +191,7 @@ When a match is created through the discovery system, a match moment dialog is d
 - **Version 1.10.6**: Enhanced all database queries to properly exclude any previously swiped collaborations with bidirectional match checking across host and requester roles
 - **Version 1.10.7**: Dramatically optimized discovery card loading time by reducing query execution from 96ms to 57ms (~40% improvement) with database indexing, SQL-based filtering, and query restructuring
 - **Version 1.11.0**: Implemented Sort By functionality with three options (Newest first, Oldest first, Collab Type) including dropdown UI component, backend sorting logic, and race condition fixes for consistent behavior
+- **Version 1.10.15**: Fixed collaboration request note saving functionality and enhanced note-adding dialog flow with proper database field mapping (`swipes.note` instead of `swipes.details`), restored two-step note composition workflow in list discovery interface, and implemented consistent button state management across both list and card discovery views
 
 ## Related Documentation
 
