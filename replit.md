@@ -119,6 +119,12 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 11, 2025. Fixed swipe note display in matches page
+  - Corrected SQL JOIN condition in `getUserMatchesWithDetails` to retrieve notes from requester's swipe
+  - Updated JOIN logic to use `s.user_id = m.requester_id` instead of `s.user_id = ${userId}`
+  - Fixed issue where collaboration request notes were not appearing in matches page
+  - Notes now properly display original messages from swipes.note field when viewing matches
+  - Confirmed working with multiple note types and null values handled correctly
 - July 11, 2025. Fixed collaboration request note saving functionality
   - Corrected `createCollabApplication` method to save notes in `swipes.note` field instead of `swipes.details`
   - Updated parameter type from `details: any` to `message: string` for better type safety

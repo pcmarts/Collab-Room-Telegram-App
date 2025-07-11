@@ -1748,6 +1748,7 @@ export class DatabaseStorage implements IStorage {
       }
       
       // Get the basic match data with swipe notes using a join query
+      // The swipe note should come from the requester (person who made the collaboration request)
       const matchesResult = await db.execute(sql`
         SELECT 
           m.id as match_id,
@@ -1761,7 +1762,7 @@ export class DatabaseStorage implements IStorage {
         FROM matches m
         LEFT JOIN swipes s ON (
           s.collaboration_id = m.collaboration_id 
-          AND s.user_id = ${userId} 
+          AND s.user_id = m.requester_id 
           AND s.direction = 'right'
         )
         WHERE (m.host_id = ${userId} OR m.requester_id = ${userId})
