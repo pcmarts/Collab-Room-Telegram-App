@@ -1705,7 +1705,7 @@ export default function DiscoverPage() {
       
       {/* Bottom controls */}
       <div className="p-4 border-t bg-card/50 flex justify-between items-center">
-        <Button 
+        {/* <Button 
           variant="outline" 
           onClick={handleOpenFilters}
           size="sm"
@@ -1713,7 +1713,7 @@ export default function DiscoverPage() {
         >
           <Filter className="h-4 w-4" />
           Filters
-        </Button>
+        </Button> */}
         
         {/* Refresh button removed per user request */}
         <div className="flex gap-2">

@@ -435,10 +435,10 @@ export default function DiscoverPageList() {
           <div>
             <h1 className="text-xl font-semibold">Discover</h1>
           </div>
-          <Button variant="outline" size="sm" onClick={handleOpenFilters}>
+          {/* <Button variant="outline" size="sm" onClick={handleOpenFilters}>
             <Filter className="w-4 h-4 mr-2" />
             {hasActiveFilters ? "Filters (Active)" : "Filters"}
-          </Button>
+          </Button> */}
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -462,10 +462,10 @@ export default function DiscoverPageList() {
             currentSort={sortBy}
             onSortChange={handleSortChange}
           />
-          <Button variant="outline" size="sm" onClick={handleOpenFilters}>
+          {/* <Button variant="outline" size="sm" onClick={handleOpenFilters}>
             <Filter className="w-4 h-4 mr-2" />
             {hasActiveFilters ? "Filters (Active)" : "Filters"}
-          </Button>
+          </Button> */}
           <Button variant="outline" size="sm" onClick={handleRefresh}>
             <RefreshCw className="w-4 h-4" />
           </Button>
