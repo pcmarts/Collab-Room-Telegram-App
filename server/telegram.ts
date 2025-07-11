@@ -2048,7 +2048,6 @@ async function handleApproveUserCallback(
       .set({
         is_approved: true,
         approved_at: new Date(),
-        approved_by: adminTelegramId,
       })
       .where(eq(users.telegram_id, telegramIdToApprove));
 
