@@ -1,11 +1,15 @@
+import { twitterCollabSchema, twitterCollabDefaults } from "../schemas/twitterSchema";
 import { podcastCollabSchema, podcastCollabDefaults } from "../schemas/podcastSchema";
+import { twitterSpacesSchema, twitterSpacesDefaults } from "../schemas/twitterSpacesSchema";
 import { liveStreamSchema, liveStreamDefaults } from "../schemas/liveStreamSchema";
 import { reportSchema, reportDefaults } from "../schemas/reportSchema";
 import { newsletterSchema, newsletterDefaults } from "../schemas/newsletterSchema";
 import { blogPostSchema, blogPostDefaults } from "../schemas/blogPostSchema";
 
 import { CollaborationTypeDefinition } from "../contexts/CollaborationTypeContext";
+import { twitterCollabSteps } from "../components/collaboration-types/TwitterCollabForm";
 import { podcastCollabSteps } from "../components/collaboration-types/PodcastCollabForm";
+import { twitterSpacesSteps } from "../components/collaboration-types/TwitterSpacesForm";
 import { liveStreamSteps } from "../components/collaboration-types/LiveStreamForm";
 import { reportSteps } from "../components/collaboration-types/ReportForm";
 import { newsletterSteps } from "../components/collaboration-types/NewsletterForm";
@@ -17,6 +21,20 @@ import { blogPostSteps } from "../components/collaboration-types/BlogPostForm";
  * Add new collaboration types here to make them available in the form
  */
 export const collaborationTypes: CollaborationTypeDefinition[] = [
+  {
+    id: "Twitter Spaces Guest",
+    name: "Twitter Spaces Guest",
+    schema: twitterSpacesSchema,
+    defaultValues: twitterSpacesDefaults,
+    steps: twitterSpacesSteps
+  },
+  {
+    id: "Co-Marketing on Twitter",
+    name: "Twitter Co-marketing",
+    schema: twitterCollabSchema,
+    defaultValues: twitterCollabDefaults,
+    steps: twitterCollabSteps
+  },
   {
     id: "Podcast Guest Appearance",
     name: "Podcast Guest Appearance",

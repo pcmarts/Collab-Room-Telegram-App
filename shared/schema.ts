@@ -139,7 +139,19 @@ export const TWITTER_FOLLOWER_COUNTS = [
   "500K+",
 ] as const;
 
-
+export const TWITTER_COLLAB_TYPES = [
+  "Thread Collab",
+  "Joint Campaign",
+  "Giveaway",
+  "Retweet & Boost",
+  "Sponsored Tweet",
+  "Poll/Q&A",
+  "Shoutout",
+  "Tweet Swap",
+  "Meme/Viral Collab",
+  "Twitter List Collab",
+  "Exclusive Announcement",
+] as const;
 
 export const AUDIENCE_SIZE_RANGES = [
   "Under 100",
@@ -915,7 +927,19 @@ export const blogPostDetailsSchema = z.object({
   estimated_release_date: z.string(),
 });
 
-
+// Co-Marketing on Twitter
+export const twitterCoMarketingDetailsSchema = z.object({
+  twittercomarketing_type: z
+    .array(z.enum(TWITTER_COLLAB_TYPES))
+    .min(1, "At least one Twitter collaboration type is required"),
+  host_twitter_handle: z.string().min(1, "Host Twitter handle is required"),
+  host_follower_count: z.enum(TWITTER_FOLLOWER_COUNTS),
+  short_description: z
+    .string()
+    .min(1, "Short description is required")
+    .max(180, "Short description must be 180 characters or less")
+    .optional(), // Updated validation rules
+});
 
 // Create a Collaboration schema that combines all the types
 export const createCollaborationSchema = z.object({
@@ -965,10 +989,12 @@ export const createCollaborationSchema = z.object({
   // Type-specific details
   details: z.union([
     podcastDetailsSchema,
+    twitterSpacesDetailsSchema,
     liveStreamDetailsSchema,
     researchReportDetailsSchema,
     newsletterDetailsSchema,
     blogPostDetailsSchema,
+    twitterCoMarketingDetailsSchema,
   ]),
 });
 

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useFormWizard } from "../../contexts/FormWizardContext";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
-
+import { TWITTER_COLLAB_TYPES } from "@shared/schema";
 
 interface StepNavigationProps {
   form: UseFormReturn<any>;
@@ -45,8 +45,15 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     // Only validate the field(s) for the current step to avoid cross-step validation issues
     let isStepValid = true;
     
+    // For Twitter Spaces specific steps
+    if (currentStepId === "basic_info") {
+      // Validate Twitter handle and follower count
+      const handleValid = await form.trigger("twitter_handle");
+      const followerValid = await form.trigger("host_follower_count");
+      isStepValid = handleValid && followerValid;
+    } 
     // When topics are on a separate page (works for all collaboration types)
-    if (currentStepId === "topics") {
+    else if (currentStepId === "topics") {
       // Validate only topics on this step
       isStepValid = await form.trigger("topics");
       console.log("Topics validation result:", isStepValid, "Topics value:", form.getValues("topics"));
@@ -102,12 +109,26 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
         overall: isStepValid
       });
     }
-    // For podcast specific steps
-    else if (currentStepId === "podcast_topics") {
+    // For Twitter collaboration type steps, validate only the relevant fields
+    else if (currentStepId === "twitter_topics" || currentStepId === "podcast_topics") {
       isStepValid = await form.trigger("topics");
-    } else if (currentStepId === "podcast_description") {
+    } else if (currentStepId === "twitter_handle") {
+      isStepValid = await form.trigger("twitter_handle");
+    } else if (currentStepId === "twitter_collab_types") {
+      isStepValid = await form.trigger("twitter_collab_types");
+      console.log("Twitter collab types validation:", isStepValid);
+      console.log("Twitter collab types value:", form.getValues("twitter_collab_types"));
+      console.log("Twitter collab types field state:", form.getFieldState("twitter_collab_types"));
+      console.log("TWITTER_COLLAB_TYPES schema values:", TWITTER_COLLAB_TYPES);
+      
+      // Show the exact validation schema zod is using
+      const selectedType = form.getValues("collab_type");
+      console.log("Selected collaboration type:", selectedType);
+    } else if (currentStepId === "twitter_followers") {
+      isStepValid = await form.trigger("follower_count");
+    } else if (currentStepId === "twitter_description" || currentStepId === "podcast_description") {
       isStepValid = await form.trigger("description");
-    } else if (currentStepId === "podcast_date") {
+    } else if (currentStepId === "twitter_date" || currentStepId === "podcast_date") {
       // Validate date fields
       isStepValid = await form.trigger("date_type");
       if (form.getValues("date_type") === "specific_date") {
