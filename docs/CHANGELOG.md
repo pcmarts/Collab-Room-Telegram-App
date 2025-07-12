@@ -5,6 +5,26 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.17] - 2025-07-12
+
+### Fixed
+- Fixed matches page filtering to display only active matches instead of all matches including declined ones
+- Added `AND m.status = 'active'` condition to `getUserMatchesWithDetails` SQL query to exclude declined matches
+- Resolved issue where declined matches were appearing in matches page alongside active matches
+- Ensured matches page only shows mutually agreed collaborations as intended
+
+### Enhanced
+- Improved matches page user experience by showing only relevant active collaborations
+- Maintained proper note display functionality from requester's swipe record
+- Enhanced SQL query performance by filtering declined matches at database level
+- Preserved existing match details and collaboration information display
+
+### Technical Details
+- Modified `getUserMatchesWithDetails` function in `server/storage.ts` to filter matches by status
+- Updated SQL WHERE clause to include `AND m.status = 'active'` condition
+- Verified fix reduces returned matches from 6 total (including 2 declined) to 4 active matches
+- Maintained existing JOIN logic for proper note retrieval from collaboration requesters
+
 ## [Version 1.10.16] - 2025-07-11
 
 ### Fixed
