@@ -653,6 +653,39 @@ export const matches = pgTable("matches", {
   };
 });
 
+// Unified requests table (replacing swipes and matches)
+export const requests = pgTable("requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  collaboration_id: uuid("collaboration_id")
+    .notNull()
+    .references(() => collaborations.id, { onDelete: "cascade" }),
+  requester_id: uuid("requester_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  host_id: uuid("host_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  status: text("status").notNull().default("pending"), // 'pending', 'accepted', 'hidden'
+  note: text("note"), // Personalized message from requester
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (table) => {
+  return {
+    // Index for requests.collaboration_id for filtering
+    requestCollabIdIdx: index("request_collab_id_idx").on(table.collaboration_id),
+    // Index for requests.requester_id for filtering by requester
+    requestRequesterIdIdx: index("request_requester_id_idx").on(table.requester_id),
+    // Index for requests.host_id for filtering by host
+    requestHostIdIdx: index("request_host_id_idx").on(table.host_id),
+    // Index for requests.status for filtering by status
+    requestStatusIdx: index("request_status_idx").on(table.status),
+    // Composite index for host_id + status for common queries
+    hostStatusIdx: index("request_host_status_idx").on(table.host_id, table.status),
+    // Composite index for requester_id + status for common queries
+    requesterStatusIdx: index("request_requester_status_idx").on(table.requester_id, table.status)
+  };
+});
+
 // Combined table for referral tracking and limits
 export const user_referrals = pgTable("user_referrals", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -702,6 +735,7 @@ export const insertCollabNotificationSchema =
   createInsertSchema(collab_notifications);
 export const insertSwipeSchema = createInsertSchema(swipes);
 export const insertMatchSchema = createInsertSchema(matches);
+export const insertRequestSchema = createInsertSchema(requests);
 
 // Referral-related schemas
 export const referralCodeSchema = z.string().regex(/^[0-9]+_[a-f0-9]{8}$/, 
@@ -726,6 +760,7 @@ export type Collaboration = typeof collaborations.$inferSelect;
 export type CollabNotification = typeof collab_notifications.$inferSelect;
 export type Swipe = typeof swipes.$inferSelect;
 export type Match = typeof matches.$inferSelect;
+export type Request = typeof requests.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
@@ -747,6 +782,7 @@ export type InsertCollabNotification = z.infer<
 >;
 export type InsertSwipe = z.infer<typeof insertSwipeSchema>;
 export type InsertMatch = z.infer<typeof insertMatchSchema>;
+export type InsertRequest = z.infer<typeof insertRequestSchema>;
 
 // Referral system types
 export type UserReferral = typeof user_referrals.$inferSelect;

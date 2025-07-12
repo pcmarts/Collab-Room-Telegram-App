@@ -18,13 +18,13 @@ import { useToast } from "@/hooks/use-toast";
 // Define props for CardStack component
 interface CardStackProps {
   cards: CardData[];
-  handleSwipe: (direction: "left" | "right", note?: string) => Promise<void>;
+  handleRequest: (action: "skip" | "request", note?: string) => Promise<void>;
   handleViewCardDetails: (card: CardData) => void;
   handleDetailsClick: (id: string) => void;
 }
 
 // CardStack component to handle rendering cards
-const CardStack = ({ cards, handleSwipe, handleViewCardDetails, handleDetailsClick }: CardStackProps) => {
+const CardStack = ({ cards, handleRequest, handleViewCardDetails, handleDetailsClick }: CardStackProps) => {
   // Log current cards state
   console.log('[CardStack] Rendering with', cards.length, 'cards');
   
@@ -44,7 +44,7 @@ const CardStack = ({ cards, handleSwipe, handleViewCardDetails, handleDetailsCli
         <SimpleCard
           key={cards[0].id}
           data={cards[0]}
-          handleSwipe={handleSwipe}
+          handleRequest={handleRequest}
           onInfoClick={() => handleViewCardDetails(cards[0])}
           handleDetailsClick={handleDetailsClick}
         />
@@ -77,10 +77,10 @@ interface CardData {
   [key: string]: any;
 }
 
-// Define types for swipe history
-interface SwipeHistoryItem {
+// Define types for request history
+interface RequestHistoryItem {
   card: CardData | null;
-  direction: "left" | "right";
+  action: "skip" | "request";
   index: number;
 }
 
@@ -132,13 +132,13 @@ export default function DiscoverPage() {
   
   // State for cards and pagination
   const [cards, setCards] = useState<CardData[]>([]);
-  const [swipeHistory, setSwipeHistory] = useState<SwipeHistoryItem[]>([]);
+  const [requestHistory, setRequestHistory] = useState<RequestHistoryItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(true);
   
   // Refs for tracking state across renders
   const cardsRef = useRef<CardData[]>([]);
-  const swipeHistoryRef = useRef<SwipeHistoryItem[]>([]);
+  const requestHistoryRef = useRef<RequestHistoryItem[]>([]);
   const isFetchingNextBatchRef = useRef(false);
   const initialLoadCompletedRef = useRef(false);
   const lastFetchTimeRef = useRef<number>(0);
@@ -155,12 +155,12 @@ export default function DiscoverPage() {
     refetchOnMount: true
   });
   
-  // Mutation for resetting left swipes
-  const resetLeftSwipesMutation = useMutation({
+  // Mutation for resetting skipped collaborations
+  const resetSkippedCollaborationsMutation = useMutation({
     mutationFn: async () => {
       setIsResettingSwipes(true);
       try {
-        const response = await apiRequest('/api/reset-left-swipes', 'POST');
+        const response = await apiRequest('/api/reset-skipped', 'POST');
         return response;
       } catch (error) {
         throw error;
@@ -170,12 +170,12 @@ export default function DiscoverPage() {
     },
     onSuccess: async (data) => {
       toast({
-        title: "Swipes Reset",
-        description: `Successfully reset ${data.deleted_count} left swipe(s). You'll now see cards you previously skipped.`,
+        title: "Skipped Cards Reset",
+        description: `Successfully reset ${data.deleted_count} skipped collaboration(s). You'll now see cards you previously skipped.`,
         duration: 5000,
       });
       
-      console.log('[Discovery] Reset left swipes successful, performing complete state reset');
+      console.log('[Discovery] Reset skipped collaborations successful, performing complete state reset');
       
       // Reset all local state
       setCards([]);
@@ -264,16 +264,16 @@ export default function DiscoverPage() {
   // We've removed motion animations since they're not needed without drag functionality
   
   // Get user swipe history to prevent showing already swiped cards
-  const { data: serverSwipeHistory } = useQuery({
-    queryKey: ['/api/user-swipes'],
+  const { data: serverRequestHistory } = useQuery({
+    queryKey: ['/api/user-requests'],
     queryFn: async () => {
       try {
-        console.log('[Discovery] Fetching user swipe history...');
-        const data = await apiRequest('/api/user-swipes');
-        console.log(`[Discovery] User swipe history fetched, count: ${data.length}`);
+        console.log('[Discovery] Fetching user request history...');
+        const data = await apiRequest('/api/user-requests');
+        console.log(`[Discovery] User request history fetched, count: ${data.length}`);
         return data;
       } catch (err) {
-        console.error('[Discovery] User swipe history fetch error:', err);
+        console.error('[Discovery] User request history fetch error:', err);
         // Check if this is an authentication error
         if (err && (
           (err as Error).name === 'AuthenticationError' || 
@@ -292,34 +292,34 @@ export default function DiscoverPage() {
     retry: false,
   });
   
-  // Extract all swiped card IDs (combining client-side, server-side and localStorage)
-  const allSwipedCardIds = useMemo(() => {
-    // Get IDs from current session swipe history
-    const sessionIds = swipeHistory
+  // Extract all requested card IDs (combining client-side, server-side and localStorage)
+  const allRequestedCardIds = useMemo(() => {
+    // Get IDs from current session request history
+    const sessionIds = requestHistory
       .map(hist => hist.card?.id)
       .filter(Boolean) as string[];
     
-    // Get IDs from server swipe history
-    const serverIds = serverSwipeHistory 
-      ? serverSwipeHistory.map(swipe => swipe.collaboration_id)
+    // Get IDs from server request history
+    const serverIds = serverRequestHistory 
+      ? serverRequestHistory.map(request => request.collaboration_id)
       : [];
     
     // Get IDs from localStorage (persistent storage)
     let persistentIds: string[] = [];
     try {
-      const storedIds = localStorage.getItem('swipedCardIds');
+      const storedIds = localStorage.getItem('requestedCardIds');
       if (storedIds) {
         persistentIds = JSON.parse(storedIds);
       }
     } catch (e) {
-      console.warn('[Discovery] Failed to retrieve persistent swiped card IDs:', e);
+      console.warn('[Discovery] Failed to retrieve persistent requested card IDs:', e);
     }
     
     // Combine and deduplicate all sources
     const uniqueIdsSet = new Set([...sessionIds, ...serverIds, ...persistentIds]);
     const uniqueIds = Array.from(uniqueIdsSet);
     
-    console.log('[Discovery] All swiped card IDs:', {
+    console.log('[Discovery] All requested card IDs:', {
       fromState: sessionIds.length,
       fromServer: serverIds.length,
       fromStorage: persistentIds.length,
@@ -327,7 +327,7 @@ export default function DiscoverPage() {
     });
     
     return uniqueIds;
-  }, [swipeHistory, serverSwipeHistory]);
+  }, [requestHistory, serverRequestHistory]);
   
   // Fetch potential matches (users who swiped right on your collaborations)
   const { data: potentialMatches, isLoading: isPotentialMatchesLoading } = useQuery({
@@ -647,38 +647,38 @@ export default function DiscoverPage() {
       
       console.log(`[Discovery] Fetching next batch with cursor: ${nextCursor || 'initial'}`);
       
-      // Get swipe IDs directly from the server - THE SINGLE SOURCE OF TRUTH
-      // The server already tracks which cards have been swiped and excludes them
-      let serverSwipedIds: string[] = [];
+      // Get request IDs directly from the server - THE SINGLE SOURCE OF TRUTH
+      // The server already tracks which cards have been processed and excludes them
+      let serverProcessedIds: string[] = [];
       try {
-        const latestSwipes = await apiRequest('/api/user-swipes') as any[];
-        if (latestSwipes && latestSwipes.length > 0) {
-          // Extract all collaboration IDs from swipes regardless of direction
+        const latestRequests = await apiRequest('/api/user-requests') as any[];
+        if (latestRequests && latestRequests.length > 0) {
+          // Extract all collaboration IDs from requests regardless of action
           // This ensures we filter out ALL cards the user has interacted with
-          serverSwipedIds = latestSwipes.map(swipe => swipe.collaboration_id);
-          console.log(`[Discovery] Server reports ${serverSwipedIds.length} swipes`);
+          serverProcessedIds = latestRequests.map(request => request.collaboration_id);
+          console.log(`[Discovery] Server reports ${serverProcessedIds.length} requests`);
           
-          // Log the directions of swipes for debugging
-          const leftSwipes = latestSwipes.filter(swipe => swipe.direction === 'left').length;
-          const rightSwipes = latestSwipes.filter(swipe => swipe.direction === 'right').length;
-          console.log(`[Discovery] Swipe directions - Left: ${leftSwipes}, Right: ${rightSwipes}`);
+          // Log the actions of requests for debugging
+          const skipRequests = latestRequests.filter(request => request.action === 'skip').length;
+          const sentRequests = latestRequests.filter(request => request.action === 'request').length;
+          console.log(`[Discovery] Request actions - Skip: ${skipRequests}, Sent: ${sentRequests}`);
         } else {
-          console.log('[Discovery] Server returned no swipes');
+          console.log('[Discovery] Server returned no requests');
         }
       } catch (e) {
-        console.warn('[Discovery] Failed to fetch swipes from server:', e);
+        console.warn('[Discovery] Failed to fetch requests from server:', e);
       }
       
-      // We only use the local session history for cards swiped in the current session
+      // We only use the local session history for cards processed in the current session
       // that might not have been saved to the server yet
-      const sessionIds = swipeHistory
+      const sessionIds = requestHistory
         .map(hist => hist.card?.id)
         .filter(Boolean) as string[];
-      console.log(`[Discovery] Current session has ${sessionIds.length} cards in local swipe history`);
+      console.log(`[Discovery] Current session has ${sessionIds.length} cards in local request history`);
       
       // Server IDs + current session IDs
       const uniqueExclusionIds = Array.from(new Set([
-        ...serverSwipedIds, 
+        ...serverProcessedIds, 
         ...sessionIds
       ]));
       
@@ -1069,14 +1069,14 @@ export default function DiscoverPage() {
   // Helper function already defined above with better variable name (fetchNextBatch)
   // Using that function instead of duplicating code
 
-  // Handle swipe actions
-  const handleSwipe = async (direction: "left" | "right", note?: string): Promise<void> => {
+  // Handle request actions
+  const handleRequest = async (action: "skip" | "request", note?: string): Promise<void> => {
     try {
-      console.log(`[Discovery] Swipe action: ${direction}${note ? ' with note' : ''}`);
+      console.log(`[Discovery] Action: ${action}${note ? ' with note' : ''}`);
       
-      // Ensure we have cards to swipe
+      // Ensure we have cards to process
       if (cards.length === 0) {
-        console.warn('[Discovery] No cards available to swipe');
+        console.warn('[Discovery] No cards available to process');
         return; // Return promise fulfills without doing anything
       }
       
@@ -1092,12 +1092,12 @@ export default function DiscoverPage() {
       const isPotentialMatch = !!card.isPotentialMatch;
       console.log(`[Discovery] Card type: ${isPotentialMatch ? 'Potential Match' : 'Regular Collaboration'}`);
       
-      // Add to local swipe history first
+      // Add to local request history first
       const updatedHistory = [
-        ...swipeHistory,
-        { card, direction, index: swipeHistory.length }
+        ...requestHistory,
+        { card, action, index: requestHistory.length }
       ];
-      setSwipeHistory(updatedHistory);
+      setRequestHistory(updatedHistory);
       
       // Remove the card from the stack
       const remainingCards = cards.slice(1);
@@ -1126,57 +1126,57 @@ export default function DiscoverPage() {
       // Log the new current card index
       console.log(`[Discovery] Card swiped, new current index: 0, remaining cards: ${cards.length - 1}`);
       
-      // RELIABILITY ENHANCEMENT: Store this swiped card ID in localStorage
+      // RELIABILITY ENHANCEMENT: Store this processed card ID in localStorage
       // This ensures we never show it again, even if the server call fails or session expires
       try {
-        // Get existing swiped card IDs from localStorage or initialize empty array
-        let persistentSwipedIds: string[] = [];
-        const storedIds = localStorage.getItem('swipedCardIds');
+        // Get existing processed card IDs from localStorage or initialize empty array
+        let persistentProcessedIds: string[] = [];
+        const storedIds = localStorage.getItem('processedCardIds');
         if (storedIds) {
-          persistentSwipedIds = JSON.parse(storedIds);
+          persistentProcessedIds = JSON.parse(storedIds);
         }
         
         // Add this card's ID if it's not already in the list
-        if (card.id && !persistentSwipedIds.includes(card.id)) {
-          persistentSwipedIds.push(card.id);
-          localStorage.setItem('swipedCardIds', JSON.stringify(persistentSwipedIds));
-          console.log(`[Discovery] Added card ID ${card.id} to persistent storage (total: ${persistentSwipedIds.length})`);
+        if (card.id && !persistentProcessedIds.includes(card.id)) {
+          persistentProcessedIds.push(card.id);
+          localStorage.setItem('processedCardIds', JSON.stringify(persistentProcessedIds));
+          console.log(`[Discovery] Added card ID ${card.id} to persistent storage (total: ${persistentProcessedIds.length})`);
         }
         
-        // If this is a potential match, also save the swipe_id to ensure we properly filter
-        if (isPotentialMatch && card.swipe_id && !persistentSwipedIds.includes(card.swipe_id)) {
-          persistentSwipedIds.push(card.swipe_id);
-          localStorage.setItem('swipedCardIds', JSON.stringify(persistentSwipedIds));
-          console.log(`[Discovery] Added swipe ID ${card.swipe_id} to persistent storage (total: ${persistentSwipedIds.length})`);
+        // If this is a potential match, also save the request_id to ensure we properly filter
+        if (isPotentialMatch && card.swipe_id && !persistentProcessedIds.includes(card.swipe_id)) {
+          persistentProcessedIds.push(card.swipe_id);
+          localStorage.setItem('processedCardIds', JSON.stringify(persistentProcessedIds));
+          console.log(`[Discovery] Added request ID ${card.swipe_id} to persistent storage (total: ${persistentProcessedIds.length})`);
         }
       } catch (e) {
-        console.warn('[Discovery] Failed to store swiped card ID in localStorage:', e);
+        console.warn('[Discovery] Failed to store processed card ID in localStorage:', e);
       }
       
-      // Prepare and send swipe data to the server
-      const swipeData = isPotentialMatch
+      // Prepare and send request data to the server
+      const requestData = isPotentialMatch
         ? {
             is_potential_match: true,
-            swipe_id: card.id,
-            direction
+            request_id: card.id,
+            action
           }
         : {
             collaboration_id: card.id,
-            direction,
+            action,
             note // Include note in the request if provided
           };
       
-      console.log('[Discovery] Sending swipe data to server:', swipeData);
+      console.log('[Discovery] Sending request data to server:', requestData);
       
       if (note) {
-        console.log('[Discovery] Sending swipe with personalized note:', note);
+        console.log('[Discovery] Sending request with personalized note:', note);
       }
       
-      const swipeResult = await apiRequest('/api/swipes', 'POST', swipeData);
-      console.log('[Discovery] Swipe recorded successfully:', swipeResult);
+      const requestResult = await apiRequest('/api/requests', 'POST', requestData);
+      console.log('[Discovery] Request recorded successfully:', requestResult);
       
       // Check if we created a match and show match moment if needed
-      if (direction === 'right' && (isPotentialMatch || swipeResult.match_created)) {
+      if (action === 'request' && (isPotentialMatch || requestResult.match_created)) {
         setMatchData({
           title: isPotentialMatch ? "Potential Match" : "New Match",
           companyName: isPotentialMatch ? card.potentialMatchData?.company_name || '' : card.creator_company_name || '',
@@ -1190,8 +1190,8 @@ export default function DiscoverPage() {
         
         // Show match moment after a short delay
         setTimeout(() => setShowMatch(true), 300);
-      } else if (direction === 'right') {
-        // Show request sent notification for right swipes that don't create matches
+      } else if (action === 'request') {
+        // Show request sent notification for requests that don't create matches
         toast({
           title: "Request Sent!",
           description: "Your collaboration request has been sent.",
@@ -1199,16 +1199,16 @@ export default function DiscoverPage() {
       }
       
       // Invalidate queries to ensure fresh data
-      // For user swipes, we need this data to be up-to-date
-      await queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
+      // For user requests, we need this data to be up-to-date
+      await queryClient.invalidateQueries({ queryKey: ['/api/user-requests'] });
       
-      // Force a refresh of the user swipes to ensure they're in memory before the next batch fetch
+      // Force a refresh of the user requests to ensure they're in memory before the next batch fetch
       try {
-        console.log('[Discovery] Explicitly fetching updated swipe data after swipe');
-        const updatedSwipes = await apiRequest('/api/user-swipes');
-        console.log(`[Discovery] Fetched ${updatedSwipes.length} swipes after recording swipe`);
-      } catch (swipeRefreshError) {
-        console.warn('[Discovery] Error refreshing swipes - continuing anyway:', swipeRefreshError);
+        console.log('[Discovery] Explicitly fetching updated request data after request');
+        const updatedRequests = await apiRequest('/api/user-requests');
+        console.log(`[Discovery] Fetched ${updatedRequests.length} requests after recording request`);
+      } catch (requestRefreshError) {
+        console.warn('[Discovery] Error refreshing requests - continuing anyway:', requestRefreshError);
       }
       
       try {
@@ -1685,7 +1685,7 @@ export default function DiscoverPage() {
         >
           <CardStack 
             cards={cards}
-            handleSwipe={handleSwipe}
+            handleRequest={handleRequest}
             handleViewCardDetails={handleViewCardDetails}
             handleDetailsClick={handleDetailsClick}
           />

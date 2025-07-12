@@ -1,5 +1,5 @@
 import { 
-  users, companies, collaborations, collab_notifications, swipes, matches,
+  users, companies, collaborations, collab_notifications, swipes, matches, requests,
   notification_preferences, marketing_preferences, conference_preferences,
   company_twitter_data, user_referrals, referral_events, // Added referral tables
   type User, type InsertUser,
@@ -8,6 +8,7 @@ import {
   type CollabNotification, type InsertCollabNotification,
   type Swipe, type InsertSwipe,
   type Match, type InsertMatch,
+  type Request, type InsertRequest,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences,
   type CompanyTwitterData,
   type UserReferral, type InsertUserReferral, // Added referral types
@@ -37,7 +38,7 @@ export interface IStorage {
   getActiveCollaborationsCount(): Promise<number>;
   
   // Collaboration applications
-  createCollabApplication(collaborationId: string, applicantId: string, details: any): Promise<CollabApplication>;
+  createCollabApplication(collaborationId: string, applicantId: string, message: string): Promise<CollabApplication>;
   applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication>;
   getCollaborationApplications(collaborationId: string): Promise<CollabApplication[]>;
   getUserApplications(userId: string): Promise<CollabApplication[]>;
@@ -57,6 +58,18 @@ export interface IStorage {
   getCollaborationMatches(collaborationId: string): Promise<Match[]>;
   getMatchById(id: string): Promise<Match | undefined>;
   updateMatchStatus(id: string, status: string): Promise<Match | undefined>;
+  
+  // Request methods (new unified table)
+  createRequest(request: InsertRequest): Promise<Request>;
+  getUserRequestsAsHost(userId: string): Promise<Request[]>;
+  getUserRequestsAsRequester(userId: string): Promise<Request[]>;
+  getCollaborationRequests(userId: string, options: { cursor?: string; limit?: number; filter?: string }): Promise<any>;
+  getCollaborationRequestsSummary(userId: string): Promise<{ pendingCount: number; totalCount: number }>;
+  getRequestById(id: string): Promise<Request | undefined>;
+  updateRequestStatus(id: string, status: string): Promise<Request | undefined>;
+  getPendingRequestsForHost(userId: string, filter: 'all' | 'hidden'): Promise<any[]>;
+  acceptCollaborationRequest(userId: string, requestId: string): Promise<{ success: boolean; error?: string; match?: any }>;
+  hideCollaborationRequest(userId: string, requestId: string): Promise<{ success: boolean; error?: string }>;
   
   // Notification methods
   createNotification(notification: InsertCollabNotification): Promise<CollabNotification>;
@@ -853,85 +866,98 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createCollabApplication(collaborationId: string, applicantId: string, message: string): Promise<CollabApplication> {
-    console.warn("Legacy createCollabApplication called - this is now managed via swipes");
+    console.log("Creating collaboration application using new requests table");
     
-    // Create a swipe instead with the message saved as note
-    const swipeData: InsertSwipe = {
-      user_id: applicantId,
+    // Get the collaboration to find the host
+    const collaboration = await this.getCollaboration(collaborationId);
+    if (!collaboration) {
+      throw new Error('Collaboration not found');
+    }
+    
+    // Create a request instead with the message saved as note
+    const requestData: InsertRequest = {
       collaboration_id: collaborationId,
-      direction: "right",
-      note: message, // Save the message as note, not details
+      requester_id: applicantId,
+      host_id: collaboration.creator_id,
+      status: 'pending',
+      note: message,
     };
     
-    const swipe = await this.createSwipe(swipeData);
+    const request = await this.createRequest(requestData);
     
     // Create the legacy compatibility object
     return {
-      id: swipe.id,
-      collaboration_id: swipe.collaboration_id,
-      applicant_id: swipe.user_id,
-      status: "pending",
+      id: request.id,
+      collaboration_id: request.collaboration_id,
+      applicant_id: request.requester_id,
+      status: request.status,
       details: { message }, // Keep backward compatibility by putting message in details
-      created_at: swipe.created_at,
+      created_at: request.created_at,
     };
   }
 
   // Collaboration applications (Legacy implementation - using swipes now)
   async applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication> {
-    console.warn("Legacy applyToCollaboration called - this is now managed via swipes");
+    console.log("Creating collaboration application using new requests table");
     
-    // Create a swipe instead
-    const swipeData: InsertSwipe = {
-      user_id: application.applicant_id,
+    // Get the collaboration to find the host
+    const collaboration = await this.getCollaboration(application.collaboration_id);
+    if (!collaboration) {
+      throw new Error('Collaboration not found');
+    }
+    
+    // Create a request instead
+    const requestData: InsertRequest = {
       collaboration_id: application.collaboration_id,
-      direction: "right",
-      details: application.details,
+      requester_id: application.applicant_id,
+      host_id: collaboration.creator_id,
+      status: 'pending',
+      note: application.details?.message || null,
     };
     
-    const swipe = await this.createSwipe(swipeData);
+    const request = await this.createRequest(requestData);
     
     // Create the legacy compatibility object
     return {
-      id: swipe.id,
-      collaboration_id: swipe.collaboration_id,
-      applicant_id: swipe.user_id,
-      status: "pending",
-      details: swipe.details as any,
-      created_at: swipe.created_at,
+      id: request.id,
+      collaboration_id: request.collaboration_id,
+      applicant_id: request.requester_id,
+      status: request.status,
+      details: application.details,
+      created_at: request.created_at,
     };
   }
   
   async getCollaborationApplications(collaborationId: string): Promise<CollabApplication[]> {
-    console.warn("Legacy getCollaborationApplications called - this is now managed via swipes");
+    console.log("Getting collaboration applications using new requests table");
     
-    // Use swipes to provide backward compatibility
-    const swipes = await this.getCollaborationSwipes(collaborationId);
-    const rightSwipes = swipes.filter(swipe => swipe.direction === "right");
+    // Get pending requests for this collaboration
+    const requests = await this.getCollaborationRequests(collaborationId);
+    const pendingRequests = requests.filter(req => req.status === "pending");
     
-    return rightSwipes.map(swipe => ({
-      id: swipe.id,
-      collaboration_id: swipe.collaboration_id,
-      applicant_id: swipe.user_id,
-      status: "pending",
-      details: swipe.details as any,
-      created_at: swipe.created_at,
+    return pendingRequests.map(request => ({
+      id: request.id,
+      collaboration_id: request.collaboration_id,
+      applicant_id: request.requester_id,
+      status: request.status,
+      details: { message: request.note },
+      created_at: request.created_at,
     }));
   }
   
   async getUserApplications(userId: string): Promise<CollabApplication[]> {
-    console.warn("Legacy getUserApplications called - this is now managed via swipes");
+    console.log("Getting user applications using new requests table");
     
-    // Use swipes to provide backward compatibility
-    const swipes = await this.getUserSwipes(userId);
-    const rightSwipes = swipes.filter(swipe => swipe.direction === "right");
+    // Get requests where user is the requester
+    const requests = await this.getUserRequestsAsRequester(userId);
     
-    return rightSwipes.map(swipe => ({
-      id: swipe.id,
-      collaboration_id: swipe.collaboration_id,
-      applicant_id: swipe.user_id,
-      status: "pending",
-      details: swipe.details as any,
-      created_at: swipe.created_at,
+    return requests.map(request => ({
+      id: request.id,
+      collaboration_id: request.collaboration_id,
+      applicant_id: request.requester_id,
+      status: request.status,
+      details: { message: request.note },
+      created_at: request.created_at,
     }));
   }
   
@@ -949,163 +975,125 @@ export class DatabaseStorage implements IStorage {
     };
   }
   
-  // Swipe methods
+  // Swipe methods (legacy - now using requests table)
   async createSwipe(swipe: InsertSwipe): Promise<Swipe> {
-    console.log("Creating swipe:", swipe);
+    console.log("Creating swipe using requests table");
     
-    const [newSwipe] = await db
-      .insert(swipes)
-      .values(swipe)
-      .returning();
-    
-    // If this is a right swipe (application), check for a potential match
-    if (swipe.direction === 'right') {
-      console.log("Right swipe detected - checking for potential match");
-      console.log(`DEBUG: User ${swipe.user_id} swiped right on collaboration ${swipe.collaboration_id}`);
-      
-      try {
-        // Get the collaboration
-        const [collaboration] = await db
-          .select()
-          .from(collaborations)
-          .where(eq(collaborations.id, swipe.collaboration_id));
-        
-        if (collaboration) {
-          console.log("Found collaboration by:", collaboration.creator_id);
-          
-          // Get host details for debugging
-          const [host] = await db
-            .select()
-            .from(users)
-            .where(eq(users.id, collaboration.creator_id));
-            
-          console.log(`DEBUG: Collab host: ${host ? host.id : 'unknown'} (telegram_id: ${host?.telegram_id || 'none'})`);
-          
-          // Get notification preferences for debugging
-          const [preferences] = await db
-            .select()
-            .from(notification_preferences)
-            .where(eq(notification_preferences.user_id, collaboration.creator_id));
-            
-          console.log(`DEBUG: Host notification preferences: ${preferences ? (preferences.notifications_enabled ? 'enabled' : 'disabled') : 'not set'}`);
-          
-          // Check if the collaboration creator has swiped right on any of this user's collaborations
-          const creatorSwipes = await db
-            .select()
-            .from(swipes)
-            .where(
-              and(
-                eq(swipes.user_id, collaboration.creator_id),
-                eq(swipes.direction, 'right')
-              )
-            );
-          
-          console.log(`Found ${creatorSwipes.length} right swipes by collaboration creator`);
-          
-          // Get user's collaborations
-          const userCollaborations = await db
-            .select()
-            .from(collaborations)
-            .where(eq(collaborations.creator_id, swipe.user_id));
-          
-          console.log(`Found ${userCollaborations.length} collaborations by swiper`);
-          
-          // Check if any of the creator's right swipes are on the user's collaborations
-          const userCollabIds = userCollaborations.map(collab => collab.id);
-          const matchingSwipes = creatorSwipes.filter(s => userCollabIds.includes(s.collaboration_id));
-          
-          // Verify that this is not a self-match (user is different from collaboration creator)
-          const isSelfMatch = swipe.user_id === collaboration.creator_id;
-          
-          if (matchingSwipes.length > 0 && !isSelfMatch) {
-            console.log("Found potential match! Creator swiped right on user's collaboration");
-            
-            // Take the first matching swipe (simplest case)
-            const matchingSwipe = matchingSwipes[0];
-            
-            // Create a match record
-            const matchData: InsertMatch = {
-              collaboration_id: matchingSwipe.collaboration_id,
-              host_id: swipe.user_id, // The user is the host of their own collaboration
-              requester_id: collaboration.creator_id, // The creator requested to collaborate
-              status: 'active',
-              note: matchingSwipe.note,
-            };
-            
-            console.log("Creating match:", matchData);
-            
-            try {
-              const match = await this.createMatch(matchData);
-              console.log("Match created:", match.id);
-              
-              // Also create a match for this swipe
-              const reverseMatchData: InsertMatch = {
-                collaboration_id: swipe.collaboration_id,
-                host_id: collaboration.creator_id, // The creator is the host of their own collaboration
-                requester_id: swipe.user_id, // The user requested to collaborate
-                status: 'active',
-                note: swipe.note,
-              };
-              
-              console.log("Creating reverse match:", reverseMatchData);
-              const reverseMatch = await this.createMatch(reverseMatchData);
-              console.log("Reverse match created:", reverseMatch.id);
-              
-              // Notify both users
-              try {
-                // Pass the correct parameters in the right order: hostUserId, requesterUserId, collaborationId, matchId
-                await notifyMatchCreated(
-                  match.host_id,          // Host user ID
-                  match.requester_id,     // Requester user ID
-                  match.collaboration_id, // Collaboration ID
-                  match.id                // Match ID
-                );
-                console.log("Match notification sent");
-              } catch (notifyError) {
-                console.error("Error sending match notification:", notifyError);
-              }
-            } catch (matchError) {
-              console.error("Error creating match:", matchError);
-            }
-          } else {
-            console.log("No match found yet");
-            
-            // Notify collaboration creator of new right swipe
-            try {
-              // Pass the correct parameters in the right order: hostUserId, requesterUserId, collaborationId
-              await notifyNewCollabRequest(
-                collaboration.creator_id, // Host user ID (collaboration creator)
-                newSwipe.user_id,        // Requester user ID (who swiped right)
-                collaboration.id         // Collaboration ID
-              );
-              console.log("Collaboration request notification sent");
-            } catch (notifyError) {
-              console.error("Error sending collaboration request notification:", notifyError);
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error checking for matches:", error);
-      }
+    // Only process right swipes (collaboration requests)
+    // Left swipes are no longer stored
+    if (swipe.direction === 'left') {
+      // Return a dummy swipe object for left swipes
+      return {
+        id: crypto.randomUUID(),
+        user_id: swipe.user_id,
+        collaboration_id: swipe.collaboration_id,
+        direction: 'left',
+        note: null,
+        details: null,
+        created_at: new Date(),
+      };
     }
     
-    return newSwipe;
+    // Get the collaboration to find the host
+    const collaboration = await this.getCollaboration(swipe.collaboration_id);
+    if (!collaboration) {
+      throw new Error('Collaboration not found');
+    }
+    
+    // Check if a request already exists
+    const existingRequest = await db
+      .select()
+      .from(requests)
+      .where(
+        and(
+          eq(requests.collaboration_id, swipe.collaboration_id),
+          eq(requests.requester_id, swipe.user_id)
+        )
+      );
+    
+    if (existingRequest.length > 0) {
+      // Return the existing request as a swipe
+      const request = existingRequest[0];
+      return {
+        id: request.id,
+        user_id: request.requester_id,
+        collaboration_id: request.collaboration_id,
+        direction: 'right',
+        note: request.note,
+        details: swipe.details,
+        created_at: request.created_at,
+      };
+    }
+    
+    // Create a new request
+    const requestData: InsertRequest = {
+      collaboration_id: swipe.collaboration_id,
+      requester_id: swipe.user_id,
+      host_id: collaboration.creator_id,
+      status: 'pending',
+      note: swipe.note || swipe.details?.message || null,
+    };
+    
+    const request = await this.createRequest(requestData);
+    
+    // Notify the host about the new request
+    try {
+      await notifyNewCollabRequest(
+        collaboration.creator_id,
+        swipe.user_id,
+        collaboration.id
+      );
+      console.log("Collaboration request notification sent");
+    } catch (notifyError) {
+      console.error("Error sending collaboration request notification:", notifyError);
+    }
+    
+    // Return as a swipe for legacy compatibility
+    return {
+      id: request.id,
+      user_id: request.requester_id,
+      collaboration_id: request.collaboration_id,
+      direction: 'right',
+      note: request.note,
+      details: swipe.details,
+      created_at: request.created_at,
+    };
   }
   
   async getUserSwipes(userId: string): Promise<Swipe[]> {
-    return db
-      .select()
-      .from(swipes)
-      .where(eq(swipes.user_id, userId))
-      .orderBy(desc(swipes.created_at));
+    console.log("Getting user swipes using requests table");
+    
+    // Get requests where user is the requester
+    const userRequests = await this.getUserRequestsAsRequester(userId);
+    
+    // Convert requests to swipes for legacy compatibility
+    return userRequests.map(request => ({
+      id: request.id,
+      user_id: request.requester_id,
+      collaboration_id: request.collaboration_id,
+      direction: 'right' as const,
+      note: request.note,
+      details: null,
+      created_at: request.created_at,
+    }));
   }
   
   async getCollaborationSwipes(collaborationId: string): Promise<Swipe[]> {
-    return db
-      .select()
-      .from(swipes)
-      .where(eq(swipes.collaboration_id, collaborationId))
-      .orderBy(desc(swipes.created_at));
+    console.log("Getting collaboration swipes using requests table");
+    
+    // Get requests for this collaboration
+    const collabRequests = await this.getCollaborationRequests(collaborationId);
+    
+    // Convert requests to swipes for legacy compatibility
+    return collabRequests.map(request => ({
+      id: request.id,
+      user_id: request.requester_id,
+      collaboration_id: request.collaboration_id,
+      direction: 'right' as const,
+      note: request.note,
+      details: null,
+      created_at: request.created_at,
+    }));
   }
   
   /**
@@ -1113,28 +1101,11 @@ export class DatabaseStorage implements IStorage {
    * This allows users to "reset" and see collaborations they previously passed on
    */
   async deleteLeftSwipes(userId: string): Promise<number> {
-    console.log(`Deleting left swipes for user ${userId}`);
+    console.log(`deleteLeftSwipes called - left swipes are no longer stored`);
     
-    try {
-      // Delete swipes with direction = 'left' for this user
-      const result = await db
-        .delete(swipes)
-        .where(
-          and(
-            eq(swipes.user_id, userId),
-            eq(swipes.direction, 'left')
-          )
-        )
-        .returning();
-      
-      const deletedCount = result.length;
-      console.log(`Successfully deleted ${deletedCount} left swipes for user ${userId}`);
-      
-      return deletedCount;
-    } catch (error) {
-      console.error(`Error deleting left swipes for user ${userId}:`, error);
-      throw error;
-    }
+    // No-op: Left swipes are no longer stored in the requests table
+    // We only store right swipes (collaboration requests)
+    return 0;
   }
   
   async getPotentialMatchesForHost(userId: string): Promise<any[]> {
@@ -1144,7 +1115,7 @@ export class DatabaseStorage implements IStorage {
     const hostCollaborations = await this.getUserCollaborations(userId);
     console.log(`Found ${hostCollaborations.length} collaborations created by host ${userId}`);
     
-    // 2. Get all right swipes on the host's collaborations
+    // 2. Get all pending requests on the host's collaborations
     const collabIds = hostCollaborations.map(collab => collab.id);
     console.log(`Collaboration IDs for host ${userId}:`, collabIds);
     
@@ -1153,39 +1124,39 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
     
-    // Get all collaborations that the user has already swiped on (any direction)
+    // Get all collaborations that the user has already made requests on
     // This ensures we never show potential matches for collaborations the user has already interacted with
-    const userSwipes = await db
-      .select({ collaboration_id: swipes.collaboration_id })
-      .from(swipes)
-      .where(eq(swipes.user_id, userId));
+    const userRequests = await db
+      .select({ collaboration_id: requests.collaboration_id })
+      .from(requests)
+      .where(eq(requests.requester_id, userId));
     
-    const alreadySwipedCollabIds = userSwipes.map(s => s.collaboration_id);
-    console.log(`Found ${alreadySwipedCollabIds.length} collaborations already swiped on by user ${userId}`);
+    const alreadyRequestedCollabIds = userRequests.map(r => r.collaboration_id);
+    console.log(`Found ${alreadyRequestedCollabIds.length} collaborations already requested by user ${userId}`);
     
-    // 3. Get existing matches for the host's collaborations
+    // 3. Get existing accepted requests for the host's collaborations
     // We'll use this to exclude users who have already matched with the host
-    // Get matches in both directions (host->requester and requester->host)
+    // Get accepted requests in both directions (host->requester and requester->host)
     const existingMatches = await db
       .select({
-        collaboration_id: matches.collaboration_id,
-        requester_id: matches.requester_id,
-        host_id: matches.host_id,
+        collaboration_id: requests.collaboration_id,
+        requester_id: requests.requester_id,
+        host_id: requests.host_id,
       })
-      .from(matches)
+      .from(requests)
       .where(
         and(
           or(
-            // Match where the user's collaboration was matched with
-            inArray(matches.collaboration_id, collabIds),
-            // Also match where the user was a requester
-            eq(matches.requester_id, userId)
+            // Requests where the user's collaboration was matched with
+            inArray(requests.collaboration_id, collabIds),
+            // Also requests where the user was a requester
+            eq(requests.requester_id, userId)
           ),
-          eq(matches.status, 'active')
+          eq(requests.status, 'accepted')
         )
       );
     
-    console.log(`Found ${existingMatches.length} existing matches for host collaborations`);
+    console.log(`Found ${existingMatches.length} existing accepted requests for host collaborations`);
     
     // Create a Set of user IDs who have already matched with the host
     // in the format "userId_collaborationId" to ensure uniqueness by collaboration
@@ -1202,73 +1173,73 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`Excluding ${matchedUserCollabPairs.size} user-collaboration pairs that already have matches`);
     
-    // Find all right swipes on host's collaborations
+    // Find all pending requests on host's collaborations
     // IMPORTANT: 
-    // 1. Exclude the host's own swipes (which would create a false "potential match")
-    // 2. Exclude collaborations the user has already swiped on (any direction)
-    const rightSwipes = await db
+    // 1. Exclude the host's own requests (which would create a false "potential match")
+    // 2. Exclude collaborations the user has already requested
+    const pendingRequests = await db
       .select({
-        swipe: swipes,
+        request: requests,
         user: users,
         company: companies,
       })
-      .from(swipes)
-      .innerJoin(users, eq(swipes.user_id, users.id))
+      .from(requests)
+      .innerJoin(users, eq(requests.requester_id, users.id))
       .innerJoin(companies, eq(users.id, companies.user_id))
       .where(
         and(
-          inArray(swipes.collaboration_id, collabIds),
-          eq(swipes.direction, 'right'),
-          // CRITICAL FIX: Exclude swipes made by the host themselves
-          // This prevents users from seeing their own swipes as potential matches
-          not(eq(swipes.user_id, userId)),
+          inArray(requests.collaboration_id, collabIds),
+          eq(requests.status, 'pending'),
+          // CRITICAL FIX: Exclude requests made by the host themselves
+          // This prevents users from seeing their own requests as potential matches
+          not(eq(requests.requester_id, userId)),
           
-          // ROBUST FILTERING: Exclude any collaborations the user has already swiped on
-          alreadySwipedCollabIds.length > 0
-            ? not(inArray(swipes.collaboration_id, alreadySwipedCollabIds))
+          // ROBUST FILTERING: Exclude any collaborations the user has already requested
+          alreadyRequestedCollabIds.length > 0
+            ? not(inArray(requests.collaboration_id, alreadyRequestedCollabIds))
             : undefined
         )
       )
-      .orderBy(desc(swipes.created_at));
+      .orderBy(desc(requests.created_at));
     
-    console.log(`Found ${rightSwipes.length} right swipes on host's collaborations`);
+    console.log(`Found ${pendingRequests.length} pending requests on host's collaborations`);
     
     // Add debugging for each potential match
-    if (rightSwipes.length > 0) {
-      console.log("Right swipes detail:");
-      rightSwipes.forEach((swipe, index) => {
-        console.log(`[${index + 1}] Swipe ID: ${swipe.swipe.id}`);
-        console.log(`    Collaboration ID: ${swipe.swipe.collaboration_id}`);
-        console.log(`    User: ${swipe.user.first_name} ${swipe.user.last_name || ''} (${swipe.user.id})`);
-        console.log(`    Company: ${swipe.company.name}`);
+    if (pendingRequests.length > 0) {
+      console.log("Pending requests detail:");
+      pendingRequests.forEach((req, index) => {
+        console.log(`[${index + 1}] Request ID: ${req.request.id}`);
+        console.log(`    Collaboration ID: ${req.request.collaboration_id}`);
+        console.log(`    User: ${req.user.first_name} ${req.user.last_name || ''} (${req.user.id})`);
+        console.log(`    Company: ${req.company.name}`);
       });
     }
     
     // Look for specific users like Jim
-    const jimSwipe = rightSwipes.find(swipe => 
-      swipe.user.first_name.toLowerCase() === 'jim' || 
-      swipe.user.first_name.toLowerCase().includes('jim')
+    const jimRequest = pendingRequests.find(req => 
+      req.user.first_name.toLowerCase() === 'jim' || 
+      req.user.first_name.toLowerCase().includes('jim')
     );
     
-    if (jimSwipe) {
+    if (jimRequest) {
       console.log("Found Jim's potential match:", {
-        swipeId: jimSwipe.swipe.id,
-        userId: jimSwipe.user.id,
-        firstName: jimSwipe.user.first_name,
-        lastName: jimSwipe.user.last_name,
-        company: jimSwipe.company.name
+        requestId: jimRequest.request.id,
+        userId: jimRequest.user.id,
+        firstName: jimRequest.user.first_name,
+        lastName: jimRequest.user.last_name,
+        company: jimRequest.company.name
       });
     } else {
-      console.log("No swipe from Jim found");
+      console.log("No request from Jim found");
     }
     
-    // Get collaboration details for each swipe
-    const enrichedSwipes = [];
+    // Get collaboration details for each request
+    const enrichedRequests = [];
     
-    for (const result of rightSwipes) {
+    for (const result of pendingRequests) {
       try {
-        // Fetch the full collaboration data for this swipe
-        const collaborationId = result.swipe.collaboration_id;
+        // Fetch the full collaboration data for this request
+        const collaborationId = result.request.collaboration_id;
         const collaboration = await this.getCollaboration(collaborationId);
         
         // Check if this user-collaboration pair already has a match in EITHER direction
@@ -1276,12 +1247,12 @@ export class DatabaseStorage implements IStorage {
         const reverseUserCollabPair = `${userId}_${collaborationId}`;
         if (matchedUserCollabPairs.has(userCollabPair) || matchedUserCollabPairs.has(reverseUserCollabPair)) {
           console.log(`Skipping already matched user-collaboration pair: ${userCollabPair} or ${reverseUserCollabPair}`);
-          continue; // Skip this swipe as it already has a match
+          continue; // Skip this request as it already has a match
         }
         
         // Create the enriched object with full collaboration data
         const enriched = {
-          ...result.swipe,
+          ...result.request,
           user: result.user,
           company: result.company,
           
@@ -1316,30 +1287,30 @@ export class DatabaseStorage implements IStorage {
             job_title: result.user.job_title,
             twitter_followers: result.user.twitter_followers,
             company_twitter_followers: result.company.twitter_followers,
-            swipe_created_at: result.swipe.created_at?.toISOString() || new Date().toISOString(),
-            collaboration_id: result.swipe.collaboration_id,
-            note: result.swipe.note || ''
+            request_created_at: result.request.created_at?.toISOString() || new Date().toISOString(),
+            collaboration_id: result.request.collaboration_id,
+            note: result.request.note || ''
           }
         };
         
-        enrichedSwipes.push(enriched);
+        enrichedRequests.push(enriched);
       } catch (error) {
-        console.error(`Error fetching collaboration ${result.swipe.collaboration_id}:`, error);
-        // Skip this swipe if we couldn't get the collaboration data
+        console.error(`Error fetching collaboration ${result.request.collaboration_id}:`, error);
+        // Skip this request if we couldn't get the collaboration data
       }
     }
     
-    console.log(`Returning ${enrichedSwipes.length} potential matches with enhanced data structure`);
+    console.log(`Returning ${enrichedRequests.length} potential matches with enhanced data structure`);
     
-    if (enrichedSwipes.length > 0) {
+    if (enrichedRequests.length > 0) {
       // Log the first entry as a sample of the data structure
-      console.log("Sample potential match data structure:", JSON.stringify(enrichedSwipes[0], null, 2));
+      console.log("Sample potential match data structure:", JSON.stringify(enrichedRequests[0], null, 2));
     }
     
-    return enrichedSwipes;
+    return enrichedRequests;
   }
   
-  // Collaboration requests methods
+  // Collaboration requests methods (legacy version still using swipes/matches)
   async getCollaborationRequestsSummary(userId: string): Promise<{
     recentRequests: any[];
     totalPendingCount: number;
@@ -1354,53 +1325,31 @@ export class DatabaseStorage implements IStorage {
       return { recentRequests: [], totalPendingCount: 0 };
     }
     
-    // Get all pending requests (right swipes on user's collaborations)
+    // Get all pending requests for user's collaborations
     const allRequests = await db
       .select({
-        swipe: swipes,
+        request: requests,
         user: users,
         company: companies,
         collaboration: collaborations,
       })
-      .from(swipes)
-      .innerJoin(users, eq(swipes.user_id, users.id))
+      .from(requests)
+      .innerJoin(users, eq(requests.requester_id, users.id))
       .innerJoin(companies, eq(users.id, companies.user_id))
-      .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
+      .innerJoin(collaborations, eq(requests.collaboration_id, collaborations.id))
       .where(
         and(
-          inArray(swipes.collaboration_id, collabIds),
-          eq(swipes.direction, 'right'),
-          not(eq(swipes.user_id, userId)) // Exclude host's own swipes
+          inArray(requests.collaboration_id, collabIds),
+          eq(requests.status, 'pending'),
+          not(eq(requests.requester_id, userId)) // Exclude host's own requests
         )
       )
-      .orderBy(desc(swipes.created_at));
-    
-    // Filter out requests that already have active matches
-    const existingMatches = await db
-      .select({
-        collaboration_id: matches.collaboration_id,
-        requester_id: matches.requester_id,
-      })
-      .from(matches)
-      .where(
-        and(
-          eq(matches.host_id, userId),
-          not(eq(matches.status, 'declined')) // Include only active matches
-        )
-      );
-    
-    const matchedPairs = new Set(
-      existingMatches.map(m => `${m.collaboration_id}_${m.requester_id}`)
-    );
-    
-    const pendingRequests = allRequests.filter(req => 
-      !matchedPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
-    );
+      .orderBy(desc(requests.created_at));
     
     // Get recent 4 requests
-    const recentRequests = pendingRequests.slice(0, 4).map(req => ({
-      id: req.swipe.id,
-      collaboration_id: req.swipe.collaboration_id,
+    const recentRequests = allRequests.slice(0, 4).map(req => ({
+      id: req.request.id,
+      collaboration_id: req.request.collaboration_id,
       collaboration_type: req.collaboration.collab_type,
       collaboration_title: req.collaboration.title || req.collaboration.collab_type,
       requester: {
@@ -1414,13 +1363,13 @@ export class DatabaseStorage implements IStorage {
         twitter_handle: req.company.twitter_handle,
         logo_url: req.company.logo_url, // FIX: Add missing logo_url field
       },
-      note: req.swipe.note,
-      created_at: req.swipe.created_at,
+      note: req.request.note,
+      created_at: req.request.created_at,
     }));
     
     return {
       recentRequests,
-      totalPendingCount: pendingRequests.length,
+      totalPendingCount: allRequests.length,
     };
   }
 
@@ -1448,86 +1397,58 @@ export class DatabaseStorage implements IStorage {
     // Build base query (including Twitter data)
     let query = db
       .select({
-        swipe: swipes,
+        request: requests,
         user: users,
         company: companies,
         collaboration: collaborations,
         twitter_data: company_twitter_data,
       })
-      .from(swipes)
-      .innerJoin(users, eq(swipes.user_id, users.id))
+      .from(requests)
+      .innerJoin(users, eq(requests.requester_id, users.id))
       .innerJoin(companies, eq(users.id, companies.user_id))
       .leftJoin(company_twitter_data, eq(companies.id, company_twitter_data.company_id))
-      .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
+      .innerJoin(collaborations, eq(requests.collaboration_id, collaborations.id))
       .where(
         and(
-          inArray(swipes.collaboration_id, collabIds),
-          eq(swipes.direction, 'right'),
-          not(eq(swipes.user_id, userId)) // Exclude host's own swipes
+          inArray(requests.collaboration_id, collabIds),
+          not(eq(requests.requester_id, userId)) // Exclude host's own requests
         )
       );
     
+    // Apply filtering based on options.filter
+    if (options.filter === 'hidden') {
+      // Show only hidden requests
+      query = query.where(eq(requests.status, 'hidden'));
+    } else {
+      // Show only pending requests (default "all" behavior)
+      query = query.where(eq(requests.status, 'pending'));
+    }
+    
     // Handle cursor pagination
     if (options.cursor) {
-      const [cursorSwipe] = await db
-        .select({ created_at: swipes.created_at })
-        .from(swipes)
-        .where(eq(swipes.id, options.cursor));
+      const [cursorRequest] = await db
+        .select({ created_at: requests.created_at })
+        .from(requests)
+        .where(eq(requests.id, options.cursor));
       
-      if (cursorSwipe) {
-        query = query.where(lt(swipes.created_at, cursorSwipe.created_at));
+      if (cursorRequest) {
+        query = query.where(lt(requests.created_at, cursorRequest.created_at));
       }
     }
     
     // Apply ordering and limit
-    query = query.orderBy(desc(swipes.created_at)).limit(limit + 1);
+    query = query.orderBy(desc(requests.created_at)).limit(limit + 1);
     
     const results = await query;
     
-    // Get existing matches with their status
-    const existingMatches = await db
-      .select({
-        collaboration_id: matches.collaboration_id,
-        requester_id: matches.requester_id,
-        status: matches.status,
-      })
-      .from(matches)
-      .where(eq(matches.host_id, userId));
-    
-    // Apply filtering based on options.filter
-    let filteredResults = results;
-    if (options.filter === 'hidden') {
-      // Show only hidden requests
-      const hiddenPairs = new Set(
-        existingMatches
-          .filter(m => m.status === 'hidden')
-          .map(m => `${m.collaboration_id}_${m.requester_id}`)
-      );
-      
-      filteredResults = results.filter(req => 
-        hiddenPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
-      );
-    } else {
-      // Show only non-hidden and non-accepted requests (default "all" behavior)
-      const hiddenOrAcceptedPairs = new Set(
-        existingMatches
-          .filter(m => m.status === 'hidden' || m.status === 'active')
-          .map(m => `${m.collaboration_id}_${m.requester_id}`)
-      );
-      
-      filteredResults = results.filter(req => 
-        !hiddenOrAcceptedPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
-      );
-    }
-    
     // Determine pagination
-    const hasMore = filteredResults.length > limit;
-    const items = hasMore ? filteredResults.slice(0, limit) : filteredResults;
+    const hasMore = results.length > limit;
+    const items = hasMore ? results.slice(0, limit) : results;
     
     // Group by collaboration
     const groupedRequests = new Map();
     items.forEach(req => {
-      const collabId = req.swipe.collaboration_id;
+      const collabId = req.request.collaboration_id;
       if (!groupedRequests.has(collabId)) {
         groupedRequests.set(collabId, {
           collaboration: {
@@ -1543,7 +1464,7 @@ export class DatabaseStorage implements IStorage {
       }
       
       groupedRequests.get(collabId).requests.push({
-        id: req.swipe.id,
+        id: req.request.id,
         requester: {
           id: req.user.id,
           first_name: req.user.first_name,
@@ -1585,13 +1506,13 @@ export class DatabaseStorage implements IStorage {
             last_fetched_at: req.twitter_data.last_fetched_at,
           } : null,
         },
-        note: req.swipe.note,
-        created_at: req.swipe.created_at,
+        note: req.request.note,
+        created_at: req.request.created_at,
       });
     });
     
     const groupedItems = Array.from(groupedRequests.values());
-    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].swipe.id : undefined;
+    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].request.id : undefined;
     
     return {
       items: groupedItems,
@@ -1608,55 +1529,23 @@ export class DatabaseStorage implements IStorage {
     console.log('Accepting collaboration request:', requestId, 'by user:', userId);
     
     try {
-      // Get the swipe record
-      const [swipeRecord] = await db
-        .select({
-          swipe: swipes,
-          collaboration: collaborations,
-        })
-        .from(swipes)
-        .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
-        .where(eq(swipes.id, requestId));
-      
-      if (!swipeRecord) {
+      const request = await this.getRequestById(requestId);
+      if (!request) {
         return { success: false, error: 'Request not found' };
       }
       
-      // Verify the collaboration belongs to the user
-      if (swipeRecord.collaboration.creator_id !== userId) {
+      // Verify the user is the host of this request
+      if (request.host_id !== userId) {
         return { success: false, error: 'Unauthorized' };
       }
       
-      // Check if match already exists
-      const existingMatch = await db
-        .select()
-        .from(matches)
-        .where(
-          and(
-            eq(matches.collaboration_id, swipeRecord.swipe.collaboration_id),
-            eq(matches.host_id, userId),
-            eq(matches.requester_id, swipeRecord.swipe.user_id)
-          )
-        );
+      // Update request status to accepted
+      await this.updateRequestStatus(requestId, 'accepted');
       
-      if (existingMatch.length > 0) {
-        return { success: false, error: 'Match already exists' };
-      }
+      // Send notification via Telegram
+      await notifyMatchCreated(request.host_id, request.requester_id, request.collaboration_id);
       
-      // Create the match
-      const matchData: InsertMatch = {
-        collaboration_id: swipeRecord.swipe.collaboration_id,
-        host_id: userId,
-        requester_id: swipeRecord.swipe.user_id,
-        status: 'active',
-        note: swipeRecord.swipe.note,
-        host_accepted: true,
-        requester_accepted: false,
-      };
-      
-      const match = await this.createMatch(matchData);
-      
-      return { success: true, match };
+      return { success: true, match: request };
     } catch (error) {
       console.error('Error accepting collaboration request:', error);
       return { success: false, error: 'Internal server error' };
@@ -1670,38 +1559,18 @@ export class DatabaseStorage implements IStorage {
     console.log('Hiding collaboration request:', requestId, 'by user:', userId);
     
     try {
-      // Get the swipe record
-      const [swipeRecord] = await db
-        .select({
-          swipe: swipes,
-          collaboration: collaborations,
-        })
-        .from(swipes)
-        .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
-        .where(eq(swipes.id, requestId));
-      
-      if (!swipeRecord) {
+      const request = await this.getRequestById(requestId);
+      if (!request) {
         return { success: false, error: 'Request not found' };
       }
       
-      // Verify the collaboration belongs to the user
-      if (swipeRecord.collaboration.creator_id !== userId) {
+      // Verify the user is the host of this request
+      if (request.host_id !== userId) {
         return { success: false, error: 'Unauthorized' };
       }
       
-      // Create a hidden match record to hide the request from the My Collabs - Requests
-      // This prevents the request from appearing again but doesn't actively decline it
-      const hiddenMatchData: InsertMatch = {
-        collaboration_id: swipeRecord.swipe.collaboration_id,
-        host_id: userId,
-        requester_id: swipeRecord.swipe.user_id,
-        status: 'hidden',
-        note: swipeRecord.swipe.note,
-        host_accepted: false,
-        requester_accepted: false,
-      };
-      
-      await this.createMatch(hiddenMatchData);
+      // Update request status to hidden
+      await this.updateRequestStatus(requestId, 'hidden');
       
       return { success: true };
     } catch (error) {
@@ -1710,50 +1579,68 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  // Match methods
+  // Match methods (legacy - now using requests table)
   async createMatch(match: InsertMatch): Promise<Match> {
-    const [newMatch] = await db
-      .insert(matches)
-      .values({
-        ...match,
-        created_at: new Date(),
-        updated_at: new Date(),
-      })
-      .returning();
-    return newMatch;
+    console.log("createMatch called - this is now handled by accepting requests");
+    
+    // Create a fake match object for legacy compatibility
+    // In reality, matches are now just accepted requests
+    return {
+      id: crypto.randomUUID(),
+      collaboration_id: match.collaboration_id,
+      host_id: match.host_id,
+      requester_id: match.requester_id,
+      status: match.status || 'active',
+      note: match.note,
+      host_accepted: match.host_accepted ?? true,
+      requester_accepted: match.requester_accepted ?? false,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
   }
   
   async getUserMatches(userId: string): Promise<Match[]> {
-    console.log(`🧩 getUserMatches - Finding basic matches for user ${userId}`);
+    console.log(`🧩 getUserMatches - Finding accepted requests for user ${userId}`);
     
     try {
-      const results = await db
+      // Get accepted requests where user is either host or requester
+      const acceptedRequests = await db
         .select()
-        .from(matches)
+        .from(requests)
         .where(
-          or(
-            eq(matches.host_id, userId),
-            eq(matches.requester_id, userId)
+          and(
+            or(
+              eq(requests.host_id, userId),
+              eq(requests.requester_id, userId)
+            ),
+            eq(requests.status, 'accepted')
           )
         )
-        .orderBy(desc(matches.created_at));
+        .orderBy(desc(requests.created_at));
       
-      console.log(`🧩 getUserMatches - Found ${results.length} matches`);
-      if (results.length > 0) {
-        // Get the status distribution for debugging
-        const statusCounts: Record<string, number> = {};
-        results.forEach(match => {
-          statusCounts[match.status] = (statusCounts[match.status] || 0) + 1;
-        });
-        console.log(`🧩 getUserMatches - Match status distribution:`, statusCounts);
-        
-        // Print sample of the first match 
-        console.log(`🧩 getUserMatches - First match sample:`, JSON.stringify(results[0], null, 2));
+      console.log(`🧩 getUserMatches - Found ${acceptedRequests.length} accepted requests`);
+      
+      // Convert requests to matches for legacy compatibility
+      const matches = acceptedRequests.map(req => ({
+        id: req.id,
+        collaboration_id: req.collaboration_id,
+        host_id: req.host_id,
+        requester_id: req.requester_id,
+        status: 'active' as const,
+        note: req.note,
+        host_accepted: true,
+        requester_accepted: true,
+        created_at: req.created_at,
+        updated_at: req.created_at,
+      }));
+      
+      if (matches.length > 0) {
+        console.log(`🧩 getUserMatches - First match sample:`, JSON.stringify(matches[0], null, 2));
       } else {
         console.log(`🧩 getUserMatches - No matches found in database`);
       }
       
-      return results;
+      return matches;
     } catch (error) {
       console.error(`🧩 getUserMatches - Error fetching matches:`, error);
       throw error;
@@ -1766,43 +1653,37 @@ export class DatabaseStorage implements IStorage {
     console.log(`🔍 getUserMatchesWithDetails - Getting enriched matches for user ${userId}`);
     
     try {
-      // First, directly check if there are active matches in the DB for this user
+      // First, directly check if there are accepted requests in the DB for this user
       try {
         const activeMatchesCount = await db.execute(sql`
           SELECT COUNT(*) as count
-          FROM matches m
-          WHERE (m.host_id = ${userId} OR m.requester_id = ${userId})
-          AND m.status = 'active'
+          FROM requests r
+          WHERE (r.host_id = ${userId} OR r.requester_id = ${userId})
+          AND r.status = 'accepted'
         `);
         
         const count = activeMatchesCount.rows?.[0]?.count || '0';
-        console.log(`🔍 getUserMatchesWithDetails - Found ${count} active matches in database for user ${userId}`);
+        console.log(`🔍 getUserMatchesWithDetails - Found ${count} accepted requests in database for user ${userId}`);
       } catch (countError) {
-        console.error(`🔍 getUserMatchesWithDetails - Error counting active matches:`, countError);
+        console.error(`🔍 getUserMatchesWithDetails - Error counting accepted requests:`, countError);
       }
       
-      // Get the basic match data with swipe notes using a join query
-      // The swipe note should come from the requester (person who made the collaboration request)
-      // Only return active matches (exclude declined matches)
+      // Get the basic request data (accepted requests are "matches")
+      // The note comes from the requester when they made the request
+      // Only return accepted requests (these are the actual matches)
       const matchesResult = await db.execute(sql`
         SELECT 
-          m.id as match_id,
-          m.created_at as match_date,
-          m.status as match_status,
-          m.note as match_note,
-          m.collaboration_id,
-          m.host_id,
-          m.requester_id,
-          s.note as swipe_note
-        FROM matches m
-        LEFT JOIN swipes s ON (
-          s.collaboration_id = m.collaboration_id 
-          AND s.user_id = m.requester_id 
-          AND s.direction = 'right'
-        )
-        WHERE (m.host_id = ${userId} OR m.requester_id = ${userId})
-        AND m.status = 'active'
-        ORDER BY m.created_at DESC
+          r.id as match_id,
+          r.created_at as match_date,
+          r.status as match_status,
+          r.note as swipe_note,
+          r.collaboration_id,
+          r.host_id,
+          r.requester_id
+        FROM requests r
+        WHERE (r.host_id = ${userId} OR r.requester_id = ${userId})
+        AND r.status = 'accepted'
+        ORDER BY r.created_at DESC
       `);
       
       // SQL queries return a QueryResult object that has rows property
@@ -1906,8 +1787,7 @@ export class DatabaseStorage implements IStorage {
             match_id: match.match_id,
             match_date: match.match_date,
             match_status: match.match_status,
-            match_note: match.match_note,
-            swipe_note: match.swipe_note, // Include the swipe note from the JOIN
+            swipe_note: match.swipe_note, // Include the note from the request
             collab_type: collaborationData.collab_type,
             collab_description: collaborationData.description,
             collab_details: collaborationData.details,
@@ -1958,35 +1838,291 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getCollaborationMatches(collaborationId: string): Promise<Match[]> {
-    return db
+    console.log("Getting matches using requests table");
+    
+    // Get accepted requests for this collaboration
+    const acceptedRequests = await db
       .select()
-      .from(matches)
-      .where(eq(matches.collaboration_id, collaborationId))
-      .orderBy(desc(matches.created_at));
+      .from(requests)
+      .where(
+        and(
+          eq(requests.collaboration_id, collaborationId),
+          eq(requests.status, 'accepted')
+        )
+      )
+      .orderBy(desc(requests.created_at));
+    
+    // Convert to matches for legacy compatibility
+    return acceptedRequests.map(req => ({
+      id: req.id,
+      collaboration_id: req.collaboration_id,
+      host_id: req.host_id,
+      requester_id: req.requester_id,
+      status: 'active' as const,
+      note: req.note,
+      host_accepted: true,
+      requester_accepted: true,
+      created_at: req.created_at,
+      updated_at: req.created_at,
+    }));
   }
   
   async getMatchById(id: string): Promise<Match | undefined> {
-    const [match] = await db
-      .select()
-      .from(matches)
-      .where(eq(matches.id, id));
-    return match;
+    console.log("Getting match using requests table");
+    
+    const request = await this.getRequestById(id);
+    if (!request || request.status !== 'accepted') {
+      return undefined;
+    }
+    
+    // Convert to match for legacy compatibility
+    return {
+      id: request.id,
+      collaboration_id: request.collaboration_id,
+      host_id: request.host_id,
+      requester_id: request.requester_id,
+      status: 'active' as const,
+      note: request.note,
+      host_accepted: true,
+      requester_accepted: true,
+      created_at: request.created_at,
+      updated_at: request.created_at,
+    };
   }
   
   async updateMatchStatus(id: string, status: string): Promise<Match | undefined> {
+    console.log("updateMatchStatus called - updating request status instead");
+    
     try {
-      const [updatedMatch] = await db
-        .update(matches)
+      // Map match status to request status
+      const requestStatus = status === 'active' ? 'accepted' : status;
+      await this.updateRequestStatus(id, requestStatus);
+      
+      // Return the updated request as a match
+      return this.getMatchById(id);
+    } catch (error) {
+      console.error("Error updating match status:", error);
+      throw error;
+    }
+  }
+  
+  // Request methods (new unified table)
+  async createRequest(request: InsertRequest): Promise<Request> {
+    const [newRequest] = await db
+      .insert(requests)
+      .values({
+        ...request,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returning();
+    return newRequest;
+  }
+  
+  async getUserRequestsAsHost(userId: string): Promise<Request[]> {
+    return db
+      .select()
+      .from(requests)
+      .where(eq(requests.host_id, userId))
+      .orderBy(desc(requests.created_at));
+  }
+  
+  async getUserRequestsAsRequester(userId: string): Promise<Request[]> {
+    return db
+      .select()
+      .from(requests)
+      .where(eq(requests.requester_id, userId))
+      .orderBy(desc(requests.created_at));
+  }
+  
+  async getCollaborationRequests(collaborationId: string): Promise<Request[]> {
+    return db
+      .select()
+      .from(requests)
+      .where(eq(requests.collaboration_id, collaborationId))
+      .orderBy(desc(requests.created_at));
+  }
+  
+  async getRequestById(id: string): Promise<Request | undefined> {
+    const [request] = await db
+      .select()
+      .from(requests)
+      .where(eq(requests.id, id));
+    return request;
+  }
+  
+  async updateRequestStatus(id: string, status: string): Promise<Request | undefined> {
+    try {
+      const [updatedRequest] = await db
+        .update(requests)
         .set({ 
           status,
           updated_at: new Date()
         })
-        .where(eq(matches.id, id))
+        .where(eq(requests.id, id))
         .returning();
-      return updatedMatch;
+      return updatedRequest;
     } catch (error) {
-      console.error("Error updating match status:", error);
+      console.error("Error updating request status:", error);
       throw error;
+    }
+  }
+  
+  async getPendingRequestsForHost(userId: string, filter: 'all' | 'hidden'): Promise<any[]> {
+    console.log(`Getting requests for host ${userId} with filter: ${filter}`);
+    
+    try {
+      // Build the query based on filter
+      let query = db
+        .select({
+          request_id: requests.id,
+          collaboration_id: requests.collaboration_id,
+          requester_id: requests.requester_id,
+          host_id: requests.host_id,
+          status: requests.status,
+          note: requests.note,
+          created_at: requests.created_at,
+          // Join with collaborations to get collaboration details
+          collaboration_title: collaborations.details,
+          collaboration_type: collaborations.collab_type,
+          collaboration_description: collaborations.description,
+          // Join with users to get requester info
+          requester_first_name: users.first_name,
+          requester_last_name: users.last_name,
+          requester_job_title: users.job_title,
+          requester_twitter_followers: users.twitter_followers,
+          // Join with companies to get company info
+          company_name: companies.name,
+          company_twitter_handle: companies.twitter_handle,
+          company_twitter_followers: companies.twitter_followers,
+          company_website: companies.website,
+          company_logo_url: companies.logo_url,
+          company_tags: companies.tags
+        })
+        .from(requests)
+        .leftJoin(collaborations, eq(requests.collaboration_id, collaborations.id))
+        .leftJoin(users, eq(requests.requester_id, users.id))
+        .leftJoin(companies, eq(users.company_id, companies.id))
+        .where(eq(requests.host_id, userId));
+      
+      // Apply filter
+      if (filter === 'all') {
+        // Show only pending requests (not hidden)
+        query = query.where(
+          and(
+            eq(requests.host_id, userId),
+            eq(requests.status, 'pending')
+          )
+        );
+      } else if (filter === 'hidden') {
+        // Show only hidden requests
+        query = query.where(
+          and(
+            eq(requests.host_id, userId),
+            eq(requests.status, 'hidden')
+          )
+        );
+      }
+      
+      const results = await query.orderBy(desc(requests.created_at));
+      
+      console.log(`Found ${results.length} requests for host ${userId} with filter ${filter}`);
+      return results;
+    } catch (error) {
+      console.error('Error getting pending requests:', error);
+      throw error;
+    }
+  }
+  
+  async getCollaborationRequests(userId: string, options: { cursor?: string; limit?: number; filter?: string }): Promise<any> {
+    const { cursor, limit = 20, filter = 'all' } = options;
+    console.log(`Getting collaboration requests for user ${userId} with filter: ${filter}`);
+    
+    try {
+      // Get all pending requests for the user as host
+      const requests = await this.getPendingRequestsForHost(userId, filter as 'all' | 'hidden');
+      
+      // Apply pagination
+      let startIndex = 0;
+      if (cursor) {
+        const cursorIndex = requests.findIndex(r => r.request_id === cursor);
+        if (cursorIndex !== -1) {
+          startIndex = cursorIndex + 1;
+        }
+      }
+      
+      const paginatedRequests = requests.slice(startIndex, startIndex + limit);
+      const hasMore = startIndex + limit < requests.length;
+      const nextCursor = hasMore ? paginatedRequests[paginatedRequests.length - 1]?.request_id : undefined;
+      
+      return {
+        requests: paginatedRequests,
+        hasMore,
+        nextCursor
+      };
+    } catch (error) {
+      console.error('Error getting collaboration requests:', error);
+      throw error;
+    }
+  }
+  
+  async getCollaborationRequestsSummary(userId: string): Promise<{ pendingCount: number; totalCount: number }> {
+    try {
+      const requests = await this.getUserRequestsAsHost(userId);
+      const pendingCount = requests.filter(r => r.status === 'pending').length;
+      const totalCount = requests.length;
+      
+      return { pendingCount, totalCount };
+    } catch (error) {
+      console.error('Error getting collaboration requests summary:', error);
+      throw error;
+    }
+  }
+  
+  async acceptCollaborationRequest(userId: string, requestId: string): Promise<{ success: boolean; error?: string; match?: any }> {
+    try {
+      const request = await this.getRequestById(requestId);
+      if (!request) {
+        return { success: false, error: 'Request not found' };
+      }
+      
+      // Verify the user is the host of this request
+      if (request.host_id !== userId) {
+        return { success: false, error: 'Unauthorized' };
+      }
+      
+      // Update request status to accepted
+      await this.updateRequestStatus(requestId, 'accepted');
+      
+      // Send notification via Telegram
+      await notifyMatchCreated(request.host_id, request.requester_id, request.collaboration_id);
+      
+      return { success: true, match: request };
+    } catch (error) {
+      console.error('Error accepting collaboration request:', error);
+      return { success: false, error: 'Internal server error' };
+    }
+  }
+  
+  async hideCollaborationRequest(userId: string, requestId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const request = await this.getRequestById(requestId);
+      if (!request) {
+        return { success: false, error: 'Request not found' };
+      }
+      
+      // Verify the user is the host of this request
+      if (request.host_id !== userId) {
+        return { success: false, error: 'Unauthorized' };
+      }
+      
+      // Update request status to hidden
+      await this.updateRequestStatus(requestId, 'hidden');
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error hiding collaboration request:', error);
+      return { success: false, error: 'Internal server error' };
     }
   }
   

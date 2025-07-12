@@ -90,29 +90,29 @@ export interface SimpleCardProps {
       industry?: string;
     };
   };
-  // Support both naming conventions for the swipe handler
-  onSwipe?: (direction: "left" | "right", note?: string) => void;
-  handleSwipe?: (direction: "left" | "right", note?: string) => void; 
+  // Support both naming conventions for the request handler
+  onRequest?: (action: "skip" | "request", note?: string) => void;
+  handleRequest?: (action: "skip" | "request", note?: string) => void; 
   onInfoClick?: () => void;
   handleDetailsClick?: (id: string) => void;
 }
 
 export default function SimpleCard({
   data,
-  onSwipe,
-  handleSwipe: propHandleSwipe,  // Renamed to avoid conflict
+  onRequest,
+  handleRequest: propHandleRequest,  // Renamed to avoid conflict
   onInfoClick,
   handleDetailsClick,
 }: SimpleCardProps) {
   const [showNoteDialog, setShowNoteDialog] = useState(false);
 
-  // Use either onSwipe or handleSwipe prop based on which is provided
-  const handleSwipeAction = (direction: "left" | "right", note?: string) => {
+  // Use either onRequest or handleRequest prop based on which is provided
+  const handleRequestAction = (action: "skip" | "request", note?: string) => {
     try {
-      if (propHandleSwipe) {
-        propHandleSwipe(direction, note);
-      } else if (onSwipe) {
-        onSwipe(direction, note);
+      if (propHandleRequest) {
+        propHandleRequest(action, note);
+      } else if (onRequest) {
+        onRequest(action, note);
       }
       // Silent if no handlers provided
     } catch (error) {
@@ -120,21 +120,21 @@ export default function SimpleCard({
     }
   };
   
-  // For compatibility with existing code that might call handleSwipe
-  const handleSwipe = handleSwipeAction;
+  // For compatibility with existing code that might call handleRequest
+  const handleRequest = handleRequestAction;
 
-  const handleButtonClick = (direction: "left" | "right") => {
+  const handleButtonClick = (action: "skip" | "request") => {
     try {
-      if (direction === "right") {
+      if (action === "request") {
         // For potential matches, skip the note dialog and directly create the match
         if (data.isPotentialMatch) {
-          handleSwipeAction(direction);
+          handleRequestAction(action);
         } else {
           // For regular collaborations, show the note dialog as before
           setShowNoteDialog(true);
         }
       } else {
-        handleSwipeAction(direction);
+        handleRequestAction(action);
       }
     } catch (error) {
       // Silent error handling
@@ -644,7 +644,7 @@ export default function SimpleCard({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              handleButtonClick("left");
+              handleButtonClick("skip");
             }}
           >
             <X className="h-4 w-4 mr-1" />
@@ -673,7 +673,7 @@ export default function SimpleCard({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              handleButtonClick("right");
+              handleButtonClick("request");
             }}
           >
             {data.isPotentialMatch ? (
@@ -691,9 +691,9 @@ export default function SimpleCard({
         isOpen={showNoteDialog}
         onClose={() => setShowNoteDialog(false)}
         onSendWithNote={(note) => {
-          // Give the dialog time to fully close before executing the swipe
+          // Give the dialog time to fully close before executing the request
           setTimeout(() => {
-            handleSwipeAction("right", note);
+            handleRequestAction("request", note);
           }, 300);
         }}
       />
