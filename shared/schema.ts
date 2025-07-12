@@ -309,31 +309,7 @@ export const companies = pgTable("companies", {
   };
 });
 
-// Twitter data for companies
-export const company_twitter_data = pgTable("company_twitter_data", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  company_id: uuid("company_id")
-    .notNull()
-    .references(() => companies.id, { onDelete: "cascade" })
-    .unique(), // One Twitter profile per company
-  username: text("username").notNull(), // Twitter handle without @ symbol
-  name: text("name").notNull(), // Display name
-  bio: text("bio"), // Twitter bio/description
-  followers_count: integer("followers_count").notNull(), // Number of followers
-  following_count: integer("following_count").notNull(), // Number of accounts following
-  tweet_count: integer("tweet_count").notNull(), // Total number of tweets
-  profile_image_url: text("profile_image_url"), // Full-size profile image URL
-  banner_image_url: text("banner_image_url"), // Profile banner/header image
-  is_verified: boolean("is_verified").default(false), // If account is verified
-  is_business_account: boolean("is_business_account").default(false), // If it's a business account
-  business_category: text("business_category"), // Category of the business
-  location: text("location"), // User's location
-  website_url: text("website_url"), // Website link from profile
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(), // When the record was created
-  twitter_created_at: text("twitter_created_at"), // When the Twitter account was created
-  last_fetched_at: timestamp("last_fetched_at", { withTimezone: true }).defaultNow(), // When data was last refreshed
-  raw_data: jsonb("raw_data"), // Store the complete raw response for future reference
-});
+
 
 // Events table
 export const events = pgTable("events", {
@@ -716,7 +692,7 @@ export const referral_events = pgTable("referral_events", {
 // Schema validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertCompanySchema = createInsertSchema(companies);
-export const insertCompanyTwitterDataSchema = createInsertSchema(company_twitter_data);
+
 export const insertNotificationPreferencesSchema = createInsertSchema(
   notification_preferences,
 );
@@ -748,7 +724,7 @@ export const insertReferralEventSchema = createInsertSchema(referral_events);
 // Types
 export type User = typeof users.$inferSelect;
 export type Company = typeof companies.$inferSelect;
-export type CompanyTwitterData = typeof company_twitter_data.$inferSelect;
+
 export type NotificationPreferences =
   typeof notification_preferences.$inferSelect;
 export type MarketingPreferences = typeof marketing_preferences.$inferSelect;
@@ -764,7 +740,7 @@ export type Request = typeof requests.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
-export type InsertCompanyTwitterData = z.infer<typeof insertCompanyTwitterDataSchema>;
+
 export type InsertNotificationPreferences = z.infer<
   typeof insertNotificationPreferencesSchema
 >;

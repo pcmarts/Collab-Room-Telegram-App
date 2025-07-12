@@ -119,6 +119,13 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 12, 2025. Removed all enrichment scripts and Twitter-related utilities
+  - Deleted all Twitter enrichment log files from ./logs/ directory
+  - Removed ./scripts/utils/update-company-with-twitter.js script
+  - Removed ./scripts/tests/test-create-twitter-collab.ts test file
+  - Removed Twitter schema files from collaboration form components
+  - Eliminated company logo downloading and Twitter data enrichment functionality
+  - Completed removal of all Twitter/enrichment infrastructure from codebase
 - July 12, 2025. Fixed duplicate matches issue in requests table
   - Identified and removed 13 duplicate records from requests table that were causing double matches
   - Database migration had created duplicates when merging data from old swipes and matches tables

@@ -1,7 +1,7 @@
 import { 
   users, companies, collaborations, collab_notifications, swipes, matches, requests,
   notification_preferences, marketing_preferences, conference_preferences,
-  company_twitter_data, user_referrals, referral_events, // Added referral tables
+  user_referrals, referral_events, // Added referral tables
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication,
@@ -10,7 +10,6 @@ import {
   type Match, type InsertMatch,
   type Request, type InsertRequest,
   type NotificationPreferences, type MarketingPreferences, type ConferencePreferences,
-  type CompanyTwitterData,
   type UserReferral, type InsertUserReferral, // Added referral types
   type ReferralEvent, type InsertReferralEvent
 } from "@shared/schema";
@@ -1437,18 +1436,7 @@ export class DatabaseStorage implements IStorage {
     const hasMore = results.length > limit;
     const items = hasMore ? results.slice(0, limit) : results;
     
-    // Fetch Twitter data separately for all companies
-    const companyIds = [...new Set(items.map(req => req.company.id))];
-    const twitterData = companyIds.length > 0 ? await db
-      .select()
-      .from(company_twitter_data)
-      .where(inArray(company_twitter_data.company_id, companyIds)) : [];
-    
-    // Create a map for quick lookup
-    const twitterDataMap = new Map();
-    twitterData.forEach(data => {
-      twitterDataMap.set(data.company_id, data);
-    });
+    // Twitter data has been removed from the system
     
     // Group by collaboration
     const groupedRequests = new Map();
@@ -1493,7 +1481,7 @@ export class DatabaseStorage implements IStorage {
           twitter_followers: req.company.twitter_followers,
           tags: req.company.tags,
           created_at: req.company.created_at,
-          twitter_data: twitterDataMap.get(req.company.id) || null,
+          twitter_data: null,
         },
         note: req.request.note,
         created_at: req.request.created_at,
