@@ -55,6 +55,70 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileCheck } from "@/components/MobileCheck";
+
+// Transform requests from API to the grouped format expected by RequestsManagementTab
+function transformRequestsToGroups(requests: any[]): any[] {
+  const groups: { [key: string]: any } = {};
+  
+  requests.forEach(request => {
+    const collabId = request.collaboration_id;
+    
+    if (!groups[collabId]) {
+      groups[collabId] = {
+        collaboration: {
+          id: collabId,
+          title: request.collaboration_description || request.collaboration_type,
+          type: request.collaboration_type,
+          description: request.collaboration_description,
+          topics: [], // Topics not provided in this API response
+          created_at: request.created_at
+        },
+        requests: []
+      };
+    }
+    
+    groups[collabId].requests.push({
+      id: request.request_id,
+      requester: {
+        id: request.requester_id,
+        first_name: request.requester_first_name,
+        last_name: request.requester_last_name,
+        twitter_url: request.requester_twitter_url,
+        avatar_url: null
+      },
+      company: {
+        name: request.company_name,
+        twitter_handle: request.company_twitter_handle,
+        job_title: request.requester_job_title,
+        website: request.company_website,
+        logo_url: request.company_logo_url,
+        short_description: request.company_short_description,
+        long_description: request.company_long_description,
+        linkedin_url: request.company_linkedin_url,
+        funding_stage: request.company_funding_stage,
+        has_token: request.company_has_token,
+        token_ticker: request.company_token_ticker,
+        blockchain_networks: request.company_blockchain_networks,
+        twitter_followers: request.company_twitter_followers,
+        tags: request.company_tags,
+        created_at: request.created_at
+      },
+      note: request.note,
+      created_at: request.created_at,
+      collaboration: {
+        id: collabId,
+        title: request.collaboration_description || request.collaboration_type,
+        type: request.collaboration_type,
+        description: request.collaboration_description,
+        topics: [],
+        created_at: request.created_at
+      }
+    });
+  });
+  
+  return Object.values(groups);
+}
+
 // We're using PageHeader imported at the top of the file
 import {
   AlertDialog,
@@ -308,15 +372,15 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         return data;
       } catch (error) {
         console.error("Error fetching collaboration requests:", error);
-        return { items: [], hasMore: false };
+        return { requests: [], hasMore: false };
       }
     },
     enabled: false, // Only load when user navigates to requests tab
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
-  // Extract the items array from the API response
-  const requestGroups = requestsData?.items || [];
+  // Transform the flat requests array into grouped format expected by the component
+  const requestGroups = requestsData?.requests ? transformRequestsToGroups(requestsData.requests) : [];
 
   // Handle tab changes to load requests data when needed
   const handleTabChange = (value: string) => {
