@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Clock, 
   Users, 
@@ -41,7 +42,16 @@ interface CollaborationRequest {
     twitter_handle?: string;
     job_title?: string;
     website?: string;
-    logo_url?: string; // FIX: Add missing logo_url field
+    logo_url?: string;
+    short_description?: string;
+    long_description?: string;
+    linkedin_url?: string;
+    funding_stage?: string;
+    has_token?: boolean;
+    token_ticker?: string;
+    blockchain_networks?: string[];
+    twitter_followers?: string;
+    tags?: string[];
   };
   note?: string;
   created_at: string;
@@ -81,6 +91,7 @@ export function RequestsManagementTab({
   hasMore = false
 }: RequestsManagementTabProps) {
   const [filter, setFilter] = useState<'all' | 'this_week'>('all');
+  const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<CollaborationRequest | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -171,10 +182,8 @@ export function RequestsManagementTab({
     hideRequestMutation.mutate(requestId);
   };
 
-  const handleViewProfile = (requester: CollaborationRequest['requester']) => {
-    if (requester.twitter_url) {
-      window.open(requester.twitter_url, '_blank');
-    }
+  const handleShowDetails = (request: CollaborationRequest) => {
+    setSelectedRequestForDetails(request);
   };
 
   if (isLoading && requestGroups.length === 0) {
@@ -304,11 +313,10 @@ export function RequestsManagementTab({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleViewProfile(request.requester)}
-                        disabled={!request.requester.twitter_url}
+                        onClick={() => handleShowDetails(request)}
                       >
                         <User className="h-4 w-4 mr-1" />
-                        View Profile
+                        Details
                       </Button>
                       <Button
                         variant="outline"
@@ -347,6 +355,190 @@ export function RequestsManagementTab({
             {isLoading ? "Loading..." : "Load More Requests"}
           </Button>
         </div>
+      )}
+
+      {/* Details Dialog */}
+      {selectedRequestForDetails && (
+        <Dialog open={!!selectedRequestForDetails} onOpenChange={() => setSelectedRequestForDetails(null)}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <LogoAvatar
+                  name={selectedRequestForDetails.company.name || "Company"}
+                  logoUrl={selectedRequestForDetails.company.logo_url}
+                  size="md"
+                  className="h-10 w-10"
+                />
+                <div>
+                  <h3 className="text-xl font-semibold">{selectedRequestForDetails.requester.first_name} {selectedRequestForDetails.requester.last_name || ''}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedRequestForDetails.company.job_title} at {selectedRequestForDetails.company.name}</p>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              {/* Company Information */}
+              <div>
+                <h4 className="font-medium mb-3">Company Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Company Name</p>
+                    <p className="text-sm">{selectedRequestForDetails.company.name}</p>
+                  </div>
+                  {selectedRequestForDetails.company.funding_stage && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Funding Stage</p>
+                      <p className="text-sm">{selectedRequestForDetails.company.funding_stage}</p>
+                    </div>
+                  )}
+                  {selectedRequestForDetails.company.twitter_followers && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Twitter Followers</p>
+                      <p className="text-sm">{selectedRequestForDetails.company.twitter_followers}</p>
+                    </div>
+                  )}
+                  {selectedRequestForDetails.company.has_token && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Token</p>
+                      <p className="text-sm">{selectedRequestForDetails.company.token_ticker || 'Yes'}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Company Description */}
+              {(selectedRequestForDetails.company.short_description || selectedRequestForDetails.company.long_description) && (
+                <div>
+                  <h4 className="font-medium mb-3">Description</h4>
+                  <div className="space-y-2">
+                    {selectedRequestForDetails.company.short_description && (
+                      <p className="text-sm">{selectedRequestForDetails.company.short_description}</p>
+                    )}
+                    {selectedRequestForDetails.company.long_description && (
+                      <p className="text-sm text-muted-foreground">{selectedRequestForDetails.company.long_description}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Tags */}
+              {selectedRequestForDetails.company.tags && selectedRequestForDetails.company.tags.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-3">Tags</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRequestForDetails.company.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Blockchain Networks */}
+              {selectedRequestForDetails.company.blockchain_networks && selectedRequestForDetails.company.blockchain_networks.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-3">Blockchain Networks</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRequestForDetails.company.blockchain_networks.map((network) => (
+                      <Badge key={network} variant="outline">
+                        {network}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Links */}
+              <div>
+                <h4 className="font-medium mb-3">Links</h4>
+                <div className="space-y-2">
+                  {selectedRequestForDetails.company.website && (
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                      <a 
+                        href={selectedRequestForDetails.company.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        Website
+                      </a>
+                    </div>
+                  )}
+                  {selectedRequestForDetails.company.twitter_handle && (
+                    <div className="flex items-center gap-2">
+                      <Twitter className="h-4 w-4 text-muted-foreground" />
+                      <a 
+                        href={`https://twitter.com/${selectedRequestForDetails.company.twitter_handle}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        @{selectedRequestForDetails.company.twitter_handle}
+                      </a>
+                    </div>
+                  )}
+                  {selectedRequestForDetails.company.linkedin_url && (
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                      <a 
+                        href={selectedRequestForDetails.company.linkedin_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        LinkedIn
+                      </a>
+                    </div>
+                  )}
+                  {selectedRequestForDetails.requester.twitter_url && (
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <a 
+                        href={selectedRequestForDetails.requester.twitter_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        {selectedRequestForDetails.requester.first_name}'s Twitter
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Request Note */}
+              {selectedRequestForDetails.note && (
+                <div>
+                  <h4 className="font-medium mb-3">Request Message</h4>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <p className="text-sm">{selectedRequestForDetails.note}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => handleHideRequest(selectedRequestForDetails.id)}
+                  disabled={hideRequestMutation.isPending}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Hide
+                </Button>
+                <Button
+                  onClick={() => handleAcceptRequest(selectedRequestForDetails.id)}
+                  disabled={acceptRequestMutation.isPending}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Accept
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
