@@ -119,6 +119,11 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 12, 2025. UX improvements for collaboration requests interface
+  - Removed collaboration details section from details modal to focus on company information
+  - Removed topic pills from request cards for cleaner design
+  - Made company names clickable links to Twitter profiles
+  - Removed redundant website and Twitter links section from request cards
 - July 12, 2025. Redesigned collaboration requests interface to infinite list format
   - Changed from grouped cards to individual request cards for better visibility
   - Removed ScrollArea max-height constraint that was hiding action buttons

@@ -264,15 +264,7 @@ export function RequestsManagementTab({
                   <p className="text-sm text-muted-foreground mt-1">
                     {request.collaboration.description}
                   </p>
-                  {request.collaboration.topics && request.collaboration.topics.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {request.collaboration.topics.map((topic) => (
-                        <Badge key={topic} variant="secondary" className="text-xs">
-                          {topic}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+
                 </div>
                 <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" />
@@ -297,7 +289,18 @@ export function RequestsManagementTab({
                       {request.requester.first_name} {request.requester.last_name || ''}
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      {request.company.job_title} at {request.company.name}
+                      {request.company.job_title} at {request.company.twitter_handle ? (
+                        <a 
+                          href={`https://twitter.com/${request.company.twitter_handle}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {request.company.name}
+                        </a>
+                      ) : (
+                        request.company.name
+                      )}
                     </p>
                   </div>
                   
@@ -308,26 +311,6 @@ export function RequestsManagementTab({
                   )}
                   
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      {request.company.website && (
-                        <a 
-                          href={request.company.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center space-x-1 hover:text-foreground transition-colors"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          <span>Website</span>
-                        </a>
-                      )}
-                      {request.company.twitter_handle && (
-                        <span className="flex items-center space-x-1">
-                          <Twitter className="h-3 w-3" />
-                          <span>@{request.company.twitter_handle}</span>
-                        </span>
-                      )}
-                    </div>
-                    
                     <div className="flex flex-wrap items-center gap-2">
                       <Button
                         variant="ghost"
@@ -564,41 +547,7 @@ export function RequestsManagementTab({
                 </div>
               )}
 
-              {/* Collaboration Information */}
-              <div>
-                <h4 className="font-medium mb-3">Collaboration Request</h4>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Collaboration Type</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      {getCollabTypeIcon(selectedRequestForDetails.collaboration.type)}
-                      <p className="text-sm">{selectedRequestForDetails.collaboration.type}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Title</p>
-                    <p className="text-sm">{selectedRequestForDetails.collaboration.title}</p>
-                  </div>
-                  {selectedRequestForDetails.collaboration.description && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Description</p>
-                      <p className="text-sm">{selectedRequestForDetails.collaboration.description}</p>
-                    </div>
-                  )}
-                  {selectedRequestForDetails.collaboration.topics && selectedRequestForDetails.collaboration.topics.length > 0 && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Topics</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {selectedRequestForDetails.collaboration.topics.map((topic) => (
-                          <Badge key={topic} variant="secondary" className="text-xs">
-                            {topic}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+
 
               {/* Links & Social */}
               <div>
