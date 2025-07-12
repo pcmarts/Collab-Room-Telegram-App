@@ -228,23 +228,9 @@ export function RequestsManagementTab({
     );
   }
 
-  if (flattenedRequests.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-muted-foreground mb-2">
-          No Collaboration Requests
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          When people apply to your collaborations, they'll appear here.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {/* Filter Header */}
+      {/* Filter Header - Always visible */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Collaboration Requests</h2>
         <Tabs value={filter} onValueChange={(value) => onFilterChange(value as any)} className="w-auto">
@@ -255,8 +241,22 @@ export function RequestsManagementTab({
         </Tabs>
       </div>
 
-      {/* Individual Request Cards */}
-      <div className="space-y-4">
+      {/* Content Area */}
+      {flattenedRequests.length === 0 ? (
+        <div className="text-center py-12">
+          <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-muted-foreground mb-2">
+            No Collaboration Requests
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {filter === 'hidden' 
+              ? "No hidden collaboration requests found."
+              : "When people apply to your collaborations, they'll appear here."
+            }
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
         {flattenedRequests.map((request) => (
           <Card key={request.id}>
             <CardHeader className="pb-3">
@@ -347,7 +347,8 @@ export function RequestsManagementTab({
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
 
       {/* Load More Button */}
       {hasMore && (
