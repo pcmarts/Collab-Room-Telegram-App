@@ -83,46 +83,7 @@ export default function MatchesPage() {
     }
   }, [isFirstRender]);
   
-  // Aggressively preload and cache data
-  React.useEffect(() => {
-    // Prefetch with highest priority
-    const controller = new AbortController();
-    const { signal } = controller;
-    
-    const prefetchWithPriority = async () => {
-      try {
-        // Create a timestamp for cache-busting
-        const timestamp = new Date().getTime();
-        
-        // Fetch data with a timeout to prevent long-hanging requests
-        const fetchPromise = apiRequest(`/api/matches?_=${timestamp}`);
-        
-        // Race the fetch with a timeout
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Prefetch timeout')), 5000)
-        );
-        
-        // Use Promise.race to implement a timeout
-        const data = await Promise.race([fetchPromise, timeoutPromise]);
-        
-        // Cache the successfully fetched data
-        queryClient.setQueryData(['/api/matches'], data);
-        console.log('Data prefetched and cached successfully');
-      } catch (error) {
-        if (!signal.aborted) {
-          console.warn('Failed to prefetch matches data:', error);
-        }
-      }
-    };
-    
-    // Start prefetching immediately
-    prefetchWithPriority();
-    
-    // Clean up if component unmounts during prefetch
-    return () => {
-      controller.abort();
-    };
-  }, [queryClient]);
+  // Removed duplicate prefetch to prevent double API calls
 
   // Optimized query with more aggressive caching and stale time
   const { 

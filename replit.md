@@ -119,6 +119,12 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 12, 2025. Fixed duplicate matches issue in requests table
+  - Identified and removed 13 duplicate records from requests table that were causing double matches
+  - Database migration had created duplicates when merging data from old swipes and matches tables
+  - Removed duplicate prefetch API calls in MatchesPage.tsx that were causing redundant requests
+  - Matches page now shows correct, deduplicated list of collaboration matches
+  - Verified backend is correctly querying only the requests table with status='accepted'
 - July 12, 2025. Enhanced collaboration requests management with improved UX
   - Fixed backend filtering to properly separate hidden vs active requests between tabs
   - Hidden requests now correctly disappear from "All" tab and only appear in "Hidden" tab
