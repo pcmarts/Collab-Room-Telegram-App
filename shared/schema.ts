@@ -634,7 +634,7 @@ export const matches = pgTable("matches", {
   requester_id: uuid("requester_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  status: text("status").notNull().default("active"), // 'active', 'archived', 'completed', etc.
+  status: text("status").notNull().default("active"), // 'active', 'archived', 'completed', 'declined', 'hidden', etc.
   note: text("note"), // Store the personalized note copied from the swipe
   host_accepted: boolean("host_accepted").default(false),
   requester_accepted: boolean("requester_accepted").default(false),

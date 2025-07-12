@@ -127,13 +127,13 @@ export function RequestsManagementTab({
     },
   });
 
-  const declineRequestMutation = useMutation({
+  const hideRequestMutation = useMutation({
     mutationFn: (requestId: string) => 
-      apiRequest(`/api/collaboration-requests/${requestId}/decline`, 'POST'),
+      apiRequest(`/api/collaboration-requests/${requestId}/hide`, 'POST'),
     onSuccess: () => {
       toast({
-        title: "Request Declined",
-        description: "The collaboration request has been declined.",
+        title: "Request Hidden",
+        description: "The collaboration request has been hidden.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/collaboration-requests'] });
       queryClient.invalidateQueries({ queryKey: ['/api/collaboration-requests/summary'] });
@@ -141,7 +141,7 @@ export function RequestsManagementTab({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to decline request",
+        description: error.message || "Failed to hide request",
         variant: "destructive",
       });
     },
@@ -151,8 +151,8 @@ export function RequestsManagementTab({
     acceptRequestMutation.mutate(requestId);
   };
 
-  const handleDeclineRequest = (requestId: string) => {
-    declineRequestMutation.mutate(requestId);
+  const handleHideRequest = (requestId: string) => {
+    hideRequestMutation.mutate(requestId);
   };
 
   const handleViewProfile = (requester: CollaborationRequest['requester']) => {
@@ -306,11 +306,11 @@ export function RequestsManagementTab({
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleDeclineRequest(request.id)}
-                                disabled={declineRequestMutation.isPending}
+                                onClick={() => handleHideRequest(request.id)}
+                                disabled={hideRequestMutation.isPending}
                               >
                                 <XCircle className="h-4 w-4 mr-1" />
-                                Decline
+                                Hide
                               </Button>
                               <Button
                                 size="sm"

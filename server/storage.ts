@@ -1482,19 +1482,14 @@ export class DatabaseStorage implements IStorage {
     
     const results = await query;
     
-    // Filter out requests that already have active matches
+    // Filter out requests that already have matches (active, declined, or hidden)
     const existingMatches = await db
       .select({
         collaboration_id: matches.collaboration_id,
         requester_id: matches.requester_id,
       })
       .from(matches)
-      .where(
-        and(
-          eq(matches.host_id, userId),
-          not(eq(matches.status, 'declined'))
-        )
-      );
+      .where(eq(matches.host_id, userId));
     
     const matchedPairs = new Set(
       existingMatches.map(m => `${m.collaboration_id}_${m.requester_id}`)
@@ -1629,11 +1624,11 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async declineCollaborationRequest(userId: string, requestId: string): Promise<{
+  async hideCollaborationRequest(userId: string, requestId: string): Promise<{
     success: boolean;
     error?: string;
   }> {
-    console.log('Declining collaboration request:', requestId, 'by user:', userId);
+    console.log('Hiding collaboration request:', requestId, 'by user:', userId);
     
     try {
       // Get the swipe record
@@ -1655,23 +1650,23 @@ export class DatabaseStorage implements IStorage {
         return { success: false, error: 'Unauthorized' };
       }
       
-      // For now, we'll just mark this as handled by creating a declined match record
-      // This prevents the request from appearing again
-      const declinedMatchData: InsertMatch = {
+      // Create a hidden match record to hide the request from the My Collabs - Requests
+      // This prevents the request from appearing again but doesn't actively decline it
+      const hiddenMatchData: InsertMatch = {
         collaboration_id: swipeRecord.swipe.collaboration_id,
         host_id: userId,
         requester_id: swipeRecord.swipe.user_id,
-        status: 'declined',
+        status: 'hidden',
         note: swipeRecord.swipe.note,
         host_accepted: false,
         requester_accepted: false,
       };
       
-      await this.createMatch(declinedMatchData);
+      await this.createMatch(hiddenMatchData);
       
       return { success: true };
     } catch (error) {
-      console.error('Error declining collaboration request:', error);
+      console.error('Error hiding collaboration request:', error);
       return { success: false, error: 'Internal server error' };
     }
   }

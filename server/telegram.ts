@@ -2630,7 +2630,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       // Update the original message
       if (callbackQuery.message) {
         await bot.editMessageText(
-          `❌ You declined the collaboration request from ${requester.first_name} ${requester.last_name || ''}.`,
+          `❌ You hid the collaboration request from ${requester.first_name} ${requester.last_name || ''}.`,
           {
             chat_id: chatId,
             message_id: callbackQuery.message.message_id,
@@ -2639,7 +2639,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       }
 
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: `You declined the request from ${requester.first_name}.`,
+        text: `You hid the request from ${requester.first_name}.`,
       });
     }
   } catch (error) {
@@ -2716,7 +2716,7 @@ export async function notifyNewCollabRequest(
       inline_keyboard: [
         [
           {
-            text: "❌ Pass",
+            text: "❌ Hide",
             callback_data: `sl_${shortCollabId}_${shortRequesterId}`,
           },
           {

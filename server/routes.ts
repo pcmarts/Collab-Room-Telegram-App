@@ -4113,7 +4113,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/collaboration-requests/:id/decline", async (req: TelegramRequest, res: Response) => {
+  app.post("/api/collaboration-requests/:id/hide", async (req: TelegramRequest, res: Response) => {
     try {
       const telegramUser = getTelegramUserFromRequest(req);
       if (!telegramUser) {
@@ -4126,7 +4126,7 @@ export async function registerRoutes(app: Express) {
       }
 
       const requestId = req.params.id;
-      const result = await storage.declineCollaborationRequest(user.id, requestId);
+      const result = await storage.hideCollaborationRequest(user.id, requestId);
       
       if (result.success) {
         res.json({ success: true });
@@ -4134,7 +4134,7 @@ export async function registerRoutes(app: Express) {
         res.status(400).json({ error: result.error });
       }
     } catch (error) {
-      console.error("Error declining collaboration request:", error);
+      console.error("Error hiding collaboration request:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
