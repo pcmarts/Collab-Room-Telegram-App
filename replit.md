@@ -119,6 +119,13 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 12, 2025. Fixed collaboration requests display and notification badge issues
+  - Resolved duplication in request titles by using collaboration type instead of description as title
+  - Fixed API mismatch where summary endpoint returned `pendingCount` but frontend expected `totalPendingCount`
+  - Enabled proper loading of requests when switching tabs by updating query enablement logic
+  - Added comprehensive cache invalidation for notification badges to update in real-time
+  - Fixed hidden requests tab loading by ensuring queries are enabled when switching between tabs
+  - Notification badges now properly display on bottom navigation and requests tab
 - July 12, 2025. Successfully resolved all database query issues in requests management system
   - Fixed multiple SQL query errors in collaboration requests endpoints
   - Converted problematic Drizzle ORM queries to properly formatted raw SQL queries
