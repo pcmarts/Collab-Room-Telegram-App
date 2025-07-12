@@ -45,6 +45,14 @@ interface CollaborationRequest {
   };
   note?: string;
   created_at: string;
+  collaboration: {
+    id: string;
+    title: string;
+    type: string;
+    description?: string;
+    topics?: string[];
+    created_at: string;
+  };
 }
 
 interface CollaborationGroup {
@@ -75,6 +83,14 @@ export function RequestsManagementTab({
   const [filter, setFilter] = useState<'all' | 'this_week'>('all');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Flatten requestGroups into a single array of requests with collaboration info
+  const flattenedRequests: CollaborationRequest[] = requestGroups.flatMap(group => 
+    group.requests.map(request => ({
+      ...request,
+      collaboration: group.collaboration
+    }))
+  );
 
   const getCollabTypeIcon = (collabType: string) => {
     switch(collabType) {
@@ -181,7 +197,7 @@ export function RequestsManagementTab({
     );
   }
 
-  if (requestGroups.length === 0) {
+  if (flattenedRequests.length === 0) {
     return (
       <div className="text-center py-12">
         <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -208,21 +224,21 @@ export function RequestsManagementTab({
         </Tabs>
       </div>
 
-      {/* Request Groups */}
-      <div className="space-y-6">
-        {requestGroups.map((group) => (
-          <Card key={group.collaboration.id}>
-            <CardHeader>
+      {/* Individual Request Cards */}
+      <div className="space-y-4">
+        {flattenedRequests.map((request) => (
+          <Card key={request.id}>
+            <CardHeader className="pb-3">
               <div className="flex items-start space-x-3">
-                {getCollabTypeIcon(group.collaboration.type)}
+                {getCollabTypeIcon(request.collaboration.type)}
                 <div className="flex-1">
-                  <CardTitle className="text-lg">{group.collaboration.title}</CardTitle>
+                  <CardTitle className="text-base">{request.collaboration.title}</CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {group.collaboration.description}
+                    {request.collaboration.description}
                   </p>
-                  {group.collaboration.topics && group.collaboration.topics.length > 0 && (
+                  {request.collaboration.topics && request.collaboration.topics.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {group.collaboration.topics.map((topic) => (
+                      {request.collaboration.topics.map((topic) => (
                         <Badge key={topic} variant="secondary" className="text-xs">
                           {topic}
                         </Badge>
@@ -230,108 +246,91 @@ export function RequestsManagementTab({
                     </div>
                   )}
                 </div>
-                <Badge variant="outline">
-                  {group.requests.length} request{group.requests.length !== 1 ? 's' : ''}
-                </Badge>
+                <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                  <Clock className="h-3 w-3" />
+                  <span>
+                    {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                  </span>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="max-h-96">
-                <div className="space-y-4">
-                  {group.requests.map((request, index) => (
-                    <div key={request.id}>
-                      <div className="flex items-start space-x-4">
-                        <LogoAvatar
-                          name={request.company.name || "Company"}
-                          logoUrl={request.company.logo_url}
-                          size="lg"
-                          className="h-12 w-12"
-                        />
-                        
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="font-medium">
-                                {request.requester.first_name} {request.requester.last_name || ''}
-                              </h4>
-                              <p className="text-sm text-muted-foreground">
-                                {request.company.job_title} at {request.company.name}
-                              </p>
-                            </div>
-                            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3" />
-                              <span>
-                                {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          {request.note && (
-                            <div className="bg-muted/50 rounded-lg p-3">
-                              <p className="text-sm">{request.note}</p>
-                            </div>
-                          )}
-                          
-                          <div className="space-y-3">
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              {request.company.website && (
-                                <a 
-                                  href={request.company.website}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center space-x-1 hover:text-foreground transition-colors"
-                                >
-                                  <ExternalLink className="h-3 w-3" />
-                                  <span>Website</span>
-                                </a>
-                              )}
-                              {request.company.twitter_handle && (
-                                <span className="flex items-center space-x-1">
-                                  <Twitter className="h-3 w-3" />
-                                  <span>@{request.company.twitter_handle}</span>
-                                </span>
-                              )}
-                            </div>
-                            
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleViewProfile(request.requester)}
-                                disabled={!request.requester.twitter_url}
-                              >
-                                <User className="h-4 w-4 mr-1" />
-                                View Profile
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleHideRequest(request.id)}
-                                disabled={hideRequestMutation.isPending}
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Hide
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={() => handleAcceptRequest(request.id)}
-                                disabled={acceptRequestMutation.isPending}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Accept
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {index < group.requests.length - 1 && (
-                        <Separator className="mt-4" />
+              <div className="flex items-start space-x-4">
+                <LogoAvatar
+                  name={request.company.name || "Company"}
+                  logoUrl={request.company.logo_url}
+                  size="lg"
+                  className="h-12 w-12"
+                />
+                
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h4 className="font-medium">
+                      {request.requester.first_name} {request.requester.last_name || ''}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {request.company.job_title} at {request.company.name}
+                    </p>
+                  </div>
+                  
+                  {request.note && (
+                    <div className="bg-muted/50 rounded-lg p-3">
+                      <p className="text-sm">{request.note}</p>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                      {request.company.website && (
+                        <a 
+                          href={request.company.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center space-x-1 hover:text-foreground transition-colors"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Website</span>
+                        </a>
+                      )}
+                      {request.company.twitter_handle && (
+                        <span className="flex items-center space-x-1">
+                          <Twitter className="h-3 w-3" />
+                          <span>@{request.company.twitter_handle}</span>
+                        </span>
                       )}
                     </div>
-                  ))}
+                    
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewProfile(request.requester)}
+                        disabled={!request.requester.twitter_url}
+                      >
+                        <User className="h-4 w-4 mr-1" />
+                        View Profile
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleHideRequest(request.id)}
+                        disabled={hideRequestMutation.isPending}
+                      >
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Hide
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleAcceptRequest(request.id)}
+                        disabled={acceptRequestMutation.isPending}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Accept
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </ScrollArea>
+              </div>
             </CardContent>
           </Card>
         ))}

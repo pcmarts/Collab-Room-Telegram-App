@@ -119,6 +119,19 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 12, 2025. Redesigned collaboration requests interface to infinite list format
+  - Changed from grouped cards to individual request cards for better visibility
+  - Removed ScrollArea max-height constraint that was hiding action buttons
+  - Each request now gets its own dedicated card with full button visibility
+  - Flattened request structure eliminates UI issues with multiple requests per collaboration
+  - Improved user experience by ensuring all Hide/Accept buttons are always accessible
+- July 12, 2025. Updated collaboration request terminology from "decline" to "hide"
+  - Changed button text from "Decline" to "Hide" in requests management interface
+  - Updated API route from `/decline` to `/hide` and backend method names
+  - Modified Telegram bot buttons from "❌ Pass" to "❌ Hide" 
+  - Updated confirmation messages to use "hid" instead of "declined"
+  - Hidden requests no longer appear in My Collabs - Requests section
+  - Added "hidden" status to match records for better request filtering
 - July 12, 2025. Fixed matches page filtering to show only active matches
   - Added `AND m.status = 'active'` condition to `getUserMatchesWithDetails` SQL query
   - Resolved issue where declined matches were appearing in matches page
