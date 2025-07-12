@@ -119,6 +119,11 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 12, 2025. Fixed matches page filtering to show only active matches
+  - Added `AND m.status = 'active'` condition to `getUserMatchesWithDetails` SQL query
+  - Resolved issue where declined matches were appearing in matches page
+  - Matches page now properly displays only mutually agreed (active) matches
+  - Maintained proper note display functionality from requester's swipe record
 - July 11, 2025. Fixed swipe note display in matches page
   - Corrected SQL JOIN condition in `getUserMatchesWithDetails` to retrieve notes from requester's swipe
   - Updated JOIN logic to use `s.user_id = m.requester_id` instead of `s.user_id = ${userId}`

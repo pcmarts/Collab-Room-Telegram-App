@@ -175,6 +175,16 @@ LEFT JOIN swipes s ON (
 
 This ensures that when viewing matches, users see the personalized messages that were sent with the original collaboration requests.
 
+The query also includes a status filter to show only active matches:
+
+```sql
+-- Only show active matches (exclude declined matches)
+WHERE (m.host_id = ${userId} OR m.requester_id = ${userId})
+AND m.status = 'active'
+```
+
+This prevents declined matches from appearing in the matches page, ensuring users only see mutually agreed collaborations.
+
 ## Relationships
 
 Key relationships in the database:

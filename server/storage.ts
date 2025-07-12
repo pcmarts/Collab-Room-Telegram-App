@@ -1749,6 +1749,7 @@ export class DatabaseStorage implements IStorage {
       
       // Get the basic match data with swipe notes using a join query
       // The swipe note should come from the requester (person who made the collaboration request)
+      // Only return active matches (exclude declined matches)
       const matchesResult = await db.execute(sql`
         SELECT 
           m.id as match_id,
@@ -1766,6 +1767,7 @@ export class DatabaseStorage implements IStorage {
           AND s.direction = 'right'
         )
         WHERE (m.host_id = ${userId} OR m.requester_id = ${userId})
+        AND m.status = 'active'
         ORDER BY m.created_at DESC
       `);
       

@@ -181,8 +181,15 @@ Version 1.7.0 enhanced the match system with personalized notes that persist thr
 - Updated the CollaborationDetailsDialog component to display notes when present
 - Implemented proper data validation to handle both defined and undefined note values
 
-### Recent Fix (Version 1.10.16)
+### Recent Fixes 
 
+**Version 1.10.17 (July 12, 2025):**
+- **Fixed Match Filtering**: Added `AND m.status = 'active'` condition to `getUserMatchesWithDetails` SQL query
+- **Resolved Declined Matches Issue**: Fixed issue where declined matches were appearing in matches page
+- **Active Matches Only**: Matches page now properly displays only mutually agreed (active) matches
+- **Maintained Note Display**: Preserved proper note display functionality from requester's swipe record
+
+**Version 1.10.16 (July 11, 2025):**
 - **Fixed Note Retrieval**: Corrected SQL JOIN condition to properly retrieve notes from the original collaboration requester
 - **Updated JOIN Logic**: Changed from `s.user_id = ${userId}` to `s.user_id = m.requester_id` to get notes from the person who made the collaboration request
 - **Improved Note Display**: Notes now properly display original messages from swipes.note field when viewing matches
