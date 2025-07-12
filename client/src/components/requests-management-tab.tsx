@@ -52,6 +52,25 @@ interface CollaborationRequest {
     blockchain_networks?: string[];
     twitter_followers?: string;
     tags?: string[];
+    created_at?: string;
+    // Additional Twitter data fields
+    twitter_data?: {
+      username?: string;
+      name?: string;
+      bio?: string;
+      followers_count?: number;
+      following_count?: number;
+      tweet_count?: number;
+      profile_image_url?: string;
+      banner_image_url?: string;
+      is_verified?: boolean;
+      is_business_account?: boolean;
+      business_category?: string;
+      location?: string;
+      website_url?: string;
+      twitter_created_at?: string;
+      last_fetched_at?: string;
+    };
   };
   note?: string;
   created_at: string;
@@ -403,19 +422,115 @@ export function RequestsManagementTab({
                       <p className="text-sm">{selectedRequestForDetails.company.token_ticker || 'Yes'}</p>
                     </div>
                   )}
+                  {selectedRequestForDetails.company.created_at && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Company Joined</p>
+                      <p className="text-sm">{formatDistanceToNow(new Date(selectedRequestForDetails.company.created_at), { addSuffix: true })}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Enhanced Twitter Data */}
+              {selectedRequestForDetails.company.twitter_data && (
+                <div>
+                  <h4 className="font-medium mb-3">Twitter Analytics</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedRequestForDetails.company.twitter_data.followers_count && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Followers</p>
+                        <p className="text-sm">{selectedRequestForDetails.company.twitter_data.followers_count.toLocaleString()}</p>
+                      </div>
+                    )}
+                    {selectedRequestForDetails.company.twitter_data.following_count && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Following</p>
+                        <p className="text-sm">{selectedRequestForDetails.company.twitter_data.following_count.toLocaleString()}</p>
+                      </div>
+                    )}
+                    {selectedRequestForDetails.company.twitter_data.tweet_count && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Tweets</p>
+                        <p className="text-sm">{selectedRequestForDetails.company.twitter_data.tweet_count.toLocaleString()}</p>
+                      </div>
+                    )}
+                    {selectedRequestForDetails.company.twitter_data.is_verified && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Verified</p>
+                        <p className="text-sm">✓ Verified Account</p>
+                      </div>
+                    )}
+                    {selectedRequestForDetails.company.twitter_data.is_business_account && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Account Type</p>
+                        <p className="text-sm">Business Account</p>
+                      </div>
+                    )}
+                    {selectedRequestForDetails.company.twitter_data.business_category && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Business Category</p>
+                        <p className="text-sm">{selectedRequestForDetails.company.twitter_data.business_category}</p>
+                      </div>
+                    )}
+                    {selectedRequestForDetails.company.twitter_data.location && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Location</p>
+                        <p className="text-sm">{selectedRequestForDetails.company.twitter_data.location}</p>
+                      </div>
+                    )}
+                    {selectedRequestForDetails.company.twitter_data.twitter_created_at && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Twitter Since</p>
+                        <p className="text-sm">{new Date(selectedRequestForDetails.company.twitter_data.twitter_created_at).getFullYear()}</p>
+                      </div>
+                    )}
+                  </div>
+                  {selectedRequestForDetails.company.twitter_data.bio && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-muted-foreground">Twitter Bio</p>
+                      <p className="text-sm mt-1">{selectedRequestForDetails.company.twitter_data.bio}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Requester Information */}
+              <div>
+                <h4 className="font-medium mb-3">Requester Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Name</p>
+                    <p className="text-sm">{selectedRequestForDetails.requester.first_name} {selectedRequestForDetails.requester.last_name || ''}</p>
+                  </div>
+                  {selectedRequestForDetails.company.job_title && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Position</p>
+                      <p className="text-sm">{selectedRequestForDetails.company.job_title}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Request Date</p>
+                    <p className="text-sm">{formatDistanceToNow(new Date(selectedRequestForDetails.created_at), { addSuffix: true })}</p>
+                  </div>
                 </div>
               </div>
 
               {/* Company Description */}
               {(selectedRequestForDetails.company.short_description || selectedRequestForDetails.company.long_description) && (
                 <div>
-                  <h4 className="font-medium mb-3">Description</h4>
+                  <h4 className="font-medium mb-3">Company Description</h4>
                   <div className="space-y-2">
                     {selectedRequestForDetails.company.short_description && (
-                      <p className="text-sm">{selectedRequestForDetails.company.short_description}</p>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Short Description</p>
+                        <p className="text-sm">{selectedRequestForDetails.company.short_description}</p>
+                      </div>
                     )}
                     {selectedRequestForDetails.company.long_description && (
-                      <p className="text-sm text-muted-foreground">{selectedRequestForDetails.company.long_description}</p>
+                      <div className="mt-2">
+                        <p className="text-sm font-medium text-muted-foreground">Detailed Description</p>
+                        <p className="text-sm">{selectedRequestForDetails.company.long_description}</p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -449,9 +564,45 @@ export function RequestsManagementTab({
                 </div>
               )}
 
-              {/* Links */}
+              {/* Collaboration Information */}
               <div>
-                <h4 className="font-medium mb-3">Links</h4>
+                <h4 className="font-medium mb-3">Collaboration Request</h4>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Collaboration Type</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {getCollabTypeIcon(selectedRequestForDetails.collaboration.type)}
+                      <p className="text-sm">{selectedRequestForDetails.collaboration.type}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Title</p>
+                    <p className="text-sm">{selectedRequestForDetails.collaboration.title}</p>
+                  </div>
+                  {selectedRequestForDetails.collaboration.description && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Description</p>
+                      <p className="text-sm">{selectedRequestForDetails.collaboration.description}</p>
+                    </div>
+                  )}
+                  {selectedRequestForDetails.collaboration.topics && selectedRequestForDetails.collaboration.topics.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Topics</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedRequestForDetails.collaboration.topics.map((topic) => (
+                          <Badge key={topic} variant="secondary" className="text-xs">
+                            {topic}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Links & Social */}
+              <div>
+                <h4 className="font-medium mb-3">Links & Social</h4>
                 <div className="space-y-2">
                   {selectedRequestForDetails.company.website && (
                     <div className="flex items-center gap-2">
@@ -462,7 +613,7 @@ export function RequestsManagementTab({
                         rel="noopener noreferrer"
                         className="text-sm text-blue-600 hover:underline"
                       >
-                        Website
+                        {selectedRequestForDetails.company.name} Website
                       </a>
                     </div>
                   )}
@@ -488,7 +639,7 @@ export function RequestsManagementTab({
                         rel="noopener noreferrer"
                         className="text-sm text-blue-600 hover:underline"
                       >
-                        LinkedIn
+                        {selectedRequestForDetails.company.name} LinkedIn
                       </a>
                     </div>
                   )}
@@ -502,6 +653,19 @@ export function RequestsManagementTab({
                         className="text-sm text-blue-600 hover:underline"
                       >
                         {selectedRequestForDetails.requester.first_name}'s Twitter
+                      </a>
+                    </div>
+                  )}
+                  {selectedRequestForDetails.company.twitter_data?.website_url && selectedRequestForDetails.company.twitter_data.website_url !== selectedRequestForDetails.company.website && (
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                      <a 
+                        href={selectedRequestForDetails.company.twitter_data.website_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        Alternative Website
                       </a>
                     </div>
                   )}

@@ -1445,17 +1445,19 @@ export class DatabaseStorage implements IStorage {
       return { items: [], hasMore: false };
     }
     
-    // Build base query
+    // Build base query (including Twitter data)
     let query = db
       .select({
         swipe: swipes,
         user: users,
         company: companies,
         collaboration: collaborations,
+        twitter_data: company_twitter_data,
       })
       .from(swipes)
       .innerJoin(users, eq(swipes.user_id, users.id))
       .innerJoin(companies, eq(users.id, companies.user_id))
+      .leftJoin(company_twitter_data, eq(companies.id, company_twitter_data.company_id))
       .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id))
       .where(
         and(
@@ -1544,7 +1546,34 @@ export class DatabaseStorage implements IStorage {
           twitter_handle: req.company.twitter_handle,
           job_title: req.company.job_title,
           website: req.company.website,
-          logo_url: req.company.logo_url, // FIX: Add missing logo_url field
+          logo_url: req.company.logo_url,
+          short_description: req.company.short_description,
+          long_description: req.company.long_description,
+          linkedin_url: req.company.linkedin_url,
+          funding_stage: req.company.funding_stage,
+          has_token: req.company.has_token,
+          token_ticker: req.company.token_ticker,
+          blockchain_networks: req.company.blockchain_networks,
+          twitter_followers: req.company.twitter_followers,
+          tags: req.company.tags,
+          created_at: req.company.created_at,
+          twitter_data: req.twitter_data ? {
+            username: req.twitter_data.username,
+            name: req.twitter_data.name,
+            bio: req.twitter_data.bio,
+            followers_count: req.twitter_data.followers_count,
+            following_count: req.twitter_data.following_count,
+            tweet_count: req.twitter_data.tweet_count,
+            profile_image_url: req.twitter_data.profile_image_url,
+            banner_image_url: req.twitter_data.banner_image_url,
+            is_verified: req.twitter_data.is_verified,
+            is_business_account: req.twitter_data.is_business_account,
+            business_category: req.twitter_data.business_category,
+            location: req.twitter_data.location,
+            website_url: req.twitter_data.website_url,
+            twitter_created_at: req.twitter_data.twitter_created_at,
+            last_fetched_at: req.twitter_data.last_fetched_at,
+          } : null,
         },
         note: req.swipe.note,
         created_at: req.swipe.created_at,
