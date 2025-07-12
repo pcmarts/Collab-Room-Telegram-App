@@ -4,6 +4,25 @@
 
 The collaboration request system provides a comprehensive workflow for users to request collaborations with personalized notes. The system is designed to mirror LinkedIn's "Add a note to your invitation" experience, offering both immediate sending and personalized note composition options.
 
+## Recent Enhancements (Version 1.10.18)
+
+### Simplified Details Modal
+- **Streamlined Design**: Details modal now matches Messages tab style with focused content
+- **Essential Information**: Shows only collaboration type, company info, request date, and message
+- **Removed Sections**: Eliminated extensive Twitter Analytics, complex company data, and redundant information
+- **Improved UX**: Cleaner interface reduces information overload and improves decision-making
+
+### Enhanced Tab Filtering
+- **All Tab**: Shows only non-hidden collaboration requests
+- **Hidden Tab**: Shows only previously hidden requests 
+- **Proper Separation**: Fixed backend filtering to prevent hidden requests from appearing in "All" tab
+- **Tab Visibility**: Always shows both "All" and "Hidden" options to prevent navigation issues
+
+### Accept Workflow Improvements
+- **Automatic Redirect**: Accept button now redirects users to messages tab (/my-matches) after accepting
+- **Better UX Flow**: Seamless transition from request acceptance to communication channel
+- **Consistent Navigation**: Enhanced workflow prevents users from getting lost after accepting requests
+
 ## Core Components
 
 ### AddNoteDialog Component

@@ -5,6 +5,33 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.18] - 2025-07-12
+
+### Enhanced
+- Enhanced collaboration requests management system with improved user experience and streamlined interface
+- Simplified details modal to match Messages tab style with focused collaboration and essential company information
+- Improved tab filtering logic to properly separate hidden vs active requests between "All" and "Hidden" tabs
+- Accept button now redirects users to messages tab (/my-matches) after accepting collaboration requests
+- Enhanced tab visibility to always show "All" and "Hidden" options preventing navigation issues
+
+### Fixed
+- Fixed backend filtering to properly handle hidden requests - they now disappear from "All" tab and only appear in "Hidden" tab
+- Resolved issue where hidden requests were still appearing in both tabs instead of proper separation
+- Fixed tab state management to prevent users from getting stuck with missing navigation options
+- Improved collaboration request workflow by automatically redirecting to messages after accepting requests
+
+### Removed
+- Removed extensive Twitter Analytics section from details modal for cleaner user experience
+- Removed complex company data sections and overwhelming information that detracted from core functionality
+- Simplified company information display to focus on essential details matching Messages tab design
+- Removed redundant sections that were causing information overload in collaboration request details
+
+### Technical Details
+- Updated collaboration requests filtering logic in backend to properly handle match status separation
+- Modified details modal component to use simplified layout matching Messages tab styling
+- Enhanced accept request workflow to include automatic navigation to messages tab
+- Improved component structure for better maintainability and consistent user experience across tabs
+
 ## [Version 1.10.17] - 2025-07-12
 
 ### Fixed
