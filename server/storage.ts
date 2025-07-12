@@ -1508,13 +1508,15 @@ export class DatabaseStorage implements IStorage {
         hiddenPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
       );
     } else {
-      // Show only non-hidden requests (default "all" behavior)
-      const matchedPairs = new Set(
-        existingMatches.map(m => `${m.collaboration_id}_${m.requester_id}`)
+      // Show only non-hidden and non-accepted requests (default "all" behavior)
+      const hiddenOrAcceptedPairs = new Set(
+        existingMatches
+          .filter(m => m.status === 'hidden' || m.status === 'active')
+          .map(m => `${m.collaboration_id}_${m.requester_id}`)
       );
       
       filteredResults = results.filter(req => 
-        !matchedPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
+        !hiddenOrAcceptedPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
       );
     }
     
