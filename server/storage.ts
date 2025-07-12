@@ -2050,13 +2050,13 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  async getCollaborationRequestsSummary(userId: string): Promise<{ pendingCount: number; totalCount: number }> {
+  async getCollaborationRequestsSummary(userId: string): Promise<{ totalPendingCount: number; totalCount: number }> {
     try {
       const requests = await this.getUserRequestsAsHost(userId);
-      const pendingCount = requests.filter(r => r.status === 'pending').length;
+      const totalPendingCount = requests.filter(r => r.status === 'pending').length;
       const totalCount = requests.length;
       
-      return { pendingCount, totalCount };
+      return { totalPendingCount, totalCount };
     } catch (error) {
       console.error('Error getting collaboration requests summary:', error);
       throw error;

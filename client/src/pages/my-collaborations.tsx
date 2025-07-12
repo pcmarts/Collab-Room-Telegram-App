@@ -67,7 +67,7 @@ function transformRequestsToGroups(requests: any[]): any[] {
       groups[collabId] = {
         collaboration: {
           id: collabId,
-          title: request.collaboration_description || request.collaboration_type,
+          title: request.collaboration_type, // Use type as title to avoid duplication
           type: request.collaboration_type,
           description: request.collaboration_description,
           topics: [], // Topics not provided in this API response
@@ -107,7 +107,7 @@ function transformRequestsToGroups(requests: any[]): any[] {
       created_at: request.created_at,
       collaboration: {
         id: collabId,
-        title: request.collaboration_description || request.collaboration_type,
+        title: request.collaboration_type, // Use type as title to avoid duplication
         type: request.collaboration_type,
         description: request.collaboration_description,
         topics: [],
@@ -356,7 +356,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         return data;
       } catch (error) {
         console.error("Error fetching requests summary:", error);
-        return { recentRequests: [], totalPendingCount: 0 };
+        return { totalPendingCount: 0 };
       }
     },
     enabled: !isLoadingCollabs,
@@ -375,7 +375,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         return { requests: [], hasMore: false };
       }
     },
-    enabled: false, // Only load when user navigates to requests tab
+    enabled: activeTab === 'requests', // Load when requests tab is active
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 

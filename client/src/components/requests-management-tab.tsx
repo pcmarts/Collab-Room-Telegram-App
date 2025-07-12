@@ -167,6 +167,9 @@ export function RequestsManagementTab({
       queryClient.invalidateQueries({ queryKey: ['/api/collaboration-requests'] });
       queryClient.invalidateQueries({ queryKey: ['/api/collaboration-requests/summary'] });
       queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
+      // Invalidate all request-related queries to update badges
+      queryClient.invalidateQueries({ queryKey: ['/api/collaboration-requests', 'all'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/collaboration-requests', 'hidden'] });
       
       // Close details modal if open
       setSelectedRequestForDetails(null);
@@ -195,6 +198,9 @@ export function RequestsManagementTab({
       });
       queryClient.invalidateQueries({ queryKey: ['/api/collaboration-requests'] });
       queryClient.invalidateQueries({ queryKey: ['/api/collaboration-requests/summary'] });
+      // Invalidate all request-related queries to update badges
+      queryClient.invalidateQueries({ queryKey: ['/api/collaboration-requests', 'all'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/collaboration-requests', 'hidden'] });
     },
     onError: (error: any) => {
       toast({
