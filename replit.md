@@ -119,6 +119,13 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 12, 2025. Successfully resolved all database query issues in requests management system
+  - Fixed multiple SQL query errors in collaboration requests endpoints
+  - Converted problematic Drizzle ORM queries to properly formatted raw SQL queries
+  - Resolved "Cannot convert undefined or null to object" errors and "there is no parameter $1" errors
+  - All collaboration requests API endpoints now working correctly with both "hidden" and "all" filters
+  - Hidden requests tab properly shows 2 hidden requests, All requests tab shows 4 pending requests
+  - Collaboration requests management system fully functional with proper data structure
 - July 12, 2025. Removed all enrichment scripts and Twitter-related utilities
   - Deleted all Twitter enrichment log files from ./logs/ directory
   - Removed ./scripts/utils/update-company-with-twitter.js script

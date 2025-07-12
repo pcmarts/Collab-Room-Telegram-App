@@ -1324,46 +1324,75 @@ export class DatabaseStorage implements IStorage {
       return { recentRequests: [], totalPendingCount: 0 };
     }
     
-    // Get all pending requests for user's collaborations
-    const allRequests = await db
-      .select({
-        request: requests,
-        user: users,
-        company: companies,
-        collaboration: collaborations,
-      })
-      .from(requests)
-      .innerJoin(users, eq(requests.requester_id, users.id))
-      .innerJoin(companies, eq(users.id, companies.user_id))
-      .innerJoin(collaborations, eq(requests.collaboration_id, collaborations.id))
-      .where(
-        and(
-          inArray(requests.collaboration_id, collabIds),
-          eq(requests.status, 'pending'),
-          not(eq(requests.requester_id, userId)) // Exclude host's own requests
-        )
-      )
-      .orderBy(desc(requests.created_at));
+    // Use raw SQL to avoid Drizzle ORM null object issues
+    const rawQuery = `
+      SELECT 
+        r.id as request_id,
+        r.collaboration_id,
+        r.note,
+        r.created_at as request_created_at,
+        u.id as user_id,
+        u.first_name,
+        u.last_name,
+        c.name as company_name,
+        c.twitter_handle,
+        c.logo_url,
+        co.collab_type,
+        co.description as collab_description
+      FROM requests r
+      INNER JOIN users u ON r.requester_id = u.id
+      INNER JOIN companies c ON u.id = c.user_id
+      INNER JOIN collaborations co ON r.collaboration_id = co.id
+      WHERE r.collaboration_id = ANY($1)
+        AND r.status = 'pending'
+        AND r.requester_id != $2
+      ORDER BY r.created_at DESC
+    `;
+    
+    const results = await db.execute(sql`
+      SELECT 
+        r.id as request_id,
+        r.collaboration_id,
+        r.note,
+        r.created_at as request_created_at,
+        u.id as user_id,
+        u.first_name,
+        u.last_name,
+        c.name as company_name,
+        c.twitter_handle,
+        c.logo_url,
+        co.collab_type,
+        co.description as collab_description
+      FROM requests r
+      INNER JOIN users u ON r.requester_id = u.id
+      INNER JOIN companies c ON u.id = c.user_id
+      INNER JOIN collaborations co ON r.collaboration_id = co.id
+      WHERE r.collaboration_id = ANY(${collabIds})
+        AND r.status = 'pending'
+        AND r.requester_id != ${userId}
+      ORDER BY r.created_at DESC
+    `);
+    const allRequests = results.rows;
     
     // Get recent 4 requests
     const recentRequests = allRequests.slice(0, 4).map(req => ({
-      id: req.request.id,
-      collaboration_id: req.request.collaboration_id,
-      collaboration_type: req.collaboration.collab_type,
-      collaboration_title: req.collaboration.title || req.collaboration.collab_type,
+      id: req.request_id,
+      collaboration_id: req.collaboration_id,
+      collaboration_type: req.collab_type,
+      collaboration_title: req.collab_description || req.collab_type,
       requester: {
-        id: req.user.id,
-        first_name: req.user.first_name,
-        last_name: req.user.last_name,
-        avatar_url: null, // Can be enhanced later
+        id: req.user_id,
+        first_name: req.first_name,
+        last_name: req.last_name,
+        avatar_url: null,
       },
       company: {
-        name: req.company.name,
-        twitter_handle: req.company.twitter_handle,
-        logo_url: req.company.logo_url, // FIX: Add missing logo_url field
+        name: req.company_name,
+        twitter_handle: req.twitter_handle,
+        logo_url: req.logo_url,
       },
-      note: req.request.note,
-      created_at: req.request.created_at,
+      note: req.note,
+      created_at: req.request_created_at,
     }));
     
     return {
@@ -1396,100 +1425,100 @@ export class DatabaseStorage implements IStorage {
     // Build base query with proper filtering
     const statusFilter = options.filter === 'hidden' ? 'hidden' : 'pending';
     
-    let query = db
-      .select({
-        request: requests,
-        user: users,
-        company: companies,
-        collaboration: collaborations,
-      })
-      .from(requests)
-      .innerJoin(users, eq(requests.requester_id, users.id))
-      .innerJoin(companies, eq(users.id, companies.user_id))
-      .innerJoin(collaborations, eq(requests.collaboration_id, collaborations.id))
-      .where(
-        and(
-          inArray(requests.collaboration_id, collabIds),
-          not(eq(requests.requester_id, userId)), // Exclude host's own requests
-          eq(requests.status, statusFilter)
-        )
-      );
-    
-    // Handle cursor pagination
-    if (options.cursor) {
-      const [cursorRequest] = await db
-        .select({ created_at: requests.created_at })
-        .from(requests)
-        .where(eq(requests.id, options.cursor));
-      
-      if (cursorRequest) {
-        query = query.where(lt(requests.created_at, cursorRequest.created_at));
-      }
-    }
-    
-    // Apply ordering and limit
-    query = query.orderBy(desc(requests.created_at)).limit(limit + 1);
-    
-    const results = await query;
+    // Use raw SQL to avoid Drizzle ORM null object issues
+    const results = await db.execute(sql`
+      SELECT 
+        r.id as request_id,
+        r.collaboration_id,
+        r.requester_id,
+        r.host_id,
+        r.status,
+        r.note,
+        r.created_at as request_created_at,
+        u.id as user_id,
+        u.first_name,
+        u.last_name,
+        u.twitter_url,
+        u.twitter_followers,
+        c.name as company_name,
+        c.twitter_handle,
+        c.job_title,
+        c.website,
+        c.logo_url,
+        c.short_description,
+        c.long_description,
+        c.linkedin_url,
+        c.funding_stage,
+        c.has_token,
+        c.tags,
+        co.id as collab_id,
+        co.collab_type,
+        co.description as collab_description,
+        co.topics,
+        co.created_at as collab_created_at
+      FROM requests r
+      INNER JOIN users u ON r.requester_id = u.id
+      INNER JOIN companies c ON u.id = c.user_id
+      INNER JOIN collaborations co ON r.collaboration_id = co.id
+      WHERE r.collaboration_id = ANY(${collabIds})
+        AND r.requester_id != ${userId}
+        AND r.status = ${statusFilter}
+      ORDER BY r.created_at DESC
+      LIMIT ${limit + 1}
+    `);
     
     // Determine pagination
-    const hasMore = results.length > limit;
-    const items = hasMore ? results.slice(0, limit) : results;
-    
-    // Twitter data has been removed from the system
+    const hasMore = results.rows.length > limit;
+    const items = hasMore ? results.rows.slice(0, limit) : results.rows;
     
     // Group by collaboration
     const groupedRequests = new Map();
     items.forEach(req => {
-      const collabId = req.request.collaboration_id;
+      const collabId = req.collaboration_id;
       if (!groupedRequests.has(collabId)) {
         groupedRequests.set(collabId, {
           collaboration: {
-            id: req.collaboration.id,
-            title: req.collaboration.title || req.collaboration.collab_type,
-            type: req.collaboration.collab_type,
-            description: req.collaboration.description,
-            topics: req.collaboration.topics,
-            created_at: req.collaboration.created_at,
+            id: req.collab_id,
+            title: req.collab_description || req.collab_type,
+            type: req.collab_type,
+            description: req.collab_description,
+            topics: req.topics,
+            created_at: req.collab_created_at,
           },
           requests: []
         });
       }
       
       groupedRequests.get(collabId).requests.push({
-        id: req.request.id,
+        id: req.request_id,
         requester: {
-          id: req.user.id,
-          first_name: req.user.first_name,
-          last_name: req.user.last_name,
-          twitter_url: req.user.twitter_url,
+          id: req.user_id,
+          first_name: req.first_name,
+          last_name: req.last_name,
+          twitter_url: req.twitter_url,
           avatar_url: null,
         },
         company: {
-          name: req.company.name,
-          twitter_handle: req.company.twitter_handle,
-          job_title: req.company.job_title,
-          website: req.company.website,
-          logo_url: req.company.logo_url,
-          short_description: req.company.short_description,
-          long_description: req.company.long_description,
-          linkedin_url: req.company.linkedin_url,
-          funding_stage: req.company.funding_stage,
-          has_token: req.company.has_token,
-          token_ticker: req.company.token_ticker,
-          blockchain_networks: req.company.blockchain_networks,
-          twitter_followers: req.company.twitter_followers,
-          tags: req.company.tags,
-          created_at: req.company.created_at,
+          name: req.company_name,
+          twitter_handle: req.twitter_handle,
+          job_title: req.job_title,
+          website: req.website,
+          logo_url: req.logo_url,
+          short_description: req.short_description,
+          long_description: req.long_description,
+          linkedin_url: req.linkedin_url,
+          funding_stage: req.funding_stage,
+          has_token: req.has_token,
+          tags: req.tags,
           twitter_data: null,
         },
-        note: req.request.note,
-        created_at: req.request.created_at,
+        note: req.note,
+        created_at: req.request_created_at,
       });
     });
     
     const groupedItems = Array.from(groupedRequests.values());
-    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].request.id : undefined;
+    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].request_id : undefined;
     
     return {
       items: groupedItems,
@@ -1949,62 +1978,40 @@ export class DatabaseStorage implements IStorage {
     console.log(`Getting requests for host ${userId} with filter: ${filter}`);
     
     try {
-      // Build the query based on filter
-      let query = db
-        .select({
-          request_id: requests.id,
-          collaboration_id: requests.collaboration_id,
-          requester_id: requests.requester_id,
-          host_id: requests.host_id,
-          status: requests.status,
-          note: requests.note,
-          created_at: requests.created_at,
-          // Join with collaborations to get collaboration details
-          collaboration_title: collaborations.details,
-          collaboration_type: collaborations.collab_type,
-          collaboration_description: collaborations.description,
-          // Join with users to get requester info
-          requester_first_name: users.first_name,
-          requester_last_name: users.last_name,
-          requester_job_title: users.job_title,
-          requester_twitter_followers: users.twitter_followers,
-          // Join with companies to get company info
-          company_name: companies.name,
-          company_twitter_handle: companies.twitter_handle,
-          company_twitter_followers: companies.twitter_followers,
-          company_website: companies.website,
-          company_logo_url: companies.logo_url,
-          company_tags: companies.tags
-        })
-        .from(requests)
-        .leftJoin(collaborations, eq(requests.collaboration_id, collaborations.id))
-        .leftJoin(users, eq(requests.requester_id, users.id))
-        .leftJoin(companies, eq(users.company_id, companies.id))
-        .where(eq(requests.host_id, userId));
+      const statusFilter = filter === 'hidden' ? 'hidden' : 'pending';
       
-      // Apply filter
-      if (filter === 'all') {
-        // Show only pending requests (not hidden)
-        query = query.where(
-          and(
-            eq(requests.host_id, userId),
-            eq(requests.status, 'pending')
-          )
-        );
-      } else if (filter === 'hidden') {
-        // Show only hidden requests
-        query = query.where(
-          and(
-            eq(requests.host_id, userId),
-            eq(requests.status, 'hidden')
-          )
-        );
-      }
+      // Use raw SQL to avoid Drizzle ORM null object issues
+      const results = await db.execute(sql`
+        SELECT 
+          r.id as request_id,
+          r.collaboration_id,
+          r.requester_id,
+          r.host_id,
+          r.status,
+          r.note,
+          r.created_at,
+          co.collab_type as collaboration_type,
+          co.description as collaboration_description,
+          u.first_name as requester_first_name,
+          u.last_name as requester_last_name,
+          c.job_title as requester_job_title,
+          u.twitter_followers as requester_twitter_followers,
+          c.name as company_name,
+          c.twitter_handle as company_twitter_handle,
+          c.twitter_followers as company_twitter_followers,
+          c.website as company_website,
+          c.logo_url as company_logo_url,
+          c.tags as company_tags
+        FROM requests r
+        LEFT JOIN collaborations co ON r.collaboration_id = co.id
+        LEFT JOIN users u ON r.requester_id = u.id
+        LEFT JOIN companies c ON u.id = c.user_id
+        WHERE r.host_id = ${userId} AND r.status = ${statusFilter}
+        ORDER BY r.created_at DESC
+      `);
       
-      const results = await query.orderBy(desc(requests.created_at));
-      
-      console.log(`Found ${results.length} requests for host ${userId} with filter ${filter}`);
-      return results;
+      console.log(`Found ${results.rows.length} requests for host ${userId} with filter ${filter}`);
+      return results.rows;
     } catch (error) {
       console.error('Error getting pending requests:', error);
       throw error;
