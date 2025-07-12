@@ -118,6 +118,15 @@ export default function DiscoverPageList() {
     refetchOnWindowFocus: false,
   });
 
+  // Query for user profile (to get user ID)
+  const { data: userProfile } = useQuery({
+    queryKey: ['/api/profile'],
+    queryFn: () => apiRequest('/api/profile'),
+    enabled: isAuthenticated,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
   // Query for user collaboration interactions (requests/matches)
   const { data: collaborationInteractions } = useQuery({
     queryKey: ['/api/collaborations/interactions'],
@@ -552,6 +561,7 @@ export default function DiscoverPageList() {
                     : undefined
                 }
                 onNavigateToMatches={() => setLocation('/matches')}
+                currentUserId={userProfile?.id}
               />
             ))}
 

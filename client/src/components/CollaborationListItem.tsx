@@ -15,6 +15,7 @@ interface CollaborationListItemProps {
     short_description?: string;
     description?: string;
     topics?: string[];
+    creator_id?: string;
   };
   isAuthenticated: boolean;
   onViewDetails: () => void;
@@ -22,6 +23,7 @@ interface CollaborationListItemProps {
   isPotentialMatch?: boolean;
   collaborationStatus?: 'requested' | 'matched';
   onNavigateToMatches?: () => void;
+  currentUserId?: string;
 }
 
 export function CollaborationListItem({
@@ -31,7 +33,8 @@ export function CollaborationListItem({
   onRequestCollaboration,
   isPotentialMatch = false,
   collaborationStatus,
-  onNavigateToMatches
+  onNavigateToMatches,
+  currentUserId
 }: CollaborationListItemProps) {
   // Get company initials for fallback avatar
   const getCompanyInitials = (name?: string) => {
@@ -58,6 +61,9 @@ export function CollaborationListItem({
 
   const collabType = collaboration.type || collaboration.collab_type || "Collaboration";
   const description = collaboration.short_description || collaboration.description;
+  
+  // Check if this is the user's own collaboration
+  const isOwnCollaboration = isAuthenticated && currentUserId && collaboration.creator_id === currentUserId;
 
   return (
     <Card className={`p-3 mb-3 hover:shadow-sm transition-shadow ${
@@ -137,7 +143,19 @@ export function CollaborationListItem({
               <span className="truncate">Details</span>
             </Button>
             
-            {isAuthenticated && collaborationStatus === 'matched' && onNavigateToMatches && (
+            {isOwnCollaboration && (
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled
+                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-gray-100 text-gray-500 cursor-not-allowed min-w-0 flex-shrink-0"
+              >
+                <Building2 className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">Your Collab</span>
+              </Button>
+            )}
+            
+            {!isOwnCollaboration && isAuthenticated && collaborationStatus === 'matched' && onNavigateToMatches && (
               <Button
                 size="sm"
                 onClick={(e) => {
@@ -151,7 +169,7 @@ export function CollaborationListItem({
               </Button>
             )}
             
-            {isAuthenticated && collaborationStatus === 'requested' && (
+            {!isOwnCollaboration && isAuthenticated && collaborationStatus === 'requested' && (
               <Button
                 size="sm"
                 variant="secondary"
@@ -163,7 +181,7 @@ export function CollaborationListItem({
               </Button>
             )}
             
-            {isAuthenticated && !collaborationStatus && onRequestCollaboration && (
+            {!isOwnCollaboration && isAuthenticated && !collaborationStatus && onRequestCollaboration && (
               <Button
                 size="sm"
                 onClick={(e) => {
