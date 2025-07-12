@@ -1394,35 +1394,27 @@ export class DatabaseStorage implements IStorage {
       return { items: [], hasMore: false };
     }
     
-    // Build base query (including Twitter data)
+    // Build base query with proper filtering
+    const statusFilter = options.filter === 'hidden' ? 'hidden' : 'pending';
+    
     let query = db
       .select({
         request: requests,
         user: users,
         company: companies,
         collaboration: collaborations,
-        twitter_data: company_twitter_data,
       })
       .from(requests)
       .innerJoin(users, eq(requests.requester_id, users.id))
       .innerJoin(companies, eq(users.id, companies.user_id))
-      .leftJoin(company_twitter_data, eq(companies.id, company_twitter_data.company_id))
       .innerJoin(collaborations, eq(requests.collaboration_id, collaborations.id))
       .where(
         and(
           inArray(requests.collaboration_id, collabIds),
-          not(eq(requests.requester_id, userId)) // Exclude host's own requests
+          not(eq(requests.requester_id, userId)), // Exclude host's own requests
+          eq(requests.status, statusFilter)
         )
       );
-    
-    // Apply filtering based on options.filter
-    if (options.filter === 'hidden') {
-      // Show only hidden requests
-      query = query.where(eq(requests.status, 'hidden'));
-    } else {
-      // Show only pending requests (default "all" behavior)
-      query = query.where(eq(requests.status, 'pending'));
-    }
     
     // Handle cursor pagination
     if (options.cursor) {
@@ -1444,6 +1436,19 @@ export class DatabaseStorage implements IStorage {
     // Determine pagination
     const hasMore = results.length > limit;
     const items = hasMore ? results.slice(0, limit) : results;
+    
+    // Fetch Twitter data separately for all companies
+    const companyIds = [...new Set(items.map(req => req.company.id))];
+    const twitterData = companyIds.length > 0 ? await db
+      .select()
+      .from(company_twitter_data)
+      .where(inArray(company_twitter_data.company_id, companyIds)) : [];
+    
+    // Create a map for quick lookup
+    const twitterDataMap = new Map();
+    twitterData.forEach(data => {
+      twitterDataMap.set(data.company_id, data);
+    });
     
     // Group by collaboration
     const groupedRequests = new Map();
@@ -1488,23 +1493,7 @@ export class DatabaseStorage implements IStorage {
           twitter_followers: req.company.twitter_followers,
           tags: req.company.tags,
           created_at: req.company.created_at,
-          twitter_data: req.twitter_data ? {
-            username: req.twitter_data.username,
-            name: req.twitter_data.name,
-            bio: req.twitter_data.bio,
-            followers_count: req.twitter_data.followers_count,
-            following_count: req.twitter_data.following_count,
-            tweet_count: req.twitter_data.tweet_count,
-            profile_image_url: req.twitter_data.profile_image_url,
-            banner_image_url: req.twitter_data.banner_image_url,
-            is_verified: req.twitter_data.is_verified,
-            is_business_account: req.twitter_data.is_business_account,
-            business_category: req.twitter_data.business_category,
-            location: req.twitter_data.location,
-            website_url: req.twitter_data.website_url,
-            twitter_created_at: req.twitter_data.twitter_created_at,
-            last_fetched_at: req.twitter_data.last_fetched_at,
-          } : null,
+          twitter_data: twitterDataMap.get(req.company.id) || null,
         },
         note: req.request.note,
         created_at: req.request.created_at,
