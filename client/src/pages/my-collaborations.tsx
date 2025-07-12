@@ -214,6 +214,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   const [processingApplicationId, setProcessingApplicationId] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   
+  // Requests filter state
+  const [requestsFilter, setRequestsFilter] = useState<'all' | 'hidden'>('all');
+  
   // Prefetch strategy: Start loading most important data first
   // Fetch user's collaborations with optimized options
   const { data: collaborations, isLoading: isLoadingCollabs } = useQuery({
@@ -298,10 +301,10 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
 
   // Fetch full collaboration requests for the management tab
   const { data: requestsData, isLoading: isLoadingRequests, refetch: refetchRequests } = useQuery({
-    queryKey: ['/api/collaboration-requests'],
+    queryKey: ['/api/collaboration-requests', requestsFilter],
     queryFn: async () => {
       try {
-        const data = await apiRequest('/api/collaboration-requests');
+        const data = await apiRequest(`/api/collaboration-requests?filter=${requestsFilter}`);
         return data;
       } catch (error) {
         console.error("Error fetching collaboration requests:", error);
@@ -321,6 +324,12 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     if (value === 'requests' && !requestsData) {
       refetchRequests();
     }
+  };
+
+  // Handle filter changes and refetch requests
+  const handleFilterChange = (newFilter: 'all' | 'hidden') => {
+    setRequestsFilter(newFilter);
+    refetchRequests();
   };
   
   // Handle approving an application
@@ -1188,6 +1197,8 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                   // TODO: Implement pagination for requests
                 }}
                 hasMore={requestsData?.hasMore || false}
+                filter={requestsFilter}
+                onFilterChange={handleFilterChange}
               />
             </TabsContent>
 

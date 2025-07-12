@@ -101,15 +101,18 @@ interface RequestsManagementTabProps {
   isLoading?: boolean;
   onLoadMore?: () => void;
   hasMore?: boolean;
+  filter: 'all' | 'hidden';
+  onFilterChange: (filter: 'all' | 'hidden') => void;
 }
 
 export function RequestsManagementTab({ 
   requestGroups, 
   isLoading = false,
   onLoadMore,
-  hasMore = false
+  hasMore = false,
+  filter,
+  onFilterChange
 }: RequestsManagementTabProps) {
-  const [filter, setFilter] = useState<'all' | 'this_week'>('all');
   const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<CollaborationRequest | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -244,10 +247,10 @@ export function RequestsManagementTab({
       {/* Filter Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Collaboration Requests</h2>
-        <Tabs value={filter} onValueChange={(value) => setFilter(value as any)} className="w-auto">
+        <Tabs value={filter} onValueChange={(value) => onFilterChange(value as any)} className="w-auto">
           <TabsList>
             <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="this_week">This Week</TabsTrigger>
+            <TabsTrigger value="hidden">Hidden</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>

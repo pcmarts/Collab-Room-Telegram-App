@@ -119,6 +119,12 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 12, 2025. Changed collaboration requests tabs from "All | This Week" to "All | Hidden"
+  - Updated frontend tabs to show "All" and "Hidden" options
+  - Backend now filters requests based on match status (hidden vs non-hidden)
+  - All tab shows pending requests that haven't been hidden
+  - Hidden tab shows previously hidden collaboration requests
+  - Filter state managed in parent component for proper API integration
 - July 12, 2025. UX improvements for collaboration requests interface
   - Removed collaboration details section from details modal to focus on company information
   - Removed topic pills from request cards for cleaner design

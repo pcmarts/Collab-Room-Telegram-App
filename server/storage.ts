@@ -1484,29 +1484,37 @@ export class DatabaseStorage implements IStorage {
     
     const results = await query;
     
-    // Filter out requests that already have matches (active, declined, or hidden)
+    // Get existing matches with their status
     const existingMatches = await db
       .select({
         collaboration_id: matches.collaboration_id,
         requester_id: matches.requester_id,
+        status: matches.status,
       })
       .from(matches)
       .where(eq(matches.host_id, userId));
     
-    const matchedPairs = new Set(
-      existingMatches.map(m => `${m.collaboration_id}_${m.requester_id}`)
-    );
-    
-    const pendingResults = results.filter(req => 
-      !matchedPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
-    );
-    
     // Apply filtering based on options.filter
-    let filteredResults = pendingResults;
-    if (options.filter === 'this_week') {
-      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      filteredResults = pendingResults.filter(req => 
-        req.swipe.created_at && req.swipe.created_at >= oneWeekAgo
+    let filteredResults = results;
+    if (options.filter === 'hidden') {
+      // Show only hidden requests
+      const hiddenPairs = new Set(
+        existingMatches
+          .filter(m => m.status === 'hidden')
+          .map(m => `${m.collaboration_id}_${m.requester_id}`)
+      );
+      
+      filteredResults = results.filter(req => 
+        hiddenPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
+      );
+    } else {
+      // Show only non-hidden requests (default "all" behavior)
+      const matchedPairs = new Set(
+        existingMatches.map(m => `${m.collaboration_id}_${m.requester_id}`)
+      );
+      
+      filteredResults = results.filter(req => 
+        !matchedPairs.has(`${req.swipe.collaboration_id}_${req.swipe.user_id}`)
       );
     }
     
