@@ -1280,41 +1280,7 @@ export async function registerRoutes(app: Express) {
   // Search Collaborations endpoint
   // Search collaborations endpoint - Removed duplicate
 
-  // Apply to Collaboration endpoint
-  app.post("/api/collaborations/:id/apply", applicationLimiter, async (req: TelegramRequest, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { message } = req.body;
-
-      if (!id) {
-        return res.status(400).json({ error: 'Collaboration ID is required' });
-      }
-
-      const telegramUser = getTelegramUserFromRequest(req);
-      if (!telegramUser) {
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      const application = await storage.createCollabApplication(id, user.id, message);
-      if (!application) {
-        return res.status(404).json({ error: 'Failed to create application' });
-      }
-
-      return res.json({
-        success: true,
-        application,
-        message: 'Application submitted successfully'
-      });
-
-    } catch (error) {
-      return res.status(500).json({ error: 'Failed to submit application' });
-    }
-  });
+  // Apply to Collaboration endpoint - REMOVED DUPLICATE (see line 3082 for complete implementation)
 
   // Marketing Preferences API endpoint
   app.get("/api/marketing-preferences", async (req: TelegramRequest, res) => {
