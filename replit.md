@@ -119,6 +119,14 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 13, 2025. Comprehensive refactoring of swipe-related terminology to use requests table format
+  - Updated rate limiter from "swipeLimiter" to "requestLimiter" 
+  - Created new storage methods for handling action-based requests (createCollaborationRequest, acceptCollaborationRequest, hideCollaborationRequest)
+  - Server now properly accepts "action" parameter ("request" or "skip") instead of "direction" ("left" or "right")
+  - Client-side code already properly sends "action" parameter - no changes needed
+  - Updated error messages and logs to use collaboration request terminology
+  - Legacy createSwipe method still available for backward compatibility but converted to use requests table
+  - **IN PROGRESS**: Completing refactoring of remaining "direction" references in server code
 - July 13, 2025. Fixed discover page database consistency issues and migrated legacy data
   - Resolved anomaly where user had match status but wasn't appearing in requests table
   - The discover page was using the requests table correctly, but legacy data remained in old swipes/matches tables

@@ -974,12 +974,24 @@ export class DatabaseStorage implements IStorage {
     };
   }
   
-  // Swipe methods (legacy - now using requests table)
-  async createSwipe(swipe: InsertSwipe): Promise<Swipe> {
-    console.log("Creating swipe using requests table");
+  // Request methods (using requests table) - Enhanced with notification
+  async createRequest(requestData: InsertRequest): Promise<Request> {
+    console.log("Creating request in requests table");
+    
+    const [request] = await db
+      .insert(requests)
+      .values(requestData)
+      .returning();
+    
+    console.log(`Created request with ID: ${request.id}, status: ${request.status}`);
+    return request;
+  }
+  
+  async createCollaborationRequest(userId: string, collaborationId: string, action: 'request' | 'skip', note?: string): Promise<Request> {
+    console.log(`Creating collaboration ${action} from user ${userId} for collaboration ${collaborationId}`);
     
     // Get the collaboration to find the host
-    const collaboration = await this.getCollaboration(swipe.collaboration_id);
+    const collaboration = await this.getCollaboration(collaborationId);
     if (!collaboration) {
       throw new Error('Collaboration not found');
     }
@@ -990,55 +1002,115 @@ export class DatabaseStorage implements IStorage {
       .from(requests)
       .where(
         and(
-          eq(requests.collaboration_id, swipe.collaboration_id),
-          eq(requests.requester_id, swipe.user_id)
+          eq(requests.collaboration_id, collaborationId),
+          eq(requests.requester_id, userId)
         )
       );
     
     if (existingRequest.length > 0) {
-      // Return the existing request as a swipe
-      const request = existingRequest[0];
-      return {
-        id: request.id,
-        user_id: request.requester_id,
-        collaboration_id: request.collaboration_id,
-        direction: request.status === 'pending' ? 'right' : 'left',
-        note: request.note,
-        details: swipe.details,
-        created_at: request.created_at,
-      };
+      console.log(`Request already exists: ${existingRequest[0].id}`);
+      return existingRequest[0];
     }
     
-    // Create a new request for both left and right swipes
+    // Create a new request
     const requestData: InsertRequest = {
-      collaboration_id: swipe.collaboration_id,
-      requester_id: swipe.user_id,
+      collaboration_id: collaborationId,
+      requester_id: userId,
       host_id: collaboration.creator_id,
-      status: swipe.direction === 'right' ? 'pending' : 'skipped',
-      note: swipe.note || swipe.details?.message || null,
+      status: action === 'request' ? 'pending' : 'skipped',
+      note: note || null,
     };
     
-    const request = await this.createRequest(requestData);
+    return await this.createRequest(requestData);
+  }
+
+  async acceptCollaborationRequest(userId: string, requestId: string): Promise<{success: boolean, match?: any, error?: string}> {
+    console.log(`User ${userId} accepting collaboration request ${requestId}`);
     
-    // Only notify the host for right swipes (collaboration requests)
-    if (swipe.direction === 'right') {
-      try {
-        console.log(`🔔 NOTIFICATION: Attempting to send collaboration request notification`);
-        console.log(`🔔 Host ID: ${collaboration.creator_id}`);
-        console.log(`🔔 Requester ID: ${swipe.user_id}`);
-        console.log(`🔔 Collaboration ID: ${collaboration.id}`);
-        
-        await notifyNewCollabRequest(
-          collaboration.creator_id,
-          swipe.user_id,
-          collaboration.id
-        );
-        console.log("🔔 SUCCESS: Collaboration request notification sent");
-      } catch (notifyError) {
-        console.error("🔔 ERROR: Failed to send collaboration request notification:", notifyError);
-        console.error("🔔 ERROR DETAILS:", notifyError.message);
+    try {
+      // Get the request details
+      const [request] = await db
+        .select()
+        .from(requests)
+        .where(eq(requests.id, requestId));
+      
+      if (!request) {
+        return { success: false, error: 'Request not found' };
       }
+      
+      // Only the host can accept requests
+      if (request.host_id !== userId) {
+        return { success: false, error: 'Not authorized to accept this request' };
+      }
+      
+      // Update the request status to accepted
+      await db
+        .update(requests)
+        .set({ status: 'accepted' })
+        .where(eq(requests.id, requestId));
+      
+      console.log(`Request ${requestId} accepted successfully`);
+      
+      // Send notification to the requester
+      try {
+        await notifyMatchCreated(request.host_id, request.requester_id, request.collaboration_id, request.note);
+        console.log("Match notification sent via Telegram");
+      } catch (notifyError) {
+        console.error("Failed to send match notification:", notifyError);
+      }
+      
+      return { success: true, match: request };
+    } catch (error) {
+      console.error('Error accepting collaboration request:', error);
+      return { success: false, error: 'Failed to accept request' };
     }
+  }
+
+  async hideCollaborationRequest(userId: string, requestId: string): Promise<{success: boolean, error?: string}> {
+    console.log(`User ${userId} hiding collaboration request ${requestId}`);
+    
+    try {
+      // Get the request details
+      const [request] = await db
+        .select()
+        .from(requests)
+        .where(eq(requests.id, requestId));
+      
+      if (!request) {
+        return { success: false, error: 'Request not found' };
+      }
+      
+      // Only the host can hide requests
+      if (request.host_id !== userId) {
+        return { success: false, error: 'Not authorized to hide this request' };
+      }
+      
+      // Update the request status to hidden
+      await db
+        .update(requests)
+        .set({ status: 'hidden' })
+        .where(eq(requests.id, requestId));
+      
+      console.log(`Request ${requestId} hidden successfully`);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error hiding collaboration request:', error);
+      return { success: false, error: 'Failed to hide request' };
+    }
+  }
+  
+  // Legacy swipe methods (for backward compatibility)
+  async createSwipe(swipe: InsertSwipe): Promise<Swipe> {
+    console.log("Legacy createSwipe called - converting to requests table");
+    
+    const action = swipe.direction === 'right' ? 'request' : 'skip';
+    const request = await this.createCollaborationRequest(
+      swipe.user_id,
+      swipe.collaboration_id,
+      action,
+      swipe.note || swipe.details?.message
+    );
     
     // Return as a swipe for legacy compatibility
     return {

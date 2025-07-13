@@ -14,7 +14,7 @@ import { eq, and, not, desc, inArray, or } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, notifyUserCollabCreated, notifyReferrerAboutApproval, bot } from "./telegram";
 import { storage } from "./storage";
-import { authLimiter, swipeLimiter, applicationLimiter } from './middleware/rate-limiter';
+import { authLimiter, requestLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
 // Twitter routes removed to fix deployment issues
 import referralRoutes from './routes/referral-routes';
@@ -3599,28 +3599,27 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Swipe API endpoint
-  app.post("/api/swipes", swipeLimiter, async (req: TelegramRequest, res: Response) => {
-    console.log('============ DEBUG: Create Swipe Endpoint ============');
+  // Collaboration Request API endpoint (new simplified version)
+  app.post("/api/requests", requestLimiter, async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Create Request Endpoint ============');
     console.log('Request timestamp:', new Date().toISOString());
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
     console.log('Body:', JSON.stringify(req.body, null, 2));
     
     try {
-      const { collaboration_id, swipe_id, direction, is_potential_match, details, note } = req.body;
+      const { collaboration_id, request_id, action, is_potential_match, note } = req.body;
       
-      console.log('Parsed request parameters:', { collaboration_id, swipe_id, direction, is_potential_match, note });
+      console.log('Parsed request parameters:', { collaboration_id, request_id, action, is_potential_match, note });
       
-      // Validate direction is either "left" or "right"
-      if (direction !== 'left' && direction !== 'right') {
-        console.log('Validation error: Invalid direction value:', direction);
-        return res.status(400).json({ error: 'Direction must be either "left" or "right"' });
+      // Validate action is either "request" or "skip"
+      if (action !== 'request' && action !== 'skip') {
+        console.log('Validation error: Invalid action value:', action);
+        return res.status(400).json({ error: 'Action must be either "request" or "skip"' });
       }
       
-      // Check if we have a valid ID (either collaboration_id or swipe_id)
-      if (!collaboration_id && !swipe_id) {
+      // Check if we have a valid ID (either collaboration_id or request_id)
+      if (!collaboration_id && !request_id) {
         console.log('Validation error: Missing required parameters');
-        return res.status(400).json({ error: 'Either collaboration_id or swipe_id is required' });
+        return res.status(400).json({ error: 'Either collaboration_id or request_id is required' });
       }
       
       // Get user from telegram data
@@ -3648,8 +3647,8 @@ export async function registerRoutes(app: Express) {
       console.log(`Database success: Found user ${user.id} (${user.first_name} ${user.last_name || ''})`);
       
       // Handle potential match case
-      if (is_potential_match && swipe_id) {
-        console.log(`Processing potential match with swipe ID: ${swipe_id}`);
+      if (is_potential_match && request_id) {
+        console.log(`Processing potential match with request ID: ${request_id}`);
         
         try {
           // Fetch the original request to get the collaboration and user info
@@ -3660,12 +3659,12 @@ export async function registerRoutes(app: Express) {
               collaboration: collaborations
             })
             .from(requests)
-            .where(eq(requests.id, swipe_id))
+            .where(eq(requests.id, request_id))
             .innerJoin(users, eq(requests.requester_id, users.id))
             .innerJoin(collaborations, eq(requests.collaboration_id, collaborations.id));
           
           if (!originalRequest) {
-            console.log(`Database error: Original request ${swipe_id} not found`);
+            console.log(`Database error: Original request ${request_id} not found`);
             return res.status(404).json({ error: 'Original request not found' });
           }
           
@@ -3977,9 +3976,9 @@ export async function registerRoutes(app: Express) {
       }
       
     } catch (error) {
-      console.error('Error creating swipe:', error);
+      console.error('Error creating collaboration request:', error);
       console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
-      return res.status(500).json({ error: 'Failed to create swipe' });
+      return res.status(500).json({ error: 'Failed to create collaboration request' });
     }
   });
 
@@ -4253,120 +4252,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Add POST /api/requests endpoint to handle new requests/swipes
-  app.post("/api/requests", async (req: TelegramRequest, res: Response) => {
-    console.log('============ DEBUG: Create Request Endpoint ============');
-    console.log('Request timestamp:', new Date().toISOString());
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    
-    try {
-      const { collaboration_id, request_id, action, note, is_potential_match } = req.body;
-      
-      console.log('Parsed request parameters:', { collaboration_id, request_id, action, note, is_potential_match });
-      
-      // Validate action
-      if (action !== 'skip' && action !== 'request') {
-        console.log('Validation error: Invalid action value:', action);
-        return res.status(400).json({ error: 'Action must be either "skip" or "request"' });
-      }
-      
-      // Get user from telegram data
-      console.log('Attempting to extract telegram user data from request...');
-      const telegramData = getTelegramUserFromRequest(req);
-      
-      if (!telegramData) {
-        console.log('Authentication error: No telegram data found in the request');
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-      
-      const telegramId = telegramData.id.toString();
-      console.log(`Authentication success: Found Telegram ID: ${telegramId}`);
-      
-      // Get the actual user from database using telegram_id
-      console.log(`Looking up user by Telegram ID: ${telegramId}...`);
-      const user = await storage.getUserByTelegramId(telegramId);
-      
-      if (!user) {
-        console.log('Database error: User not found with telegramId:', telegramId);
-        return res.status(404).json({ error: 'User not found' });
-      }
-      
-      console.log(`Database success: Found user ${user.id} (${user.first_name} ${user.last_name || ''})`);
-      
-      // Handle potential match case
-      if (is_potential_match && request_id) {
-        console.log(`Processing potential match with request ID: ${request_id}`);
-        
-        // For potential matches, we need to accept or hide the request
-        if (action === 'request') {
-          // Accept the request
-          const result = await storage.acceptCollaborationRequest(user.id, request_id);
-          if (result.success) {
-            console.log(`Accepted collaboration request ${request_id}`);
-            return res.json({ success: true, match: result.match });
-          } else {
-            console.log(`Failed to accept collaboration request: ${result.error}`);
-            return res.status(400).json({ error: result.error });
-          }
-        } else {
-          // Hide the request
-          const result = await storage.hideCollaborationRequest(user.id, request_id);
-          if (result.success) {
-            console.log(`Hidden collaboration request ${request_id}`);
-            return res.json({ success: true });
-          } else {
-            console.log(`Failed to hide collaboration request: ${result.error}`);
-            return res.status(400).json({ error: result.error });
-          }
-        }
-      }
-      
-      // Handle regular collaboration case
-      if (!collaboration_id) {
-        console.log('Validation error: Missing collaboration_id');
-        return res.status(400).json({ error: 'collaboration_id is required' });
-      }
-      
-      // Convert action to direction for the swipe system
-      const direction = action === 'request' ? 'right' : 'left';
-      
-      // Create the swipe/request
-      const swipeData = {
-        user_id: user.id,
-        collaboration_id: collaboration_id,
-        direction: direction,
-        note: note || null,
-        details: note || null
-      };
-      
-      console.log('Creating swipe with data:', swipeData);
-      const swipe = await storage.createSwipe(swipeData);
-      
-      console.log('Swipe created successfully:', swipe);
-      
-      // Check for matches if this was a right swipe
-      if (direction === 'right') {
-        console.log('Checking for potential matches...');
-        // This logic would be handled by the createSwipe function
-        // which should check for mutual right swipes and create matches
-      }
-      
-      return res.json({ 
-        success: true, 
-        swipe: swipe,
-        action: action,
-        collaboration_id: collaboration_id 
-      });
-      
-    } catch (error) {
-      console.error('Failed to create request:', error);
-      return res.status(500).json({ 
-        error: 'Failed to create request', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
-      });
-    }
-  });
+  // NOTE: POST /api/requests endpoint is already defined above - this duplicate has been removed
 
   // Twitter API routes removed
 

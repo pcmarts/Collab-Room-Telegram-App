@@ -105,9 +105,9 @@ export const authLimiter = createRateLimiter({
   skipIfDevelopment: true
 });
 
-export const swipeLimiter = createRateLimiter({
+export const requestLimiter = createRateLimiter({
   windowMs: 60 * 1000, // 1 minute
-  max: 60, // Limit each IP to 60 swipes per minute (1 per second)
+  max: 60, // Limit each IP to 60 requests per minute (1 per second)
   skipIfDevelopment: true
 });
 
