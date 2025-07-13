@@ -195,6 +195,8 @@ async function checkAdminMiddleware(req: Request, res: Response, next: NextFunct
 // Twitter routes are imported at the top of the file
 
 export async function registerRoutes(app: Express) {
+  console.log('🔧 ROUTE REGISTRATION: Starting API route registration');
+  
   // Network statistics endpoint
   app.get("/api/network-stats", async (_req: Request, res: Response) => {
     try {
@@ -3076,12 +3078,14 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  console.log('🔧 ROUTE REGISTRATION: Registering POST /api/collaborations/:id/apply');
   app.post("/api/collaborations/:id/apply", applicationLimiter, async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Apply to Collaboration Endpoint ============');
     console.log('Headers:', req.headers);
     console.log('Params:', req.params);
     console.log('Body:', req.body);
     console.log('🚀 ROUTE HANDLER: Starting collaboration application process');
+    console.log('🚀 ENHANCED LOGGING: Route handler is executing');
 
     try {
       const { id } = req.params;
@@ -3187,6 +3191,28 @@ export async function registerRoutes(app: Express) {
         error: 'Server error', 
         details: error instanceof Error ? error.message : 'Unknown error' 
       });
+    }
+  });
+
+  // Test notification endpoint
+  console.log('🔧 ROUTE REGISTRATION: Registering POST /api/test-notification');
+  app.post("/api/test-notification", async (req, res) => {
+    try {
+      console.log('🧪 TEST NOTIFICATION: Starting test notification');
+      const { hostUserId, requesterUserId, collaborationId } = req.body;
+      
+      if (!hostUserId || !requesterUserId || !collaborationId) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+      }
+      
+      console.log('🧪 TEST NOTIFICATION: Calling notifyNewCollabRequest');
+      const result = await notifyNewCollabRequest(hostUserId, requesterUserId, collaborationId);
+      console.log('🧪 TEST NOTIFICATION: Result:', result);
+      
+      return res.json({ success: true, result });
+    } catch (error) {
+      console.error('🧪 TEST NOTIFICATION: Error:', error);
+      return res.status(500).json({ error: 'Test notification failed' });
     }
   });
 
