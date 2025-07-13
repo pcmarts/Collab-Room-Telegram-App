@@ -2469,7 +2469,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       .where(
         and(
           eq(requests.collaboration_id, collaborationId),
-          eq(requests.user_id, requesterId)
+          eq(requests.requester_id, requesterId)
         )
       );
 
@@ -2534,7 +2534,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
         .where(
           and(
             eq(requests.collaboration_id, collaborationId),
-            eq(requests.user_id, requesterId)
+            eq(requests.requester_id, requesterId)
           )
         )
         .returning();
@@ -2636,7 +2636,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
         .where(
           and(
             eq(requests.collaboration_id, collaborationId),
-            eq(requests.user_id, requesterId)
+            eq(requests.requester_id, requesterId)
           )
         )
         .returning();
@@ -2819,7 +2819,7 @@ export async function notifyNewCollabRequest(
       `\n\n💼 <a href="${requesterCompany?.website || requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>` +
       `\n❓ <i>${requesterCompany?.short_description || "Web3 company focusing on blockchain solutions"}</i>` +
       `\n🔗 ${twitterLink} | ${linkedinLink} | ${websiteLink}` +
-      `\n👤 ${requesterCompany?.role_title || requester.job_title || "Unknown Role"}` +
+      `\n👤 ${requesterCompany?.job_title || "Unknown Role"}` +
       
       // Collaboration details
       `\n\n🤝 <b>Your Collab:</b> ${collaboration.collab_type}` +
