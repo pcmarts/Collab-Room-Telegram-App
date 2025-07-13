@@ -12,7 +12,7 @@ import {
 } from "../shared/schema";
 import { eq, and, not, desc, inArray, or } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, notifyUserCollabCreated, notifyReferrerAboutApproval, bot } from "./telegram";
+import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, notifyUserCollabCreated, notifyReferrerAboutApproval, notifyNewCollabRequest, bot } from "./telegram";
 import { storage } from "./storage";
 import { authLimiter, requestLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
@@ -3829,8 +3829,22 @@ export async function registerRoutes(app: Express) {
         console.log(`Details: ${direction} swipe for collaboration ${collaboration_id} by user ${user.id}`);
         console.log(`Timestamp: ${swipe.created_at}`);
         
+        // If this is a "request" action, send a notification to the collaboration host
+        if (action === 'request') {
+          try {
+            const collaboration = await storage.getCollaboration(collaboration_id);
+            if (collaboration) {
+              await notifyNewCollabRequest(collaboration.creator_id, user.id, collaboration_id);
+              console.log(`✅ Sent Telegram notification to host ${collaboration.creator_id} about new collaboration request`);
+            }
+          } catch (notificationError) {
+            console.error('Error sending collaboration request notification:', notificationError);
+            // Continue processing even if notification fails
+          }
+        }
+        
         // If this is a "right" swipe, check if the collaboration host has already swiped right on any of this user's collaborations
-        if (direction === 'right') {
+        if (action === 'request') {
           try {
             // Get the collaboration details to find the host ID
             const collaboration = await storage.getCollaboration(collaboration_id);

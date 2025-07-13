@@ -119,6 +119,12 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 13, 2025. **FIXED**: Telegram notifications now properly sent to hosts when users request collaborations
+  - Fixed missing notification call in `/api/requests` endpoint when users make collaboration requests
+  - Added `notifyNewCollabRequest` function call to notify hosts immediately when someone requests their collaboration
+  - Notifications include requester's company information, personal notes, and interactive buttons for quick response
+  - Enhanced error handling to prevent notification failures from breaking the request flow
+  - Host notifications work for both regular collaboration requests and potential match responses
 - July 13, 2025. **COMPLETED**: Comprehensive refactoring of swipe-related terminology to use requests table format
   - Updated rate limiter from "swipeLimiter" to "requestLimiter" throughout codebase
   - Created new storage methods for handling action-based requests (createCollaborationRequest, acceptCollaborationRequest, hideCollaborationRequest)
