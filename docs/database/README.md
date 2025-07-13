@@ -131,59 +131,62 @@ export const insertCollaborationSchema = createInsertSchema(collaborations);
 // etc.
 ```
 
-### Swipes and Matches
+### Collaboration Requests (Unified System)
 
-The application implements a Tinder-like swiping system for collaborations:
+**⚠️ IMPORTANT: As of v1.10.19 (2025-07-13), the legacy `swipes` and `matches` tables have been permanently deleted and replaced with a unified `requests` table.**
+
+The application implements a Tinder-like swiping system for collaborations using a unified requests table:
 
 ```typescript
-export const swipes = pgTable('swipes', {
-  id: text('id').primaryKey().notNull(),
-  user_id: text('user_id').references(() => users.id).notNull(),
-  collaboration_id: text('collaboration_id').references(() => collaborations.id).notNull(),
-  direction: text('direction').notNull(), // 'left' or 'right'
-  details: jsonb('details').default({}).notNull(),
-  created_at: timestamp('created_at', { mode: 'date' }).defaultNow(),
-});
-
-export const matches = pgTable('matches', {
-  id: text('id').primaryKey().notNull(),
-  collaboration_id: text('collaboration_id').references(() => collaborations.id).notNull(),
-  host_id: text('host_id').references(() => users.id).notNull(),
-  requester_id: text('requester_id').references(() => users.id).notNull(),
-  status: text('status').default('pending').notNull(),
-  host_accepted: boolean('host_accepted').default(false),
-  requester_accepted: boolean('requester_accepted').default(false),
-  created_at: timestamp('created_at', { mode: 'date' }).defaultNow(),
-  updated_at: timestamp('updated_at', { mode: 'date' }).defaultNow(),
+export const requests = pgTable("requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  collaboration_id: uuid("collaboration_id")
+    .notNull()
+    .references(() => collaborations.id, { onDelete: "cascade" }),
+  requester_id: uuid("requester_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  host_id: uuid("host_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  status: text("status").notNull().default("pending"), // 'pending', 'accepted', 'hidden', 'skipped'
+  note: text("note"), // Personalized message from requester
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 ```
 
-The `swipes` table records when a user swipes left or right on a collaboration, while the `matches` table is created when both users have swiped right on each other's collaborations.
+#### Request Status Types
+
+The unified requests table handles all user interactions with collaborations:
+
+- **`pending`**: Right swipe (collaboration request) awaiting host decision
+- **`accepted`**: Mutual match - both users interested in collaboration
+- **`hidden`**: Request hidden by host (declined)
+- **`skipped`**: Left swipe (passed on collaboration)
+
+#### System Benefits
+
+The unified system provides several advantages over the legacy dual-table approach:
+
+1. **Data Consistency**: All user interactions stored in single table eliminates synchronization issues
+2. **Simplified Queries**: No complex JOINs between swipes and matches tables
+3. **Better Performance**: Single table queries with proper indexing
+4. **Easier Maintenance**: One source of truth for all collaboration interactions
 
 #### Note Display in Matches
 
-When users view their matches, the system displays the original collaboration request notes from the swipes table. The `getUserMatchesWithDetails` function uses a SQL JOIN to retrieve these notes:
+When users view their matches, the system displays the original collaboration request notes from the `note` field in the requests table. Only `accepted` status requests appear as matches:
 
 ```sql
--- Join matches with swipes to get original collaboration request notes
-LEFT JOIN swipes s ON (
-  s.collaboration_id = m.collaboration_id 
-  AND s.user_id = m.requester_id -- Note from the person who made the collaboration request
-  AND s.direction = 'right'
-)
+-- Get matches with notes from unified requests table
+SELECT * FROM requests 
+WHERE status = 'accepted' 
+  AND (host_id = ${userId} OR requester_id = ${userId})
+ORDER BY created_at DESC;
 ```
 
-This ensures that when viewing matches, users see the personalized messages that were sent with the original collaboration requests.
-
-The query also includes a status filter to show only active matches:
-
-```sql
--- Only show active matches (exclude declined matches)
-WHERE (m.host_id = ${userId} OR m.requester_id = ${userId})
-AND m.status = 'active'
-```
-
-This prevents declined matches from appearing in the matches page, ensuring users only see mutually agreed collaborations.
+This ensures that when viewing matches, users see the personalized messages that were sent with the original collaboration requests, now stored directly in the unified requests table.
 
 ## Relationships
 
@@ -194,9 +197,9 @@ Key relationships in the database:
 3. Users can apply to multiple collaborations
 4. Each collaboration belongs to a specific user and company
 5. Applications link users to collaborations they're interested in
-6. Users can swipe on multiple collaborations (recorded in the swipes table)
-7. When both users swipe right on each other's collaborations, a match is created
-8. Each match connects a host (collaboration creator) with a requester (user who swiped right)
+6. Users can create requests for collaborations (recorded in the unified requests table)
+7. When a host accepts a request, the status changes to 'accepted' creating a match
+8. Each request connects a host (collaboration creator) with a requester (user who made the request)
 
 ## Database Migrations
 
@@ -238,6 +241,35 @@ In version 1.9.4, strategic database indexes were added to improve query perform
 - Indexes on filter fields to optimize the performance of frequently used filter operations
 
 For detailed information about the database indexing strategy, see [Database Indexing for Discovery Cards](../discovery/database-indexing.md).
+
+#### Legacy Table Migration (v1.10.19)
+
+In version 1.10.19, a major database restructuring was completed that unified the swipe and match system:
+
+**Migration Overview:**
+- **185 swipes** and **12 matches** successfully migrated from legacy `swipes` and `matches` tables to unified `requests` table
+- Legacy table data preserved with original timestamps and proper status mapping
+- Data integrity validated to ensure no loss of user interaction history
+
+**Legacy Status Mapping:**
+- Legacy right swipes → `pending` status requests
+- Legacy left swipes → `skipped` status requests  
+- Legacy matches → `accepted` status requests
+- Legacy declined matches → `hidden` status requests
+
+**Post-Migration Cleanup:**
+- Legacy `swipes` and `matches` tables permanently deleted from database
+- All schema references and imports updated throughout codebase
+- API endpoints converted to use unified requests table
+- Database queries optimized for single-table operations
+
+**Benefits Achieved:**
+- Eliminated data consistency issues between separate swipe and match tables
+- Improved query performance with single-table operations
+- Simplified maintenance with unified data structure
+- Resolved discover page anomalies where users had match status but missing request data
+
+For technical details on the migration process, see `scripts/migrate-legacy-data.ts`.
 
 #### Table Cleanup (v1.3.1)
 

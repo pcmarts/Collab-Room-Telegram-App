@@ -5,6 +5,38 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.19] - 2025-07-13
+
+### Fixed
+- Resolved critical database consistency issues where users showed match status but didn't appear in requests interface
+- Fixed discover page to exclusively use unified requests table instead of legacy swipes/matches tables
+- Resolved anomaly where legacy data remained in old tables while new system used requests table
+- Fixed missing API endpoints `/api/user-requests` and `/api/requests` that frontend was calling
+- Corrected `createSwipe` function to properly handle both left (skip) and right (request) swipes in requests table
+- Updated `getUserSwipes` function to return all swipes including skipped ones with proper direction mapping
+- Fixed `/api/collaborations/interactions` endpoint to use requests table instead of deleted legacy tables
+- Fixed stats endpoints to use requests table with `status='accepted'` instead of deleted matches table
+
+### Enhanced
+- Successfully migrated 185 swipes and 12 matches from legacy tables to unified requests table
+- Added "skipped" status to requests table schema for left swipes (joins existing "pending", "accepted", "hidden")
+- Improved database consistency by consolidating all swipe and match data into single requests table
+- Enhanced discover page filtering to properly exclude swiped collaborations using requests table
+- Created comprehensive migration script with data integrity validation and duplicate prevention
+
+### Removed
+- **BREAKING**: Permanently deleted legacy `swipes` and `matches` tables from database after successful migration
+- Removed legacy table definitions from `shared/schema.ts` and updated all import statements
+- Cleaned up legacy schema exports and types (insertSwipeSchema, insertMatchSchema, Swipe, Match types)
+- Removed references to deleted tables across server codebase (telegram.ts, routes.ts, stats-routes.ts)
+
+### Technical Details
+- Database now exclusively uses unified requests table with 35 total requests (7 accepted, 1 hidden, 27 pending)
+- Migration preserved original timestamps and properly mapped legacy statuses to new schema
+- Added proper indexes on requests table for optimal query performance
+- All API endpoints now consistently use requests table for swipe and match operations
+- Verified data integrity: specific user 2075c43e-aae9-4826-b9b6-5341112518b9 now has correct data in requests table
+
 ## [Version 1.10.18] - 2025-07-12
 
 ### Enhanced
