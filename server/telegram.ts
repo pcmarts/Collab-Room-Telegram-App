@@ -2462,17 +2462,17 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       return;
     }
 
-    // Check if swipe already exists (to prevent duplicates)
-    const existingSwipes = await db
+    // Check if request already exists in the unified requests table
+    const existingRequests = await db
       .select()
-      .from(swipes)
+      .from(requests)
       .where(
-        sql`${swipes.collaboration_id} = ${collaborationId} AND ${swipes.user_id} = ${requesterId}`
+        sql`${requests.collaboration_id} = ${collaborationId} AND ${requests.user_id} = ${requesterId}`
       );
 
-    if (!existingSwipes || existingSwipes.length === 0) {
+    if (!existingRequests || existingRequests.length === 0) {
       console.error(
-        `[SWIPE_ACTION] No existing swipe found for collab ${collaborationId} and user ${requesterId}`
+        `[SWIPE_ACTION] No existing request found for collab ${collaborationId} and user ${requesterId}`
       );
       await bot.answerCallbackQuery(callbackQuery.id, {
         text: "Original request not found. It may have been removed.",
@@ -2481,15 +2481,10 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       return;
     }
 
-    // Check if there's already a match
-    const existingMatches = await db
-      .select()
-      .from(matches)
-      .where(
-        sql`${matches.collaboration_id} = ${collaborationId} AND ${matches.requester_id} = ${requesterId}`
-      );
+    // Check if there's already an accepted match in the requests table
+    const existingMatch = existingRequests.find(req => req.status === 'accepted');
 
-    if (existingMatches && existingMatches.length > 0) {
+    if (existingMatch) {
       console.log(
         `[SWIPE_ACTION] Match already exists for collab ${collaborationId} and user ${requesterId}`
       );
@@ -2524,23 +2519,22 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       return;
     }
 
-    // If swiping right, create a match
+    // If swiping right, accept the request (create a match)
     if (direction === "right") {
-      // Create a match record
-      const [match] = await db
-        .insert(matches)
-        .values({
-          id: crypto.randomUUID(),
-          collaboration_id: collaborationId,
-          host_id: user.id,
-          requester_id: requesterId,
-          created_at: new Date(),
-          status: "active",
+      // Update the request status to 'accepted' to create a match
+      const [updatedRequest] = await db
+        .update(requests)
+        .set({
+          status: 'accepted',
+          updated_at: new Date()
         })
+        .where(
+          sql`${requests.collaboration_id} = ${collaborationId} AND ${requests.user_id} = ${requesterId}`
+        )
         .returning();
 
       console.log(
-        `[SWIPE_ACTION] Created match ${match.id} for collab ${collaborationId} and user ${requesterId}`
+        `[SWIPE_ACTION] Accepted request ${updatedRequest.id} for collab ${collaborationId} and user ${requesterId}`
       );
 
       // Send notification to the requester about the match
@@ -2620,10 +2614,26 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
         text: `You matched with ${requester.first_name}! They've been notified.`,
       });
     } 
-    // If swiping left, just update the UI
+    // If swiping left, hide the request
     else if (direction === "left") {
       console.log(
         `[SWIPE_ACTION] User ${user.id} swiped left on request from ${requesterId} for collab ${collaborationId}`
+      );
+
+      // Update the request status to 'hidden'
+      const [updatedRequest] = await db
+        .update(requests)
+        .set({
+          status: 'hidden',
+          updated_at: new Date()
+        })
+        .where(
+          sql`${requests.collaboration_id} = ${collaborationId} AND ${requests.user_id} = ${requesterId}`
+        )
+        .returning();
+
+      console.log(
+        `[SWIPE_ACTION] Hidden request ${updatedRequest.id} for collab ${collaborationId} and user ${requesterId}`
       );
 
       // Update the original message
