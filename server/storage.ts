@@ -978,21 +978,6 @@ export class DatabaseStorage implements IStorage {
   async createSwipe(swipe: InsertSwipe): Promise<Swipe> {
     console.log("Creating swipe using requests table");
     
-    // Only process right swipes (collaboration requests)
-    // Left swipes are no longer stored
-    if (swipe.direction === 'left') {
-      // Return a dummy swipe object for left swipes
-      return {
-        id: crypto.randomUUID(),
-        user_id: swipe.user_id,
-        collaboration_id: swipe.collaboration_id,
-        direction: 'left',
-        note: null,
-        details: null,
-        created_at: new Date(),
-      };
-    }
-    
     // Get the collaboration to find the host
     const collaboration = await this.getCollaboration(swipe.collaboration_id);
     if (!collaboration) {
@@ -1017,34 +1002,36 @@ export class DatabaseStorage implements IStorage {
         id: request.id,
         user_id: request.requester_id,
         collaboration_id: request.collaboration_id,
-        direction: 'right',
+        direction: request.status === 'pending' ? 'right' : 'left',
         note: request.note,
         details: swipe.details,
         created_at: request.created_at,
       };
     }
     
-    // Create a new request
+    // Create a new request for both left and right swipes
     const requestData: InsertRequest = {
       collaboration_id: swipe.collaboration_id,
       requester_id: swipe.user_id,
       host_id: collaboration.creator_id,
-      status: 'pending',
+      status: swipe.direction === 'right' ? 'pending' : 'skipped',
       note: swipe.note || swipe.details?.message || null,
     };
     
     const request = await this.createRequest(requestData);
     
-    // Notify the host about the new request
-    try {
-      await notifyNewCollabRequest(
-        collaboration.creator_id,
-        swipe.user_id,
-        collaboration.id
-      );
-      console.log("Collaboration request notification sent");
-    } catch (notifyError) {
-      console.error("Error sending collaboration request notification:", notifyError);
+    // Only notify the host for right swipes (collaboration requests)
+    if (swipe.direction === 'right') {
+      try {
+        await notifyNewCollabRequest(
+          collaboration.creator_id,
+          swipe.user_id,
+          collaboration.id
+        );
+        console.log("Collaboration request notification sent");
+      } catch (notifyError) {
+        console.error("Error sending collaboration request notification:", notifyError);
+      }
     }
     
     // Return as a swipe for legacy compatibility
@@ -1052,7 +1039,7 @@ export class DatabaseStorage implements IStorage {
       id: request.id,
       user_id: request.requester_id,
       collaboration_id: request.collaboration_id,
-      direction: 'right',
+      direction: swipe.direction,
       note: request.note,
       details: swipe.details,
       created_at: request.created_at,
@@ -1062,15 +1049,19 @@ export class DatabaseStorage implements IStorage {
   async getUserSwipes(userId: string): Promise<Swipe[]> {
     console.log("Getting user swipes using requests table");
     
-    // Get requests where user is the requester
-    const userRequests = await this.getUserRequestsAsRequester(userId);
+    // Get ALL requests where user is the requester (including skipped ones)
+    const userRequests = await db
+      .select()
+      .from(requests)
+      .where(eq(requests.requester_id, userId))
+      .orderBy(desc(requests.created_at));
     
     // Convert requests to swipes for legacy compatibility
     return userRequests.map(request => ({
       id: request.id,
       user_id: request.requester_id,
       collaboration_id: request.collaboration_id,
-      direction: 'right' as const,
+      direction: request.status === 'skipped' ? 'left' as const : 'right' as const,
       note: request.note,
       details: null,
       created_at: request.created_at,

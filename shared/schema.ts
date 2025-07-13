@@ -641,7 +641,7 @@ export const requests = pgTable("requests", {
   host_id: uuid("host_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  status: text("status").notNull().default("pending"), // 'pending', 'accepted', 'hidden'
+  status: text("status").notNull().default("pending"), // 'pending', 'accepted', 'hidden', 'skipped'
   note: text("note"), // Personalized message from requester
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),

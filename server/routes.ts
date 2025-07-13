@@ -4213,6 +4213,169 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Add user-requests endpoint (alias for user-swipes since they're now the same)
+  app.get("/api/user-requests", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Get User Requests Endpoint ============');
+    console.log('Headers:', req.headers);
+
+    try {
+      // Get user from impersonation session or Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Get user from database
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found in database');
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Get all requests for this user from the requests table
+      const userRequests = await storage.getUserSwipes(user.id);
+      
+      console.log(`Found ${userRequests.length} requests for user ${user.id}`);
+      
+      // Convert to the format expected by the frontend
+      const formattedRequests = userRequests.map(request => ({
+        id: request.id,
+        collaboration_id: request.collaboration_id,
+        user_id: request.user_id,
+        action: request.direction === 'right' ? 'request' : 'skip',
+        created_at: request.created_at,
+        note: request.note
+      }));
+      
+      return res.json(formattedRequests);
+    } catch (error) {
+      console.error('Failed to fetch user requests:', error);
+      return res.status(500).json({ 
+        error: 'Failed to fetch user requests', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Add POST /api/requests endpoint to handle new requests/swipes
+  app.post("/api/requests", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Create Request Endpoint ============');
+    console.log('Request timestamp:', new Date().toISOString());
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    
+    try {
+      const { collaboration_id, request_id, action, note, is_potential_match } = req.body;
+      
+      console.log('Parsed request parameters:', { collaboration_id, request_id, action, note, is_potential_match });
+      
+      // Validate action
+      if (action !== 'skip' && action !== 'request') {
+        console.log('Validation error: Invalid action value:', action);
+        return res.status(400).json({ error: 'Action must be either "skip" or "request"' });
+      }
+      
+      // Get user from telegram data
+      console.log('Attempting to extract telegram user data from request...');
+      const telegramData = getTelegramUserFromRequest(req);
+      
+      if (!telegramData) {
+        console.log('Authentication error: No telegram data found in the request');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      const telegramId = telegramData.id.toString();
+      console.log(`Authentication success: Found Telegram ID: ${telegramId}`);
+      
+      // Get the actual user from database using telegram_id
+      console.log(`Looking up user by Telegram ID: ${telegramId}...`);
+      const user = await storage.getUserByTelegramId(telegramId);
+      
+      if (!user) {
+        console.log('Database error: User not found with telegramId:', telegramId);
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      console.log(`Database success: Found user ${user.id} (${user.first_name} ${user.last_name || ''})`);
+      
+      // Handle potential match case
+      if (is_potential_match && request_id) {
+        console.log(`Processing potential match with request ID: ${request_id}`);
+        
+        // For potential matches, we need to accept or hide the request
+        if (action === 'request') {
+          // Accept the request
+          const result = await storage.acceptCollaborationRequest(user.id, request_id);
+          if (result.success) {
+            console.log(`Accepted collaboration request ${request_id}`);
+            return res.json({ success: true, match: result.match });
+          } else {
+            console.log(`Failed to accept collaboration request: ${result.error}`);
+            return res.status(400).json({ error: result.error });
+          }
+        } else {
+          // Hide the request
+          const result = await storage.hideCollaborationRequest(user.id, request_id);
+          if (result.success) {
+            console.log(`Hidden collaboration request ${request_id}`);
+            return res.json({ success: true });
+          } else {
+            console.log(`Failed to hide collaboration request: ${result.error}`);
+            return res.status(400).json({ error: result.error });
+          }
+        }
+      }
+      
+      // Handle regular collaboration case
+      if (!collaboration_id) {
+        console.log('Validation error: Missing collaboration_id');
+        return res.status(400).json({ error: 'collaboration_id is required' });
+      }
+      
+      // Convert action to direction for the swipe system
+      const direction = action === 'request' ? 'right' : 'left';
+      
+      // Create the swipe/request
+      const swipeData = {
+        user_id: user.id,
+        collaboration_id: collaboration_id,
+        direction: direction,
+        note: note || null,
+        details: note || null
+      };
+      
+      console.log('Creating swipe with data:', swipeData);
+      const swipe = await storage.createSwipe(swipeData);
+      
+      console.log('Swipe created successfully:', swipe);
+      
+      // Check for matches if this was a right swipe
+      if (direction === 'right') {
+        console.log('Checking for potential matches...');
+        // This logic would be handled by the createSwipe function
+        // which should check for mutual right swipes and create matches
+      }
+      
+      return res.json({ 
+        success: true, 
+        swipe: swipe,
+        action: action,
+        collaboration_id: collaboration_id 
+      });
+      
+    } catch (error) {
+      console.error('Failed to create request:', error);
+      return res.status(500).json({ 
+        error: 'Failed to create request', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   // Twitter API routes removed
 
   // Register Referral API routes
