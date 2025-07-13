@@ -2352,9 +2352,9 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       
       // Find the full collaboration ID using the shortened version
       const collaborationResults = await db.execute(
-        sql`SELECT * FROM ${collaborations} WHERE SUBSTRING(CAST(${collaborations.id} as TEXT), 1, 8) = ${shortCollabId}`
+        sql`SELECT * FROM collaborations WHERE SUBSTRING(CAST(id as TEXT), 1, 8) = ${shortCollabId}`
       );
-      const collaboration = collaborationResults[0];
+      const collaboration = collaborationResults.rows[0];
       
       if (!collaboration) {
         console.error(`[SWIPE_CALLBACK] Collaboration with short ID ${shortCollabId} not found`);
@@ -2367,9 +2367,9 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       
       // Find the full requester ID using the shortened version
       const requesterResults = await db.execute(
-        sql`SELECT * FROM ${users} WHERE SUBSTRING(CAST(${users.id} as TEXT), 1, 8) = ${shortRequesterId}`
+        sql`SELECT * FROM users WHERE SUBSTRING(CAST(id as TEXT), 1, 8) = ${shortRequesterId}`
       );
-      const requester = requesterResults[0];
+      const requester = requesterResults.rows[0];
         
       if (!requester) {
         console.error(`[SWIPE_CALLBACK] Requester with short ID ${shortRequesterId} not found`);
