@@ -119,6 +119,11 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 13, 2025. **FIXED**: Resolved SQL syntax errors in Telegram action button handlers
+  - Fixed syntax error "syntax error at or near '='" in button callback handlers
+  - Replaced problematic `sql` template literals with proper Drizzle ORM syntax using `and()` and `eq()` functions
+  - Action buttons now correctly update request status in database (Hide button sets status to 'hidden', Match button sets status to 'accepted')
+  - Telegram notifications system fully operational with working interactive buttons for collaboration request responses
 - July 13, 2025. **FIXED**: Resolved duplicate route definition issue preventing Telegram notifications from being sent
   - Fixed critical bug where duplicate `/api/collaborations/:id/apply` route definitions caused notifications to fail
   - Removed basic route handler that was intercepting requests before enhanced route with notification code

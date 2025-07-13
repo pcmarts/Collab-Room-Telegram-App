@@ -2467,7 +2467,10 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       .select()
       .from(requests)
       .where(
-        sql`${requests.collaboration_id} = ${collaborationId} AND ${requests.user_id} = ${requesterId}`
+        and(
+          eq(requests.collaboration_id, collaborationId),
+          eq(requests.user_id, requesterId)
+        )
       );
 
     if (!existingRequests || existingRequests.length === 0) {
@@ -2529,7 +2532,10 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
           updated_at: new Date()
         })
         .where(
-          sql`${requests.collaboration_id} = ${collaborationId} AND ${requests.user_id} = ${requesterId}`
+          and(
+            eq(requests.collaboration_id, collaborationId),
+            eq(requests.user_id, requesterId)
+          )
         )
         .returning();
 
@@ -2628,7 +2634,10 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
           updated_at: new Date()
         })
         .where(
-          sql`${requests.collaboration_id} = ${collaborationId} AND ${requests.user_id} = ${requesterId}`
+          and(
+            eq(requests.collaboration_id, collaborationId),
+            eq(requests.user_id, requesterId)
+          )
         )
         .returning();
 
