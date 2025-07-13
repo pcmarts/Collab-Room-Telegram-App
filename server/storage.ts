@@ -898,6 +898,7 @@ export class DatabaseStorage implements IStorage {
   // Collaboration applications (Legacy implementation - using swipes now)
   async applyToCollaboration(application: InsertCollabApplication): Promise<CollabApplication> {
     console.log("Creating collaboration application using new requests table");
+    console.log(`📝 Application details structure:`, JSON.stringify(application.details, null, 2));
     
     // Get the collaboration to find the host
     const collaboration = await this.getCollaboration(application.collaboration_id);
@@ -911,10 +912,12 @@ export class DatabaseStorage implements IStorage {
       requester_id: application.applicant_id,
       host_id: collaboration.creator_id,
       status: 'pending',
-      note: application.details?.message || null,
+      note: application.details?.notes || application.details?.message || null,
     };
     
+    console.log(`📝 Creating request with note: "${requestData.note}"`);
     const request = await this.createRequest(requestData);
+    console.log(`📝 Request created successfully with ID: ${request.id}`);
     
     // Create the legacy compatibility object
     return {

@@ -3133,9 +3133,12 @@ export async function registerRoutes(app: Express) {
 
       // Submit the application (which will create a swipe)
       try {
+        console.log(`📝 About to create application for collaboration ${id} by user ${user.id}`);
         const application = await storage.applyToCollaboration(applicationData);
+        console.log(`📝 Application created successfully: ${application.id}`);
         
         // Create notification for collaboration creator
+        console.log(`📝 Creating database notification for host ${collaboration.creator_id}`);
         await storage.createNotification({
           user_id: collaboration.creator_id,
           type: 'new_application',
@@ -3145,16 +3148,19 @@ export async function registerRoutes(app: Express) {
           is_sent: false,
           created_at: new Date()
         });
+        console.log(`📝 Database notification created successfully`);
 
         // Send Telegram notification to collaboration host
         try {
+          console.log(`📧 About to send Telegram notification to host ${collaboration.creator_id} about application from user ${user.id}`);
           await notifyNewCollabRequest(collaboration.creator_id, user.id, collaboration.id);
           console.log(`✅ Sent Telegram notification to host ${collaboration.creator_id} about new collaboration application`);
         } catch (notificationError) {
-          console.error('Error sending collaboration application notification:', notificationError);
+          console.error('❌ Error sending collaboration application notification:', notificationError);
           // Continue processing even if notification fails
         }
 
+        console.log(`📝 About to send success response`);
         res.status(201).json({
           success: true,
           application,
