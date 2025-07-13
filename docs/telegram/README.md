@@ -184,16 +184,19 @@ export async function notifyMatchCreated(hostUserId: string, requesterUserId: st
 }
 ```
 
-### Admin Notifications (Enhanced in v1.10.9)
+### Admin Notifications (Enhanced in v1.10.9, Updated in v1.10.23)
 
-The bot sends enhanced notifications to administrators about new user applications with interactive buttons for immediate actions. The latest enhancements (v1.10.9) include:
+The bot sends enhanced notifications to administrators about new user applications with interactive buttons for immediate actions. The latest enhancements include:
 
 1. **Enriched User Information** - More comprehensive applicant details including Telegram handle
 2. **Hyperlinked Company Information** - Company names are now hyperlinked to websites for quick validation 
 3. **Robust Telegram ID Handling** - Improved validation and error handling for various Telegram ID formats
 4. **HTML Formatted Messages** - Better readability with proper formatting and emphasis
 5. **Direct Approval Functionality** - Admin can approve applications directly through interactive buttons
-6. **Message Update After Approval** - Original notification is updated to prevent duplicate approvals
+6. **Enhanced Approval Flow (v1.10.23)** - Improved admin experience with separate confirmation messages and button removal
+   - Admin receives a new confirmation message after approving a user
+   - Original message has the approve button completely removed instead of just changing text
+   - Confirmation message includes user details and quick access to admin dashboard
 
 For complete details on the enhanced admin notification system, see [Notification Updates](./notificationUpdates.md#enhanced-admin-notifications-v1109).
 

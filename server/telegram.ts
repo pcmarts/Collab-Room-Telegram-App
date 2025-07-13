@@ -2011,21 +2011,20 @@ async function handleApproveUserCallback(
         show_alert: true,
       });
 
-      // Update the button text to show it's already approved
+      // Remove the approve button since user is already approved
       if (callbackQuery.message) {
         // Get the current inline keyboard
         const currentKeyboard = callbackQuery.message.reply_markup?.inline_keyboard;
 
-        if (currentKeyboard) {
-          // Update the first button (the approval button)
-          currentKeyboard[0][0] = {
-            text: "✅ Already Approved",
-            callback_data: "already_approved", // Dummy callback, won't do anything
+        if (currentKeyboard && currentKeyboard.length > 1) {
+          // Remove the first row (approve button) and keep only the "View Application" button
+          const updatedKeyboard = {
+            inline_keyboard: currentKeyboard.slice(1), // Remove first row, keep the rest
           };
 
           // Update the message with the new keyboard
           await bot.editMessageReplyMarkup(
-            { inline_keyboard: currentKeyboard },
+            updatedKeyboard,
             {
               chat_id: chatId,
               message_id: callbackQuery.message.message_id,
@@ -2148,21 +2147,46 @@ async function handleApproveUserCallback(
       }
     }
 
-    // Update the original message to show the user has been approved
+    // Send a new message to the admin confirming the approval
+    const confirmationMessage = 
+      `✅ <b>User Approved Successfully!</b>\n\n` +
+      `You have approved <b>${userToApprove.first_name} ${userToApprove.last_name || ""}</b>'s application.\n\n` +
+      `The user has been notified and now has full access to the platform.`;
+
+    const confirmationKeyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "👁️ View All Applications",
+            web_app: { url: `${WEBAPP_URL}/admin/applications` },
+          },
+        ],
+      ],
+    };
+
+    try {
+      await bot.sendMessage(chatId, confirmationMessage, {
+        parse_mode: 'HTML',
+        reply_markup: confirmationKeyboard,
+      });
+    } catch (error) {
+      console.error(`[APPROVAL] Failed to send confirmation message: ${error}`);
+    }
+
+    // Remove the approve button from the original message
     if (callbackQuery.message) {
       // Get the current inline keyboard
       const currentKeyboard = callbackQuery.message.reply_markup?.inline_keyboard;
 
-      if (currentKeyboard) {
-        // Update the first button (the approval button)
-        currentKeyboard[0][0] = {
-          text: "✅ User Approved",
-          callback_data: "already_approved", // Dummy callback, won't do anything
+      if (currentKeyboard && currentKeyboard.length > 1) {
+        // Remove the first row (approve button) and keep only the "View Application" button
+        const updatedKeyboard = {
+          inline_keyboard: currentKeyboard.slice(1), // Remove first row, keep the rest
         };
 
         // Update the message with the new keyboard
         await bot.editMessageReplyMarkup(
-          { inline_keyboard: currentKeyboard },
+          updatedKeyboard,
           {
             chat_id: chatId,
             message_id: callbackQuery.message.message_id,

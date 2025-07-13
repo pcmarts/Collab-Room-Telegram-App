@@ -5,6 +5,23 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.23] - 2025-01-16
+
+### Enhanced
+- **Telegram User Approval Flow**: Improved admin user approval experience with enhanced messaging and UI feedback
+  - Admin now receives a new confirmation message after approving a user, providing clear feedback that the action was successful
+  - Original "approve user" message now has the approve button completely removed instead of just changing button text
+  - Confirmation message includes approved user's name and status update for better admin workflow
+  - Enhanced keyboard layout with "View All Applications" button for quick navigation to admin dashboard
+  - Consistent behavior applied to both normal approval and "already approved" cases
+
+### Technical Details
+- Updated `handleApproveUserCallback` function in `server/telegram.ts` to send separate confirmation message to admin
+- Modified original message button removal logic to use `keyboard.slice(1)` instead of button text replacement
+- Added HTML formatting to confirmation message with proper error handling for message delivery
+- Improved user experience by providing immediate visual feedback when approval actions are completed
+- Enhanced admin workflow efficiency with direct access to applications dashboard from confirmation message
+
 ## [Version 1.10.22] - 2025-01-16
 
 ### Fixed

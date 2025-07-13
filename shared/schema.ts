@@ -466,21 +466,7 @@ export const collab_applications = pgTable("collab_applications", {
   };
 });
 
-// Collaboration matching notifications
-export const collab_notifications = pgTable("collab_notifications", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  user_id: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  collaboration_id: uuid("collaboration_id")
-    .notNull()
-    .references(() => collaborations.id, { onDelete: "cascade" }),
-  type: text("type").notNull(),
-  content: text("content").notNull(),
-  is_read: boolean("is_read").default(false),
-  is_sent: boolean("is_sent").default(false),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
+// Collaboration matching notifications table removed - notifications are sent directly via Telegram
 
 // Unified requests table (replacing legacy swipes and matches tables)
 export const requests = pgTable("requests", {
@@ -555,8 +541,7 @@ export const insertMarketingPreferencesSchema = createInsertSchema(
 export const insertCollaborationSchema = createInsertSchema(collaborations);
 export const insertCollabApplicationSchema = createInsertSchema(collab_applications);
 
-export const insertCollabNotificationSchema =
-  createInsertSchema(collab_notifications);
+// Collab notification schema removed - notifications are sent directly via Telegram
 // Legacy schema exports removed - swipes and matches tables have been deleted
 export const insertRequestSchema = createInsertSchema(requests);
 
@@ -577,7 +562,7 @@ export type NotificationPreferences =
 export type MarketingPreferences = typeof marketing_preferences.$inferSelect;
 export type Collaboration = typeof collaborations.$inferSelect;
 
-export type CollabNotification = typeof collab_notifications.$inferSelect;
+// CollabNotification type removed - notifications are sent directly via Telegram
 // Legacy types removed - swipes and matches tables have been deleted
 export type Request = typeof requests.$inferSelect;
 
@@ -590,15 +575,9 @@ export type InsertNotificationPreferences = z.infer<
 export type InsertMarketingPreferences = z.infer<
   typeof insertMarketingPreferencesSchema
 >;
-export type InsertConferencePreferences = z.infer<
-  typeof insertConferencePreferencesSchema
->;
-export type InsertEvent = z.infer<typeof insertEventSchema>;
-export type InsertUserEvent = z.infer<typeof insertUserEventSchema>;
+// Event and conference preference types removed - features have been simplified
 export type InsertCollaboration = z.infer<typeof insertCollaborationSchema>;
-export type InsertCollabNotification = z.infer<
-  typeof insertCollabNotificationSchema
->;
+// InsertCollabNotification type removed - notifications are sent directly via Telegram
 // Legacy insert types removed - swipes and matches tables have been deleted
 export type InsertRequest = z.infer<typeof insertRequestSchema>;
 

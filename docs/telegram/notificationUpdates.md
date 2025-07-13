@@ -6,13 +6,38 @@ The Collab Room has enhanced the Telegram notification system with multiple impr
 
 > **Important Update**: For information about recent fixes to the notification delivery system, including solutions for callback data length limits and chat ID validation, see [Notification Fixes](./notification-fixes.md).
 
-## Enhanced Admin Notifications (v1.10.9)
+## Enhanced Admin Notifications (v1.10.9, Updated in v1.10.23)
 
 The system now provides administrators with rich, interactive notifications about new user applications with direct approval capabilities.
 
 ### Recent Fix (v1.10.14)
 
 **Fixed Critical Approval Button Issue**: Resolved a database schema error that was preventing the approval button from working correctly. The issue occurred when admins clicked "Approve Application" - the system was attempting to update a non-existent `approved_by` field in the database schema, causing the approval process to fail silently. The fix ensures that only valid schema fields (`is_approved` and `approved_at`) are updated during the approval process.
+
+### Enhanced Approval Flow (v1.10.23)
+
+**Improved Admin User Approval Experience**: Enhanced the user approval flow to provide better feedback and clearer workflow for administrators:
+
+- **Separate Confirmation Message**: Admin now receives a new confirmation message after approving a user, providing immediate feedback that the action was successful
+- **Button Removal**: Original "approve user" message has the approve button completely removed instead of just changing the button text
+- **Rich Confirmation Details**: Confirmation message includes the approved user's name and current status
+- **Quick Navigation**: Confirmation message includes direct access to the admin applications dashboard
+- **Consistent Experience**: Same behavior applied to both normal approval and "already approved" scenarios
+
+#### New Confirmation Message Format
+```
+✅ User Approved Successfully!
+
+You have approved [User Name]'s application.
+
+The user has been notified and now has full access to the platform.
+```
+
+#### Technical Implementation
+- Updated `handleApproveUserCallback` function to send separate confirmation message
+- Modified keyboard handling to remove approve button using `slice(1)` method
+- Added HTML formatting with proper error handling for message delivery
+- Enhanced workflow efficiency with direct admin dashboard access
 
 ### Features
 

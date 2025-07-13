@@ -1,8 +1,46 @@
-# Collaboration Admin Notifications
+# Admin Notifications
 
-This document describes the admin notification system for new collaborations in the Collab Room platform.
+This document describes the admin notification system for the Collab Room platform.
 
 ## Overview
+
+The admin notification system covers two main areas:
+
+1. **User Application Notifications** - When new users apply to join the platform
+2. **Collaboration Notifications** - When users create new collaborations
+
+## User Application Notifications
+
+### New User Applications
+
+When a new user submits an application, notifications are sent to all admin users with:
+- User's name and Telegram handle
+- Company information (hyperlinked to website)
+- User's role/job title
+- Interactive buttons for immediate action
+
+### User Approval Flow (Enhanced in v1.10.23)
+
+The user approval process has been enhanced to provide better feedback to administrators:
+
+1. **Initial Notification**: Admin receives notification with "Approve Application" button
+2. **Approval Action**: When admin clicks approve:
+   - User is approved in the database
+   - User receives approval notification
+   - **NEW**: Admin receives a separate confirmation message
+   - **UPDATED**: Original message has approve button removed (not just text change)
+3. **Confirmation Message**: Includes approved user's name and quick access to admin dashboard
+
+#### Approval Confirmation Message Format
+```
+✅ User Approved Successfully!
+
+You have approved [User Name]'s application.
+
+The user has been notified and now has full access to the platform.
+```
+
+## Collaboration Notifications
 
 When a user creates a new collaboration, two notifications are sent:
 

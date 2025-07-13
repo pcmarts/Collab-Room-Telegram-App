@@ -4,7 +4,7 @@ import { createServer } from "http";
 import { db } from "./db";
 import { 
   users, companies, notification_preferences, marketing_preferences, 
-  collaborations, collab_notifications, requests,
+  collaborations, requests,
   referral_events, user_referrals,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
   InsertCollaboration, CollabApplication, InsertCollabApplication,
@@ -2956,97 +2956,7 @@ export async function registerRoutes(app: Express) {
 
 
 
-  // Get user notifications
-  app.get("/api/notifications", async (req: TelegramRequest, res: Response) => {
-    console.log('============ DEBUG: User Notifications Endpoint ============');
-    console.log('Headers:', req.headers);
-
-    try {
-      // Get user from request
-      const telegramUser = getTelegramUserFromRequest(req);
-      if (!telegramUser) {
-        console.error('No Telegram user found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Get user from database
-      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
-      if (!user) {
-        console.error('User not found');
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      // Get user's notifications
-      const notifications = await storage.getUserNotifications(user.id);
-      return res.json(notifications);
-
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-      res.status(500).json({ 
-        error: 'Failed to fetch notifications', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
-      });
-    }
-  });
-
-  // Mark notification as read
-  app.patch("/api/notifications/:id/read", async (req: TelegramRequest, res: Response) => {
-    console.log('============ DEBUG: Mark Notification Read Endpoint ============');
-    console.log('Headers:', req.headers);
-    console.log('Params:', req.params);
-
-    try {
-      const { id } = req.params;
-      
-      // Get user from request
-      const telegramUser = getTelegramUserFromRequest(req);
-      if (!telegramUser) {
-        console.error('No Telegram user found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Get user from database
-      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
-      if (!user) {
-        console.error('User not found');
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      // Get the notification
-      const [notification] = await db.select()
-        .from(collab_notifications)
-        .where(eq(collab_notifications.id, id));
-      
-      if (!notification) {
-        return res.status(404).json({ error: 'Notification not found' });
-      }
-
-      // Check if user owns this notification
-      if (notification.user_id !== user.id) {
-        return res.status(403).json({ error: 'You are not authorized to update this notification' });
-      }
-
-      // Mark notification as read
-      const updatedNotification = await storage.markNotificationAsRead(id);
-      
-      return res.json({
-        success: true,
-        notification: updatedNotification,
-        message: 'Notification marked as read'
-      });
-
-    } catch (error) {
-      console.error('Detailed error:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        name: error instanceof Error ? error.name : 'Unknown'
-      });
-      res.status(500).json({ 
-        error: 'Server error', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
-      });
-    }
-  });
+  // Notification routes removed - notifications are sent directly via Telegram
 
   // Get user matches
   app.get("/api/matches", async (req: TelegramRequest, res: Response) => {

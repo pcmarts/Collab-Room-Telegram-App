@@ -1,13 +1,11 @@
 import { 
-  users, companies, collaborations, collab_notifications, swipes, matches, requests,
+  users, companies, collaborations, requests,
   notification_preferences, marketing_preferences,
   user_referrals, referral_events, // Added referral tables
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
   type CollabApplication, type InsertCollabApplication,
-  type CollabNotification, type InsertCollabNotification,
-  type Swipe, type InsertSwipe,
-  type Match, type InsertMatch,
+  // Legacy notification and swipe types removed
   type Request, type InsertRequest,
   type NotificationPreferences, type MarketingPreferences,
   type UserReferral, type InsertUserReferral, // Added referral types
@@ -70,11 +68,7 @@ export interface IStorage {
   acceptCollaborationRequest(userId: string, requestId: string): Promise<{ success: boolean; error?: string; match?: any }>;
   hideCollaborationRequest(userId: string, requestId: string): Promise<{ success: boolean; error?: string }>;
   
-  // Notification methods
-  createNotification(notification: InsertCollabNotification): Promise<CollabNotification>;
-  getUserNotifications(userId: string): Promise<CollabNotification[]>;
-  markNotificationAsRead(id: string): Promise<CollabNotification | undefined>;
-  markNotificationAsSent(id: string): Promise<CollabNotification | undefined>;
+  // Notification methods removed - notifications are sent directly via Telegram
   
   // Notification preferences
   getUserNotificationPreferences(userId: string): Promise<NotificationPreferences | undefined>;
@@ -2191,50 +2185,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  // Notification methods
-  async createNotification(notification: InsertCollabNotification): Promise<CollabNotification> {
-    const [newNotification] = await db
-      .insert(collab_notifications)
-      .values(notification)
-      .returning();
-    return newNotification;
-  }
-  
-  async getUserNotifications(userId: string): Promise<CollabNotification[]> {
-    return db
-      .select()
-      .from(collab_notifications)
-      .where(eq(collab_notifications.user_id, userId))
-      .orderBy(desc(collab_notifications.created_at));
-  }
-  
-  async markNotificationAsRead(id: string): Promise<CollabNotification | undefined> {
-    try {
-      const [updatedNotification] = await db
-        .update(collab_notifications)
-        .set({ is_read: true })
-        .where(eq(collab_notifications.id, id))
-        .returning();
-      return updatedNotification;
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-      throw error;
-    }
-  }
-  
-  async markNotificationAsSent(id: string): Promise<CollabNotification | undefined> {
-    try {
-      const [updatedNotification] = await db
-        .update(collab_notifications)
-        .set({ is_sent: true })
-        .where(eq(collab_notifications.id, id))
-        .returning();
-      return updatedNotification;
-    } catch (error) {
-      console.error("Error marking notification as sent:", error);
-      throw error;
-    }
-  }
+  // Notification methods removed - notifications are sent directly via Telegram
   
   // Notification preferences
   async getUserNotificationPreferences(userId: string): Promise<NotificationPreferences | undefined> {
