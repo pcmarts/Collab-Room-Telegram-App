@@ -1023,14 +1023,20 @@ export class DatabaseStorage implements IStorage {
     // Only notify the host for right swipes (collaboration requests)
     if (swipe.direction === 'right') {
       try {
+        console.log(`🔔 NOTIFICATION: Attempting to send collaboration request notification`);
+        console.log(`🔔 Host ID: ${collaboration.creator_id}`);
+        console.log(`🔔 Requester ID: ${swipe.user_id}`);
+        console.log(`🔔 Collaboration ID: ${collaboration.id}`);
+        
         await notifyNewCollabRequest(
           collaboration.creator_id,
           swipe.user_id,
           collaboration.id
         );
-        console.log("Collaboration request notification sent");
+        console.log("🔔 SUCCESS: Collaboration request notification sent");
       } catch (notifyError) {
-        console.error("Error sending collaboration request notification:", notifyError);
+        console.error("🔔 ERROR: Failed to send collaboration request notification:", notifyError);
+        console.error("🔔 ERROR DETAILS:", notifyError.message);
       }
     }
     

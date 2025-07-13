@@ -2662,6 +2662,11 @@ export async function notifyNewCollabRequest(
   collaborationId: string
 ) {
   try {
+    console.log(`🔔 TELEGRAM NOTIFICATION: Starting notifyNewCollabRequest`);
+    console.log(`🔔 Host User ID: ${hostUserId}`);
+    console.log(`🔔 Requester User ID: ${requesterUserId}`);
+    console.log(`🔔 Collaboration ID: ${collaborationId}`);
+    
     // Get host user details
     const [host] = await db
       .select()
@@ -2669,9 +2674,11 @@ export async function notifyNewCollabRequest(
       .where(eq(users.id, hostUserId));
 
     if (!host || !host.telegram_id) {
-      console.error(`Host user ${hostUserId} not found or has no Telegram ID`);
+      console.error(`🔔 ERROR: Host user ${hostUserId} not found or has no Telegram ID`);
       return false;
     }
+    
+    console.log(`🔔 Host found: ${host.first_name} ${host.last_name}, Telegram ID: ${host.telegram_id}`);
 
     // Get requester user details
     const [requester] = await db
@@ -2680,9 +2687,11 @@ export async function notifyNewCollabRequest(
       .where(eq(users.id, requesterUserId));
 
     if (!requester) {
-      console.error(`Requester user ${requesterUserId} not found`);
+      console.error(`🔔 ERROR: Requester user ${requesterUserId} not found`);
       return false;
     }
+    
+    console.log(`🔔 Requester found: ${requester.first_name} ${requester.last_name}`);
 
     // Get collaboration details
     const [collaboration] = await db
@@ -2799,13 +2808,16 @@ export async function notifyNewCollabRequest(
       `\n${collaboration.topics?.length ? "🏷️ " + collaboration.topics.join(", ") : ""}`;
 
     // Send notification to host with link preview disabled
+    console.log(`🔔 SENDING MESSAGE: Attempting to send Telegram message to ${host.telegram_id}`);
+    console.log(`🔔 MESSAGE CONTENT: ${message.substring(0, 200)}...`);
+    
     await sendDirectFormattedMessage(parseInt(host.telegram_id), message, {
       parse_mode: "HTML",
       reply_markup: keyboard,
       disable_web_page_preview: true
     });
 
-    console.log(`Sent collaboration request notification to host ${hostUserId}`);
+    console.log(`🔔 SUCCESS: Sent collaboration request notification to host ${hostUserId}`);
     return true;
   } catch (error) {
     console.error("Error sending collaboration request notification:", error);
