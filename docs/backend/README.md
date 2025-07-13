@@ -73,6 +73,17 @@ export interface IStorage {
   getUserCollaborations(userId: string): Promise<Collaboration[]>;
   searchCollaborations(userId: string, filters: CollaborationFilters): Promise<Collaboration[]>;
   
+  // Collaboration request methods (unified requests system)
+  createCollaborationRequest(userId: string, collaborationId: string, action: 'request' | 'skip', note?: string): Promise<Request>;
+  acceptCollaborationRequest(userId: string, requestId: string): Promise<{success: boolean, match?: any, error?: string}>;
+  hideCollaborationRequest(userId: string, requestId: string): Promise<{success: boolean, error?: string}>;
+  getCollaborationRequests(userId: string, options: {cursor?: string, limit?: number, filter?: string}): Promise<any>;
+  
+  // Legacy compatibility methods (deprecated, use request methods above)
+  createSwipe(swipe: InsertSwipe): Promise<Swipe>; // Converts to request format
+  getUserSwipes(userId: string): Promise<Swipe[]>; // Returns converted request data
+  deleteLeftSwipes(userId: string): Promise<number>; // Deletes skipped requests
+  
   // Other methods...
 }
 ```

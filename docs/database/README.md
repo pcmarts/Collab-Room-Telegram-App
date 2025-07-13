@@ -135,6 +135,8 @@ export const insertCollaborationSchema = createInsertSchema(collaborations);
 
 **⚠️ IMPORTANT: As of v1.10.19 (2025-07-13), the legacy `swipes` and `matches` tables have been permanently deleted and replaced with a unified `requests` table.**
 
+**✅ REFACTORING COMPLETED: As of v1.10.20 (2025-07-13), all swipe-related terminology has been comprehensively refactored to use requests table format throughout the codebase.**
+
 The application implements a Tinder-like swiping system for collaborations using a unified requests table:
 
 ```typescript
@@ -173,6 +175,25 @@ The unified system provides several advantages over the legacy dual-table approa
 2. **Simplified Queries**: No complex JOINs between swipes and matches tables
 3. **Better Performance**: Single table queries with proper indexing
 4. **Easier Maintenance**: One source of truth for all collaboration interactions
+
+#### API Integration (v1.10.20 Updates)
+
+The refactored system now uses consistent request-based terminology:
+
+**New Primary Endpoint:**
+- `POST /api/requests` - Accepts `action` parameter ("request" or "skip") instead of legacy `direction` ("left" or "right")
+
+**Storage Methods:**
+- `createCollaborationRequest()` - Creates new requests with proper action-based parameters
+- `acceptCollaborationRequest()` - Handles request acceptance and match creation
+- `hideCollaborationRequest()` - Manages request hiding functionality
+
+**Legacy Compatibility:**
+- `POST /api/swipes` - Deprecated endpoint maintained for backward compatibility
+- `createSwipe()` - Legacy method that converts old format to new requests table
+- `getUserSwipes()` - Returns request data in legacy swipe format for compatibility
+
+All new development should use the request-based endpoints and methods, while legacy methods ensure existing code continues to function during transition.
 
 #### Note Display in Matches
 

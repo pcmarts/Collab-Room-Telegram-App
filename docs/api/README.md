@@ -261,50 +261,138 @@ Retrieves potential matches for the current user. These are users who have alrea
 ]
 ```
 
-#### `POST /api/swipes`
+#### `POST /api/requests`
 
-Records a user's swipe action on a collaboration or a potential match.
+Records a user's action on a collaboration or a potential match using the unified requests system.
 
 **Request Body for a Regular Collaboration:**
 ```json
 {
   "collaboration_id": "collab-id",
-  "direction": "left" | "right"
+  "action": "request" | "skip",
+  "note": "Optional message for collaboration request"
 }
 ```
 
 **Request Body for a Potential Match:**
 ```json
 {
-  "swipe_id": "original-swipe-id",
-  "direction": "left" | "right",
-  "is_potential_match": true
+  "request_id": "original-request-id",
+  "action": "request" | "skip",
+  "is_potential_match": true,
+  "note": "Optional response message"
 }
 ```
 
 **Response:**
 ```json
 {
-  "swipe": {
-    "id": "swipe-id",
-    "user_id": "user-id",
+  "request": {
+    "id": "request-id",
+    "requester_id": "user-id",
     "collaboration_id": "collab-id",
-    "direction": "left" | "right",
-    "details": {},
-    "created_at": "2025-03-22T12:00:00Z"
+    "host_id": "host-user-id",
+    "action": "request" | "skip",
+    "status": "pending" | "accepted" | "hidden" | "skipped",
+    "note": "Optional message",
+    "created_at": "2025-07-13T12:00:00Z"
   },
   "match": {
     "id": "match-id",
     "collaboration_id": "collab-id",
     "host_id": "host-user-id",
     "requester_id": "requester-user-id",
-    "status": "pending",
-    "created_at": "2025-03-22T12:00:00Z"
+    "status": "active",
+    "created_at": "2025-07-13T12:00:00Z"
   }
 }
 ```
 
-The `match` field is only included when both users have swiped right on each other's collaborations, creating a match. When a match is created, both users will also receive a notification through the Telegram bot.
+The `match` field is only included when both users have made requests on each other's collaborations, creating a match. When a match is created, both users will also receive a notification through the Telegram bot.
+
+#### `POST /api/collaboration-requests/:id/accept`
+
+Accepts a collaboration request.
+
+**Response:**
+```json
+{
+  "success": true,
+  "match": {
+    "id": "match-id",
+    "collaboration_id": "collab-id",
+    "host_id": "host-user-id",
+    "requester_id": "requester-user-id",
+    "status": "active",
+    "created_at": "2025-07-13T12:00:00Z"
+  }
+}
+```
+
+#### `POST /api/collaboration-requests/:id/hide`
+
+Hides a collaboration request from the user's request list.
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+#### `GET /api/collaboration-requests`
+
+Retrieves collaboration requests for the current user with pagination and filtering support.
+
+**Query Parameters:**
+- `cursor`: Pagination cursor (optional)
+- `limit`: Number of requests to return (default: 10)
+- `filter`: Filter type ("all" or "hidden")
+
+**Response:**
+```json
+{
+  "requests": [
+    {
+      "id": "request-id",
+      "collaboration_id": "collab-id",
+      "requester_id": "user-id",
+      "host_id": "host-user-id",
+      "status": "pending",
+      "note": "Request message",
+      "created_at": "2025-07-13T12:00:00Z",
+      "collaboration": {
+        "type": "podcast",
+        "description": "Collaboration description"
+      },
+      "requester": {
+        "first_name": "First",
+        "last_name": "Last"
+      }
+    }
+  ],
+  "hasMore": true,
+  "nextCursor": "cursor-value"
+}
+```
+
+#### `GET /api/collaboration-requests/summary`
+
+Retrieves a summary of collaboration requests for the current user.
+
+**Response:**
+```json
+{
+  "totalPendingCount": 5,
+  "totalCount": 12
+}
+```
+
+#### `POST /api/swipes` (Legacy - Deprecated)
+
+**⚠️ This endpoint is deprecated and maintained for backward compatibility only. Use `/api/requests` instead.**
+
+Legacy endpoint that converts old swipe format to new request format internally. Parameters are automatically converted from `direction` ("left"/"right") to `action` ("skip"/"request").
 
 #### `GET /api/matches`
 

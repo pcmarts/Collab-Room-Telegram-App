@@ -5,6 +5,30 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.20] - 2025-07-13
+
+### Refactored
+- **MAJOR**: Comprehensive refactoring of swipe-related terminology to use requests table format throughout entire codebase
+- Updated rate limiter from `swipeLimiter` to `requestLimiter` in middleware and all route handlers
+- Migrated server to accept "action" parameter ("request" or "skip") instead of legacy "direction" ("left" or "right")
+- Created new storage methods for action-based requests: `createCollaborationRequest`, `acceptCollaborationRequest`, `hideCollaborationRequest`
+- Updated all error messages, logs, and documentation to use collaboration request terminology consistently
+- Refactored `deleteLeftSwipes` method to properly delete skipped requests from requests table instead of no-op behavior
+
+### Enhanced
+- Improved parameter validation with clear error messages for invalid action values
+- Added comprehensive logging for request processing with detailed debugging information
+- Enhanced backward compatibility by maintaining legacy `createSwipe` and `getUserSwipes` methods that convert to new format
+- Strengthened type safety by updating method signatures to use proper action-based parameters
+- Improved code consistency by removing mixed terminology and standardizing on requests-based language
+
+### Technical Details
+- All endpoints now use consistent request/action terminology while maintaining full backward compatibility
+- Server properly validates action parameters and returns appropriate error messages
+- Legacy compatibility functions convert between old direction format and new action format seamlessly
+- Rate limiting properly applied to collaboration request endpoints with updated naming
+- Database operations exclusively use requests table with proper status mapping (pending/accepted/hidden/skipped)
+
 ## [Version 1.10.19] - 2025-07-13
 
 ### Fixed
