@@ -2738,26 +2738,26 @@ export async function notifyNewCollabRequest(
       .from(companies)
       .where(eq(companies.user_id, requesterUserId));
       
-    // Get swipe details (if user added a note)
-    const [swipe] = await db
+    // Get request details (if user added a note)
+    const [request] = await db
       .select()
-      .from(swipes)
+      .from(requests)
       .where(
         and(
-          eq(swipes.user_id, requesterUserId),
-          eq(swipes.collaboration_id, collaborationId),
-          eq(swipes.direction, 'right')
+          eq(requests.requester_id, requesterUserId),
+          eq(requests.collaboration_id, collaborationId),
+          eq(requests.status, 'pending')
         )
       )
-      .orderBy(sql`${swipes.created_at} DESC`)
+      .orderBy(sql`${requests.created_at} DESC`)
       .limit(1);
 
     // Format the message with user and collaboration details in the enhanced format
     
     // Handle note if present
     let noteSection = "";
-    if (swipe && swipe.note) {
-      noteSection = `\n📝 <b>Note:</b> ${swipe.note}\n`;
+    if (request && request.note) {
+      noteSection = `\n📝 <b>Note:</b> ${request.note}\n`;
     }
     
     // Handle Twitter, LinkedIn, and Website links

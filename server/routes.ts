@@ -3057,17 +3057,17 @@ export async function registerRoutes(app: Express) {
         .where(eq(collaborations.id, id))
         .returning();
       
-      // Also delete any swipes (applications) for this collaboration
-      const deletedSwipes = await db.delete(swipes)
-        .where(eq(swipes.collaboration_id, id))
+      // Also delete any requests for this collaboration
+      const deletedRequests = await db.delete(requests)
+        .where(eq(requests.collaboration_id, id))
         .returning();
       
-      console.log(`Successfully deleted collaboration ${id} and ${deletedSwipes.length} related swipes/applications`);
+      console.log(`Successfully deleted collaboration ${id} and ${deletedRequests.length} related requests`);
       return res.status(200).json({ 
         success: true, 
         message: 'Collaboration deleted successfully',
         deletedId: id,
-        deletedSwipesCount: deletedSwipes.length
+        deletedRequestsCount: deletedRequests.length
       });
       
     } catch (error) {
@@ -3652,30 +3652,30 @@ export async function registerRoutes(app: Express) {
         console.log(`Processing potential match with swipe ID: ${swipe_id}`);
         
         try {
-          // Fetch the original swipe to get the collaboration and user info
-          const [originalSwipe] = await db
+          // Fetch the original request to get the collaboration and user info
+          const [originalRequest] = await db
             .select({
-              swipe: swipes,
+              request: requests,
               user: users,
               collaboration: collaborations
             })
-            .from(swipes)
-            .where(eq(swipes.id, swipe_id))
-            .innerJoin(users, eq(swipes.user_id, users.id))
-            .innerJoin(collaborations, eq(swipes.collaboration_id, collaborations.id));
+            .from(requests)
+            .where(eq(requests.id, swipe_id))
+            .innerJoin(users, eq(requests.requester_id, users.id))
+            .innerJoin(collaborations, eq(requests.collaboration_id, collaborations.id));
           
-          if (!originalSwipe) {
-            console.log(`Database error: Original swipe ${swipe_id} not found`);
-            return res.status(404).json({ error: 'Original swipe not found' });
+          if (!originalRequest) {
+            console.log(`Database error: Original request ${swipe_id} not found`);
+            return res.status(404).json({ error: 'Original request not found' });
           }
           
-          // Get the collaboration_id from the original swipe
-          const actualCollaborationId = originalSwipe.collaboration.id;
-          const otherUserId = originalSwipe.user.id;
-          const collaborationType = originalSwipe.collaboration.collab_type;
+          // Get the collaboration_id from the original request
+          const actualCollaborationId = originalRequest.collaboration.id;
+          const otherUserId = originalRequest.user.id;
+          const collaborationType = originalRequest.collaboration.collab_type;
           
-          console.log(`Found original swipe with collaboration ID: ${actualCollaborationId}`);
-          console.log(`Original swipe was from user ID: ${otherUserId}`);
+          console.log(`Found original request with collaboration ID: ${actualCollaborationId}`);
+          console.log(`Original request was from user ID: ${otherUserId}`);
           
           // Create a swipe record for the current user
           const swipe = await storage.createSwipe({
@@ -3863,24 +3863,24 @@ export async function registerRoutes(app: Express) {
             // Get all the collaboration IDs
             const userCollabIds = userCollaborations.map(collab => collab.id);
             
-            // Check if the host has swiped right on any of the user's collaborations
-            const hostRightSwipes = await db
+            // Check if the host has made pending requests on any of the user's collaborations
+            const hostPendingRequests = await db
               .select()
-              .from(swipes)
+              .from(requests)
               .where(
                 and(
-                  eq(swipes.user_id, hostId),
-                  inArray(swipes.collaboration_id, userCollabIds),
-                  eq(swipes.direction, 'right')
+                  eq(requests.requester_id, hostId),
+                  inArray(requests.collaboration_id, userCollabIds),
+                  eq(requests.status, 'pending')
                 )
               );
             
-            console.log(`Found ${hostRightSwipes.length} right swipes from host for user's collaborations`);
+            console.log(`Found ${hostPendingRequests.length} pending requests from host for user's collaborations`);
             
-            if (hostRightSwipes.length > 0) {
-              // We have a match! The host has swiped right on one of the user's collaborations
-              const matchedCollaboration = hostRightSwipes[0];
-              console.log(`MATCH FOUND! Host has swiped right on user collaboration ${matchedCollaboration.collaboration_id}`);
+            if (hostPendingRequests.length > 0) {
+              // We have a match! The host has made a request on one of the user's collaborations
+              const matchedCollaboration = hostPendingRequests[0];
+              console.log(`MATCH FOUND! Host has made a request on user collaboration ${matchedCollaboration.collaboration_id}`);
               
               // Get the matched collaboration details
               const matchedUserCollab = await storage.getCollaboration(matchedCollaboration.collaboration_id);
