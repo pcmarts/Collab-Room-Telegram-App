@@ -572,64 +572,7 @@ export const collab_notifications = pgTable("collab_notifications", {
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-// Swipes table for recording user swipe actions
-export const swipes = pgTable("swipes", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  user_id: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  collaboration_id: uuid("collaboration_id")
-    .notNull()
-    .references(() => collaborations.id, { onDelete: "cascade" }),
-  direction: text("direction").notNull(), // "left" or "right" (pass or request)
-  note: text("note"), // Store the personalized note for invitation
-  details: jsonb("details"), // To store application details for backward compatibility
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-}, (table) => {
-  return {
-    // Index for swipes.user_id for filtering by user
-    swipeUserIdIdx: index("swipe_user_id_idx").on(table.user_id),
-    // Index for swipes.collaboration_id for filtering by collaboration
-    swipeCollabIdIdx: index("swipe_collab_id_idx").on(table.collaboration_id),
-    // Composite index for user_id + collaboration_id for the NOT EXISTS query
-    userCollabIdx: index("swipe_user_collab_idx").on(table.user_id, table.collaboration_id),
-    // Composite index for direction + user_id for finding matches
-    directionUserIdx: index("swipe_direction_user_idx").on(table.direction, table.user_id)
-  };
-});
-
-// Matches table for storing successful collaboration matches
-export const matches = pgTable("matches", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  collaboration_id: uuid("collaboration_id")
-    .notNull()
-    .references(() => collaborations.id, { onDelete: "cascade" }),
-  host_id: uuid("host_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  requester_id: uuid("requester_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  status: text("status").notNull().default("active"), // 'active', 'archived', 'completed', 'declined', 'hidden', etc.
-  note: text("note"), // Store the personalized note copied from the swipe
-  host_accepted: boolean("host_accepted").default(false),
-  requester_accepted: boolean("requester_accepted").default(false),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-}, (table) => {
-  return {
-    // Index for matches.host_id for filtering by host
-    matchHostIdIdx: index("match_host_id_idx").on(table.host_id),
-    // Index for matches.requester_id for filtering by requester
-    matchRequesterIdIdx: index("match_requester_id_idx").on(table.requester_id),
-    // Index for matches.collaboration_id for join operations
-    matchCollabIdIdx: index("match_collab_id_idx").on(table.collaboration_id),
-    // Composite index for host_id + requester_id for finding specific matches
-    hostRequesterIdx: index("match_host_requester_idx").on(table.host_id, table.requester_id)
-  };
-});
-
-// Unified requests table (replacing swipes and matches)
+// Unified requests table (replacing legacy swipes and matches tables)
 export const requests = pgTable("requests", {
   id: uuid("id").primaryKey().defaultRandom(),
   collaboration_id: uuid("collaboration_id")
@@ -709,8 +652,7 @@ export const insertCollabApplicationSchema = createInsertSchema(collab_applicati
 
 export const insertCollabNotificationSchema =
   createInsertSchema(collab_notifications);
-export const insertSwipeSchema = createInsertSchema(swipes);
-export const insertMatchSchema = createInsertSchema(matches);
+// Legacy schema exports removed - swipes and matches tables have been deleted
 export const insertRequestSchema = createInsertSchema(requests);
 
 // Referral-related schemas
@@ -734,8 +676,7 @@ export type UserEvent = typeof user_events.$inferSelect;
 export type Collaboration = typeof collaborations.$inferSelect;
 
 export type CollabNotification = typeof collab_notifications.$inferSelect;
-export type Swipe = typeof swipes.$inferSelect;
-export type Match = typeof matches.$inferSelect;
+// Legacy types removed - swipes and matches tables have been deleted
 export type Request = typeof requests.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -756,8 +697,7 @@ export type InsertCollaboration = z.infer<typeof insertCollaborationSchema>;
 export type InsertCollabNotification = z.infer<
   typeof insertCollabNotificationSchema
 >;
-export type InsertSwipe = z.infer<typeof insertSwipeSchema>;
-export type InsertMatch = z.infer<typeof insertMatchSchema>;
+// Legacy insert types removed - swipes and matches tables have been deleted
 export type InsertRequest = z.infer<typeof insertRequestSchema>;
 
 // Referral system types

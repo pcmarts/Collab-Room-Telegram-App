@@ -129,6 +129,10 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
   - Successfully migrated user 2075c43e-aae9-4826-b9b6-5341112518b9 data: 2 requests now properly stored in requests table
   - Added "skipped" status to requests table schema for left swipes (joins existing "pending", "accepted", "hidden")
   - Discover page now fully uses requests table with proper filtering and excludes swiped collaborations correctly
+  - **FINAL CLEANUP**: Deleted legacy swipes and matches tables from database after successful migration
+  - Removed legacy table definitions from schema file and updated all import statements
+  - Fixed stats endpoint to use requests table with status='accepted' instead of deleted matches table
+  - Database now exclusively uses unified requests table with 35 total requests (7 accepted, 1 hidden, 27 pending)
 - July 12, 2025. Fixed collaboration requests display and notification badge issues
   - Resolved duplication in request titles by using collaboration type instead of description as title
   - Fixed API mismatch where summary endpoint returned `pendingCount` but frontend expected `totalPendingCount`

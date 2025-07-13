@@ -4,7 +4,7 @@ import { createServer } from "http";
 import { db } from "./db";
 import { 
   users, companies, notification_preferences, marketing_preferences, conference_preferences, 
-  events, user_events, collaborations, collab_notifications, swipes, matches,
+  events, user_events, collaborations, collab_notifications, requests,
   referral_events, user_referrals,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
   InsertCollaboration, CollabApplication, InsertCollabApplication,
@@ -2677,35 +2677,27 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: 'User not found' });
       }
 
-      // Get user's swipes (requests)
-      const userSwipes = await db.select()
-        .from(swipes)
-        .where(eq(swipes.user_id, user.id));
-
-      // Get user's matches
-      const userMatches = await db.select()
-        .from(matches)
+      // Get user's requests (both as requester and as host)
+      const userRequests = await db.select()
+        .from(requests)
         .where(or(
-          eq(matches.host_id, user.id),
-          eq(matches.requester_id, user.id)
+          eq(requests.requester_id, user.id),
+          eq(requests.host_id, user.id)
         ));
 
       // Create a map of collaboration interactions
       const interactions: Record<string, { status: 'requested' | 'matched', matchId?: string }> = {};
 
-      // Add requests (right swipes)
-      userSwipes.forEach(swipe => {
-        if (swipe.direction === 'right') {
-          interactions[swipe.collaboration_id] = { status: 'requested' };
+      // Process requests and matches
+      userRequests.forEach(request => {
+        if (request.status === 'accepted') {
+          interactions[request.collaboration_id] = { 
+            status: 'matched', 
+            matchId: request.id 
+          };
+        } else if (request.status === 'pending' && request.requester_id === user.id) {
+          interactions[request.collaboration_id] = { status: 'requested' };
         }
-      });
-
-      // Add matches (override requests if there's a match)
-      userMatches.forEach(match => {
-        interactions[match.collaboration_id] = { 
-          status: 'matched', 
-          matchId: match.id 
-        };
       });
 
       return res.json(interactions);

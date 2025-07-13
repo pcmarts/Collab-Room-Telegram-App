@@ -1,7 +1,7 @@
 
 import { Express, Request, Response } from "express";
 import { db } from "../db";
-import { users, collaborations, matches } from "@shared/schema";
+import { users, collaborations, requests } from "@shared/schema";
 import { eq } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 
@@ -17,8 +17,9 @@ export default function registerStatsRoutes(app: Express) {
       const collabsResult = await db.select({ count: sql`count(*)` }).from(collaborations)
         .where(eq(collaborations.status, "active"));
         
-      // Count all matches
-      const matchesResult = await db.select({ count: sql`count(*)` }).from(matches);
+      // Count all accepted requests (matches)
+      const matchesResult = await db.select({ count: sql`count(*)` }).from(requests)
+        .where(eq(requests.status, "accepted"));
 
       res.json({
         users: Number(usersResult[0]?.count || 0),

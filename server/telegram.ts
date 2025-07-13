@@ -5,8 +5,7 @@ import {
   collaborations,
   companies,
   notification_preferences,
-  swipes,
-  matches,
+  requests,
   user_referrals,
   referral_events,
 } from "@shared/schema";
