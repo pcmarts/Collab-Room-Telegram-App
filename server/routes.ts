@@ -208,8 +208,9 @@ export async function registerRoutes(app: Express) {
       const collabsResult = await db.select({ count: sql`count(*)` }).from(collaborations)
         .where(eq(collaborations.status, "active"));
         
-      // Count all matches
-      const matchesResult = await db.select({ count: sql`count(*)` }).from(matches);
+      // Count all accepted requests (matches) from the unified requests table
+      const matchesResult = await db.select({ count: sql`count(*)` }).from(requests)
+        .where(eq(requests.status, "accepted"));
 
       res.json({
         users: Number(usersResult[0]?.count || 0),
