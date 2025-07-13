@@ -17,9 +17,17 @@ flowchart TD
     PersonalInfo -->|Step 2| CompanyInfo[Company Information]
     CompanyInfo -->|Step 3| Preferences[Set Preferences]
     Preferences -->|Complete| ApprovalCheck{Admin Approval?}
-    ApprovalCheck -->|Pending| WaitingScreen[Waiting for Approval]
+    ApprovalCheck -->|Pending| PendingView[Limited View - Application Pending]
     ApprovalCheck -->|Approved| HomeScreen
     OnboardCheck -->|Yes| HomeScreen
+    
+    %% Pending Application Experience
+    PendingView --> BrowseOnly[Browse Collaborations Only]
+    BrowseOnly --> ViewDetails[View Details]
+    ViewDetails --> DisabledRequest[Request Button Disabled]
+    DisabledRequest --> BrowseOnly
+    PendingView --> DisabledNav[Navigation Menu Disabled]
+    DisabledNav --> PendingView
     
     %% Main Application Flow
     HomeScreen --> NavMenu{Navigation Menu}
@@ -79,8 +87,9 @@ flowchart TD
 ### 1. New User Journey
 - Authentication via Telegram
 - Complete onboarding process (personal info, company info, preferences)
+- **Pending Application Experience**: Users with pending applications can browse collaborations and view details but cannot request collaborations or access "My Collabs", "My Account", or "My Matches"
 - Wait for admin approval
-- Access main application features
+- Access main application features once approved
 
 ### 2. Discovery Journey
 - Navigate to discovery feed

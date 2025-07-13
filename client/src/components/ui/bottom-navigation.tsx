@@ -6,23 +6,37 @@ import { DiscoveryIcon } from "@/components/icons/DiscoveryIcon"
 import { Badge } from "@/components/ui/badge"
 import { useQuery } from "@tanstack/react-query"
 import { apiRequest } from "@/lib/queryClient"
+import { useNavigationPreloader } from "@/hooks/useNavigationPreloader"
 
 const BottomNavigation = () => {
   const [location] = useLocation()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [userProfile, setUserProfile] = useState<any>(null)
+  const { preloadRoute, preloadAllNavigation, isPreloaded } = useNavigationPreloader()
   
-  // Check authentication status
+  // Check authentication status and get user profile
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await apiRequest('/api/profile');
+        const profile = await apiRequest('/api/profile');
         setIsAuthenticated(true);
+        setUserProfile(profile);
       } catch (error) {
         setIsAuthenticated(false);
+        setUserProfile(null);
       }
     };
     checkAuth();
   }, []);
+
+  // Preload all navigation components on mount
+  useEffect(() => {
+    // Start preloading immediately when bottom navigation mounts
+    preloadAllNavigation();
+  }, [preloadAllNavigation]);
+
+  // Check if user is authenticated but not approved
+  const isApplicationPending = isAuthenticated && userProfile && !userProfile.user.is_approved;
   
   // Fetch actual matches count from API (only if authenticated)
   const { data: matches } = useQuery({
@@ -100,15 +114,21 @@ const BottomNavigation = () => {
     },
   ]
 
+  // Handle hover to preload specific route
+  const handleItemHover = (href: string) => {
+    preloadRoute(href);
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 z-50 w-full h-24 bg-background border-t border-border pb-6">
       <div className="grid h-full grid-cols-4 mx-auto">
         {navItems.map((item) => {
           const isRestricted = item.requiresAuth && !isAuthenticated;
+          const isPendingRestricted = item.requiresAuth && isApplicationPending;
           const isActive = location === item.href;
           
-          if (isRestricted) {
-            // Render as disabled for unauthenticated users
+          if (isRestricted || isPendingRestricted) {
+            // Render as disabled for unauthenticated users or users with pending applications
             return (
               <div
                 key={item.href}
@@ -116,10 +136,11 @@ const BottomNavigation = () => {
                   "flex flex-col items-center justify-center px-1 pt-2 relative opacity-50 cursor-not-allowed",
                   "text-muted-foreground"
                 )}
+                onMouseEnter={() => handleItemHover(item.href)}
               >
                 <div className="relative">
                   <item.icon className="w-5 h-5 mb-1" />
-                  {item.notificationCount && isAuthenticated && (
+                  {item.notificationCount && isAuthenticated && !isApplicationPending && (
                     <Badge 
                       className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center rounded-full text-xs font-bold opacity-50 bg-primary text-primary-foreground"
                     >
@@ -141,6 +162,7 @@ const BottomNavigation = () => {
                 "flex flex-col items-center justify-center px-1 pt-2 hover:bg-accent relative",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
+              onMouseEnter={() => handleItemHover(item.href)}
             >
               <div className="relative">
                 <item.icon className="w-5 h-5 mb-1" />

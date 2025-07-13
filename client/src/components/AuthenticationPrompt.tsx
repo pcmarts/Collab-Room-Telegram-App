@@ -7,13 +7,15 @@ interface AuthenticationPromptProps {
   message?: string;
   onSignIn?: () => void;
   compact?: boolean;
+  pending?: boolean;
 }
 
 export function AuthenticationPrompt({
   title = "Sign up to continue",
   message = "You need to sign up through Telegram to request collaborations and access all features.",
   onSignIn,
-  compact = false
+  compact = false,
+  pending = false
 }: AuthenticationPromptProps) {
   const handleSignIn = () => {
     if (onSignIn) {
@@ -29,11 +31,13 @@ export function AuthenticationPrompt({
       <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md border">
         <Lock className="w-4 h-4 text-muted-foreground" />
         <span className="text-sm text-muted-foreground flex-1">
-          Sign up to request
+          {pending ? "Application pending" : "Sign up to request"}
         </span>
-        <Button size="sm" onClick={handleSignIn}>
-          Sign Up
-        </Button>
+        {!pending && (
+          <Button size="sm" onClick={handleSignIn}>
+            Sign Up
+          </Button>
+        )}
       </div>
     );
   }

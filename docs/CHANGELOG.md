@@ -5,6 +5,24 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.24] - 2025-01-16
+
+### Enhanced
+- **Pending Application User Experience**: Improved user interface for authenticated users with pending applications
+  - Users with pending applications now see "Application pending" message instead of "Sign up" button
+  - Collaboration request buttons are disabled and show "Application Pending" for users awaiting approval
+  - Navigation menu items ("My Collabs", "My Account", "My Matches") are grayed out and unclickable for pending users
+  - Consistent limited view experience for both unauthenticated and pending users
+  - Users can still browse collaborations and view details while waiting for approval
+
+### Technical Details
+- Enhanced `DiscoverPageList.tsx` to detect authenticated but not approved users using `userProfile.user.is_approved`
+- Updated `AuthenticationPrompt.tsx` with new `pending` prop to handle application pending state in compact mode
+- Modified `CollaborationListItem.tsx` with `isApplicationPending` prop to disable request buttons
+- Enhanced `bottom-navigation.tsx` to disable menu items for users with pending applications
+- Fixed profile structure reference from `userProfile.is_approved` to `userProfile.user.is_approved`
+- Improved user experience by providing clear visual feedback about application status
+
 ## [Version 1.10.23] - 2025-01-16
 
 ### Enhanced

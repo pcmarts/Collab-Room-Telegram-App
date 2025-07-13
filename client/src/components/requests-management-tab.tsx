@@ -381,113 +381,298 @@ export function RequestsManagementTab({
       {/* Details Dialog */}
       {selectedRequestForDetails && (
         <Dialog open={!!selectedRequestForDetails} onOpenChange={() => setSelectedRequestForDetails(null)}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-3">
-                <LogoAvatar
-                  name={selectedRequestForDetails.company.name || "Company"}
-                  logoUrl={selectedRequestForDetails.company.logo_url}
-                  size="md"
-                  className="h-10 w-10"
-                />
-                <div>
-                  <h3 className="text-xl font-semibold">{selectedRequestForDetails.requester.first_name} {selectedRequestForDetails.requester.last_name || ''}</h3>
-                  <p className="text-sm text-muted-foreground">{selectedRequestForDetails.company.job_title} at {selectedRequestForDetails.company.name}</p>
-                </div>
+              <DialogTitle className="sr-only">
+                {selectedRequestForDetails.collaboration.type} Request Details
               </DialogTitle>
             </DialogHeader>
             
-            <div className="space-y-4">
-              {/* Collaboration Info */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  {getCollabTypeIcon(selectedRequestForDetails.collaboration.type)}
-                  <span className="font-medium">{selectedRequestForDetails.collaboration.type}</span>
+            <div className="space-y-6">
+              {/* Header Section with Request Summary */}
+              <div className="pb-4 border-b">
+                <div className="flex items-start gap-3 mb-2">
+                  {/* Company Logo */}
+                  <LogoAvatar
+                    name={selectedRequestForDetails.company.name || "Company"}
+                    logoUrl={selectedRequestForDetails.company.logo_url}
+                    className="w-16 h-16"
+                    size="xl"
+                  />
+                  
+                  {/* Company info and collaboration details */}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <h2 className="text-xl font-bold">{selectedRequestForDetails.company.name}</h2>
+                    </div>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {selectedRequestForDetails.requester.first_name} {selectedRequestForDetails.requester.last_name || ''}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedRequestForDetails.company.job_title}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <Badge variant="outline" className="text-primary bg-primary/5 border-primary/10 mb-1 whitespace-nowrap">
+                          {selectedRequestForDetails.collaboration.type}
+                        </Badge>
+                        <p className="text-xs text-muted-foreground">
+                          Requested {formatDistanceToNow(new Date(selectedRequestForDetails.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{selectedRequestForDetails.collaboration.description}</p>
               </div>
 
-              {/* Company Quick Info */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="font-medium text-muted-foreground">Company</p>
-                  <p>{selectedRequestForDetails.company.name}</p>
-                </div>
-                {selectedRequestForDetails.company.twitter_followers && (
-                  <div>
-                    <p className="font-medium text-muted-foreground">Twitter Followers</p>
-                    <p>{selectedRequestForDetails.company.twitter_followers}</p>
-                  </div>
-                )}
-                {selectedRequestForDetails.company.funding_stage && (
-                  <div>
-                    <p className="font-medium text-muted-foreground">Funding Stage</p>
-                    <p>{selectedRequestForDetails.company.funding_stage}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="font-medium text-muted-foreground">Request Date</p>
-                  <p>{formatDistanceToNow(new Date(selectedRequestForDetails.created_at), { addSuffix: true })}</p>
-                </div>
-              </div>
-
-              {/* Request Note */}
+              {/* Personalized Note - If Present */}
               {selectedRequestForDetails.note && (
-                <div>
-                  <p className="font-medium text-muted-foreground mb-2">Message</p>
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <p className="text-sm">{selectedRequestForDetails.note}</p>
-                  </div>
+                <div className="mb-4 bg-primary/5 p-3 rounded-md border border-primary/10">
+                  <h3 className="font-medium text-sm text-primary mb-1">
+                    Personalized Note
+                  </h3>
+                  <p className="text-sm italic">{selectedRequestForDetails.note}</p>
                 </div>
               )}
 
-              {/* Links */}
-              <div className="flex flex-wrap gap-2">
-                {selectedRequestForDetails.company.twitter_handle && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a 
-                      href={`https://twitter.com/${selectedRequestForDetails.company.twitter_handle}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1"
-                    >
-                      <Twitter className="h-3 w-3" />
-                      Twitter
-                    </a>
-                  </Button>
-                )}
-                {selectedRequestForDetails.company.website && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a 
-                      href={selectedRequestForDetails.company.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Website
-                    </a>
-                  </Button>
-                )}
-              </div>
+              <div className="grid gap-6">
+                {/* About Person Section */}
+                <div className="p-4 bg-muted/10 rounded-lg border border-border/50">
+                  <h3 className="font-semibold text-base mb-2">About {selectedRequestForDetails.requester.first_name} {selectedRequestForDetails.requester.last_name || ''}</h3>
+                  <div className="space-y-2">
+                    <p className="text-sm">{selectedRequestForDetails.company.short_description || selectedRequestForDetails.company.long_description || "No description available"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedRequestForDetails.company.job_title} at {selectedRequestForDetails.company.name}
+                    </p>
 
-              {/* Request Note */}
-              {selectedRequestForDetails.note && (
-                <div>
-                  <h4 className="font-medium mb-3">Request Message</h4>
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <p className="text-sm">{selectedRequestForDetails.note}</p>
+                    {/* User Social Links */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedRequestForDetails.company.twitter_handle && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a 
+                            href={`https://x.com/${selectedRequestForDetails.company.twitter_handle}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1"
+                          >
+                            <Twitter className="h-3 w-3" />
+                            @{selectedRequestForDetails.company.twitter_handle}
+                          </a>
+                        </Button>
+                      )}
+
+                      {selectedRequestForDetails.company.linkedin_url && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a 
+                            href={selectedRequestForDetails.company.linkedin_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1"
+                          >
+                            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"/>
+                            </svg>
+                            LinkedIn
+                          </a>
+                        </Button>
+                      )}
+
+                      {selectedRequestForDetails.requester.twitter_url && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a 
+                            href={selectedRequestForDetails.requester.twitter_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1"
+                          >
+                            <Twitter className="h-3 w-3" />
+                            Personal Twitter
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* User Analytics */}
+                    <div className="grid grid-cols-2 gap-4 mt-3 text-xs">
+                      {selectedRequestForDetails.company.twitter_followers && (
+                        <div className="flex items-center gap-1">
+                          <Users className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-muted-foreground">Twitter:</span>
+                          <span className="font-medium">{selectedRequestForDetails.company.twitter_followers}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              )}
+
+                {/* Company Section */}
+                <div className="p-4 bg-muted/10 rounded-lg border border-border/50">
+                  <h3 className="font-semibold text-base mb-2">About {selectedRequestForDetails.company.name}</h3>
+                  <div className="space-y-3">
+                    {selectedRequestForDetails.company.short_description && (
+                      <p className="text-sm">{selectedRequestForDetails.company.short_description}</p>
+                    )}
+                    
+                    {selectedRequestForDetails.company.long_description && selectedRequestForDetails.company.long_description !== selectedRequestForDetails.company.short_description && (
+                      <p className="text-sm">{selectedRequestForDetails.company.long_description}</p>
+                    )}
+
+                    {/* Company Analytics */}
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                      {selectedRequestForDetails.company.twitter_followers && (
+                        <div className="flex items-center gap-1">
+                          <Users className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-muted-foreground">Twitter:</span>
+                          <span className="font-medium">{selectedRequestForDetails.company.twitter_followers}</span>
+                        </div>
+                      )}
+                      {selectedRequestForDetails.company.funding_stage && (
+                        <div className="flex items-center gap-1">
+                          <svg className="h-3 w-3 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                          </svg>
+                          <span className="text-muted-foreground">Stage:</span>
+                          <span className="font-medium">{selectedRequestForDetails.company.funding_stage}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Company Social Links */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedRequestForDetails.company.website && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a 
+                            href={selectedRequestForDetails.company.website} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Website
+                          </a>
+                        </Button>
+                      )}
+
+                      {selectedRequestForDetails.company.twitter_handle && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a 
+                            href={`https://x.com/${selectedRequestForDetails.company.twitter_handle}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1"
+                          >
+                            <Twitter className="h-3 w-3" />
+                            @{selectedRequestForDetails.company.twitter_handle}
+                          </a>
+                        </Button>
+                      )}
+
+                      {selectedRequestForDetails.company.linkedin_url && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a 
+                            href={selectedRequestForDetails.company.linkedin_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1"
+                          >
+                            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"/>
+                            </svg>
+                            LinkedIn
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Token Information */}
+                    {selectedRequestForDetails.company.has_token && (
+                      <div className="mt-3 p-3 bg-secondary/10 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <svg className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                          </svg>
+                          <span className="text-sm font-medium">Token Information</span>
+                        </div>
+                        {selectedRequestForDetails.company.token_ticker && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Ticker: {selectedRequestForDetails.company.token_ticker}
+                          </p>
+                        )}
+                        {selectedRequestForDetails.company.blockchain_networks && selectedRequestForDetails.company.blockchain_networks.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {selectedRequestForDetails.company.blockchain_networks.map((network, idx) => (
+                              <Badge key={idx} variant="outline" className="text-xs">
+                                {network}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Company Tags */}
+                    {selectedRequestForDetails.company.tags && selectedRequestForDetails.company.tags.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-sm font-medium mb-2">Tags</p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedRequestForDetails.company.tags.map((tag, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Collaboration Details */}
+                <div className="p-4 bg-muted/10 rounded-lg border border-border/50">
+                  <h3 className="font-semibold text-base mb-3 pb-2 border-b">
+                    {selectedRequestForDetails.collaboration.type} Details
+                  </h3>
+                  {selectedRequestForDetails.collaboration.description && (
+                    <div className="bg-muted/30 p-3 rounded-md mb-3">
+                      <p className="text-sm">{selectedRequestForDetails.collaboration.description}</p>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      {getCollabTypeIcon(selectedRequestForDetails.collaboration.type)}
+                      <span className="font-medium">{selectedRequestForDetails.collaboration.type}</span>
+                    </div>
+                    
+                    {selectedRequestForDetails.collaboration.topics && selectedRequestForDetails.collaboration.topics.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium mb-2">Topics</p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedRequestForDetails.collaboration.topics.map((topic, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {topic}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="text-xs text-muted-foreground">
+                      Created {formatDistanceToNow(new Date(selectedRequestForDetails.collaboration.created_at), { addSuffix: true })}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2 pt-4 border-t">
+              <div className="flex justify-between pt-2 border-t">
                 <Button
                   variant="outline"
                   onClick={() => handleHideRequest(selectedRequestForDetails.id)}
                   disabled={hideRequestMutation.isPending}
-                  className="flex-1"
                 >
                   <XCircle className="h-4 w-4 mr-2" />
                   Hide
@@ -495,7 +680,6 @@ export function RequestsManagementTab({
                 <Button
                   onClick={() => handleAcceptRequest(selectedRequestForDetails.id)}
                   disabled={acceptRequestMutation.isPending}
-                  className="flex-1"
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Accept

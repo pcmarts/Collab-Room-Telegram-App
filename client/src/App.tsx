@@ -11,6 +11,7 @@ import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { MatchProvider } from "@/contexts/MatchContext";
 import { initTelegramButtonFix } from "./utils/telegram-button-fix";
 import { useTelegramInit } from "@/hooks/useTelegramInit";
+import { useNavigationPreloader } from "@/hooks/useNavigationPreloader";
 import AuthTest from "@/components/AuthTest";
 
 // Import RouteComponentProps type for proper router component typing
@@ -61,8 +62,16 @@ const BlockchainNetworksFilter = lazy(() => import("@/pages/filters/blockchain-n
 // Create wrapper components for components with custom props
 // These wrapper components convert RouteComponentProps to the specific props each component needs
 const MyCollaborations = (props: RouteComponentProps) => <MyCollaborationsComponent />;
-const CreateCollaboration = (props: RouteComponentProps) => <CreateCollaborationComponent />;
 
+// Navigation routes that are preloaded
+const PRELOADED_ROUTES = ['/discover', '/my-collaborations', '/dashboard', '/matches'];
+
+// Minimal loading fallback for preloaded routes
+const MinimalLoadingFallback = () => (
+  <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
+    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 // Application form routes that should not show bottom navigation
 const APPLICATION_ROUTES = [
@@ -89,12 +98,23 @@ const APPLICATION_ROUTES = [
 function Router() {
   const [location] = useLocation();
   const showBottomNav = !APPLICATION_ROUTES.includes(location);
+  const { isPreloaded } = useNavigationPreloader();
+
+  // Smart fallback selection based on whether the route is preloaded
+  const getSuspenseFallback = (routePath: string) => {
+    // For preloaded navigation routes, use minimal fallback
+    if (PRELOADED_ROUTES.includes(routePath) && isPreloaded(routePath)) {
+      return <MinimalLoadingFallback />;
+    }
+    // For other routes or not-yet-preloaded routes, use full loading screen
+    return <LoadingScreen />;
+  };
 
   return (
     <div className="min-h-screen bg-background w-full">
       <ImpersonationBanner />
       <div className={`w-full ${showBottomNav ? 'pb-24' : ''}`}>
-        <Suspense fallback={<LoadingScreen />}>
+        <Suspense fallback={getSuspenseFallback(location)}>
           <Switch>
             {/* Welcome and Application Flow */}
             <Route path="/welcome" component={Welcome} />

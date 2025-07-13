@@ -147,6 +147,12 @@ export default function DiscoverPageList() {
     marketingPrefs.has_token
   );
 
+  // Check if user is authenticated but not approved
+  const isAuthenticatedButNotApproved = isAuthenticated && userProfile && !userProfile.user.is_approved;
+  
+  // Show limited view for both unauthenticated users and authenticated users who are not approved
+  const shouldShowLimitedView = !isAuthenticated || isAuthenticatedButNotApproved;
+
   // Fetch collaborations
   const fetchCollaborations = async (cursor?: string, customSortBy?: SortOption) => {
     const now = Date.now();
@@ -352,7 +358,7 @@ export default function DiscoverPageList() {
   // Handle sending collaboration request with note
   const sendCollaborationRequest = async (collaboration: CardData, note: string, isPotentialMatch: boolean = false) => {
     // Immediately update the local state to show "Requested" status
-    setRequestedCollaborations(prev => new Set([...prev, collaboration.id]));
+    setRequestedCollaborations(prev => new Set(prev).add(collaboration.id));
 
     try {
       const response = await fetch(`/api/collaborations/${collaboration.id}/apply`, {
@@ -514,10 +520,16 @@ export default function DiscoverPageList() {
       </div>
 
       {/* Authentication status for unauthenticated users */}
-      {!isAuthenticated && (
+      {shouldShowLimitedView && (
         <div className="p-4 bg-muted/30 border-b">
           <AuthenticationPrompt 
             compact={true}
+            pending={isAuthenticatedButNotApproved}
+            title={isAuthenticatedButNotApproved ? "Application pending" : "Sign up to continue"}
+            message={isAuthenticatedButNotApproved 
+              ? "Your application is currently being processed. You can browse collaborations while waiting."
+              : "You need to sign up through Telegram to request collaborations and access all features."
+            }
             onSignIn={handleAuthenticationPrompt}
           />
         </div>
@@ -553,15 +565,19 @@ export default function DiscoverPageList() {
                 onRequestCollaboration={() => handleRequestCollaboration(item, item.isPotentialMatch)}
                 isPotentialMatch={item.isPotentialMatch}
                 collaborationStatus={
-                  // Check if locally requested first (for immediate UI update)
-                  requestedCollaborations.has(item.id)
-                    ? 'requested'
-                    : collaborationInteractions && collaborationInteractions[item.id]
-                    ? collaborationInteractions[item.id].status
-                    : undefined
+                  // Never show collaboration status for user's own collaborations
+                  userProfile?.id && item.creator_id === userProfile.id
+                    ? undefined
+                    : // Check if locally requested first (for immediate UI update)
+                      requestedCollaborations.has(item.id)
+                      ? 'requested'
+                      : collaborationInteractions && collaborationInteractions[item.id]
+                      ? collaborationInteractions[item.id].status
+                      : undefined
                 }
                 onNavigateToMatches={() => setLocation('/matches')}
                 currentUserId={userProfile?.id}
+                isApplicationPending={isAuthenticatedButNotApproved}
               />
             ))}
 

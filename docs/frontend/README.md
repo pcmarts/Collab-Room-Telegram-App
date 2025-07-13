@@ -50,6 +50,37 @@ The system uses a two-step dialog process:
 
 Notes are properly saved to the `swipes.note` field in the database, ensuring they persist through the collaboration lifecycle and appear in match details and notifications.
 
+## Pending Application Experience
+
+The application provides a consistent limited view experience for users with pending applications, ensuring they can still browse content while waiting for approval.
+
+### User States
+
+The application handles three distinct user states:
+
+1. **Unauthenticated Users**: See "Sign up" prompt with sign-up button
+2. **Authenticated Users with Pending Applications**: See "Application pending" message without button
+3. **Approved Users**: Full application access
+
+### Limited View Features
+
+Users with pending applications can:
+- Browse all collaborations in the discovery feed
+- View detailed information about collaborations
+- Access the discover page
+
+Users with pending applications cannot:
+- Request collaborations (buttons are disabled and show "Application Pending")
+- Access "My Collabs", "My Account", or "My Matches" navigation items
+- Interact with navigation menu items (they are grayed out and unclickable)
+
+### Implementation Details
+
+- **AuthenticationPrompt Component**: Enhanced with `pending` prop to handle application pending state
+- **CollaborationListItem Component**: Added `isApplicationPending` prop to disable request buttons
+- **BottomNavigation Component**: Detects pending users and disables relevant menu items
+- **Profile Structure**: Uses `userProfile.user.is_approved` to determine user approval status
+
 ## Technology Stack
 
 - **React**: Core UI library
@@ -394,3 +425,4 @@ export function getCollabTypeIcon(type: string | undefined): React.ReactNode {
       return <Megaphone className="w-3 h-3 mr-1" />;
   }
 }
+```

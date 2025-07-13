@@ -104,8 +104,13 @@ async function isValidChatId(chatId: number): Promise<boolean> {
  */
 export async function setupBotCommands() {
   try {
-    // Regular commands for all users
+    // Regular commands for all users (only /start)
     const regularCommands = [
+      { command: "start", description: "Start using Collab Room" },
+    ];
+    
+    // Commands for users who have applied but not approved
+    const pendingUserCommands = [
       { command: "start", description: "Start using Collab Room" },
       { command: "status", description: "Check your application status" },
     ];
@@ -161,6 +166,47 @@ export async function setupBotCommands() {
       // If there's a DB error, we can continue with just the regular commands
       console.error("[BOT_SETUP] Database error when fetching admin users:", dbError);
       console.log("[BOT_SETUP] Continuing with just regular commands setup");
+    }
+    
+    try {
+      // Get all users who have applied but are not approved
+      const pendingUsers = await db
+        .select()
+        .from(users)
+        .where(and(eq(users.is_approved, false), eq(users.is_admin, false)));
+      
+      console.log(`[BOT_SETUP] Found ${pendingUsers.length} pending users`);
+      
+      // Set pending user commands for each user
+      for (const pendingUser of pendingUsers) {
+        if (!pendingUser.telegram_id) {
+          console.warn(`[BOT_SETUP] Pending user ${pendingUser.id} has no Telegram ID, skipping`);
+          continue;
+        }
+        
+        try {
+          // Check if this is a valid chat_id
+          const chatExists = await isValidChatId(parseInt(pendingUser.telegram_id));
+          
+          if (chatExists) {
+            // Create a chat scope for this specific pending user
+            const pendingUserScope = {
+              type: 'chat',
+              chat_id: parseInt(pendingUser.telegram_id)
+            };
+            
+            // Set pending user commands
+            await bot.setMyCommands(pendingUserCommands, { scope: pendingUserScope });
+            console.log(`[BOT_SETUP] Set pending user commands for ${pendingUser.first_name} (${pendingUser.telegram_id})`);
+          } else {
+            console.log(`[BOT_SETUP] Pending user ${pendingUser.first_name} (${pendingUser.telegram_id}) hasn't interacted with the bot yet, skipping command setup`);
+          }
+        } catch (error) {
+          console.error(`[BOT_SETUP] Failed to set commands for pending user ${pendingUser.telegram_id}:`, error);
+        }
+      }
+    } catch (dbError) {
+      console.error("[BOT_SETUP] Database error when fetching pending users:", dbError);
     }
     
     return true;
@@ -334,7 +380,7 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
 
     if (!existingUser) {
       // Build URL with referral code if available
-      let applicationUrl = `${WEBAPP_URL}/welcome`;
+      let applicationUrl = `${WEBAPP_URL}/discover`;
       if (referralCode) {
         applicationUrl += `?referral=${referralCode}`;
       }
@@ -343,7 +389,7 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
         inline_keyboard: [
           [
             {
-              text: "Apply to Join",
+              text: "Launch Collab Room",
               web_app: { url: applicationUrl },
             },
           ],

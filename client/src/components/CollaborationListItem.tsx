@@ -24,6 +24,7 @@ interface CollaborationListItemProps {
   collaborationStatus?: 'requested' | 'matched';
   onNavigateToMatches?: () => void;
   currentUserId?: string;
+  isApplicationPending?: boolean;
 }
 
 export function CollaborationListItem({
@@ -34,7 +35,8 @@ export function CollaborationListItem({
   isPotentialMatch = false,
   collaborationStatus,
   onNavigateToMatches,
-  currentUserId
+  currentUserId,
+  isApplicationPending = false
 }: CollaborationListItemProps) {
   // Get company initials for fallback avatar
   const getCompanyInitials = (name?: string) => {
@@ -143,6 +145,7 @@ export function CollaborationListItem({
               <span className="truncate">Details</span>
             </Button>
             
+            {/* Always show "My Collab" for user's own collaborations, regardless of any other status */}
             {isOwnCollaboration && (
               <Button
                 size="sm"
@@ -151,10 +154,11 @@ export function CollaborationListItem({
                 className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-gray-100 text-gray-500 cursor-not-allowed min-w-0 flex-shrink-0"
               >
                 <Building2 className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">Your Collab</span>
+                <span className="truncate">My Collab</span>
               </Button>
             )}
             
+            {/* Only show collaboration status buttons for collaborations that are NOT owned by the current user */}
             {!isOwnCollaboration && isAuthenticated && collaborationStatus === 'matched' && onNavigateToMatches && (
               <Button
                 size="sm"
@@ -186,12 +190,21 @@ export function CollaborationListItem({
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onRequestCollaboration();
+                  if (!isApplicationPending) {
+                    onRequestCollaboration();
+                  }
                 }}
-                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-blue-600 hover:bg-blue-700 text-white min-w-0 flex-shrink-0"
+                disabled={isApplicationPending}
+                className={`flex items-center gap-1 text-xs px-2 py-1 h-auto min-w-0 flex-shrink-0 ${
+                  isApplicationPending
+                    ? "bg-gray-100 text-gray-500 cursor-not-allowed opacity-60"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
               >
                 <MessageSquare className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">Request Collaboration</span>
+                <span className="truncate">
+                  {isApplicationPending ? "Application Pending" : "Request Collaboration"}
+                </span>
               </Button>
             )}
             
