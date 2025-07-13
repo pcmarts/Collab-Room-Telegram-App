@@ -3982,9 +3982,9 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Endpoint to reset left swipes (delete all swipes with direction="left" for a user)
+  // Endpoint to reset skipped requests (delete all requests with status="skipped" for a user)
   app.post("/api/reset-left-swipes", async (req: TelegramRequest, res: Response) => {
-    console.log('============ DEBUG: Reset Left Swipes Endpoint ============');
+    console.log('============ DEBUG: Reset Skipped Requests Endpoint ============');
     console.log('Request timestamp:', new Date().toISOString());
     console.log('Headers:', JSON.stringify(req.headers, null, 2));
     
@@ -4009,10 +4009,10 @@ export async function registerRoutes(app: Express) {
       
       console.log(`Found database user: ${user.id}`);
       
-      // Delete left swipes for this user
+      // Delete skipped requests for this user
       const deletedCount = await storage.deleteLeftSwipes(user.id);
       
-      console.log(`Success: Deleted ${deletedCount} left swipes for user ${user.id}`);
+      console.log(`Success: Deleted ${deletedCount} skipped requests for user ${user.id}`);
       
       // Clear client-side cache to ensure next discovery feed load is fresh
       // This sets a header that the client can check to know it should reset local state
@@ -4021,7 +4021,7 @@ export async function registerRoutes(app: Express) {
       return res.status(200).json({ 
         success: true,
         deleted_count: deletedCount,
-        message: `Successfully reset ${deletedCount} left swipes`,
+        message: `Successfully reset ${deletedCount} skipped requests`,
         should_clear_local_cache: true
       });
       

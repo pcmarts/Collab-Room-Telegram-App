@@ -48,7 +48,7 @@ export interface IStorage {
   getUserSwipes(userId: string): Promise<Swipe[]>;
   getCollaborationSwipes(collaborationId: string): Promise<Swipe[]>;
   getPotentialMatchesForHost(userId: string): Promise<any[]>; // Get users who swiped right on host's collaborations
-  deleteLeftSwipes(userId: string): Promise<number>; // Delete left swipes for a user and return count of deleted swipes
+  deleteLeftSwipes(userId: string): Promise<number>; // Delete skipped requests for a user and return count of deleted requests
   
   // Match methods
   createMatch(match: InsertMatch): Promise<Match>;
@@ -320,7 +320,7 @@ export class DatabaseStorage implements IStorage {
     const userSwipes = await this.getUserSwipes(userId);
     // Only exclude left swipes (not right swipes that haven't matched yet)
     const leftSwipedCollaborationIds = userSwipes
-      .filter(swipe => swipe.direction === 'left')
+      .filter(swipe => swipe.direction === 'left') // Legacy compatibility
       .map(swipe => swipe.collaboration_id);
     
     console.log(`Found ${userSwipes.length} previous swipes by user ${userId}, of which ${leftSwipedCollaborationIds.length} are left swipes`);
@@ -1169,11 +1169,22 @@ export class DatabaseStorage implements IStorage {
    * This allows users to "reset" and see collaborations they previously passed on
    */
   async deleteLeftSwipes(userId: string): Promise<number> {
-    console.log(`deleteLeftSwipes called - left swipes are no longer stored`);
+    console.log(`deleteLeftSwipes called - now deletes skipped requests`);
+    console.log(`Deleting requests with status='skipped' for user ${userId}`);
     
-    // No-op: Left swipes are no longer stored in the requests table
-    // We only store right swipes (collaboration requests)
-    return 0;
+    // Delete skipped requests for this user
+    const deletedRequests = await db
+      .delete(requests)
+      .where(
+        and(
+          eq(requests.requester_id, userId),
+          eq(requests.status, 'skipped')
+        )
+      )
+      .returning();
+    
+    console.log(`Deleted ${deletedRequests.length} skipped requests for user ${userId}`);
+    return deletedRequests.length;
   }
   
   async getPotentialMatchesForHost(userId: string): Promise<any[]> {
