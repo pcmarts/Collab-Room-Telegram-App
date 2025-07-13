@@ -2425,6 +2425,13 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: 'User not found' });
       }
 
+      // Get user's own collaboration IDs to exclude them from interactions
+      const userCollaborations = await db.select({ id: collaborations.id })
+        .from(collaborations)
+        .where(eq(collaborations.creator_id, user.id));
+      
+      const userCollaborationIds = userCollaborations.map(c => c.id);
+
       // Get user's requests (both as requester and as host)
       const userRequests = await db.select()
         .from(requests)
@@ -2433,11 +2440,16 @@ export async function registerRoutes(app: Express) {
           eq(requests.host_id, user.id)
         ));
 
-      // Create a map of collaboration interactions
+      // Create a map of collaboration interactions, excluding user's own collaborations
       const interactions: Record<string, { status: 'requested' | 'matched', matchId?: string }> = {};
 
       // Process requests and matches
       userRequests.forEach(request => {
+        // Skip interactions for user's own collaborations
+        if (userCollaborationIds.includes(request.collaboration_id)) {
+          return;
+        }
+
         if (request.status === 'accepted') {
           interactions[request.collaboration_id] = { 
             status: 'matched', 

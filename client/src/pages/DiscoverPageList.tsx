@@ -566,7 +566,7 @@ export default function DiscoverPageList() {
                 isPotentialMatch={item.isPotentialMatch}
                 collaborationStatus={
                   // Never show collaboration status for user's own collaborations
-                  userProfile?.id && item.creator_id === userProfile.id
+                  userProfile?.user?.id && item.creator_id === userProfile.user.id
                     ? undefined
                     : // Check if locally requested first (for immediate UI update)
                       requestedCollaborations.has(item.id)
@@ -576,7 +576,7 @@ export default function DiscoverPageList() {
                       : undefined
                 }
                 onNavigateToMatches={() => setLocation('/matches')}
-                currentUserId={userProfile?.id}
+                currentUserId={userProfile?.user?.id}
                 isApplicationPending={isAuthenticatedButNotApproved}
               />
             ))}

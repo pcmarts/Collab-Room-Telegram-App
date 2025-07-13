@@ -237,6 +237,25 @@ Applies to a collaboration.
 }
 ```
 
+#### `GET /api/collaborations/interactions`
+
+Retrieves the current user's interaction status with collaborations (whether they've requested or matched).
+
+**Response:**
+```json
+{
+  "collaboration-id-1": {
+    "status": "requested" | "matched",
+    "matchId": "match-id" // Optional, only present for matched status
+  },
+  "collaboration-id-2": {
+    "status": "requested"
+  }
+}
+```
+
+**Note:** This endpoint excludes the user's own collaborations from the response, as they should be displayed with "My Collab" status instead of interaction status.
+
 #### `GET /api/potential-matches`
 
 Retrieves potential matches for the current user. These are users who have already swiped right on the user's collaborations.

@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/use-profile";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 import {
@@ -56,6 +57,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { data: profileData } = useProfile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollabType, setSelectedCollabType] = useState<typeof COLLAB_TYPES[number] | "">("");
   const [showTwitterFields, setShowTwitterFields] = useState(false);
@@ -140,8 +142,14 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
         });
         break;
       case "Twitter Spaces Guest":
+        // Pre-fill with company Twitter URL if available, otherwise use default
+        const companyTwitterUrl = profileData?.company?.twitter_handle 
+          ? (profileData.company.twitter_handle.startsWith('https://') 
+              ? profileData.company.twitter_handle
+              : `https://x.com/${profileData.company.twitter_handle}`)
+          : "https://x.com/";
         form.setValue('details', {
-          twitter_handle: "https://x.com/",
+          twitter_handle: companyTwitterUrl,
           space_topic: [],
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
         });
@@ -201,6 +209,22 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
     // Since we've moved "Co-Marketing on Twitter" to the top of the list
     handleCollabTypeChange(COLLAB_TYPES[0]);
   }, [handleCollabTypeChange]);
+
+  // Pre-fill Twitter handle with company's Twitter URL for Twitter Spaces
+  useEffect(() => {
+    if (profileData?.company?.twitter_handle && selectedCollabType === "Twitter Spaces Guest") {
+      const currentValue = form.getValues("details.twitter_handle");
+      // Only pre-fill if the field is empty or has the default value
+      if (!currentValue || currentValue === "https://x.com/" || currentValue === "https://x.com/yourhandle") {
+        const companyTwitterUrl = profileData.company.twitter_handle.startsWith('https://') 
+          ? profileData.company.twitter_handle
+          : `https://x.com/${profileData.company.twitter_handle}`;
+        
+        form.setValue("details.twitter_handle", companyTwitterUrl, { shouldValidate: false, shouldDirty: false });
+        console.log("Pre-filled Twitter handle for Twitter Spaces:", companyTwitterUrl);
+      }
+    }
+  }, [profileData, selectedCollabType, form]);
 
   // Fetch collaboration data if editing
   useEffect(() => {
@@ -413,15 +437,24 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
       });
       
       if (response.ok) {
-        // Invalidate queries to refresh collaboration lists
-        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+        const responseData = await response.json();
+        const newCollaborationId = responseData.collaboration?.id;
+        
+        // Force refetch queries to refresh collaboration lists and wait for completion
+        await queryClient.refetchQueries({ queryKey: ['/api/collaborations/my'] });
         
         toast({
           title: "Success!",
           description: "Your collaboration has been created successfully."
         });
-        // Redirect to the "My Collaborations" tab on marketing-collabs-new
-        setLocation('/marketing-collabs-new?tab=my');
+        
+        // Redirect to My Collaborations page with new collaboration ID for highlighting
+        if (newCollaborationId) {
+          setLocation(`/my-collaborations?newCollab=${newCollaborationId}`);
+        } else {
+          // Fallback to marketing-collabs-new without highlighting
+          setLocation('/marketing-collabs-new?tab=my');
+        }
       } else {
         const errorText = await response.text();
         throw new Error(`Failed to create: ${errorText}`);

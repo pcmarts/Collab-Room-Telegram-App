@@ -61,6 +61,46 @@ This function handles the following input formats:
 3. **UX improvement**: Ensures all Twitter links open in the correct domain
 4. **Maintenance**: Single centralized function for handling Twitter URL formatting
 
+## Twitter URL Pre-fill Feature (v1.10.29)
+
+### Automatic Pre-filling for Twitter Spaces
+
+As of version 1.10.29, Twitter Spaces collaboration forms now automatically pre-fill the Twitter URL field with the company's Twitter handle from the user's profile. This enhancement improves user experience by reducing manual input for the most common use case.
+
+#### Implementation Details
+
+- **Pre-fill Source**: Uses the `twitter_handle` field from the user's company profile data
+- **Pre-fill Logic**: Only pre-fills when the field is empty or contains default placeholder values
+- **User Control**: Users can still edit the pre-filled URL if needed for specific requirements
+- **URL Format**: Follows the same standardization rules, ensuring `https://x.com/[handle]` format
+
+#### Forms Updated
+
+The pre-fill feature is implemented across all Twitter Spaces collaboration forms:
+
+1. **TwitterSpacesForm.tsx** (CollaborationFormV2 component)
+2. **create-collaboration-steps.tsx** (Step-based form)
+3. **create-collaboration-fixed.tsx** (Fixed layout form)
+
+#### Technical Implementation
+
+```typescript
+// Pre-fill logic in useEffect
+useEffect(() => {
+  if (profileData?.company?.twitter_handle && selectedCollabType === "Twitter Spaces Guest") {
+    const currentValue = form.getValues("details.twitter_handle");
+    // Only pre-fill if field is empty or has default value
+    if (!currentValue || currentValue === "https://x.com/" || currentValue === "https://x.com/username") {
+      const companyTwitterUrl = profileData.company.twitter_handle.startsWith('https://') 
+        ? profileData.company.twitter_handle
+        : `https://x.com/${profileData.company.twitter_handle}`;
+      
+      form.setValue("details.twitter_handle", companyTwitterUrl);
+    }
+  }
+}, [profileData, selectedCollabType, form]);
+```
+
 ## Related Changes
 
 This improvement was implemented alongside the silent mode enhancement, which removed unnecessary console.log statements and improved application performance.

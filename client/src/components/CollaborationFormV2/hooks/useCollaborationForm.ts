@@ -117,6 +117,7 @@ export const useCollaborationForm = <T extends Record<string, any>>(
       }
       
       const data = await response.json();
+      const newCollaborationId = data.collaboration?.id;
       
       // Clear the form after successful submission
       clearFormState(formId);
@@ -128,15 +129,20 @@ export const useCollaborationForm = <T extends Record<string, any>>(
         description: "Your collaboration was created successfully",
       });
       
-      // Invalidate collaboration queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["/api/collaborations"] });
+      // Force refetch queries to refresh data and wait for completion
+      await queryClient.refetchQueries({ queryKey: ["/api/collaborations/my"] });
       
       // Call success callback if provided
       if (onSuccess) {
         onSuccess(data);
       } else {
-        // Navigate to collaborations page
-        setLocation("/my-collaborations");
+        // Navigate to collaborations page with new collaboration ID for highlighting
+        if (newCollaborationId) {
+          setLocation(`/my-collaborations?newCollab=${newCollaborationId}`);
+        } else {
+          // Fallback without highlighting if ID is not available
+          setLocation("/my-collaborations");
+        }
       }
     } catch (error) {
       console.error("Error submitting form:", error);

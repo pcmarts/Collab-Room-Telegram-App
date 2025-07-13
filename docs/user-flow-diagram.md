@@ -87,6 +87,8 @@ flowchart TD
 ### 1. New User Journey
 - Authentication via Telegram
 - Complete onboarding process (personal info, company info, preferences)
+  - Welcome page loads immediately without artificial delays
+  - Smooth transitions between onboarding steps
 - **Pending Application Experience**: Users with pending applications can browse collaborations and view details but cannot request collaborations or access "My Collabs", "My Account", or "My Matches"
 - Wait for admin approval
 - Access main application features once approved

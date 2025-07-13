@@ -16,7 +16,6 @@ import { applyButtonFix } from "@/App";
 export default function Welcome() {
   const [_, setLocation] = useLocation();
   const [referralCode, setReferralCode] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   
   // Combine all collaboration types for the animation
   const allCollabTypes = [
@@ -71,18 +70,6 @@ export default function Welcome() {
       setReferralCode(urlReferralCode);
     }
   }, []);
-
-  useEffect(() => {
-    // Simulate content loading
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <div className="min-h-screen bg-gradient-to-b from-background to-background/90 flex items-center justify-center">
-      <div className="animate-pulse text-white">Loading...</div>
-    </div>;
-  }
 
   const handleContinue = () => {
     if (referralCode.trim()) {

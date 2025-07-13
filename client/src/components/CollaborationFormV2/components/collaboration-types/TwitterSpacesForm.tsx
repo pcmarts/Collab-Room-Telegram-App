@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/select";
 import { TWITTER_FOLLOWER_COUNTS, COLLAB_TOPICS } from "@shared/schema";
 import { useFormContext } from "react-hook-form";
+import { useProfile } from "@/hooks/use-profile";
+import type { ProfileData } from "@/types/profile";
 import { LimitedTopicSelector } from "../fields/LimitedTopicSelector";
 import { DateSelector } from "../fields/DateSelector";
 import { Step } from "../../contexts/FormWizardContext";
@@ -49,6 +51,7 @@ export const twitterSpacesSteps: Step[] = [
  */
 export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
   const form = useFormContext();
+  const { data: profileData } = useProfile();
   
   // Initialize topics if needed
   React.useEffect(() => {
@@ -58,6 +61,22 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
       console.log("Initialized topics array for Twitter Spaces form:", form.getValues());
     }
   }, [step, form]);
+
+  // Pre-fill Twitter handle with company's Twitter URL
+  React.useEffect(() => {
+    if (profileData?.company?.twitter_handle && step === "basic_info") {
+      const currentValue = form.getValues().twitter_handle;
+      // Only pre-fill if the field is empty or has the default value
+      if (!currentValue || currentValue === "https://x.com/" || currentValue === "https://x.com/yourhandle") {
+        const companyTwitterUrl = profileData.company.twitter_handle.startsWith('https://') 
+          ? profileData.company.twitter_handle
+          : `https://x.com/${profileData.company.twitter_handle}`;
+        
+        form.setValue("twitter_handle", companyTwitterUrl, { shouldValidate: false, shouldDirty: false });
+        console.log("Pre-filled Twitter handle with company URL:", companyTwitterUrl);
+      }
+    }
+  }, [profileData, step, form]);
   
   switch (step) {
     case "basic_info":
@@ -103,7 +122,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
           />
         </div>
       );
-      
+    
     case "description":
       return (
         <div className="space-y-4" key={step}>

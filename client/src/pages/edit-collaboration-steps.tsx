@@ -435,15 +435,24 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
       });
       
       if (response.ok) {
-        // Invalidate queries to refresh collaboration lists
-        queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+        const responseData = await response.json();
+        const updatedCollaborationId = responseData.collaboration?.id || id;
+        
+        // Force refetch queries to refresh collaboration lists and wait for completion
+        await queryClient.refetchQueries({ queryKey: ['/api/collaborations/my'] });
         
         toast({
           title: "Success!",
           description: "Your collaboration has been updated successfully."
         });
-        // Redirect to the "My Collaborations" tab on marketing-collabs-new
-        setLocation('/marketing-collabs-new?tab=my');
+        
+        // Redirect to My Collaborations page with updated collaboration ID for highlighting
+        if (updatedCollaborationId) {
+          setLocation(`/my-collaborations?newCollab=${updatedCollaborationId}`);
+        } else {
+          // Fallback to marketing-collabs-new without highlighting
+          setLocation('/marketing-collabs-new?tab=my');
+        }
       } else {
         const errorText = await response.text();
         throw new Error(`Failed to update: ${errorText}`);

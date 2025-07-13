@@ -349,7 +349,7 @@ export default function MatchesPage() {
     <div className="page-scrollable pb-20">
       <PageHeader title="My Matches" />
 
-      <div className="px-4">
+      <div className="px-4 pt-4">
         {content}
       </div>
 

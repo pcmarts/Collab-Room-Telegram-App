@@ -205,6 +205,42 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   // Tab state for managing different views
   const [activeTab, setActiveTab] = useState('overview');
   
+  // State for highlighting newly created collaborations
+  const [highlightedCollabId, setHighlightedCollabId] = useState<string | null>(null);
+  
+  // Check for new collaboration ID in URL parameters or localStorage
+  useEffect(() => {
+    // Check URL parameters for new collaboration ID
+    const urlParams = new URLSearchParams(window.location.search);
+    const newCollabId = urlParams.get('newCollab');
+    
+    // Also check localStorage for new collaboration ID (fallback)
+    const storedNewCollabId = localStorage.getItem('newCollaborationId');
+    
+    const collabToHighlight = newCollabId || storedNewCollabId;
+    
+    if (collabToHighlight) {
+      setHighlightedCollabId(collabToHighlight);
+      
+      // Clear from localStorage if it was stored there
+      if (storedNewCollabId) {
+        localStorage.removeItem('newCollaborationId');
+      }
+      
+      // Clear from URL parameters if present
+      if (newCollabId) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('newCollab');
+        window.history.replaceState({}, '', url.toString());
+      }
+      
+      // Clear highlighting after 5 seconds
+      setTimeout(() => {
+        setHighlightedCollabId(null);
+      }, 5000);
+    }
+  }, []);
+  
   // This disables the default fixed positioning and overflow hidden
   // so that we can have a normal scrolling container with a scrollbar
   useEffect(() => {
@@ -303,10 +339,10 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         throw error;
       }
     },
-    // Explicitly configure to prevent React Query background updates
-    staleTime: Infinity,
+    // Allow proper invalidation while preventing unnecessary background updates
+    staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true, // Allow refetch on mount for invalidation
     refetchOnReconnect: false,
     refetchInterval: false
   });
@@ -626,14 +662,28 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       : collab.status === 'active';
     
     return (
-      <Card key={collab.id} className="mb-4">
+      <Card 
+        key={collab.id} 
+        className={`mb-4 transition-all duration-500 ${
+          highlightedCollabId === collab.id 
+            ? 'ring-2 ring-primary ring-offset-2 bg-primary/5 animate-pulse' 
+            : ''
+        }`}
+      >
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
-              <Badge className="mb-2 flex items-center gap-1">
-                {getCollabTypeIcon(collab.collab_type)}
-                {collab.collab_type}
-              </Badge>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="flex items-center gap-1">
+                  {getCollabTypeIcon(collab.collab_type)}
+                  {collab.collab_type}
+                </Badge>
+                {highlightedCollabId === collab.id && (
+                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 animate-pulse">
+                    ✨ New
+                  </Badge>
+                )}
+              </div>
               <CardTitle className="text-xl">
                 {collab.title === "Collaboration" ? collab.collab_type : collab.title}
               </CardTitle>

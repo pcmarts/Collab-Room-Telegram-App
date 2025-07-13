@@ -115,10 +115,11 @@ The frontend code is organized in the `client` directory with the following stru
 The application includes the following key pages:
 
 1. **Onboarding Flow**:
-   - `onboarding.tsx`: Main onboarding page
+   - `welcome.tsx`: Welcome page (optimized for immediate load without artificial delays)
    - `personal-info.tsx`: Personal information form
    - `company-info.tsx`: Company information form
    - `company-sector.tsx`: Company sector selection
+   - `company-details.tsx`: Company token and blockchain information
    - `collab-preferences.tsx`: Collaboration preferences
 
 2. **Discovery System**:

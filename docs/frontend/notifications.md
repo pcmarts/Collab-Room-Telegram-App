@@ -2,6 +2,21 @@
 
 The Collab Room platform includes a notification system to keep users informed about important events such as matches, application updates, and collaboration status changes.
 
+## Version 1.10.27 Update: Application Status Page Toast Removal
+
+As of Version 1.10.27, toast notifications have been removed from the application status page for a cleaner, less intrusive user experience:
+
+1. **Removed Toast Notifications**: Application status updates no longer display toast notifications
+2. **Improved User Experience**: Users now see status updates directly in the main interface without popup interruptions
+3. **Maintained Real-Time Updates**: Server-Sent Events (SSE) functionality continues to provide real-time status updates
+4. **Cleaner Interface**: Status updates are displayed in the main content area without additional notification overlays
+
+### Technical Changes
+- Removed `useToast` hook import and usage from `application-status.tsx`
+- Eliminated toast notification calls for application status updates
+- Maintained all SSE functionality for real-time status display
+- Status updates are now shown directly in the main interface components
+
 ## Version 1.9.8 Update: Enhanced Toast Notifications
 
 In Version 1.9.8, the toast notification system has been enhanced to provide better visual feedback when collaboration requests are sent:

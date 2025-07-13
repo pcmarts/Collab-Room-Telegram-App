@@ -5,6 +5,91 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.29] - 2025-01-17
+
+### Enhanced
+- **Twitter Spaces URL Pre-fill**: Added automatic pre-filling of Twitter URL field for Twitter Spaces collaborations
+  - When creating a Twitter Spaces collaboration, the Twitter URL field is now pre-filled with the company's Twitter handle from the user's profile
+  - Pre-fill format: `https://x.com/company_handle` or uses existing full URL if already formatted
+  - Users can still edit the pre-filled URL if needed for specific requirements
+  - Feature implemented across all Twitter Spaces collaboration forms (CollaborationFormV2, step-based form, and fixed form)
+  - Only pre-fills when field is empty or contains default placeholder values
+  - Improves user experience by reducing manual input for most common use case
+
+## [Version 1.10.28] - 2025-01-17
+
+### Fixed
+- **Collaboration Creation Data Refresh**: Fixed issue where newly created collaborations didn't appear on the "My Collabs" page without a manual refresh
+  - Collaborations now appear immediately after creation with proper React Query invalidation
+  - Fixed timing issues with query invalidation and navigation race conditions
+  - Users no longer need to refresh the page to see their newly created collaborations
+  - Enhanced user experience with immediate feedback after collaboration creation
+
+### Enhanced
+- **New Collaboration Visual Highlighting**: Added visual feedback system for newly created collaborations
+  - New collaborations are highlighted with a pulsing ring animation and background color
+  - Added "✨ New" badge to clearly indicate recently created collaborations
+  - Highlighting automatically disappears after 5 seconds
+  - URL parameter system for persistent highlighting across page navigation
+
+### Technical Details
+- Fixed React Query configuration in `my-collaborations.tsx` to allow proper invalidation (`staleTime: 5 minutes` instead of `Infinity`)
+- Replaced `invalidateQueries` with `refetchQueries` for immediate data fetching instead of just marking as stale
+- Added `await` to query invalidation calls to ensure completion before navigation
+- Fixed query key consistency across all collaboration creation forms (`['/api/collaborations/my']`)
+- Updated `create-collaboration-steps.tsx`, `create-collaboration-fixed.tsx`, `create-collaboration.tsx`, `edit-collaboration-steps.tsx`, and `useCollaborationForm.ts`
+- Implemented URL parameter highlighting system with `?newCollab={id}` for new collaboration identification
+- Added visual styling with `ring-2 ring-primary ring-offset-2 bg-primary/5 animate-pulse` classes
+- Enhanced collaboration creation flow with proper response data handling and ID extraction
+
+## [Version 1.10.27] - 2025-01-17
+
+### Enhanced
+- **Application Status Page User Experience**: Updated application status page with improved design and functionality
+  - Changed from dark theme to light theme for better accessibility and consistency
+  - Added "Explore Collab Room" button for users with pending applications to discover collaborations while waiting for approval
+  - Removed toast notifications from the application status page for a cleaner, less intrusive user experience
+  - Improved visual hierarchy with better color contrast and modern light theme styling
+
+### Technical Details
+- Updated `application-status.tsx` to use light theme color scheme (gray-50 background, white cards, gray-900 text)
+- Added new button component with compass icon linking to the discover page for pending users
+- Removed toast hook usage and all related toast notification functionality
+- Enhanced status indicators with improved color coding for better visibility
+- Maintained all existing SSE functionality for real-time status updates
+
+## [Version 1.10.26] - 2025-01-17
+
+### Enhanced
+- **Application Form User Experience**: Improved onboarding flow by removing artificial loading screens
+  - Removed 1-second artificial loading delay from welcome page
+  - Users now experience immediate page load without unnecessary waiting
+  - Smoother transition between application form pages
+  - Enhanced overall user experience during the onboarding process
+
+### Technical Details
+- Removed `isLoading` state and artificial 1-second timeout from `welcome.tsx`
+- Eliminated loading screen render logic that was blocking immediate page display
+- Maintained all existing functionality while removing unnecessary loading delays
+- Improved page load performance for the initial application form step
+
+## [Version 1.10.25] - 2025-01-17
+
+### Fixed
+- **User's Own Collaboration Display**: Fixed issue where users saw "matched" status for their own collaborations instead of "My Collab"
+  - Users now properly see "My Collab" (grayed out and unclickable) for collaborations they created
+  - Fixed collaboration status logic to never show interaction status for user's own collaborations
+  - Resolved backend interactions endpoint returning status for user's own collaborations
+  - Improved user experience by providing clear visual distinction between own collaborations and others
+
+### Technical Details
+- Updated `DiscoverPageList.tsx` to properly access user profile structure using `userProfile.user.id` instead of `userProfile.id`
+- Modified collaboration status logic to return `undefined` for user's own collaborations, preventing status badges
+- Enhanced `/api/collaborations/interactions` endpoint to exclude user's own collaborations from the response
+- Fixed `CollaborationListItem.tsx` to prioritize "My Collab" display over any collaboration status
+- Added proper filtering in backend to prevent interaction status being calculated for user's own collaborations
+- Ensured consistent behavior across both frontend and backend for user's own collaboration handling
+
 ## [Version 1.10.24] - 2025-01-16
 
 ### Enhanced

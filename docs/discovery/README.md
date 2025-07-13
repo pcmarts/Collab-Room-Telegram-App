@@ -90,11 +90,13 @@ The discovery system uses cursor-based pagination for efficient data loading:
 The `searchCollaborationsPaginated` function in `server/storage.ts` implements the core discovery logic:
 
 1. Filters out previously swiped collaborations
-2. Filters out the user's own collaborations
+2. Includes the user's own collaborations with special handling (shows "My Collab" instead of interaction buttons)
 3. Applies any additional filters (collaboration type, company attributes, etc.)
 4. Applies sorting based on the selected sort option
 5. Returns collaborations sorted by appropriate criteria
 6. Includes a secondary safety filter to ensure no excluded cards appear
+
+**User's Own Collaborations**: Users can see their own collaborations in the discovery feed, but these are displayed with a "My Collab" button (grayed out and unclickable) instead of interaction buttons like "Request Collaboration" or "Matched". This provides users with visibility into their own content while preventing self-interaction.
 
 ### Sort By Implementation
 
@@ -192,6 +194,7 @@ When a match is created through the discovery system, a match moment dialog is d
 - **Version 1.10.7**: Dramatically optimized discovery card loading time by reducing query execution from 96ms to 57ms (~40% improvement) with database indexing, SQL-based filtering, and query restructuring
 - **Version 1.11.0**: Implemented Sort By functionality with three options (Newest first, Oldest first, Collab Type) including dropdown UI component, backend sorting logic, and race condition fixes for consistent behavior
 - **Version 1.10.15**: Fixed collaboration request note saving functionality and enhanced note-adding dialog flow with proper database field mapping (`swipes.note` instead of `swipes.details`), restored two-step note composition workflow in list discovery interface, and implemented consistent button state management across both list and card discovery views
+- **Version 1.10.25**: Fixed user's own collaboration display issue - users now properly see "My Collab" (grayed out and unclickable) instead of "matched" status for collaborations they created, resolved backend interactions endpoint to exclude user's own collaborations, and improved frontend logic to handle user profile structure correctly
 
 ## Related Documentation
 

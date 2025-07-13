@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 import {
@@ -51,6 +52,7 @@ import {
 export default function CreateCollaboration() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollabType, setSelectedCollabType] = useState<typeof COLLAB_TYPES[number] | "">("");
@@ -155,12 +157,24 @@ export default function CreateCollaboration() {
       });
 
       if (response.ok) {
+        const responseData = await response.json();
+        const newCollaborationId = responseData.collaboration?.id;
+        
+        // Force refetch queries to refresh collaboration lists and wait for completion
+        await queryClient.refetchQueries({ queryKey: ['/api/collaborations/my'] });
+        
         toast({
           title: "Success!",
           description: "Your collaboration has been posted.",
         });
-        // Redirect to the "My Collaborations" tab on marketing-collabs-new
-        setLocation('/marketing-collabs-new?tab=my');
+        
+        // Redirect to My Collaborations page with new collaboration ID for highlighting
+        if (newCollaborationId) {
+          setLocation(`/my-collaborations?newCollab=${newCollaborationId}`);
+        } else {
+          // Fallback to marketing-collabs-new without highlighting
+          setLocation('/marketing-collabs-new?tab=my');
+        }
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to create collaboration');

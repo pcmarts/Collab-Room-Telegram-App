@@ -141,8 +141,14 @@ const handleCollabTypeChange = useCallback((value: typeof COLLAB_TYPES[number]) 
       });
       break;
     case "Twitter Spaces Guest":
+      // Pre-fill with company Twitter URL if available, otherwise use default
+      const companyTwitterUrl = profileData?.company?.twitter_handle 
+        ? (profileData.company.twitter_handle.startsWith('https://') 
+            ? profileData.company.twitter_handle
+            : `https://x.com/${profileData.company.twitter_handle}`)
+        : "https://x.com/";
       form.setValue('details', {
-        twitter_handle: "https://x.com/",
+        twitter_handle: companyTwitterUrl,
         space_topic: [],
         host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
       });
@@ -156,6 +162,48 @@ This approach ensures that:
 1. Only relevant fields are shown for each collaboration type
 2. Field values don't "bleed" between different collaboration types
 3. Default values are set appropriately
+
+### Twitter URL Pre-fill Feature (v1.10.29)
+
+For Twitter Spaces collaborations, the form now automatically pre-fills the Twitter URL field with the company's Twitter handle from the user's profile. This enhancement provides several benefits:
+
+#### Key Features
+
+- **Automatic Pre-filling**: When a user selects "Twitter Spaces Guest", the `twitter_handle` field is automatically populated with their company's Twitter URL
+- **Smart URL Handling**: The feature handles both partial handles (e.g., "chainlink") and full URLs (e.g., "https://x.com/chainlink")
+- **User Override**: Users can still edit the pre-filled URL if needed for specific requirements
+- **Non-intrusive**: Only pre-fills when the field is empty or contains default placeholder values
+
+#### Implementation Details
+
+The pre-fill logic is implemented in multiple places:
+
+1. **Initial Form Setup**: When the collaboration type is changed to "Twitter Spaces Guest"
+2. **Profile Data Loading**: When user profile data becomes available after form initialization
+
+```typescript
+// Additional useEffect for profile data loading
+useEffect(() => {
+  if (profileData?.company?.twitter_handle && selectedCollabType === "Twitter Spaces Guest") {
+    const currentValue = form.getValues("details.twitter_handle");
+    // Only pre-fill if field is empty or has default value
+    if (!currentValue || currentValue === "https://x.com/" || currentValue === "https://x.com/username") {
+      const companyTwitterUrl = profileData.company.twitter_handle.startsWith('https://') 
+        ? profileData.company.twitter_handle
+        : `https://x.com/${profileData.company.twitter_handle}`;
+      
+      form.setValue("details.twitter_handle", companyTwitterUrl);
+    }
+  }
+}, [profileData, selectedCollabType, form]);
+```
+
+#### Forms Updated
+
+This feature is implemented across all Twitter Spaces collaboration forms:
+- `TwitterSpacesForm.tsx` (CollaborationFormV2 component)
+- `create-collaboration-steps.tsx` (Step-based form)
+- `create-collaboration-fixed.tsx` (Fixed layout form)
 
 ## Conditional Rendering
 
@@ -239,15 +287,24 @@ const onSubmit = async (data: CreateCollaboration) => {
     
     // Handle response
     if (response.ok) {
-      // Invalidate queries to refresh collaboration lists
-      queryClient.invalidateQueries({ queryKey: ['/api/collaborations/my'] });
+      const responseData = await response.json();
+      const newCollaborationId = responseData.collaboration?.id;
+      
+      // Force refetch queries to refresh collaboration lists and wait for completion
+      await queryClient.refetchQueries({ queryKey: ['/api/collaborations/my'] });
       
       toast({
         title: "Success!",
         description: "Your collaboration has been created successfully."
       });
-      // Redirect to the "My Collaborations" tab
-      setLocation('/marketing-collabs-new?tab=my');
+      
+      // Redirect to My Collaborations page with new collaboration ID for highlighting
+      if (newCollaborationId) {
+        setLocation(`/my-collaborations?newCollab=${newCollaborationId}`);
+      } else {
+        // Fallback without highlighting if ID is not available
+        setLocation('/marketing-collabs-new?tab=my');
+      }
     } else {
       const errorText = await response.text();
       throw new Error(`Failed to create: ${errorText}`);
@@ -271,7 +328,52 @@ Key aspects of the submission process:
 3. Conditional field removal
 4. Telegram integration data
 5. Error handling and user feedback
-6. Redirect after successful submission
+6. **React Query data refresh**: Uses `refetchQueries` to ensure immediate data update
+7. **Visual highlighting**: Redirects with collaboration ID for highlighting newly created items
+8. **Race condition prevention**: Awaits query refetch completion before navigation
+
+## React Query Integration and Data Refresh
+
+### Immediate Data Updates
+
+The collaboration form implements a robust data refresh system to ensure users see their newly created collaborations immediately without requiring a manual page refresh.
+
+**Previous Issue**: Users had to refresh the page to see newly created collaborations due to React Query configuration preventing proper invalidation.
+
+**Solution Implemented**:
+
+```typescript
+// Use refetchQueries instead of invalidateQueries for immediate data fetching
+await queryClient.refetchQueries({ queryKey: ['/api/collaborations/my'] });
+```
+
+**Key Improvements**:
+- **`refetchQueries` over `invalidateQueries`**: Forces immediate data fetching instead of just marking data as stale
+- **Await completion**: Ensures query refetch completes before navigation to prevent race conditions
+- **Consistent query keys**: All collaboration forms use the same query key `['/api/collaborations/my']`
+
+### Visual Highlighting System
+
+Newly created collaborations are visually highlighted to provide clear feedback to users:
+
+**URL Parameter System**:
+```typescript
+// Redirect with collaboration ID for highlighting
+setLocation(`/my-collaborations?newCollab=${newCollaborationId}`);
+```
+
+**Visual Styling**:
+- Pulsing ring animation: `ring-2 ring-primary ring-offset-2`
+- Background highlight: `bg-primary/5`
+- New badge: `✨ New` with sparkle emoji
+- Automatic cleanup after 5 seconds
+
+**Implementation Details**:
+1. Extract collaboration ID from API response
+2. Pass ID via URL parameter
+3. My Collaborations page detects parameter and applies highlighting
+4. Highlighting persists across navigation and refreshes
+5. Auto-cleanup prevents permanent highlighting
 
 ## Common Challenges and Solutions
 

@@ -20,6 +20,7 @@ The application has already implemented several performance optimizations:
    - Three-phase progressive loading system (HTML splash, React splash, full app)
    - Ultra-light splash screen that renders in under 100ms
    - Optimized application startup with non-blocking initialization
+   - Removed artificial loading delays from onboarding flow (welcome page now loads immediately)
 
 2. **Database Optimizations**:
    - Strategic database indexing for discovery cards feature
