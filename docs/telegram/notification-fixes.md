@@ -4,6 +4,37 @@
 
 This document describes the improvements made to the Telegram notification system to resolve critical issues affecting notification delivery in Collab Room, particularly with right-swipe notifications for collaboration requests.
 
+## Latest Fix - Route Definition Issue (July 13, 2025)
+
+### Problem
+Telegram notifications were not being sent to collaboration hosts when users requested collaborations, despite the notification system being implemented and apparently functional.
+
+### Root Cause
+The issue was caused by **duplicate route definitions** in the Express.js server for `/api/collaborations/:id/apply`:
+1. Basic route handler (line 1284) - Simple validation, no notification code
+2. Enhanced route handler (line 3082) - Full validation, notification system, enhanced logging
+
+Express.js was using the first matching route definition, so the basic route intercepted all requests before they could reach the enhanced route containing the notification code.
+
+### Solution
+1. **Removed duplicate route**: Deleted the basic route handler that was intercepting requests
+2. **Fixed validation mismatch**: Updated validation from complex `collabApplicationSchema` to simple message validation matching frontend payload
+3. **Cleaned up duplicate logic**: Removed duplicate application creation code
+4. **Enhanced logging**: Confirmed full notification flow execution
+
+### Verification
+- Collaboration request successfully processed with full enhanced logging visible
+- Telegram notification sent to host (Message ID: 713 confirmed)
+- Interactive buttons included for quick response (Hide/Match options)
+- HTTP 201 response returned successfully
+- Enhanced logging confirms: route handler → storage → Telegram API → success response
+
+### Technical Details
+- Express.js route matching uses first-match-wins principle
+- Frontend sends simple `{message: "text"}` payload
+- Backend was expecting complex form data with multiple required fields
+- Fixed by simplifying validation to match actual frontend implementation
+
 ## Key Issues Fixed
 
 ### 1. Telegram Callback Data Length Limit

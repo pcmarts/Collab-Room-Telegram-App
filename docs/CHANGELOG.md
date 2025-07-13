@@ -5,6 +5,23 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.21] - 2025-07-13
+
+### Fixed
+- **Critical Bug**: Resolved duplicate route definition issue preventing Telegram notifications from being sent
+  - Fixed duplicate `/api/collaborations/:id/apply` route definitions where basic route was intercepting requests before enhanced route
+  - Removed basic route handler that lacked notification functionality
+  - Fixed validation schema mismatch between frontend (sending `message` field) and backend (expecting complex form data)
+  - Enhanced logging now properly displays throughout collaboration request flow
+  - Telegram notifications successfully sent to collaboration hosts with interactive buttons for quick response
+  - Collaboration request system now fully functional with proper notification delivery
+
+### Technical Details
+- Express.js was using first matching route definition, causing enhanced route with notifications to never execute
+- Simplified validation from complex `collabApplicationSchema` to basic message validation
+- Removed duplicate application creation logic that was causing processing errors
+- Enhanced logging confirms notification flow: route handler → storage → Telegram API → success response
+
 ## [Version 1.10.20] - 2025-07-13
 
 ### Refactored
