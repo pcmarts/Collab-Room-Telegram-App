@@ -3146,6 +3146,15 @@ export async function registerRoutes(app: Express) {
           created_at: new Date()
         });
 
+        // Send Telegram notification to collaboration host
+        try {
+          await notifyNewCollabRequest(collaboration.creator_id, user.id, collaboration.id);
+          console.log(`✅ Sent Telegram notification to host ${collaboration.creator_id} about new collaboration application`);
+        } catch (notificationError) {
+          console.error('Error sending collaboration application notification:', notificationError);
+          // Continue processing even if notification fails
+        }
+
         res.status(201).json({
           success: true,
           application,
