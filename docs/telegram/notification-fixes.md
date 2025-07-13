@@ -4,7 +4,43 @@
 
 This document describes the improvements made to the Telegram notification system to resolve critical issues affecting notification delivery in Collab Room, particularly with right-swipe notifications for collaboration requests.
 
-## Latest Fix - Route Definition Issue (July 13, 2025)
+## Latest Fixes - Field Reference Issues (January 16, 2025)
+
+### Problem 1: User Roles Not Displaying in Notifications
+User roles (e.g., "CMO") were not appearing in Telegram collaboration request notifications, showing as empty or undefined values.
+
+### Root Cause 1
+The `notifyNewCollabRequest` function in `server/telegram.ts` was attempting to access `requesterCompany?.role_title` to display the user's role, but this field doesn't exist in the database schema.
+
+### Solution 1
+- **Fixed field reference**: Changed `role_title` to `job_title` in the notification message formatting
+- **Database schema verification**: Confirmed that the `companies` table uses `job_title` field (line 296 in `shared/schema.ts`)
+- **Updated line 2809** in `server/telegram.ts` to use correct field name
+
+### Problem 2: Match/Hide Button Errors
+When hosts pressed the Match or Hide buttons in Telegram notifications, database errors occurred preventing the callback from being processed.
+
+### Root Cause 2
+The `handleSwipeCallback` function was using an incorrect database field name `requests.user_id` in three separate database queries, but this field doesn't exist in the schema.
+
+### Solution 2
+- **Fixed database queries**: Updated all instances of `requests.user_id` to `requests.requester_id`
+- **Database schema verification**: Confirmed that the `requests` table uses `requester_id` field (lines 575-605 in `shared/schema.ts`)
+- **Updated three queries**: Fixed checking for existing requests, updating to 'accepted' status, and updating to 'hidden' status
+
+### Verification
+- User roles now properly display in collaboration request notifications (e.g., "👤 CMO")
+- Match and Hide buttons function correctly without database errors
+- Both fixes tested with request ID `ef677927-961c-49b3-9d7a-b798e02fd629`
+- Enhanced error handling for database field reference issues
+
+### Technical Details
+- The `companies` table schema includes `job_title` field, not `role_title`
+- The `requests` table schema includes `requester_id` and `host_id` fields, not `user_id`
+- All callback button interactions now work properly with correct field references
+- Fallback behavior implemented for missing role information
+
+## Previous Fix - Route Definition Issue (July 13, 2025)
 
 ### Problem
 Telegram notifications were not being sent to collaboration hosts when users requested collaborations, despite the notification system being implemented and apparently functional.

@@ -14,8 +14,7 @@ import type {
   User as UserType, 
   Company, 
   NotificationPreferences, 
-  MarketingPreferences, 
-  ConferencePreferences 
+  MarketingPreferences 
 } from '@shared/schema';
 import { NOTIFICATION_FREQUENCIES } from '@shared/schema';
 import { useToast } from "@/hooks/use-toast";
@@ -28,7 +27,6 @@ interface ProfileData {
   preferences: any;
   notificationPreferences: NotificationPreferences;
   marketingPreferences: MarketingPreferences;
-  conferencePreferences: ConferencePreferences;
 }
 
 export default function Dashboard() {
@@ -179,18 +177,7 @@ export default function Dashboard() {
         filtered_marketing_topics: profile?.marketingPreferences?.filtered_marketing_topics || [],
         twitter_collabs: profile?.marketingPreferences?.twitter_collabs || [],
         
-        // Include conference preferences
-        coffee_match_enabled: profile?.conferencePreferences?.coffee_match_enabled || false,
-        coffee_match_company_sectors: profile?.conferencePreferences?.coffee_match_company_sectors || [],
-        coffee_match_company_followers: profile?.conferencePreferences?.coffee_match_company_followers || null,
-        coffee_match_user_followers: profile?.conferencePreferences?.coffee_match_user_followers || null,
-        coffee_match_funding_stages: profile?.conferencePreferences?.coffee_match_funding_stages || [],
-        coffee_match_token_status: profile?.conferencePreferences?.coffee_match_token_status || false,
-        coffee_match_filter_company_sectors_enabled: profile?.conferencePreferences?.coffee_match_filter_company_sectors_enabled || false,
-        coffee_match_filter_company_followers_enabled: profile?.conferencePreferences?.coffee_match_filter_company_followers_enabled || false,
-        coffee_match_filter_user_followers_enabled: profile?.conferencePreferences?.coffee_match_filter_user_followers_enabled || false,
-        coffee_match_filter_funding_stages_enabled: profile?.conferencePreferences?.coffee_match_filter_funding_stages_enabled || false,
-        coffee_match_filter_token_status_enabled: profile?.conferencePreferences?.coffee_match_filter_token_status_enabled || false
+        // No conference preferences - removed as part of simplification
       });
 
       setNotificationFrequency(frequency);

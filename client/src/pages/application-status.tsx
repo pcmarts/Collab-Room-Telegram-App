@@ -22,7 +22,7 @@ interface ProfileData {
   company?: any;
   preferences?: any;
   marketingPreferences?: any;
-  conferencePreferences?: any;
+
 }
 
 export default function ApplicationStatusPage() {

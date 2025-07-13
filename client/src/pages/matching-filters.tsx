@@ -23,16 +23,12 @@ export default function MatchingFilters() {
   });
 
   const [formData, setFormData] = useState({
-    filtered_conference_sectors: [] as string[]
+    // Conference preferences removed as part of simplification
   });
 
-  // Load existing preferences when data is fetched
+  // Conference preferences removed as part of simplification
   useEffect(() => {
-    if (profileData?.conferencePreferences) {
-      setFormData({
-        filtered_conference_sectors: profileData.conferencePreferences.filtered_conference_sectors || []
-      });
-    }
+    // No longer needed - conference preferences removed
   }, [profileData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,31 +37,22 @@ export default function MatchingFilters() {
     try {
       setIsSubmitting(true);
 
-      // Use the new conference preferences endpoint
-      const response = await apiRequest('/api/conference-preferences', 'POST', {
-        filtered_conference_sectors: formData.filtered_conference_sectors
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update conference preferences');
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
-
+      // Conference preferences removed - this page is no longer functional
+      
       toast({
-        title: "Success!",
-        description: "Your conference matching filters have been updated",
-        duration: 2000
+        title: "Feature Removed",
+        description: "Conference matching filters have been removed from the system",
+        duration: 3000
       });
 
       setLocation('/dashboard');
 
     } catch (error) {
-      console.error('Failed to submit:', error);
+      console.error('Error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to submit form"
+        description: "Feature has been removed from the system."
       });
     } finally {
       setIsSubmitting(false);
@@ -81,12 +68,7 @@ export default function MatchingFilters() {
   };
 
   const toggleExcludedTag = (tag: string) => {
-    setFormData(prev => ({
-      ...prev,
-      filtered_conference_sectors: prev.filtered_conference_sectors.includes(tag)
-        ? prev.filtered_conference_sectors.filter(t => t !== tag)
-        : [...prev.filtered_conference_sectors, tag]
-    }));
+    // Conference preferences removed - no longer functional
   };
 
   if (isLoading) {
@@ -100,69 +82,26 @@ export default function MatchingFilters() {
   return (
     <div className="min-h-[100svh] bg-background">
       <PageHeader
-        title="Conference Matching"
-        subtitle="Set your networking preferences"
+        title="Feature Removed"
+        subtitle="Conference matching has been removed"
         backUrl="/dashboard"
       />
 
       <div className="p-4 space-y-6">
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="space-y-4">
-            <Label className="text-lg">☕ Coffee Match Filters</Label>
-            <p className="text-sm text-muted-foreground mb-4">
-              By default, all company types are included in your coffee match suggestions. Deselect any sectors below to exclude those types of companies from your conference networking.
-            </p>
-
-            {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-              <div key={category} className="border rounded-lg overflow-hidden">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full flex justify-between items-center p-4"
-                  onClick={() => toggleCategory(category)}
-                >
-                  <span className="font-medium">{category}</span>
-                  {expandedCategories.includes(category) ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </Button>
-
-                {expandedCategories.includes(category) && (
-                  <div className="p-4 pt-0 grid grid-cols-1 gap-2">
-                    {tags.map(tag => (
-                      <Button
-                        key={tag}
-                        type="button"
-                        variant={formData.filtered_conference_sectors.includes(tag) ? "outline" : "default"}
-                        className="justify-start h-auto py-3 px-4"
-                        onClick={() => toggleExcludedTag(tag)}
-                      >
-                        <span className="text-left">{tag}</span>
-                      </Button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">
+            Conference matching and event attendance features have been removed from the platform as part of a simplification process.
+          </p>
+          <p className="text-muted-foreground">
+            This page is no longer functional and will be removed in future updates.
+          </p>
           <Button
-            type="submit"
+            onClick={() => setLocation('/dashboard')}
             className="w-full mt-6"
-            disabled={isSubmitting}
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save"
-            )}
+            Return to Dashboard
           </Button>
-        </form>
+        </div>
       </div>
     </div>
   );

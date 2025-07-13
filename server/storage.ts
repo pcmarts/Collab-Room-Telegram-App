@@ -1,6 +1,6 @@
 import { 
   users, companies, collaborations, collab_notifications, swipes, matches, requests,
-  notification_preferences, marketing_preferences, conference_preferences,
+  notification_preferences, marketing_preferences,
   user_referrals, referral_events, // Added referral tables
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration, 
@@ -9,7 +9,7 @@ import {
   type Swipe, type InsertSwipe,
   type Match, type InsertMatch,
   type Request, type InsertRequest,
-  type NotificationPreferences, type MarketingPreferences, type ConferencePreferences,
+  type NotificationPreferences, type MarketingPreferences,
   type UserReferral, type InsertUserReferral, // Added referral types
   type ReferralEvent, type InsertReferralEvent
 } from "@shared/schema";
@@ -84,9 +84,7 @@ export interface IStorage {
   getUserMarketingPreferences(userId: string): Promise<MarketingPreferences | undefined>;
   updateUserMarketingPreferences(userId: string, preferences: Partial<MarketingPreferences>): Promise<MarketingPreferences | undefined>;
   
-  // Conference preferences
-  getUserConferencePreferences(userId: string): Promise<ConferencePreferences | undefined>;
-  updateUserConferencePreferences(userId: string, preferences: Partial<ConferencePreferences>): Promise<ConferencePreferences | undefined>;
+
   
   // Referral methods
   getUserReferral(userId: string): Promise<UserReferral | undefined>;
@@ -2355,63 +2353,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  // Conference preferences
-  async getUserConferencePreferences(userId: string): Promise<ConferencePreferences | undefined> {
-    const [prefs] = await db
-      .select()
-      .from(conference_preferences)
-      .where(eq(conference_preferences.user_id, userId));
-    return prefs;
-  }
-  
-  async updateUserConferencePreferences(userId: string, prefs: Partial<ConferencePreferences>): Promise<ConferencePreferences | undefined> {
-    const existingPrefs = await this.getUserConferencePreferences(userId);
-    
-    // Ensure all array fields are properly initialized and validated
-    const safePrefs = {
-      ...prefs,
-      coffee_match_company_sectors: Array.isArray(prefs.coffee_match_company_sectors) ? prefs.coffee_match_company_sectors : [],
-      coffee_match_funding_stages: Array.isArray(prefs.coffee_match_funding_stages) ? prefs.coffee_match_funding_stages : [],
-      filtered_conference_sectors: Array.isArray(prefs.filtered_conference_sectors) ? prefs.filtered_conference_sectors : []
-    };
-    
-    console.log("STORAGE: Saving conference preferences with arrays:", {
-      coffee_match_company_sectors: safePrefs.coffee_match_company_sectors,
-      coffee_match_funding_stages: safePrefs.coffee_match_funding_stages,
-      filtered_conference_sectors: safePrefs.filtered_conference_sectors
-    });
-    
-    if (existingPrefs) {
-      // Update existing preferences
-      const [updatedPrefs] = await db
-        .update(conference_preferences)
-        .set(safePrefs)
-        .where(eq(conference_preferences.id, existingPrefs.id))
-        .returning();
-      return updatedPrefs;
-    } else {
-      // Create new preferences
-      const [newPrefs] = await db
-        .insert(conference_preferences)
-        .values({
-          user_id: userId,
-          coffee_match_enabled: prefs.coffee_match_enabled || false,
-          coffee_match_company_sectors: safePrefs.coffee_match_company_sectors,
-          coffee_match_company_followers: prefs.coffee_match_company_followers || null,
-          coffee_match_user_followers: prefs.coffee_match_user_followers || null,
-          coffee_match_funding_stages: safePrefs.coffee_match_funding_stages,
-          coffee_match_token_status: prefs.coffee_match_token_status || false,
-          filtered_conference_sectors: safePrefs.filtered_conference_sectors, 
-          coffee_match_filter_company_sectors_enabled: prefs.coffee_match_filter_company_sectors_enabled || false,
-          coffee_match_filter_company_followers_enabled: prefs.coffee_match_filter_company_followers_enabled || false,
-          coffee_match_filter_user_followers_enabled: prefs.coffee_match_filter_user_followers_enabled || false,
-          coffee_match_filter_funding_stages_enabled: prefs.coffee_match_filter_funding_stages_enabled || false,
-          coffee_match_filter_token_status_enabled: prefs.coffee_match_filter_token_status_enabled || false
-        })
-        .returning();
-      return newPrefs;
-    }
-  }
+
   
   // Referral methods
   async getUserReferral(userId: string): Promise<UserReferral | undefined> {

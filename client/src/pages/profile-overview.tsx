@@ -12,8 +12,7 @@ import type {
   User,
   Company,
   NotificationPreferences,
-  MarketingPreferences,
-  ConferencePreferences
+  MarketingPreferences
 } from "@shared/schema";
 import { TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,7 +25,7 @@ interface ProfileData {
   preferences: any;
   notificationPreferences: NotificationPreferences;
   marketingPreferences: MarketingPreferences;
-  conferencePreferences: ConferencePreferences;
+  // Conference preferences removed as part of simplification
 }
 
 export default function ProfileOverview() {

@@ -5,6 +5,26 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.22] - 2025-01-16
+
+### Fixed
+- **Telegram Notification Display**: Fixed user roles not appearing in Telegram notification messages
+  - Updated `notifyNewCollabRequest` function to use correct database field `job_title` instead of non-existent `role_title`
+  - User roles (e.g., "CMO") now properly display in collaboration request notifications
+  - Fixed field reference in `server/telegram.ts` line 2809
+
+- **Telegram Callback Button Errors**: Resolved errors when hosts press Match/Hide buttons in Telegram notifications
+  - Fixed incorrect database field reference in `handleSwipeCallback` function
+  - Changed all instances of `requests.user_id` to `requests.requester_id` to match actual database schema
+  - Match and Hide buttons now function correctly without database query errors
+  - Updated three database queries in callback handling logic
+
+### Technical Details
+- Database schema analysis confirmed `companies` table uses `job_title` field, not `role_title`
+- Database schema analysis confirmed `requests` table uses `requester_id` field, not `user_id`
+- All callback button interactions now work properly with correct field references
+- Enhanced error handling for Telegram notification system
+
 ## [Version 1.10.21] - 2025-07-13
 
 ### Fixed

@@ -3,12 +3,12 @@ import type { Session } from 'express-session';
 import { createServer } from "http";
 import { db } from "./db";
 import { 
-  users, companies, notification_preferences, marketing_preferences, conference_preferences, 
-  events, user_events, collaborations, collab_notifications, requests,
+  users, companies, notification_preferences, marketing_preferences, 
+  collaborations, collab_notifications, requests,
   referral_events, user_referrals,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
   InsertCollaboration, CollabApplication, InsertCollabApplication,
-  type NotificationPreferences, type MarketingPreferences, type ConferencePreferences
+  type NotificationPreferences, type MarketingPreferences
 } from "../shared/schema";
 import { eq, and, not, desc, inArray, or } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
@@ -272,11 +272,6 @@ export async function registerRoutes(app: Express) {
         .from(marketing_preferences)
         .where(eq(marketing_preferences.user_id, user.id));
         
-      // Get conference preferences
-      const [conferencePreferences] = await db.select()
-        .from(conference_preferences)
-        .where(eq(conference_preferences.user_id, user.id));
-
       // Add all data to the response
       const response = {
         user,
@@ -284,7 +279,6 @@ export async function registerRoutes(app: Express) {
         // Include all preference objects with proper null handling
         notificationPreferences: notificationPreferences || null,
         marketingPreferences: marketingPreferences || null,
-        conferencePreferences: conferencePreferences || null,
         // For backward compatibility
         preferences: notificationPreferences || {},
         impersonating: req.session?.impersonating ? {
@@ -843,12 +837,7 @@ export async function registerRoutes(app: Express) {
               filter_token_status_enabled: true
             });
         
-          await tx
-            .insert(conference_preferences)
-            .values({
-              user_id: user.id,
-              coffee_match_enabled: false
-            });
+
         }
 
         return { user };
@@ -1127,15 +1116,10 @@ export async function registerRoutes(app: Express) {
           .from(marketing_preferences)
           .where(eq(marketing_preferences.user_id, user.id));
           
-        const existingConferencePrefs = await db.select()
-          .from(conference_preferences)
-          .where(eq(conference_preferences.user_id, user.id));
-
         // Start transaction to ensure all preferences are updated together
         const result = await db.transaction(async (tx) => {
           let generalPrefs;
           let marketingPrefs;
-          let conferencePrefs;
           
           // 1. Handle Notification Preferences
           const notifications_enabled = req.body.notifications_enabled === false ? false : true;
@@ -1188,48 +1172,13 @@ export async function registerRoutes(app: Express) {
             console.log('Created marketing preferences:', marketingPrefs);
           }
           
-          // 3. Handle Conference Preferences
-          const conferencePrefsData = {
-            coffee_match_enabled: coffee_match_enabled === true,
-            coffee_match_company_sectors: company_sectors,
-            coffee_match_company_followers: coffee_match_company_followers || null,
-            coffee_match_user_followers: coffee_match_user_followers || null,
-            coffee_match_funding_stages: funding_stages,
-            coffee_match_token_status: coffee_match_token_status === true,
-            // Coffee match filter toggle states
-            coffee_match_filter_company_sectors_enabled: coffee_match_filter_company_sectors_enabled === true,
-            coffee_match_filter_company_followers_enabled: coffee_match_filter_company_followers_enabled === true,
-            coffee_match_filter_user_followers_enabled: coffee_match_filter_user_followers_enabled === true,
-            coffee_match_filter_funding_stages_enabled: coffee_match_filter_funding_stages_enabled === true,
-            coffee_match_filter_token_status_enabled: coffee_match_filter_token_status_enabled === true
-          };
-          
-          if (existingConferencePrefs.length > 0) {
-            // Update existing conference preferences
-            [conferencePrefs] = await tx.update(conference_preferences)
-              .set(conferencePrefsData)
-              .where(eq(conference_preferences.user_id, user.id))
-              .returning();
-            console.log('Updated conference preferences:', conferencePrefs);
-          } else {
-            // Create new conference preferences
-            [conferencePrefs] = await tx.insert(conference_preferences)
-              .values({
-                user_id: user.id,
-                ...conferencePrefsData
-              })
-              .returning();
-            console.log('Created conference preferences:', conferencePrefs);
-          }
-          
-          return { generalPrefs, marketingPrefs, conferencePrefs };
+          return { generalPrefs, marketingPrefs };
         });
         
         return res.json({
           success: true,
           preferences: result.generalPrefs,
           marketingPreferences: result.marketingPrefs,
-          conferencePreferences: result.conferencePrefs,
           message: 'All preferences updated successfully'
         });
 
@@ -1683,167 +1632,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Conference Preferences API endpoint
-  app.post("/api/conference-preferences", authLimiter, async (req: TelegramRequest, res) => {
-    console.log('============ DEBUG: Conference Preferences Endpoint ============');
-    console.log('Headers:', req.headers);
-    console.log('Body:', req.body);
 
-    try {
-      const {
-        filtered_conference_sectors,
-        coffee_match_enabled,
-        coffee_match_company_sectors,
-        coffee_match_company_followers,
-        coffee_match_user_followers,
-        coffee_match_funding_stages,
-        coffee_match_token_status,
-        coffee_match_filter_company_sectors_enabled,
-        coffee_match_filter_company_followers_enabled,
-        coffee_match_filter_user_followers_enabled,
-        coffee_match_filter_funding_stages_enabled,
-        coffee_match_filter_token_status_enabled,
-        coffee_match_filter_blockchain_networks_enabled,
-        company_blockchain_networks
-      } = req.body;
-
-      // Get user from impersonation session or Telegram data
-      let telegramUser = getTelegramUserFromRequest(req);
-      if (!telegramUser) {
-        console.error('No Telegram user ID found');
-        if (process.env.NODE_ENV === 'production') {
-          res.status(400);
-          return res.json({ error: 'Invalid Telegram data' });
-        }
-        // In development, fallback to test user
-        console.log('Using development fallback for Telegram data');
-        telegramUser = {
-          id: '123456789',
-          first_name: 'Dev',
-          username: 'dev_user'
-        };
-      }
-
-      // Get user ID from telegram_id
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!user) {
-        console.error('User not found');
-        res.status(404);
-        return res.json({ error: 'User not found' });
-      }
-
-      try {
-        // Check if conference preferences exist for this user
-        const existingConferencePrefs = await db.select()
-          .from(conference_preferences)
-          .where(eq(conference_preferences.user_id, user.id));
-          
-        let result;
-        
-        // Handle Conference Preferences
-        const updateData: any = {};
-        
-        // Only update fields that were provided in the request
-        if (filtered_conference_sectors !== undefined) {
-          updateData.filtered_conference_sectors = filtered_conference_sectors;
-        }
-        
-        if (coffee_match_enabled !== undefined) {
-          updateData.coffee_match_enabled = coffee_match_enabled === true;
-        }
-        
-        if (coffee_match_company_sectors !== undefined) {
-          updateData.coffee_match_company_sectors = coffee_match_company_sectors;
-        }
-        
-        if (coffee_match_company_followers !== undefined) {
-          updateData.coffee_match_company_followers = coffee_match_company_followers || null;
-        }
-        
-        if (coffee_match_user_followers !== undefined) {
-          updateData.coffee_match_user_followers = coffee_match_user_followers || null;
-        }
-        
-        if (coffee_match_funding_stages !== undefined) {
-          updateData.coffee_match_funding_stages = coffee_match_funding_stages;
-        }
-        
-        if (coffee_match_token_status !== undefined) {
-          updateData.coffee_match_token_status = coffee_match_token_status === true;
-        }
-        
-        if (coffee_match_filter_company_sectors_enabled !== undefined) {
-          updateData.coffee_match_filter_company_sectors_enabled = coffee_match_filter_company_sectors_enabled === true;
-        }
-        
-        if (coffee_match_filter_company_followers_enabled !== undefined) {
-          updateData.coffee_match_filter_company_followers_enabled = coffee_match_filter_company_followers_enabled === true;
-        }
-        
-        if (coffee_match_filter_user_followers_enabled !== undefined) {
-          updateData.coffee_match_filter_user_followers_enabled = coffee_match_filter_user_followers_enabled === true;
-        }
-        
-        if (coffee_match_filter_funding_stages_enabled !== undefined) {
-          updateData.coffee_match_filter_funding_stages_enabled = coffee_match_filter_funding_stages_enabled === true;
-        }
-        
-        if (coffee_match_filter_token_status_enabled !== undefined) {
-          updateData.coffee_match_filter_token_status_enabled = coffee_match_filter_token_status_enabled === true;
-        }
-        
-        // Add blockchain networks enabled filter
-        if (coffee_match_filter_blockchain_networks_enabled !== undefined) {
-          updateData.coffee_match_filter_blockchain_networks_enabled = coffee_match_filter_blockchain_networks_enabled === true;
-        }
-        
-        // Add blockchain networks array
-        if (company_blockchain_networks !== undefined) {
-          updateData.company_blockchain_networks = Array.isArray(company_blockchain_networks) ? company_blockchain_networks : [];
-        }
-        
-        if (existingConferencePrefs.length > 0) {
-          // Update existing conference preferences
-          [result] = await db.update(conference_preferences)
-            .set(updateData)
-            .where(eq(conference_preferences.user_id, user.id))
-            .returning();
-          console.log('Updated conference preferences:', result);
-        } else {
-          // Create new conference preferences
-          [result] = await db.insert(conference_preferences)
-            .values({
-              user_id: user.id,
-              ...updateData
-            })
-            .returning();
-          console.log('Created conference preferences:', result);
-        }
-        
-        // Return a more explicitly formatted response to help client-side processing
-        return res.json({
-          success: true,
-          message: 'Conference preferences updated successfully',
-          conferencePrefs: result
-        });
-
-      } catch (dbError) {
-        console.error('Database error:', dbError);
-        throw new Error(`Failed to save conference preferences: ${dbError}`);
-      }
-
-    } catch (error) {
-      console.error('Detailed error:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        name: error instanceof Error ? error.name : 'Unknown'
-      });
-      res.status(500).json({ error: 'Server error', details: error instanceof Error ? error.message : 'Unknown error' });
-    }
-  });
 
   // Profile endpoint
   app.get("/api/profile", async (req: TelegramRequest, res) => {
@@ -2058,17 +1847,7 @@ export async function registerRoutes(app: Express) {
     }
   }
 
-  // Events endpoint
-  app.get("/api/events", async (req, res) => {
-    try {
-      const allEvents = await db.select().from(events);
-      return res.json(allEvents);
-    } catch (error) {
-      console.error('Failed to fetch events:', error);
-      res.status(500);
-      return res.json({ error: 'Failed to fetch events' });
-    }
-  });
+
   
   // Endpoint to fetch user's applications
   app.get("/api/my-applications", async (req: TelegramRequest, res) => {
@@ -3174,51 +2953,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Events endpoint
-  app.get("/api/events", async (req, res) => {
-    try {
-      const allEvents = await db.select().from(events);
-      return res.json(allEvents);
-    } catch (error) {
-      console.error('Failed to fetch events:', error);
-      res.status(500).json({ error: 'Failed to fetch events' });
-    }
-  });
 
-  // User events endpoint
-  app.get("/api/user-events", async (req: TelegramRequest, res: Response) => {
-    console.log('============ DEBUG: User Events Endpoint ============');
-    console.log('Headers:', req.headers);
-    
-    try {
-      // Get user from request
-      const telegramUser = getTelegramUserFromRequest(req);
-      if (!telegramUser) {
-        console.error('No Telegram user found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Get user from database
-      const user = await storage.getUserByTelegramId(telegramUser.id.toString());
-      if (!user) {
-        console.error('User not found');
-        return res.status(404).json({ error: 'User not found' });
-      }
-      
-      console.log('Using user:', user);
-      
-      // Get user's event attendance
-      const userEventAttendance = await db.select()
-        .from(user_events)
-        .where(eq(user_events.user_id, user.id));
-
-      return res.json(userEventAttendance);
-
-    } catch (error) {
-      console.error('Failed to fetch user events:', error);
-      res.status(500).json({ error: 'Failed to fetch user events' });
-    }
-  });
 
   // Get user notifications
   app.get("/api/notifications", async (req: TelegramRequest, res: Response) => {
@@ -3473,136 +3208,7 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  // Toggle user event attendance
-  app.post("/api/user-events", async (req, res) => {
-    console.log('============ DEBUG: Toggle User Event Attendance Endpoint ============');
-    console.log('Headers:', req.headers);
-    console.log('Body:', req.body);
-    
-    try {
-      const { event_id } = req.body;
 
-      if (!event_id) {
-        return res.status(400).json({ error: 'Event ID is required' });
-      }
-
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      let telegramUser;
-      
-      if (!initData) {
-        console.error('No Telegram init data found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      } else {
-        // Parse Telegram data
-        const decodedInitData = new URLSearchParams(initData);
-        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      }
-
-      if (!telegramUser?.id) {
-        console.error('No Telegram user ID found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-
-      // Get user ID from telegram_id
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!user) {
-        console.log('User not found by Telegram ID');
-        return res.status(404).json({ error: 'User not found' });
-      }
-      
-      console.log('Using user ID:', user.id);
-
-      // Check if user is already attending this event
-      const [existingAttendance] = await db.select()
-        .from(user_events)
-        .where(eq(user_events.user_id, user.id))
-        .where(eq(user_events.event_id, event_id));
-
-      if (existingAttendance) {
-        // Remove attendance if exists
-        await db.delete(user_events)
-          .where(eq(user_events.id, existingAttendance.id));
-      } else {
-        // Add new attendance
-        await db.insert(user_events)
-          .values({
-            user_id: user.id,
-            event_id
-          });
-      }
-
-      return res.json({ success: true });
-
-    } catch (error) {
-      console.error('Failed to toggle event attendance:', error);
-      res.status(500).json({ error: 'Failed to update event attendance' });
-    }
-  });
-  
-  // Delete user event attendance
-  app.delete("/api/user-events/:id", async (req, res) => {
-    console.log('============ DEBUG: Delete User Event Attendance Endpoint ============');
-    console.log('Headers:', req.headers);
-    console.log('Params:', req.params);
-    
-    try {
-      const { id } = req.params;
-      
-      if (!id) {
-        return res.status(400).json({ error: 'User event ID is required' });
-      }
-      
-      // Get Telegram data from header
-      const initData = req.headers['x-telegram-init-data'] as string;
-      let telegramUser;
-      
-      if (!initData) {
-        console.error('No Telegram init data found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      } else {
-        // Parse Telegram data
-        const decodedInitData = new URLSearchParams(initData);
-        telegramUser = JSON.parse(decodedInitData.get('user') || '{}');
-      }
-
-      if (!telegramUser?.id) {
-        console.error('No Telegram user ID found');
-        return res.status(400).json({ error: 'Invalid Telegram data' });
-      }
-      
-      // Get user ID from telegram_id
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-        
-      // Check if the user event belongs to the current user
-      const [userEvent] = await db.select()
-        .from(user_events)
-        .where(eq(user_events.id, id));
-        
-      if (!userEvent) {
-        return res.status(404).json({ error: 'User event not found' });
-      }
-      
-      if (user && userEvent.user_id !== user.id) {
-        return res.status(403).json({ error: 'Unauthorized' });
-      }
-      
-      // Delete the user event
-      await db.delete(user_events)
-        .where(eq(user_events.id, id));
-        
-      return res.json({ success: true });
-      
-    } catch (error) {
-      console.error('Failed to delete event attendance:', error);
-      res.status(500).json({ error: 'Failed to delete event attendance' });
-    }
-  });
 
   // Collaboration Request API endpoint (new simplified version)
   app.post("/api/requests", requestLimiter, async (req: TelegramRequest, res: Response) => {

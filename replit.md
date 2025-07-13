@@ -119,6 +119,15 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 13, 2025. **COMPLETED**: Successfully removed Events, Conference preferences, and Event attendance tables to simplify database
+  - Removed events, user_events, event_attendance, and conference_preferences tables from shared/schema.ts
+  - Removed all related API endpoints from server/routes.ts (events, user-events, conference-preferences)
+  - Removed conference preferences storage methods from server/storage.ts
+  - Updated frontend components to remove all conference preferences references
+  - Modified dashboard.tsx, application-status.tsx, profile-overview.tsx, and matching-filters.tsx to remove conference functionality
+  - Matching-filters.tsx now shows "Feature Removed" message instead of conference matching interface
+  - Dropped database tables using SQL commands to complete the cleanup
+  - Database simplified and streamlined for core collaboration functionality only
 - July 13, 2025. **FIXED**: Resolved SQL syntax errors in Telegram action button handlers
   - Fixed syntax error "syntax error at or near '='" in button callback handlers
   - Replaced problematic `sql` template literals with proper database queries using `db.execute()` and `.rows[0]` access

@@ -162,27 +162,7 @@ export const AUDIENCE_SIZE_RANGES = [
   "10,000+",
 ] as const;
 
-// Initial events data
-export const INITIAL_EVENTS = [
-  {
-    name: "European Blockchain Convention",
-    start_date: "2025-02-15",
-    end_date: "2025-02-17",
-    city: "Barcelona",
-  },
-  {
-    name: "Blockchain Economy London Summit",
-    start_date: "2025-02-27",
-    end_date: "2025-02-28",
-    city: "London",
-  },
-  {
-    name: "Web Summit",
-    start_date: "2025-11-11",
-    end_date: "2025-11-14",
-    city: "Lisbon",
-  },
-] as const;
+
 
 // Company Tags by Category
 export const COMPANY_TAG_CATEGORIES = {
@@ -311,27 +291,7 @@ export const companies = pgTable("companies", {
 
 
 
-// Events table
-export const events = pgTable("events", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  start_date: timestamp("start_date", { withTimezone: true }).notNull(),
-  end_date: timestamp("end_date", { withTimezone: true }).notNull(),
-  city: text("city").notNull(),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
 
-// User events (for tracking which events users are attending)
-export const user_events = pgTable("user_events", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  user_id: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  event_id: uuid("event_id")
-    .notNull()
-    .references(() => events.id, { onDelete: "cascade" }),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
 
 // Notification preferences
 export const notification_preferences = pgTable("notification_preferences", {
@@ -410,57 +370,7 @@ export const marketing_preferences = pgTable("marketing_preferences", {
   };
 });
 
-// Conference coffee preferences
-export const conference_preferences = pgTable("conference_preferences", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  user_id: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  // Coffee match preferences
-  coffee_match_enabled: boolean("coffee_match_enabled").default(false),
 
-  // Matching user and company fields for consistent filtering - same structure as user and company tables
-  twitter_followers: text("twitter_followers"), // Match user.twitter_followers field
-  company_twitter_followers: text("company_twitter_followers"), // Match companies.twitter_followers field
-  funding_stage: text("funding_stage"), // Match companies.funding_stage field
-  company_has_token: boolean("company_has_token").default(false), // Match companies.has_token field
-  company_token_ticker: text("company_token_ticker"), // Match companies.token_ticker field
-  company_blockchain_networks: text("company_blockchain_networks").array(), // Match companies.blockchain_networks field
-  company_tags: text("company_tags").array(), // Match companies.tags field
-
-  // Legacy fields - keep for backward compatibility but use new fields above
-  coffee_match_company_sectors: text("coffee_match_company_sectors").array(),
-  coffee_match_company_followers: text("coffee_match_company_followers"),
-  coffee_match_user_followers: text("coffee_match_user_followers"),
-  coffee_match_funding_stages: text("coffee_match_funding_stages").array(),
-  coffee_match_token_status: boolean("coffee_match_token_status").default(
-    false,
-  ),
-
-  // Conference sector filtering
-  filtered_conference_sectors: text("filtered_conference_sectors").array(),
-
-  // Toggle states for coffee match filters
-  coffee_match_filter_company_sectors_enabled: boolean(
-    "coffee_match_filter_company_sectors_enabled",
-  ).default(false),
-  coffee_match_filter_company_followers_enabled: boolean(
-    "coffee_match_filter_company_followers_enabled",
-  ).default(false),
-  coffee_match_filter_user_followers_enabled: boolean(
-    "coffee_match_filter_user_followers_enabled",
-  ).default(false),
-  coffee_match_filter_funding_stages_enabled: boolean(
-    "coffee_match_filter_funding_stages_enabled",
-  ).default(false),
-  coffee_match_filter_token_status_enabled: boolean(
-    "coffee_match_filter_token_status_enabled",
-  ).default(false),
-  coffee_match_filter_blockchain_networks_enabled: boolean(
-    "coffee_match_filter_blockchain_networks_enabled",
-  ).default(false),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
 
 // Collaborations table
 export const collaborations = pgTable("collaborations", {
@@ -642,11 +552,6 @@ export const insertNotificationPreferencesSchema = createInsertSchema(
 export const insertMarketingPreferencesSchema = createInsertSchema(
   marketing_preferences,
 );
-export const insertConferencePreferencesSchema = createInsertSchema(
-  conference_preferences,
-);
-export const insertEventSchema = createInsertSchema(events);
-export const insertUserEventSchema = createInsertSchema(user_events);
 export const insertCollaborationSchema = createInsertSchema(collaborations);
 export const insertCollabApplicationSchema = createInsertSchema(collab_applications);
 
@@ -670,9 +575,6 @@ export type Company = typeof companies.$inferSelect;
 export type NotificationPreferences =
   typeof notification_preferences.$inferSelect;
 export type MarketingPreferences = typeof marketing_preferences.$inferSelect;
-export type ConferencePreferences = typeof conference_preferences.$inferSelect;
-export type Event = typeof events.$inferSelect;
-export type UserEvent = typeof user_events.$inferSelect;
 export type Collaboration = typeof collaborations.$inferSelect;
 
 export type CollabNotification = typeof collab_notifications.$inferSelect;
