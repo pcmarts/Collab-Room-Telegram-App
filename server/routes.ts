@@ -2669,18 +2669,7 @@ export async function registerRoutes(app: Express) {
           .where(eq(users.id, application.applicant_id));
         
         if (applicant) {
-          // Create notification for the applicant
-          await storage.createNotification({
-            user_id: applicant.id,
-            type: `application_${status}`,
-            content: `Your application for "${collaboration.title}" has been ${status}`,
-            collaboration_id: collaboration.id,
-            application_id: application.id,
-            is_read: false,
-            is_sent: false,
-            created_at: new Date()
-          });
-          
+          // Database notifications removed - notifications are sent directly via Telegram
           // Send message via Telegram bot (optional implementation)
           // This would call the appropriate method in telegram.ts
           // await sendApplicationStatusUpdate(applicant.telegram_id, status, collaboration.title);
@@ -2892,18 +2881,8 @@ export async function registerRoutes(app: Express) {
       try {
         console.log(`📝 Application created successfully for collaboration ${id} by user ${user.id}`);
         
-        // Create notification for collaboration creator
-        console.log(`📝 Creating database notification for host ${collaboration.creator_id}`);
-        await storage.createNotification({
-          user_id: collaboration.creator_id,
-          type: 'new_application',
-          content: `${user.first_name} ${user.last_name || ''} applied to your "${collaboration.description}" collaboration`,
-          collaboration_id: collaboration.id,
-          is_read: false,
-          is_sent: false,
-          created_at: new Date()
-        });
-        console.log(`📝 Database notification created successfully`);
+        // Database notifications removed - notifications are sent directly via Telegram
+        console.log(`📝 Database notifications removed - using Telegram notifications only`);
 
         // Send Telegram notification to collaboration host
         try {
@@ -3274,25 +3253,8 @@ export async function registerRoutes(app: Express) {
             
             console.log(`Success: Created match record with ID: ${match.id}`);
             
-            // Create a notification for the collaboration host
-            const hostNotification = await storage.createNotification({
-              user_id: hostId,
-              collaboration_id: actualCollaborationId,
-              type: 'match',
-              content: `${isUserTheHost ? originalSwipe.user.first_name : user.first_name} ${isUserTheHost ? (originalSwipe.user.last_name || '') : (user.last_name || '')} matched with your ${collaborationType} collaboration!`,
-              is_read: false
-            });
-            
-            // Create a notification for the requester
-            const requesterNotification = await storage.createNotification({
-              user_id: requesterId,
-              collaboration_id: actualCollaborationId,
-              type: 'match',
-              content: `You matched with ${isUserTheHost ? user.first_name : originalSwipe.user.first_name} ${isUserTheHost ? (user.last_name || '') : (originalSwipe.user.last_name || '')}'s ${collaborationType} collaboration!`,
-              is_read: false
-            });
-            
-            console.log('Created match notifications:', { hostNotification, requesterNotification });
+            // Database notifications removed - notifications are sent directly via Telegram
+            console.log('Database notifications removed - using Telegram notifications only');
             
             // Send Telegram notifications
             try {
@@ -3472,24 +3434,8 @@ export async function registerRoutes(app: Express) {
                 .from(companies)
                 .where(eq(companies.user_id, user.id));
               
-              // Create notifications
-              const userNotification = await storage.createNotification({
-                user_id: user.id,
-                collaboration_id: matchedCollaboration.collaboration_id,
-                type: 'match',
-                content: `A match was found for your ${userCollabType} collaboration!`,
-                is_read: false
-              });
-              
-              const hostNotification = await storage.createNotification({
-                user_id: hostId,
-                collaboration_id: collaboration_id,
-                type: 'match',
-                content: `A match was found for your ${hostCollabType} collaboration!`,
-                is_read: false
-              });
-              
-              console.log('Created match notifications:', { userNotification, hostNotification });
+              // Database notifications removed - notifications are sent directly via Telegram
+              console.log('Database notifications removed - using Telegram notifications only');
               
               // Send Telegram notifications using the enhanced notification function
               try {
