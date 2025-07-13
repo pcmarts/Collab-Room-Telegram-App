@@ -3056,13 +3056,12 @@ export async function registerRoutes(app: Express) {
     try {
       const { id } = req.params;
       
-      // Validate application data using the enhanced schema
-      const result = collabApplicationSchema.safeParse(req.body);
-      if (!result.success) {
-        console.error('Validation error:', result.error);
+      // Validate application data - use simple validation for message field
+      const { message } = req.body;
+      if (!message || typeof message !== 'string' || message.trim().length === 0) {
+        console.error('Validation error: message is required');
         return res.status(400).json({ 
-          error: 'Invalid application data', 
-          details: result.error.format() 
+          error: 'Message is required for collaboration application' 
         });
       }
       
@@ -3091,22 +3090,15 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: 'You cannot apply to your own collaboration' });
       }
 
-      // Prepare application data as InsertCollabApplication type
-      const applicationData: InsertCollabApplication = {
-        collaboration_id: id,
-        applicant_id: user.id,
-        status: 'pending',
-        details: { // Store the form data in the details field
-          application_data: result.data,
-          notes: req.body.notes || ''
-        }
-      };
+      // Create application using the unified requests table approach
+      const applicationResult = await storage.createCollabApplication(id, user.id, message);
+      if (!applicationResult) {
+        return res.status(500).json({ error: 'Failed to create collaboration application' });
+      }
 
-      // Submit the application (which will create a swipe)
+      // Application already created above with storage.createCollabApplication
       try {
-        console.log(`📝 About to create application for collaboration ${id} by user ${user.id}`);
-        const application = await storage.applyToCollaboration(applicationData);
-        console.log(`📝 Application created successfully: ${application.id}`);
+        console.log(`📝 Application created successfully for collaboration ${id} by user ${user.id}`);
         
         // Create notification for collaboration creator
         console.log(`📝 Creating database notification for host ${collaboration.creator_id}`);
@@ -3139,7 +3131,7 @@ export async function registerRoutes(app: Express) {
         console.log(`📝 About to send success response`);
         res.status(201).json({
           success: true,
-          application,
+          application: applicationResult,
           message: 'Application submitted successfully'
         });
       } catch (dbError) {
