@@ -5,6 +5,24 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.31] - 2025-07-14
+
+### Fixed
+- **Welcome Page Button Interaction Issue**: Fixed critical usability issue where all elements on the welcome page were unclickable
+  - Identified root cause: `TelegramFixedButtonContainer` was creating an invisible overlay that blocked all user interactions
+  - **Problem**: Fixed container was placed inside Card component but used `position: fixed`, creating a 80px high blocking overlay across the entire page bottom
+  - **Solution**: Moved `TelegramFixedButtonContainer` to root level of component, following the same pattern used in other onboarding pages
+  - Added proper bottom padding (`pb-24`) to main content container to prevent content overlap with fixed button
+  - Reduced aggressive styling intervals that could interfere with DOM event handling
+  - All interactive elements now function correctly: apply button, referral code input, details toggle, and close button
+
+### Technical Details
+- Modified `client/src/pages/welcome.tsx` to move button container outside Card component structure
+- Replaced constant MutationObserver and styling intervals with single timeout application
+- Enhanced component layout to prevent z-index and positioning conflicts
+- Improved user experience by ensuring all page elements remain accessible and clickable
+- Maintained Telegram-specific button styling while removing interaction-blocking overlay
+
 ## [Version 1.10.30] - 2025-07-14
 
 ### Fixed

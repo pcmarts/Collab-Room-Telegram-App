@@ -35,28 +35,18 @@ export default function Welcome() {
     // ... add more
   };
   
-  // Apply button fix when component mounts and after any render
+  // Apply button fix when component mounts - reduced aggressive fixing
   useEffect(() => {
-    // Apply immediately on mount
+    // Apply once on mount
     applyButtonFix();
     
-    // Use MutationObserver instead of interval for better performance
-    const observer = new MutationObserver(() => {
+    // Single timeout to apply again after initial render
+    const timeoutId = setTimeout(() => {
       applyButtonFix();
-    });
-    
-    // Only observe the button container, not the entire document
-    const buttonContainer = document.querySelector('.telegram-fixed-container');
-    if (buttonContainer) {
-      observer.observe(buttonContainer, {
-        attributes: true,
-        attributeFilter: ['style', 'class'],
-        subtree: true
-      });
-    }
+    }, 500);
     
     // Cleanup on unmount
-    return () => observer.disconnect();
+    return () => clearTimeout(timeoutId);
   }, []);
   
   // Extract referral code from URL when component mounts
@@ -100,7 +90,7 @@ export default function Welcome() {
         <X className="w-5 h-5" />
       </Button>
       
-      <div className="max-w-md mx-auto space-y-8 w-full">
+      <div className="max-w-md mx-auto space-y-8 w-full pb-24">
         <div className="text-center space-y-6">
           <div className="space-y-4">
             <h1 className="text-xl font-semibold text-gray-900">Welcome to The Collab Room</h1>
@@ -149,15 +139,6 @@ export default function Welcome() {
               </div>
             </details>
           </CardContent>
-          
-          {/* Use fixed container for better mobile visibility */}
-          <TelegramFixedButtonContainer>
-            <TelegramButton
-              type="button"
-              onClick={handleContinue}
-              text="Apply for early access →"  // More descriptive than "Next"
-            />
-          </TelegramFixedButtonContainer>
         </Card>
 
         <div className="text-center space-y-2 py-4 border-t border-gray-800">
@@ -198,6 +179,15 @@ export default function Welcome() {
           </div>
         </div>
       </div>
+
+      {/* Fixed button container at root level for proper positioning */}
+      <TelegramFixedButtonContainer>
+        <TelegramButton
+          type="button"
+          onClick={handleContinue}
+          text="Apply for early access →"
+        />
+      </TelegramFixedButtonContainer>
     </div>
   );
 }
