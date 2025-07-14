@@ -18,6 +18,8 @@ import { authLimiter, requestLimiter, applicationLimiter } from './middleware/ra
 import { logger } from './utils/logger';
 // Twitter routes removed to fix deployment issues
 import referralRoutes from './routes/referral-routes';
+import specialCodesRoutes from './routes/special-codes';
+import { isAutoApprovalCode } from './config/special-codes';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -736,55 +738,51 @@ export async function registerRoutes(app: Express) {
           let shouldAutoApprove = false;
           if (referral_code) {
             logger.info(`Processing referral code: ${referral_code} for new user ${user.id}`);
-            try {
-              // Handle both formats: with 'r_' prefix and without prefix (direct telegram_id_randomstring format)
-              if (referral_code.includes('_')) {
-                // If it has r_ prefix, extract it without the prefix
-                let processedCode = referral_code;
-                if (referral_code.startsWith('r_')) {
-                  processedCode = referral_code.substring(2);
-                }
-                // Extract the Telegram ID from the code
-                // For code format: telegramId_randomString, use index 0
-                // For code format: r_telegramId_randomString, we use the processedCode with r_ prefix removed
-                const telegramIdFromCode = processedCode.split('_')[0];
-                logger.info(`Extracted referrer Telegram ID from code: ${telegramIdFromCode}`);
-                
-                // Look up referrer by telegram_id
-                const [referrer] = await tx
-                  .select()
-                  .from(users)
-                  .where(eq(users.telegram_id, telegramIdFromCode));
-                
-                if (referrer) {
-                  logger.info(`Found referrer user: ${referrer.id} (${referrer.first_name} ${referrer.last_name || ''}) for code ${referral_code}`);
-                  
-                  // Check if this referral code has auto-approval enabled
-                  const [referralRecord] = await tx
-                    .select()
-                    .from(user_referrals)
-                    .where(eq(user_referrals.referral_code, processedCode));
-                  
-                  if (referralRecord && referralRecord.is_auto_approve) {
-                    shouldAutoApprove = true;
-                    logger.info(`Referral code ${referral_code} has auto-approval enabled - user will be automatically approved`);
+            
+            // First, check if it's a special auto-approval code
+            if (isAutoApprovalCode(referral_code)) {
+              shouldAutoApprove = true;
+              logger.info(`Special auto-approval code detected: ${referral_code} - user will be automatically approved`);
+            } else {
+              // Handle regular referral codes with telegram_id_randomstring format
+              try {
+                if (referral_code.includes('_')) {
+                  // If it has r_ prefix, extract it without the prefix
+                  let processedCode = referral_code;
+                  if (referral_code.startsWith('r_')) {
+                    processedCode = referral_code.substring(2);
                   }
+                  // Extract the Telegram ID from the code
+                  // For code format: telegramId_randomString, use index 0
+                  // For code format: r_telegramId_randomString, we use the processedCode with r_ prefix removed
+                  const telegramIdFromCode = processedCode.split('_')[0];
+                  logger.info(`Extracted referrer Telegram ID from code: ${telegramIdFromCode}`);
                   
-                  // Update user with referrer id
-                  await tx
-                    .update(users)
-                    .set({ referred_by: referrer.id })
-                    .where(eq(users.id, user.id));
+                  // Look up referrer by telegram_id
+                  const [referrer] = await tx
+                    .select()
+                    .from(users)
+                    .where(eq(users.telegram_id, telegramIdFromCode));
                   
-                  logger.info(`Updated user ${user.id} with referrer ${referrer.id}`);
+                  if (referrer) {
+                    logger.info(`Found referrer user: ${referrer.id} (${referrer.first_name} ${referrer.last_name || ''}) for code ${referral_code}`);
+                    
+                    // Update user with referrer id
+                    await tx
+                      .update(users)
+                      .set({ referred_by: referrer.id })
+                      .where(eq(users.id, user.id));
+                    
+                    logger.info(`Updated user ${user.id} with referrer ${referrer.id}`);
+                  } else {
+                    logger.warn(`Could not find referrer with Telegram ID ${telegramIdFromCode} for code ${referral_code}`);
+                  }
                 } else {
-                  logger.warn(`Could not find referrer with Telegram ID ${telegramIdFromCode} for code ${referral_code}`);
+                  logger.warn(`Referral code ${referral_code} doesn't match expected format TELEGRAM_ID_RANDOM`);
                 }
-              } else {
-                logger.warn(`Referral code ${referral_code} doesn't match expected format TELEGRAM_ID_RANDOM`);
+              } catch (referralError) {
+                logger.error(`Error processing referral: ${referralError}`);
               }
-            } catch (referralError) {
-              logger.error(`Error processing referral: ${referralError}`);
               // Continue with user creation even if referral processing fails
             }
           }
@@ -856,7 +854,7 @@ export async function registerRoutes(app: Express) {
         return { user };
       });
 
-      // If this is a new user application (not a profile update), notify admins and the user
+      // If this is a new user application (not a profile update), handle approval and notifications
       if (!isProfileUpdate && result.user) {
         try {
           // Get company data for the notification
@@ -866,19 +864,60 @@ export async function registerRoutes(app: Express) {
             .where(eq(companies.user_id, result.user.id));
 
           if (company) {
-            // Send notification to all admins with enhanced user data
-            await notifyAdminsNewUser({
-              telegram_id: result.user.telegram_id,
-              first_name: result.user.first_name,
-              last_name: result.user.last_name,
-              handle: result.user.handle,
-              company_name: company.name,
-              company_website: company.website,
-              job_title: company.job_title,
-              twitter_url: result.user.twitter_url,
-              company_twitter_handle: company.twitter_handle
-            });
-            console.log('Admin notification sent for new user application');
+            // Handle auto-approval if special referral code was used
+            if (shouldAutoApprove) {
+              logger.info(`Auto-approving user ${result.user.id} due to special referral code`);
+              
+              // Update user status to approved
+              await db
+                .update(users)
+                .set({ 
+                  approved: true,
+                  approved_at: new Date()
+                })
+                .where(eq(users.id, result.user.id));
+              
+              // Send approval notification to user
+              try {
+                const telegramId = parseInt(result.user.telegram_id);
+                if (!isNaN(telegramId)) {
+                  await notifyUserApproved(telegramId, result.user.handle);
+                  logger.info(`Auto-approval notification sent to user ${result.user.first_name} (${result.user.telegram_id})`);
+                }
+              } catch (approvalNotifyError) {
+                logger.error('Failed to send auto-approval notification:', approvalNotifyError);
+              }
+              
+              // Send admin notification about auto-approval
+              await notifyAdminsNewUser({
+                telegram_id: result.user.telegram_id,
+                first_name: result.user.first_name,
+                last_name: result.user.last_name,
+                handle: result.user.handle,
+                company_name: company.name,
+                company_website: company.website,
+                job_title: company.job_title,
+                twitter_url: result.user.twitter_url,
+                company_twitter_handle: company.twitter_handle,
+                isAutoApproved: true,
+                referralCode: referral_code
+              });
+              logger.info('Admin notification sent for auto-approved user application');
+            } else {
+              // Send regular notification to admins for manual approval
+              await notifyAdminsNewUser({
+                telegram_id: result.user.telegram_id,
+                first_name: result.user.first_name,
+                last_name: result.user.last_name,
+                handle: result.user.handle,
+                company_name: company.name,
+                company_website: company.website,
+                job_title: company.job_title,
+                twitter_url: result.user.twitter_url,
+                company_twitter_handle: company.twitter_handle
+              });
+              logger.info('Admin notification sent for new user application (manual approval required)');
+            }
             
             // Fire webhook after successful company creation
             try {
@@ -3764,6 +3803,7 @@ export async function registerRoutes(app: Express) {
 
   // Register Referral API routes
   app.use('/api/referrals', referralRoutes);
+  app.use('/api/special-codes', specialCodesRoutes);
 
   return httpServer;
 }
