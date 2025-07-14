@@ -14,11 +14,19 @@ import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 
-// Choose bot token based on environment
-const BOT_TOKEN =
-  process.env.NODE_ENV === "production"
-    ? process.env.TELEGRAM_BOT_TOKEN
-    : process.env.TELEGRAM_TEST_BOT_TOKEN;
+// FIXED: Always use production bot for notifications to match user registrations
+// Development can use test bot for commands/interactions, but notifications should be consistent
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+
+// Enhanced environment detection and logging
+const isProduction = process.env.NODE_ENV === "production";
+const currentEnvironment = isProduction ? "PRODUCTION" : "DEVELOPMENT";
+console.log(`🔧 TELEGRAM BOT CONFIGURATION:`);
+console.log(`🔧 NODE_ENV: "${process.env.NODE_ENV || 'undefined'}"`);
+console.log(`🔧 Environment: ${currentEnvironment}`);
+console.log(`🔧 Using: TELEGRAM_BOT_TOKEN (production bot for all notifications)`);
+console.log(`🔧 Bot token present: ${BOT_TOKEN ? 'YES' : 'NO'}`);
+console.log(`🔧 Bot token length: ${BOT_TOKEN ? BOT_TOKEN.length : 0} characters`);
 
 if (!BOT_TOKEN) {
   throw new Error("Telegram bot token is required");
@@ -2375,20 +2383,37 @@ async function sendDirectFormattedMessage(
   options?: TelegramBot.SendMessageOptions
 ) {
   try {
+    console.log(`[TELEGRAM] Environment: ${currentEnvironment}`);
+    console.log(`[TELEGRAM] Using production bot for all notifications`);
     console.log(`[TELEGRAM] Attempting to send message to chat ID: ${chatId}`);
     console.log(`[TELEGRAM] Message preview: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
     console.log(`[TELEGRAM] Message options:`, JSON.stringify(options || {}));
     
+    // Test bot connection before sending
+    const botInfo = await bot.getMe();
+    console.log(`[TELEGRAM] Bot info: ${botInfo.username} (ID: ${botInfo.id})`);
+    
     const result = await bot.sendMessage(chatId, text, options);
-    console.log(`[TELEGRAM] Successfully sent formatted message to ${chatId}, message ID: ${result.message_id}`);
+    console.log(`[TELEGRAM] ✅ Successfully sent message to ${chatId}, message ID: ${result.message_id}`);
     return true;
   } catch (error) {
     console.error(`[TELEGRAM] Failed to send message to ${chatId}:`, error);
-    // More detailed error logging for troubleshooting
+    
+    // Enhanced error classification
     if (error instanceof Error) {
-      console.error(`[TELEGRAM] Error name: ${error.name}, message: ${error.message}`);
-      console.error(`[TELEGRAM] Error stack: ${error.stack}`);
+      console.error(`[TELEGRAM] Error: ${error.name}, message: ${error.message}`);
+      
+      if (error.message.includes('chat not found')) {
+        console.error(`[TELEGRAM] ERROR: Chat ${chatId} not found. User may have blocked the bot or never interacted with it.`);
+      } else if (error.message.includes('bot was blocked')) {
+        console.error(`[TELEGRAM] ERROR: Bot was blocked by user ${chatId}.`);
+      } else if (error.message.includes('Forbidden')) {
+        console.error(`[TELEGRAM] ERROR: Bot doesn't have permission to send messages to ${chatId}.`);
+      } else if (error.message.includes('Bad Request')) {
+        console.error(`[TELEGRAM] ERROR: Invalid request parameters for chat ${chatId}.`);
+      }
     }
+    
     return false;
   }
 }
@@ -2752,6 +2777,8 @@ export async function notifyNewCollabRequest(
 ) {
   try {
     console.log(`🔔 TELEGRAM NOTIFICATION: Starting notifyNewCollabRequest`);
+    console.log(`🔔 Environment: ${currentEnvironment}`);
+    console.log(`🔔 Using production bot for consistent notifications`);
     console.log(`🔔 Host User ID: ${hostUserId}`);
     console.log(`🔔 Requester User ID: ${requesterUserId}`);
     console.log(`🔔 Collaboration ID: ${collaborationId}`);
