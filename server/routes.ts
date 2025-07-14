@@ -684,6 +684,10 @@ export async function registerRoutes(app: Express) {
         return res.json({ error: 'First name is required' });
       }
 
+      // Process referral code if it exists (before transaction)
+      let shouldAutoApprove = false;
+      let isSpecialCode = false;
+      
       const result = await db.transaction(async (tx) => {
         let user;
         
@@ -735,8 +739,6 @@ export async function registerRoutes(app: Express) {
           }
 
           // Process referral code if it exists
-          let shouldAutoApprove = false;
-          let isSpecialCode = false;
           if (referral_code) {
             logger.info(`Processing referral code: ${referral_code} for new user ${user.id}`);
             
