@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { useQuery } from "@tanstack/react-query"
 import { apiRequest } from "@/lib/queryClient"
 import { useNavigationPreloader } from "@/hooks/useNavigationPreloader"
+import { triggerHapticFeedback } from "@/lib/haptics"
 
 const BottomNavigation = () => {
   const [location] = useLocation()
@@ -119,6 +120,14 @@ const BottomNavigation = () => {
     preloadRoute(href);
   };
 
+  // Handle navigation item click with haptic feedback
+  const handleItemClick = (href: string) => {
+    // Trigger very light haptic feedback for menu navigation
+    triggerHapticFeedback('selection');
+    // Preload the route as well
+    preloadRoute(href);
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 z-50 w-full h-24 bg-background border-t border-border pb-6">
       <div className="grid h-full grid-cols-4 mx-auto">
@@ -163,6 +172,7 @@ const BottomNavigation = () => {
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
               onMouseEnter={() => handleItemHover(item.href)}
+              onClick={() => handleItemClick(item.href)}
             >
               <div className="relative">
                 <item.icon className="w-5 h-5 mb-1" />

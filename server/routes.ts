@@ -604,7 +604,7 @@ export async function registerRoutes(app: Express) {
 
       // Send Telegram notification to the approved user
       try {
-        await notifyUserApproved(parseInt(user.telegram_id));
+        await notifyUserApproved(parseInt(user.telegram_id), user.handle);
       } catch (msgError) {
         console.error('Failed to send user approval notification:', msgError);
       }

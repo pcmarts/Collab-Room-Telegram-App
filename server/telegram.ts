@@ -662,7 +662,7 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
 }
 
 // Notify user when their application is approved
-export async function notifyUserApproved(chatId: number) {
+export async function notifyUserApproved(chatId: number, handle?: string) {
   const keyboard = {
     inline_keyboard: [
       [
@@ -680,10 +680,16 @@ export async function notifyUserApproved(chatId: number) {
     ],
   };
 
+  // Create personalized message with handle mention if available
+  const handleMention = handle ? `@${handle.replace(/^@/, '')}` : '';
+  const congratsMessage = handleMention 
+    ? `🎉 Congratulations ${handleMention}! Your application has been approved!`
+    : "🎉 Congratulations! Your application has been approved!";
+
   try {
     await bot.sendMessage(
       chatId,
-      "🎉 Congratulations! Your application has been approved!\n\n" +
+      congratsMessage + "\n\n" +
         "Welcome to Collab Room! You now have full access to the platform.\n\n" +
         "Click below to discover new collaborations and join our announcement channel for updates.",
       { reply_markup: keyboard },
@@ -2114,7 +2120,7 @@ async function handleApproveUserCallback(
     );
 
     // Send notification to the approved user
-    await notifyUserApproved(parseInt(telegramIdToApprove));
+    await notifyUserApproved(parseInt(telegramIdToApprove), userToApprove.handle);
 
     // Check if this user was referred by someone and notify the referrer
     if (userToApprove.referred_by) {

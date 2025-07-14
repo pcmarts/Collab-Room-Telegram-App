@@ -667,6 +667,16 @@ const onButtonClick = (e: React.MouseEvent, direction: "left" | "right") => {
 
 ## Usage Guidelines
 
+### TelegramButton Positioning
+
+- **Always Place at Root Level**: TelegramFixedButtonContainer should be placed at the root level of the component, not inside Card or other container components
+- **Prevent Interaction Blocking**: Avoid nesting fixed containers inside other components to prevent invisible overlay issues
+- **Add Bottom Padding**: Include adequate bottom padding (e.g., `pb-24`) on main content containers to prevent overlap with fixed buttons
+- **Consistent Pattern**: Follow the established pattern used in onboarding pages like `company-details.tsx` and `personal-info.tsx`
+- **Minimize Style Intervals**: Use minimal styling intervals to avoid interference with DOM event handling
+
+### Haptic Feedback
+
 - **Use Sparingly**: Reserve haptic feedback for meaningful interactions to prevent feedback fatigue
 - **Consistent Patterns**: Use consistent haptic patterns for similar actions (accept/reject, submit/cancel)
 - **Combine with Visual Feedback**: Always pair haptic feedback with visual cues for accessibility
