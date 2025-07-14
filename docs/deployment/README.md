@@ -5,16 +5,22 @@ This directory contains documentation related to deployment processes, fixes, an
 ## Contents
 
 - [SQL Import Fix](./sql-import-fix.md) - Documentation on fixing SQL import issues that were causing deployment failures
+- [Production WebApp URL Fix](./production-webapp-url-fix.md) - Fix for production Telegram bot WebApp URL configuration
 
 ## Deployment Best Practices
 
 When deploying The Collab Room application, keep the following in mind:
 
 1. **Environment Variables**: Ensure all required environment variables are properly set
+   - `NODE_ENV=production` for production deployment
+   - `WEBAPP_URL=https://your-production-domain.com` for Telegram bot WebApp URLs
+   - `TELEGRAM_BOT_TOKEN=<production_bot_token>` for production bot
+   - `DATABASE_URL=<production_database_url>` for production database
 2. **Database Compatibility**: Verify that the SQL queries are compatible with the database version
 3. **Module Imports**: Double-check that all imports are from the correct packages
 4. **API Keys**: Make sure all required API keys are available and valid
 5. **Logging Level**: Consider setting LOG_LEVEL=1 (WARN) for deployment to reduce log volume
+6. **Telegram Bot Configuration**: Verify WebApp URLs point to production domain, not development
 
 ## Common Deployment Issues
 

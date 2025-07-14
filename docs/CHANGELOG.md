@@ -5,6 +5,31 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.32] - 2025-07-14
+
+### Fixed
+- **Production WebApp URL Configuration**: Fixed critical issue where production Telegram bot's "Launch Collab Room" button pointed to development environment instead of live production deployment
+  - Identified root cause: Production deployment was using development `REPLIT_DOMAINS` instead of production domain
+  - Production bot was correctly configured with `TELEGRAM_BOT_TOKEN` but webapp URLs pointed to development environment (`*.replit.dev`)
+  - **Solution**: Enhanced Telegram bot configuration to prioritize `WEBAPP_URL` environment variable over `REPLIT_DOMAINS`
+  - Added automatic warning system to detect when production bot uses development URL with clear error messages
+  - Created comprehensive deployment documentation with proper environment variable configuration
+  - Updated logging to clearly show environment and URL configuration for debugging deployment issues
+
+### Enhanced
+- **Deployment Environment Detection**: Added enhanced logging and warning system for production deployment misconfiguration
+  - Automatic detection when production bot token is used with development webapp URL
+  - Clear warning messages: "WARNING: Production bot using development URL!"
+  - Comprehensive logging of environment variables and URL configuration
+  - Priority-based URL configuration: `WEBAPP_URL` > `REPLIT_DOMAINS` > fallback
+
+### Technical Details
+- Modified `server/telegram.ts` to implement priority-based webapp URL configuration
+- Added automatic warning system for production/development environment mismatches
+- Enhanced logging to show: NODE_ENV, WEBAPP_URL, REPLIT_DOMAINS, and final configuration
+- Created `docs/deployment/production-webapp-url-fix.md` with deployment instructions
+- Updated `replit.md` with comprehensive changelog entry and deployment considerations
+
 ## [Version 1.10.31] - 2025-07-14
 
 ### Fixed
