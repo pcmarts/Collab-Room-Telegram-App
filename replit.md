@@ -119,6 +119,13 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 14, 2025. **FIXED**: Resolved @collabroom_test_bot not responding to /start command
+  - Fixed bot token configuration to use TELEGRAM_TEST_BOT_TOKEN in development mode
+  - Fixed undefined shouldAutoApprove variable error that was preventing bot responses
+  - Added comprehensive debug logging for bot message handling and polling errors
+  - Bot now correctly responds to /start command with proper welcome message and Launch button
+  - Confirmed bot connection and message processing is working properly
+  - Server logs now show proper bot message reception and processing
 - July 14, 2025. **COMPLETED**: Implemented special referral codes auto-approval system for user applications
   - Added predefined list of 10 special codes that trigger automatic approval (VIP_ACCESS, ADMIN_INSTANT, PARTNER_INVITE, etc.)
   - Created configuration system in `server/config/special-codes.ts` with case-insensitive code matching

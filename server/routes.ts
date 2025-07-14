@@ -867,7 +867,7 @@ export async function registerRoutes(app: Express) {
 
           if (company) {
             // Handle auto-approval if special referral code was used
-            if (shouldAutoApprove) {
+            if (result.shouldAutoApprove) {
               logger.info(`Auto-approving user ${result.user.id} due to special referral code`);
               
               // Update user status to approved
