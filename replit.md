@@ -119,6 +119,14 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 14, 2025. **COMPLETED**: Fixed production WebApp URL configuration issue where "Launch Collab Room" button pointed to development environment
+  - Identified root cause: Production deployment was using development `REPLIT_DOMAINS` instead of production domain
+  - Production bot was correctly configured with `TELEGRAM_BOT_TOKEN` but webapp URLs pointed to development environment
+  - Enhanced Telegram bot configuration to prioritize `WEBAPP_URL` environment variable over `REPLIT_DOMAINS`
+  - Added automatic warning system to detect when production bot uses development URL
+  - Created comprehensive deployment documentation with proper environment variable configuration
+  - Solution: Set `WEBAPP_URL` environment variable to production domain during deployment
+  - Updated logging to clearly show environment and URL configuration for debugging
 - July 14, 2025. **COMPLETED**: Fixed production issue where collaboration requests failed due to Telegram bot environment mismatch
   - Identified root cause: different bot tokens used in development (TELEGRAM_TEST_BOT_TOKEN) vs production (TELEGRAM_BOT_TOKEN)
   - Users onboarded with test bot couldn't receive notifications from production bot, causing "chat not found" errors

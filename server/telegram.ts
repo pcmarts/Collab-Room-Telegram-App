@@ -68,8 +68,21 @@ function logAdminMessage(
 }
 
 // Get the webapp URL from environment
-const domain = process.env.REPLIT_DOMAINS.split(",")[0];
-const WEBAPP_URL = `https://${domain}`;
+// Priority: WEBAPP_URL env var > REPLIT_DOMAINS > fallback
+const WEBAPP_URL = process.env.WEBAPP_URL || 
+  (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}` : 'https://localhost:5000');
+
+// Enhanced logging for debugging deployment issues
+console.log(`🔧 WEBAPP_URL CONFIGURATION:`);
+console.log(`🔧 WEBAPP_URL env var: "${process.env.WEBAPP_URL || 'not set'}"`);
+console.log(`🔧 REPLIT_DOMAINS: "${process.env.REPLIT_DOMAINS || 'not set'}"`);
+console.log(`🔧 Final WEBAPP_URL: "${WEBAPP_URL}"`);
+console.log(`🔧 Environment: ${currentEnvironment}`);
+if (WEBAPP_URL.includes('replit.dev') && isProduction) {
+  console.log(`🔧 ⚠️  WARNING: Production bot using development URL!`);
+  console.log(`🔧 ⚠️  This means "Launch Collab Room" button will point to development environment`);
+  console.log(`🔧 ⚠️  Set WEBAPP_URL environment variable to the production domain for deployment`);
+}
 
 // Import config to respect LOG_LEVEL setting
 import { config } from "../shared/config";
