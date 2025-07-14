@@ -119,24 +119,6 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
-- July 14, 2025. **FIXED**: Resolved @collabroom_test_bot not responding to /start command
-  - Fixed bot token configuration to use TELEGRAM_TEST_BOT_TOKEN in development mode
-  - Fixed undefined shouldAutoApprove variable error that was preventing bot responses
-  - Added comprehensive debug logging for bot message handling and polling errors
-  - Bot now correctly responds to /start command with proper welcome message and Launch button
-  - Confirmed bot connection and message processing is working properly
-  - Server logs now show proper bot message reception and processing
-- July 14, 2025. **COMPLETED**: Implemented special referral codes auto-approval system for user applications
-  - Added predefined list of 10 special codes that trigger automatic approval (VIP_ACCESS, ADMIN_INSTANT, PARTNER_INVITE, etc.)
-  - Created configuration system in `server/config/special-codes.ts` with case-insensitive code matching
-  - Modified application flow in `/api/onboarding` to detect special codes and auto-approve users
-  - Auto-approved users receive immediate approval notifications and platform access
-  - Admin notifications differentiate between auto-approved and manual approval users
-  - Added comprehensive testing with `scripts/test-special-codes.ts` and `scripts/test-auto-approval-flow.ts`
-  - Created API endpoints for special code management (`/api/special-codes/*`)
-  - Documented complete system in `docs/special-codes-auto-approval.md`
-  - All special codes are case-insensitive and whitespace-tolerant for user convenience
-  - System maintains backward compatibility with existing referral code processing
 - July 14, 2025. **COMPLETED**: Fixed production WebApp URL configuration issue where "Launch Collab Room" button pointed to development environment
   - Identified root cause: Production deployment was using development `REPLIT_DOMAINS` instead of production domain
   - Production bot was correctly configured with `TELEGRAM_BOT_TOKEN` but webapp URLs pointed to development environment

@@ -106,50 +106,28 @@ export default function ReferralCodeForm() {
       sessionStorage.removeItem('companyFormData');
       sessionStorage.removeItem('referralCode');
 
-      // Check if user was auto-approved
-      if (data.autoApproved && data.isSpecialCode) {
-        toast({
-          title: "🎉 Auto-Approved!",
-          description: `You've been automatically approved using referral code: ${data.referralCode}`,
-          duration: 8000
-        });
-        
-        // Wait for profile to be available
-        setProcessingMessage('Finalizing your approval...');
-        console.log('Auto-approved user, waiting for profile data...');
-        const profileExists = await checkProfileExists();
+      toast({
+        title: "Application Submitted!",
+        description: "We'll review your application and notify you through Telegram.",
+        duration: 5000
+      });
 
-        if (profileExists) {
-          console.log('Profile data confirmed, redirecting to discover page...');
-          setLocation('/discover');
-        } else {
-          console.log('Profile data not found, redirecting to discover anyway...');
-          setLocation('/discover');
-        }
+      // Wait for profile to be available
+      setProcessingMessage('Finalizing your application...');
+      console.log('Waiting for profile data to be available...');
+      const profileExists = await checkProfileExists();
+
+      if (profileExists) {
+        console.log('Profile data confirmed, proceeding to application status page...');
+        setLocation('/application-status');
       } else {
+        console.log('Profile data not found after maximum attempts');
         toast({
-          title: "Application Submitted!",
-          description: "We'll review your application and notify you through Telegram.",
-          duration: 5000
+          variant: "destructive",
+          title: "Processing Delay",
+          description: "Please wait a moment and try refreshing the application status page."
         });
-
-        // Wait for profile to be available
-        setProcessingMessage('Finalizing your application...');
-        console.log('Waiting for profile data to be available...');
-        const profileExists = await checkProfileExists();
-
-        if (profileExists) {
-          console.log('Profile data confirmed, proceeding to application status page...');
-          setLocation('/application-status');
-        } else {
-          console.log('Profile data not found after maximum attempts');
-          toast({
-            variant: "destructive",
-            title: "Processing Delay",
-            description: "Please wait a moment and try refreshing the application status page."
-          });
-          setLocation('/application-status');
-        }
+        setLocation('/application-status');
       }
 
     } catch (error) {

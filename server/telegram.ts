@@ -14,10 +14,9 @@ import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 
-// Use test bot for development, production bot for production
-const BOT_TOKEN = process.env.NODE_ENV === "production" 
-  ? process.env.TELEGRAM_BOT_TOKEN 
-  : process.env.TELEGRAM_TEST_BOT_TOKEN;
+// FIXED: Always use production bot for notifications to match user registrations
+// Development can use test bot for commands/interactions, but notifications should be consistent
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 // Enhanced environment detection and logging
 const isProduction = process.env.NODE_ENV === "production";
@@ -25,7 +24,7 @@ const currentEnvironment = isProduction ? "PRODUCTION" : "DEVELOPMENT";
 console.log(`🔧 TELEGRAM BOT CONFIGURATION:`);
 console.log(`🔧 NODE_ENV: "${process.env.NODE_ENV || 'undefined'}"`);
 console.log(`🔧 Environment: ${currentEnvironment}`);
-console.log(`🔧 Using: ${process.env.NODE_ENV === "production" ? 'TELEGRAM_BOT_TOKEN (production bot)' : 'TELEGRAM_TEST_BOT_TOKEN (test bot)'}`);
+console.log(`🔧 Using: TELEGRAM_BOT_TOKEN (production bot for all notifications)`);
 console.log(`🔧 Bot token present: ${BOT_TOKEN ? 'YES' : 'NO'}`);
 console.log(`🔧 Bot token length: ${BOT_TOKEN ? BOT_TOKEN.length : 0} characters`);
 
@@ -104,16 +103,6 @@ if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
 export const bot = new TelegramBot(BOT_TOKEN, {
   polling: true,
   webHook: false,
-});
-
-// Add debug logging for all incoming messages
-bot.on('message', (msg) => {
-  console.log(`[BOT_MESSAGE] Received message from ${msg.from?.username || msg.from?.first_name} (ID: ${msg.from?.id}): ${msg.text}`);
-});
-
-// Add debug logging for polling errors
-bot.on('polling_error', (error) => {
-  console.error('[BOT_ERROR] Polling error:', error);
 });
 
 // Helper function to check if a chat ID is valid (bot has interacted with user)
@@ -322,11 +311,6 @@ bot.on("message", async (msg) => {
 
 // Register command handlers - capture the referral code if present
 bot.onText(/\/start(?:\s+(.+))?/, handleStart);
-
-// Add debug logging for all text messages
-bot.on('text', (msg) => {
-  console.log(`[BOT_TEXT] Text message received: "${msg.text}" from ${msg.from?.username || msg.from?.first_name} (ID: ${msg.from?.id})`);
-});
 
 // Register command handlers first
 async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | null) {
@@ -561,8 +545,6 @@ interface NewUserNotification {
   job_title: string;
   twitter_url?: string;
   company_twitter_handle?: string;
-  isAutoApproved?: boolean;
-  referralCode?: string;
 }
 
 export async function notifyAdminsNewUser(userData: NewUserNotification) {
@@ -608,50 +590,32 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
       : "";
 
     // Build the message with HTML formatting
-    let message = userData.isAutoApproved
-      ? `✅ <b>Auto-Approved User!</b>\n\n`
-      : `🆕 <b>New User Application!</b>\n\n`;
-    
-    message += `<b>Name:</b> ${userTwitterFormatted} ${telegramHandle ? `(${telegramHandle})` : ""}\n`;
-    message += `<b>Company:</b> ${companyNameFormatted}${companyTwitterLink}\n`;
-    message += `<b>Role:</b> ${userData.job_title}\n`;
-    
-    if (userData.isAutoApproved && userData.referralCode) {
-      message += `<b>Referral Code:</b> ${userData.referralCode}\n`;
-    }
-    
-    message += userData.isAutoApproved 
-      ? `\n🎉 User was automatically approved using special referral code!`
-      : `\nUse the buttons below to take action:`;
+    const message =
+      `🆕 <b>New User Application!</b>\n\n` +
+      `<b>Name:</b> ${userTwitterFormatted} ${telegramHandle ? `(${telegramHandle})` : ""}\n` +
+      `<b>Company:</b> ${companyNameFormatted}${companyTwitterLink}\n` +
+      `<b>Role:</b> ${userData.job_title}\n\n` +
+      `Use the buttons below to take action:`;
 
-    // Create inline keyboard - different buttons for auto-approved vs manual approval
-    const keyboard = userData.isAutoApproved 
-      ? {
-          inline_keyboard: [
-            [
-              {
-                text: "👁️ View All Applications",
-                web_app: { url: `${WEBAPP_URL}/admin/applications` },
-              },
-            ],
-          ],
-        }
-      : {
-          inline_keyboard: [
-            [
-              {
-                text: "✅ Approve Application",
-                callback_data: `approve_user_${userData.telegram_id}`,
-              },
-            ],
-            [
-              {
-                text: "👁️ View Application",
-                web_app: { url: `${WEBAPP_URL}/admin/applications` },
-              },
-            ],
-          ],
-        };
+    // Create inline keyboard with two buttons:
+    // 1. Approve Application - callback query with approve_user_{telegram_id} format
+    // 2. View Application - web app link to pending applications page
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "✅ Approve Application",
+            callback_data: `approve_user_${userData.telegram_id}`,
+          },
+        ],
+        [
+          {
+            text: "👁️ View Application",
+            web_app: { url: `${WEBAPP_URL}/admin/applications` },
+          },
+        ],
+      ],
+    };
 
     // Send notification to each admin
     for (const admin of adminUsers) {
@@ -711,7 +675,7 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
 }
 
 // Notify user when their application is approved
-export async function notifyUserApproved(chatId: number, handle?: string, referralCode?: string) {
+export async function notifyUserApproved(chatId: number, handle?: string) {
   const keyboard = {
     inline_keyboard: [
       [
@@ -731,30 +695,16 @@ export async function notifyUserApproved(chatId: number, handle?: string, referr
 
   // Create personalized message with handle mention if available
   const handleMention = handle ? `@${handle.replace(/^@/, '')}` : '';
-  let congratsMessage = handleMention 
+  const congratsMessage = handleMention 
     ? `🎉 Congratulations ${handleMention}! Your application has been approved!`
     : "🎉 Congratulations! Your application has been approved!";
-
-  // Add special message for auto-approved users
-  if (referralCode) {
-    congratsMessage = handleMention 
-      ? `🎉 Congratulations ${handleMention}! You've been automatically approved!`
-      : "🎉 Congratulations! You've been automatically approved!";
-  }
-
-  let message = congratsMessage + "\n\n";
-  
-  if (referralCode) {
-    message += `✨ You used the special referral code: ${referralCode}\n\n`;
-  }
-  
-  message += "Welcome to Collab Room! You now have full access to the platform.\n\n" +
-    "Click below to discover new collaborations and join our announcement channel for updates.";
 
   try {
     await bot.sendMessage(
       chatId,
-      message,
+      congratsMessage + "\n\n" +
+        "Welcome to Collab Room! You now have full access to the platform.\n\n" +
+        "Click below to discover new collaborations and join our announcement channel for updates.",
       { reply_markup: keyboard },
     );
     console.log("Approval notification sent successfully");
