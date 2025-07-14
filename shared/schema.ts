@@ -510,6 +510,7 @@ export const user_referrals = pgTable("user_referrals", {
   referral_code: text("referral_code").notNull().unique(),
   total_available: integer("total_available").notNull().default(3),
   total_used: integer("total_used").notNull().default(0),
+  is_auto_approve: boolean("is_auto_approve").notNull().default(false), // Special codes that auto-approve users
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });

@@ -733,6 +733,7 @@ export async function registerRoutes(app: Express) {
           }
 
           // Process referral code if it exists
+          let shouldAutoApprove = false;
           if (referral_code) {
             logger.info(`Processing referral code: ${referral_code} for new user ${user.id}`);
             try {
@@ -757,6 +758,17 @@ export async function registerRoutes(app: Express) {
                 
                 if (referrer) {
                   logger.info(`Found referrer user: ${referrer.id} (${referrer.first_name} ${referrer.last_name || ''}) for code ${referral_code}`);
+                  
+                  // Check if this referral code has auto-approval enabled
+                  const [referralRecord] = await tx
+                    .select()
+                    .from(user_referrals)
+                    .where(eq(user_referrals.referral_code, processedCode));
+                  
+                  if (referralRecord && referralRecord.is_auto_approve) {
+                    shouldAutoApprove = true;
+                    logger.info(`Referral code ${referral_code} has auto-approval enabled - user will be automatically approved`);
+                  }
                   
                   // Update user with referrer id
                   await tx
