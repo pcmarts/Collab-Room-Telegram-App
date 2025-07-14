@@ -5,6 +5,30 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.33] - 2025-07-14
+
+### Added
+- **Special Referral Codes Auto-Approval System**: Implemented complete enhanced user experience for automatic approval of users with special referral codes
+  - **Enhanced Frontend UX**: Auto-approved users receive special toast notification: "🎉 Auto-Approved! You've been automatically approved using referral code: [CODE]"
+  - **Direct Redirect Flow**: Auto-approved users bypass application status page and redirect directly to /discover for immediate platform access
+  - **Enhanced Telegram Notifications**: Users receive personalized approval messages mentioning their special referral code: "✨ You used the special referral code: [CODE]"
+  - **Admin Notification Enhancement**: Admin notifications differentiate between auto-approved and manual approval users, showing referral code used
+  - **Seamless User Experience**: No waiting period or manual approval required for users with special codes
+
+### Enhanced
+- **Application Response Structure**: Backend now returns `autoApproved`, `isSpecialCode`, and `referralCode` fields in onboarding API response
+- **Telegram Bot Messaging**: Different notification styles for auto-approved vs manual approval users
+  - Auto-approved users get "automatically approved" messaging with referral code details
+  - Admin buttons adjust based on approval type (auto-approved shows "View All Applications" only)
+- **Frontend Flow Logic**: Smart routing based on approval status with enhanced error handling and user feedback
+
+### Technical Details
+- Modified `server/routes.ts` to return auto-approval status in API responses
+- Enhanced `server/telegram.ts` with conditional messaging and button layouts
+- Updated `client/src/pages/referral-code.tsx` with auto-approval detection and routing
+- Created comprehensive test suite with `scripts/test-complete-flow.ts` for end-to-end validation
+- Updated documentation in `docs/implementation-summary.md` with complete user flow details
+
 ## [Version 1.10.32] - 2025-07-14
 
 ### Fixed

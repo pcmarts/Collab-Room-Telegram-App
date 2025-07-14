@@ -78,17 +78,28 @@ Content-Type: application/json
 
 ## Usage Flow
 
-### For Users
+### For Users with Special Codes
 1. User receives special referral code from admin/partner
 2. User visits application form and enters the special code
 3. User completes application normally
 4. System automatically approves the user upon submission
-5. User receives immediate approval notification
+5. **Enhanced Frontend Experience**: User sees special toast notification: "🎉 Auto-Approved! You've been automatically approved using referral code: [CODE]"
+6. **Direct Navigation**: User redirected directly to /discover page (bypasses application status page)
+7. **Enhanced Telegram Notification**: User receives personalized approval message: "🎉 Congratulations! You've been automatically approved! ✨ You used the special referral code: [CODE]"
+8. User gains instant access to platform
+
+### For Regular Users
+1. User enters regular referral code (or none)
+2. User completes application normally
+3. System processes regular referral logic
+4. User status remains pending
+5. User redirected to application status page
+6. Admin receives notification for manual approval
 
 ### For Admins
 1. Admin can view all special codes via API
 2. Admin can add new special codes as needed
-3. Admin receives notifications when users are auto-approved
+3. **Enhanced Admin Notifications**: Admin receives differentiated notifications for auto-approved users showing referral code used
 4. Admin can audit auto-approval activity via logs
 
 ## Testing
