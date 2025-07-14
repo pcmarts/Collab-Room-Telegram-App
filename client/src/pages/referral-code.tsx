@@ -106,28 +106,50 @@ export default function ReferralCodeForm() {
       sessionStorage.removeItem('companyFormData');
       sessionStorage.removeItem('referralCode');
 
-      toast({
-        title: "Application Submitted!",
-        description: "We'll review your application and notify you through Telegram.",
-        duration: 5000
-      });
-
-      // Wait for profile to be available
-      setProcessingMessage('Finalizing your application...');
-      console.log('Waiting for profile data to be available...');
-      const profileExists = await checkProfileExists();
-
-      if (profileExists) {
-        console.log('Profile data confirmed, proceeding to application status page...');
-        setLocation('/application-status');
-      } else {
-        console.log('Profile data not found after maximum attempts');
+      // Check if user was auto-approved
+      if (data.autoApproved && data.isSpecialCode) {
         toast({
-          variant: "destructive",
-          title: "Processing Delay",
-          description: "Please wait a moment and try refreshing the application status page."
+          title: "🎉 Auto-Approved!",
+          description: `You've been automatically approved using referral code: ${data.referralCode}`,
+          duration: 8000
         });
-        setLocation('/application-status');
+        
+        // Wait for profile to be available
+        setProcessingMessage('Finalizing your approval...');
+        console.log('Auto-approved user, waiting for profile data...');
+        const profileExists = await checkProfileExists();
+
+        if (profileExists) {
+          console.log('Profile data confirmed, redirecting to discover page...');
+          setLocation('/discover');
+        } else {
+          console.log('Profile data not found, redirecting to discover anyway...');
+          setLocation('/discover');
+        }
+      } else {
+        toast({
+          title: "Application Submitted!",
+          description: "We'll review your application and notify you through Telegram.",
+          duration: 5000
+        });
+
+        // Wait for profile to be available
+        setProcessingMessage('Finalizing your application...');
+        console.log('Waiting for profile data to be available...');
+        const profileExists = await checkProfileExists();
+
+        if (profileExists) {
+          console.log('Profile data confirmed, proceeding to application status page...');
+          setLocation('/application-status');
+        } else {
+          console.log('Profile data not found after maximum attempts');
+          toast({
+            variant: "destructive",
+            title: "Processing Delay",
+            description: "Please wait a moment and try refreshing the application status page."
+          });
+          setLocation('/application-status');
+        }
       }
 
     } catch (error) {

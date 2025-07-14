@@ -736,12 +736,14 @@ export async function registerRoutes(app: Express) {
 
           // Process referral code if it exists
           let shouldAutoApprove = false;
+          let isSpecialCode = false;
           if (referral_code) {
             logger.info(`Processing referral code: ${referral_code} for new user ${user.id}`);
             
             // First, check if it's a special auto-approval code
             if (isAutoApprovalCode(referral_code)) {
               shouldAutoApprove = true;
+              isSpecialCode = true;
               logger.info(`Special auto-approval code detected: ${referral_code} - user will be automatically approved`);
             } else {
               // Handle regular referral codes with telegram_id_randomstring format
@@ -851,7 +853,7 @@ export async function registerRoutes(app: Express) {
 
         }
 
-        return { user };
+        return { user, shouldAutoApprove, isSpecialCode };
       });
 
       // If this is a new user application (not a profile update), handle approval and notifications
@@ -881,7 +883,7 @@ export async function registerRoutes(app: Express) {
               try {
                 const telegramId = parseInt(result.user.telegram_id);
                 if (!isNaN(telegramId)) {
-                  await notifyUserApproved(telegramId, result.user.handle);
+                  await notifyUserApproved(telegramId, result.user.handle, referral_code);
                   logger.info(`Auto-approval notification sent to user ${result.user.first_name} (${result.user.telegram_id})`);
                 }
               } catch (approvalNotifyError) {
@@ -965,7 +967,10 @@ export async function registerRoutes(app: Express) {
       return res.json({
         success: true,
         message: isProfileUpdate ? 'Profile updated successfully' : 'Application submitted successfully',
-        ...result
+        user: result.user,
+        autoApproved: result.shouldAutoApprove || false,
+        isSpecialCode: result.isSpecialCode || false,
+        referralCode: result.isSpecialCode ? referral_code : undefined
       });
 
     } catch (error) {

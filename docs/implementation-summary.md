@@ -18,20 +18,30 @@ Successfully implemented a special referral codes system that automatically appr
 - Integrated with existing referral processing
 - Maintains backward compatibility
 - Comprehensive logging
+- Returns auto-approval status to frontend
 
-### 3. Database Schema
-**File**: `shared/schema.ts`
-- Enhanced user_referrals table with `is_auto_approve` field (for future use)
-- Maintains existing referral system structure
+### 3. Frontend Integration
+**File**: `client/src/pages/referral-code.tsx`
+- Detects auto-approval response from backend
+- Shows special toast notification for auto-approved users
+- Redirects auto-approved users directly to /discover page
+- Regular users continue to application status page
 
-### 4. API Endpoints
+### 4. Enhanced Telegram Notifications
+**File**: `server/telegram.ts`
+- `notifyUserApproved()` - Enhanced with referral code info
+- `notifyAdminsNewUser()` - Shows auto-approval status and referral code
+- Different message formatting for auto-approved vs manual users
+- Admin notifications include referral code information
+
+### 5. API Endpoints
 **File**: `server/routes/special-codes.ts`
 - `/api/special-codes/check` - Check if code is special
 - `/api/special-codes/list` - List all special codes
 - `/api/special-codes/add` - Add new special code
 - `/api/special-codes/remove` - Remove special code
 
-### 5. Testing Infrastructure
+### 6. Testing Infrastructure
 **Files**: 
 - `scripts/test-special-codes.ts` - Core functionality tests
 - `scripts/test-auto-approval-flow.ts` - End-to-end flow tests
@@ -77,15 +87,18 @@ The following codes trigger automatic approval:
 2. User enters code in application form
 3. User completes application normally
 4. System detects special code and auto-approves
-5. User receives immediate approval notification
-6. User gains instant platform access
+5. **Special toast notification**: "🎉 Auto-Approved! You've been automatically approved using referral code: [CODE]"
+6. User redirected directly to /discover page (bypasses application status)
+7. **Enhanced Telegram notification**: "🎉 Congratulations! You've been automatically approved! ✨ You used the special referral code: [CODE]"
+8. User gains instant platform access
 
 ### For Regular Users
 1. User enters regular referral code (or none)
 2. User completes application normally
 3. System processes regular referral logic
 4. User status remains pending
-5. Admin receives notification for manual approval
+5. User redirected to application status page
+6. Admin receives notification for manual approval
 
 ## Technical Implementation
 
