@@ -23,6 +23,9 @@ The application uses two main aspects of Telegram's platform:
 The Telegram bot is initialized in `server/telegram.ts`:
 
 ```typescript
+// Updated July 14, 2025: Always use production bot for consistency
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+
 export const bot = new TelegramBot(BOT_TOKEN, {
   polling: process.env.NODE_ENV !== 'test'
 });
@@ -36,6 +39,10 @@ bot.onText(/\/status/, async (msg) => {
   await handleStatus(msg);
 });
 ```
+
+### Environment Configuration
+
+**Important**: The system now uses `TELEGRAM_BOT_TOKEN` consistently across all environments to prevent notification delivery failures. This ensures users receive notifications from the same bot they registered with, regardless of the deployment environment.
 
 ### Command Handlers
 

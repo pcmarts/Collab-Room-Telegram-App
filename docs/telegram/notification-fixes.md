@@ -40,6 +40,26 @@ The `handleSwipeCallback` function was using an incorrect database field name `r
 - All callback button interactions now work properly with correct field references
 - Fallback behavior implemented for missing role information
 
+## Previous Fix - Production Environment Mismatch (July 14, 2025)
+
+### Problem
+Collaboration requests were failing in production due to Telegram bot environment mismatch, causing "chat not found" errors when sending notifications.
+
+### Root Cause
+The system was switching between test bot (`TELEGRAM_TEST_BOT_TOKEN`) and production bot (`TELEGRAM_BOT_TOKEN`) based on `NODE_ENV`, but users were registered with the production bot. When the development environment used the test bot token, it couldn't send notifications to users who had only interacted with the production bot.
+
+### Solution
+1. **Simplified bot token selection**: Always use `TELEGRAM_BOT_TOKEN` for all notifications regardless of environment
+2. **Removed fallback system**: Eliminated complex dual-bot logic that caused confusion
+3. **Enhanced logging**: Added comprehensive environment detection and bot selection logging
+4. **Consistent behavior**: Ensured all notifications use the same bot users registered with
+
+### Verification
+- Test notifications now succeed in development environment using production bot
+- Real collaboration requests work correctly with proper notification delivery
+- Enhanced logging shows bot selection and environment detection
+- Eliminated "chat not found" errors caused by environment mismatch
+
 ## Previous Fix - Route Definition Issue (July 13, 2025)
 
 ### Problem
