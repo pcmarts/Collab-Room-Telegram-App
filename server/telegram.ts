@@ -14,9 +14,10 @@ import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 
-// FIXED: Always use production bot for notifications to match user registrations
-// Development can use test bot for commands/interactions, but notifications should be consistent
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+// Use test bot for development, production bot for production
+const BOT_TOKEN = process.env.NODE_ENV === "production" 
+  ? process.env.TELEGRAM_BOT_TOKEN 
+  : process.env.TELEGRAM_TEST_BOT_TOKEN;
 
 // Enhanced environment detection and logging
 const isProduction = process.env.NODE_ENV === "production";
@@ -24,7 +25,7 @@ const currentEnvironment = isProduction ? "PRODUCTION" : "DEVELOPMENT";
 console.log(`🔧 TELEGRAM BOT CONFIGURATION:`);
 console.log(`🔧 NODE_ENV: "${process.env.NODE_ENV || 'undefined'}"`);
 console.log(`🔧 Environment: ${currentEnvironment}`);
-console.log(`🔧 Using: TELEGRAM_BOT_TOKEN (production bot for all notifications)`);
+console.log(`🔧 Using: ${process.env.NODE_ENV === "production" ? 'TELEGRAM_BOT_TOKEN (production bot)' : 'TELEGRAM_TEST_BOT_TOKEN (test bot)'}`);
 console.log(`🔧 Bot token present: ${BOT_TOKEN ? 'YES' : 'NO'}`);
 console.log(`🔧 Bot token length: ${BOT_TOKEN ? BOT_TOKEN.length : 0} characters`);
 
@@ -103,6 +104,16 @@ if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
 export const bot = new TelegramBot(BOT_TOKEN, {
   polling: true,
   webHook: false,
+});
+
+// Add debug logging for all incoming messages
+bot.on('message', (msg) => {
+  console.log(`[BOT_MESSAGE] Received message from ${msg.from?.username || msg.from?.first_name} (ID: ${msg.from?.id}): ${msg.text}`);
+});
+
+// Add debug logging for polling errors
+bot.on('polling_error', (error) => {
+  console.error('[BOT_ERROR] Polling error:', error);
 });
 
 // Helper function to check if a chat ID is valid (bot has interacted with user)
@@ -311,6 +322,11 @@ bot.on("message", async (msg) => {
 
 // Register command handlers - capture the referral code if present
 bot.onText(/\/start(?:\s+(.+))?/, handleStart);
+
+// Add debug logging for all text messages
+bot.on('text', (msg) => {
+  console.log(`[BOT_TEXT] Text message received: "${msg.text}" from ${msg.from?.username || msg.from?.first_name} (ID: ${msg.from?.id})`);
+});
 
 // Register command handlers first
 async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | null) {
