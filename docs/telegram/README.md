@@ -23,8 +23,11 @@ The application uses two main aspects of Telegram's platform:
 The Telegram bot is initialized in `server/telegram.ts`:
 
 ```typescript
-// Updated July 14, 2025: Always use production bot for consistency
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+// Updated July 15, 2025: Restored environment-based bot token selection
+const isProduction = process.env.NODE_ENV === "production";
+const BOT_TOKEN = isProduction 
+  ? process.env.TELEGRAM_BOT_TOKEN 
+  : (process.env.TELEGRAM_TEST_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN);
 
 export const bot = new TelegramBot(BOT_TOKEN, {
   polling: process.env.NODE_ENV !== 'test'
@@ -42,7 +45,12 @@ bot.onText(/\/status/, async (msg) => {
 
 ### Environment Configuration
 
-**Important**: The system now uses `TELEGRAM_BOT_TOKEN` consistently across all environments to prevent notification delivery failures. This ensures users receive notifications from the same bot they registered with, regardless of the deployment environment.
+**Updated July 15, 2025**: The system now uses proper environment-based bot token selection:
+
+- **Development environment**: Uses `TELEGRAM_TEST_BOT_TOKEN`
+- **Production environment**: Uses `TELEGRAM_BOT_TOKEN`
+
+This ensures users who register in each environment receive notifications from the correct bot, preventing "chat not found" errors caused by environment mismatches.
 
 ### Command Handlers
 

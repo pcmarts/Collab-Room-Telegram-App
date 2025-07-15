@@ -16,17 +16,17 @@ The production issue where collaboration requests from DiscoverPageList.tsx fail
 4. Production bot cannot send messages to users who only interacted with test bot
 5. Results in `ETELEGRAM: 400 Bad Request: chat not found` errors
 
-## Solution Implemented
+## Solution Implemented (Reverted July 15, 2025)
 
 ### 1. Enhanced Environment Detection
 - Added comprehensive logging for environment detection
 - Improved debugging with bot token type identification
 - Added warning for potential environment mismatches
 
-### 2. Fallback Bot System
-- Implemented dual-bot support with automatic fallback
-- Primary bot tries first, fallback bot activates on "chat not found" errors
-- Handles cross-environment user notification seamlessly
+### 2. Fallback Bot System (REMOVED)
+- ~~Implemented dual-bot support with automatic fallback~~
+- ~~Primary bot tries first, fallback bot activates on "chat not found" errors~~
+- ~~Handles cross-environment user notification seamlessly~~
 
 ### 3. Enhanced Error Handling
 - Detailed error classification and logging
@@ -108,14 +108,16 @@ curl -X POST http://localhost:5000/api/collaborations/377b29dc-6b3b-4d21-a460-e3
 - `[TELEGRAM] ✅ Successfully sent with fallback bot`: Environment mismatch resolved
 - `🔔 SUCCESS: Sent collaboration request notification`: End-to-end success
 
-## Final Solution
+## Final Solution (Updated July 15, 2025)
 
-After initial implementation of a complex fallback system, the solution was simplified to:
+After initial implementation of a complex fallback system, the solution was reverted to proper environment separation:
 
-1. **Always use production bot token** (`TELEGRAM_BOT_TOKEN`) for all notifications
-2. **Remove environment-based switching** to prevent user registration mismatches
+1. **Environment-based bot token selection** restored
+   - Development environment: Uses `TELEGRAM_TEST_BOT_TOKEN` 
+   - Production environment: Uses `TELEGRAM_BOT_TOKEN`
+2. **Removed complex fallback systems** for simplified architecture
 3. **Enhanced logging** for debugging and monitoring
-4. **Consistent behavior** across all deployment environments
+4. **Environment-specific behavior** to prevent cross-environment user registration issues
 
 ## Future Improvements
 
