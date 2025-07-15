@@ -16,6 +16,7 @@ When deploying The Collab Room application, keep the following in mind:
    - `WEBAPP_URL=https://your-production-domain.com` for Telegram bot WebApp URLs
    - `TELEGRAM_BOT_TOKEN=<production_bot_token>` for production bot
    - `DATABASE_URL=<production_database_url>` for production database
+   - `FORCE_PRODUCTION_BOT=true` (optional) to force production bot usage in any environment
 2. **Database Compatibility**: Verify that the SQL queries are compatible with the database version
 3. **Module Imports**: Double-check that all imports are from the correct packages
 4. **API Keys**: Make sure all required API keys are available and valid

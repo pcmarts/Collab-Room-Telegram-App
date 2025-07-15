@@ -52,6 +52,22 @@ bot.onText(/\/status/, async (msg) => {
 
 This ensures users who register in each environment receive notifications from the correct bot, preventing "chat not found" errors caused by environment mismatches.
 
+#### Force Production Bot (Temporary Solution)
+
+**Added July 15, 2025**: A temporary environment variable `FORCE_PRODUCTION_BOT` can be used to override the default bot selection:
+
+```bash
+FORCE_PRODUCTION_BOT=true
+```
+
+When set to `true`, this forces the system to use the production bot (`TELEGRAM_BOT_TOKEN`) regardless of the `NODE_ENV` setting. This is useful when:
+
+- Running in development mode but users have registered with the production bot
+- Both bots share the same database (current architecture limitation)
+- Preventing "chat not found" errors when users interact with one bot but the server uses another
+
+**Note**: This is a temporary solution. The proper fix would be to track which bot each user registered with in the database.
+
 ### Command Handlers
 
 The bot responds to several commands:

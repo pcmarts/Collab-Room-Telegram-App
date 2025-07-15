@@ -5,6 +5,32 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.34] - 2025-07-15
+
+### Added
+- **Temporary Bot Selection Override**: Added `FORCE_PRODUCTION_BOT` environment variable to control notification bot selection
+  - Allows forcing production bot usage regardless of `NODE_ENV` setting
+  - Addresses issue where users interact with production bot but receive notifications from test bot
+  - Set `FORCE_PRODUCTION_BOT=true` to use production bot (@Collab_Room_bot) in any environment
+  - Temporary solution until proper bot tracking is implemented in the database
+
+### Enhanced
+- **Bot Configuration Logging**: Improved visibility of bot selection in logs
+  - Added explicit logging of `FORCE_PRODUCTION_BOT` environment variable value
+  - Warning message displayed when forcing production bot: "⚠️ FORCING PRODUCTION BOT regardless of NODE_ENV"
+  - Clear indication of which bot token is being used for notifications
+
+### Technical Details
+- Modified `server/telegram.ts` to check `FORCE_PRODUCTION_BOT` environment variable
+- Bot selection logic now: `forceProductionBot || NODE_ENV === "production"`
+- Enhanced logging shows: NODE_ENV, FORCE_PRODUCTION_BOT, final bot selection
+- No database changes required - this is a configuration-based solution
+
+### Known Issues
+- Both test and production bots share the same database
+- Users can register with one bot but receive notifications from another
+- Proper solution requires tracking which bot each user registered with
+
 ## [Version 1.10.33] - 2025-07-15
 
 ### Reverted
