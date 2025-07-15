@@ -361,14 +361,23 @@ export default function DiscoverPageList() {
     setRequestedCollaborations(prev => new Set(prev).add(collaboration.id));
 
     try {
+      // Prepare headers with Telegram authentication
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add Telegram authentication header if available
+      if (window.Telegram?.WebApp?.initData) {
+        headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
+      }
+      
       const response = await fetch(`/api/collaborations/${collaboration.id}/apply`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           message: note || (isPotentialMatch ? "Accepting your collaboration request!" : "I'm interested in this collaboration opportunity."),
         }),
+        credentials: 'include' // Ensure cookies are sent for session authentication
       });
       
       if (!response.ok) {
