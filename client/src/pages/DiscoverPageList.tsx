@@ -9,6 +9,7 @@ import { AuthenticationPrompt } from "../components/AuthenticationPrompt";
 import { MatchMoment } from "../components/MatchMoment";
 import AddNoteDialog from "../components/AddNoteDialog";
 import { SortByButton, type SortOption } from "../components/SortByButton";
+import { AddCollabBanner } from "../components/AddCollabBanner";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useMatchContext } from "@/contexts/MatchContext";
@@ -565,30 +566,53 @@ export default function DiscoverPageList() {
           </div>
         ) : (
           <div className="p-4 space-y-4">
-            {allItems.map((item) => (
-              <CollaborationListItem
-                key={`${item.isPotentialMatch ? 'match' : 'collab'}-${item.id}`}
-                collaboration={item}
-                isAuthenticated={isAuthenticated}
-                onViewDetails={() => handleViewDetails(item)}
-                onRequestCollaboration={() => handleRequestCollaboration(item, item.isPotentialMatch)}
-                isPotentialMatch={item.isPotentialMatch}
-                collaborationStatus={
-                  // Never show collaboration status for user's own collaborations
-                  userProfile?.user?.id && item.creator_id === userProfile.user.id
-                    ? undefined
-                    : // Check if locally requested first (for immediate UI update)
-                      requestedCollaborations.has(item.id)
-                      ? 'requested'
-                      : collaborationInteractions && collaborationInteractions[item.id]
-                      ? collaborationInteractions[item.id].status
-                      : undefined
-                }
-                onNavigateToMatches={() => setLocation('/matches')}
-                currentUserId={userProfile?.user?.id}
-                isApplicationPending={isAuthenticatedButNotApproved}
-              />
+            {allItems.map((item, index) => (
+              <div key={`${item.isPotentialMatch ? 'match' : 'collab'}-${item.id}`}>
+                <CollaborationListItem
+                  collaboration={item}
+                  isAuthenticated={isAuthenticated}
+                  onViewDetails={() => handleViewDetails(item)}
+                  onRequestCollaboration={() => handleRequestCollaboration(item, item.isPotentialMatch)}
+                  isPotentialMatch={item.isPotentialMatch}
+                  collaborationStatus={
+                    // Never show collaboration status for user's own collaborations
+                    userProfile?.user?.id && item.creator_id === userProfile.user.id
+                      ? undefined
+                      : // Check if locally requested first (for immediate UI update)
+                        requestedCollaborations.has(item.id)
+                        ? 'requested'
+                        : collaborationInteractions && collaborationInteractions[item.id]
+                        ? collaborationInteractions[item.id].status
+                        : undefined
+                  }
+                  onNavigateToMatches={() => setLocation('/matches')}
+                  currentUserId={userProfile?.user?.id}
+                  isApplicationPending={isAuthenticatedButNotApproved}
+                />
+                
+                {/* Add banner after the 5th item (index 4) */}
+                {index === 4 && (
+                  <div className="my-4">
+                    <AddCollabBanner
+                      isAuthenticated={isAuthenticated}
+                      isApproved={userProfile?.user?.is_approved || false}
+                      onSignIn={handleAuthenticationPrompt}
+                    />
+                  </div>
+                )}
+              </div>
             ))}
+            
+            {/* Add banner at the end if there are collaborations */}
+            {allItems.length > 0 && !loadingMore && (
+              <div className="mt-4">
+                <AddCollabBanner
+                  isAuthenticated={isAuthenticated}
+                  isApproved={userProfile?.user?.is_approved || false}
+                  onSignIn={handleAuthenticationPrompt}
+                />
+              </div>
+            )}
 
             {/* Loading more indicator */}
             {loadingMore && (

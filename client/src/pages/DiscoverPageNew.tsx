@@ -10,6 +10,7 @@ import SimpleCard from "../components/SimpleCard";
 import { MatchMoment } from "../components/MatchMoment";
 import { CollaborationDetailsDialog } from "../components/CollaborationDetailsDialog";
 import { AuthenticationError } from "../components/AuthenticationError";
+import { AddCollabBanner } from "../components/AddCollabBanner";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useMatchContext } from "@/contexts/MatchContext";
@@ -128,6 +129,8 @@ export default function DiscoverPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [authError, setAuthError] = useState<boolean>(false);
   const [isResettingSwipes, setIsResettingSwipes] = useState(false);
+  const [showBannerAfterFifth, setShowBannerAfterFifth] = useState(false);
+  const [cardViewCount, setCardViewCount] = useState(0);
   const { toast } = useToast();
   
   // State for cards and pagination
@@ -262,6 +265,18 @@ export default function DiscoverPage() {
   const prevLocationRef = useRef<string>('');
   
   // We've removed motion animations since they're not needed without drag functionality
+  
+  // Get user profile for authentication status
+  const { data: userProfile } = useQuery({
+    queryKey: ['/api/profile'],
+    queryFn: () => apiRequest('/api/profile'),
+    retry: false,
+    staleTime: 60000, // Consider stale after 1 minute
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+  });
   
   // Get user swipe history to prevent showing already swiped cards
   const { data: serverRequestHistory } = useQuery({
@@ -1103,9 +1118,14 @@ export default function DiscoverPage() {
       const remainingCards = cards.slice(1);
       setCards(remainingCards);
       
-      // Update current card index for pagination tracking
-      // Since we're removing the first card, the current index is now 0 again
-      setCurrentCardIndex(0);
+      // Track card views for banner display
+      const newCardViewCount = cardViewCount + 1;
+      setCardViewCount(newCardViewCount);
+      
+      // Show banner after 5th card view
+      if (newCardViewCount === 5) {
+        setShowBannerAfterFifth(true);
+      }
       
       // If we've just swiped the last card, immediately trigger a fetch for more
       if (remainingCards.length === 0) {
@@ -1669,6 +1689,20 @@ export default function DiscoverPage() {
                 Create a Collab
               </Button>
             </div>
+            
+            {/* Add banner at the end of the empty state */}
+            <div className="mt-8 max-w-md mx-auto">
+              <AddCollabBanner
+                isAuthenticated={!!userProfile}
+                isApproved={userProfile?.user?.is_approved || false}
+                onSignIn={() => {
+                  // Handle sign in for card view (same as list view)
+                  if (typeof window !== 'undefined' && window.location && typeof window.location.reload === 'function') {
+                    window.location.reload();
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -1707,6 +1741,22 @@ export default function DiscoverPage() {
             </div>
           )}
         </div>
+        
+        {/* Show banner after 5th card view */}
+        {showBannerAfterFifth && (
+          <div className="px-4 pb-4">
+            <AddCollabBanner
+              isAuthenticated={!!userProfile}
+              isApproved={userProfile?.user?.is_approved || false}
+              onSignIn={() => {
+                // Handle sign in for card view (same as list view)
+                if (typeof window !== 'undefined' && window.location && typeof window.location.reload === 'function') {
+                  window.location.reload();
+                }
+              }}
+            />
+          </div>
+        )}
       </div>
       
       {/* Bottom controls */}
