@@ -15,7 +15,9 @@ import fs from "fs";
 import path from "path";
 
 // Restore proper environment-based bot token selection
-const isProduction = process.env.NODE_ENV === "production";
+// Check if we should force using a specific bot for notifications
+const forceProductionBot = process.env.FORCE_PRODUCTION_BOT === "true";
+const isProduction = forceProductionBot || process.env.NODE_ENV === "production";
 const currentEnvironment = isProduction ? "PRODUCTION" : "DEVELOPMENT";
 
 // Use appropriate bot token based on environment
@@ -26,8 +28,12 @@ const BOT_TOKEN = isProduction
 // Enhanced environment detection and logging
 console.log(`🔧 TELEGRAM BOT CONFIGURATION:`);
 console.log(`🔧 NODE_ENV: "${process.env.NODE_ENV || 'undefined'}"`);
+console.log(`🔧 FORCE_PRODUCTION_BOT: "${process.env.FORCE_PRODUCTION_BOT || 'false'}"`);
 console.log(`🔧 Environment: ${currentEnvironment}`);
 console.log(`🔧 Bot Token Source: ${isProduction ? 'TELEGRAM_BOT_TOKEN (Production)' : 'TELEGRAM_TEST_BOT_TOKEN (Development)'}`);
+if (forceProductionBot) {
+  console.log(`🔧 ⚠️  FORCING PRODUCTION BOT regardless of NODE_ENV`);
+}
 console.log(`🔧 Bot token present: ${BOT_TOKEN ? 'YES' : 'NO'}`);
 console.log(`🔧 Bot token length: ${BOT_TOKEN ? BOT_TOKEN.length : 0} characters`);
 

@@ -136,6 +136,13 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
   - Prevents "chat not found" errors caused by bot/user environment mismatches
   - Simplified architecture by removing complex fallback systems
   - Each environment now operates independently with its own bot token
+- July 15, 2025. **TEMPORARY FIX**: Added environment variable to control bot selection for notifications
+  - Issue: When running in development mode, notifications always use test bot even when users interact with production bot
+  - Root cause: Bot selection based on NODE_ENV, not which bot users actually registered with
+  - Added `FORCE_PRODUCTION_BOT` environment variable to force using production bot for notifications
+  - Set `FORCE_PRODUCTION_BOT=true` to use production bot regardless of NODE_ENV
+  - This is a temporary fix - proper solution would track which bot each user registered with in the database
+  - Both test and production bots share the same database, causing notification/registration mismatches
 - July 13, 2025. **COMPLETED**: Successfully removed Events, Conference preferences, Event attendance, and collab_notifications tables to simplify database
   - Removed events, user_events, event_attendance, conference_preferences, and collab_notifications tables from shared/schema.ts
   - Removed all related API endpoints from server/routes.ts (events, user-events, conference-preferences, notifications)
