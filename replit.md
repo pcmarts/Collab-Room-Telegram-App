@@ -127,15 +127,15 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
   - Created comprehensive deployment documentation with proper environment variable configuration
   - Solution: Set `WEBAPP_URL` environment variable to production domain during deployment
   - Updated logging to clearly show environment and URL configuration for debugging
-- July 14, 2025. **COMPLETED**: Fixed production issue where collaboration requests failed due to Telegram bot environment mismatch
-  - Identified root cause: different bot tokens used in development (TELEGRAM_TEST_BOT_TOKEN) vs production (TELEGRAM_BOT_TOKEN)
-  - Users onboarded with test bot couldn't receive notifications from production bot, causing "chat not found" errors
-  - Implemented fallback bot system with automatic retry mechanism for cross-environment notifications
-  - Enhanced error handling with detailed logging and environment detection warnings
-  - Added comprehensive test coverage confirming successful notification delivery via fallback bot
-  - Created documentation in docs/production-notification-fix.md with complete technical details
-  - Solution ensures seamless user experience regardless of registration environment while maintaining backward compatibility
-  - Production deployment will now handle environment mismatches automatically with dual-bot support
+- July 15, 2025. **REVERTED**: Restored proper environment-based Telegram bot token selection
+  - Reverted changes that made all messages go through production bot regardless of environment
+  - Development environment now properly uses TELEGRAM_TEST_BOT_TOKEN
+  - Production environment uses TELEGRAM_BOT_TOKEN
+  - This ensures users who register in test environment receive notifications from test bot
+  - This ensures users who register in production environment receive notifications from production bot
+  - Prevents "chat not found" errors caused by bot/user environment mismatches
+  - Simplified architecture by removing complex fallback systems
+  - Each environment now operates independently with its own bot token
 - July 13, 2025. **COMPLETED**: Successfully removed Events, Conference preferences, Event attendance, and collab_notifications tables to simplify database
   - Removed events, user_events, event_attendance, conference_preferences, and collab_notifications tables from shared/schema.ts
   - Removed all related API endpoints from server/routes.ts (events, user-events, conference-preferences, notifications)

@@ -5,6 +5,30 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.33] - 2025-07-15
+
+### Reverted
+- **Telegram Bot Environment Separation**: Restored proper environment-based bot token selection
+  - Reverted the change that forced all notifications to use the production bot regardless of environment
+  - Development environment now correctly uses `TELEGRAM_TEST_BOT_TOKEN` 
+  - Production environment uses `TELEGRAM_BOT_TOKEN`
+  - This prevents "chat not found" errors when users registered with one bot receive notifications from another
+  - Removed complex fallback systems in favor of simple environment-based separation
+  - Each environment now operates independently with its own bot instance
+
+### Fixed
+- **Environment Mismatch Issues**: Resolved problems with requests, applications, and notifications
+  - Users registered in test environment will receive notifications from test bot
+  - Users registered in production environment will receive notifications from production bot
+  - Fixed collaboration request failures caused by bot environment mismatches
+  - Fixed application submission issues related to wrong bot token usage
+
+### Technical Details
+- Modified `server/telegram.ts` to use environment-appropriate bot tokens
+- Updated bot token selection logic: `isProduction ? TELEGRAM_BOT_TOKEN : TELEGRAM_TEST_BOT_TOKEN`
+- Enhanced logging to clearly show which bot is being used in each environment
+- Simplified notification architecture by removing cross-environment fallback attempts
+
 ## [Version 1.10.32] - 2025-07-14
 
 ### Fixed

@@ -14,17 +14,20 @@ import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 
-// FIXED: Always use production bot for notifications to match user registrations
-// Development can use test bot for commands/interactions, but notifications should be consistent
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-
-// Enhanced environment detection and logging
+// Restore proper environment-based bot token selection
 const isProduction = process.env.NODE_ENV === "production";
 const currentEnvironment = isProduction ? "PRODUCTION" : "DEVELOPMENT";
+
+// Use appropriate bot token based on environment
+const BOT_TOKEN = isProduction 
+  ? process.env.TELEGRAM_BOT_TOKEN 
+  : (process.env.TELEGRAM_TEST_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN);
+
+// Enhanced environment detection and logging
 console.log(`🔧 TELEGRAM BOT CONFIGURATION:`);
 console.log(`🔧 NODE_ENV: "${process.env.NODE_ENV || 'undefined'}"`);
 console.log(`🔧 Environment: ${currentEnvironment}`);
-console.log(`🔧 Using: TELEGRAM_BOT_TOKEN (production bot for all notifications)`);
+console.log(`🔧 Bot Token Source: ${isProduction ? 'TELEGRAM_BOT_TOKEN (Production)' : 'TELEGRAM_TEST_BOT_TOKEN (Development)'}`);
 console.log(`🔧 Bot token present: ${BOT_TOKEN ? 'YES' : 'NO'}`);
 console.log(`🔧 Bot token length: ${BOT_TOKEN ? BOT_TOKEN.length : 0} characters`);
 
@@ -2403,7 +2406,7 @@ async function sendDirectFormattedMessage(
 ) {
   try {
     console.log(`[TELEGRAM] Environment: ${currentEnvironment}`);
-    console.log(`[TELEGRAM] Using production bot for all notifications`);
+    console.log(`[TELEGRAM] Using ${isProduction ? 'production' : 'test'} bot for notifications`);
     console.log(`[TELEGRAM] Attempting to send message to chat ID: ${chatId}`);
     console.log(`[TELEGRAM] Message preview: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
     console.log(`[TELEGRAM] Message options:`, JSON.stringify(options || {}));
@@ -2424,6 +2427,7 @@ async function sendDirectFormattedMessage(
       
       if (error.message.includes('chat not found')) {
         console.error(`[TELEGRAM] ERROR: Chat ${chatId} not found. User may have blocked the bot or never interacted with it.`);
+        console.error(`[TELEGRAM] NOTE: Make sure user registered with the ${isProduction ? 'production' : 'test'} bot.`);
       } else if (error.message.includes('bot was blocked')) {
         console.error(`[TELEGRAM] ERROR: Bot was blocked by user ${chatId}.`);
       } else if (error.message.includes('Forbidden')) {
@@ -2797,7 +2801,7 @@ export async function notifyNewCollabRequest(
   try {
     console.log(`🔔 TELEGRAM NOTIFICATION: Starting notifyNewCollabRequest`);
     console.log(`🔔 Environment: ${currentEnvironment}`);
-    console.log(`🔔 Using production bot for consistent notifications`);
+    console.log(`🔔 Using ${isProduction ? 'production' : 'test'} bot for notifications`);
     console.log(`🔔 Host User ID: ${hostUserId}`);
     console.log(`🔔 Requester User ID: ${requesterUserId}`);
     console.log(`🔔 Collaboration ID: ${collaborationId}`);
