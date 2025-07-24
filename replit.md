@@ -119,6 +119,15 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 24, 2025. **IDENTIFIED**: Root cause of slow collab room loading in production
+  - Issue: "Launch Collab Room" button in production Telegram bot loads slowly
+  - Root cause: NOT a missing separate server - "Launch Collab Room" simply opens main web app at `/discover` route
+  - Real problem: Missing `WEBAPP_URL` environment variable in production deployment
+  - When `WEBAPP_URL` is not set, Telegram bot falls back to `REPLIT_DOMAINS` which points to development URLs
+  - Solution: Set `WEBAPP_URL=https://your-production-domain.com` in production environment
+  - Also identified `FORCE_PRODUCTION_BOT` formatting issue (was `=true`, should be `true`)
+  - This ensures production bot opens production URLs, not development environment
+  - No code changes needed - issue is purely environment configuration
 - July 14, 2025. **COMPLETED**: Fixed production WebApp URL configuration issue where "Launch Collab Room" button pointed to development environment
   - Identified root cause: Production deployment was using development `REPLIT_DOMAINS` instead of production domain
   - Production bot was correctly configured with `TELEGRAM_BOT_TOKEN` but webapp URLs pointed to development environment
