@@ -428,9 +428,9 @@ export function CollaborationDetailsDialog({
                 </div>
               )}
               
-              {/* Request button - moved to bottom of collaboration details */}
-              {!isOwnCollaboration && (
-                <div className="mt-6 pt-4 border-t border-border/50">
+              {/* Action buttons - moved to bottom of collaboration details */}
+              <div className="mt-6 pt-4 border-t border-border/50 space-y-2">
+                {!isOwnCollaboration && (
                   <Button
                     size="sm"
                     onClick={(e) => {
@@ -451,8 +451,21 @@ export function CollaborationDetailsDialog({
                     <MessageSquare className="w-4 h-4 mr-1" />
                     Request Collaboration
                   </Button>
-                </div>
-              )}
+                )}
+                
+                {/* Close button as secondary button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClose();
+                  }}
+                  className="w-full"
+                >
+                  Close
+                </Button>
+              </div>
             </Card>
             
             {/* Company info section - MOVED TO BOTTOM */}
