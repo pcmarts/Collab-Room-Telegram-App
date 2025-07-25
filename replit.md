@@ -119,6 +119,19 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 25, 2025. **COMPLETED**: Fixed collaboration details dialog button visibility issues
+  - Improved header layout with proper button positioning and increased height (56px minimum)
+  - Enhanced back button with rounded design, shadow, and better z-index positioning
+  - Restructured dialog with flexbox layout to prevent content overflow
+  - Added extra bottom padding to ensure close button is never cut off
+  - Back button now has better contrast with background/80 opacity and hover states
+  - All navigation buttons in dialog are now clearly visible and accessible
+- July 25, 2025. **COMPLETED**: Enhanced collaboration details dialog to display date information
+  - Added date_type and specific_date fields to collaboration interface and data flow
+  - Date displays as formatted date (e.g., "January 15, 2025") for specific dates
+  - Shows "Flexible timing" for collaborations with any_future_date preference
+  - Updated TypeScript interfaces and fixed all type safety issues
+  - Date information appears in "Additional Details" section when available
 - July 25, 2025. **COMPLETED**: Enhanced collaboration request system with comprehensive improvements
   - Restructured request cards with full-width content below header (logo, name, timestamp)
   - Enhanced AddNoteDialog with host company logo, name, and improved button spacing

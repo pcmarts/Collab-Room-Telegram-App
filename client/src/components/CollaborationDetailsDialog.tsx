@@ -159,21 +159,23 @@ export function CollaborationDetailsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] p-0 overflow-hidden">
-        <DialogHeader className="px-4 py-3 sticky top-0 bg-background z-10 border-b">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onClose} 
-            className="absolute left-2 top-2"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <DialogTitle className="sr-only">Collaboration Details</DialogTitle>
+      <DialogContent className="sm:max-w-md max-h-[90vh] p-0 overflow-hidden flex flex-col">
+        <DialogHeader className="relative px-0 py-0 sticky top-0 bg-background z-10 border-b shrink-0">
+          <div className="relative flex items-center justify-center h-14 px-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onClose} 
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full bg-background/80 hover:bg-muted border shadow-sm"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <DialogTitle className="sr-only">Collaboration Details</DialogTitle>
+          </div>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[70vh]">
-          <div className="space-y-4 p-4">
+        <ScrollArea className="flex-1 overflow-y-auto">
+          <div className="space-y-4 p-4 pb-6">
             {/* Company header at the very top */}
             <div className="flex items-center gap-3 mb-4">
               <LogoAvatar 
@@ -486,7 +488,7 @@ export function CollaborationDetailsDialog({
                     e.stopPropagation();
                     onClose();
                   }}
-                  className="w-full"
+                  className="w-full bg-background hover:bg-muted border-2 font-medium"
                 >
                   Close
                 </Button>
