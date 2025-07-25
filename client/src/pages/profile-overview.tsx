@@ -186,7 +186,7 @@ export default function ProfileOverview() {
           description: responseData.message || "Profile updated successfully",
         });
         
-        setLocation("/dashboard");
+        setLocation("/discover");
       } else {
         // Handle case where server returns success: false
         throw new Error(responseData.error || "Failed to update profile");
@@ -208,7 +208,7 @@ export default function ProfileOverview() {
     <div className="min-h-[100svh] bg-background">
       <PageHeader
         title="My Profile"
-        backUrl="/dashboard"
+        backUrl="/discover"
         showBackButton={true}
       />
 

@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { MobileCheck } from "@/components/MobileCheck";
 import { RequestsManagementTab } from "@/components/requests-management-tab";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RequestsPage() {
   const [requestsFilter, setRequestsFilter] = useState<"all" | "hidden">("all");

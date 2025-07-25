@@ -175,7 +175,7 @@ export default function CompanyInfoForm() {
         duration: 2000
       });
 
-      setLocation('/dashboard');
+      setLocation('/discover');
 
     } catch (error) {
       console.error('Failed to update company info:', error);
@@ -201,7 +201,7 @@ export default function CompanyInfoForm() {
     <div className="min-h-[100svh] bg-background">
       <PageHeader 
         title="My Company"
-        backUrl="/dashboard"
+        backUrl="/discover"
         showBackButton={true}
       />
 
