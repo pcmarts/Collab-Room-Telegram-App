@@ -30,6 +30,18 @@ interface CardData {
   topics?: string[];
   creator_id?: string;
   details?: any;
+  date_type?: string;
+  specific_date?: string;
+  companyName?: string;
+  isPotentialMatch?: boolean;
+  potentialMatchData?: {
+    user_id?: string;
+    first_name?: string;
+    last_name?: string;
+    company_name?: string;
+    job_title?: string;
+    note?: string;
+  };
   company_data?: {
     name?: string;
     short_description?: string;
@@ -665,7 +677,9 @@ export default function DiscoverPageList() {
           company_data: selectedCardDetails.company_data,
           creator_id: selectedCardDetails.creator_id,
           isPotentialMatch: selectedCardDetails.isPotentialMatch,
-          potentialMatchData: selectedCardDetails.potentialMatchData
+          potentialMatchData: selectedCardDetails.potentialMatchData,
+          date_type: selectedCardDetails.date_type,
+          specific_date: selectedCardDetails.specific_date
         } : undefined}
       />
 

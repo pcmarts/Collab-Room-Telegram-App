@@ -48,9 +48,12 @@ interface CollaborationDetailsDialogProps {
     collab_type?: string;
     description?: string;
     date?: string;
+    date_type?: string;
+    specific_date?: string;
     topics?: string[];
     companyName?: string;
     company_logo_url?: string;
+    creator_id?: string;
     company_data?: {
       name?: string;
       short_description?: string;
@@ -86,6 +89,8 @@ interface CollaborationDetailsDialogProps {
       collab_type?: string;
       description?: string;
       date?: string;
+      date_type?: string;
+      specific_date?: string;
       topics?: string[];
       creator_id?: string;
       details?: Record<string, any>;
@@ -391,13 +396,33 @@ export function CollaborationDetailsDialog({
                       </div>
                     )}
                     
+                    {/* Date information */}
+                    {(collabData.date_type || collabData.specific_date) && (
+                      <div className="text-xs">
+                        <span className="font-medium">Date: </span>
+                        <span>
+                          {collabData.date_type === 'specific_date' && collabData.specific_date
+                            ? new Date(collabData.specific_date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long', 
+                                day: 'numeric'
+                              })
+                            : collabData.date_type === 'any_future_date'
+                            ? 'Flexible timing'
+                            : 'Date not specified'
+                          }
+                        </span>
+                      </div>
+                    )}
+                    
                     {/* Generic details for other fields */}
                     {Object.entries(details).map(([key, value]) => {
                       // Skip already handled fields
                       if ([
                           'twittercomarketing_type', 'host_twitter_handle', 'host_follower_count',
                           'podcast_name', 'episode_duration', 'podcast_audience_size',
-                          'platform', 'stream_duration', 'report_type', 'publication_name'
+                          'platform', 'stream_duration', 'report_type', 'publication_name',
+                          'date_type', 'specific_date' // Skip date fields as they're handled above
                         ].includes(key)) {
                           return null;
                         }
