@@ -136,24 +136,7 @@ export function CollaborationListItem({
             </div>
           </div>
 
-          {/* Topics */}
-          {collaboration.topics && collaboration.topics.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
-              {collaboration.topics.slice(0, 3).map((topic) => (
-                <span 
-                  key={topic} 
-                  className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-md"
-                >
-                  {topic}
-                </span>
-              ))}
-              {collaboration.topics.length > 3 && (
-                <span className="text-xs text-gray-500">
-                  +{collaboration.topics.length - 3} more
-                </span>
-              )}
-            </div>
-          )}
+          {/* Topics - Hidden on discover page, still available in details dialog */}
 
           {/* Description */}
           {description && (
