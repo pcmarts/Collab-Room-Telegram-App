@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Loader2, Filter, SearchX, RefreshCw, Settings } from "lucide-react";
+import { Loader2, Filter, SearchX, RefreshCw, Settings, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CollaborationListItem } from "../components/CollaborationListItem";
@@ -520,6 +520,13 @@ export default function DiscoverPageList() {
             currentSort={sortBy}
             onSortChange={handleSortChange}
           />
+          {/* Show Sign Up button for non-authenticated users */}
+          {!isAuthenticated && (
+            <Button variant="default" size="sm" onClick={handleAuthenticationPrompt}>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Sign Up
+            </Button>
+          )}
           {/* <Button variant="outline" size="sm" onClick={handleOpenFilters}>
             <Filter className="w-4 h-4 mr-2" />
             {hasActiveFilters ? "Filters (Active)" : "Filters"}
@@ -529,22 +536,6 @@ export default function DiscoverPageList() {
           </Button>
         </div>
       </div>
-
-      {/* Authentication status for unauthenticated users */}
-      {shouldShowLimitedView && (
-        <div className="p-4 bg-muted/30 border-b">
-          <AuthenticationPrompt 
-            compact={true}
-            pending={isAuthenticatedButNotApproved}
-            title={isAuthenticatedButNotApproved ? "Application pending" : "Sign up to continue"}
-            message={isAuthenticatedButNotApproved 
-              ? "Your application is currently being processed. You can browse collaborations while waiting."
-              : "You need to sign up through Telegram to request collaborations and access all features."
-            }
-            onSignIn={handleAuthenticationPrompt}
-          />
-        </div>
-      )}
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
