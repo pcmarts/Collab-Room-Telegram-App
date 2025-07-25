@@ -129,9 +129,9 @@ export function CollaborationListItem({
               )}
               
               {/* Collaboration Type with Icon - Prominent Position */}
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(collabType)}`}>
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(collabType)}`}>
                 {getCollabTypeIcon(collabType)}
-                <span className="truncate max-w-[120px]">{collabType}</span>
+                <span className="truncate max-w-[100px]">{collabType}</span>
               </span>
             </div>
           </div>
