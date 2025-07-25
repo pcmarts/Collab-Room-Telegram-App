@@ -252,8 +252,8 @@ export const applyButtonFix = () => {
       container.style.setProperty('right', '0', 'important');
       container.style.setProperty('width', '100%', 'important');
       container.style.setProperty('padding', '16px', 'important');
-      container.style.setProperty('background-color', 'black', 'important');
-      container.style.setProperty('border-top', '1px solid rgba(255,255,255,0.1)', 'important');
+      container.style.setProperty('background-color', '#ffffff', 'important');
+      container.style.setProperty('border-top', '1px solid rgba(0,0,0,0.1)', 'important');
       container.style.setProperty('z-index', '9999', 'important');
       container.style.setProperty('pointer-events', 'auto', 'important');
       container.classList.add('telegram-container-visible');
