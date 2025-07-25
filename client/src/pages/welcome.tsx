@@ -108,7 +108,7 @@ export default function Welcome() {
           </div>
 
           <div className="text-center space-y-2 py-4">
-            <p className="text-xs text-gray-500">
+            <p className="text-sm text-gray-500">
               Join 50+ Web3 professionals already collaborating
             </p>
             <div className="flex justify-center gap-1">
