@@ -117,7 +117,7 @@ export function CollaborationListItem({
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Header */}
-          <div className="flex items-start justify-between gap-2 mb-1">
+          <div className="flex items-start justify-between gap-2 mb-2">
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-gray-900 text-base truncate">
                 {collaboration.creator_company_name || "Unknown Company"}
@@ -143,7 +143,7 @@ export function CollaborationListItem({
 
           {/* Description */}
           {description && (
-            <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+            <p className="text-sm text-gray-600 line-clamp-2 mb-4">
               {description}
             </p>
           )}
