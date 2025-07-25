@@ -99,9 +99,12 @@ export function CollaborationListItem({
   const isOwnCollaboration = isAuthenticated && currentUserId && collaboration.creator_id === currentUserId;
 
   return (
-    <Card className={`p-3 mb-3 hover:shadow-md hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
-      isPotentialMatch ? "ring-2 ring-primary/20 bg-primary/5" : ""
-    }`}>
+    <Card 
+      className={`p-3 mb-3 hover:shadow-md hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
+        isPotentialMatch ? "ring-2 ring-primary/20 bg-primary/5" : ""
+      }`}
+      onClick={onViewDetails}
+    >
       <div className="flex items-start gap-3">
         {/* Company Logo */}
         <LogoAvatar 
