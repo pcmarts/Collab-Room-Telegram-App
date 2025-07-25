@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { SignupToCollaborateDialog } from "@/components/SignupToCollaborateDialog";
-import { Building2, Eye, MessageSquare } from "lucide-react";
+import { Building2, Eye, MessageSquare, Mic, Video, Mail, FileText, FileSearch, Coffee, Twitter, PenTool, ListChecks } from "lucide-react";
 import { useState } from "react";
 
 interface CollaborationListItemProps {
@@ -64,6 +64,34 @@ export function CollaborationListItem({
     return "bg-gray-100 text-gray-800";
   };
 
+  // Get collaboration type icon
+  const getCollabTypeIcon = (collabType: string) => {
+    const lowerType = collabType.toLowerCase();
+    if (lowerType.includes('podcast')) {
+      return <Mic className="h-4 w-4" />;
+    }
+    if (lowerType.includes('twitter') || lowerType.includes('social')) {
+      return <Twitter className="h-4 w-4" />;
+    }
+    if (lowerType.includes('live stream') || lowerType.includes('livestream') || lowerType.includes('webinar')) {
+      return <Video className="h-4 w-4" />;
+    }
+    if (lowerType.includes('newsletter')) {
+      return <Mail className="h-4 w-4" />;
+    }
+    if (lowerType.includes('blog')) {
+      return <PenTool className="h-4 w-4" />;
+    }
+    if (lowerType.includes('research') || lowerType.includes('report')) {
+      return <FileSearch className="h-4 w-4" />;
+    }
+    if (lowerType.includes('coffee')) {
+      return <Coffee className="h-4 w-4" />;
+    }
+    // Default collaboration icon
+    return <MessageSquare className="h-4 w-4" />;
+  };
+
   const collabType = collaboration.type || collaboration.collab_type || "Collaboration";
   const description = collaboration.short_description || collaboration.description;
   
@@ -93,18 +121,19 @@ export function CollaborationListItem({
               </h3>
             </div>
             
-            {isPotentialMatch && (
-              <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0">
-                Match
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {isPotentialMatch && (
+                <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                  Match
+                </span>
+              )}
+              
+              {/* Collaboration Type with Icon - Prominent Position */}
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(collabType)}`}>
+                {getCollabTypeIcon(collabType)}
+                <span className="truncate max-w-[120px]">{collabType}</span>
               </span>
-            )}
-          </div>
-
-          {/* Collaboration Type as Pill */}
-          <div className="mb-2">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(collabType)}`}>
-              {collabType}
-            </span>
+            </div>
           </div>
 
           {/* Topics */}
