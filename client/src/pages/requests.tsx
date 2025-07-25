@@ -64,23 +64,61 @@ export default function RequestsPage() {
     const groupsMap = new Map();
     
     requestsData.requests.forEach((request: any) => {
-      const collabId = request.collaboration?.id || request.collaboration_id;
+      const collabId = request.collaboration_id;
       
       if (!groupsMap.has(collabId)) {
         groupsMap.set(collabId, {
           collaboration: {
             id: collabId,
-            title: request.collaboration?.title || request.collaboration_type || 'Collaboration',
-            type: request.collaboration?.type || request.collaboration_type,
-            description: request.collaboration?.description,
-            topics: request.collaboration?.topics || [],
-            created_at: request.collaboration?.created_at || new Date().toISOString()
+            title: request.collaboration_description || request.collaboration_type || 'Collaboration',
+            type: request.collaboration_type,
+            description: request.collaboration_description,
+            topics: [],
+            created_at: request.created_at || new Date().toISOString()
           },
           requests: []
         });
       }
       
-      groupsMap.get(collabId).requests.push(request);
+      // Transform the flat request structure into the nested structure expected by RequestsManagementTab
+      const transformedRequest = {
+        id: request.request_id,
+        requester: {
+          id: request.requester_id,
+          first_name: request.requester_first_name,
+          last_name: request.requester_last_name,
+          twitter_url: null,
+          avatar_url: null
+        },
+        company: {
+          name: request.company_name,
+          twitter_handle: request.company_twitter_handle,
+          job_title: request.requester_job_title,
+          website: request.company_website,
+          logo_url: request.company_logo_url,
+          short_description: null,
+          long_description: null,
+          linkedin_url: null,
+          funding_stage: null,
+          has_token: false,
+          token_ticker: null,
+          blockchain_networks: [],
+          twitter_followers: request.company_twitter_followers,
+          tags: request.company_tags || []
+        },
+        note: request.note,
+        created_at: request.created_at,
+        collaboration: {
+          id: collabId,
+          title: request.collaboration_description || request.collaboration_type || 'Collaboration',
+          type: request.collaboration_type,
+          description: request.collaboration_description,
+          topics: [],
+          created_at: request.created_at || new Date().toISOString()
+        }
+      };
+      
+      groupsMap.get(collabId).requests.push(transformedRequest);
     });
     
     return Array.from(groupsMap.values());
