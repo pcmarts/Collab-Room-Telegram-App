@@ -119,6 +119,14 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 25, 2025. **COMPLETED**: Redesigned CollaborationDetailsDialog with improved visual hierarchy and UX
+  - Moved company name and logo to the very top of the dialog outside the card for prominence
+  - Made collaboration type badge full-width with centered content and enhanced styling
+  - Repositioned request button to bottom of collaboration details section with clear separation
+  - Added close button as secondary action below request button for better user control
+  - Enhanced visual hierarchy: Company header → Full-width collab type → Details → Action buttons
+  - Improved button styling with consistent full-width design and proper spacing
+  - Dialog now provides clearer information flow and better action accessibility
 - July 25, 2025. **COMPLETED**: Enhanced discover page UX with compact signup flow and visual improvements
   - Moved signup prompt from bulky top banner to compact "Sign Up" button in header next to refresh button
   - Sign Up button only appears for non-authenticated users with UserPlus icon
@@ -127,11 +135,6 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
   - Created SignupToCollaborateDialog component for targeted signup messaging
   - Added CollabTypesBanner with animated collaboration types matching signup page
   - Improved overall interface by removing authentication banner to save vertical space
-  - **COMPLETED**: Reorganized CollaborationDetailsDialog structure for better information hierarchy
-    - Collaboration details now appear first with company logo/name header and request button
-    - All company information moved to bottom section for cleaner organization
-    - Maintained proper authentication and ownership checking for request functionality
-    - Streamlined dialog structure while preserving all existing functionality
 - July 24, 2025. **IDENTIFIED**: Root cause of slow collab room loading in production
   - Issue: "Launch Collab Room" button in production Telegram bot loads slowly
   - Root cause: NOT a missing separate server - "Launch Collab Room" simply opens main web app at `/discover` route
