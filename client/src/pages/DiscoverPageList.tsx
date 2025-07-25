@@ -635,6 +635,13 @@ export default function DiscoverPageList() {
       <CollaborationDetailsDialog
         isOpen={cardDialogOpen}
         onClose={() => setCardDialogOpen(false)}
+        onRequestCollaboration={() => {
+          if (selectedCardDetails) {
+            handleRequestCollaboration(selectedCardDetails, selectedCardDetails.isPotentialMatch);
+          }
+        }}
+        currentUserId={userProfile?.user?.id}
+        isAuthenticated={isAuthenticated}
         collaboration={selectedCardDetails ? {
           id: selectedCardDetails.id,
           title: selectedCardDetails.title,
@@ -645,7 +652,10 @@ export default function DiscoverPageList() {
           company_logo_url: selectedCardDetails.company_logo_url,
           details: selectedCardDetails.details,
           type: selectedCardDetails.type || selectedCardDetails.collab_type,
-          company_data: selectedCardDetails.company_data
+          company_data: selectedCardDetails.company_data,
+          creator_id: selectedCardDetails.creator_id,
+          isPotentialMatch: selectedCardDetails.isPotentialMatch,
+          potentialMatchData: selectedCardDetails.potentialMatchData
         } : undefined}
       />
 

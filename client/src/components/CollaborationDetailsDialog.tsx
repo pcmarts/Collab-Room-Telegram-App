@@ -28,12 +28,16 @@ import {
   FileText,
   Mic,
   Video,
-  Mail
+  Mail,
+  MessageSquare
 } from "lucide-react";
 
 interface CollaborationDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onRequestCollaboration?: () => void;
+  currentUserId?: string;
+  isAuthenticated?: boolean;
   collaboration?: {
     id?: string;
     title?: string;
@@ -89,6 +93,9 @@ interface CollaborationDetailsDialogProps {
 export function CollaborationDetailsDialog({
   isOpen,
   onClose,
+  onRequestCollaboration,
+  currentUserId,
+  isAuthenticated = false,
   collaboration
 }: CollaborationDetailsDialogProps) {
   if (!collaboration) return null;
@@ -134,6 +141,10 @@ export function CollaborationDetailsDialog({
     companyData.name || 
     collaboration.companyName || 
     "Unknown Company";
+  
+  // Check if this is the user's own collaboration
+  const isOwnCollaboration = isAuthenticated && currentUserId && 
+    (collabData.creator_id === currentUserId || collaboration.collaboration?.creator_id === currentUserId);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -152,17 +163,105 @@ export function CollaborationDetailsDialog({
         
         <ScrollArea className="max-h-[70vh]">
           <div className="space-y-4 p-4">
-            {/* Company info section - FIRST */}
+            {/* Collaboration details section - FIRST with company header */}
             <Card className="p-4 bg-card/50 border shadow-sm">
-              <h3 className="text-lg font-semibold flex items-center gap-3">
-                <LogoAvatar 
-                  name={companyName}
-                  logoUrl={collaboration.company_logo_url || companyData.logo_url} 
-                  className="w-8 h-8"
-                  size="sm"
-                />
-                <span>{companyName}</span>
-              </h3>
+              {/* Company logo and name at the top */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold flex items-center gap-3">
+                  <LogoAvatar 
+                    name={companyName}
+                    logoUrl={collaboration.company_logo_url || companyData.logo_url} 
+                    className="w-8 h-8"
+                    size="sm"
+                  />
+                  <span>{companyName}</span>
+                </h3>
+                
+                {/* Request button */}
+                {!isOwnCollaboration && onRequestCollaboration && (
+                  <Button
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRequestCollaboration();
+                      onClose(); // Close dialog after requesting
+                    }}
+                    className="bg-primary hover:bg-primary/90 text-white px-4"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-1" />
+                    Request
+                  </Button>
+                )}
+              </div>
+              
+              <Separator className="mb-4" />
+              
+              {/* Collaboration details first */}
+              <div className="mb-4">
+                <h4 className="text-lg font-semibold text-foreground mb-2">
+                  {title && title !== collabType ? title : collabType}
+                </h4>
+                
+                {/* Collaboration Type as Badge */}
+                <div className="mb-3">
+                  {collabType?.includes('Twitter Co-Marketing') || collabType?.includes('Co-Marketing on Twitter') ? (
+                    <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-blue-700">
+                      <Twitter className="w-3 h-3 mr-1" />
+                      Twitter Co-Marketing
+                    </Badge>
+                  ) : collabType === 'Twitter Spaces Guest' ? (
+                    <Badge variant="outline" className="text-xs bg-blue-500/10 border-blue-500/20 text-blue-700">
+                      <Twitter className="w-3 h-3 mr-1" />
+                      Twitter Spaces Guest
+                    </Badge>
+                  ) : collabType === 'Podcast Guest Appearance' ? (
+                    <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/20 text-purple-700">
+                      <Mic className="w-3 h-3 mr-1" />
+                      Podcast Guest Appearance
+                    </Badge>
+                  ) : collabType === 'Live Stream Guest Appearance' ? (
+                    <Badge variant="outline" className="text-xs bg-red-500/10 border-red-500/20 text-red-700">
+                      <Video className="w-3 h-3 mr-1" />
+                      {collabType}
+                    </Badge>
+                  ) : collabType === 'Blog Post Feature' ? (
+                    <Badge variant="outline" className="text-xs bg-emerald-500/10 border-emerald-500/20 text-emerald-700">
+                      <FileText className="w-3 h-3 mr-1" />
+                      Blog Post Feature
+                    </Badge>
+                  ) : collabType === 'Newsletter Feature' ? (
+                    <Badge variant="outline" className="text-xs bg-indigo-500/10 border-indigo-500/20 text-indigo-700">
+                      <Mail className="w-3 h-3 mr-1" />
+                      Newsletter Feature
+                    </Badge>
+                  ) : collabType === 'Report & Research Feature' ? (
+                    <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-500/20 text-amber-700">
+                      <FileSearch className="w-3 h-3 mr-1" />
+                      Report & Research Feature
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs">
+                      {collabType}
+                    </Badge>
+                  )}
+                </div>
+                
+                {/* Description */}
+                <p className="text-sm text-muted-foreground mb-3">{description}</p>
+                
+                {/* Topics/Tags if available */}
+                {topics && topics.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {topics.map((topic, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {topic}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <Separator className="mb-4" />
               
               {/* Job title - Show for potential matches or from company data */}
               {(isPotentialMatch && potentialMatchData.job_title) ? (
