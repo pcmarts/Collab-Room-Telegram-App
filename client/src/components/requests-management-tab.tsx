@@ -101,6 +101,7 @@ interface RequestsManagementTabProps {
   isLoading?: boolean;
   onLoadMore?: () => void;
   hasMore?: boolean;
+  isLoadingMore?: boolean;
   filter: 'all' | 'hidden';
   onFilterChange: (filter: 'all' | 'hidden') => void;
 }
@@ -110,6 +111,7 @@ export function RequestsManagementTab({
   isLoading = false,
   onLoadMore,
   hasMore = false,
+  isLoadingMore = false,
   filter,
   onFilterChange
 }: RequestsManagementTabProps) {
@@ -410,14 +412,14 @@ export function RequestsManagementTab({
       )}
 
       {/* Load More Button */}
-      {hasMore && (
+      {hasMore && onLoadMore && (
         <div className="text-center">
           <Button 
             variant="outline" 
             onClick={onLoadMore}
-            disabled={isLoading}
+            disabled={isLoadingMore}
           >
-            {isLoading ? "Loading..." : "Load More Requests"}
+            {isLoadingMore ? "Loading..." : "Load More Requests"}
           </Button>
         </div>
       )}

@@ -9,6 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function RequestsPage() {
   const [requestsFilter, setRequestsFilter] = useState<"all" | "hidden">("all");
+  const [allRequestsData, setAllRequestsData] = useState<any[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const { toast } = useToast();
 
   // Check authentication
@@ -37,32 +41,66 @@ export default function RequestsPage() {
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
-  // Fetch full collaboration requests for the management tab
+  // Fetch initial collaboration requests for the management tab
   const { data: requestsData, isLoading: isLoadingRequests, refetch: refetchRequests } = useQuery({
     queryKey: ['/api/collaboration-requests', requestsFilter],
     queryFn: async () => {
       try {
-        const data = await apiRequest(`/api/collaboration-requests?filter=${requestsFilter}`);
+        const data = await apiRequest(`/api/collaboration-requests?filter=${requestsFilter}&limit=20`);
         return data;
       } catch (error) {
         console.error("Error fetching collaboration requests:", error);
-        return { requests: [], hasMore: false };
+        return { requests: [], hasMore: false, nextCursor: undefined };
       }
     },
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
+  // Load more requests function
+  const loadMoreRequests = async () => {
+    if (!nextCursor || !hasMore || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const moreData = await apiRequest(`/api/collaboration-requests?filter=${requestsFilter}&limit=20&cursor=${nextCursor}`);
+      
+      if (moreData && moreData.requests) {
+        setAllRequestsData(prev => [...prev, ...moreData.requests]);
+        setHasMore(moreData.hasMore || false);
+        setNextCursor(moreData.nextCursor);
+      }
+    } catch (error) {
+      console.error("Error loading more requests:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load more requests",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  // Update state when data changes
+  React.useEffect(() => {
+    if (requestsData) {
+      setAllRequestsData(requestsData.requests || []);
+      setHasMore(requestsData.hasMore || false);
+      setNextCursor(requestsData.nextCursor);
+    }
+  }, [requestsData]);
+
   // Transform the flat requests array into grouped format expected by RequestsManagementTab
   const requestGroups = React.useMemo(() => {
-    if (!requestsData?.requests) {
+    if (!allRequestsData || allRequestsData.length === 0) {
       return [];
     }
 
     // Group requests by collaboration_id
     const groupsMap = new Map();
     
-    requestsData.requests.forEach((request: any) => {
+    allRequestsData.forEach((request: any) => {
       const collabId = request.collaboration_id;
       
       if (!groupsMap.has(collabId)) {
@@ -121,7 +159,7 @@ export default function RequestsPage() {
     });
     
     return Array.from(groupsMap.values());
-  }, [requestsData?.requests]);
+  }, [allRequestsData]);
 
 
 
@@ -179,6 +217,9 @@ export default function RequestsPage() {
               isLoading={isLoadingRequests}
               filter={requestsFilter}
               onFilterChange={setRequestsFilter}
+              onLoadMore={loadMoreRequests}
+              hasMore={hasMore}
+              isLoadingMore={isLoadingMore}
             />
           </div>
         </div>
