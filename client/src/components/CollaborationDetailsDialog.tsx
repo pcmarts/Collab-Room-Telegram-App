@@ -656,7 +656,13 @@ export function CollaborationDetailsDialog({
       {/* Signup Dialog for non-authenticated users */}
       <SignupToCollaborateDialog
         open={showSignupDialog}
-        onOpenChange={setShowSignupDialog}
+        onOpenChange={(open) => {
+          setShowSignupDialog(open);
+          // When signup dialog closes (user cancels), also close the parent details dialog
+          if (!open) {
+            onClose();
+          }
+        }}
         companyName={companyName}
         companyLogoUrl={collaboration.company_logo_url || companyData.logo_url}
         collaborationType={collabType}

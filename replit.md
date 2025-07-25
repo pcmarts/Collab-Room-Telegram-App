@@ -119,6 +119,11 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 25, 2025. **COMPLETED**: Fixed signup dialog flow to close completely instead of showing details dialog
+  - Modified SignupToCollaborateDialog onOpenChange handler in CollaborationDetailsDialog component
+  - When unauthenticated user clicks "Request" and then cancels signup dialog, it now returns directly to discovery page
+  - Eliminated confusing flow where canceling signup dialog would show collaboration details dialog
+  - Improved user experience by providing clear exit path back to discovery page
 - July 25, 2025. **COMPLETED**: Enhanced haptic feedback system across all UI components for better mobile experience
   - Extended haptic feedback to all interactive UI elements throughout the app
   - Added light haptic feedback ('light' intensity) to buttons, tabs, switches, checkboxes, radio buttons, and select dropdowns
