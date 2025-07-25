@@ -119,6 +119,14 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 25, 2025. **COMPLETED**: Added webhook integration for new collaboration creation
+  - Created webhook utility function in server/utils/webhook.ts to send collaboration details to n8n
+  - Integrated webhook call into POST /api/collaborations endpoint after collaboration is created
+  - Webhook sends comprehensive payload including: collaboration ID, type, description, date, company details (name, Twitter URL/handle, LinkedIn URL, logo URL), and creator information
+  - Added test endpoint /api/test-webhook-alchemy for testing webhook functionality
+  - Successfully tested webhook with latest Alchemy collaboration, confirming payload delivery to n8n endpoint
+  - Webhook URL: https://paulsworkspace.app.n8n.cloud/webhook-test/1d92b7d4-9a9b-4211-bc0a-53dc8d4c5aaa
+  - Webhook fires automatically on collaboration creation without affecting the main flow
 - July 25, 2025. **COMPLETED**: Removed loading screens from navigation between pages
   - Modified App.tsx to use NoLoadingFallback (null component) for preloaded routes instead of LoadingScreen
   - Expanded navigation preloader to include '/requests' route alongside existing preloaded routes

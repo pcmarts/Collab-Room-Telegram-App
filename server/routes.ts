@@ -18,6 +18,7 @@ import { authLimiter, requestLimiter, applicationLimiter } from './middleware/ra
 import { logger } from './utils/logger';
 // Twitter routes removed to fix deployment issues
 import referralRoutes from './routes/referral-routes';
+import { sendCollaborationWebhook, sendTestWebhookForAlchemy } from "./utils/webhook";
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -2187,6 +2188,15 @@ export async function registerRoutes(app: Express) {
           console.error('Failed to send admin notification for new collaboration:', adminNotifyError);
         }
         
+        // Send webhook notification for new collaboration
+        try {
+          await sendCollaborationWebhook(newCollaboration.id);
+          console.log(`Webhook sent for new collaboration ${newCollaboration.id}`);
+        } catch (webhookError) {
+          // Log error but don't fail the overall request
+          console.error('Failed to send webhook for new collaboration:', webhookError);
+        }
+        
         res.status(201);
         return res.json({
           success: true,
@@ -3764,6 +3774,33 @@ export async function registerRoutes(app: Express) {
 
   // Register Referral API routes
   app.use('/api/referrals', referralRoutes);
+  
+  // Test webhook endpoint for Alchemy collaboration
+  app.get("/api/test-webhook-alchemy", async (req: Request, res: Response) => {
+    console.log('[Webhook Test] Testing webhook for latest Alchemy collaboration');
+    
+    try {
+      const result = await sendTestWebhookForAlchemy();
+      
+      if (result.success) {
+        return res.json({ 
+          success: true, 
+          message: result.message 
+        });
+      } else {
+        return res.status(404).json({ 
+          success: false, 
+          error: result.message 
+        });
+      }
+    } catch (error) {
+      console.error('[Webhook Test] Error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to send test webhook' 
+      });
+    }
+  });
 
   return httpServer;
 }
