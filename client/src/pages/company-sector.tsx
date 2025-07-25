@@ -18,7 +18,7 @@ type TagString = string;
 
 export default function CompanySector() {
   const { toast } = useToast();
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [_, setLocation] = useLocation();
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
@@ -196,7 +196,10 @@ export default function CompanySector() {
         <TelegramButton
           type="button"
           onClick={handleNext}
+          isLoading={isSubmitting}
+          loadingText="Saving..."
           text="Continue to Company Details"
+          disabled={isSubmitting}
         />
       </TelegramFixedButtonContainer>
     </div>
