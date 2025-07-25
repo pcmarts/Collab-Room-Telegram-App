@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TextLoop } from "@/components/ui/text-loop";
 import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
+import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 import { X } from "lucide-react";
 import { 
   COLLAB_TYPES,
@@ -79,33 +80,22 @@ export default function Welcome() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/90 p-4 flex flex-col items-center justify-center relative">
-      {/* Close button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleClose}
-        className="absolute top-4 right-4 z-10 hover:bg-background/20"
-      >
-        <X className="w-5 h-5" />
-      </Button>
+    <div className="min-h-screen bg-background">
+      {/* Header matching personal-info page */}
+      <OnboardingHeader 
+        title="Signup to Collab Room"
+        step={0}
+        totalSteps={0}
+        backUrl="/discover"
+      />
       
-      <div className="max-w-md mx-auto space-y-8 w-full pb-24">
-        <div className="text-center space-y-6">
-          <div className="space-y-4">
-            <h1 className="text-xl font-semibold text-gray-900">Welcome to The Collab Room</h1>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              Find and post marketing collaborations for your brand
-            </p>
-          </div>
-          
-          <div className="flex flex-col items-center justify-center space-y-6 px-4 py-6">
-            <h2 className="text-base tracking-tight" style={{ color: '#8F8F99' }}>Find your next...</h2>
-            
+      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 80px)" }}>
+        <div className="max-w-md mx-auto space-y-8 w-full pb-24">
+          <div className="text-center space-y-6">
             <div className="text-center w-full">
               <TextLoop
-                interval={2}  // Increased from 0.5 to 2 seconds
-                className="text-lg font-medium text-gray-900 block min-h-[40px]"  // Changed from text-white to text-gray-900
+                interval={2}
+                className="text-lg font-medium text-gray-900 block min-h-[40px]"
               >
                 {allCollabTypes.map((type) => (
                   <span key={type} className="block text-center whitespace-normal px-4 flex items-center justify-center gap-2">
@@ -116,45 +106,43 @@ export default function Welcome() {
               </TextLoop>
             </div>
           </div>
-        </div>
 
-
-
-        <div className="text-center space-y-2 py-4 border-t border-gray-800">
-          <p className="text-xs text-gray-500">
-            Join 50+ Web3 professionals already collaborating
-          </p>
-          <div className="flex justify-center gap-1">
-            <img 
-              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//bondexapp_sd.jpg" 
-              alt="Bondex" 
-              className="w-6 h-6 rounded-full object-cover border border-gray-600"
-            />
-            <img 
-              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//Cookie3_com_sd.jpg" 
-              alt="Cookie3" 
-              className="w-6 h-6 rounded-full object-cover border border-gray-600"
-            />
-            <img 
-              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//poapxyz_sd.jpg" 
-              alt="POAP" 
-              className="w-6 h-6 rounded-full object-cover border border-gray-600"
-            />
-            <img 
-              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//XBorgHQ_sd.jpg" 
-              alt="XBorg" 
-              className="w-6 h-6 rounded-full object-cover border border-gray-600"
-            />
-            <img 
-              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//Flight3official_sd.jpg" 
-              alt="Flight3" 
-              className="w-6 h-6 rounded-full object-cover border border-gray-600"
-            />
-            <img 
-              src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//re_sd.jpg" 
-              alt="RE" 
-              className="w-6 h-6 rounded-full object-cover border border-gray-600"
-            />
+          <div className="text-center space-y-2 py-4">
+            <p className="text-xs text-gray-500">
+              Join 50+ Web3 professionals already collaborating
+            </p>
+            <div className="flex justify-center gap-1">
+              <img 
+                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//bondexapp_sd.jpg" 
+                alt="Bondex" 
+                className="w-6 h-6 rounded-full object-cover border border-gray-600"
+              />
+              <img 
+                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//Cookie3_com_sd.jpg" 
+                alt="Cookie3" 
+                className="w-6 h-6 rounded-full object-cover border border-gray-600"
+              />
+              <img 
+                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//poapxyz_sd.jpg" 
+                alt="POAP" 
+                className="w-6 h-6 rounded-full object-cover border border-gray-600"
+              />
+              <img 
+                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//XBorgHQ_sd.jpg" 
+                alt="XBorg" 
+                className="w-6 h-6 rounded-full object-cover border border-gray-600"
+              />
+              <img 
+                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//Flight3official_sd.jpg" 
+                alt="Flight3" 
+                className="w-6 h-6 rounded-full object-cover border border-gray-600"
+              />
+              <img 
+                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//re_sd.jpg" 
+                alt="RE" 
+                className="w-6 h-6 rounded-full object-cover border border-gray-600"
+              />
+            </div>
           </div>
         </div>
       </div>
