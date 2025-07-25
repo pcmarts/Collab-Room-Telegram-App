@@ -164,7 +164,7 @@ export function CollaborationDetailsDialog({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <DialogTitle className="pt-2 pl-8">{isPotentialMatch ? "🌟 Potential Match Details" : title}</DialogTitle>
+          <DialogTitle className="sr-only">Collaboration Details</DialogTitle>
         </DialogHeader>
         
         <ScrollArea className="max-h-[70vh]">
@@ -468,7 +468,7 @@ export function CollaborationDetailsDialog({
             <Card className="p-4 bg-card/50 border shadow-sm">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Info className="h-5 w-5 text-muted-foreground" />
-                Company Details
+                About {companyName}
               </h3>
               
               <Separator className="my-3" />
