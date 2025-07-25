@@ -31,7 +31,9 @@ import {
   Mic,
   Video,
   Mail,
-  MessageSquare
+  MessageSquare,
+  Filter,
+  TrendingUp
 } from "lucide-react";
 
 interface CollaborationDetailsDialogProps {
@@ -263,12 +265,200 @@ export function CollaborationDetailsDialog({
                 
                 {/* Topics/Tags if available */}
                 {topics && topics.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {topics.map((topic, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {topic}
-                      </Badge>
-                    ))}
+                  <div className="mb-4">
+                    <h5 className="text-xs font-medium mb-2 text-muted-foreground">Topics</h5>
+                    <div className="flex flex-wrap gap-1.5">
+                      {topics.map((topic, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {topic}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Date Information */}
+                {(collabData.date_type || collabData.specific_date) && (
+                  <div className="mb-4">
+                    <h5 className="text-xs font-medium mb-2 text-muted-foreground flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      Timeline
+                    </h5>
+                    <div className="text-sm">
+                      {collabData.date_type === 'specific_date' && collabData.specific_date ? (
+                        <span className="text-primary font-medium">
+                          {new Date(collabData.specific_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      ) : collabData.date_type === 'any_future_date' ? (
+                        <span>Any future date</span>
+                      ) : (
+                        <span>Timeline to be discussed</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Collaboration Requirements */}
+                {(collabData.twitter_followers || collabData.company_twitter_followers || collabData.funding_stage || collabData.company_tags?.length > 0) && (
+                  <div className="mb-4">
+                    <h5 className="text-xs font-medium mb-2 text-muted-foreground flex items-center gap-1">
+                      <Filter className="w-3 h-3" />
+                      Requirements
+                    </h5>
+                    <div className="space-y-2">
+                      {collabData.twitter_followers && (
+                        <div className="flex items-center gap-2 text-xs">
+                          <Twitter className="w-3 h-3 text-blue-500" />
+                          <span>Personal Twitter followers: {collabData.twitter_followers}</span>
+                        </div>
+                      )}
+                      {collabData.company_twitter_followers && (
+                        <div className="flex items-center gap-2 text-xs">
+                          <Building className="w-3 h-3 text-gray-500" />
+                          <span>Company Twitter followers: {collabData.company_twitter_followers}</span>
+                        </div>
+                      )}
+                      {collabData.funding_stage && (
+                        <div className="flex items-center gap-2 text-xs">
+                          <TrendingUp className="w-3 h-3 text-green-500" />
+                          <span>Funding stage: {collabData.funding_stage}</span>
+                        </div>
+                      )}
+                      {collabData.company_tags && collabData.company_tags.length > 0 && (
+                        <div className="flex items-start gap-2 text-xs">
+                          <Tag className="w-3 h-3 text-purple-500 mt-0.5" />
+                          <div>
+                            <span className="block mb-1">Company sectors:</span>
+                            <div className="flex flex-wrap gap-1">
+                              {collabData.company_tags.map((tag, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Type-specific Details */}
+                {details && Object.keys(details).length > 0 && (
+                  <div className="mb-4">
+                    <h5 className="text-xs font-medium mb-2 text-muted-foreground flex items-center gap-1">
+                      <Info className="w-3 h-3" />
+                      Additional Details
+                    </h5>
+                    <div className="space-y-2">
+                      {/* Twitter Co-Marketing specific details */}
+                      {collabType?.includes('Twitter') && details.twittercomarketing_type && (
+                        <div className="text-xs">
+                          <span className="font-medium">Co-marketing types: </span>
+                          <span>{Array.isArray(details.twittercomarketing_type) ? details.twittercomarketing_type.join(', ') : details.twittercomarketing_type}</span>
+                        </div>
+                      )}
+                      {collabType?.includes('Twitter') && details.host_twitter_handle && (
+                        <div className="text-xs">
+                          <span className="font-medium">Host Twitter: </span>
+                          <a href={details.host_twitter_handle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {details.host_twitter_handle}
+                          </a>
+                        </div>
+                      )}
+                      {collabType?.includes('Twitter') && details.host_follower_count && (
+                        <div className="text-xs">
+                          <span className="font-medium">Host followers: </span>
+                          <span>{details.host_follower_count}</span>
+                        </div>
+                      )}
+                      
+                      {/* Podcast specific details */}
+                      {collabType?.includes('Podcast') && details.podcast_name && (
+                        <div className="text-xs">
+                          <span className="font-medium">Podcast: </span>
+                          <span>{details.podcast_name}</span>
+                        </div>
+                      )}
+                      {collabType?.includes('Podcast') && details.episode_duration && (
+                        <div className="text-xs">
+                          <span className="font-medium">Duration: </span>
+                          <span>{details.episode_duration}</span>
+                        </div>
+                      )}
+                      {collabType?.includes('Podcast') && details.podcast_audience_size && (
+                        <div className="text-xs">
+                          <span className="font-medium">Audience size: </span>
+                          <span>{details.podcast_audience_size}</span>
+                        </div>
+                      )}
+                      
+                      {/* Live Stream specific details */}
+                      {collabType?.includes('Live Stream') && details.platform && (
+                        <div className="text-xs">
+                          <span className="font-medium">Platform: </span>
+                          <span>{details.platform}</span>
+                        </div>
+                      )}
+                      {collabType?.includes('Live Stream') && details.stream_duration && (
+                        <div className="text-xs">
+                          <span className="font-medium">Duration: </span>
+                          <span>{details.stream_duration}</span>
+                        </div>
+                      )}
+                      
+                      {/* Report & Research specific details */}
+                      {collabType?.includes('Report') && details.report_type && (
+                        <div className="text-xs">
+                          <span className="font-medium">Report type: </span>
+                          <span>{details.report_type}</span>
+                        </div>
+                      )}
+                      {collabType?.includes('Report') && details.publication_name && (
+                        <div className="text-xs">
+                          <span className="font-medium">Publication: </span>
+                          <span>{details.publication_name}</span>
+                        </div>
+                      )}
+                      
+                      {/* Generic details for other fields */}
+                      {Object.entries(details).map(([key, value]) => {
+                        // Skip already handled fields
+                        if ([
+                          'twittercomarketing_type', 'host_twitter_handle', 'host_follower_count',
+                          'podcast_name', 'episode_duration', 'podcast_audience_size',
+                          'platform', 'stream_duration', 'report_type', 'publication_name'
+                        ].includes(key)) {
+                          return null;
+                        }
+                        
+                        // Skip empty values
+                        if (!value || (Array.isArray(value) && value.length === 0)) {
+                          return null;
+                        }
+                        
+                        return (
+                          <div key={key} className="text-xs">
+                            <span className="font-medium capitalize">{key.replace(/_/g, ' ')}: </span>
+                            <span>{Array.isArray(value) ? value.join(', ') : String(value)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Collaboration Status */}
+                {collabData.status && collabData.status !== 'active' && (
+                  <div className="mb-4">
+                    <h5 className="text-xs font-medium mb-2 text-muted-foreground">Status</h5>
+                    <Badge variant={collabData.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                      {collabData.status}
+                    </Badge>
                   </div>
                 )}
               </div>
