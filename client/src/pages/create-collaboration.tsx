@@ -778,7 +778,7 @@ export default function CreateCollaboration() {
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => setLocation('/dashboard')}
+                    onClick={() => setLocation('/my-collaborations')}
                   >
                     Cancel
                   </Button>
