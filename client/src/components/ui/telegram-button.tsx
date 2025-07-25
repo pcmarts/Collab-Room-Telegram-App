@@ -153,12 +153,12 @@ export function TelegramFixedButtonContainer({
         'width': '100%',
         'background-color': 'black',
         'pointer-events': 'auto',
-        'padding': '16px',
+        'padding': '20px 16px 28px 16px',
         'border-top': '1px solid rgba(255,255,255,0.1)',
         'box-shadow': '0 -4px 10px rgba(0,0,0,0.2)',
         'transform': 'translateZ(0)',
         '-webkit-transform': 'translateZ(0)',
-        'min-height': '80px'
+        'min-height': '92px'
       };
       
       // Apply each style with !important
@@ -191,14 +191,14 @@ export function TelegramFixedButtonContainer({
         left: "0",
         right: "0",
         zIndex: "99999",
-        padding: "16px",
+        padding: "20px 16px 28px 16px",
         backgroundColor: "black",
         borderTop: "1px solid rgba(255,255,255,0.1)",
         opacity: "1",
         visibility: "visible",
         display: "block",
         width: "100%",
-        minHeight: "80px",
+        minHeight: "92px",
         pointerEvents: "auto",
         boxShadow: "0 -4px 10px rgba(0,0,0,0.2)",
         transform: "translateZ(0)",

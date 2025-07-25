@@ -118,28 +118,7 @@ export default function Welcome() {
           </div>
         </div>
 
-        <Card className="border border-primary/20">
-          <CardContent className="pt-4 pb-4">
-            {/* Compact referral code section */}
-            <details className="group">
-              <summary className="text-sm text-gray-400 cursor-pointer list-none text-center">
-                Have a referral code? <span className="group-open:hidden">Click to enter</span>
-              </summary>
-              <div className="mt-3 space-y-2">
-                <Input
-                  id="referral_code"
-                  value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value)}
-                  placeholder="Enter your referral code"
-                  className={`${referralCode ? 'border-green-500' : ''}`}
-                />
-                {referralCode && (
-                  <span className="text-xs text-green-500">✓ Referral code applied</span>
-                )}
-              </div>
-            </details>
-          </CardContent>
-        </Card>
+
 
         <div className="text-center space-y-2 py-4 border-t border-gray-800">
           <p className="text-xs text-gray-500">
