@@ -215,12 +215,41 @@ app.use('/api', (req, res, next) => {
     }
 
     // Use the default port to work with the workflow
-    const port = process.env.PORT || 5000;
-    server.listen({
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
+    const port = parseInt(process.env.PORT || '5000', 10);
+    
+    // Handle graceful shutdown
+    process.on('SIGINT', () => {
+      logger.info('Received SIGINT, shutting down gracefully...');
+      server.close(() => {
+        logger.info('Server closed');
+        process.exit(0);
+      });
+    });
+
+    process.on('SIGTERM', () => {
+      logger.info('Received SIGTERM, shutting down gracefully...');
+      server.close(() => {
+        logger.info('Server closed');
+        process.exit(0);
+      });
+    });
+
+    // Handle uncaught exceptions
+    process.on('uncaughtException', (error) => {
+      logger.error('Uncaught Exception:', error);
+      server.close(() => {
+        process.exit(1);
+      });
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+      logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+      server.close(() => {
+        process.exit(1);
+      });
+    });
+
+    server.listen(port, "0.0.0.0", () => {
       // Only log server startup info if LOG_LEVEL >= 2 (INFO level or higher)
       if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
         logger.info(`Server running on port ${port}`);
