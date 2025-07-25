@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
+import { SignupToCollaborateDialog } from "@/components/SignupToCollaborateDialog";
+import { useState } from "react";
 import {
   Calendar,
   Globe,
@@ -98,6 +100,8 @@ export function CollaborationDetailsDialog({
   isAuthenticated = false,
   collaboration
 }: CollaborationDetailsDialogProps) {
+  const [showSignupDialog, setShowSignupDialog] = useState(false);
+  
   if (!collaboration) return null;
   
   // Debug log to see what data we're receiving
@@ -177,14 +181,22 @@ export function CollaborationDetailsDialog({
                   <span>{companyName}</span>
                 </h3>
                 
-                {/* Request button */}
-                {!isOwnCollaboration && onRequestCollaboration && (
+                {/* Request button - show for non-own collaborations */}
+                {!isOwnCollaboration && (
                   <Button
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onRequestCollaboration();
-                      onClose(); // Close dialog after requesting
+                      if (!isAuthenticated) {
+                        // Show signup dialog for non-authenticated users
+                        setShowSignupDialog(true);
+                      } else {
+                        // Call the collaboration request handler for authenticated users
+                        if (onRequestCollaboration) {
+                          onRequestCollaboration();
+                          onClose(); // Close dialog after requesting
+                        }
+                      }
                     }}
                     className="bg-primary hover:bg-primary/90 text-white px-4"
                   >
@@ -419,6 +431,15 @@ export function CollaborationDetailsDialog({
           </div>
         </ScrollArea>
       </DialogContent>
+      
+      {/* Signup Dialog for non-authenticated users */}
+      <SignupToCollaborateDialog
+        open={showSignupDialog}
+        onOpenChange={setShowSignupDialog}
+        companyName={companyName}
+        companyLogoUrl={collaboration.company_logo_url || companyData.logo_url}
+        collaborationType={collabType}
+      />
     </Dialog>
   );
 }
