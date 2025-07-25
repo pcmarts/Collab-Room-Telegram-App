@@ -354,31 +354,39 @@ export function RequestsManagementTab({
                   </div>
                   
                   {/* Action buttons */}
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="space-y-2">
+                    {/* Hide and Accept on same line */}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleHideRequest(request.id)}
+                        disabled={hideRequestMutation.isPending}
+                        className="flex-1"
+                      >
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Hide
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleAcceptRequest(request.id)}
+                        disabled={acceptRequestMutation.isPending}
+                        className="flex-1"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Accept
+                      </Button>
+                    </div>
+                    
+                    {/* Details on its own line */}
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleShowDetails(request)}
+                      className="w-full"
                     >
                       <User className="h-4 w-4 mr-1" />
-                      Details
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleHideRequest(request.id)}
-                      disabled={hideRequestMutation.isPending}
-                    >
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Hide
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => handleAcceptRequest(request.id)}
-                      disabled={acceptRequestMutation.isPending}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Accept
+                      More Details
                     </Button>
                   </div>
                 </div>
