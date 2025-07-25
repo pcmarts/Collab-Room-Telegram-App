@@ -296,18 +296,16 @@ export function RequestsManagementTab({
         {flattenedRequests.map((request) => (
           <Card key={request.id}>
             <CardContent className="pt-4">
-              <div className="flex items-start space-x-4">
-                {/* Requester's logo at top left */}
-                <LogoAvatar
-                  name={request.company.name || "Company"}
-                  logoUrl={request.company.logo_url}
-                  size="lg"
-                  className="h-12 w-12 flex-shrink-0"
-                />
-                
-                <div className="flex-1 space-y-3">
-                  {/* Header with requester info and timestamp */}
-                  <div className="flex items-start justify-between">
+              <div className="space-y-4">
+                {/* Header section with logo, name and timestamp */}
+                <div className="flex items-start space-x-4">
+                  <LogoAvatar
+                    name={request.company.name || "Company"}
+                    logoUrl={request.company.logo_url}
+                    size="lg"
+                    className="h-12 w-12 flex-shrink-0"
+                  />
+                  <div className="flex-1 flex items-start justify-between">
                     <div>
                       <h4 className="font-medium">
                         {request.requester.twitter_url ? (
@@ -345,7 +343,10 @@ export function RequestsManagementTab({
                       </span>
                     </div>
                   </div>
-                  
+                </div>
+                
+                {/* Full width content below header */}
+                <div className="space-y-4">
                   {/* Main content - requester's note */}
                   {request.note && (
                     <div className="bg-muted/50 rounded-lg p-4">
