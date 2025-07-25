@@ -101,7 +101,8 @@ import {
   Lock,
   Megaphone,
   Headphones,
-  BarChart
+  BarChart,
+  Plus
 } from "lucide-react";
 
 // Helper function to get appropriate icon based on collaboration type
@@ -1111,19 +1112,40 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         
         <div className="container mx-auto py-4 px-4">
           {/* Main Content - Overview */}
-          <div className="mt-6">
+          <div className="mt-4">
             {isLoadingCollabs ? (
               renderSkeletons()
             ) : collaborations && collaborations.length > 0 ? (
               <div>
-                <div className="my-8 py-4 flex justify-center">
-                  <Button 
-                    onClick={handleNavigateToCreateCollab}
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    Create New Collab
-                  </Button>
+                {/* Create Collab Banner - matching discover page style */}
+                <div className="mb-4">
+                  <div className="border-2 border-dashed border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors rounded-lg">
+                    <div className="px-4 py-6 text-center">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-center mb-2">
+                          <div className="rounded-full bg-primary/10 p-2">
+                            <Plus className="h-5 w-5 text-primary" />
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground mb-1">
+                            Add your collab
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Share your collaboration opportunity with the community
+                          </p>
+                          <Button 
+                            onClick={handleNavigateToCreateCollab}
+                            size="sm"
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Your Collab
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 {collaborations.map(collab => renderCollaborationCard(collab))}
               </div>
