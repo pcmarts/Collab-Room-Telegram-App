@@ -119,6 +119,13 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 25, 2025. **COMPLETED**: Fixed dialog navigation architecture to prevent nested dialog state conflicts
+  - Separated SignupToCollaborateDialog from CollaborationDetailsDialog for independent management
+  - Modified CollaborationDetailsDialog to use onShowSignupDialog callback instead of internal state
+  - Moved signup dialog state management to DiscoverPageList parent component
+  - Fixed issue where canceling signup dialog would reopen collaboration details dialog
+  - Improved dialog architecture by eliminating complex nested dialog interactions
+  - Now provides clean user experience: Request → Signup Dialog → Cancel returns directly to discovery page
 - July 25, 2025. **COMPLETED**: Fixed signup dialog flow to close completely instead of showing details dialog
   - Modified SignupToCollaborateDialog onOpenChange handler in CollaborationDetailsDialog component
   - When unauthenticated user clicks "Request" and then cancels signup dialog, it now returns directly to discovery page
