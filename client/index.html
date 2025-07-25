@@ -5,66 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>CollabRoom - Web3 Collaboration Platform</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Inline critical styles for instant splash screen display (<100ms) -->
+    <!-- Minimal critical styles -->
     <style>
-      /* Minimal critical styles for splash screen */
+      /* Basic reset */
       html, body {
         margin: 0;
         padding: 0;
         height: 100%;
         width: 100%;
-        background-color: #020817;
-        color: #F8FAFC;
         font-family: system-ui, -apple-system, sans-serif;
       }
       
       #root {
         height: 100%;
-        overflow: hidden;
-      }
-      
-      #splash-screen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background-color: #020817;
-        z-index: 9999;
-      }
-      
-      #splash-logo {
-        width: 80px;
-        height: 80px;
-        margin-bottom: 20px;
-      }
-      
-      #splash-logo circle, #splash-logo path {
-        stroke: #4F46E5;
-      }
-      
-      #splash-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin: 0;
       }
     </style>
   </head>
   <body>
-    <div id="root">
-      <!-- Initial HTML splash screen that renders immediately -->
-      <div id="splash-screen">
-        <svg id="splash-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="50" r="45" stroke="#4F46E5" stroke-width="5" />
-          <path d="M30 50C30 40 40 30 50 30C60 30 70 40 70 50C70 60 60 70 50 70" stroke="#4F46E5" stroke-width="5" />
-        </svg>
-        <h1 id="splash-title">CollabRoom</h1>
-      </div>
-    </div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

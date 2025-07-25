@@ -119,6 +119,12 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 25, 2025. **COMPLETED**: Removed dark splash screen and simplified loading experience
+  - Removed dark background HTML splash screen with CollabRoom logo from index.html
+  - Simplified HTML initial setup to minimal reset styles only
+  - Kept light LoadingScreen component with progress bar animation for app initialization
+  - Deleted unused SplashScreen.tsx component file
+  - App now shows clean, light loading experience without dark splash screen interruption
 - July 25, 2025. **COMPLETED**: Enhanced webhook integration documentation and testing
   - Created comprehensive webhook integration documentation in docs/backend/webhook-integration.md
   - Updated API documentation to include webhook information and test endpoint details
