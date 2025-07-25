@@ -3,7 +3,6 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Loader2 } from "lucide-react";
-import { PageHeader } from "@/components/PageHeader";
 import { MobileCheck } from "@/components/MobileCheck";
 import { RequestsManagementTab } from "@/components/requests-management-tab";
 import { useToast } from "@/hooks/use-toast";
@@ -131,8 +130,15 @@ export default function RequestsPage() {
   if (isLoadingProfile) {
     return (
       <MobileCheck>
-        <div className="min-h-[100svh] bg-background flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin" />
+        <div className="flex flex-col h-[100svh]">
+          <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+            <div>
+              <h1 className="text-xl font-semibold">Requests</h1>
+            </div>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin" />
+          </div>
         </div>
       </MobileCheck>
     );
@@ -141,9 +147,13 @@ export default function RequestsPage() {
   if (!isAuthenticated) {
     return (
       <MobileCheck>
-        <div className="min-h-[100svh] bg-background">
-          <PageHeader title="Requests" />
-          <div className="container mx-auto py-8 px-4 text-center">
+        <div className="flex flex-col h-[100svh]">
+          <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+            <div>
+              <h1 className="text-xl font-semibold">Requests</h1>
+            </div>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
             <p className="text-muted-foreground">Please log in to view your collaboration requests.</p>
           </div>
         </div>
@@ -153,17 +163,24 @@ export default function RequestsPage() {
 
   return (
     <MobileCheck>
-      <div className="min-h-[100svh] bg-background">
-        <PageHeader title="Requests" />
+      <div className="flex flex-col h-[100svh]">
+        {/* Header - matching discover page style */}
+        <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+          <div>
+            <h1 className="text-xl font-semibold">Requests</h1>
+          </div>
+        </div>
         
-        <div className="container mx-auto py-4 px-4">
-
-          <RequestsManagementTab
-            requestGroups={requestGroups}
-            isLoading={isLoadingRequests}
-            filter={requestsFilter}
-            onFilterChange={setRequestsFilter}
-          />
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="py-4 px-4">
+            <RequestsManagementTab
+              requestGroups={requestGroups}
+              isLoading={isLoadingRequests}
+              filter={requestsFilter}
+              onFilterChange={setRequestsFilter}
+            />
+          </div>
         </div>
       </div>
     </MobileCheck>
