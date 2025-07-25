@@ -1,30 +1,21 @@
 import { Card } from "@/components/ui/card";
 import { TextLoop } from "@/components/ui/text-loop";
-import { COLLAB_TYPES, TWITTER_COLLAB_TYPES } from "@shared/schema";
+import { COLLAB_TYPES } from "@shared/schema";
 
 export function CollabTypesBanner() {
-  // Combine all collaboration types for the animation
-  const allCollabTypes = [
-    ...COLLAB_TYPES, 
-    ...TWITTER_COLLAB_TYPES.map(type => `Twitter ${type}`)
-  ];
+  // Use only main collaboration types for the animation
+  const allCollabTypes = COLLAB_TYPES;
 
-  // Icons for different collaboration types
+  // Icons for main collaboration types
   const collaborationIcons = {
     'Podcast Guest Appearance': '🎙️',
     'Twitter Spaces Guest': '🐦',
     'Newsletter Feature': '📰',
     'Report & Research Feature': '📝',
-    'Twitter Exclusive Announcement': '📣',
-    'Twitter Shoutout': '💬',
     'Live Stream Guest Appearance': '📺',
     'Co-Marketing on Twitter': '🤝',
     'Blog Post Feature': '✍️',
-    'Conference Coffee': '☕',
-    'Twitter Thread': '🧵',
-    'Twitter Quote Tweet': '💬',
-    'Twitter Reply': '↩️',
-    'Twitter AMA': '❓'
+    'Conference Coffee': '☕'
   };
 
   return (
@@ -36,7 +27,7 @@ export function CollabTypesBanner() {
         
         <div className="text-center w-full">
           <TextLoop
-            interval={2}
+            interval={1}
             className="text-base font-medium text-foreground block min-h-[32px]"
           >
             {allCollabTypes.map((type) => (
