@@ -658,9 +658,12 @@ export function CollaborationDetailsDialog({
         open={showSignupDialog}
         onOpenChange={(open) => {
           setShowSignupDialog(open);
-          // When signup dialog closes (user cancels), also close the parent details dialog
+          // When signup dialog closes without signup (user cancels), close the parent details dialog
           if (!open) {
-            onClose();
+            // Set a small delay to ensure the signup dialog closes first
+            setTimeout(() => {
+              onClose();
+            }, 100);
           }
         }}
         companyName={companyName}
