@@ -5,6 +5,34 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.35] - 2025-07-25
+
+### Enhanced
+- **Collaboration Request System**: Comprehensive UX improvements across request management flows
+  - Restructured request cards with full-width content below header section (logo, name, timestamp)
+  - Enhanced AddNoteDialog with host company logo, name, and improved button spacing
+  - Added company information header in collaboration request dialogs showing host company details
+  - Improved button layout with vertical stacking and proper gap spacing (gap-3)
+  - Made "Add a Note" the primary button and "Just Send" the secondary option
+  - Updated copy to include company name context ("to [Company Name]")
+
+- **CollabTypesBanner Optimization**: Streamlined collaboration type display
+  - Updated to show only main collaboration types (removed Twitter-specific subtypes)
+  - Simplified animation to focus on core collaboration opportunities
+  - Maintained visual consistency with appropriate icons for each type
+
+### Technical Details
+- Modified `client/src/components/AddNoteDialog.tsx` to accept collaboration data prop
+- Enhanced `client/src/components/requests-management-tab.tsx` with full-width card layout
+- Updated `client/src/pages/DiscoverPageList.tsx` and `client/src/components/SimpleCard.tsx` to pass collaboration data
+- Simplified `client/src/components/CollabTypesBanner.tsx` to use only COLLAB_TYPES constant
+
+### User Experience
+- Improved visual hierarchy in request management interface
+- Better company information display in collaboration request flows
+- Enhanced dialog spacing and button accessibility
+- Cleaner collaboration type presentation in discovery banners
+
 ## [Version 1.10.34] - 2025-07-15
 
 ### Added

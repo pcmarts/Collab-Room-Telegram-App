@@ -16,9 +16,51 @@ The empty state on the My Collaborations page features a three-step explanation 
 - Prominent "Create Your First Collab" button
 - Privacy section with lock icon and privacy explanation
 
+## CollabTypesBanner Component
+
+The CollabTypesBanner component displays an animated banner showcasing the main collaboration types available on the platform. It uses the TextLoop component to cycle through different collaboration types with appropriate icons.
+
+### Recent Updates (Version 1.10.35)
+
+- **Simplified Content**: Now displays only main collaboration types from COLLAB_TYPES constant
+- **Removed Twitter Subtypes**: Eliminated Twitter-specific subtypes to focus on core opportunities
+- **Consistent Icons**: Maintained appropriate emoji icons for each collaboration type
+- **Streamlined Animation**: Cleaner cycling through primary collaboration types
+
+### Implementation
+
+Located at `client/src/components/CollabTypesBanner.tsx`, this component provides a visual introduction to collaboration opportunities.
+
+```typescript
+export function CollabTypesBanner() {
+  // Use only main collaboration types for the animation
+  const allCollabTypes = COLLAB_TYPES;
+
+  // Icons for main collaboration types
+  const collaborationIcons = {
+    'Podcast Guest Appearance': '🎙️',
+    'Twitter Spaces Guest': '🐦',
+    'Newsletter Feature': '📰',
+    'Report & Research Feature': '📝',
+    'Live Stream Guest Appearance': '📺',
+    'Co-Marketing on Twitter': '🤝',
+    'Blog Post Feature': '✍️',
+    'Conference Coffee': '☕'
+  };
+}
+```
+
+### Usage
+
+The component is used on the discover page to introduce users to available collaboration types:
+
+```jsx
+<CollabTypesBanner />
+```
+
 ## Text Loop Component
 
-The TextLoop component provides an animated text rotation effect that smoothly transitions between different text items. It's primarily used on the welcome page to showcase different collaboration types.
+The TextLoop component provides an animated text rotation effect that smoothly transitions between different text items. It's primarily used in the CollabTypesBanner and welcome page to showcase different collaboration types.
 
 ### Implementation
 

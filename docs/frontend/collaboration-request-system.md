@@ -4,7 +4,27 @@
 
 The collaboration request system provides a comprehensive workflow for users to request collaborations with personalized notes. The system is designed to mirror LinkedIn's "Add a note to your invitation" experience, offering both immediate sending and personalized note composition options.
 
-## Recent Enhancements (Version 1.10.18)
+## Recent Enhancements (Version 1.10.35)
+
+### Enhanced AddNoteDialog with Company Information
+- **Host Company Display**: Dialog now shows host company logo and name in header
+- **Contextual Copy**: Updated copy to include company name ("to [Company Name]")
+- **Improved Button Layout**: Buttons now stack vertically with proper gap spacing (gap-3)
+- **Primary/Secondary Actions**: "Add a Note" is primary button, "Just Send" is secondary
+- **Visual Hierarchy**: Company information prominently displayed at top of dialog
+
+### Restructured Request Cards
+- **Full-Width Content**: Card content now spans full width below header section
+- **Header Section**: Logo, company name, and timestamp positioned at top
+- **Better Layout**: Improved spacing and visual hierarchy in request management interface
+- **Enhanced Readability**: Clearer separation between company info and collaboration details
+
+### CollabTypesBanner Optimization
+- **Main Types Only**: Removed Twitter-specific subtypes, showing only core collaboration types
+- **Simplified Animation**: Streamlined type cycling to focus on primary opportunities
+- **Consistent Icons**: Maintained appropriate emoji icons for each collaboration type
+
+## Previous Enhancements (Version 1.10.18)
 
 ### Simplified Details Modal
 - **Streamlined Design**: Details modal now matches Messages tab style with focused content
@@ -27,15 +47,21 @@ The collaboration request system provides a comprehensive workflow for users to 
 
 ### AddNoteDialog Component
 
-The `AddNoteDialog` component handles the two-step note composition flow:
+The `AddNoteDialog` component handles the two-step note composition flow with enhanced company information display:
 
 ```typescript
 interface AddNoteDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSendWithNote: (note: string) => void;
+  collaboration?: CardData; // Enhanced to include collaboration data
 }
 ```
+
+#### Company Information Header
+- **Company Logo**: Displays host company logo at top of dialog
+- **Company Name**: Shows company name in dialog copy and header
+- **Collaboration Type**: Displays the specific collaboration type being requested
 
 #### Two-Step Flow
 
