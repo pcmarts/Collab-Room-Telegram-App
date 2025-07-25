@@ -1150,78 +1150,51 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
                 {collaborations.map(collab => renderCollaborationCard(collab))}
               </div>
             ) : (
-              <div className="text-center pt-4 pb-4 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
-            {/* Collaboration Steps Section */}
-            <div className="mb-4 text-left">
-              <h3 className="text-base font-medium mb-2 pl-2">How Collaborations Work</h3>
-              <div className="flex flex-col gap-4">
-                {/* Step 1 */}
-                <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                  <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
-                    <span className="font-bold text-xl text-primary-foreground">1</span>
-                    <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
-                  </div>
-                  <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                    <h4 className="font-medium text-sm">Create Your Collab</h4>
-                    <p className="text-xs text-muted-foreground">
-                      Choose from Twitter Collabs, reports, newsletters, podcasts, etc.
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Step 2 */}
-                <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                  <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
-                    <span className="font-bold text-xl text-primary-foreground">2</span>
-                    <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
-                  </div>
-                  <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                    <h4 className="font-medium text-sm">Approve or Pass Collab Requests</h4>
-                    <p className="text-xs text-muted-foreground">
-                      You'll be notified when others request to join your collab.
-                    </p>
+              <div className="space-y-4">
+                {/* Simple Add Collab Banner */}
+                <div className="border-2 border-dashed border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors rounded-lg">
+                  <div className="px-4 py-6 text-center">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-center mb-2">
+                        <div className="rounded-full bg-primary/10 p-2">
+                          <Plus className="h-5 w-5 text-primary" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-1">
+                          Add your collab
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Share your collaboration opportunity with the community
+                        </p>
+                        <Button 
+                          onClick={handleNavigateToCreateCollab}
+                          size="sm"
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Your Collab
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
-                {/* Step 3 */}
-                <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                  <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
-                    <span className="font-bold text-xl text-primary-foreground">3</span>
-                    <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
-                  </div>
-                  <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                    <h4 className="font-medium text-sm">Chat with Your New Match</h4>
-                    <p className="text-xs text-muted-foreground">
-                      You'll be able to chat directly in Telegram with your new collaborator.
-                    </p>
+                {/* Privacy Section */}
+                <div className="flex flex-col items-center">
+                  <div className="flex items-stretch border border-muted-foreground/10 rounded-lg overflow-hidden">
+                    <div className="bg-yellow-500/65 flex-shrink-0 w-14 flex items-center justify-center">
+                      <span className="text-white"><Lock size={18} /></span>
+                    </div>
+                    <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
+                      <p className="text-xs flex flex-col gap-1">
+                        <strong>PRIVACY FIRST</strong>
+                        <span className="text-muted-foreground">Contact details shared only upon successful match. Anyone you passed on won't be notified.</span>
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Bottom CTA Button */}
-            <Button 
-              onClick={handleNavigateToCreateCollab}
-              className="w-full max-w-xs py-3 mx-auto mb-6 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Create Your First Collab
-            </Button>
-            
-            {/* Privacy Section */}
-            <div className="flex flex-col items-center">
-              <div className="flex items-stretch border border-muted-foreground/10 rounded-lg overflow-hidden">
-                <div className="bg-yellow-500/65 flex-shrink-0 w-14 flex items-center justify-center">
-                  <span className="text-white"><Lock size={18} /></span>
-                </div>
-                <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                  <p className="text-xs flex flex-col gap-1">
-                    <strong>PRIVACY FIRST</strong>
-                    <span className="text-muted-foreground">Contact details shared only upon successful match. Anyone you passed on won't be notified.</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
             )}
           </div>
           
