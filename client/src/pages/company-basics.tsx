@@ -14,7 +14,7 @@ import { applyButtonFix } from "@/App";
 
 export default function CompanyBasics() {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [_, setLocation] = useLocation();
 
   // Fetch existing data
@@ -224,10 +224,7 @@ export default function CompanyBasics() {
         <TelegramButton
           type="button"
           onClick={handleNext}
-          isLoading={isSubmitting}
-          loadingText="Saving..."
           text="Continue to Company Sector"
-          disabled={isSubmitting}
         />
       </TelegramFixedButtonContainer>
     </div>

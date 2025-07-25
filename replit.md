@@ -119,6 +119,12 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 25, 2025. **COMPLETED**: Removed loading screens from all onboarding form steps for smoother user experience
+  - Removed `isLoading`, `loadingText`, and `disabled` properties from TelegramButton components across all form pages
+  - Eliminated `isSubmitting` state management from personal-info, company-basics, company-sector, and company-details pages
+  - Buttons now provide instant feedback without loading delays between steps
+  - Form transitions are now seamless and faster, improving overall onboarding flow
+  - Only kept essential loading state for final application submission to prevent duplicate submissions
 - July 25, 2025. **COMPLETED**: Redesigned CollaborationDetailsDialog with improved visual hierarchy and UX
   - Moved company name and logo to the very top of the dialog outside the card for prominence
   - Made collaboration type badge full-width with centered content and enhanced styling

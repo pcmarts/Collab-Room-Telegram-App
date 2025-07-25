@@ -14,7 +14,7 @@ import { applyButtonFix } from "@/App";
 
 export default function PersonalInfo() {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [_, setLocation] = useLocation();
 
   // Get Telegram username from WebApp data
@@ -221,10 +221,7 @@ export default function PersonalInfo() {
         <TelegramButton
           type="button"
           onClick={(e) => { e.preventDefault(); handleNext(); }}
-          isLoading={isSubmitting}
-          loadingText="Saving..."
           text="Continue to Company Info"
-          disabled={isSubmitting}
         />
       </TelegramFixedButtonContainer>
     </div>

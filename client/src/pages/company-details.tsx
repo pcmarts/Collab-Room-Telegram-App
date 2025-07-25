@@ -26,7 +26,7 @@ type NetworkString = string;
 
 export default function CompanyDetails() {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [_, setLocation] = useLocation();
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
@@ -73,7 +73,6 @@ export default function CompanyDetails() {
     e.preventDefault();
 
     try {
-      setIsSubmitting(true);
 
       // Get all required data from session storage
       const basicData = JSON.parse(
@@ -193,8 +192,6 @@ export default function CompanyDetails() {
             ? error.message
             : "Failed to submit application",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -399,10 +396,7 @@ export default function CompanyDetails() {
         <TelegramButton
           type="button"
           onClick={handleSubmit}
-          isLoading={isSubmitting}
-          loadingText="Submitting..."
           text="Submit Application"
-          disabled={isSubmitting}
         />
       </TelegramFixedButtonContainer>
     </div>
