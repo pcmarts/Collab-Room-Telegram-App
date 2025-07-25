@@ -89,8 +89,8 @@ export default function Welcome() {
         backUrl="/discover"
       />
       
-      <div className="p-4 overflow-y-auto" style={{ height: "calc(100vh - 80px)" }}>
-        <div className="max-w-md mx-auto space-y-8 w-full pb-24">
+      <div className="p-4 overflow-y-auto flex flex-col justify-center" style={{ height: "calc(100vh - 80px)" }}>
+        <div className="max-w-md mx-auto space-y-8 w-full">
           <div className="text-center space-y-6">
             <div className="text-center w-full">
               <TextLoop
@@ -144,17 +144,30 @@ export default function Welcome() {
               />
             </div>
           </div>
+
+          {/* Button moved to middle of page */}
+          <div className="px-4">
+            <button
+              type="button"
+              onClick={handleContinue}
+              className="w-full text-center py-3 px-4 rounded font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              style={{
+                cursor: "pointer",
+                backgroundColor: "#4034B9",
+                color: "white",
+                border: "none",
+                fontSize: "16px",
+                fontWeight: "bold",
+                height: "48px",
+                minHeight: "48px",
+                borderRadius: "6px"
+              }}
+            >
+              Apply for early access →
+            </button>
+          </div>
         </div>
       </div>
-
-      {/* Fixed button container at root level for proper positioning */}
-      <TelegramFixedButtonContainer>
-        <TelegramButton
-          type="button"
-          onClick={handleContinue}
-          text="Apply for early access →"
-        />
-      </TelegramFixedButtonContainer>
     </div>
   );
 }
