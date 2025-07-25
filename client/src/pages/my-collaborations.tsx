@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -40,7 +40,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { GlowButton } from "@/components/GlowButton";
+
 
 
 import {
@@ -98,39 +98,61 @@ import {
   Coffee,
   Mail,
   PenTool,
-  Lock
+  Lock,
+  Megaphone,
+  Headphones,
+  BarChart
 } from "lucide-react";
 
 // Helper function to get appropriate icon based on collaboration type
-const getCollabTypeIcon = (collabType: string) => {
-  switch(collabType) {
-    case 'Podcast Guest Appearance':
-    case 'Podcast':
-      return <Mic className="h-3 w-3" />;
-    case 'Twitter Spaces Guest':
-    case 'Twitter Space':
-      return <Twitter className="h-3 w-3" />;
-    case 'Twitter Co-Marketing':
-    case 'Co-Marketing on Twitter':
-      return <Twitter className="h-3 w-3" />;
-    case 'Live Stream Guest Appearance':
-    case 'Live Stream':
-    case 'Webinar':
-      return <Video className="h-3 w-3" />;
-    case 'Report & Research Feature':
-    case 'Research Report':
-      return <ListChecks className="h-3 w-3" />;
-    case 'Newsletter Feature':
-    case 'Newsletter':
-      return <Mail className="h-3 w-3" />;
-    case 'Blog Post Feature':
-    case 'Blog Post':
-      return <PenTool className="h-3 w-3" />;
-    case 'Conference Coffee':
-      return <Coffee className="h-3 w-3" />;
-    default:
-      return <MessageSquare className="h-3 w-3" />;
+// Helper function to get the icon for a collaboration type (matching discover page)
+const getCollaborationTypeIcon = (type: string | undefined) => {
+  if (!type) return Megaphone;
+  
+  const typeLower = type.toLowerCase();
+  
+  if (typeLower.includes('twitter') && (typeLower.includes('co-marketing') || typeLower.includes('comarketing'))) {
+    return Twitter;
+  } else if (typeLower.includes('twitter')) {
+    return Twitter;
+  } else if (typeLower.includes('podcast')) {
+    return Headphones;
+  } else if (typeLower.includes('blog')) {
+    return FileText;
+  } else if (typeLower.includes('livestream') || typeLower.includes('live stream')) {
+    return Video;
+  } else if (typeLower.includes('newsletter')) {
+    return Mail;
+  } else if (typeLower.includes('research') || typeLower.includes('report')) {
+    return BarChart;
   }
+  
+  return Megaphone;
+};
+
+// Helper function to get badge styling based on collaboration type (matching discover page)
+const getCollaborationBadgeClass = (type: string | undefined): string => {
+  if (!type) return "bg-primary/10 border-primary/20";
+  
+  const typeLower = type.toLowerCase();
+  
+  if (typeLower.includes('twitter') && (typeLower.includes('co-marketing') || typeLower.includes('comarketing'))) {
+    return "bg-blue-500/10 border-blue-500/30 text-[#1DA1F2]";
+  } else if (typeLower.includes('twitter')) {
+    return "bg-blue-500/10 border-blue-500/30";
+  } else if (typeLower.includes('podcast')) {
+    return "bg-purple-500/10 border-purple-500/30";
+  } else if (typeLower.includes('blog')) {
+    return "bg-emerald-500/10 border-emerald-500/30";
+  } else if (typeLower.includes('livestream') || typeLower.includes('live stream')) {
+    return "bg-red-500/10 border-red-500/30";
+  } else if (typeLower.includes('newsletter')) {
+    return "bg-emerald-500/10 border-emerald-500/30";
+  } else if (typeLower.includes('research') || typeLower.includes('report')) {
+    return "bg-violet-500/10 border-violet-500/30";
+  }
+  
+  return "bg-primary/10 border-primary/20";
 };
 
 export default function MyCollaborations({ collaborationId }: MyCollaborationsProps = {}) {
@@ -564,9 +586,11 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           <div className="flex justify-between items-start">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge className="flex items-center gap-1">
-                  {getCollabTypeIcon(collab.collab_type)}
-                  {collab.collab_type}
+                <Badge variant="outline" className={`${getCollaborationBadgeClass(collab.collab_type)} p-1.5`}>
+                  <span className="mr-1.5">
+                    {React.createElement(getCollaborationTypeIcon(collab.collab_type), { className: "w-3.5 h-3.5" })}
+                  </span>
+                  <span>{collab.collab_type}</span>
                 </Badge>
                 {highlightedCollabId === collab.id && (
                   <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 animate-pulse">
@@ -1093,12 +1117,13 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             ) : collaborations && collaborations.length > 0 ? (
               <div>
                 <div className="my-8 py-4 flex justify-center">
-                  <GlowButton 
+                  <Button 
                     onClick={handleNavigateToCreateCollab}
-                    className="w-full max-w-md py-6"
+                    size="sm"
+                    className="bg-primary hover:bg-primary/90"
                   >
                     Create New Collab
-                  </GlowButton>
+                  </Button>
                 </div>
                 {collaborations.map(collab => renderCollaborationCard(collab))}
               </div>
