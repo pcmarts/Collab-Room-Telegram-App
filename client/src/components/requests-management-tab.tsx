@@ -268,11 +268,11 @@ export function RequestsManagementTab({
   return (
     <div className="space-y-6">
       {/* Filter Header - Always visible */}
-      <div className="flex items-center justify-end">
-        <Tabs value={filter} onValueChange={(value) => onFilterChange(value as any)} className="w-auto">
-          <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="hidden">Hidden</TabsTrigger>
+      <div className="flex items-center justify-center">
+        <Tabs value={filter} onValueChange={(value) => onFilterChange(value as any)} className="w-full">
+          <TabsList className="w-full">
+            <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
+            <TabsTrigger value="hidden" className="flex-1">Hidden</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
