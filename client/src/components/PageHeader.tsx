@@ -24,7 +24,7 @@ export function PageHeader({
   const [_, setLocation] = useLocation();
 
   return (
-    <div className="px-6 py-6 flex flex-row justify-between items-center border-b">
+    <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
       <div className="flex items-center">
         {showBackButton && (
           <button 
@@ -36,7 +36,7 @@ export function PageHeader({
           </button>
         )}
         <div>
-          <h1 className="text-2xl font-bold">{title}</h1>
+          <h1 className="text-xl font-semibold">{title}</h1>
           {subtitle && (
             <p className="text-muted-foreground mt-1">{subtitle}</p>
           )}
