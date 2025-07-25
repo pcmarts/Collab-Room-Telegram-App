@@ -8,18 +8,29 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { useToast } from "@/hooks/use-toast";
+
+interface CollaborationData {
+  id: string;
+  creator_company_name: string;
+  company_logo_url?: string;
+  collab_type: string;
+  description?: string;
+}
 
 interface AddNoteDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSendWithNote: (note: string) => void;
+  collaboration?: CollaborationData;
 }
 
 export default function AddNoteDialog({
   isOpen,
   onClose,
   onSendWithNote,
+  collaboration,
 }: AddNoteDialogProps) {
   const [note, setNote] = useState("");
   const [showNoteComposer, setShowNoteComposer] = useState(false);
@@ -78,9 +89,24 @@ export default function AddNoteDialog({
           <DialogHeader>
             <DialogTitle>Add a Note</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
+          <div className="space-y-4">
+            {/* Company Header */}
+            {collaboration && (
+              <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                <LogoAvatar
+                  name={collaboration.creator_company_name}
+                  logoUrl={collaboration.company_logo_url}
+                  size="sm"
+                  className="h-8 w-8"
+                />
+                <div>
+                  <p className="text-sm font-medium">{collaboration.creator_company_name}</p>
+                  <p className="text-xs text-muted-foreground">{collaboration.collab_type}</p>
+                </div>
+              </div>
+            )}
             <p className="text-sm text-muted-foreground">
-              Add an optional note to your collaboration request.
+              Add an optional note to your collaboration request{collaboration ? ` to ${collaboration.creator_company_name}` : ''}.
             </p>
             <Textarea
               placeholder="e.g., I'm interested in your Twitter collaboration opportunity. Our companies align well in the Web3 space..."
@@ -109,26 +135,41 @@ export default function AddNoteDialog({
           <DialogHeader>
             <DialogTitle>Send Collaboration Request</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
+          <div className="space-y-4">
+            {/* Company Header */}
+            {collaboration && (
+              <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                <LogoAvatar
+                  name={collaboration.creator_company_name}
+                  logoUrl={collaboration.company_logo_url}
+                  size="sm"
+                  className="h-8 w-8"
+                />
+                <div>
+                  <p className="text-sm font-medium">{collaboration.creator_company_name}</p>
+                  <p className="text-xs text-muted-foreground">{collaboration.collab_type}</p>
+                </div>
+              </div>
+            )}
             <p className="text-sm text-muted-foreground">
-              Would you like to add a personalized note to your collaboration request?
+              Would you like to add a personalized note to your collaboration request{collaboration ? ` to ${collaboration.creator_company_name}` : ''}?
             </p>
           </div>
-          <DialogFooter className="flex justify-between w-full sm:justify-between">
+          <DialogFooter className="flex flex-col gap-3 w-full sm:flex-col sm:gap-3">
+            <Button 
+              type="button" 
+              onClick={handleAddNote}
+              className="w-full"
+            >
+              Add a Note
+            </Button>
             <Button
               type="button"
               variant="outline"
               onClick={handleJustSend}
-              className="flex-1"
+              className="w-full"
             >
               Just Send
-            </Button>
-            <Button 
-              type="button" 
-              onClick={handleAddNote}
-              className="flex-1"
-            >
-              Add a Note
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -693,6 +693,13 @@ export default function DiscoverPageList() {
           setShowNoteDialog(false);
           setSelectedCollaboration(null);
         }}
+        collaboration={selectedCollaboration ? {
+          id: selectedCollaboration.id,
+          creator_company_name: selectedCollaboration.creator_company_name || selectedCollaboration.companyName || '',
+          company_logo_url: selectedCollaboration.company_logo_url,
+          collab_type: selectedCollaboration.type || selectedCollaboration.collab_type || '',
+          description: selectedCollaboration.description
+        } : undefined}
       />
     </div>
   );

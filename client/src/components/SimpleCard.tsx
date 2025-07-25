@@ -696,6 +696,13 @@ export default function SimpleCard({
             handleRequestAction("request", note);
           }, 300);
         }}
+        collaboration={{
+          id: data.id,
+          creator_company_name: data.creator_company_name || '',
+          company_logo_url: data.creator_company_logo_url,
+          collab_type: data.collab_type || '',
+          description: data.description
+        }}
       />
     </div>
   );
