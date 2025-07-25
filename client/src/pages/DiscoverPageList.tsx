@@ -539,20 +539,28 @@ export default function DiscoverPageList() {
               <UserCircle className="w-4 h-4" />
             </Button>
           )}
-          {/* Show Sign Up button for non-authenticated users */}
+          {/* Show Refresh and Sign Up buttons for non-authenticated users */}
           {!isAuthenticated && (
-            <Button variant="default" size="sm" onClick={handleAuthenticationPrompt}>
-              <UserPlus className="w-4 h-4 mr-2" />
-              Sign Up
+            <>
+              <Button variant="outline" size="sm" onClick={handleRefresh}>
+                <RefreshCw className="w-4 h-4" />
+              </Button>
+              <Button variant="default" size="sm" onClick={handleAuthenticationPrompt}>
+                <UserPlus className="w-4 h-4 mr-2" />
+                Sign Up
+              </Button>
+            </>
+          )}
+          {/* Show Refresh button for authenticated users */}
+          {isAuthenticated && (
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <RefreshCw className="w-4 h-4" />
             </Button>
           )}
           {/* <Button variant="outline" size="sm" onClick={handleOpenFilters}>
             <Filter className="w-4 h-4 mr-2" />
             {hasActiveFilters ? "Filters (Active)" : "Filters"}
           </Button> */}
-          <Button variant="outline" size="sm" onClick={handleRefresh}>
-            <RefreshCw className="w-4 h-4" />
-          </Button>
         </div>
       </div>
 
