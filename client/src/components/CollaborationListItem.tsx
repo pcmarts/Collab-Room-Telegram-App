@@ -2,7 +2,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
+import { SignupToCollaborateDialog } from "@/components/SignupToCollaborateDialog";
 import { Building2, Eye, MessageSquare } from "lucide-react";
+import { useState } from "react";
 
 interface CollaborationListItemProps {
   collaboration: {
@@ -38,6 +40,7 @@ export function CollaborationListItem({
   currentUserId,
   isApplicationPending = false
 }: CollaborationListItemProps) {
+  const [showSignupDialog, setShowSignupDialog] = useState(false);
   // Get company initials for fallback avatar
   const getCompanyInitials = (name?: string) => {
     if (!name) return "CO";
@@ -212,16 +215,28 @@ export function CollaborationListItem({
               <Button
                 size="sm"
                 variant="secondary"
-                disabled
-                className="flex items-center gap-1 text-xs px-2 py-1 h-auto opacity-60 bg-gray-100 text-gray-500 min-w-0 flex-shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSignupDialog(true);
+                }}
+                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-blue-600 hover:bg-blue-700 text-white min-w-0 flex-shrink-0"
               >
                 <MessageSquare className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">Sign up to Request</span>
+                <span className="truncate">Request</span>
               </Button>
             )}
           </div>
         </div>
       </div>
+      
+      {/* Signup Dialog for non-authenticated users */}
+      <SignupToCollaborateDialog
+        open={showSignupDialog}
+        onOpenChange={setShowSignupDialog}
+        companyName={collaboration.creator_company_name || "Unknown Company"}
+        companyLogoUrl={collaboration.company_logo_url}
+        collaborationType={collabType}
+      />
     </Card>
   );
 }

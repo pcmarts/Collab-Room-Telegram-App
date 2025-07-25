@@ -10,6 +10,7 @@ import { MatchMoment } from "../components/MatchMoment";
 import AddNoteDialog from "../components/AddNoteDialog";
 import { SortByButton, type SortOption } from "../components/SortByButton";
 import { AddCollabBanner } from "../components/AddCollabBanner";
+import { CollabTypesBanner } from "../components/CollabTypesBanner";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useMatchContext } from "@/contexts/MatchContext";
@@ -566,6 +567,9 @@ export default function DiscoverPageList() {
           </div>
         ) : (
           <div className="p-4 space-y-4">
+            {/* Collab Types Banner */}
+            <CollabTypesBanner />
+            
             {allItems.map((item, index) => (
               <div key={`${item.isPotentialMatch ? 'match' : 'collab'}-${item.id}`}>
                 <CollaborationListItem
