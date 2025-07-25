@@ -34,8 +34,8 @@ export function TelegramButton({
         'display': 'flex',
         'position': 'relative',
         'z-index': '99999',
-        'color': '#1a1a1a',
-        'background-color': 'white',
+        'color': 'white',
+        'background-color': '#4034B9',
         'cursor': disabled ? 'not-allowed' : 'pointer',
         'box-shadow': 'none',
         'border': 'none',
@@ -69,11 +69,11 @@ export function TelegramButton({
     // Apply immediately
     forceButtonStyles();
     
-    // Set interval to keep applying
-    const interval = setInterval(forceButtonStyles, 100);
+    // Set timeout to apply again after a short delay instead of continuous interval
+    const timeout = setTimeout(forceButtonStyles, 300);
     
     // Clean up on unmount
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeout);
   }, [disabled]);
   
   return (
@@ -90,8 +90,8 @@ export function TelegramButton({
         boxShadow: "none",
         outline: "none",
         textShadow: "none",
-        backgroundColor: "white",
-        color: "#1a1a1a",
+        backgroundColor: "#4034B9",
+        color: "white",
         border: "none",
         fontSize: "16px",
         fontWeight: "bold",
@@ -173,11 +173,11 @@ export function TelegramFixedButtonContainer({
     // Apply immediately
     forceContainerStyles();
     
-    // Set interval to keep applying
-    const interval = setInterval(forceContainerStyles, 100);
+    // Set timeout to apply again after a short delay instead of continuous interval
+    const timeout = setTimeout(forceContainerStyles, 300);
     
     // Clean up on unmount
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeout);
   }, []);
   
   return (
