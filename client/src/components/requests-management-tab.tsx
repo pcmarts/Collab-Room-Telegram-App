@@ -156,6 +156,28 @@ export function RequestsManagementTab({
     }
   };
 
+  const getCollabTypeBadgeClass = (collabType: string) => {
+    const typeLower = collabType.toLowerCase();
+    
+    if (typeLower.includes('twitter') || typeLower.includes('spaces')) {
+      return "bg-blue-500/10 border-blue-500/20 text-blue-700";
+    } else if (typeLower.includes('podcast')) {
+      return "bg-purple-500/10 border-purple-500/20 text-purple-700";
+    } else if (typeLower.includes('blog')) {
+      return "bg-emerald-500/10 border-emerald-500/20 text-emerald-700";
+    } else if (typeLower.includes('livestream') || typeLower.includes('live stream')) {
+      return "bg-red-500/10 border-red-500/20 text-red-700";
+    } else if (typeLower.includes('newsletter')) {
+      return "bg-indigo-500/10 border-indigo-500/20 text-indigo-700";
+    } else if (typeLower.includes('research') || typeLower.includes('report')) {
+      return "bg-amber-500/10 border-amber-500/20 text-amber-700";
+    } else if (typeLower.includes('coffee')) {
+      return "bg-orange-500/10 border-orange-500/20 text-orange-700";
+    }
+    
+    return "bg-gray-500/10 border-gray-500/20 text-gray-700";
+  };
+
   const acceptRequestMutation = useMutation({
     mutationFn: (requestId: string) => 
       apiRequest(`/api/collaboration-requests/${requestId}/accept`, 'POST'),
@@ -274,88 +296,91 @@ export function RequestsManagementTab({
         <div className="space-y-4">
         {flattenedRequests.map((request) => (
           <Card key={request.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start space-x-3">
-                {getCollabTypeIcon(request.collaboration.type)}
-                <div className="flex-1">
-                  <CardTitle className="text-base">{request.collaboration.title}</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {request.collaboration.description}
-                  </p>
-
-                </div>
-                <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  <span>
-                    {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
-                  </span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               <div className="flex items-start space-x-4">
+                {/* Requester's logo at top left */}
                 <LogoAvatar
                   name={request.company.name || "Company"}
                   logoUrl={request.company.logo_url}
                   size="lg"
-                  className="h-12 w-12"
+                  className="h-12 w-12 flex-shrink-0"
                 />
                 
                 <div className="flex-1 space-y-3">
-                  <div>
-                    <h4 className="font-medium">
-                      {request.requester.first_name} {request.requester.last_name || ''}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      {request.company.job_title} at {request.company.twitter_handle ? (
-                        <a 
-                          href={`https://twitter.com/${request.company.twitter_handle}`}
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {request.company.name}
-                        </a>
-                      ) : (
-                        request.company.name
-                      )}
-                    </p>
+                  {/* Header with requester info and timestamp */}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-medium">
+                        {request.requester.first_name} {request.requester.last_name || ''}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        {request.company.job_title} at {request.company.twitter_handle ? (
+                          <a 
+                            href={`https://twitter.com/${request.company.twitter_handle}`}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            {request.company.name}
+                          </a>
+                        ) : (
+                          request.company.name
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span>
+                        {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                      </span>
+                    </div>
                   </div>
                   
+                  {/* Main content - requester's note */}
                   {request.note && (
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <p className="text-sm">{request.note}</p>
+                    <div className="bg-muted/50 rounded-lg p-4">
+                      <p className="text-sm font-medium">{request.note}</p>
                     </div>
                   )}
                   
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleShowDetails(request)}
-                      >
-                        <User className="h-4 w-4 mr-1" />
-                        Details
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleHideRequest(request.id)}
-                        disabled={hideRequestMutation.isPending}
-                      >
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Hide
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleAcceptRequest(request.id)}
-                        disabled={acceptRequestMutation.isPending}
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Accept
-                      </Button>
-                    </div>
+                  {/* Collaboration type pill */}
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      variant="outline" 
+                      className={getCollabTypeBadgeClass(request.collaboration.type)}
+                    >
+                      {getCollabTypeIcon(request.collaboration.type)}
+                      <span className="ml-1">{request.collaboration.type}</span>
+                    </Badge>
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleShowDetails(request)}
+                    >
+                      <User className="h-4 w-4 mr-1" />
+                      Details
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleHideRequest(request.id)}
+                      disabled={hideRequestMutation.isPending}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Hide
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleAcceptRequest(request.id)}
+                      disabled={acceptRequestMutation.isPending}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      Accept
+                    </Button>
                   </div>
                 </div>
               </div>
