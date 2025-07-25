@@ -6,13 +6,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { MobileCheck } from "@/components/MobileCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import SplashScreen from "@/components/SplashScreen";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { MatchProvider } from "@/contexts/MatchContext";
 import { initTelegramButtonFix } from "./utils/telegram-button-fix";
 import { useTelegramInit } from "@/hooks/useTelegramInit";
-import { useNavigationPreloader } from "@/hooks/useNavigationPreloader";
-import AuthTest from "@/components/AuthTest";
 
 // Import RouteComponentProps type for proper router component typing
 import type { RouteComponentProps } from "wouter";
@@ -95,34 +92,15 @@ const APPLICATION_ROUTES = [
 function Router() {
   const [location] = useLocation();
   const showBottomNav = !APPLICATION_ROUTES.includes(location);
-  const { isPreloaded } = useNavigationPreloader();
 
-  // Smart fallback selection based on whether the route is preloaded
-  const getSuspenseFallback = (routePath: string) => {
-    // For preloaded navigation routes, use no loading fallback
-    if (PRELOADED_ROUTES.includes(routePath) && isPreloaded(routePath)) {
-      return <NoLoadingFallback />;
-    }
-    
-    // For application form routes, also use no loading fallback to prevent flashing
-    if (APPLICATION_ROUTES.includes(routePath)) {
-      return <NoLoadingFallback />;
-    }
-    
-    // Only show loading screen for initial app load on discovery page
-    if (routePath === '/discover' && !isPreloaded('/discover')) {
-      return <LoadingScreen />;
-    }
-    
-    // For all other routes, use no loading fallback
-    return <NoLoadingFallback />;
-  };
+  // Use no loading fallback for all routes to prevent multiple loading screens
+  const getSuspenseFallback = () => <NoLoadingFallback />;
 
   return (
     <div className="min-h-screen bg-background w-full">
       <ImpersonationBanner />
       <div className={`w-full ${showBottomNav ? 'pb-24' : ''}`}>
-        <Suspense fallback={getSuspenseFallback(location)}>
+        <Suspense fallback={getSuspenseFallback()}>
           <Switch>
             {/* Welcome and Application Flow */}
             <Route path="/welcome" component={Welcome} />
@@ -258,64 +236,47 @@ export const applyButtonFix = () => {
 };
 
 function App() {
-  // Two-phase loading state
-  const [appPhase, setAppPhase] = useState<'splash' | 'loading' | 'ready'>('splash');
+  // Single loading state - much simpler!
+  const [isAppReady, setIsAppReady] = useState(false);
   
   // Use the optimized Telegram WebApp initialization hook
   const telegramInitialized = useTelegramInit();
   
-  // Immediately render the splash screen and transition to loading phase
+  // Initialize app once on mount
   useEffect(() => {
-    // This first phase transition happens extremely quickly (within ~50ms)
-    // just enough time to ensure the splash screen rendered
-    const splashTimer = setTimeout(() => {
-      setAppPhase('loading');
-      
-      // Begin actual app initialization in the background
-      console.log('[App] Initializing app with ultra-light splash screen');
-      
-      // Telegram initialization now handled by useTelegramInit hook
-      if (!telegramInitialized) {
-        console.warn('[App] Telegram WebApp initialization pending...');
-      }
-    }, 50); // Ultra short timeout to ensure splash screen renders first
-    
-    return () => clearTimeout(splashTimer);
-  }, [telegramInitialized]);
-  
-  // Once the loading phase starts, begin more intensive initialization
-  useEffect(() => {
-    if (appPhase !== 'loading') return;
+    console.log('[App] Initializing app...');
     
     // Initialize Telegram button visibility fix
     const cleanupButtonFix = initTelegramButtonFix();
     applyButtonFix();
     
-    // Transition to the fully loaded app after initialization
-    const loadingTimer = setTimeout(() => {
-      setAppPhase('ready');
-    }, 800); // Adjust this time as needed for good UX
+    // Check if Telegram is initialized
+    if (!telegramInitialized) {
+      console.warn('[App] Telegram WebApp initialization pending...');
+    }
+    
+    // Short delay to ensure smooth transition
+    const timer = setTimeout(() => {
+      setIsAppReady(true);
+    }, 300); // Reduced from 850ms total to just 300ms
     
     return () => {
-      clearTimeout(loadingTimer);
+      clearTimeout(timer);
       if (typeof cleanupButtonFix === 'function') {
         cleanupButtonFix();
       }
     };
-  }, [appPhase]);
+  }, [telegramInitialized]);
   
-  // Render different UI based on the loading phase
+  // Render single loading screen or app
   return (
     <QueryClientProvider client={queryClient}>
       <MatchProvider>
-        {appPhase === 'splash' ? (
-          // Phase 1: Ultra-light splash screen (renders in <100ms)
-          <SplashScreen />
-        ) : appPhase === 'loading' ? (
-          // Phase 2: Full loading screen with progress indicator
+        {!isAppReady ? (
+          // Single loading screen - no more multiple phases
           <LoadingScreen />
         ) : (
-          // Phase 3: Main application
+          // Main application
           <MobileCheck>
             <Router />
           </MobileCheck>
