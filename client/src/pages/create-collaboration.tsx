@@ -392,9 +392,9 @@ export default function CreateCollaboration() {
           subtitle="Offer collaboration opportunities"
         />
         
-        <div className="p-4">
+        <div className="p-4 pb-32">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 form-scrollable-container">
               <Card>
                 <CardHeader>
                   <CardTitle>Basic Information</CardTitle>
@@ -772,22 +772,28 @@ export default function CreateCollaboration() {
                 </CardContent>
               </Card>
               
-              <div className="flex justify-end space-x-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setLocation('/dashboard')}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting} 
-                  className="min-w-[120px]"
-                >
-                  {isSubmitting ? "Submitting..." : "Create Collaboration"}
-                </Button>
+              {/* Fixed bottom buttons container for mobile */}
+              <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 mb-16 z-40">
+                <div className="flex justify-end space-x-4 max-w-4xl mx-auto">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setLocation('/dashboard')}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting} 
+                    className="min-w-[120px]"
+                  >
+                    {isSubmitting ? "Submitting..." : "Create Collaboration"}
+                  </Button>
+                </div>
               </div>
+              
+              {/* Spacer to prevent content from being hidden behind fixed buttons */}
+              <div className="h-32"></div>
             </form>
           </Form>
         </div>

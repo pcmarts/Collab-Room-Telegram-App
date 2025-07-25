@@ -118,6 +118,37 @@ body.scrollable-page {
   padding-bottom: 160px;
 }
 
+/* Mobile keyboard handling for create collaboration form */
+@media only screen and (max-width: 768px) {
+  .create-collaboration-container {
+    min-height: 100vh;
+    padding-bottom: 180px; /* Extra padding for bottom nav + submit buttons */
+  }
+  
+  .create-collaboration-form {
+    padding-bottom: 160px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ensure form buttons stay above bottom navigation */
+  .create-collaboration-buttons {
+    bottom: 100px; /* Position above bottom navigation */
+    z-index: 45; /* Between form content and bottom nav */
+  }
+  
+  /* When virtual keyboard is open (viewport height changes) */
+  @media (max-height: 600px) {
+    .create-collaboration-buttons {
+      position: relative;
+      bottom: auto;
+      z-index: auto;
+      margin-top: 20px;
+      margin-bottom: 140px;
+    }
+  }
+}
+
 /* Custom subtle scrollbar styling */
 .subtle-scrollbar {
   overflow-y: auto;
