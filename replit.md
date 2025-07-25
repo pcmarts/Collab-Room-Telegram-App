@@ -119,6 +119,13 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 25, 2025. **COMPLETED**: Removed loading screens from navigation between pages
+  - Modified App.tsx to use NoLoadingFallback (null component) for preloaded routes instead of LoadingScreen
+  - Expanded navigation preloader to include '/requests' route alongside existing preloaded routes
+  - Removed LoadingScreen fallback for application form routes to prevent flashing during navigation
+  - Now only shows LoadingScreen on initial app load when discovery page isn't preloaded yet
+  - All other route transitions now happen instantly without loading screens
+  - Improved user experience by eliminating unnecessary loading states during navigation
 - July 25, 2025. **COMPLETED**: Fixed collaboration details dialog button visibility issues
   - Improved header layout with proper button positioning and increased height (56px minimum)
   - Enhanced back button with rounded design, shadow, and better z-index positioning

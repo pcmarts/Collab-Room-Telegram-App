@@ -67,12 +67,8 @@ const MyCollaborations = (props: RouteComponentProps) => <MyCollaborationsCompon
 // Navigation routes that are preloaded
 const PRELOADED_ROUTES = ['/discover', '/my-collaborations', '/requests', '/matches'];
 
-// Minimal loading fallback for preloaded routes
-const MinimalLoadingFallback = () => (
-  <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
-    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-  </div>
-);
+// No loading fallback for preloaded routes - just an empty div to prevent flashing
+const NoLoadingFallback = () => null;
 
 // Application form routes that should not show bottom navigation
 const APPLICATION_ROUTES = [
@@ -103,12 +99,23 @@ function Router() {
 
   // Smart fallback selection based on whether the route is preloaded
   const getSuspenseFallback = (routePath: string) => {
-    // For preloaded navigation routes, use minimal fallback
+    // For preloaded navigation routes, use no loading fallback
     if (PRELOADED_ROUTES.includes(routePath) && isPreloaded(routePath)) {
-      return <MinimalLoadingFallback />;
+      return <NoLoadingFallback />;
     }
-    // For other routes or not-yet-preloaded routes, use full loading screen
-    return <LoadingScreen />;
+    
+    // For application form routes, also use no loading fallback to prevent flashing
+    if (APPLICATION_ROUTES.includes(routePath)) {
+      return <NoLoadingFallback />;
+    }
+    
+    // Only show loading screen for initial app load on discovery page
+    if (routePath === '/discover' && !isPreloaded('/discover')) {
+      return <LoadingScreen />;
+    }
+    
+    // For all other routes, use no loading fallback
+    return <NoLoadingFallback />;
   };
 
   return (
@@ -126,11 +133,7 @@ function Router() {
             <Route path="/application-status" component={ApplicationStatus} />
 
             <Route path="/apply/:id">
-              {(params) => (
-                <Suspense fallback={<LoadingScreen />}>
-                  <ApplyComponent id={params.id} />
-                </Suspense>
-              )}
+              {(params) => <ApplyComponent id={params.id} />}
             </Route>
 
             {/* Main App Routes */}
@@ -177,21 +180,9 @@ function Router() {
             <Route path="/admin/referrals" component={AdminReferralsPage} />
 
             {/* Collaboration Routes */}
-            <Route path="/create-collaboration-steps">
-              {() => <Suspense fallback={<LoadingScreen />}>
-                <CreateCollaborationSteps />
-              </Suspense>}
-            </Route>
-            <Route path="/create-collaboration-v2">
-              {() => <Suspense fallback={<LoadingScreen />}>
-                <CreateCollaborationV2 />
-              </Suspense>}
-            </Route>
-            <Route path="/create-collaboration">
-              {() => <Suspense fallback={<LoadingScreen />}>
-                <CreateCollaborationComponent />
-              </Suspense>}
-            </Route>
+            <Route path="/create-collaboration-steps" component={CreateCollaborationSteps} />
+            <Route path="/create-collaboration-v2" component={CreateCollaborationV2} />
+            <Route path="/create-collaboration" component={CreateCollaborationComponent} />
             
             {/* Profile Routes */}
             <Route path="/profile-overview" component={ProfileOverview} />

@@ -21,6 +21,11 @@ const NAVIGATION_ROUTES = [
     path: '/matches',
     loader: () => import('@/pages/MatchesPage'),
     component: 'MatchesPage'
+  },
+  {
+    path: '/requests',
+    loader: () => import('@/pages/requests'),
+    component: 'RequestsPage'
   }
 ];
 
