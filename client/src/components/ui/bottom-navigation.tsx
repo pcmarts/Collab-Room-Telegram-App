@@ -129,7 +129,7 @@ const BottomNavigation = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 z-50 w-full h-24 bg-background border-t border-border pb-6">
+    <nav className="fixed bottom-0 left-0 z-50 w-full h-24 bg-background border-t border-border pb-6" style={{ bottom: '0px', position: 'fixed' }}>
       <div className="grid h-full grid-cols-4 mx-auto">
         {navItems.map((item) => {
           const isRestricted = item.requiresAuth && !isAuthenticated;

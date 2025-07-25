@@ -118,26 +118,78 @@ body.scrollable-page {
   padding-bottom: 160px;
 }
 
-/* Mobile keyboard handling for create collaboration form */
+/* Fix bottom navigation to prevent it from moving above keyboard */
+nav[class*="fixed"][class*="bottom-0"] {
+  position: fixed !important;
+  bottom: 0 !important;
+  /* Use initial containing block and prevent adjustments */
+  transform: translateY(0) !important;
+  max-height: none !important;
+  min-height: auto !important;
+}
+
+/* Enhanced mobile keyboard handling */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific fixes */
+  nav[class*="fixed"][class*="bottom-0"] {
+    bottom: 0 !important;
+    bottom: calc(env(keyboard-inset-height, 0px) * -1) !important;
+    position: fixed !important;
+    z-index: 50 !important;
+  }
+}
+
+/* Universal mobile bottom navigation fixes */
+@media only screen and (max-width: 768px) {
+  nav[class*="fixed"][class*="bottom-0"] {
+    position: fixed !important;
+    bottom: 0px !important;
+    left: 0px !important;
+    right: 0px !important;
+    z-index: 50 !important;
+    /* Force hardware acceleration and prevent repositioning */
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+    /* Lock position to prevent iOS Safari adjustments */
+    contain: layout style paint !important;
+  }
+  
+  /* When virtual keyboard is detected, keep navigation at bottom */
+  body[data-keyboard-open="true"] nav[class*="fixed"][class*="bottom-0"] {
+    bottom: 0px !important;
+    transform: translate3d(0, 0, 0) !important;
+    visibility: hidden !important; /* Hide navigation when keyboard is open */
+  }
+  
+  /* Alternative: slide navigation down when keyboard is open */
+  body[data-keyboard-method="slide"] nav[class*="fixed"][class*="bottom-0"] {
+    transform: translateY(100%) !important;
+    transition: transform 0.3s ease !important;
+  }
+}
+
+/* Mobile keyboard handling for forms - keep content scrollable */
 @media only screen and (max-width: 768px) {
   .create-collaboration-container {
     min-height: 100vh;
-    padding-bottom: 180px; /* Extra padding for bottom nav + submit buttons */
+    padding-bottom: 120px; /* Space for bottom navigation */
   }
   
   .create-collaboration-form {
-    padding-bottom: 160px;
+    padding-bottom: 200px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
   
-  /* Ensure form buttons stay above bottom navigation */
+  /* Ensure form buttons don't conflict with bottom nav */
   .create-collaboration-buttons {
-    bottom: 100px; /* Position above bottom navigation */
-    z-index: 45; /* Between form content and bottom nav */
+    bottom: 100px;
+    z-index: 45;
   }
   
-  /* When virtual keyboard is open (viewport height changes) */
+  /* When keyboard is open, use normal flow */
   @media (max-height: 600px) {
     .create-collaboration-buttons {
       position: relative;

@@ -10,6 +10,7 @@ import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { MatchProvider } from "@/contexts/MatchContext";
 import { initTelegramButtonFix } from "./utils/telegram-button-fix";
 import { useTelegramInit } from "@/hooks/useTelegramInit";
+import { mobileKeyboardManager } from "./utils/mobile-keyboard";
 
 // Import RouteComponentProps type for proper router component typing
 import type { RouteComponentProps } from "wouter";
@@ -250,6 +251,10 @@ function App() {
     const cleanupButtonFix = initTelegramButtonFix();
     applyButtonFix();
     
+    // Initialize mobile keyboard manager to handle bottom navigation behavior
+    console.log('[App] Initializing mobile keyboard manager...');
+    // The mobileKeyboardManager is a singleton that automatically handles keyboard detection
+    
     // Check if Telegram is initialized
     if (!telegramInitialized) {
       console.warn('[App] Telegram WebApp initialization pending...');
@@ -265,6 +270,7 @@ function App() {
       if (typeof cleanupButtonFix === 'function') {
         cleanupButtonFix();
       }
+      // Mobile keyboard manager cleanup happens automatically
     };
   }, [telegramInitialized]);
   
