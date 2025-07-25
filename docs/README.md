@@ -23,6 +23,10 @@
 - **Search APIs** (`server/storage.optimized.ts`) - Optimized collaboration search with company data
 - **Requests APIs** (`server/storage.ts`) - Collaboration request management with company data
 
+### Backend Integration
+- **[API Reference](api/README.md)** - Complete API endpoint documentation
+- **[Webhook Integration](backend/webhook-integration.md)** - External webhook configuration and payload structure for collaboration creation
+
 ## Common Issues & Solutions
 
 ### Image Loading

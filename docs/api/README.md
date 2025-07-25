@@ -209,7 +209,10 @@ Searches for collaborations based on filter criteria.
 
 #### `POST /api/collaborations`
 
-Creates a new collaboration.
+Creates a new collaboration. Upon successful creation, automatically triggers:
+1. User notification via Telegram
+2. Admin notification via Telegram  
+3. Webhook notification to external services
 
 **Request Body:**
 ```json
@@ -219,6 +222,21 @@ Creates a new collaboration.
     // Collaboration-specific details
   },
   "description": "Collaboration description"
+}
+```
+
+**Webhook Integration:**
+When a collaboration is successfully created, a webhook is automatically sent to the configured endpoint with comprehensive collaboration and company details. See [Webhook Integration Documentation](../backend/webhook-integration.md) for complete payload structure and configuration details.
+
+#### `GET /api/test-webhook-alchemy`
+
+Test endpoint for webhook functionality. Sends a webhook with the latest Alchemy collaboration data to verify webhook integration.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Test webhook sent for Alchemy collaboration [collaboration-id]"
 }
 ```
 
