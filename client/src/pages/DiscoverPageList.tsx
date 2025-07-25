@@ -11,6 +11,7 @@ import AddNoteDialog from "../components/AddNoteDialog";
 import { SortByButton, type SortOption } from "../components/SortByButton";
 import { AddCollabBanner } from "../components/AddCollabBanner";
 import { CollabTypesBanner } from "../components/CollabTypesBanner";
+import { NetworkStatus } from "@/components/NetworkStatus";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useMatchContext } from "@/contexts/MatchContext";
@@ -566,6 +567,9 @@ export default function DiscoverPageList() {
           <div className="p-4 space-y-4">
             {/* Collab Types Banner */}
             <CollabTypesBanner />
+            
+            {/* Network Statistics */}
+            <NetworkStatus className="mb-4" />
             
             {allItems.map((item, index) => (
               <div key={`${item.isPotentialMatch ? 'match' : 'collab'}-${item.id}`}>

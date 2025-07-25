@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useLocation } from 'wouter';
 import { UserIcon, Users, Building, Star, Bell, Calendar, Plus, Settings, Clock } from 'lucide-react';
 import { FaLinkedin, FaTwitter } from 'react-icons/fa';
-import { NetworkStatus } from "@/components/NetworkStatus";
+
 import { PageHeader } from "../components/PageHeader";
 import type { 
   User as UserType, 
@@ -310,10 +310,7 @@ export default function Dashboard() {
           </CardHeader>
         </Card>
         
-        {/* Network Stats - Moved below notifications */}
-        <div className="my-8">
-          <NetworkStatus />
-        </div>
+
 
         {/* Footer with credits */}
         <div className="text-center pt-2 pb-8 text-sm text-muted-foreground">
