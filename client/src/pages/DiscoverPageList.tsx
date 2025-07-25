@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CollaborationListItem } from "../components/CollaborationListItem";
 import { CollaborationDetailsDialog } from "../components/CollaborationDetailsDialog";
+import { SignupToCollaborateDialog } from "../components/SignupToCollaborateDialog";
 import { AuthenticationPrompt } from "../components/AuthenticationPrompt";
 import { MatchMoment } from "../components/MatchMoment";
 import AddNoteDialog from "../components/AddNoteDialog";
@@ -93,6 +94,10 @@ export default function DiscoverPageList() {
   // State for note dialog
   const [showNoteDialog, setShowNoteDialog] = useState(false);
   const [selectedCollaboration, setSelectedCollaboration] = useState<CardData | null>(null);
+  
+  // State for signup dialog (moved from CollaborationDetailsDialog)
+  const [showSignupDialog, setShowSignupDialog] = useState(false);
+  const [signupCollaboration, setSignupCollaboration] = useState<CardData | null>(null);
   
   // Refs
   const initialLoadCompletedRef = useRef(false);
@@ -670,6 +675,11 @@ export default function DiscoverPageList() {
             handleRequestCollaboration(selectedCardDetails, selectedCardDetails.isPotentialMatch);
           }
         }}
+        onShowSignupDialog={() => {
+          // Store the collaboration for signup dialog and show it
+          setSignupCollaboration(selectedCardDetails);
+          setShowSignupDialog(true);
+        }}
         currentUserId={userProfile?.user?.id}
         isAuthenticated={isAuthenticated}
         collaboration={selectedCardDetails ? {
@@ -726,6 +736,21 @@ export default function DiscoverPageList() {
           collab_type: selectedCollaboration.type || selectedCollaboration.collab_type || '',
           description: selectedCollaboration.description
         } : undefined}
+      />
+
+      {/* Signup Dialog for non-authenticated users */}
+      <SignupToCollaborateDialog
+        open={showSignupDialog}
+        onOpenChange={(open) => {
+          setShowSignupDialog(open);
+          // When dialog closes, also clear the stored collaboration
+          if (!open) {
+            setSignupCollaboration(null);
+          }
+        }}
+        companyName={signupCollaboration?.creator_company_name || signupCollaboration?.companyName || "Company"}
+        companyLogoUrl={signupCollaboration?.company_logo_url || signupCollaboration?.company_data?.logo_url}
+        collaborationType={signupCollaboration?.type || signupCollaboration?.collab_type || "Collaboration"}
       />
     </div>
   );

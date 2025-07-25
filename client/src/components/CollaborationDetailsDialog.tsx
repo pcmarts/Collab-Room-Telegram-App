@@ -5,8 +5,6 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
-import { SignupToCollaborateDialog } from "@/components/SignupToCollaborateDialog";
-import { useState } from "react";
 import {
   Calendar,
   Globe,
@@ -40,6 +38,7 @@ interface CollaborationDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onRequestCollaboration?: () => void;
+  onShowSignupDialog?: () => void;
   currentUserId?: string;
   isAuthenticated?: boolean;
   collaboration?: {
@@ -103,11 +102,11 @@ export function CollaborationDetailsDialog({
   isOpen,
   onClose,
   onRequestCollaboration,
+  onShowSignupDialog,
   currentUserId,
   isAuthenticated = false,
   collaboration
 }: CollaborationDetailsDialogProps) {
-  const [showSignupDialog, setShowSignupDialog] = useState(false);
   
   if (!collaboration) return null;
   
@@ -463,8 +462,11 @@ export function CollaborationDetailsDialog({
                     onClick={(e) => {
                       e.stopPropagation();
                       if (!isAuthenticated) {
-                        // Show signup dialog for non-authenticated users
-                        setShowSignupDialog(true);
+                        // Trigger signup dialog via callback and close this dialog
+                        if (onShowSignupDialog) {
+                          onShowSignupDialog();
+                          onClose(); // Close details dialog
+                        }
                       } else {
                         // Call the collaboration request handler for authenticated users
                         if (onRequestCollaboration) {
@@ -652,24 +654,6 @@ export function CollaborationDetailsDialog({
           </div>
         </ScrollArea>
       </DialogContent>
-      
-      {/* Signup Dialog for non-authenticated users */}
-      <SignupToCollaborateDialog
-        open={showSignupDialog}
-        onOpenChange={(open) => {
-          setShowSignupDialog(open);
-          // When signup dialog closes without signup (user cancels), close the parent details dialog
-          if (!open) {
-            // Set a small delay to ensure the signup dialog closes first
-            setTimeout(() => {
-              onClose();
-            }, 100);
-          }
-        }}
-        companyName={companyName}
-        companyLogoUrl={collaboration.company_logo_url || companyData.logo_url}
-        collaborationType={collabType}
-      />
     </Dialog>
   );
 }
