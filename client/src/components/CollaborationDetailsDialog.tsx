@@ -183,8 +183,56 @@ export function CollaborationDetailsDialog({
                   <span>{companyName}</span>
                 </h3>
                 
-                {/* Request button - show for non-own collaborations */}
-                {!isOwnCollaboration && (
+                {/* Collaboration Type as larger Badge - moved to top right */}
+                <div>
+                  {collabType?.includes('Twitter Co-Marketing') || collabType?.includes('Co-Marketing on Twitter') ? (
+                    <Badge variant="outline" className="text-sm px-3 py-1.5 bg-blue-500/10 border-blue-500/20 text-blue-700">
+                      <Twitter className="w-4 h-4 mr-2" />
+                      Twitter Co-Marketing
+                    </Badge>
+                  ) : collabType === 'Twitter Spaces Guest' ? (
+                    <Badge variant="outline" className="text-sm px-3 py-1.5 bg-blue-500/10 border-blue-500/20 text-blue-700">
+                      <Twitter className="w-4 h-4 mr-2" />
+                      Twitter Spaces Guest
+                    </Badge>
+                  ) : collabType === 'Podcast Guest Appearance' ? (
+                    <Badge variant="outline" className="text-sm px-3 py-1.5 bg-purple-500/10 border-purple-500/20 text-purple-700">
+                      <Mic className="w-4 h-4 mr-2" />
+                      Podcast Guest Appearance
+                    </Badge>
+                  ) : collabType === 'Live Stream Guest Appearance' ? (
+                    <Badge variant="outline" className="text-sm px-3 py-1.5 bg-red-500/10 border-red-500/20 text-red-700">
+                      <Video className="w-4 h-4 mr-2" />
+                      {collabType}
+                    </Badge>
+                  ) : collabType === 'Blog Post Feature' ? (
+                    <Badge variant="outline" className="text-sm px-3 py-1.5 bg-emerald-500/10 border-emerald-500/20 text-emerald-700">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Blog Post Feature
+                    </Badge>
+                  ) : collabType === 'Newsletter Feature' ? (
+                    <Badge variant="outline" className="text-sm px-3 py-1.5 bg-indigo-500/10 border-indigo-500/20 text-indigo-700">
+                      <Mail className="w-4 h-4 mr-2" />
+                      Newsletter Feature
+                    </Badge>
+                  ) : collabType === 'Report & Research Feature' ? (
+                    <Badge variant="outline" className="text-sm px-3 py-1.5 bg-amber-500/10 border-amber-500/20 text-amber-700">
+                      <FileSearch className="w-4 h-4 mr-2" />
+                      Report & Research Feature
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-sm px-3 py-1.5">
+                      {collabType}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              
+              <Separator className="mb-4" />
+              
+              {/* Request button - moved below separator */}
+              {!isOwnCollaboration && (
+                <div className="mb-4">
                   <Button
                     size="sm"
                     onClick={(e) => {
@@ -205,54 +253,8 @@ export function CollaborationDetailsDialog({
                     <MessageSquare className="w-4 h-4 mr-1" />
                     Request
                   </Button>
-                )}
-              </div>
-              
-              <Separator className="mb-4" />
-              
-              {/* Collaboration Type as larger Badge - single display */}
-              <div className="mb-4">
-                {collabType?.includes('Twitter Co-Marketing') || collabType?.includes('Co-Marketing on Twitter') ? (
-                  <Badge variant="outline" className="text-sm px-3 py-1.5 bg-blue-500/10 border-blue-500/20 text-blue-700">
-                    <Twitter className="w-4 h-4 mr-2" />
-                    Twitter Co-Marketing
-                  </Badge>
-                ) : collabType === 'Twitter Spaces Guest' ? (
-                  <Badge variant="outline" className="text-sm px-3 py-1.5 bg-blue-500/10 border-blue-500/20 text-blue-700">
-                    <Twitter className="w-4 h-4 mr-2" />
-                    Twitter Spaces Guest
-                  </Badge>
-                ) : collabType === 'Podcast Guest Appearance' ? (
-                  <Badge variant="outline" className="text-sm px-3 py-1.5 bg-purple-500/10 border-purple-500/20 text-purple-700">
-                    <Mic className="w-4 h-4 mr-2" />
-                    Podcast Guest Appearance
-                  </Badge>
-                ) : collabType === 'Live Stream Guest Appearance' ? (
-                  <Badge variant="outline" className="text-sm px-3 py-1.5 bg-red-500/10 border-red-500/20 text-red-700">
-                    <Video className="w-4 h-4 mr-2" />
-                    {collabType}
-                  </Badge>
-                ) : collabType === 'Blog Post Feature' ? (
-                  <Badge variant="outline" className="text-sm px-3 py-1.5 bg-emerald-500/10 border-emerald-500/20 text-emerald-700">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Blog Post Feature
-                  </Badge>
-                ) : collabType === 'Newsletter Feature' ? (
-                  <Badge variant="outline" className="text-sm px-3 py-1.5 bg-indigo-500/10 border-indigo-500/20 text-indigo-700">
-                    <Mail className="w-4 h-4 mr-2" />
-                    Newsletter Feature
-                  </Badge>
-                ) : collabType === 'Report & Research Feature' ? (
-                  <Badge variant="outline" className="text-sm px-3 py-1.5 bg-amber-500/10 border-amber-500/20 text-amber-700">
-                    <FileSearch className="w-4 h-4 mr-2" />
-                    Report & Research Feature
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="text-sm px-3 py-1.5">
-                    {collabType}
-                  </Badge>
-                )}
-              </div>
+                </div>
+              )}
                 
               {/* Description */}
               <p className="text-sm text-muted-foreground mb-3">{description}</p>
