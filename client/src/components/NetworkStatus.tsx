@@ -16,7 +16,7 @@ interface NetworkStatsData {
 
 export function NetworkStatus({ className = "" }: NetworkStatusProps) {
   const { data: networkStats, isLoading } = useQuery<NetworkStatsData>({
-    queryKey: ['/api/network-stats'],
+    queryKey: ["/api/network-stats"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     // No automatic refetching - will only fetch on component mount
     refetchInterval: false,
@@ -39,7 +39,9 @@ export function NetworkStatus({ className = "" }: NetworkStatusProps) {
 
   return (
     <div className={`${className} border-t border-b py-3 border-border/50`}>
-      <h3 className="text-sm font-medium mb-2 text-muted-foreground">Network Statistics</h3>
+      <h3 className="text-sm font-medium mb-2 text-muted-foreground">
+        Live Stats
+      </h3>
       <div className="flex justify-between text-sm">
         <div className="flex items-center">
           <Users className="h-3.5 w-3.5 mr-1.5 text-foreground" />
@@ -48,7 +50,9 @@ export function NetworkStatus({ className = "" }: NetworkStatusProps) {
         </div>
         <div className="flex items-center">
           <Zap className="h-3.5 w-3.5 mr-1.5 text-foreground" />
-          <span className="font-medium">{networkStats?.collaborations ?? 0}</span>
+          <span className="font-medium">
+            {networkStats?.collaborations ?? 0}
+          </span>
           <span className="ml-1 text-muted-foreground text-xs">collabs</span>
         </div>
         <div className="flex items-center">
