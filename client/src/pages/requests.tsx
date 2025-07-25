@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Loader2 } from "lucide-react";
@@ -53,8 +54,37 @@ export default function RequestsPage() {
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
-  // Use the requests data directly
-  const requestGroups = requestsData?.requests || [];
+  // Transform the flat requests array into grouped format expected by RequestsManagementTab
+  const requestGroups = React.useMemo(() => {
+    if (!requestsData?.requests) {
+      return [];
+    }
+
+    // Group requests by collaboration_id
+    const groupsMap = new Map();
+    
+    requestsData.requests.forEach((request: any) => {
+      const collabId = request.collaboration?.id || request.collaboration_id;
+      
+      if (!groupsMap.has(collabId)) {
+        groupsMap.set(collabId, {
+          collaboration: {
+            id: collabId,
+            title: request.collaboration?.title || request.collaboration_type || 'Collaboration',
+            type: request.collaboration?.type || request.collaboration_type,
+            description: request.collaboration?.description,
+            topics: request.collaboration?.topics || [],
+            created_at: request.collaboration?.created_at || new Date().toISOString()
+          },
+          requests: []
+        });
+      }
+      
+      groupsMap.get(collabId).requests.push(request);
+    });
+    
+    return Array.from(groupsMap.values());
+  }, [requestsData?.requests]);
 
 
 
