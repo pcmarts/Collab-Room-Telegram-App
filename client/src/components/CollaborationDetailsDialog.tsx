@@ -229,32 +229,6 @@ export function CollaborationDetailsDialog({
               </div>
               
               <Separator className="mb-4" />
-              
-              {/* Request button - moved below separator */}
-              {!isOwnCollaboration && (
-                <div className="mb-4">
-                  <Button
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!isAuthenticated) {
-                        // Show signup dialog for non-authenticated users
-                        setShowSignupDialog(true);
-                      } else {
-                        // Call the collaboration request handler for authenticated users
-                        if (onRequestCollaboration) {
-                          onRequestCollaboration();
-                          onClose(); // Close dialog after requesting
-                        }
-                      }
-                    }}
-                    className="bg-primary hover:bg-primary/90 text-white px-4"
-                  >
-                    <MessageSquare className="w-4 h-4 mr-1" />
-                    Request
-                  </Button>
-                </div>
-              )}
                 
               {/* Description */}
               <p className="text-sm text-muted-foreground mb-3">{description}</p>
@@ -455,6 +429,32 @@ export function CollaborationDetailsDialog({
                   <Badge variant={collabData.status === 'active' ? 'default' : 'secondary'} className="text-xs">
                     {collabData.status}
                   </Badge>
+                </div>
+              )}
+              
+              {/* Request button - moved to bottom of collaboration details */}
+              {!isOwnCollaboration && (
+                <div className="mt-6 pt-4 border-t border-border/50">
+                  <Button
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isAuthenticated) {
+                        // Show signup dialog for non-authenticated users
+                        setShowSignupDialog(true);
+                      } else {
+                        // Call the collaboration request handler for authenticated users
+                        if (onRequestCollaboration) {
+                          onRequestCollaboration();
+                          onClose(); // Close dialog after requesting
+                        }
+                      }
+                    }}
+                    className="bg-primary hover:bg-primary/90 text-white px-4 w-full"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-1" />
+                    Request Collaboration
+                  </Button>
                 </div>
               )}
             </Card>
