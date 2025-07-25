@@ -6,7 +6,7 @@
  * Trigger haptic feedback for button presses
  * @param type The type of haptic feedback to trigger
  */
-export const triggerHapticFeedback = (type: 'impact' | 'notification' | 'selection' = 'impact') => {
+export const triggerHapticFeedback = (type: 'impact' | 'notification' | 'selection' | 'light' = 'impact') => {
   // Check if Telegram WebApp and HapticFeedback is available
   if (!window.Telegram?.WebApp?.HapticFeedback) {
     console.log('Haptic feedback not available in this environment');
@@ -25,6 +25,9 @@ export const triggerHapticFeedback = (type: 'impact' | 'notification' | 'selecti
         break;
       case 'selection':
         haptic.selectionChanged();
+        break;
+      case 'light':
+        haptic.impactOccurred('light');
         break;
       default:
         haptic.impactOccurred('medium');

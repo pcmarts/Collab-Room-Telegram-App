@@ -119,6 +119,13 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 25, 2025. **COMPLETED**: Enhanced haptic feedback system across all UI components for better mobile experience
+  - Extended haptic feedback to all interactive UI elements throughout the app
+  - Added light haptic feedback ('light' intensity) to buttons, tabs, switches, checkboxes, radio buttons, and select dropdowns
+  - Enhanced Telegram WebApp integration with graceful fallbacks for non-Telegram environments
+  - Optimized haptics utility with new 'light' feedback type for subtle, comfortable user interaction
+  - All button presses, form interactions, and navigation actions now provide gentle tactile feedback
+  - Comprehensive coverage ensures consistent mobile user experience across entire application
 - July 25, 2025. **COMPLETED**: Removed dark splash screen and simplified loading experience
   - Removed dark background HTML splash screen with CollabRoom logo from index.html
   - Simplified HTML initial setup to minimal reset styles only

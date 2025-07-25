@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { triggerHapticFeedback } from "@/lib/haptics";
 
 interface TelegramButtonProps extends ButtonProps {
   isLoading?: boolean;
@@ -76,12 +77,22 @@ export function TelegramButton({
     return () => clearTimeout(timeout);
   }, [disabled]);
   
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    // Trigger light haptic feedback on button press
+    triggerHapticFeedback('light')
+    
+    // Call the original onClick handler if provided
+    if (onClick) {
+      onClick(event)
+    }
+  }
+
   return (
     <button
       ref={buttonRef}
       type={type as "button" | "submit" | "reset"}
       disabled={disabled}
-      onClick={onClick}
+      onClick={handleClick}
       className={`w-full text-center py-3 px-4 rounded font-bold telegram-button ${className}`}
       style={{
         // Initial inline styles - will be reinforced by the useEffect
