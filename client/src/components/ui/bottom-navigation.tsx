@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "wouter"
-import { User, MessageSquare, FolderPlus, Users } from "lucide-react"
+import { User, MessageSquare, FolderPlus, Users, Inbox } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DiscoveryIcon } from "@/components/icons/DiscoveryIcon"
 import { Badge } from "@/components/ui/badge"
@@ -98,13 +98,13 @@ const BottomNavigation = () => {
       icon: FolderPlus,
       href: "/my-collaborations",
       requiresAuth: true,
-      notificationCount: collaborationRequestsCount
     },
     {
-      label: "My Account",
-      icon: User,
-      href: "/dashboard",
+      label: "Requests",
+      icon: Inbox,
+      href: "/requests",
       requiresAuth: true,
+      notificationCount: collaborationRequestsCount
     },
     {
       label: "My Matches",

@@ -52,11 +52,9 @@ export function SortByButton({ currentSort, onSortChange, className = "" }: Sort
           className={`gap-2 ${className}`}
         >
           <ArrowUpDown className="h-4 w-4" />
-          <span className="hidden sm:inline">Sort by</span>
-          <span className="sm:hidden">Sort</span>
           {currentOption && (
             <span className="hidden md:inline text-muted-foreground">
-              • {currentOption.label}
+              {currentOption.label}
             </span>
           )}
         </Button>

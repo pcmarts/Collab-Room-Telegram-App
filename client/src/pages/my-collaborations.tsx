@@ -39,10 +39,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { GlowButton } from "@/components/GlowButton";
 
-import { RequestsManagementTab } from "@/components/requests-management-tab";
+
 import {
   Dialog,
   DialogContent,
@@ -56,68 +56,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { MobileCheck } from "@/components/MobileCheck";
 
-// Transform requests from API to the grouped format expected by RequestsManagementTab
-function transformRequestsToGroups(requests: any[]): any[] {
-  const groups: { [key: string]: any } = {};
-  
-  requests.forEach(request => {
-    const collabId = request.collaboration_id;
-    
-    if (!groups[collabId]) {
-      groups[collabId] = {
-        collaboration: {
-          id: collabId,
-          title: request.collaboration_type, // Use type as title to avoid duplication
-          type: request.collaboration_type,
-          description: request.collaboration_description,
-          topics: [], // Topics not provided in this API response
-          created_at: request.created_at
-        },
-        requests: []
-      };
-    }
-    
-    groups[collabId].requests.push({
-      id: request.request_id,
-      requester: {
-        id: request.requester_id,
-        first_name: request.requester_first_name,
-        last_name: request.requester_last_name,
-        twitter_url: request.requester_twitter_url,
-        avatar_url: null
-      },
-      company: {
-        name: request.company_name,
-        twitter_handle: request.company_twitter_handle,
-        job_title: request.requester_job_title,
-        website: request.company_website,
-        logo_url: request.company_logo_url,
-        short_description: request.company_short_description,
-        long_description: request.company_long_description,
-        linkedin_url: request.company_linkedin_url,
-        funding_stage: request.company_funding_stage,
-        has_token: request.company_has_token,
-        token_ticker: request.company_token_ticker,
-        blockchain_networks: request.company_blockchain_networks,
-        twitter_followers: request.company_twitter_followers,
-        tags: request.company_tags,
-        created_at: request.created_at
-      },
-      note: request.note,
-      created_at: request.created_at,
-      collaboration: {
-        id: collabId,
-        title: request.collaboration_type, // Use type as title to avoid duplication
-        type: request.collaboration_type,
-        description: request.collaboration_description,
-        topics: [],
-        created_at: request.created_at
-      }
-    });
-  });
-  
-  return Object.values(groups);
-}
+
 
 // We're using PageHeader imported at the top of the file
 import {
@@ -202,8 +141,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   // State to control the preloaded component visibility
   const [showCreateCollab, setShowCreateCollab] = useState(false);
   
-  // Tab state for managing different views
-  const [activeTab, setActiveTab] = useState('overview');
+
   
   // State for highlighting newly created collaborations
   const [highlightedCollabId, setHighlightedCollabId] = useState<string | null>(null);
@@ -314,8 +252,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   const [processingApplicationId, setProcessingApplicationId] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   
-  // Requests filter state
-  const [requestsFilter, setRequestsFilter] = useState<'all' | 'hidden'>('all');
+
   
   // Prefetch strategy: Start loading most important data first
   // Fetch user's collaborations with optimized options
@@ -383,54 +320,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     staleTime: Infinity
   });
 
-  // Fetch collaboration requests summary for the summary card
-  const { data: requestsSummary } = useQuery({
-    queryKey: ['/api/collaboration-requests/summary'],
-    queryFn: async () => {
-      try {
-        const data = await apiRequest('/api/collaboration-requests/summary');
-        return data;
-      } catch (error) {
-        console.error("Error fetching requests summary:", error);
-        return { totalPendingCount: 0 };
-      }
-    },
-    enabled: !isLoadingCollabs,
-    staleTime: 5 * 60 * 1000 // 5 minutes
-  });
 
-  // Fetch full collaboration requests for the management tab
-  const { data: requestsData, isLoading: isLoadingRequests, refetch: refetchRequests } = useQuery({
-    queryKey: ['/api/collaboration-requests', requestsFilter],
-    queryFn: async () => {
-      try {
-        const data = await apiRequest(`/api/collaboration-requests?filter=${requestsFilter}`);
-        return data;
-      } catch (error) {
-        console.error("Error fetching collaboration requests:", error);
-        return { requests: [], hasMore: false };
-      }
-    },
-    enabled: activeTab === 'requests', // Load when requests tab is active
-    staleTime: 5 * 60 * 1000 // 5 minutes
-  });
-
-  // Transform the flat requests array into grouped format expected by the component
-  const requestGroups = requestsData?.requests ? transformRequestsToGroups(requestsData.requests) : [];
-
-  // Handle tab changes to load requests data when needed
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    if (value === 'requests' && !requestsData) {
-      refetchRequests();
-    }
-  };
-
-  // Handle filter changes and refetch requests
-  const handleFilterChange = (newFilter: 'all' | 'hidden') => {
-    setRequestsFilter(newFilter);
-    refetchRequests();
-  };
   
   // Handle approving an application
   const handleApproveApplication = async (applicationId: string) => {
@@ -1196,128 +1086,97 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         />
         
         <div className="container mx-auto py-4 px-4">
-          {/* Tab Navigation */}
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="requests">
-                Requests
-                {requestsSummary && requestsSummary.totalPendingCount > 0 && (
-                  <Badge className="ml-2 h-5 w-5 rounded-full p-0 text-xs bg-primary text-primary-foreground flex items-center justify-center">
-                    {requestsSummary.totalPendingCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="mt-6">
-              {isLoadingCollabs ? (
-                renderSkeletons()
-              ) : collaborations && collaborations.length > 0 ? (
-                <div>
-                  <div className="my-8 py-4 flex justify-center">
-                    <GlowButton 
-                      onClick={handleNavigateToCreateCollab}
-                      className="w-full max-w-md py-6"
-                    >
-                      Create New Collab
-                    </GlowButton>
-                  </div>
-                  {collaborations.map(collab => renderCollaborationCard(collab))}
+          {/* Main Content - Overview */}
+          <div className="mt-6">
+            {isLoadingCollabs ? (
+              renderSkeletons()
+            ) : collaborations && collaborations.length > 0 ? (
+              <div>
+                <div className="my-8 py-4 flex justify-center">
+                  <GlowButton 
+                    onClick={handleNavigateToCreateCollab}
+                    className="w-full max-w-md py-6"
+                  >
+                    Create New Collab
+                  </GlowButton>
                 </div>
-              ) : (
-                <div className="text-center pt-4 pb-4 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
-              {/* Collaboration Steps Section */}
-              <div className="mb-4 text-left">
-                <h3 className="text-base font-medium mb-2 pl-2">How Collaborations Work</h3>
-                <div className="flex flex-col gap-4">
-                  {/* Step 1 */}
-                  <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                    <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
-                      <span className="font-bold text-xl text-primary-foreground">1</span>
-                      <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
-                    </div>
-                    <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                      <h4 className="font-medium text-sm">Create Your Collab</h4>
-                      <p className="text-xs text-muted-foreground">
-                        Choose from Twitter Collabs, reports, newsletters, podcasts, etc.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Step 2 */}
-                  <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                    <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
-                      <span className="font-bold text-xl text-primary-foreground">2</span>
-                      <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
-                    </div>
-                    <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                      <h4 className="font-medium text-sm">Approve or Pass Collab Requests</h4>
-                      <p className="text-xs text-muted-foreground">
-                        You'll be notified when others request to join your collab.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Step 3 */}
-                  <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
-                    <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
-                      <span className="font-bold text-xl text-primary-foreground">3</span>
-                      <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
-                    </div>
-                    <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                      <h4 className="font-medium text-sm">Chat with Your New Match</h4>
-                      <p className="text-xs text-muted-foreground">
-                        You'll be able to chat directly in Telegram with your new collaborator.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                {collaborations.map(collab => renderCollaborationCard(collab))}
               </div>
-              
-              {/* Bottom CTA Button */}
-              <Button 
-                onClick={handleNavigateToCreateCollab}
-                className="w-full max-w-xs py-3 mx-auto mb-6 bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Create Your First Collab
-              </Button>
-              
-              {/* Privacy Section */}
-              <div className="flex flex-col items-center">
-                <div className="flex items-stretch border border-muted-foreground/10 rounded-lg overflow-hidden">
-                  <div className="bg-yellow-500/65 flex-shrink-0 w-14 flex items-center justify-center">
-                    <span className="text-white"><Lock size={18} /></span>
+            ) : (
+              <div className="text-center pt-4 pb-4 px-4 border rounded-xl shadow-sm bg-gradient-to-b from-background to-muted/20">
+            {/* Collaboration Steps Section */}
+            <div className="mb-4 text-left">
+              <h3 className="text-base font-medium mb-2 pl-2">How Collaborations Work</h3>
+              <div className="flex flex-col gap-4">
+                {/* Step 1 */}
+                <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
+                  <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
+                    <span className="font-bold text-xl text-primary-foreground">1</span>
+                    <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
                   </div>
                   <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                    <p className="text-xs flex flex-col gap-1">
-                      <strong>PRIVACY FIRST</strong>
-                      <span className="text-muted-foreground">Contact details shared only upon successful match. Anyone you passed on won't be notified.</span>
+                    <h4 className="font-medium text-sm">Create Your Collab</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Choose from Twitter Collabs, reports, newsletters, podcasts, etc.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Step 2 */}
+                <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
+                  <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
+                    <span className="font-bold text-xl text-primary-foreground">2</span>
+                    <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
+                  </div>
+                  <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
+                    <h4 className="font-medium text-sm">Approve or Pass Collab Requests</h4>
+                    <p className="text-xs text-muted-foreground">
+                      You'll be notified when others request to join your collab.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Step 3 */}
+                <div className="flex items-start border border-muted-foreground/10 rounded-lg overflow-hidden">
+                  <div className="bg-primary/65 flex-shrink-0 w-14 h-full min-h-[4rem] flex items-center justify-center relative">
+                    <span className="font-bold text-xl text-primary-foreground">3</span>
+                    <div className="absolute right-0 w-3 h-3 bg-primary/65 rotate-45 translate-x-1/2"></div>
+                  </div>
+                  <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
+                    <h4 className="font-medium text-sm">Chat with Your New Match</h4>
+                    <p className="text-xs text-muted-foreground">
+                      You'll be able to chat directly in Telegram with your new collaborator.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-              )}
-            </TabsContent>
-
-            {/* Requests Tab */}
-            <TabsContent value="requests" className="mt-6">
-              <RequestsManagementTab
-                requestGroups={requestGroups || []}
-                isLoading={isLoadingRequests}
-                onLoadMore={() => {
-                  // TODO: Implement pagination for requests
-                }}
-                hasMore={requestsData?.hasMore || false}
-                filter={requestsFilter}
-                onFilterChange={handleFilterChange}
-              />
-            </TabsContent>
-
-
-          </Tabs>
+            
+            {/* Bottom CTA Button */}
+            <Button 
+              onClick={handleNavigateToCreateCollab}
+              className="w-full max-w-xs py-3 mx-auto mb-6 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Create Your First Collab
+            </Button>
+            
+            {/* Privacy Section */}
+            <div className="flex flex-col items-center">
+              <div className="flex items-stretch border border-muted-foreground/10 rounded-lg overflow-hidden">
+                <div className="bg-yellow-500/65 flex-shrink-0 w-14 flex items-center justify-center">
+                  <span className="text-white"><Lock size={18} /></span>
+                </div>
+                <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
+                  <p className="text-xs flex flex-col gap-1">
+                    <strong>PRIVACY FIRST</strong>
+                    <span className="text-muted-foreground">Contact details shared only upon successful match. Anyone you passed on won't be notified.</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+            )}
+          </div>
           
           {/* Application Details Dialog */}
           <Dialog open={applicationDialogOpen} onOpenChange={setApplicationDialogOpen}>

@@ -47,6 +47,7 @@ const NotFound = lazy(() => import("@/pages/not-found"));
 const AdminApplications = lazy(() => import("@/pages/admin/applications"));
 const AdminReferralsPage = lazy(() => import("@/pages/admin/referrals"));
 const ReferralsPage = lazy(() => import("@/pages/referrals"));
+const RequestsPage = lazy(() => import("@/pages/requests"));
 
 // Lazy load filter sub-pages
 const FiltersDashboard = lazy(() => import("@/pages/filters/dashboard"));
@@ -64,7 +65,7 @@ const BlockchainNetworksFilter = lazy(() => import("@/pages/filters/blockchain-n
 const MyCollaborations = (props: RouteComponentProps) => <MyCollaborationsComponent />;
 
 // Navigation routes that are preloaded
-const PRELOADED_ROUTES = ['/discover', '/my-collaborations', '/dashboard', '/matches'];
+const PRELOADED_ROUTES = ['/discover', '/my-collaborations', '/requests', '/matches'];
 
 // Minimal loading fallback for preloaded routes
 const MinimalLoadingFallback = () => (
@@ -140,6 +141,7 @@ function Router() {
             {/* New Tab Routes */}
             <Route path="/discover" component={DiscoverPage} />
             <Route path="/my-collaborations" component={MyCollaborations} />
+            <Route path="/requests" component={RequestsPage} />
             <Route path="/matches" component={MatchesPage} />
             <Route path="/settings">
               <Redirect to="/dashboard" />

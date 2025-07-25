@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Loader2, Filter, SearchX, RefreshCw, Settings, UserPlus } from "lucide-react";
+import { Loader2, Filter, SearchX, RefreshCw, Settings, UserPlus, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CollaborationListItem } from "../components/CollaborationListItem";
@@ -520,6 +520,12 @@ export default function DiscoverPageList() {
             currentSort={sortBy}
             onSortChange={handleSortChange}
           />
+          {/* Show Account button for authenticated users */}
+          {isAuthenticated && (
+            <Button variant="outline" size="sm" onClick={() => setLocation('/dashboard')}>
+              <UserCircle className="w-4 h-4" />
+            </Button>
+          )}
           {/* Show Sign Up button for non-authenticated users */}
           {!isAuthenticated && (
             <Button variant="default" size="sm" onClick={handleAuthenticationPrompt}>
