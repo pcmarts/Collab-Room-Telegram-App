@@ -221,7 +221,7 @@ export function CollaborationListItem({
               >
                 <MessageSquare className="w-3 h-3 flex-shrink-0" />
                 <span className="truncate">
-                  {isApplicationPending ? "Application Pending" : "Request Collaboration"}
+                  {isApplicationPending ? "Application Pending" : "Request"}
                 </span>
               </Button>
             )}
