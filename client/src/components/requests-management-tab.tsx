@@ -310,7 +310,18 @@ export function RequestsManagementTab({
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="font-medium">
-                        {request.requester.first_name} {request.requester.last_name || ''}
+                        {request.requester.twitter_url ? (
+                          <a 
+                            href={request.requester.twitter_url}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            {request.requester.first_name} {request.requester.last_name || ''}
+                          </a>
+                        ) : (
+                          <span>{request.requester.first_name} {request.requester.last_name || ''}</span>
+                        )}
                       </h4>
                       <p className="text-sm text-muted-foreground">
                         {request.company.job_title} at {request.company.twitter_handle ? (
