@@ -216,7 +216,7 @@ export function CollaborationListItem({
                 className={`flex items-center gap-1 text-xs px-2 py-1 h-auto min-w-0 flex-shrink-0 ${
                   isApplicationPending
                     ? "bg-gray-100 text-gray-500 cursor-not-allowed opacity-60"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-[#4034B9] hover:bg-[#4034B9]/90 text-white"
                 }`}
               >
                 <MessageSquare className="w-3 h-3 flex-shrink-0" />
@@ -234,7 +234,7 @@ export function CollaborationListItem({
                   e.stopPropagation();
                   setShowSignupDialog(true);
                 }}
-                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-blue-600 hover:bg-blue-700 text-white min-w-0 flex-shrink-0"
+                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-[#4034B9] hover:bg-[#4034B9]/90 text-white min-w-0 flex-shrink-0"
               >
                 <MessageSquare className="w-3 h-3 flex-shrink-0" />
                 <span className="truncate">Request</span>
