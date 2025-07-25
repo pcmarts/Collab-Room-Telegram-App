@@ -268,8 +268,7 @@ export function RequestsManagementTab({
   return (
     <div className="space-y-6">
       {/* Filter Header - Always visible */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Collaboration Requests</h2>
+      <div className="flex items-center justify-end">
         <Tabs value={filter} onValueChange={(value) => onFilterChange(value as any)} className="w-auto">
           <TabsList>
             <TabsTrigger value="all">All</TabsTrigger>
