@@ -258,6 +258,8 @@ export const users = pgTable("users", {
   return {
     // Index for users.id since it's frequently used in joins with other tables
     userIdIdx: index("user_id_idx").on(table.id),
+    // Index for telegram_id since it's the primary lookup field for Telegram bot interactions
+    telegramIdIdx: index("telegram_id_idx").on(table.telegram_id),
   };
 });
 

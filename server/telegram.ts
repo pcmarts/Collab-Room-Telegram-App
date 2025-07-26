@@ -321,14 +321,55 @@ bot.on("message", async (msg) => {
 // Register command handlers - capture the referral code if present
 bot.onText(/\/start(?:\s+(.+))?/, handleStart);
 
+// Simple cache for referral lookups and user data to reduce database hits
+const referralCache = new Map<string, any>();
+const userCache = new Map<string, any>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Periodic cache cleanup to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  referralCache.forEach((value, key) => {
+    if (now - value.timestamp > CACHE_TTL) {
+      referralCache.delete(key);
+    }
+  });
+  userCache.forEach((value, key) => {
+    if (now - value.timestamp > CACHE_TTL) {
+      userCache.delete(key);
+    }
+  });
+}, CACHE_TTL); // Run cleanup every 5 minutes
+
+// Pre-built keyboard configurations for faster response
+const KEYBOARDS = {
+  newUser: (url: string) => ({
+    inline_keyboard: [
+      [{ text: "Launch Collab Room", web_app: { url } }]
+    ]
+  }),
+  approvedUser: {
+    inline_keyboard: [
+      [{ text: "🚀 Launch Collab Room", web_app: { url: `${WEBAPP_URL}/discover` } }],
+      [{ text: "📣 Announcements", url: "https://t.me/TheMarketingDAO" }]
+    ]
+  },
+  pendingUser: {
+    inline_keyboard: [
+      [{ text: "View Application Status", web_app: { url: `${WEBAPP_URL}/application-status` } }],
+      [{ text: "📣 Join Announcement Channel", url: "https://t.me/TheMarketingDAO" }]
+    ]
+  }
+};
+
 // Register command handlers first
 async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | null) {
   const chatId = msg.chat.id;
   const telegramId = msg.from?.id.toString();
   // Extract referral code from the message if present
   const referralParam = match && match[1] ? match[1].trim() : null;
-  let referralCode = null;
-  let referrerDetails = null;
+  let referralCode: string | null = null;
+  let referrerDetails: any = null;
 
   try {
     if (!telegramId) {
@@ -337,74 +378,94 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
 
     console.log(`[START] User ${telegramId} started bot with param: ${referralParam || 'none'}`);
     
-    // Check if the parameter is a referral code
-    // Handle both formats: with 'r_' prefix and without prefix (direct telegram_id_randomstring format)
+    // Process referral code efficiently
     if (referralParam) {
       if (referralParam.startsWith('r_')) {
         referralCode = referralParam.substring(2); // Remove 'r_' prefix
       } else if (referralParam.includes('_')) {
-        // If it has an underscore but no prefix, it's likely a direct referral code
         referralCode = referralParam;
       }
-      console.log(`[REFERRAL] Found referral code: ${referralCode}`);
       
-      // Look up the referrer by referral code
-      // Parse the telegram_id from the referral code (format: telegram_id_random_string)
-      // Ensure referralCode contains at least one underscore
       if (referralCode && referralCode.includes('_')) {
-        // Extract the Telegram ID from the code
-        // For code format: telegramId_randomString, use index 0
-        // For code format: r_telegramId_randomString, we already removed the r_ prefix
         const telegramIdFromCode = referralCode.split('_')[0];
-        console.log(`[REFERRAL] Extracted Telegram ID from code: ${telegramIdFromCode}`);
-      
-        // First try to look up user by the embedded telegram_id in the code
-        const [referrerUser] = await db
-          .select({
-            id: users.id,
-            first_name: users.first_name,
-            last_name: users.last_name
-          })
-          .from(users)
-          .where(eq(users.telegram_id, telegramIdFromCode));
+        console.log(`[REFERRAL] Processing referral from Telegram ID: ${telegramIdFromCode}`);
         
-        if (referrerUser) {
-          // If found, get company info
-          let companyName = null;
-          
-          // Look up company by user_id since the relationship is user -> company
-          const companyResults = await db
-            .select({
-              name: companies.name
-            })
-            .from(companies)
-            .where(eq(companies.user_id, referrerUser.id));
-              
-          if (companyResults && companyResults.length > 0) {
-            companyName = companyResults[0].name;
-          }
-              
-          referrerDetails = {
-            id: referrerUser.id,
-            first_name: referrerUser.first_name,
-            last_name: referrerUser.last_name || '',
-            company_name: companyName
-          };
-          
-          console.log(`[REFERRAL] Found referrer: ${referrerDetails.first_name} ${referrerDetails.last_name}`);
+        // Check cache first
+        const cacheKey = `referrer_${telegramIdFromCode}`;
+        const cached = referralCache.get(cacheKey);
+        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+          referrerDetails = cached.data;
+          console.log(`[REFERRAL] Using cached referrer data`);
         } else {
-          console.log(`[REFERRAL] Invalid referral code: ${referralCode}`);
+          // Single optimized query with JOIN to get user and company data together
+          const referrerData = await db
+            .select({
+              id: users.id,
+              first_name: users.first_name,
+              last_name: users.last_name,
+              company_name: companies.name
+            })
+            .from(users)
+            .leftJoin(companies, eq(companies.user_id, users.id))
+            .where(eq(users.telegram_id, telegramIdFromCode))
+            .limit(1);
+          
+          if (referrerData.length > 0) {
+            const referrer = referrerData[0];
+            referrerDetails = {
+              id: referrer.id,
+              first_name: referrer.first_name,
+              last_name: referrer.last_name || '',
+              company_name: referrer.company_name
+            };
+            
+            // Cache the result
+            referralCache.set(cacheKey, {
+              data: referrerDetails,
+              timestamp: Date.now()
+            });
+            
+            console.log(`[REFERRAL] Found referrer: ${referrerDetails.first_name} ${referrerDetails.last_name}`);
+          } else {
+            console.log(`[REFERRAL] Invalid referral code: ${referralCode}`);
+          }
         }
-      } else {
-        console.log(`[REFERRAL] Referral code doesn't match expected format with underscore: ${referralCode}`);
       }
     }
 
-    const [existingUser] = await db
-      .select()
-      .from(users)
-      .where(eq(users.telegram_id, telegramId));
+    // Check user cache first for faster lookups
+    const userCacheKey = `user_${telegramId}`;
+    let existingUser = null;
+    
+    const cachedUser = userCache.get(userCacheKey);
+    if (cachedUser && Date.now() - cachedUser.timestamp < CACHE_TTL) {
+      existingUser = cachedUser.data;
+      console.log(`[START] Using cached user data for ${telegramId}`);
+    } else {
+      // Single optimized query to check existing user
+      const userData = await db
+        .select({
+          id: users.id,
+          telegram_id: users.telegram_id,
+          is_approved: users.is_approved,
+          first_name: users.first_name,
+          last_name: users.last_name
+        })
+        .from(users)
+        .where(eq(users.telegram_id, telegramId))
+        .limit(1);
+      
+      if (userData.length > 0) {
+        existingUser = userData[0];
+        // Cache the user data
+        userCache.set(userCacheKey, {
+          data: existingUser,
+          timestamp: Date.now()
+        });
+      }
+    }
 
+    // Pre-build response components using cached configurations
     let keyboard;
     let welcomeMessage;
 
@@ -415,29 +476,12 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
         applicationUrl += `?referral=${referralCode}`;
       }
       
-      keyboard = {
-        inline_keyboard: [
-          [
-            {
-              text: "Launch Collab Room",
-              web_app: { url: applicationUrl },
-            },
-          ],
-        ],
-      };
+      keyboard = KEYBOARDS.newUser(applicationUrl);
       
       // Customize welcome message for referred users
-      if (referrerDetails !== null) {
-        // Type assertion to ensure TypeScript knows referrerDetails is not null here
-        const details = referrerDetails as {
-          id: string;
-          first_name: string;
-          last_name: string;
-          company_name: string | null;
-        };
-        
-        const referrerName = `${details.first_name} ${details.last_name}`.trim();
-        const companyPart = details.company_name ? ` from ${details.company_name}` : '';
+      if (referrerDetails) {
+        const referrerName = `${referrerDetails.first_name} ${referrerDetails.last_name}`.trim();
+        const companyPart = referrerDetails.company_name ? ` from ${referrerDetails.company_name}` : '';
         
         welcomeMessage =
           `🎉 Congratulations! You've been referred by ${referrerName}${companyPart}.\n\n` +
@@ -452,40 +496,10 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
           "Click below to start your application.";
       }
     } else if (existingUser.is_approved) {
-      keyboard = {
-        inline_keyboard: [
-          [
-            {
-              text: "🚀 Launch Collab Room",
-              web_app: { url: `${WEBAPP_URL}/discover` },
-            },
-          ],
-          [
-            {
-              text: "📣 Announcements",
-              url: "https://t.me/TheMarketingDAO",
-            },
-          ],
-        ],
-      };
+      keyboard = KEYBOARDS.approvedUser;
       welcomeMessage = `👋 Welcome back to Collab Room!\n\nYou're all set! Click below to access your matches and discover new collaborations.`;
     } else {
-      keyboard = {
-        inline_keyboard: [
-          [
-            {
-              text: "View Application Status",
-              web_app: { url: `${WEBAPP_URL}/application-status` },
-            },
-          ],
-          [
-            {
-              text: "📣 Join Announcement Channel",
-              url: "https://t.me/TheMarketingDAO",
-            },
-          ],
-        ],
-      };
+      keyboard = KEYBOARDS.pendingUser;
       welcomeMessage = `👋 Welcome back to Collab Room!\n\nYour application is currently under review. Click below to check your application status or use /status command anytime.`;
     }
 
