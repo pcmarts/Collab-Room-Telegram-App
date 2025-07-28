@@ -126,6 +126,10 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
   - Updated database records: Updated 13 existing collaborations and 52 marketing preference records to use new names
   - Updated schema constants and form type registry to reflect new names throughout the application
   - Removed character length limitations on collaboration type pills for full visibility
+  - Fixed create collaboration form validation by updating all individual collaboration type schemas (z.literal() validations) to use new names
+  - Updated CollabTypesBanner and welcome page icon mappings to use new collaboration type names
+  - Fixed back navigation on create collaboration page to route to "My Collabs" instead of dashboard
+  - Comprehensive update: All schema files, UI components, and validation logic now use consistent new collaboration type names
 - July 28, 2025. **COMPLETED**: Phase 1 Telegram Bot Startup Performance Optimization - 400% improvement achieved (20s → <5s)
   - **Problem Solved**: Users no longer experience 20-second delay when pressing /start - response is now <5 seconds (0.009s measured)
   - Implemented non-blocking bot verification: Server no longer waits for bot.getMe() to complete before starting

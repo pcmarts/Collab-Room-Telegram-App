@@ -7,7 +7,7 @@ import { baseCollabFields } from "./baseSchema";
  */
 export const blogPostSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Blog Post Feature"),
+  collab_type: z.literal("Guest Posts for Brand Blog"),
   blog_name: z.string()
     .min(2, "Blog name is required"),
   blog_url: z.string()
@@ -21,7 +21,7 @@ export const blogPostSchema = z.object({
  * Default values for Blog Post Feature collaborations
  */
 export const blogPostDefaults = {
-  collab_type: "Blog Post Feature",
+  collab_type: "Guest Posts for Brand Blog",
   blog_name: "",
   blog_url: "",
   monthly_visitors: AUDIENCE_SIZE_RANGES[0],

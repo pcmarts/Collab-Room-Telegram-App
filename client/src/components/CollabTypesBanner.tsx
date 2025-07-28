@@ -8,14 +8,13 @@ export function CollabTypesBanner() {
 
   // Icons for main collaboration types
   const collaborationIcons = {
-    'Podcast Guest Appearance': '🎙️',
+    'Podcast Guests': '🎙️',
     'Twitter Spaces Guest': '🐦',
     'Newsletter Feature': '📰',
-    'Report & Research Feature': '📝',
-    'Live Stream Guest Appearance': '📺',
-    'Co-Marketing on Twitter': '🤝',
-    'Blog Post Feature': '✍️',
-    'Conference Coffee': '☕'
+    'Report & Research Contributors': '📝',
+    'Live Stream Guests': '📺',
+    'Twitter Brand Collab': '🤝',
+    'Guest Posts for Brand Blog': '✍️'
   };
 
   return (

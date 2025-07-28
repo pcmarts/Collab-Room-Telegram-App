@@ -25,14 +25,15 @@ export default function Welcome() {
   ];
 
   const collaborationIcons = {
-    "Podcast Guest Appearance": "🎙️",
+    "Podcast Guests": "🎙️",
     "Twitter Spaces Guest": "🐦",
     "Newsletter Feature": "📰",
-    "Report & Research": "📝",
+    "Report & Research Contributors": "📝",
     "Twitter Exclusive Announcement": "📣",
     "Twitter Shoutout": "💬",
-    "Live Stream Guest Appearance": "📺",
-    "Co-Marketing on Twitter": "🤝",
+    "Live Stream Guests": "📺",
+    "Twitter Brand Collab": "🤝",
+    "Guest Posts for Brand Blog": "✍️",
     // ... add more
   };
 
