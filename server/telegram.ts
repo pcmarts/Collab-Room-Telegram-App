@@ -72,19 +72,24 @@ function logAdminMessage(
 }
 
 // Get the webapp URL from environment
-// Use WEBAPP_URL if set, otherwise use environment-specific defaults
-const WEBAPP_URL = process.env.WEBAPP_URL || 
-  (process.env.NODE_ENV === 'production' 
-    ? 'https://the-collab-room.replit.app'
-    : 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev');
+// Production uses WEBAPP_URL, development uses WEBAPP_URL_DEV
+const WEBAPP_URL = process.env.NODE_ENV === 'production' 
+  ? process.env.WEBAPP_URL 
+  : process.env.WEBAPP_URL_DEV;
 
 // Simplified webapp URL logging
 console.log(`🔧 WEBAPP_URL CONFIGURATION:`);
-console.log(`🔧 WEBAPP_URL env var: "${process.env.WEBAPP_URL || 'not set'}"`);
-console.log(`🔧 Final WEBAPP_URL: "${WEBAPP_URL}"`);
+if (process.env.NODE_ENV === 'production') {
+  console.log(`🔧 WEBAPP_URL: "${process.env.WEBAPP_URL || 'not set'}"`);
+} else {
+  console.log(`🔧 WEBAPP_URL_DEV: "${process.env.WEBAPP_URL_DEV || 'not set'}"`);
+}
+console.log(`🔧 Final WEBAPP_URL: "${WEBAPP_URL || 'ERROR: No webapp URL configured!'}"`);
 console.log(`🔧 Environment: ${currentEnvironment}`);
-if (process.env.WEBAPP_URL && process.env.NODE_ENV === 'development') {
-  console.log(`🔧 ⚠️  WARNING: WEBAPP_URL is explicitly set in development. Consider removing it to use default dev URL.`);
+
+if (!WEBAPP_URL) {
+  console.error(`🔧 ❌ ERROR: ${currentEnvironment} webapp URL not configured!`);
+  console.error(`🔧 ❌ Please set ${process.env.NODE_ENV === 'production' ? 'WEBAPP_URL' : 'WEBAPP_URL_DEV'} environment variable`);
 }
 
 // Import config to respect LOG_LEVEL setting

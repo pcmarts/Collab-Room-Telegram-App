@@ -106,7 +106,8 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ### Environment Variables
 - **Database**: `DATABASE_URL` for PostgreSQL connection
-- **Authentication**: `TELEGRAM_BOT_TOKEN` and test token variants
+- **Authentication**: `TELEGRAM_BOT_TOKEN` for production, `TELEGRAM_TEST_BOT_TOKEN` for development
+- **WebApp URLs**: `WEBAPP_URL` for production, `WEBAPP_URL_DEV` for development (stored as secrets)
 - **External APIs**: `X_RAPIDAPI_KEY` for Twitter integration
 - **Security**: `SESSION_SECRET` for session encryption
 - **Configuration**: `LOG_LEVEL` for logging control
@@ -123,9 +124,7 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
   - Removed complex FORCE_PRODUCTION_BOT logic and environment entanglement
   - Each environment now uses dedicated bot token (dev uses test bot, production uses production bot)
   - Added proper bot cleanup on shutdown (SIGINT/SIGTERM) to prevent 409 Conflict errors
-  - Fixed webapp URL configuration with environment-specific defaults
-  - Development URL: https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev (fixed Replit domain)
-  - Production URL: https://the-collab-room.replit.app
+  - Enhanced security by moving webapp URLs to environment secrets (WEBAPP_URL, WEBAPP_URL_DEV)
   - Bot instances no longer conflict when switching environments
   - Users can interact with any bot but receive notifications from environment-specific bot
   - Created comprehensive PRD document at docs/architecture/telegram-bot-environment-architecture-prd.md
