@@ -1601,7 +1601,7 @@ export default function DiscoverPage() {
   // Render authentication error state
   if (authError) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-screen">
         <div className="p-4 border-b flex items-center">
           <h1 className="text-xl font-semibold">Discover</h1>
         </div>
@@ -1618,7 +1618,7 @@ export default function DiscoverPage() {
   // Render loading state
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-screen">
         <div className="p-4 border-b flex items-center">
           <h1 className="text-xl font-semibold">Discover</h1>
         </div>
@@ -1638,7 +1638,7 @@ export default function DiscoverPage() {
   // 3. We're not currently loading or refreshing data
   if (allCardsViewed && cards.length === 0 && !isLoading && !loadingMore) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-screen">
         <div className="p-4 border-b flex items-center">
           <h1 className="text-xl font-semibold">Discover</h1>
         </div>

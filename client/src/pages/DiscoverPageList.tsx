@@ -506,7 +506,7 @@ export default function DiscoverPageList() {
   // Render loading state
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-screen">
         <div className="p-4 border-b flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold">Discover</h1>
