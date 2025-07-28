@@ -490,9 +490,12 @@ async function handleStart(msg: TelegramBot.Message, match: RegExpExecArray | nu
       } else {
         welcomeMessage =
           "👋 Welcome to Collab Room!\n\n" +
-          "This is the fastest way to find and share marketing collabs with other Web3 brands—guest blogs, Twitter Collabs, AMAs, and more.\n\n" +
-          "You'll get filtered, relevant opportunities straight to your Telegram, and can push your own out to a verified network.\n\n" +
-          "Click below to start your application.";
+          "Find or Host collaborations with other Web3 Brands and founders\n" +
+          "🎙️ Be a guest on X Spaces\n" +
+          "✍️  Collab on a Co-Blog Posts \n" +
+          "📺  Find Podcast to appear on\n" +
+          "🎤 Speak at an event \n\n" +
+          "Or host your own collaborations for other brands or founders to join.";
       }
     } else if (existingUser.is_approved) {
       keyboard = KEYBOARDS.approvedUser;
