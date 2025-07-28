@@ -148,24 +148,32 @@ export const bot = new TelegramBot(BOT_TOKEN, {
 
 ### 5. Notification System Adaptation
 
-Since users can interact with any bot, notifications should be attempted with error handling:
+**Important Note**: This approach accepts that notifications will only work if the user has interacted with the bot running in that environment. This is not problematic because:
+
+1. **Production users** will naturally interact with the production bot
+2. **Developers** testing will use the test bot in development
+3. **No cross-environment notifications** are needed or expected
+
+The notification system simply attempts to send and gracefully handles failures:
 
 ```typescript
 async function sendNotification(userId: number, message: string) {
   const user = await getUser(userId);
   
   try {
-    // Try to send with current environment's bot
+    // Send with current environment's bot
     await bot.sendMessage(user.telegram_chat_id, message);
   } catch (error) {
     if (error.message.includes('chat not found')) {
-      console.log(`User ${userId} hasn't interacted with this environment's bot`);
-      // This is expected behavior - user may be using different bot
+      // Expected: user uses different bot
+      console.log(`User ${userId} hasn't interacted with ${process.env.NODE_ENV} bot`);
     }
-    // Log but don't fail the operation
+    // Don't fail the operation
   }
 }
 ```
+
+**This is by design**: Each environment operates independently with its own bot.
 
 ### 6. Deployment Strategy
 
@@ -228,12 +236,6 @@ development:
 - Set up monitoring for bot errors
 - Create runbooks for common issues
 
-## Risk Mitigation
-
-1. **Backward Compatibility**: Keep old logic during migration
-2. **Gradual Rollout**: Test with small user group first
-3. **Rollback Plan**: Can revert to single bot if issues arise
-4. **Monitoring**: Add metrics for bot response times and errors
 
 ## Success Metrics
 
@@ -305,13 +307,9 @@ While the full architectural refactor is being planned, these immediate steps ca
 
 2. **Document Current Bot Tokens**: Create clear documentation of which bot token is used in which environment
 
-3. **Add Bot Type Logging**: Add logging to track which bot users are registering with
+3. **Set WEBAPP_URL Explicitly**: Always set `WEBAPP_URL` environment variable explicitly for each environment
 
-4. **Create Bot Migration Script**: Prepare a script to identify which users belong to which bot based on logs
-
-5. **Set WEBAPP_URL Explicitly**: Always set `WEBAPP_URL` environment variable explicitly for each environment
-
-6. **Monitor Errors**: Set up alerting for:
+4. **Monitor Errors**: Set up alerting for:
    - "Chat not found" errors
    - "409 Conflict" errors
    - Bot polling failures
