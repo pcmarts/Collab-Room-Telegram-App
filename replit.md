@@ -119,6 +119,16 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 28, 2025. **COMPLETED**: Simplified Telegram bot environment architecture for cleaner separation
+  - Removed complex FORCE_PRODUCTION_BOT logic and environment entanglement
+  - Each environment now uses dedicated bot token (dev uses test bot, production uses production bot)
+  - Added proper bot cleanup on shutdown (SIGINT/SIGTERM) to prevent 409 Conflict errors
+  - Fixed webapp URL configuration with environment-specific defaults
+  - Development URL: https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev (fixed Replit domain)
+  - Production URL: https://the-collab-room.replit.app
+  - Bot instances no longer conflict when switching environments
+  - Users can interact with any bot but receive notifications from environment-specific bot
+  - Created comprehensive PRD document at docs/architecture/telegram-bot-environment-architecture-prd.md
 - July 25, 2025. **COMPLETED**: Fixed dialog navigation architecture to prevent nested dialog state conflicts
   - Separated SignupToCollaborateDialog from CollaborationDetailsDialog for independent management
   - Modified CollaborationDetailsDialog to use onShowSignupDialog callback instead of internal state

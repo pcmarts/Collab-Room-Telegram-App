@@ -14,26 +14,14 @@ import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
 
-// Restore proper environment-based bot token selection
-// Check if we should force using a specific bot for notifications
-const forceProductionBot = process.env.FORCE_PRODUCTION_BOT === "true";
-const isProduction = forceProductionBot || process.env.NODE_ENV === "production";
-const currentEnvironment = isProduction ? "PRODUCTION" : "DEVELOPMENT";
+// Simple bot token configuration - one token per environment
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const currentEnvironment = process.env.NODE_ENV === "production" ? "PRODUCTION" : "DEVELOPMENT";
 
-// Use appropriate bot token based on environment
-const BOT_TOKEN = isProduction 
-  ? process.env.TELEGRAM_BOT_TOKEN 
-  : (process.env.TELEGRAM_TEST_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN);
-
-// Enhanced environment detection and logging
+// Simplified environment logging
 console.log(`🔧 TELEGRAM BOT CONFIGURATION:`);
 console.log(`🔧 NODE_ENV: "${process.env.NODE_ENV || 'undefined'}"`);
-console.log(`🔧 FORCE_PRODUCTION_BOT: "${process.env.FORCE_PRODUCTION_BOT || 'false'}"`);
 console.log(`🔧 Environment: ${currentEnvironment}`);
-console.log(`🔧 Bot Token Source: ${isProduction ? 'TELEGRAM_BOT_TOKEN (Production)' : 'TELEGRAM_TEST_BOT_TOKEN (Development)'}`);
-if (forceProductionBot) {
-  console.log(`🔧 ⚠️  FORCING PRODUCTION BOT regardless of NODE_ENV`);
-}
 console.log(`🔧 Bot token present: ${BOT_TOKEN ? 'YES' : 'NO'}`);
 console.log(`🔧 Bot token length: ${BOT_TOKEN ? BOT_TOKEN.length : 0} characters`);
 
@@ -77,21 +65,17 @@ function logAdminMessage(
 }
 
 // Get the webapp URL from environment
-// Priority: WEBAPP_URL env var > REPLIT_DOMAINS > fallback
+// Use WEBAPP_URL if set, otherwise use environment-specific defaults
 const WEBAPP_URL = process.env.WEBAPP_URL || 
-  (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}` : 'https://localhost:5000');
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://the-collab-room.replit.app'
+    : 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev');
 
-// Enhanced logging for debugging deployment issues
+// Simplified webapp URL logging
 console.log(`🔧 WEBAPP_URL CONFIGURATION:`);
 console.log(`🔧 WEBAPP_URL env var: "${process.env.WEBAPP_URL || 'not set'}"`);
-console.log(`🔧 REPLIT_DOMAINS: "${process.env.REPLIT_DOMAINS || 'not set'}"`);
 console.log(`🔧 Final WEBAPP_URL: "${WEBAPP_URL}"`);
 console.log(`🔧 Environment: ${currentEnvironment}`);
-if (WEBAPP_URL.includes('replit.dev') && isProduction) {
-  console.log(`🔧 ⚠️  WARNING: Production bot using development URL!`);
-  console.log(`🔧 ⚠️  This means "Launch Collab Room" button will point to development environment`);
-  console.log(`🔧 ⚠️  Set WEBAPP_URL environment variable to the production domain for deployment`);
-}
 
 // Import config to respect LOG_LEVEL setting
 import { config } from "../shared/config";
@@ -2821,7 +2805,7 @@ export async function notifyNewCollabRequest(
   try {
     console.log(`🔔 TELEGRAM NOTIFICATION: Starting notifyNewCollabRequest`);
     console.log(`🔔 Environment: ${currentEnvironment}`);
-    console.log(`🔔 Using ${isProduction ? 'production' : 'test'} bot for notifications`);
+    console.log(`🔔 Using ${currentEnvironment} bot for notifications`);
     console.log(`🔔 Host User ID: ${hostUserId}`);
     console.log(`🔔 Requester User ID: ${requesterUserId}`);
     console.log(`🔔 Collaboration ID: ${collaborationId}`);
@@ -3137,3 +3121,27 @@ setupBotCommands()
   .catch(error => {
     console.error("Error setting up bot commands:", error);
   });
+
+// Graceful shutdown handling
+export async function stopBot() {
+  try {
+    console.log("🔧 Stopping Telegram bot...");
+    await bot.stopPolling();
+    console.log("🔧 Telegram bot stopped successfully");
+  } catch (error) {
+    console.error("Error stopping bot:", error);
+  }
+}
+
+// Handle process termination
+process.on('SIGINT', async () => {
+  console.log('\n🔧 Received SIGINT, shutting down gracefully...');
+  await stopBot();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('\n🔧 Received SIGTERM, shutting down gracefully...');
+  await stopBot();
+  process.exit(0);
+});
