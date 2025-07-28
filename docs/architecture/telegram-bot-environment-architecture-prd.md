@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The current Telegram bot architecture faces critical issues with environment isolation, causing test environment actions to interfere with production behavior. This PRD analyzes the root causes and proposes a clean architectural solution to properly isolate test and production environments while maintaining a shared database.
+The current Telegram bot architecture faces critical issues with environment isolation and bot instance conflicts. This PRD analyzes the root causes and proposes a clean architectural solution to properly isolate test and production bot instances while maintaining flexibility for users to interact with any bot based on their needs.
 
 ## Current State Analysis
 
@@ -69,10 +69,10 @@ const BOT_TOKEN = isProduction
 
 ### 4. Architectural Flaws
 
-1. **No Bot Association Tracking**: Database doesn't track which bot a user registered with
-2. **Single Bot Instance**: Only one bot runs at a time, determined by environment
-3. **Environment Variable Overloading**: Too many conditional checks and fallbacks
-4. **Shared State**: Both environments trying to use same notification system
+1. **Bot Token Reuse**: Same bot token being used across multiple environments
+2. **Complex Environment Detection**: Too many conditional checks and fallbacks
+3. **Unclear Bot Purpose**: Mixing test and production bot usage
+4. **No Instance Management**: No mechanism to prevent multiple instances of same bot
 
 ### 5. Notification System Issues
 
@@ -97,149 +97,142 @@ Based on code analysis, the notification system has several critical problems:
 
 ## Proposed Solution
 
-### 1. Core Principle: Bot-User Association
+### 1. Core Principle: Environment-Based Bot Isolation
 
-Track which bot each user registered with and ensure all communications go through the same bot.
+Create clear separation between test and production bot instances, with each environment having its own dedicated bot that never conflicts with the other.
 
-### 2. Database Schema Changes
-
-Add bot association to users table:
-
-```sql
-ALTER TABLE users ADD COLUMN registered_bot_type VARCHAR(20) DEFAULT 'production';
--- Values: 'production', 'test'
-
-CREATE INDEX idx_users_registered_bot_type ON users(registered_bot_type);
-```
-
-### 3. Dual Bot Architecture
-
-Run both bots simultaneously in separate processes.
+### 2. Single Bot Per Environment Architecture
 
 **This directly solves the "409 Conflict" error** by ensuring:
-- Each bot token is only used by one process
-- Test bot runs only in test environment process
-- Production bot runs only in production environment process
-- No overlap or conflict in polling
+- Each environment runs only its designated bot
+- No bot token is shared across environments
+- Clear separation prevents polling conflicts
 
 Architecture:
-
 ```
-server/
-  bots/
-    production-bot.ts  -- Production bot process
-    test-bot.ts        -- Test bot process
-    shared/
-      handlers.ts      -- Shared command handlers
-      notifications.ts -- Notification logic
+production/
+  server.ts       -- Runs ONLY production bot
+  .env.production -- Contains TELEGRAM_BOT_TOKEN
+
+development/
+  server.ts       -- Runs ONLY test bot  
+  .env.development -- Contains TELEGRAM_TEST_BOT_TOKEN
 ```
 
-### 4. Environment Configuration
+### 3. Environment Configuration Simplification
 
-Simplify environment variables:
+Remove all conditional bot selection logic:
 
 ```bash
-# Production bot config
-TELEGRAM_PRODUCTION_BOT_TOKEN=xxx
-TELEGRAM_PRODUCTION_WEBAPP_URL=https://production.domain.com
+# Production (.env.production)
+TELEGRAM_BOT_TOKEN=xxx
+WEBAPP_URL=https://production.domain.com
+NODE_ENV=production
 
-# Test bot config  
-TELEGRAM_TEST_BOT_TOKEN=xxx
-TELEGRAM_TEST_WEBAPP_URL=https://test.domain.com
-
-# Shared
-DATABASE_URL=xxx
+# Development (.env.development)  
+TELEGRAM_BOT_TOKEN=xxx  # Note: This is actually the test bot token
+WEBAPP_URL=https://test.domain.com
+NODE_ENV=development
 ```
 
-### 5. Bot Selection Logic
+### 4. Bot Initialization Simplification
 
-Replace complex conditionals with simple, explicit logic:
+Replace complex conditionals with simple, environment-specific initialization:
 
 ```typescript
-// When user interacts with bot
-async function handleStart(msg: TelegramBot.Message, botType: 'production' | 'test') {
-  const user = await createOrUpdateUser({
-    telegram_id: msg.from.id,
-    registered_bot_type: botType,
-    // ... other fields
-  });
+// Simple bot initialization - no conditionals
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+if (!BOT_TOKEN) {
+  throw new Error("TELEGRAM_BOT_TOKEN is required");
 }
 
-// When sending notifications
+export const bot = new TelegramBot(BOT_TOKEN, {
+  polling: true,
+  webHook: false,
+});
+```
+
+### 5. Notification System Adaptation
+
+Since users can interact with any bot, notifications should be attempted with error handling:
+
+```typescript
 async function sendNotification(userId: number, message: string) {
   const user = await getUser(userId);
-  const bot = user.registered_bot_type === 'test' ? testBot : productionBot;
-  await bot.sendMessage(user.telegram_chat_id, message);
+  
+  try {
+    // Try to send with current environment's bot
+    await bot.sendMessage(user.telegram_chat_id, message);
+  } catch (error) {
+    if (error.message.includes('chat not found')) {
+      console.log(`User ${userId} hasn't interacted with this environment's bot`);
+      // This is expected behavior - user may be using different bot
+    }
+    // Log but don't fail the operation
+  }
 }
 ```
 
-### 6. Process Management
+### 6. Deployment Strategy
 
-Use PM2 or similar to run both bots:
+Each environment runs independently with its own bot:
 
-```json
-{
-  "apps": [
-    {
-      "name": "collab-room-prod-bot",
-      "script": "./server/bots/production-bot.ts",
-      "env": {
-        "BOT_TYPE": "production"
-      }
-    },
-    {
-      "name": "collab-room-test-bot", 
-      "script": "./server/bots/test-bot.ts",
-      "env": {
-        "BOT_TYPE": "test"
-      }
-    }
-  ]
-}
+```yaml
+# Production deployment
+production:
+  env_file: .env.production
+  bot_token: PRODUCTION_BOT_TOKEN
+  webapp_url: https://production.domain.com
+
+# Development deployment  
+development:
+  env_file: .env.development
+  bot_token: TEST_BOT_TOKEN
+  webapp_url: https://development.domain.com
 ```
 
 ### 7. Migration Strategy
 
-1. **Phase 1**: Add `registered_bot_type` column with default 'production'
-2. **Phase 2**: Deploy dual bot architecture in parallel with existing
-3. **Phase 3**: Migrate existing users based on their interaction history
-4. **Phase 4**: Remove old bot logic and `FORCE_PRODUCTION_BOT`
+1. **Phase 1**: Remove `FORCE_PRODUCTION_BOT` and conditional logic
+2. **Phase 2**: Set up environment-specific configurations
+3. **Phase 3**: Deploy each environment with its dedicated bot
+4. **Phase 4**: Clean up legacy environment detection code
 
 ## Benefits of Proposed Solution
 
-1. **Clear Separation**: Each bot operates independently
-2. **No Environment Confusion**: Users always interact with the same bot
-3. **Simplified Logic**: No complex conditionals or environment detection
-4. **Better Performance**: Each bot has its own process and resources
-5. **Easier Debugging**: Clear association between users and bots
-6. **Scalability**: Can add more bots (staging, etc.) easily
+1. **No Polling Conflicts**: Each environment runs only one bot instance
+2. **Simplified Logic**: No complex conditionals or environment detection
+3. **Clear Separation**: Test bot for developers, production bot for users
+4. **Flexibility**: Users can interact with any bot they choose
+5. **Easier Debugging**: Environment-specific logs and behaviors
+6. **Reduced Complexity**: Remove FORCE_PRODUCTION_BOT and fallback logic
 
 ## Implementation Roadmap
 
-### Phase 1: Database Preparation (1 day)
-- Add `registered_bot_type` column
-- Create migration script
-- Update schema types
+### Phase 1: Environment Separation (1 day)
+- Create environment-specific configuration files
+- Remove `FORCE_PRODUCTION_BOT` variable
+- Simplify bot initialization code
 
-### Phase 2: Dual Bot Architecture (2-3 days)
-- Refactor bot code into separate processes
-- Extract shared handlers
-- Implement bot-specific configurations
+### Phase 2: Code Simplification (1 day)
+- Remove all conditional bot selection logic
+- Clean up `isProduction` and `forceProductionBot` checks
+- Implement simple TELEGRAM_BOT_TOKEN usage
 
 ### Phase 3: Notification System Update (1 day)
-- Update notification logic to use registered bot type
-- Remove `FORCE_PRODUCTION_BOT` logic
-- Test notification routing
+- Add graceful error handling for "chat not found" errors
+- Remove complex fallback mechanisms
+- Implement logging for notification attempts
 
-### Phase 4: Deployment & Migration (1 day)
-- Deploy both bots
-- Run user migration based on logs
-- Monitor for issues
+### Phase 4: Deployment (1 day)
+- Deploy production with production bot only
+- Deploy development with test bot only
+- Verify no polling conflicts
 
-### Phase 5: Cleanup (1 day)
-- Remove old environment logic
-- Update documentation
-- Remove deprecated environment variables
+### Phase 5: Documentation & Monitoring (1 day)
+- Update all documentation
+- Set up monitoring for bot errors
+- Create runbooks for common issues
 
 ## Risk Mitigation
 
@@ -250,11 +243,11 @@ Use PM2 or similar to run both bots:
 
 ## Success Metrics
 
-1. **Zero "chat not found" errors**
+1. **Zero "409 Conflict" errors** - No polling conflicts between environments
 2. **Consistent sub-second `/start` command response**
-3. **100% correct bot-user associations**
-4. **Simplified codebase (remove 50+ lines of environment logic)**
-5. **Clear separation of test/production data flows**
+3. **Clear environment separation** - Test bot only in dev, production bot only in prod
+4. **Simplified codebase** - Remove 50+ lines of environment detection logic
+5. **Predictable notifications** - Accept that some notifications may fail if user hasn't interacted with that environment's bot
 
 ## Additional Technical Considerations
 
@@ -279,9 +272,32 @@ Current implementation creates new database connections for each query. This cou
 - Query batching where appropriate
 - Prepared statements for frequently used queries
 
+## Technical Implementation Details
+
+### Current Problem in Your Logs
+The error `"409 Conflict: terminated by other getUpdates request"` confirms that multiple instances are trying to poll with the same bot token. Based on your logs:
+- `FORCE_PRODUCTION_BOT: "true"` is set
+- Environment is PRODUCTION but `NODE_ENV: "development"`
+- This suggests another instance (likely production) is already running with the same bot token
+
+### Proposed Bot Separation
+```
+Production Environment:
+- Uses: TELEGRAM_BOT_TOKEN (production bot)
+- Users: All production users
+- URL: https://production.domain.com
+
+Development Environment:
+- Uses: TELEGRAM_TEST_BOT_TOKEN (test bot)  
+- Users: Developers only
+- URL: https://development.domain.com
+
+Key: Each environment uses a completely different bot token
+```
+
 ## Conclusion
 
-The current architecture's attempt to handle multiple environments with a single bot instance and complex conditional logic has created more problems than it solves. The proposed dual-bot architecture with explicit user-bot association provides a cleaner, more maintainable solution that properly isolates environments while maintaining the shared database requirement.
+The current architecture's attempt to handle multiple environments with conditional logic and shared bot tokens has created conflicts and complexity. The proposed solution of strict environment-based bot separation provides a cleaner, more maintainable approach that eliminates polling conflicts while allowing users the flexibility to interact with whichever bot they choose.
 
 ## Immediate Action Items
 
