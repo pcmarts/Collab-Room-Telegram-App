@@ -117,11 +117,20 @@ export function CollaborationListItem({
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Header */}
-          <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex items-start justify-between gap-2 mb-3">
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 text-base truncate">
+              <h3 className="font-semibold text-gray-900 text-base truncate mb-2">
                 {collaboration.creator_company_name || "Unknown Company"}
               </h3>
+              
+              {/* Looking For section */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Looking For</span>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(collabType)}`}>
+                  {getCollabTypeIcon(collabType)}
+                  <span className="truncate max-w-[120px]">{collabType}</span>
+                </span>
+              </div>
             </div>
             
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -130,12 +139,6 @@ export function CollaborationListItem({
                   Match
                 </span>
               )}
-              
-              {/* Collaboration Type with Icon - Prominent Position */}
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(collabType)}`}>
-                {getCollabTypeIcon(collabType)}
-                <span className="truncate max-w-[100px]">{collabType}</span>
-              </span>
             </div>
           </div>
 
