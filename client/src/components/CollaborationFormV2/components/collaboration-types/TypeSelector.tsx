@@ -37,19 +37,19 @@ const getCollaborationTypeIcon = (type: string) => {
   
   const typeLower = type.toLowerCase();
   
-  if (typeLower.includes('twitter') && (typeLower.includes('co-marketing') || typeLower.includes('comarketing'))) {
+  if (typeLower.includes('twitter') && (typeLower.includes('brand') || typeLower.includes('collab'))) {
     return Twitter;
   } else if (typeLower.includes('twitter')) {
     return Twitter;
   } else if (typeLower.includes('podcast')) {
     return Headphones;
-  } else if (typeLower.includes('blog')) {
+  } else if (typeLower.includes('blog') || typeLower.includes('guest posts')) {
     return FileText;
   } else if (typeLower.includes('livestream') || typeLower.includes('live stream')) {
     return Video;
   } else if (typeLower.includes('newsletter')) {
     return Mail;
-  } else if (typeLower.includes('research') || typeLower.includes('report')) {
+  } else if (typeLower.includes('research') || typeLower.includes('report') || typeLower.includes('contributors')) {
     return BarChart;
   }
   
@@ -105,8 +105,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
             {COLLAB_TYPES
               // Filter out unavailable collaboration types completely
               .filter(type => 
-                type !== "Newsletter Feature" && 
-                type !== "Blog Post Feature"
+                type !== "Newsletter Feature"
               )
               .map((type) => {
                 const isSelected = field.value === type;

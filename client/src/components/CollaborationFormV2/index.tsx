@@ -108,19 +108,19 @@ const CollaborationFormContent: React.FC = () => {
     const stepId = currentStepId || "";
     
     switch (selectedTypeId) {
-      case "Co-Marketing on Twitter":
+      case "Twitter Brand Collab":
         return <TwitterCollabForm step={stepId} />;
-      case "Podcast Guest Appearance":
+      case "Podcast Guests":
         return <PodcastCollabForm step={stepId} />;
       case "Twitter Spaces Guest":
         return <TwitterSpacesForm step={stepId} />;
-      case "Live Stream Guest Appearance":
+      case "Live Stream Guests":
         return <LiveStreamForm step={stepId} />;
-      case "Report & Research Feature":
+      case "Report & Research Contributors":
         return <ReportForm step={stepId} />;
       case "Newsletter Feature":
         return <NewsletterForm step={stepId} />;
-      case "Blog Post Feature":
+      case "Guest Posts for Brand Blog":
         return <BlogPostForm step={stepId} />;
       default:
         // Fallback when no collaboration type is selected or supported

@@ -64,6 +64,7 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
     defaultValues: newsletterDefaults,
     steps: newsletterSteps
   },
+  */
   {
     id: "Guest Posts for Brand Blog",
     name: "Guest Posts for Brand Blog",
@@ -71,7 +72,6 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
     defaultValues: blogPostDefaults,
     steps: blogPostSteps
   }
-  */
 ];
 
 /**
