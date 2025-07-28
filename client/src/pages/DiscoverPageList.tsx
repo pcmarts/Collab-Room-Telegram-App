@@ -80,7 +80,6 @@ export default function DiscoverPageList() {
   const [authError, setAuthError] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAnimatedItems, setShowAnimatedItems] = useState(false);
-  const [pageTransition, setPageTransition] = useState<"entering" | "exiting" | "none">("none");
   const { toast } = useToast();
   
   // State for collaborations and pagination
@@ -517,25 +516,6 @@ export default function DiscoverPageList() {
     }
   }, [isLoading, allItems.length]);
 
-  // Handle page entry animation
-  useEffect(() => {
-    setPageTransition("entering");
-    const timer = setTimeout(() => setPageTransition("none"), 300);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Get page transition classes
-  const getPageTransitionClass = () => {
-    switch (pageTransition) {
-      case "entering":
-        return "translate-x-0 opacity-100"; // Already in position, fade in
-      case "exiting":
-        return "translate-x-full opacity-100"; // Slide out to right
-      default:
-        return "translate-x-0 opacity-100"; // Normal position
-    }
-  };
-
   // Render loading state
   if (isLoading) {
     return (
@@ -560,7 +540,7 @@ export default function DiscoverPageList() {
   }
 
   return (
-    <div className={`flex flex-col h-full transition-transform duration-300 ease-in-out ${getPageTransitionClass()}`}>
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div>
@@ -573,10 +553,7 @@ export default function DiscoverPageList() {
           />
           {/* Show Account button for authenticated users */}
           {isAuthenticated && (
-            <Button variant="outline" size="sm" onClick={() => {
-              setPageTransition("exiting");
-              setTimeout(() => setLocation('/dashboard'), 300);
-            }}>
+            <Button variant="outline" size="sm" onClick={() => setLocation('/dashboard')}>
               <UserCircle className="w-4 h-4" />
             </Button>
           )}

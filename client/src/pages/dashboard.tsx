@@ -33,7 +33,6 @@ export default function Dashboard() {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pageTransition, setPageTransition] = useState<"entering" | "exiting" | "none">("entering");
   const { data: profile, isLoading, refetch } = useQuery<ProfileData>({
     queryKey: ['/api/profile'],
     // Use refetchOnMount and staleTime: 0 to ensure fresh data each time
@@ -99,30 +98,6 @@ export default function Dashboard() {
       console.log('Dashboard - No notification preferences found in profile data');
     }
   }, [profile]);
-
-  // Handle page entry animation
-  useEffect(() => {
-    const timer = setTimeout(() => setPageTransition("none"), 300);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Get page transition classes
-  const getPageTransitionClass = () => {
-    switch (pageTransition) {
-      case "entering":
-        return "translate-x-full"; // Start from right, slide in
-      case "exiting":
-        return "translate-x-full"; // Slide out to right
-      default:
-        return "translate-x-0"; // Normal position
-    }
-  };
-
-  // Handle back navigation with transition
-  const handleBackNavigation = () => {
-    setPageTransition("exiting");
-    setTimeout(() => setLocation('/discover'), 300);
-  };
 
   const handleNotificationSettingsChange = async (enabled: boolean) => {
     console.log('Dashboard - Notification toggle button clicked with value:', enabled);
@@ -260,13 +235,12 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={`min-h-[100svh] bg-background transition-transform duration-300 ease-in-out ${getPageTransitionClass()}`}>
+    <div className="min-h-[100svh] bg-background">
       {/* Welcome Section with standardized PageHeader */}
       <PageHeader 
         title={`Welcome, ${user.first_name}!`}
         backUrl="/discover"
         showBackButton={true}
-        onBack={handleBackNavigation}
       />
 
       <div className="p-4 space-y-4 pb-safe">

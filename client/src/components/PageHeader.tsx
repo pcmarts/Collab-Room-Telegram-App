@@ -8,7 +8,6 @@ interface PageHeaderProps {
   action?: React.ReactNode;
   backUrl?: string;
   showBackButton?: boolean;
-  onBack?: () => void;
 }
 
 /**
@@ -20,25 +19,16 @@ export function PageHeader({
   subtitle, 
   action, 
   backUrl = '/dashboard',
-  showBackButton = false,
-  onBack
+  showBackButton = false
 }: PageHeaderProps) {
   const [_, setLocation] = useLocation();
-
-  const handleBackClick = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      setLocation(backUrl);
-    }
-  };
 
   return (
     <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
       <div className="flex items-center">
         {showBackButton && (
           <button 
-            onClick={handleBackClick}
+            onClick={() => setLocation(backUrl)}
             className="mr-3 p-1 rounded-full hover:bg-muted transition-colors"
             aria-label="Back"
           >
