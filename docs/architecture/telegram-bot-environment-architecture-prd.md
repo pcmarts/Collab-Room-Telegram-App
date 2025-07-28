@@ -32,6 +32,15 @@ const BOT_TOKEN = isProduction
 
 ### 3. Key Problem Areas
 
+#### 3.0 Multiple Bot Instance Conflict
+- **Error**: `409 Conflict: terminated by other getUpdates request; make sure that only one bot instance is running`
+- **Root Cause**: Multiple instances of the same bot token attempting to poll Telegram's servers simultaneously
+- **Scenarios**:
+  - Development and production servers both using same bot token
+  - Multiple development instances running
+  - Server restart without proper cleanup of previous bot instance
+- **Impact**: Bot becomes unstable, missing messages, and unreliable notification delivery
+
 #### 3.1 Environment Entanglement
 - **Root Cause**: Bot selection is based on `NODE_ENV` rather than which bot the user actually interacted with
 - **Impact**: Users who start with test bot may receive notifications from production bot and vice versa
@@ -105,7 +114,15 @@ CREATE INDEX idx_users_registered_bot_type ON users(registered_bot_type);
 
 ### 3. Dual Bot Architecture
 
-Run both bots simultaneously in separate processes:
+Run both bots simultaneously in separate processes.
+
+**This directly solves the "409 Conflict" error** by ensuring:
+- Each bot token is only used by one process
+- Test bot runs only in test environment process
+- Production bot runs only in production environment process
+- No overlap or conflict in polling
+
+Architecture:
 
 ```
 server/
@@ -270,8 +287,21 @@ The current architecture's attempt to handle multiple environments with a single
 
 While the full architectural refactor is being planned, these immediate steps can help mitigate current issues:
 
-1. **Document Current Bot Tokens**: Create clear documentation of which bot token is used in which environment
-2. **Add Bot Type Logging**: Add logging to track which bot users are registering with
-3. **Create Bot Migration Script**: Prepare a script to identify which users belong to which bot based on logs
-4. **Set WEBAPP_URL Explicitly**: Always set `WEBAPP_URL` environment variable explicitly for each environment
-5. **Monitor "Chat Not Found" Errors**: Set up alerting for these errors to track impact
+1. **Fix Polling Conflict (CRITICAL)**: 
+   - Ensure only one instance of each bot token is running at any time
+   - Stop all bot instances before starting a new one
+   - Add proper cleanup on server shutdown
+   - Consider using webhooks instead of polling for production
+
+2. **Document Current Bot Tokens**: Create clear documentation of which bot token is used in which environment
+
+3. **Add Bot Type Logging**: Add logging to track which bot users are registering with
+
+4. **Create Bot Migration Script**: Prepare a script to identify which users belong to which bot based on logs
+
+5. **Set WEBAPP_URL Explicitly**: Always set `WEBAPP_URL` environment variable explicitly for each environment
+
+6. **Monitor Errors**: Set up alerting for:
+   - "Chat not found" errors
+   - "409 Conflict" errors
+   - Bot polling failures
