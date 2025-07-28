@@ -79,6 +79,7 @@ export default function DiscoverPageList() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [authError, setAuthError] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAnimatedItems, setShowAnimatedItems] = useState(false);
   const { toast } = useToast();
   
   // State for collaborations and pagination
@@ -237,6 +238,7 @@ export default function DiscoverPageList() {
   const handleRefresh = async () => {
     setIsLoading(true);
     setAuthError(false);
+    setShowAnimatedItems(false);
     
     try {
       // Check authentication first
@@ -503,6 +505,17 @@ export default function DiscoverPageList() {
     console.log('[Discovery] First item structure:', allItems[0]);
   }
 
+  // Trigger animation after loading completes and items are available
+  useEffect(() => {
+    if (!isLoading && allItems.length > 0) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        setShowAnimatedItems(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, allItems.length]);
+
   // Render loading state
   if (isLoading) {
     return (
@@ -591,38 +604,72 @@ export default function DiscoverPageList() {
         ) : (
           <div className="p-4 space-y-4">
             {/* Collab Types Banner */}
-            <CollabTypesBanner />
+            <div 
+              className={`transition-all duration-500 ${
+                showAnimatedItems 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-4'
+              }`}
+              style={{ transitionDelay: '0ms' }}
+            >
+              <CollabTypesBanner />
+            </div>
             
             {/* Network Statistics */}
-            <NetworkStatus className="mb-4" />
+            <div 
+              className={`transition-all duration-500 ${
+                showAnimatedItems 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 translate-y-4'
+              }`}
+              style={{ transitionDelay: '100ms' }}
+            >
+              <NetworkStatus className="mb-4" />
+            </div>
             
             {allItems.map((item, index) => (
               <div key={`${item.isPotentialMatch ? 'match' : 'collab'}-${item.id}`}>
-                <CollaborationListItem
-                  collaboration={item}
-                  isAuthenticated={isAuthenticated}
-                  onViewDetails={() => handleViewDetails(item)}
-                  onRequestCollaboration={() => handleRequestCollaboration(item, item.isPotentialMatch)}
-                  isPotentialMatch={item.isPotentialMatch}
-                  collaborationStatus={
-                    // Never show collaboration status for user's own collaborations
-                    userProfile?.user?.id && item.creator_id === userProfile.user.id
-                      ? undefined
-                      : // Check if locally requested first (for immediate UI update)
-                        requestedCollaborations.has(item.id)
-                        ? 'requested'
-                        : collaborationInteractions && collaborationInteractions[item.id]
-                        ? collaborationInteractions[item.id].status
-                        : undefined
-                  }
-                  onNavigateToMatches={() => setLocation('/matches')}
-                  currentUserId={userProfile?.user?.id}
-                  isApplicationPending={isAuthenticatedButNotApproved}
-                />
+                <div 
+                  className={`transition-all duration-500 ${
+                    showAnimatedItems 
+                      ? 'opacity-100 translate-y-0' 
+                      : 'opacity-0 translate-y-4'
+                  }`}
+                  style={{ transitionDelay: `${200 + index * 150}ms` }}
+                >
+                  <CollaborationListItem
+                    collaboration={item}
+                    isAuthenticated={isAuthenticated}
+                    onViewDetails={() => handleViewDetails(item)}
+                    onRequestCollaboration={() => handleRequestCollaboration(item, item.isPotentialMatch)}
+                    isPotentialMatch={item.isPotentialMatch}
+                    collaborationStatus={
+                      // Never show collaboration status for user's own collaborations
+                      userProfile?.user?.id && item.creator_id === userProfile.user.id
+                        ? undefined
+                        : // Check if locally requested first (for immediate UI update)
+                          requestedCollaborations.has(item.id)
+                          ? 'requested'
+                          : collaborationInteractions && collaborationInteractions[item.id]
+                          ? collaborationInteractions[item.id].status
+                          : undefined
+                    }
+                    onNavigateToMatches={() => setLocation('/matches')}
+                    currentUserId={userProfile?.user?.id}
+                    isApplicationPending={isAuthenticatedButNotApproved}
+                  />
+                </div>
                 
                 {/* Add banner after the 5th item (index 4) */}
                 {index === 4 && (
-                  <div className="my-4">
+                  <div 
+                    className={`my-4 transition-all duration-500 ${
+                      showAnimatedItems 
+                        ? 'opacity-100 translate-y-0' 
+                        : 'opacity-0 translate-y-4'
+                    }`}
+                    style={{ transitionDelay: `${200 + (index + 1) * 150}ms` }}
+                  >
                     <AddCollabBanner
                       isAuthenticated={isAuthenticated}
                       isApproved={userProfile?.user?.is_approved || false}
@@ -635,7 +682,14 @@ export default function DiscoverPageList() {
             
             {/* Add banner at the end if there are collaborations */}
             {allItems.length > 0 && !loadingMore && (
-              <div className="mt-4">
+              <div 
+                className={`mt-4 transition-all duration-500 ${
+                  showAnimatedItems 
+                    ? 'opacity-100 translate-y-0' 
+                    : 'opacity-0 translate-y-4'
+                }`}
+                style={{ transitionDelay: `${200 + allItems.length * 150}ms` }}
+              >
                 <AddCollabBanner
                   isAuthenticated={isAuthenticated}
                   isApproved={userProfile?.user?.is_approved || false}
@@ -656,7 +710,14 @@ export default function DiscoverPageList() {
 
             {/* End of list indicator */}
             {!hasMore && allItems.length > 0 && (
-              <div className="text-center py-8">
+              <div 
+                className={`text-center py-8 transition-all duration-500 ${
+                  showAnimatedItems 
+                    ? 'opacity-100 translate-y-0' 
+                    : 'opacity-0 translate-y-4'
+                }`}
+                style={{ transitionDelay: `${200 + (allItems.length + 1) * 150}ms` }}
+              >
                 <p className="text-sm text-muted-foreground">
                   You've reached the end of available collaborations
                 </p>
