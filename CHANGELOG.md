@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+- **Telegram Bot Environment Architecture Overhaul** - Complete redesign of bot environment management
+  - **Environment Separation**: Clean separation between development and production bot instances
+  - **Security Enhancement**: Moved webapp URLs to environment secrets (`WEBAPP_URL`, `WEBAPP_URL_DEV`)
+  - **Graceful Shutdown**: Added proper bot cleanup on SIGINT/SIGTERM to prevent 409 Conflict errors
+  - **Simplified Logic**: Removed complex `FORCE_PRODUCTION_BOT` conditional logic
+  - **Test Script**: Added `scripts/tests/test-bot-environment.ts` for configuration verification
+  - **Documentation**: Created comprehensive PRD and implementation guides in `/docs/architecture/`
+
 ### Fixed
 - **Company Logo Loading Issues** - Fixed company logos not displaying across the application
   - **CSP Configuration**: Added Supabase storage domain (`*.supabase.co`) to Content Security Policy in `server/index.ts` to allow logo images and API requests
@@ -13,18 +22,34 @@
   - **Related Issue**: Resolves fallback letter avatars appearing instead of actual company logos stored in Supabase storage
 
 ### Technical Details
-- **Root Cause 1**: CSP blocking Supabase storage domain causing browser to reject logo image requests
-- **Root Cause 2**: Backend APIs not including `company_logo_url` field in responses, causing frontend to receive `undefined` values
-- **Components Affected**: `LogoAvatar`, `CollaborationListItem`, `RequestsManagementTab`, `MatchesPage`, `MatchDetail`
-- **Verification**: LogoAvatar component provides debug logging to verify successful logo loading
+- **Telegram Bot Environment Issues**:
+  - **Root Cause**: Multiple bot instances attempting to poll same token causing 409 Conflict errors
+  - **Solution**: Environment-specific bot token selection with proper cleanup handlers
+  - **Security**: Webapp URLs moved from hardcoded values to environment secrets
+  - **Files Modified**: `server/telegram.ts`, `scripts/tests/test-bot-environment.ts`
+  - **Environment Variables**: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_TEST_BOT_TOKEN`, `WEBAPP_URL`, `WEBAPP_URL_DEV`
+
+- **Company Logo Loading Issues**:
+  - **Root Cause 1**: CSP blocking Supabase storage domain causing browser to reject logo image requests
+  - **Root Cause 2**: Backend APIs not including `company_logo_url` field in responses, causing frontend to receive `undefined` values
+  - **Components Affected**: `LogoAvatar`, `CollaborationListItem`, `RequestsManagementTab`, `MatchesPage`, `MatchDetail`
+  - **Verification**: LogoAvatar component provides debug logging to verify successful logo loading
 
 ### Breaking Changes
 - None
 
 ### Migration Notes
-- Server restart required for CSP changes to take effect
-- No database migrations needed
-- Existing logo URLs in database will automatically start working
+- **Telegram Bot Environment Changes**:
+  - Configure `WEBAPP_URL_DEV` environment secret for development
+  - Configure `WEBAPP_URL` environment secret for production deployments
+  - Development environment now uses `TELEGRAM_TEST_BOT_TOKEN` automatically
+  - Production environment uses `TELEGRAM_BOT_TOKEN`
+  - Server restart required to apply bot configuration changes
+
+- **Company Logo Fixes**:
+  - Server restart required for CSP changes to take effect
+  - No database migrations needed
+  - Existing logo URLs in database will automatically start working
 
 ---
 

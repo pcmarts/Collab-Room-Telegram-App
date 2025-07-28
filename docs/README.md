@@ -27,6 +27,12 @@
 - **[API Reference](api/README.md)** - Complete API endpoint documentation
 - **[Webhook Integration](backend/webhook-integration.md)** - External webhook configuration and payload structure for collaboration creation
 
+## Architecture Documentation
+
+### Core Systems
+- **[Telegram Bot Environment Architecture PRD](architecture/telegram-bot-environment-architecture-prd.md)** - Problem analysis and solution design
+- **[Telegram Bot Environment Implementation](architecture/telegram-bot-environment-implementation.md)** - Technical implementation details and security improvements
+
 ## Common Issues & Solutions
 
 ### Image Loading
