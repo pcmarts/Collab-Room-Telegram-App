@@ -99,25 +99,32 @@ if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
   logger.info('=== Initializing Server ===');
 }
 
-// Verify bot is working
+// PHASE 1 OPTIMIZATION: Non-blocking bot verification
 try {
   if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
-    logger.info('Checking Telegram bot status...');
+    logger.info('Starting bot verification in background...');
   }
 
   if (!bot) {
     throw new Error('Telegram bot not initialized');
   }
 
-  // Try to get bot info to verify token works
-  bot.getMe().then((botInfo) => {
-    if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
-      logger.info(`Telegram bot verified: ${botInfo.username}`);
-    }
-  }).catch((error) => {
-    logger.error('Failed to verify bot', { error });
-    process.exit(1);
-  });
+  // OPTIMIZATION: Make bot verification non-blocking - server continues immediately
+  bot.getMe()
+    .then((botInfo) => {
+      if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
+        logger.info(`[BOT] Verified: ${botInfo.username}`);
+      }
+    })
+    .catch((error) => {
+      logger.error('[BOT] Verification failed but server continues:', error);
+      // Don't exit - let server continue to operate
+    });
+
+  // Server continues immediately without waiting for bot verification
+  if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
+    logger.info('[BOT] Bot verification running in background, server continuing...');
+  }
 
 } catch (error) {
   logger.error('Critical error initializing Telegram bot', { error });

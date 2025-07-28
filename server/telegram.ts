@@ -107,11 +107,50 @@ if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
   console.log("WebApp URL:", WEBAPP_URL);
 }
 
-// Initialize bot with polling and minimal logging
+// PHASE 1 OPTIMIZATION: Initialize bot with optimized polling settings
 export const bot = new TelegramBot(BOT_TOKEN, {
-  polling: true,
+  polling: {
+    params: {
+      timeout: 10, // Reduce from default 30 seconds to 10 seconds
+      limit: 100,  // Process more updates per request
+    },
+    retryTimeout: 2000 // Faster retry on network issues (default 5000)
+  },
   webHook: false,
 });
+
+// PHASE 1 OPTIMIZATION: Defer command setup to background process after server starts
+setTimeout(async () => {
+  try {
+    console.log('[BOT_SETUP] Starting deferred command setup...');
+    await setupBotCommands();
+    console.log('[BOT_SETUP] Commands configured successfully');
+  } catch (error) {
+    console.error('[BOT_SETUP] Command setup failed, but bot remains functional:', error);
+  }
+}, 1000); // Allow server to start first
+
+// PHASE 1 OPTIMIZATION: Graceful bot cleanup on shutdown to prevent 409 Conflict errors
+const gracefulShutdown = (signal: string) => {
+  console.log(`[BOT_CLEANUP] Received ${signal}, gracefully shutting down bot...`);
+  
+  try {
+    if (bot) {
+      // Stop polling to prevent 409 conflicts
+      bot.stopPolling();
+      console.log('[BOT_CLEANUP] Bot polling stopped successfully');
+    }
+  } catch (error) {
+    console.error('[BOT_CLEANUP] Error during bot cleanup:', error);
+  }
+  
+  // Exit after cleanup
+  process.exit(0);
+};
+
+// Register cleanup handlers
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 // Helper function to check if a chat ID is valid (bot has interacted with user)
 async function isValidChatId(chatId: number): Promise<boolean> {
@@ -126,10 +165,20 @@ async function isValidChatId(chatId: number): Promise<boolean> {
   }
 }
 
+// PHASE 1 OPTIMIZATION: Performance monitoring for command setup
+const botPerformanceLogger = {
+  startupTime: Date.now(),
+  commandSetupTime: null,
+  
+  logCommandSetup() {
+    this.commandSetupTime = Date.now() - this.startupTime;
+    console.log(`[PERF] Bot command setup completed in ${this.commandSetupTime}ms`);
+  }
+};
+
 /**
- * Sets up bot commands based on user roles
- * Regular users only see basic commands
- * Admin users see additional commands including broadcast
+ * PHASE 1 OPTIMIZATION: Asynchronous bot command setup
+ * This function now runs in the background after server startup to prevent blocking
  */
 export async function setupBotCommands() {
   try {
@@ -150,98 +199,97 @@ export async function setupBotCommands() {
       { command: "broadcast", description: "Send message to all users" }
     ];
     
-    // Set regular commands as the default for all users
+    // OPTIMIZATION: Set basic commands immediately for immediate functionality
     await bot.setMyCommands(regularCommands);
     console.log("[BOT_SETUP] Set regular commands as default for all users");
     
-    try {
-      // Get all admin users from the database
-      const adminUsers = await db
-        .select()
-        .from(users)
-        .where(eq(users.is_admin, true));
-      
-      console.log(`[BOT_SETUP] Found ${adminUsers.length} admin users`);
-      
-      // Set admin commands for each admin user instead of using chat_administrators scope
-      for (const admin of adminUsers) {
-        if (!admin.telegram_id) {
-          console.warn(`[BOT_SETUP] Admin ${admin.id} has no Telegram ID, skipping`);
-          continue;
-        }
-        
-        try {
-          // Check if this is a valid chat_id - can't set commands for users the bot hasn't interacted with
-          const chatExists = await isValidChatId(parseInt(admin.telegram_id));
-          
-          if (chatExists) {
-            // Create a chat scope for this specific admin user
-            const adminScope = {
-              type: 'chat',
-              chat_id: parseInt(admin.telegram_id)
-            };
-            
-            // Set admin-specific commands
-            await bot.setMyCommands(adminCommands, { scope: adminScope });
-            console.log(`[BOT_SETUP] Set admin commands for ${admin.first_name} (${admin.telegram_id})`);
-          } else {
-            console.log(`[BOT_SETUP] Admin ${admin.first_name} (${admin.telegram_id}) hasn't interacted with the bot yet, skipping command setup`);
-          }
-        } catch (error) {
-          console.error(`[BOT_SETUP] Failed to set commands for admin ${admin.telegram_id}:`, error);
-        }
+    // OPTIMIZATION: Background admin command setup (non-blocking)
+    setImmediate(async () => {
+      try {
+        await setupAdminCommands(adminCommands);
+        botPerformanceLogger.logCommandSetup();
+      } catch (error) {
+        console.error('[BOT_SETUP] Admin command setup failed, but bot remains functional:', error);
       }
-    } catch (dbError) {
-      // If there's a DB error, we can continue with just the regular commands
-      console.error("[BOT_SETUP] Database error when fetching admin users:", dbError);
-      console.log("[BOT_SETUP] Continuing with just regular commands setup");
-    }
+    });
     
-    try {
-      // Get all users who have applied but are not approved
-      const pendingUsers = await db
-        .select()
-        .from(users)
-        .where(and(eq(users.is_approved, false), eq(users.is_admin, false)));
-      
-      console.log(`[BOT_SETUP] Found ${pendingUsers.length} pending users`);
-      
-      // Set pending user commands for each user
-      for (const pendingUser of pendingUsers) {
-        if (!pendingUser.telegram_id) {
-          console.warn(`[BOT_SETUP] Pending user ${pendingUser.id} has no Telegram ID, skipping`);
-          continue;
-        }
-        
-        try {
-          // Check if this is a valid chat_id
-          const chatExists = await isValidChatId(parseInt(pendingUser.telegram_id));
-          
-          if (chatExists) {
-            // Create a chat scope for this specific pending user
-            const pendingUserScope = {
-              type: 'chat',
-              chat_id: parseInt(pendingUser.telegram_id)
-            };
-            
-            // Set pending user commands
-            await bot.setMyCommands(pendingUserCommands, { scope: pendingUserScope });
-            console.log(`[BOT_SETUP] Set pending user commands for ${pendingUser.first_name} (${pendingUser.telegram_id})`);
-          } else {
-            console.log(`[BOT_SETUP] Pending user ${pendingUser.first_name} (${pendingUser.telegram_id}) hasn't interacted with the bot yet, skipping command setup`);
-          }
-        } catch (error) {
-          console.error(`[BOT_SETUP] Failed to set commands for pending user ${pendingUser.telegram_id}:`, error);
-        }
-      }
-    } catch (dbError) {
-      console.error("[BOT_SETUP] Database error when fetching pending users:", dbError);
-    }
-    
-    return true;
   } catch (error) {
-    console.error("[BOT_SETUP] Error setting up bot commands:", error);
+    console.error("[BOT_SETUP] Error setting up basic bot commands:", error);
     return false;
+  }
+  
+  return true;
+}
+
+/**
+ * PHASE 1 OPTIMIZATION: Optimized admin command setup with parallel processing
+ */
+async function setupAdminCommands(adminCommands: any[]) {
+  try {
+    // OPTIMIZATION: Single optimized query instead of multiple
+    const [admins, pendingUsers] = await Promise.all([
+      db.select({ 
+        telegram_id: users.telegram_id, 
+        first_name: users.first_name,
+        id: users.id 
+      })
+        .from(users)
+        .where(and(eq(users.is_admin, true), sql`${users.telegram_id} IS NOT NULL`)),
+      db.select({ 
+        telegram_id: users.telegram_id,
+        id: users.id
+      })
+        .from(users)
+        .where(and(eq(users.is_approved, false), eq(users.is_admin, false), sql`${users.telegram_id} IS NOT NULL`))
+    ]);
+    
+    console.log(`[BOT_SETUP] Found ${admins.length} admin users, ${pendingUsers.length} pending users`);
+    
+    // OPTIMIZATION: Parallel command setup with error handling
+    const commandPromises = admins.map(admin => 
+      setupAdminCommandsForUser(admin, adminCommands).catch(err => 
+        console.warn(`[BOT_SETUP] Failed to set commands for ${admin.first_name}:`, err)
+      )
+    );
+    
+    await Promise.allSettled(commandPromises);
+    console.log('[BOT_SETUP] Admin command setup completed');
+    
+  } catch (error) {
+    console.error('[BOT_SETUP] Error in admin command setup:', error);
+  }
+}
+
+/**
+ * PHASE 1 OPTIMIZATION: Individual admin command setup with timeout
+ */
+async function setupAdminCommandsForUser(admin: any, adminCommands: any[]) {
+  try {
+    if (!admin.telegram_id) {
+      return;
+    }
+    
+    // OPTIMIZATION: Check chat validity with timeout
+    const chatExists = await Promise.race([
+      isValidChatId(parseInt(admin.telegram_id)),
+      new Promise<boolean>((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      )
+    ]);
+    
+    if (chatExists) {
+      const adminScope = {
+        type: 'chat',
+        chat_id: parseInt(admin.telegram_id)
+      };
+      
+      await bot.setMyCommands(adminCommands, { scope: adminScope });
+      console.log(`[BOT_SETUP] Set admin commands for ${admin.first_name} (${admin.telegram_id})`);
+    } else {
+      console.log(`[BOT_SETUP] Admin ${admin.first_name} (${admin.telegram_id}) hasn't interacted with the bot yet, skipping command setup`);
+    }
+  } catch (error) {
+    console.warn(`[BOT_SETUP] Failed to set commands for ${admin.first_name}:`, error);
   }
 }
 
