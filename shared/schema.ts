@@ -14,12 +14,12 @@ import { z } from "zod";
 // Constants for form options
 export const COLLAB_TYPES = [
   "Twitter Spaces Guest",
-  "Co-Marketing on Twitter",
-  "Podcast Guest Appearance",
-  "Live Stream Guest Appearance",
-  "Report & Research Feature",
+  "Twitter Brand Collab",
+  "Podcast Guests",
+  "Live Stream Guests",
+  "Report & Research Contributors",
   "Newsletter Feature",
-  "Blog Post Feature",
+  "Guest Posts for Brand Blog",
 ] as const;
 
 // Standardized topic list used throughout the app
