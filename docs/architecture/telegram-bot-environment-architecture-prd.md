@@ -84,13 +84,7 @@ Based on code analysis, the notification system has several critical problems:
 - No fallback mechanism when primary bot fails
 - Assumes user registered with the current environment's bot
 
-#### 5.2 Notification Flow Problems
-1. **User Registration**: User registers with test bot (creates chat association)
-2. **Environment Switch**: Server runs in production mode
-3. **Notification Attempt**: Production bot tries to send message to user
-4. **Failure**: "Chat not found" because production bot never interacted with user
-
-#### 5.3 Current Workarounds
+#### 5.2 Current Workarounds
 - `FORCE_PRODUCTION_BOT` environment variable - band-aid solution
 - Extensive logging to debug issues
 - Manual intervention required when notifications fail
