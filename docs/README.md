@@ -32,6 +32,7 @@
 ### Core Systems
 - **[Telegram Bot Environment Architecture PRD](architecture/telegram-bot-environment-architecture-prd.md)** - Problem analysis and solution design
 - **[Telegram Bot Environment Implementation](architecture/telegram-bot-environment-implementation.md)** - Technical implementation details and security improvements
+- **[Telegram Bot Startup Performance PRD](architecture/telegram-bot-startup-performance-prd.md)** - Solution for 20-second startup delays
 
 ## Common Issues & Solutions
 

@@ -120,6 +120,14 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 28, 2025. **IDENTIFIED**: Root cause of 20-second bot startup delays and created comprehensive performance PRD
+  - Issue: Users experience 20-second delay when pressing /start before app loads
+  - Root causes: Synchronous bot command setup with database queries and API calls during server initialization
+  - Primary cause: setupBotCommands() function makes sequential database queries and Telegram API calls at startup
+  - Secondary causes: Blocking bot verification, polling initialization delay, non-optimized database connections
+  - Solution strategy: Asynchronous command setup, non-blocking verification, optimized database queries
+  - Created detailed PRD document at docs/architecture/telegram-bot-startup-performance-prd.md with 3-phase implementation plan
+  - Target: Reduce startup delay from 20 seconds to <2 seconds through architectural improvements
 - July 28, 2025. **COMPLETED**: Simplified Telegram bot environment architecture for cleaner separation
   - Removed complex FORCE_PRODUCTION_BOT logic and environment entanglement
   - Each environment now uses dedicated bot token (dev uses test bot, production uses production bot)

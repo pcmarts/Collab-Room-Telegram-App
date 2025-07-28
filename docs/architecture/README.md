@@ -9,6 +9,7 @@ This directory contains comprehensive documentation for The Collab Room's system
 ### Telegram Bot Architecture
 - **[Environment Architecture PRD](telegram-bot-environment-architecture-prd.md)** - Problem analysis and solution design for bot environment management
 - **[Environment Implementation Guide](telegram-bot-environment-implementation.md)** - Technical implementation details and security improvements
+- **[Startup Performance Optimization PRD](telegram-bot-startup-performance-prd.md)** - Solution for 20-second bot startup delays
 
 The Telegram bot system provides authentication and notifications for the platform. Recent improvements include:
 - Clean separation between development and production environments
