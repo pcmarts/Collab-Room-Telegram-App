@@ -15,13 +15,20 @@ import fs from "fs";
 import path from "path";
 
 // Simple bot token configuration - one token per environment
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+// In development, use TELEGRAM_TEST_BOT_TOKEN if available, otherwise fall back to TELEGRAM_BOT_TOKEN
+const BOT_TOKEN = process.env.NODE_ENV === "production" 
+  ? process.env.TELEGRAM_BOT_TOKEN 
+  : (process.env.TELEGRAM_TEST_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN);
 const currentEnvironment = process.env.NODE_ENV === "production" ? "PRODUCTION" : "DEVELOPMENT";
 
 // Simplified environment logging
 console.log(`🔧 TELEGRAM BOT CONFIGURATION:`);
 console.log(`🔧 NODE_ENV: "${process.env.NODE_ENV || 'undefined'}"`);
 console.log(`🔧 Environment: ${currentEnvironment}`);
+console.log(`🔧 Bot token source: ${
+  process.env.NODE_ENV === "production" ? 'TELEGRAM_BOT_TOKEN' : 
+  process.env.TELEGRAM_TEST_BOT_TOKEN ? 'TELEGRAM_TEST_BOT_TOKEN' : 'TELEGRAM_BOT_TOKEN (fallback)'
+}`);
 console.log(`🔧 Bot token present: ${BOT_TOKEN ? 'YES' : 'NO'}`);
 console.log(`🔧 Bot token length: ${BOT_TOKEN ? BOT_TOKEN.length : 0} characters`);
 
@@ -76,6 +83,9 @@ console.log(`🔧 WEBAPP_URL CONFIGURATION:`);
 console.log(`🔧 WEBAPP_URL env var: "${process.env.WEBAPP_URL || 'not set'}"`);
 console.log(`🔧 Final WEBAPP_URL: "${WEBAPP_URL}"`);
 console.log(`🔧 Environment: ${currentEnvironment}`);
+if (process.env.WEBAPP_URL && process.env.NODE_ENV === 'development') {
+  console.log(`🔧 ⚠️  WARNING: WEBAPP_URL is explicitly set in development. Consider removing it to use default dev URL.`);
+}
 
 // Import config to respect LOG_LEVEL setting
 import { config } from "../shared/config";
