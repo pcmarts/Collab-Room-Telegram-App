@@ -124,7 +124,7 @@ export function CollaborationListItem({
               </h3>
               
               {/* Looking For section */}
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <span className="text-sm text-gray-600">Looking for</span>
                 <div>
                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(collabType)}`}>

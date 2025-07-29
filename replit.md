@@ -128,6 +128,15 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 29, 2025. **COMPLETED**: Enhanced Telegram notification system with user handles, notes, and hyperlinked company names
+  - **Enhanced User Experience**: Requester confirmation messages now include user handle (@username or full name) at the beginning
+  - **Personalized Messages**: User's collaboration request notes are included in confirmation messages when provided
+  - **Interactive Company Links**: Company names in confirmation messages are hyperlinked to their X (Twitter) profiles
+  - **Improved Message Format**: Messages now display as: "@handle - Your collab request has been sent to [Company Link] for their collab [Type]"
+  - **Note Integration**: When users include notes, they appear as "📝 Your note: [message]" in the confirmation
+  - **Updated API Integration**: Both endpoints (/api/requests and /api/collaborations/:id/apply) now pass note parameter properly
+  - **Design Enhancement**: Reduced spacing between company name and "Looking for" text on discovery cards for better visual hierarchy
+  - **Comprehensive Testing**: All features tested and confirmed working with both development and production bot configurations
 - July 29, 2025. **COMPLETED**: Fixed Telegram notification system and implemented collab request confirmation
   - **Issue Fixed**: Resolved `ReferenceError: isProduction is not defined` error that was preventing all Telegram notifications from working
   - **Root Cause**: Missing `isProduction` constant definition in server/telegram.ts after recent bot environment architecture changes
