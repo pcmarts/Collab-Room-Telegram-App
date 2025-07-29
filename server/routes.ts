@@ -2919,7 +2919,7 @@ export async function registerRoutes(app: Express) {
           console.log(`✅ Sent Telegram notification to host ${collaboration.creator_id} about new collaboration application`);
 
           // Send confirmation notification to the requester (new functionality)
-          const requesterNotificationResult = await notifyRequesterRequestSent(user.id, collaboration.creator_id, collaboration.id);
+          const requesterNotificationResult = await notifyRequesterRequestSent(user.id, collaboration.creator_id, collaboration.id, message);
           console.log(`📧 DEBUG: requesterNotificationResult = ${requesterNotificationResult}`);
           console.log(`✅ Sent Telegram confirmation to requester ${user.id} about collab request sent`);
         } catch (notificationError) {
@@ -3370,7 +3370,7 @@ export async function registerRoutes(app: Express) {
               console.log(`✅ Sent Telegram notification to host ${collaboration.creator_id} about new collaboration request`);
 
               // Send confirmation notification to the requester (new functionality)
-              await notifyRequesterRequestSent(user.id, collaboration.creator_id, collaboration_id);
+              await notifyRequesterRequestSent(user.id, collaboration.creator_id, collaboration_id, note);
               console.log(`✅ Sent Telegram confirmation to requester ${user.id} about collab request sent`);
             }
           } catch (notificationError) {

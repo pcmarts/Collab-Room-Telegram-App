@@ -3448,11 +3448,13 @@ export async function notifyNewCollabRequest(
  * @param requesterUserId ID of the user who sent the request
  * @param hostUserId ID of the host user (collaboration creator)  
  * @param collaborationId ID of the collaboration that received the request
+ * @param note The note/message that the requester included with their request
  */
 export async function notifyRequesterRequestSent(
   requesterUserId: string,
   hostUserId: string,
   collaborationId: string,
+  note?: string,
 ) {
   try {
     console.log(`🔔 TELEGRAM NOTIFICATION: Starting notifyRequesterRequestSent`);
@@ -3490,7 +3492,7 @@ export async function notifyRequesterRequestSent(
       return false;
     }
 
-    // Get host company details for the company name
+    // Get host company details for the company name and Twitter URL
     const [hostCompany] = await db
       .select()
       .from(companies)
@@ -3503,6 +3505,7 @@ export async function notifyRequesterRequestSent(
     }
 
     console.log(`🔔 Host company found: ${hostCompany.name}`);
+    console.log(`🔔 Host company Twitter handle: ${hostCompany.twitter_handle}`);
 
     // Check if the requester's notifications are enabled
     const [preferences] = await db
@@ -3533,10 +3536,22 @@ export async function notifyRequesterRequestSent(
       ],
     };
 
-    // Format the confirmation message with company name and collab type
-    const message =
-      `✅ <b>Your collab request has been sent to ${hostCompany.name} for their collab ${collaboration.collab_type}.</b>\n\n` +
-      `If they approve it, you'll be matched and able to connect via the My Matches section. You'll also get a notification here when that happens.`;
+    // Format the confirmation message with user handle, company name (hyperlinked), collab type, and note
+    const userHandle = requester.username ? `@${requester.username}` : `${requester.first_name}${requester.last_name ? ` ${requester.last_name}` : ''}`;
+    
+    // Create hyperlinked company name if Twitter handle exists
+    const companyNameDisplay = hostCompany.twitter_handle 
+      ? `<a href="https://x.com/${hostCompany.twitter_handle}">${hostCompany.name}</a>`
+      : hostCompany.name;
+    
+    let message = `✅ <b>${userHandle} - Your collab request has been sent to ${companyNameDisplay} for their collab ${collaboration.collab_type}.</b>\n\n`;
+    
+    // Include the user's note if provided
+    if (note && note.trim()) {
+      message += `📝 <b>Your note:</b> ${note}\n\n`;
+    }
+    
+    message += `If they approve it, you'll be matched and able to connect via the My Matches section. You'll also get a notification here when that happens.`;
 
     // Send confirmation notification to requester
     console.log(
