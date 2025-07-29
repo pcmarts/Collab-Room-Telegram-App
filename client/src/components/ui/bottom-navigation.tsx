@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "wouter"
-import { User, MessageSquare, FolderPlus, Users, Inbox, Layers, Copy, SquareStack } from "lucide-react"
+import { User, MessageSquare, FolderPlus, Users, Inbox, Layers, Copy, SquareStack, Combine } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DiscoveryIcon } from "@/components/icons/DiscoveryIcon"
 import { Badge } from "@/components/ui/badge"
@@ -95,7 +95,7 @@ const BottomNavigation = () => {
     },
     {
       label: "My Collabs",
-      icon: FolderPlus,
+      icon: Combine,
       href: "/my-collaborations",
       requiresAuth: true,
     },
