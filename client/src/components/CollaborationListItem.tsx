@@ -146,104 +146,10 @@ export function CollaborationListItem({
 
           {/* Description */}
           {description && (
-            <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+            <p className="text-sm text-gray-600 line-clamp-3 mb-2">
               {description}
             </p>
           )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewDetails();
-              }}
-              className="flex items-center gap-1 text-xs px-2 py-1 h-auto border-gray-300 text-gray-700 hover:bg-gray-50 min-w-0 flex-shrink-0"
-            >
-              <Eye className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">Details</span>
-            </Button>
-            
-            {/* Always show "My Collab" for user's own collaborations, regardless of any other status */}
-            {isOwnCollaboration && (
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled
-                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-gray-100 text-gray-500 cursor-not-allowed min-w-0 flex-shrink-0"
-              >
-                <Building2 className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">My Collab</span>
-              </Button>
-            )}
-            
-            {/* Only show collaboration status buttons for collaborations that are NOT owned by the current user */}
-            {!isOwnCollaboration && isAuthenticated && collaborationStatus === 'matched' && onNavigateToMatches && (
-              <Button
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onNavigateToMatches();
-                }}
-                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-green-600 hover:bg-green-700 text-white min-w-0 flex-shrink-0"
-              >
-                <MessageSquare className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">Matched</span>
-              </Button>
-            )}
-            
-            {!isOwnCollaboration && isAuthenticated && collaborationStatus === 'requested' && (
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled
-                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-orange-100 text-orange-700 min-w-0 flex-shrink-0"
-              >
-                <MessageSquare className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">Requested</span>
-              </Button>
-            )}
-            
-            {!isOwnCollaboration && isAuthenticated && !collaborationStatus && onRequestCollaboration && (
-              <Button
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!isApplicationPending) {
-                    onRequestCollaboration();
-                  }
-                }}
-                disabled={isApplicationPending}
-                className={`flex items-center gap-1 text-xs px-2 py-1 h-auto min-w-0 flex-shrink-0 ${
-                  isApplicationPending
-                    ? "bg-gray-100 text-gray-500 cursor-not-allowed opacity-60"
-                    : "bg-[#4034B9] hover:bg-[#4034B9]/90 text-white"
-                }`}
-              >
-                <MessageSquare className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">
-                  {isApplicationPending ? "Application Pending" : "Request"}
-                </span>
-              </Button>
-            )}
-            
-            {!isAuthenticated && (
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowSignupDialog(true);
-                }}
-                className="flex items-center gap-1 text-xs px-2 py-1 h-auto bg-[#4034B9] hover:bg-[#4034B9]/90 text-white min-w-0 flex-shrink-0"
-              >
-                <MessageSquare className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">Request</span>
-              </Button>
-            )}
-          </div>
         </div>
         
         {/* Right Arrow Indicator */}
