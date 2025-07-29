@@ -143,7 +143,7 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
     transitionDirection.current = direction;
   }, [location, direction]);
 
-  // Variants for simultaneous directional movement
+  // Variants for subtle simultaneous directional movement
   const variants = {
     initial: (dir: string) => {
       if (!isMainNavigation) {
@@ -151,10 +151,11 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
         return { x: '100%', opacity: 0.25 };
       }
       
-      // Rightward: new page slides in from right (95% offset)
-      // Leftward: new page slides in from left (-95% offset)
+      // Much more subtle movement: new page slides in from 20% offset
+      // Rightward: new page slides in from right (20% offset)
+      // Leftward: new page slides in from left (-20% offset)
       return {
-        x: dir === 'rightward' ? '95%' : '-95%',
+        x: dir === 'rightward' ? '20%' : '-20%',
         opacity: 0.25,
       };
     },
@@ -168,10 +169,11 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
         return { x: '-100%', opacity: 0.25 };
       }
       
-      // Rightward: old page shifts left (5% offset)
-      // Leftward: old page shifts right (5% offset)
+      // Very subtle shift: old page shifts 3% in opposite direction
+      // Rightward: old page shifts left (3% offset)
+      // Leftward: old page shifts right (3% offset)
       return {
-        x: dir === 'rightward' ? '-5%' : '5%',
+        x: dir === 'rightward' ? '-3%' : '3%',
         opacity: 0.25,
       };
     },
