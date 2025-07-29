@@ -104,7 +104,7 @@ export const useNavigationDirection = () => {
   const menuOrder = ['/discover', '/my-collaborations', '/requests', '/matches'];
   
   const prevLocationRef = React.useRef(location);
-  const [direction, setDirection] = React.useState<'slide-left' | 'slide-right'>('slide-right');
+  const [direction, setDirection] = React.useState<'slide-right-to-left' | 'slide-left-to-right'>('slide-right-to-left');
   
   React.useEffect(() => {
     const prevLocation = prevLocationRef.current;
@@ -119,12 +119,13 @@ export const useNavigationDirection = () => {
       if (prevPosition !== -1 && currentPosition !== -1) {
         const movingRight = currentPosition > prevPosition;
         
-        // When moving right: slide content left (slide-left)
-        // When moving left: slide content right (slide-right)
-        const newDirection = movingRight ? 'slide-left' : 'slide-right';
+        // FIXED LOGIC:
+        // When moving right in menu: content should slide right-to-left (slide-right-to-left)
+        // When moving left in menu: content should slide left-to-right (slide-left-to-right)
+        const newDirection = movingRight ? 'slide-right-to-left' : 'slide-left-to-right';
         setDirection(newDirection);
         
-        console.log(`Math: Position ${prevPosition} → ${currentPosition} | Moving: ${movingRight ? 'RIGHT' : 'LEFT'} | Animation: ${newDirection}`);
+        console.log(`Math: Position ${prevPosition} → ${currentPosition} | Moving: ${movingRight ? 'RIGHT' : 'LEFT'} | Content Animation: ${newDirection}`);
       }
       
       prevLocationRef.current = currentLocation;
@@ -158,11 +159,11 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
         return { x: '100%', opacity: 0.25 };
       }
       
-      // Mathematical slide logic:
-      // slide-left: new page enters from right (20%)
-      // slide-right: new page enters from left (-20%)
+      // CORRECTED slide logic:
+      // slide-right-to-left: new page enters from right (20%)
+      // slide-left-to-right: new page enters from left (-20%)
       return {
-        x: dir === 'slide-left' ? '20%' : '-20%',
+        x: dir === 'slide-right-to-left' ? '20%' : '-20%',
         opacity: 0.25,
       };
     },
@@ -176,11 +177,11 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
         return { x: '-100%', opacity: 0.25 };
       }
       
-      // Mathematical slide logic:
-      // slide-left: current page exits to left (-3%)
-      // slide-right: current page exits to right (3%)
+      // CORRECTED slide logic:
+      // slide-right-to-left: current page exits to left (-3%)
+      // slide-left-to-right: current page exits to right (3%)
       return {
-        x: dir === 'slide-left' ? '-3%' : '3%',
+        x: dir === 'slide-right-to-left' ? '-3%' : '3%',
         opacity: 0.25,
       };
     },
