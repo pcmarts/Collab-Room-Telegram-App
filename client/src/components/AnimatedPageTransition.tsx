@@ -99,33 +99,49 @@ export const SynchronizedPageTransition: React.FC<AnimatedPageTransitionProps> =
 // Hook to get direction of navigation for directional animations
 export const useNavigationDirection = () => {
   const [location] = useLocation();
-  const [prevLocation, setPrevLocation] = React.useState(location);
+  const prevLocationRef = React.useRef(location);
   const [direction, setDirection] = React.useState<'rightward' | 'leftward'>('rightward');
 
   // Define the order of main navigation routes (left to right)
   const routeOrder = ['/discover', '/my-collaborations', '/requests', '/matches'];
 
   React.useEffect(() => {
+    const prevLocation = prevLocationRef.current;
+    
     if (location !== prevLocation) {
       const prevIndex = routeOrder.indexOf(prevLocation);
       const currentIndex = routeOrder.indexOf(location);
       
-      // Only set direction for main navigation routes
-      if (prevIndex !== -1 && currentIndex !== -1) {
-        setDirection(currentIndex > prevIndex ? 'rightward' : 'leftward');
+      // Only update direction for main navigation routes with valid indices
+      if (prevIndex !== -1 && currentIndex !== -1 && prevIndex !== currentIndex) {
+        const newDirection = currentIndex > prevIndex ? 'rightward' : 'leftward';
+        setDirection(newDirection);
+        console.log(`Navigation: ${prevLocation} → ${location} (${newDirection})`);
       }
       
-      setPrevLocation(location);
+      prevLocationRef.current = location;
     }
-  }, [location, prevLocation]);
+  }, [location, routeOrder]);
 
-  return { direction, isMainNavigation: routeOrder.includes(location) };
+  return { 
+    direction, 
+    isMainNavigation: routeOrder.includes(location),
+    routeOrder 
+  };
 };
 
 // Enhanced directional page transition with simultaneous animations
 export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = ({ children }) => {
   const [location] = useLocation();
   const { direction, isMainNavigation } = useNavigationDirection();
+  
+  // Store the direction for this specific transition to prevent changes mid-animation
+  const transitionDirection = React.useRef(direction);
+  
+  // Update direction only when location changes
+  React.useEffect(() => {
+    transitionDirection.current = direction;
+  }, [location, direction]);
 
   // Variants for simultaneous directional movement
   const variants = {
@@ -135,10 +151,10 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
         return { x: '100%', opacity: 0.25 };
       }
       
-      // Rightward: new page slides in from right (90% offset)
-      // Leftward: new page slides in from left (-90% offset)
+      // Rightward: new page slides in from right (95% offset)
+      // Leftward: new page slides in from left (-95% offset)
       return {
-        x: dir === 'rightward' ? '90%' : '-90%',
+        x: dir === 'rightward' ? '95%' : '-95%',
         opacity: 0.25,
       };
     },
@@ -152,10 +168,10 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
         return { x: '-100%', opacity: 0.25 };
       }
       
-      // Rightward: old page shifts left (10% offset)
-      // Leftward: old page shifts right (10% offset)
+      // Rightward: old page shifts left (5% offset)
+      // Leftward: old page shifts right (5% offset)
       return {
-        x: dir === 'rightward' ? '-10%' : '10%',
+        x: dir === 'rightward' ? '-5%' : '5%',
         opacity: 0.25,
       };
     },
@@ -163,10 +179,10 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-background">
-      <AnimatePresence mode="sync" initial={false} custom={direction}>
+      <AnimatePresence mode="sync" initial={false} custom={transitionDirection.current}>
         <motion.div
           key={location}
-          custom={direction}
+          custom={transitionDirection.current}
           initial="initial"
           animate="in"
           exit="out"
