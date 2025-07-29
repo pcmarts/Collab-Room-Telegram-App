@@ -11,7 +11,7 @@ import { MatchProvider } from "@/contexts/MatchContext";
 import { initTelegramButtonFix } from "./utils/telegram-button-fix";
 import { useTelegramInit } from "@/hooks/useTelegramInit";
 import { mobileKeyboardManager } from "./utils/mobile-keyboard";
-import { SynchronizedPageTransition } from "@/components/AnimatedPageTransition";
+import { DirectionalPageTransition } from "@/components/AnimatedPageTransition";
 
 // Import RouteComponentProps type for proper router component typing
 import type { RouteComponentProps } from "wouter";
@@ -104,7 +104,7 @@ function Router() {
     <div className="min-h-screen bg-background w-full">
       <ImpersonationBanner />
       <div className={`w-full ${showBottomNav ? 'pb-24' : ''}`}>
-        <SynchronizedPageTransition>
+        <DirectionalPageTransition>
           <Suspense fallback={getSuspenseFallback()}>
             <Switch>
               {/* Welcome and Application Flow */}
@@ -181,7 +181,7 @@ function Router() {
               <Route path="*" component={NotFound} />
             </Switch>
           </Suspense>
-        </SynchronizedPageTransition>
+        </DirectionalPageTransition>
         {showBottomNav && <BottomNavigation />}
       </div>
     </div>

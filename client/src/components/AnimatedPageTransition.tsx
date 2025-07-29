@@ -90,13 +90,13 @@ export const SynchronizedPageTransition: React.FC<AnimatedPageTransitionProps> =
   );
 };
 
-// Hook to get direction of navigation for more advanced animations
+// Hook to get direction of navigation for directional animations
 export const useNavigationDirection = () => {
   const [location] = useLocation();
   const [prevLocation, setPrevLocation] = React.useState(location);
-  const [direction, setDirection] = React.useState<'forward' | 'backward'>('forward');
+  const [direction, setDirection] = React.useState<'rightward' | 'leftward'>('rightward');
 
-  // Define the order of main navigation routes
+  // Define the order of main navigation routes (left to right)
   const routeOrder = ['/discover', '/my-collaborations', '/requests', '/matches'];
 
   React.useEffect(() => {
@@ -104,39 +104,59 @@ export const useNavigationDirection = () => {
       const prevIndex = routeOrder.indexOf(prevLocation);
       const currentIndex = routeOrder.indexOf(location);
       
+      // Only set direction for main navigation routes
       if (prevIndex !== -1 && currentIndex !== -1) {
-        setDirection(currentIndex > prevIndex ? 'forward' : 'backward');
+        setDirection(currentIndex > prevIndex ? 'rightward' : 'leftward');
       }
       
       setPrevLocation(location);
     }
   }, [location, prevLocation]);
 
-  return direction;
+  return { direction, isMainNavigation: routeOrder.includes(location) };
 };
 
-// Enhanced version with directional awareness
+// Enhanced directional page transition with subtle movement and synced opacity
 export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = ({ children }) => {
   const [location] = useLocation();
-  const direction = useNavigationDirection();
+  const { direction, isMainNavigation } = useNavigationDirection();
 
+  // Variants for subtle directional movement
   const variants = {
-    initial: (direction: string) => ({
-      x: direction === 'forward' ? '100%' : '-100%',
-      opacity: 0.25,
-    }),
+    initial: (dir: string) => {
+      if (!isMainNavigation) {
+        // Default behavior for non-main navigation routes
+        return { x: '100%', opacity: 0.25 };
+      }
+      
+      // Rightward: new page slides in from right (90% offset)
+      // Leftward: new page slides in from left (-90% offset)
+      return {
+        x: dir === 'rightward' ? '90%' : '-90%',
+        opacity: 0.25,
+      };
+    },
     in: {
-      x: 0,
+      x: '0%',
       opacity: 1,
     },
-    out: (direction: string) => ({
-      x: direction === 'forward' ? '-100%' : '100%',
-      opacity: 0.25,
-    }),
+    out: (dir: string) => {
+      if (!isMainNavigation) {
+        // Default behavior for non-main navigation routes
+        return { x: '-100%', opacity: 0.25 };
+      }
+      
+      // Rightward: old page shifts left (10% offset)
+      // Leftward: old page shifts right (10% offset)
+      return {
+        x: dir === 'rightward' ? '-10%' : '10%',
+        opacity: 0.25,
+      };
+    },
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    <div className="relative w-full min-h-screen overflow-hidden bg-background">
       <AnimatePresence mode="wait" initial={false} custom={direction}>
         <motion.div
           key={location}
@@ -148,12 +168,14 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
           transition={{
             type: 'tween',
             ease: customEasing,
-            duration: 0.2,
+            duration: 0.4, // Updated to 0.4s as requested
           }}
-          className="absolute inset-0 w-full h-full bg-background"
+          className="absolute inset-0 w-full bg-background"
           style={{ 
             willChange: 'transform, opacity',
             backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'translateZ(0)', // Force hardware acceleration
           }}
         >
           {children}
