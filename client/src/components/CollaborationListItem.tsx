@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { SignupToCollaborateDialog } from "@/components/SignupToCollaborateDialog";
-import { Building2, Eye, MessageSquare, Mic, Video, Mail, FileText, FileSearch, Coffee, Twitter, PenTool, ListChecks } from "lucide-react";
+import { Building2, Eye, MessageSquare, Mic, Video, Mail, FileText, FileSearch, Coffee, Twitter, PenTool, ListChecks, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 interface CollaborationListItemProps {
@@ -244,6 +244,11 @@ export function CollaborationListItem({
               </Button>
             )}
           </div>
+        </div>
+        
+        {/* Right Arrow Indicator */}
+        <div className="flex items-center justify-center self-center flex-shrink-0">
+          <ChevronRight className="w-5 h-5 text-gray-400" />
         </div>
       </div>
       
