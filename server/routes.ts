@@ -12,7 +12,7 @@ import {
 } from "../shared/schema";
 import { eq, and, not, desc, inArray, or } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, notifyUserCollabCreated, notifyReferrerAboutApproval, notifyNewCollabRequest, bot } from "./telegram";
+import { sendApplicationConfirmation, notifyAdminsNewUser, notifyUserApproved, notifyMatchCreated, notifyAdminsNewCollaboration, notifyUserCollabCreated, notifyReferrerAboutApproval, notifyNewCollabRequest, notifyRequesterRequestSent, bot } from "./telegram";
 import { storage } from "./storage";
 import { authLimiter, requestLimiter, applicationLimiter } from './middleware/rate-limiter';
 import { logger } from './utils/logger';
@@ -3211,22 +3211,23 @@ export async function registerRoutes(app: Express) {
           console.log(`Found original request with collaboration ID: ${actualCollaborationId}`);
           console.log(`Original request was from user ID: ${otherUserId}`);
           
-          // Create a swipe record for the current user
-          const swipe = await storage.createSwipe({
-            user_id: user.id,
-            collaboration_id: actualCollaborationId,
-            direction,
-            note
-          });
-          
-          console.log(`Success: Created swipe record with ID: ${swipe.id}`);
-          console.log(`Details: ${direction} swipe for collaboration ${actualCollaborationId} by user ${user.id}`);
-          
-          // If it's a right swipe, we have a match!
-          if (direction === 'right') {
-            console.log('MATCH CREATED! Both users swiped right.');
+          // Create a request record for the current user if this is a request action
+          if (action === 'request') {
+            const newRequest = await db.insert(requests).values({
+              collaboration_id: actualCollaborationId,
+              requester_id: user.id,
+              host_id: originalRequest.collaboration.creator_id,
+              status: 'accepted', // Auto-accept since this is a match
+              note: note || null
+            }).returning();
             
-            // Get the host user ID from the collaboration 
+            console.log(`Success: Created request record with ID: ${newRequest[0].id}`);
+            console.log(`Details: request for collaboration ${actualCollaborationId} by user ${user.id}`);
+            
+            // Since both users have now made requests, we have a match!
+            console.log('MATCH CREATED! Both users made requests.');
+            
+            // Get the collaboration details
             const [collaboration] = await db.select()
                 .from(collaborations)
                 .where(eq(collaborations.id, actualCollaborationId));
@@ -3239,19 +3240,18 @@ export async function registerRoutes(app: Express) {
             
             // Determine who is the host and who is the requester
             const isUserTheHost = user.id === collaboration.creator_id;
-            const otherUserId = isUserTheHost ? originalSwipe.user.id : collaboration.creator_id;
+            const originalRequesterId = originalRequest.user.id;
             
             console.log("Match roles:", {
               current_user_id: user.id,
               collaboration_creator_id: collaboration.creator_id,
-              original_swiper_id: originalSwipe.user.id,
-              is_user_the_host: isUserTheHost,
-              other_user_id: otherUserId
+              original_requester_id: originalRequesterId,
+              is_user_the_host: isUserTheHost
             });
             
             // If current user is the host, the other user is the requester. Otherwise, the current user is the requester.
             const hostId = isUserTheHost ? user.id : collaboration.creator_id;
-            const requesterId = isUserTheHost ? originalSwipe.user.id : user.id;
+            const requesterId = isUserTheHost ? originalRequesterId : user.id;
             
             // Create a match record in the database
             console.log('Creating match record with parameters:', {
@@ -3260,8 +3260,8 @@ export async function registerRoutes(app: Express) {
               requester_id: requesterId
             });
             
-            // Copy the note from the original swipe if available
-            const note = originalSwipe.note;
+            // Copy the note from the current request if available
+            const matchNote = note || originalRequest.request.note;
             
             const match = await storage.createMatch({
               collaboration_id: actualCollaborationId,
@@ -3270,7 +3270,7 @@ export async function registerRoutes(app: Express) {
               status: 'active',
               host_accepted: true,
               requester_accepted: true,
-              note: note
+              note: matchNote
             });
             
             console.log(`Success: Created match record with ID: ${match.id}`);
@@ -3282,7 +3282,7 @@ export async function registerRoutes(app: Express) {
             try {
               // Use the enhanced notification function from telegram.ts
               console.log('Sending enhanced Telegram notifications via notifyMatchCreated function');
-              await notifyMatchCreated(hostId, requesterId, actualCollaborationId, note);
+              await notifyMatchCreated(hostId, requesterId, actualCollaborationId, matchNote);
               console.log('Enhanced Telegram notifications sent to both users');
             } catch (telegramError) {
               console.error('Error sending Telegram notifications:', telegramError);
@@ -3291,19 +3291,19 @@ export async function registerRoutes(app: Express) {
             }
             
             return res.status(201).json({ 
-              swipe,
+              request: newRequest[0],
               match: true,
               matchData: match,
               matchedUser: {
-                id: otherUserId,
-                name: `${originalSwipe.user.first_name} ${originalSwipe.user.last_name || ''}`,
-                collaboration: originalSwipe.collaboration
+                id: originalRequesterId,
+                name: `${originalRequest.user.first_name} ${originalRequest.user.last_name || ''}`,
+                collaboration: originalRequest.collaboration
               }
             });
           }
           
-          // If it's a left swipe, just record the rejection
-          return res.status(201).json(swipe);
+          // If it's a skip action, just record the rejection
+          return res.status(201).json({ message: 'Request skipped' });
           
         } catch (matchError) {
           console.error('Error processing potential match:', matchError);
@@ -3311,13 +3311,14 @@ export async function registerRoutes(app: Express) {
           return res.status(500).json({ error: 'Failed to process potential match' });
         }
       } 
-      // Regular collaboration swipe
+      // Regular collaboration request
       else if (collaboration_id) {
-        console.log(`Creating swipe for collaboration: ${collaboration_id}`);
+        console.log(`Creating request for collaboration: ${collaboration_id}`);
         
         // Verify that the collaboration exists
+        let collaboration;
         try {
-          const collaboration = await storage.getCollaboration(collaboration_id);
+          collaboration = await storage.getCollaboration(collaboration_id);
           if (!collaboration) {
             console.log(`Database error: Collaboration ${collaboration_id} not found`);
             return res.status(404).json({ error: 'Collaboration not found' });
@@ -3328,35 +3329,45 @@ export async function registerRoutes(app: Express) {
           return res.status(500).json({ error: 'Failed to verify collaboration' });
         }
         
-        // Create the swipe record
-        console.log('Creating swipe record with parameters:', {
-          user_id: user.id,
-          collaboration_id,
-          direction,
-          note
-        });
+        // Create the request record
+        let requestResult;
+        if (action === 'request') {
+          console.log('Creating request record with parameters:', {
+            requester_id: user.id,
+            collaboration_id,
+            host_id: collaboration.creator_id,
+            note
+          });
+          
+          const newRequest = await db.insert(requests).values({
+            collaboration_id: collaboration_id,
+            requester_id: user.id,
+            host_id: collaboration.creator_id,
+            status: 'pending',
+            note: note || null
+          }).returning();
+          
+          console.log(`Success: Created request record with ID: ${newRequest[0].id}`);
+          console.log(`Details: request for collaboration ${collaboration_id} by user ${user.id}`);
+          console.log(`Timestamp: ${newRequest[0].created_at}`);
+          requestResult = newRequest[0];
+        }
         
-        const swipe = await storage.createSwipe({
-          user_id: user.id,
-          collaboration_id,
-          direction,
-          note
-        });
-        
-        console.log(`Success: Created swipe record with ID: ${swipe.id}`);
-        console.log(`Details: ${direction} swipe for collaboration ${collaboration_id} by user ${user.id}`);
-        console.log(`Timestamp: ${swipe.created_at}`);
-        
-        // If this is a "request" action, send a notification to the collaboration host
+        // If this is a "request" action, send notifications to both host and requester
         if (action === 'request') {
           try {
             const collaboration = await storage.getCollaboration(collaboration_id);
             if (collaboration) {
+              // Send notification to the host (existing functionality)
               await notifyNewCollabRequest(collaboration.creator_id, user.id, collaboration_id);
               console.log(`✅ Sent Telegram notification to host ${collaboration.creator_id} about new collaboration request`);
+
+              // Send confirmation notification to the requester (new functionality)
+              await notifyRequesterRequestSent(user.id, collaboration.creator_id, collaboration_id);
+              console.log(`✅ Sent Telegram confirmation to requester ${user.id} about collab request sent`);
             }
           } catch (notificationError) {
-            console.error('Error sending collaboration request notification:', notificationError);
+            console.error('Error sending collaboration request notifications:', notificationError);
             // Continue processing even if notification fails
           }
         }
@@ -3369,16 +3380,16 @@ export async function registerRoutes(app: Express) {
             
             if (!collaboration) {
               console.log(`Warning: Could not find collaboration ${collaboration_id} when checking for host match`);
-              return res.status(201).json(swipe);
+              return res.status(201).json(requestResult);
             }
             
             const hostId = collaboration.creator_id;
-            console.log(`Checking if host (${hostId}) has swiped right on any of user's (${user.id}) collaborations`);
+            console.log(`Checking if host (${hostId}) has made requests on any of user's (${user.id}) collaborations`);
             
             // Don't try to match if the user is the host
             if (hostId === user.id) {
               console.log(`User is the host of this collaboration - no need to check for match`);
-              return res.status(201).json(swipe);
+              return res.status(201).json(requestResult);
             }
             
             // Get all collaborations owned by this user
@@ -3386,7 +3397,7 @@ export async function registerRoutes(app: Express) {
             
             if (userCollaborations.length === 0) {
               console.log(`User has no collaborations - no match possible`);
-              return res.status(201).json(swipe);
+              return res.status(201).json(requestResult);
             }
             
             console.log(`Found ${userCollaborations.length} collaborations for user ${user.id}`);
@@ -3473,7 +3484,7 @@ export async function registerRoutes(app: Express) {
               }
               
               return res.status(201).json({
-                swipe,
+                request: requestResult,
                 match: true,
                 matchData: match
               });
@@ -3481,11 +3492,11 @@ export async function registerRoutes(app: Express) {
           } catch (matchCheckError) {
             console.error('Error checking for potential match:', matchCheckError);
             console.error('Stack trace:', matchCheckError instanceof Error ? matchCheckError.stack : 'No stack trace available');
-            // Continue to return the swipe even if match checking fails
+            // Continue to return the request even if match checking fails
           }
         }
         
-        return res.status(201).json(swipe);
+        return res.status(201).json(requestResult || { message: 'Request processed successfully' });
       } else {
         console.log('Validation error: Invalid request format');
         return res.status(400).json({ error: 'Invalid request format' });

@@ -48,9 +48,17 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 - **Applications**: User application system with status tracking
 
 ### External Integrations
-- **Telegram Bot**: Notifications, user approval workflow, admin management
+- **Telegram Bot**: Notifications (user approval, collab requests, matches), user approval workflow, admin management
 - **Twitter API**: Company profile data enrichment via RapidAPI
 - **Supabase**: Additional data storage and authentication support
+
+### Notification System
+- **Telegram Integration**: Real-time notifications via Telegram bot
+- **Request Confirmations**: When users send collab requests, they receive immediate confirmation notifications
+- **Host Notifications**: Collaboration hosts receive notifications when someone requests their collab
+- **Match Notifications**: Both users receive notifications when mutual requests create matches
+- **Message Format**: Professional HTML-formatted messages with company names and collab types
+- **Interactive Buttons**: Quick access to My Matches section and main application
 
 ## Data Flow
 
@@ -120,6 +128,15 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 29, 2025. **COMPLETED**: Added Telegram notification for collab request confirmation
+  - **New Feature**: When users send collab requests, they now receive immediate confirmation notifications via Telegram
+  - **Message Content**: "Your collab request has been sent to [Company Name] for their collab [Collab Type]. If they approve it, you'll be matched and able to connect via the My Matches section. You'll also get a notification here when that happens."
+  - **Implementation**: Created notifyRequesterRequestSent() function in server/telegram.ts
+  - **Integration**: Added notification call to POST /api/requests endpoint immediately after request creation
+  - **User Experience**: Sets clear expectations about next steps and provides quick access to My Matches
+  - **Interactive Buttons**: Includes "View My Matches" and "Launch Collab Room" buttons for easy navigation
+  - **Personalization**: Includes actual company name and collaboration type from database
+  - **Timing**: Sent immediately after request submission alongside existing host notification
 - July 29, 2025. **COMPLETED**: Enhanced discovery cards UX with improved layout and visual hierarchy
   - Redesigned card layout: Company name → "Looking for" → Collaboration type pill → Description
   - Changed "Looking For" to lowercase "Looking for" for friendlier tone

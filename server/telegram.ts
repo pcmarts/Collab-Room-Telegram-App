@@ -3442,6 +3442,123 @@ export async function notifyNewCollabRequest(
   }
 }
 
+/**
+ * Send confirmation notification to the requester when they send a collab request
+ * @param requesterUserId ID of the user who sent the request
+ * @param hostUserId ID of the host user (collaboration creator)  
+ * @param collaborationId ID of the collaboration that received the request
+ */
+export async function notifyRequesterRequestSent(
+  requesterUserId: string,
+  hostUserId: string,
+  collaborationId: string,
+) {
+  try {
+    console.log(`🔔 TELEGRAM NOTIFICATION: Starting notifyRequesterRequestSent`);
+    console.log(`🔔 Environment: ${currentEnvironment}`);
+    console.log(`🔔 Using ${currentEnvironment} bot for notifications`);
+    console.log(`🔔 Requester User ID: ${requesterUserId}`);
+    console.log(`🔔 Host User ID: ${hostUserId}`);
+    console.log(`🔔 Collaboration ID: ${collaborationId}`);
+
+    // Get requester user details
+    const [requester] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, requesterUserId));
+
+    if (!requester || !requester.telegram_id) {
+      console.error(
+        `🔔 ERROR: Requester user ${requesterUserId} not found or has no Telegram ID`,
+      );
+      return false;
+    }
+
+    console.log(
+      `🔔 Requester found: ${requester.first_name} ${requester.last_name}, Telegram ID: ${requester.telegram_id}`,
+    );
+
+    // Get collaboration details
+    const [collaboration] = await db
+      .select()
+      .from(collaborations)
+      .where(eq(collaborations.id, collaborationId));
+
+    if (!collaboration) {
+      console.error(`🔔 ERROR: Collaboration ${collaborationId} not found`);
+      return false;
+    }
+
+    // Get host company details for the company name
+    const [hostCompany] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.user_id, hostUserId))
+      .limit(1);
+
+    if (!hostCompany) {
+      console.error(`🔔 ERROR: Host company for user ${hostUserId} not found`);
+      return false;
+    }
+
+    console.log(`🔔 Host company found: ${hostCompany.name}`);
+
+    // Check if the requester's notifications are enabled
+    const [preferences] = await db
+      .select()
+      .from(notification_preferences)
+      .where(eq(notification_preferences.user_id, requesterUserId));
+
+    if (preferences && preferences.notifications_enabled === false) {
+      console.log(`🔔 Requester ${requesterUserId} has notifications disabled`);
+      return false;
+    }
+
+    // Create keyboard with link to My Matches section
+    const keyboard = {
+      inline_keyboard: [
+        [
+          {
+            text: "📱 View My Matches",
+            web_app: { url: `${WEBAPP_URL}/matches` },
+          },
+        ],
+        [
+          {
+            text: "🚀 Launch Collab Room",
+            web_app: { url: `${WEBAPP_URL}/discover` },
+          },
+        ],
+      ],
+    };
+
+    // Format the confirmation message with company name and collab type
+    const message =
+      `✅ <b>Your collab request has been sent to ${hostCompany.name} for their collab ${collaboration.collab_type}.</b>\n\n` +
+      `If they approve it, you'll be matched and able to connect via the My Matches section. You'll also get a notification here when that happens.`;
+
+    // Send confirmation notification to requester
+    console.log(
+      `🔔 SENDING MESSAGE: Attempting to send confirmation to ${requester.telegram_id}`,
+    );
+    console.log(`🔔 MESSAGE CONTENT: ${message}`);
+
+    await sendDirectFormattedMessage(parseInt(requester.telegram_id), message, {
+      parse_mode: "HTML",
+      reply_markup: keyboard,
+      disable_web_page_preview: true,
+    });
+
+    console.log(
+      `🔔 SUCCESS: Sent collab request confirmation to requester ${requesterUserId}`,
+    );
+    return true;
+  } catch (error) {
+    console.error("Error sending collab request confirmation:", error);
+    return false;
+  }
+}
+
 export async function notifyMatchCreated(
   hostUserId: string,
   requesterUserId: string,
