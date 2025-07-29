@@ -114,18 +114,26 @@ export const useNavigationDirection = () => {
       const prevPosition = menuOrder.indexOf(prevLocation);
       const currentPosition = menuOrder.indexOf(currentLocation);
       
-      // Math: if current position > previous position, we're moving right
-      // Math: if current position < previous position, we're moving left
+      console.log(`🔍 DEBUG: Prev:"${prevLocation}" (${prevPosition}) → Current:"${currentLocation}" (${currentPosition})`);
+      
+      // Only process main navigation routes
       if (prevPosition !== -1 && currentPosition !== -1) {
-        const movingRight = currentPosition > prevPosition;
+        // Simple math: position difference determines direction
+        const positionDiff = currentPosition - prevPosition;
         
-        // FIXED LOGIC:
-        // When moving right in menu: content should slide right-to-left (slide-right-to-left)
-        // When moving left in menu: content should slide left-to-right (slide-left-to-right)
-        const newDirection = movingRight ? 'slide-right-to-left' : 'slide-left-to-right';
+        let newDirection: 'slide-right-to-left' | 'slide-left-to-right';
+        
+        if (positionDiff > 0) {
+          // Moving to higher position (moving right) → slide right-to-left
+          newDirection = 'slide-right-to-left';
+          console.log(`✅ Moving RIGHT: ${prevPosition} → ${currentPosition} | Animation: slide-right-to-left`);
+        } else {
+          // Moving to lower position (moving left) → slide left-to-right  
+          newDirection = 'slide-left-to-right';
+          console.log(`✅ Moving LEFT: ${prevPosition} → ${currentPosition} | Animation: slide-left-to-right`);
+        }
+        
         setDirection(newDirection);
-        
-        console.log(`🧭 Navigation: FROM "${prevLocation}" (pos:${prevPosition}) → TO "${currentLocation}" (pos:${currentPosition}) | Menu Direction: ${movingRight ? 'RIGHT' : 'LEFT'} | Animation: ${newDirection}`);
       }
       
       prevLocationRef.current = currentLocation;
