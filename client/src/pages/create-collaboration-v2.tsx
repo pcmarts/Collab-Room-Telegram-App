@@ -50,7 +50,6 @@ export default function CreateCollaborationV2() {
       <div className="mb-2">
         <PageHeader
           title="🤝 Create Your Collab"
-          backUrl="/my-collaborations"
         />
       </div>
       

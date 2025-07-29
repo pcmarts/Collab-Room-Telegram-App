@@ -7,7 +7,7 @@ import { baseCollabFields } from "./baseSchema";
  */
 export const reportSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Report & Research Contributors"),
+  collab_type: z.literal("Report & Research Feature"),
   report_name: z.string()
     .min(2, "Report name is required"),
   report_link: z.string()
@@ -24,7 +24,7 @@ export const reportSchema = z.object({
  * Default values for Report & Research Feature collaborations
  */
 export const reportDefaults = {
-  collab_type: "Report & Research Contributors",
+  collab_type: "Report & Research Feature",
   report_name: "",
   report_link: "",
   audience_reach: AUDIENCE_SIZE_RANGES[0],

@@ -29,29 +29,29 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
     steps: twitterSpacesSteps
   },
   {
-    id: "Twitter Brand Collab",
-    name: "Twitter Brand Collab",
+    id: "Co-Marketing on Twitter",
+    name: "Twitter Co-marketing",
     schema: twitterCollabSchema,
     defaultValues: twitterCollabDefaults,
     steps: twitterCollabSteps
   },
   {
-    id: "Podcast Guests",
-    name: "Podcast Guests",
+    id: "Podcast Guest Appearance",
+    name: "Podcast Guest Appearance",
     schema: podcastCollabSchema,
     defaultValues: podcastCollabDefaults,
     steps: podcastCollabSteps
   },
   {
-    id: "Live Stream Guests",
-    name: "Live Stream Guests",
+    id: "Live Stream Guest Appearance",
+    name: "Live Stream Guest Appearance",
     schema: liveStreamSchema,
     defaultValues: liveStreamDefaults,
     steps: liveStreamSteps
   },
   {
-    id: "Report & Research Contributors",
-    name: "Report & Research Contributors",
+    id: "Report & Research Feature",
+    name: "Report & Research Feature",
     schema: reportSchema,
     defaultValues: reportDefaults,
     steps: reportSteps
@@ -64,14 +64,14 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
     defaultValues: newsletterDefaults,
     steps: newsletterSteps
   },
-  */
   {
-    id: "Guest Posts for Brand Blog",
-    name: "Guest Posts for Brand Blog",
+    id: "Blog Post Feature",
+    name: "Blog Post Feature",
     schema: blogPostSchema,
     defaultValues: blogPostDefaults,
     steps: blogPostSteps
   }
+  */
 ];
 
 /**
