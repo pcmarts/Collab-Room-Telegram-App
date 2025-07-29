@@ -125,7 +125,7 @@ export const useNavigationDirection = () => {
         const newDirection = movingRight ? 'slide-right-to-left' : 'slide-left-to-right';
         setDirection(newDirection);
         
-        console.log(`Math: Position ${prevPosition} → ${currentPosition} | Moving: ${movingRight ? 'RIGHT' : 'LEFT'} | Content Animation: ${newDirection}`);
+        console.log(`🧭 Navigation: FROM "${prevLocation}" (pos:${prevPosition}) → TO "${currentLocation}" (pos:${currentPosition}) | Menu Direction: ${movingRight ? 'RIGHT' : 'LEFT'} | Animation: ${newDirection}`);
       }
       
       prevLocationRef.current = currentLocation;
@@ -134,14 +134,26 @@ export const useNavigationDirection = () => {
 
   return { 
     direction, 
-    isMainNavigation: menuOrder.includes(location) 
+    isMainNavigation: menuOrder.includes(location),
+    // Additional navigation context
+    fromPage: prevLocationRef.current,
+    toPage: location,
+    fromPosition: menuOrder.indexOf(prevLocationRef.current),
+    toPosition: menuOrder.indexOf(location)
   };
 };
 
 // Enhanced directional page transition with simultaneous animations
 export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = ({ children }) => {
   const [location] = useLocation();
-  const { direction, isMainNavigation } = useNavigationDirection();
+  const { 
+    direction, 
+    isMainNavigation, 
+    fromPage, 
+    toPage, 
+    fromPosition, 
+    toPosition 
+  } = useNavigationDirection();
   
   // Store the direction for this specific transition to prevent changes mid-animation
   const transitionDirection = React.useRef(direction);
@@ -149,7 +161,12 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
   // Update direction only when location changes
   React.useEffect(() => {
     transitionDirection.current = direction;
-  }, [location, direction]);
+    
+    // Additional detailed logging for animation debugging
+    if (isMainNavigation && fromPage !== toPage) {
+      console.log(`🎬 Animation: "${fromPage}" → "${toPage}" | Direction: ${direction} | Positions: ${fromPosition} → ${toPosition}`);
+    }
+  }, [location, direction, isMainNavigation, fromPage, toPage, fromPosition, toPosition]);
 
   // Variants for subtle simultaneous directional movement
   const variants = {
