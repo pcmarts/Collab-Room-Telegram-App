@@ -96,55 +96,47 @@ export const SynchronizedPageTransition: React.FC<AnimatedPageTransitionProps> =
   );
 };
 
-// Reliable direction calculation hook - calculates fresh each time
+// Simple navigation direction hook with immediate calculation
 export const useNavigationDirection = () => {
   const [location] = useLocation();
   
-  // Menu positions: 0=Discover, 1=My Collabs, 2=Requests, 3=Matches
+  // Menu order array
   const menuOrder = ['/discover', '/my-collaborations', '/requests', '/matches'];
   
+  // Store previous location with immediate update
   const prevLocationRef = React.useRef(location);
+  const [prevLocation, setPrevLocation] = React.useState(location);
   
-  // Calculate direction fresh each time instead of storing in state
-  const getDirection = React.useCallback(() => {
-    const prevLocation = prevLocationRef.current;
-    const currentLocation = location;
-    
-    const prevPosition = menuOrder.indexOf(prevLocation);  
-    const currentPosition = menuOrder.indexOf(currentLocation);
-    
-    // Default direction for non-menu or invalid routes
-    if (prevPosition === -1 || currentPosition === -1) {
-      return 'slide-right-to-left';
-    }
-    
-    // Calculate direction from positions directly
-    const movingRight = currentPosition > prevPosition;
-    const direction = movingRight ? 'slide-right-to-left' : 'slide-left-to-right';
-    
-    console.log(`🎯 DIRECT CALC: "${prevLocation}"(${prevPosition}) → "${currentLocation}"(${currentPosition}) = ${direction}`);
-    
-    return direction;
-  }, [location, menuOrder]);
-  
-  // Update ref when location changes
+  // Update previous location when current changes
   React.useEffect(() => {
-    const prevLocation = prevLocationRef.current;
-    if (prevLocation !== location) {
-      console.log(`📍 Location changed: ${prevLocation} → ${location}`);
+    if (location !== prevLocationRef.current) {
+      setPrevLocation(prevLocationRef.current);
       prevLocationRef.current = location;
     }
   }, [location]);
-
-  const direction = getDirection();
   
-  return { 
-    direction, 
+  // Calculate direction immediately from positions
+  const prevPos = menuOrder.indexOf(prevLocation);
+  const currentPos = menuOrder.indexOf(location);
+  
+  // Simple direction calculation
+  let direction: 'slide-right-to-left' | 'slide-left-to-right' = 'slide-right-to-left';
+  
+  if (prevPos !== -1 && currentPos !== -1 && prevPos !== currentPos) {
+    // If current position is higher, we moved right → slide right-to-left
+    // If current position is lower, we moved left → slide left-to-right
+    direction = currentPos > prevPos ? 'slide-right-to-left' : 'slide-left-to-right';
+    
+    console.log(`SIMPLE: ${prevLocation}[${prevPos}] → ${location}[${currentPos}] = ${direction}`);
+  }
+  
+  return {
+    direction,
     isMainNavigation: menuOrder.includes(location),
-    fromPage: prevLocationRef.current,
+    fromPage: prevLocation,
     toPage: location,
-    fromPosition: menuOrder.indexOf(prevLocationRef.current),
-    toPosition: menuOrder.indexOf(location)
+    fromPosition: prevPos,
+    toPosition: currentPos
   };
 };
 
