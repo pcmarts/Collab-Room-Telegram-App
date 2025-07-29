@@ -10,7 +10,10 @@
 ### Quick Fix References
 - **[Logo Loading Fix](./ai-assistant-guides/logo-loading-fix.md)** - Quick reference for AI assistants to identify and fix company logo loading issues
 
-## Component Documentation
+## Frontend Documentation
+
+### User Experience
+- **[Discovery Cards UX Improvements](frontend/discovery-cards-ux-improvements.md)** - July 2025 UX enhancements for improved browsing and visual hierarchy
 
 ### UI Components
 - **LogoAvatar** (`client/src/components/ui/logo-avatar.tsx`) - Displays company/user logos with fallback handling

@@ -120,6 +120,16 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
+- July 29, 2025. **COMPLETED**: Enhanced discovery cards UX with improved layout and visual hierarchy
+  - Redesigned card layout: Company name → "Looking for" → Collaboration type pill → Description
+  - Changed "Looking For" to lowercase "Looking for" for friendlier tone
+  - Moved collaboration type pill below "Looking for" text on separate line for better visual hierarchy
+  - Made description text italic with lighter gray color (text-gray-500) for improved readability
+  - Updated request button text to "Request to Collab (Free)" in collaboration details dialog
+  - Simplified live stats to show only collaboration count, removed title and user/match counts
+  - Updated navigation icons: Discover uses Search icon, My Collabs uses Sparkles icon
+  - Added right arrow indicators to cards following standard UI patterns for clickable items
+  - Removed action buttons from cards, moved all actions to details dialog for cleaner browsing experience
 - July 28, 2025. **COMPLETED**: Phase 1 Telegram Bot Startup Performance Optimization - 400% improvement achieved (20s → <5s)
   - **Problem Solved**: Users no longer experience 20-second delay when pressing /start - response is now <5 seconds (0.009s measured)
   - Implemented non-blocking bot verification: Server no longer waits for bot.getMe() to complete before starting
