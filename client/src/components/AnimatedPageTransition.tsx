@@ -96,37 +96,41 @@ export const SynchronizedPageTransition: React.FC<AnimatedPageTransitionProps> =
   );
 };
 
-// Hook to get direction of navigation for directional animations
+// Simple navigation direction hook
 export const useNavigationDirection = () => {
   const [location] = useLocation();
+  
+  // Define menu order from left to right
+  const menuOrder = ['/discover', '/my-collaborations', '/requests', '/matches'];
+  
+  // Store previous location to determine direction
   const prevLocationRef = React.useRef(location);
-  const [direction, setDirection] = React.useState<'rightward' | 'leftward'>('rightward');
-
-  // Define the order of main navigation routes (left to right)
-  const routeOrder = ['/discover', '/my-collaborations', '/requests', '/matches'];
-
+  const [direction, setDirection] = React.useState<'left-to-right' | 'right-to-left'>('left-to-right');
+  
   React.useEffect(() => {
     const prevLocation = prevLocationRef.current;
+    const currentLocation = location;
     
-    if (location !== prevLocation) {
-      const prevIndex = routeOrder.indexOf(prevLocation);
-      const currentIndex = routeOrder.indexOf(location);
+    if (prevLocation !== currentLocation) {
+      const prevIndex = menuOrder.indexOf(prevLocation);
+      const currentIndex = menuOrder.indexOf(currentLocation);
       
-      // Only update direction for main navigation routes with valid indices
-      if (prevIndex !== -1 && currentIndex !== -1 && prevIndex !== currentIndex) {
-        const newDirection = currentIndex > prevIndex ? 'rightward' : 'leftward';
+      // Only calculate direction for main menu routes
+      if (prevIndex !== -1 && currentIndex !== -1) {
+        // If clicking menu item to the right → animation goes right to left
+        // If clicking menu item to the left → animation goes left to right
+        const newDirection = currentIndex > prevIndex ? 'right-to-left' : 'left-to-right';
         setDirection(newDirection);
-        console.log(`Navigation: ${prevLocation} → ${location} (${newDirection})`);
+        console.log(`Menu navigation: ${prevLocation} → ${currentLocation} | Direction: ${newDirection}`);
       }
       
-      prevLocationRef.current = location;
+      prevLocationRef.current = currentLocation;
     }
-  }, [location, routeOrder]);
+  }, [location]);
 
   return { 
     direction, 
-    isMainNavigation: routeOrder.includes(location),
-    routeOrder 
+    isMainNavigation: menuOrder.includes(location) 
   };
 };
 
@@ -151,11 +155,11 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
         return { x: '100%', opacity: 0.25 };
       }
       
-      // Much more subtle movement: new page slides in from 20% offset
-      // Rightward: new page slides in from right (20% offset)
-      // Leftward: new page slides in from left (-20% offset)
+      // Simple logic:
+      // left-to-right: new page starts from left (-20%)
+      // right-to-left: new page starts from right (20%)
       return {
-        x: dir === 'rightward' ? '20%' : '-20%',
+        x: dir === 'left-to-right' ? '-20%' : '20%',
         opacity: 0.25,
       };
     },
@@ -169,11 +173,11 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
         return { x: '-100%', opacity: 0.25 };
       }
       
-      // Very subtle shift: old page shifts 3% in opposite direction
-      // Rightward: old page shifts left (3% offset)
-      // Leftward: old page shifts right (3% offset)
+      // Simple logic:
+      // left-to-right: current page shifts right (3%)
+      // right-to-left: current page shifts left (-3%)
       return {
-        x: dir === 'rightward' ? '-3%' : '3%',
+        x: dir === 'left-to-right' ? '3%' : '-3%',
         opacity: 0.25,
       };
     },
