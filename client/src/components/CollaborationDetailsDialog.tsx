@@ -478,7 +478,7 @@ export function CollaborationDetailsDialog({
                     className="bg-primary hover:bg-primary/90 text-white px-4 w-full"
                   >
                     <MessageSquare className="w-4 h-4 mr-1" />
-                    Request
+                    Request to Collab (Free)
                   </Button>
                 )}
                 
