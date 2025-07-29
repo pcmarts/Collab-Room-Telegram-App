@@ -35,19 +35,25 @@ export const AnimatedPageTransition: React.FC<AnimatedPageTransitionProps> = ({ 
   const [location] = useLocation();
 
   return (
-    <div className="relative w-full min-h-screen overflow-hidden">
-      <AnimatePresence mode="wait" initial={false}>
+    <div className="relative w-full min-h-screen overflow-hidden bg-background">
+      <AnimatePresence mode="sync" initial={false}>
         <motion.div
           key={location}
           initial="initial"
           animate="in"
           exit="out"
           variants={pageVariants}
-          transition={pageTransition}
+          transition={{
+            type: 'tween' as const,
+            ease: customEasing,
+            duration: 0.4,
+          }}
           className="absolute inset-0 w-full bg-background"
           style={{ 
             willChange: 'transform, opacity',
             backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'translateZ(0)',
           }}
         >
           {children}
@@ -57,14 +63,14 @@ export const AnimatedPageTransition: React.FC<AnimatedPageTransitionProps> = ({ 
   );
 };
 
-// Synchronized page transition that creates smooth slide animation
+// Synchronized page transition with simultaneous animations
 // Current page slides left (opacity 100% -> 25%) while new page slides in from right (opacity 25% -> 100%)
 export const SynchronizedPageTransition: React.FC<AnimatedPageTransitionProps> = ({ children }) => {
   const [location] = useLocation();
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-background">
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="sync" initial={false}>
         <motion.div
           key={location}
           initial={{ x: '100%', opacity: 0.25 }}
@@ -73,7 +79,7 @@ export const SynchronizedPageTransition: React.FC<AnimatedPageTransitionProps> =
           transition={{
             type: 'tween',
             ease: customEasing,
-            duration: 0.2,
+            duration: 0.4,
           }}
           className="absolute inset-0 w-full bg-background"
           style={{ 
@@ -116,12 +122,12 @@ export const useNavigationDirection = () => {
   return { direction, isMainNavigation: routeOrder.includes(location) };
 };
 
-// Enhanced directional page transition with subtle movement and synced opacity
+// Enhanced directional page transition with simultaneous animations
 export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = ({ children }) => {
   const [location] = useLocation();
   const { direction, isMainNavigation } = useNavigationDirection();
 
-  // Variants for subtle directional movement
+  // Variants for simultaneous directional movement
   const variants = {
     initial: (dir: string) => {
       if (!isMainNavigation) {
@@ -157,7 +163,7 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-background">
-      <AnimatePresence mode="wait" initial={false} custom={direction}>
+      <AnimatePresence mode="sync" initial={false} custom={direction}>
         <motion.div
           key={location}
           custom={direction}
@@ -168,7 +174,7 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
           transition={{
             type: 'tween',
             ease: customEasing,
-            duration: 0.4, // Updated to 0.4s as requested
+            duration: 0.4,
           }}
           className="absolute inset-0 w-full bg-background"
           style={{ 
