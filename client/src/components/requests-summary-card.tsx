@@ -4,17 +4,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { 
   Clock, 
-  ArrowRight,
-  Mic,
-  Video,
-  Mail,
-  PenTool,
-  Coffee,
-  MessageSquare,
-  ListChecks
+  ArrowRight
 } from "lucide-react";
-import { FaTwitter as Twitter } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
+import { getCollabTypeIcon } from "@/lib/collaboration-utils";
 
 interface RequestsSummaryCardProps {
   recentRequests: Array<{
@@ -44,36 +37,7 @@ export function RequestsSummaryCard({
   totalPendingCount, 
   onViewAllRequests 
 }: RequestsSummaryCardProps) {
-  const getCollabTypeIcon = (collabType: string) => {
-    switch(collabType) {
-      case 'Podcast Guest Appearance':
-      case 'Podcast':
-        return <Mic className="h-4 w-4" />;
-      case 'Twitter Spaces Guest':
-      case 'Twitter Space':
-        return <Twitter className="h-4 w-4" />;
-      case 'Twitter Co-Marketing':
-      case 'Co-Marketing on Twitter':
-        return <Twitter className="h-4 w-4" />;
-      case 'Live Stream Guest Appearance':
-      case 'Live Stream':
-      case 'Webinar':
-        return <Video className="h-4 w-4" />;
-      case 'Report & Research Feature':
-      case 'Research Report':
-        return <ListChecks className="h-4 w-4" />;
-      case 'Newsletter Feature':
-      case 'Newsletter':
-        return <Mail className="h-4 w-4" />;
-      case 'Blog Post Feature':
-      case 'Blog Post':
-        return <PenTool className="h-4 w-4" />;
-      case 'Conference Coffee':
-        return <Coffee className="h-4 w-4" />;
-      default:
-        return <MessageSquare className="h-4 w-4" />;
-    }
-  };
+  // Using centralized collaboration types registry
 
   return (
     <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">

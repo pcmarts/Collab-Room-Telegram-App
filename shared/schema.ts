@@ -11,16 +11,37 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Constants for form options
+// Import collaboration types from the new registry system
+import { COLLABORATION_TYPE_DEFINITIONS } from './collaboration-types/definitions';
+
+// Constants for form options - now powered by the collaboration types registry
+// This maintains backward compatibility while using the new centralized system
+const activeCollabTypeNames = COLLABORATION_TYPE_DEFINITIONS
+  .filter(type => type.isActive)
+  .map(type => type.name);
+
 export const COLLAB_TYPES = [
   "Twitter Spaces Guest",
-  "Co-Marketing on Twitter",
+  "Co-Marketing on Twitter", 
   "Podcast Guest Appearance",
   "Live Stream Guest Appearance",
   "Report & Research Feature",
   "Newsletter Feature",
   "Blog Post Feature",
 ] as const;
+
+// Verify that our registry contains all the expected types
+if (process.env.NODE_ENV === 'development') {
+  const registryNames = new Set(activeCollabTypeNames);
+  const hardcodedNames = new Set(COLLAB_TYPES);
+  
+  // Check if all hardcoded types exist in registry
+  for (const name of hardcodedNames) {
+    if (!registryNames.has(name)) {
+      console.warn(`⚠️ Collaboration type "${name}" missing from registry`);
+    }
+  }
+}
 
 // Standardized topic list used throughout the app
 export const COLLAB_TOPICS = [

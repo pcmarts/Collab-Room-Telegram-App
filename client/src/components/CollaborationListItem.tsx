@@ -3,8 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { SignupToCollaborateDialog } from "@/components/SignupToCollaborateDialog";
-import { Building2, Eye, MessageSquare, Mic, Video, Mail, FileText, FileSearch, Coffee, Twitter, PenTool, ListChecks, ChevronRight } from "lucide-react";
+import { Building2, Eye, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { 
+  getCollabTypeIcon, 
+  getCollabTypeColorClasses 
+} from "@/lib/collaboration-utils";
 
 interface CollaborationListItemProps {
   collaboration: {
@@ -51,46 +55,7 @@ export function CollaborationListItem({
       .join("");
   };
 
-  // Get collaboration type color
-  const getTypeColor = (type?: string) => {
-    if (!type) return "bg-gray-100 text-gray-800";
-    const lowerType = type.toLowerCase();
-    if (lowerType.includes("twitter") || lowerType.includes("social")) return "bg-blue-100 text-blue-800";
-    if (lowerType.includes("podcast")) return "bg-purple-100 text-purple-800";
-    if (lowerType.includes("blog") || lowerType.includes("content")) return "bg-emerald-100 text-emerald-800";
-    if (lowerType.includes("research") || lowerType.includes("report")) return "bg-amber-100 text-amber-800";
-    if (lowerType.includes("newsletter")) return "bg-indigo-100 text-indigo-800";
-    if (lowerType.includes("livestream") || lowerType.includes("stream")) return "bg-red-100 text-red-800";
-    return "bg-gray-100 text-gray-800";
-  };
-
-  // Get collaboration type icon
-  const getCollabTypeIcon = (collabType: string) => {
-    const lowerType = collabType.toLowerCase();
-    if (lowerType.includes('podcast')) {
-      return <Mic className="h-4 w-4" />;
-    }
-    if (lowerType.includes('twitter') || lowerType.includes('social')) {
-      return <Twitter className="h-4 w-4" />;
-    }
-    if (lowerType.includes('live stream') || lowerType.includes('livestream') || lowerType.includes('webinar')) {
-      return <Video className="h-4 w-4" />;
-    }
-    if (lowerType.includes('newsletter')) {
-      return <Mail className="h-4 w-4" />;
-    }
-    if (lowerType.includes('blog')) {
-      return <PenTool className="h-4 w-4" />;
-    }
-    if (lowerType.includes('research') || lowerType.includes('report')) {
-      return <FileSearch className="h-4 w-4" />;
-    }
-    if (lowerType.includes('coffee')) {
-      return <Coffee className="h-4 w-4" />;
-    }
-    // Default collaboration icon
-    return <MessageSquare className="h-4 w-4" />;
-  };
+  // Now using the centralized collaboration types registry
 
   const collabType = collaboration.type || collaboration.collab_type || "Collaboration";
   const description = collaboration.short_description || collaboration.description;
@@ -127,7 +92,7 @@ export function CollaborationListItem({
               <div className="space-y-1">
                 <span className="text-sm text-gray-600">Looking for</span>
                 <div>
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(collabType)}`}>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getCollabTypeColorClasses(collabType)}`}>
                     {getCollabTypeIcon(collabType)}
                     <span>{collabType}</span>
                   </span>
