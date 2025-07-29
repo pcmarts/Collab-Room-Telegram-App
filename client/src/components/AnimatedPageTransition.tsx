@@ -70,23 +70,22 @@ export const SynchronizedPageTransition: React.FC<AnimatedPageTransitionProps> =
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-background">
-      <AnimatePresence mode="sync" initial={false}>
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={location}
           initial={{ x: '100%', opacity: 0.25 }}
-          animate={{ x: '0%', opacity: 1 }}
+          animate={{ x: '0%', opacity: 1 }} // FIXED: Changed from 0.25 to 1 for full visibility
           exit={{ x: '-100%', opacity: 0.25 }}
           transition={{
             type: 'tween',
             ease: customEasing,
-            duration: 0.4,
+            duration: 0.3, // REDUCED: Faster for better click responsiveness
           }}
           className="absolute inset-0 w-full bg-background"
           style={{ 
-            willChange: 'transform, opacity',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            transform: 'translateZ(0)', // Force hardware acceleration
+            // REMOVED: Properties that can interfere with touch events
+            touchAction: 'manipulation', // ADDED: Improves touch responsiveness
+            WebkitTapHighlightColor: 'transparent', // ADDED: Removes tap highlighting
           }}
         >
           {children}
@@ -96,117 +95,99 @@ export const SynchronizedPageTransition: React.FC<AnimatedPageTransitionProps> =
   );
 };
 
-// Simple navigation direction hook with immediate calculation
-export const useNavigationDirection = () => {
+// HARDCODED ANIMATION RULES FOR ALL MENU TRANSITIONS
+const ANIMATION_RULES = {
+  // FROM /discover
+  '/discover': {
+    '/my-collaborations': { newFrom: '100%', oldTo: '-10%', direction: 'rightward' }, // discover → my-collabs (rightward)
+    '/requests': { newFrom: '100%', oldTo: '-10%', direction: 'rightward' },           // discover → requests (rightward)
+    '/matches': { newFrom: '100%', oldTo: '-10%', direction: 'rightward' },            // discover → matches (rightward)
+  },
+  
+  // FROM /my-collaborations  
+  '/my-collaborations': {
+    '/discover': { newFrom: '-100%', oldTo: '10%', direction: 'leftward' },            // my-collabs → discover (leftward)
+    '/requests': { newFrom: '100%', oldTo: '-10%', direction: 'rightward' },           // my-collabs → requests (rightward)
+    '/matches': { newFrom: '100%', oldTo: '-100', direction: 'rightward' },            // my-collabs → matches (rightward)
+  },
+  
+  // FROM /requests
+  '/requests': {
+    '/discover': { newFrom: '-100%', oldTo: '10%', direction: 'leftward' },            // requests → discover (leftward)
+    '/my-collaborations': { newFrom: '-10%', oldTo: '10%', direction: 'leftward' },   // requests → my-collabs (leftward)
+    '/matches': { newFrom: '100%', oldTo: '-10%', direction: 'rightward' },            // requests → matches (rightward)
+  },
+  
+  // FROM /matches
+  '/matches': {
+    '/discover': { newFrom: '-100%', oldTo: '10%', direction: 'leftward' },            // matches → discover (leftward)
+    '/my-collaborations': { newFrom: '-100%', oldTo: '10%', direction: 'leftward' },   // matches → my-collabs (leftward)
+    '/requests': { newFrom: '-100%', oldTo: '10%', direction: 'leftward' },            // matches → requests (leftward)
+  },
+} as const;
+
+// DEFAULT ANIMATION (for non-menu routes)
+const DEFAULT_ANIMATION = { newFrom: '100%', oldTo: '-10%', direction: 'default' };
+
+// Function to get animation rule for transition
+const getAnimationRule = (fromPage: string, toPage: string) => {
+  const rule = ANIMATION_RULES[fromPage as keyof typeof ANIMATION_RULES]?.[toPage as keyof typeof ANIMATION_RULES['/discover']] || DEFAULT_ANIMATION;
+  
+  console.log(`🎯 ANIMATION RULE: ${fromPage} → ${toPage}`);
+  console.log(`   📥 New page enters from: ${rule.newFrom}`);
+  console.log(`   📤 Old page exits to: ${rule.oldTo}`);
+  console.log(`   🧭 Direction: ${rule.direction}`);
+  
+  return rule;
+};
+
+// Enhanced directional page transition with hardcoded rules
+export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = ({ children }) => {
   const [location] = useLocation();
   
   // Menu order array
   const menuOrder = ['/discover', '/my-collaborations', '/requests', '/matches'];
+  const isMainNavigation = menuOrder.includes(location);
   
-  // Store previous location with immediate update
+  // Track previous location to determine animation direction
   const prevLocationRef = React.useRef(location);
-  const [prevLocation, setPrevLocation] = React.useState(location);
-  
-  // Update previous location when current changes
   React.useEffect(() => {
-    if (location !== prevLocationRef.current) {
-      setPrevLocation(prevLocationRef.current);
-      prevLocationRef.current = location;
-    }
-  }, [location]);
-  
-  // Calculate direction immediately from positions
-  const prevPos = menuOrder.indexOf(prevLocation);
-  const currentPos = menuOrder.indexOf(location);
-  
-  // Simple direction calculation
-  let direction: 'slide-right-to-left' | 'slide-left-to-right' = 'slide-right-to-left';
-  
-  if (prevPos !== -1 && currentPos !== -1 && prevPos !== currentPos) {
-    // If current position is higher, we moved right → slide right-to-left
-    // If current position is lower, we moved left → slide left-to-right
-    direction = currentPos > prevPos ? 'slide-right-to-left' : 'slide-left-to-right';
-    
-    console.log(`SIMPLE: ${prevLocation}[${prevPos}] → ${location}[${currentPos}] = ${direction}`);
-  }
-  
-  return {
-    direction,
-    isMainNavigation: menuOrder.includes(location),
-    fromPage: prevLocation,
-    toPage: location,
-    fromPosition: prevPos,
-    toPosition: currentPos
-  };
-};
+    // This updates *after* the render, so on next render, ref has previous value
+    prevLocationRef.current = location;
+  });
 
-// Enhanced directional page transition with simultaneous animations
-export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = ({ children }) => {
-  const [location] = useLocation();
-  const { 
-    direction, 
-    isMainNavigation, 
-    fromPage, 
-    toPage, 
-    fromPosition, 
-    toPosition 
-  } = useNavigationDirection();
-  
-  // Store the direction for this specific transition to prevent changes mid-animation
-  const transitionDirection = React.useRef(direction);
-  
-  // Update direction only when location changes
-  React.useEffect(() => {
-    transitionDirection.current = direction;
-    
-    // Additional detailed logging for animation debugging
-    if (isMainNavigation && fromPage !== toPage) {
-      console.log(`🎬 Animation: "${fromPage}" → "${toPage}" | Direction: ${direction} | Positions: ${fromPosition} → ${toPosition}`);
-    }
-  }, [location, direction, isMainNavigation, fromPage, toPage, fromPosition, toPosition]);
+  // Calculate the rule for the CURRENT transition (from prev to current)
+  const fromPage = prevLocationRef.current;
+  const toPage = location;
+  const animationRule = getAnimationRule(fromPage, toPage);
 
-  // Variants for subtle simultaneous directional movement
-  const variants = {
-    initial: (dir: string) => {
-      if (!isMainNavigation) {
-        // Default behavior for non-main navigation routes
-        return { x: '100%', opacity: 0.25 };
-      }
+  // OPTIMIZED: Create variants once and pass rule via custom prop to avoid constant recreation
+  const variants = React.useMemo(() => ({
+    initial: (rule: typeof DEFAULT_ANIMATION) => {
+      if (!isMainNavigation) return { x: '100%', opacity: 0.3 };
       
-      // CORRECTED slide logic:
-      // slide-right-to-left: new page enters from right (20%)
-      // slide-left-to-right: new page enters from left (-20%)
-      return {
-        x: dir === 'slide-right-to-left' ? '20%' : '-20%',
-        opacity: 0.25,
-      };
+      console.log(`📥 NEW PAGE (${toPage}) enters from: ${rule.newFrom}`);
+      return { x: rule.newFrom, opacity: 0.3 };
     },
     in: {
       x: '0%',
       opacity: 1,
     },
-    out: (dir: string) => {
-      if (!isMainNavigation) {
-        // Default behavior for non-main navigation routes
-        return { x: '-100%', opacity: 0.25 };
-      }
+    out: (rule: typeof DEFAULT_ANIMATION) => {
+      if (!isMainNavigation) return { x: '-100%', opacity: 0.3 };
       
-      // CORRECTED slide logic:
-      // slide-right-to-left: current page exits to left (-3%)
-      // slide-left-to-right: current page exits to right (3%)
-      return {
-        x: dir === 'slide-right-to-left' ? '-3%' : '3%',
-        opacity: 0.25,
-      };
+      console.log(`📤 OLD PAGE (${fromPage}) exits to: ${rule.oldTo}`);
+      return { x: rule.oldTo, opacity: 0.3 };
     },
-  };
+  }), [isMainNavigation]); // FIXED: Removed fromPage, toPage to prevent constant recreation
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-background">
-      <AnimatePresence mode="sync" initial={false} custom={transitionDirection.current}>
+      {/* Changed to "wait" mode to prevent overlapping elements that can interfere with clicks */}
+      <AnimatePresence mode="wait" initial={false} custom={animationRule}>
         <motion.div
           key={location}
-          custom={transitionDirection.current}
+          custom={animationRule} // Pass rule to variants
           initial="initial"
           animate="in"
           exit="out"
@@ -214,14 +195,13 @@ export const DirectionalPageTransition: React.FC<AnimatedPageTransitionProps> = 
           transition={{
             type: 'tween',
             ease: customEasing,
-            duration: 0.4,
+            duration: 0.2, // REDUCED: Faster animations to prevent click blocking
           }}
           className="absolute inset-0 w-full bg-background"
           style={{ 
-            willChange: 'transform, opacity',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            transform: 'translateZ(0)', // Force hardware acceleration
+            // REMOVED: willChange, backfaceVisibility, and translateZ that can interfere with touch
+            touchAction: 'manipulation', // ADDED: Improves touch responsiveness
+            WebkitTapHighlightColor: 'transparent', // ADDED: Removes tap highlighting that can interfere
           }}
         >
           {children}
