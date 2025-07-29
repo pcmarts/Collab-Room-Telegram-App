@@ -96,7 +96,7 @@ export const SynchronizedPageTransition: React.FC<AnimatedPageTransitionProps> =
   );
 };
 
-// Mathematical direction calculation hook
+// Reliable direction calculation hook - calculates fresh each time
 export const useNavigationDirection = () => {
   const [location] = useLocation();
   
@@ -104,46 +104,43 @@ export const useNavigationDirection = () => {
   const menuOrder = ['/discover', '/my-collaborations', '/requests', '/matches'];
   
   const prevLocationRef = React.useRef(location);
-  const [direction, setDirection] = React.useState<'slide-right-to-left' | 'slide-left-to-right'>('slide-right-to-left');
   
-  React.useEffect(() => {
+  // Calculate direction fresh each time instead of storing in state
+  const getDirection = React.useCallback(() => {
     const prevLocation = prevLocationRef.current;
     const currentLocation = location;
     
-    if (prevLocation !== currentLocation) {
-      const prevPosition = menuOrder.indexOf(prevLocation);
-      const currentPosition = menuOrder.indexOf(currentLocation);
-      
-      console.log(`🔍 DEBUG: Prev:"${prevLocation}" (${prevPosition}) → Current:"${currentLocation}" (${currentPosition})`);
-      
-      // Only process main navigation routes
-      if (prevPosition !== -1 && currentPosition !== -1) {
-        // Simple math: position difference determines direction
-        const positionDiff = currentPosition - prevPosition;
-        
-        let newDirection: 'slide-right-to-left' | 'slide-left-to-right';
-        
-        if (positionDiff > 0) {
-          // Moving to higher position (moving right) → slide right-to-left
-          newDirection = 'slide-right-to-left';
-          console.log(`✅ Moving RIGHT: ${prevPosition} → ${currentPosition} | Animation: slide-right-to-left`);
-        } else {
-          // Moving to lower position (moving left) → slide left-to-right  
-          newDirection = 'slide-left-to-right';
-          console.log(`✅ Moving LEFT: ${prevPosition} → ${currentPosition} | Animation: slide-left-to-right`);
-        }
-        
-        setDirection(newDirection);
-      }
-      
-      prevLocationRef.current = currentLocation;
+    const prevPosition = menuOrder.indexOf(prevLocation);  
+    const currentPosition = menuOrder.indexOf(currentLocation);
+    
+    // Default direction for non-menu or invalid routes
+    if (prevPosition === -1 || currentPosition === -1) {
+      return 'slide-right-to-left';
+    }
+    
+    // Calculate direction from positions directly
+    const movingRight = currentPosition > prevPosition;
+    const direction = movingRight ? 'slide-right-to-left' : 'slide-left-to-right';
+    
+    console.log(`🎯 DIRECT CALC: "${prevLocation}"(${prevPosition}) → "${currentLocation}"(${currentPosition}) = ${direction}`);
+    
+    return direction;
+  }, [location, menuOrder]);
+  
+  // Update ref when location changes
+  React.useEffect(() => {
+    const prevLocation = prevLocationRef.current;
+    if (prevLocation !== location) {
+      console.log(`📍 Location changed: ${prevLocation} → ${location}`);
+      prevLocationRef.current = location;
     }
   }, [location]);
 
+  const direction = getDirection();
+  
   return { 
     direction, 
     isMainNavigation: menuOrder.includes(location),
-    // Additional navigation context
     fromPage: prevLocationRef.current,
     toPage: location,
     fromPosition: menuOrder.indexOf(prevLocationRef.current),
