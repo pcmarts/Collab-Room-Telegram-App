@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "wouter"
-import { User, MessageSquare, FolderPlus, Users, Inbox, Layers, Copy, SquareStack, Combine, Sparkles } from "lucide-react"
+import { User, MessageSquare, FolderPlus, Users, Inbox, Layers, Copy, SquareStack, Combine, Sparkles, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DiscoveryIcon } from "@/components/icons/DiscoveryIcon"
 import { Badge } from "@/components/ui/badge"
@@ -89,7 +89,7 @@ const BottomNavigation = () => {
   const navItems = [
     {
       label: "Discover",
-      icon: DiscoveryIcon,
+      icon: Search,
       href: "/discover",
       requiresAuth: false,
     },
