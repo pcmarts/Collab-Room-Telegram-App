@@ -146,7 +146,7 @@ export function CollaborationListItem({
 
           {/* Description */}
           {description && (
-            <p className="text-sm text-gray-600 line-clamp-3 mb-2">
+            <p className="text-sm text-gray-500 italic line-clamp-3 mb-2">
               {description}
             </p>
           )}
