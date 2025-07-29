@@ -128,15 +128,20 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
-- July 29, 2025. **COMPLETED**: Added Telegram notification for collab request confirmation
+- July 29, 2025. **COMPLETED**: Fixed Telegram notification system and implemented collab request confirmation
+  - **Issue Fixed**: Resolved `ReferenceError: isProduction is not defined` error that was preventing all Telegram notifications from working
+  - **Root Cause**: Missing `isProduction` constant definition in server/telegram.ts after recent bot environment architecture changes
+  - **Solution**: Added `const isProduction = process.env.NODE_ENV === "production";` to telegram.ts configuration section
+  - **Additional Fix**: Resolved duplicate export error for `notifyRequesterRequestSent` function
   - **New Feature**: When users send collab requests, they now receive immediate confirmation notifications via Telegram
   - **Message Content**: "Your collab request has been sent to [Company Name] for their collab [Collab Type]. If they approve it, you'll be matched and able to connect via the My Matches section. You'll also get a notification here when that happens."
-  - **Implementation**: Created notifyRequesterRequestSent() function in server/telegram.ts
+  - **Implementation**: Created notifyRequesterRequestSent() function in server/telegram.ts with proper export
   - **Integration**: Added notification call to POST /api/requests endpoint immediately after request creation
   - **User Experience**: Sets clear expectations about next steps and provides quick access to My Matches
   - **Interactive Buttons**: Includes "View My Matches" and "Launch Collab Room" buttons for easy navigation
   - **Personalization**: Includes actual company name and collaboration type from database
   - **Timing**: Sent immediately after request submission alongside existing host notification
+  - **Environment**: Works correctly with both development (TELEGRAM_TEST_BOT_TOKEN) and production (TELEGRAM_BOT_TOKEN) bot configurations
 - July 29, 2025. **COMPLETED**: Enhanced discovery cards UX with improved layout and visual hierarchy
   - Redesigned card layout: Company name → "Looking for" → Collaboration type pill → Description
   - Changed "Looking For" to lowercase "Looking for" for friendlier tone

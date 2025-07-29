@@ -22,6 +22,7 @@ const BOT_TOKEN =
     : process.env.TELEGRAM_TEST_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
 const currentEnvironment =
   process.env.NODE_ENV === "production" ? "PRODUCTION" : "DEVELOPMENT";
+const isProduction = process.env.NODE_ENV === "production";
 
 // Simplified environment logging
 console.log(`🔧 TELEGRAM BOT CONFIGURATION:`);
