@@ -31,7 +31,9 @@ import {
   Mail,
   MessageSquare,
   Filter,
-  TrendingUp
+  TrendingUp,
+  PenTool,
+  Coffee
 } from "lucide-react";
 
 interface CollaborationDetailsDialogProps {
@@ -109,6 +111,47 @@ export function CollaborationDetailsDialog({
 }: CollaborationDetailsDialogProps) {
   
   if (!collaboration) return null;
+
+  // Get collaboration type color - matches CollaborationListItem.tsx
+  const getTypeColor = (type?: string) => {
+    if (!type) return "bg-gray-100 text-gray-800";
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes("twitter") || lowerType.includes("social")) return "bg-blue-100 text-blue-800";
+    if (lowerType.includes("podcast")) return "bg-purple-100 text-purple-800";
+    if (lowerType.includes("blog") || lowerType.includes("content")) return "bg-emerald-100 text-emerald-800";
+    if (lowerType.includes("research") || lowerType.includes("report")) return "bg-amber-100 text-amber-800";
+    if (lowerType.includes("newsletter")) return "bg-indigo-100 text-indigo-800";
+    if (lowerType.includes("livestream") || lowerType.includes("stream")) return "bg-red-100 text-red-800";
+    return "bg-gray-100 text-gray-800";
+  };
+
+  // Get collaboration type icon - matches CollaborationListItem.tsx
+  const getCollabTypeIcon = (collabType: string) => {
+    const lowerType = collabType.toLowerCase();
+    if (lowerType.includes('podcast')) {
+      return <Mic className="h-4 w-4" />;
+    }
+    if (lowerType.includes('twitter') || lowerType.includes('social')) {
+      return <Twitter className="h-4 w-4" />;
+    }
+    if (lowerType.includes('live stream') || lowerType.includes('livestream') || lowerType.includes('webinar')) {
+      return <Video className="h-4 w-4" />;
+    }
+    if (lowerType.includes('newsletter')) {
+      return <Mail className="h-4 w-4" />;
+    }
+    if (lowerType.includes('blog')) {
+      return <PenTool className="h-4 w-4" />;
+    }
+    if (lowerType.includes('research') || lowerType.includes('report')) {
+      return <FileSearch className="h-4 w-4" />;
+    }
+    if (lowerType.includes('coffee')) {
+      return <Coffee className="h-4 w-4" />;
+    }
+    // Default collaboration icon
+    return <MessageSquare className="h-4 w-4" />;
+  };
   
   // Debug log to see what data we're receiving
   console.log('[CollabDetails] Full collaboration data received:', collaboration);
@@ -188,48 +231,12 @@ export function CollaborationDetailsDialog({
             
             {/* Collaboration details section */}
             <Card className="p-4 bg-card/50 border shadow-sm">
-              {/* Collaboration Type as full-width Badge */}
+              {/* Collaboration Type as full-width Badge with consistent styling */}
               <div className="mb-4">
-                {collabType?.includes('Twitter Co-Marketing') || collabType?.includes('Co-Marketing on Twitter') ? (
-                  <Badge variant="outline" className="text-sm px-4 py-2 bg-blue-500/10 border-blue-500/20 text-blue-700 w-full justify-center">
-                    <Twitter className="w-4 h-4 mr-2" />
-                    Twitter Co-Marketing
-                  </Badge>
-                ) : collabType === 'Twitter Spaces Guest' ? (
-                  <Badge variant="outline" className="text-sm px-4 py-2 bg-blue-500/10 border-blue-500/20 text-blue-700 w-full justify-center">
-                    <Twitter className="w-4 h-4 mr-2" />
-                    Twitter Spaces Guest
-                  </Badge>
-                ) : collabType === 'Podcast Guest Appearance' ? (
-                  <Badge variant="outline" className="text-sm px-4 py-2 bg-purple-500/10 border-purple-500/20 text-purple-700 w-full justify-center">
-                    <Mic className="w-4 h-4 mr-2" />
-                    Podcast Guest Appearance
-                  </Badge>
-                ) : collabType === 'Live Stream Guest Appearance' ? (
-                  <Badge variant="outline" className="text-sm px-4 py-2 bg-red-500/10 border-red-500/20 text-red-700 w-full justify-center">
-                    <Video className="w-4 h-4 mr-2" />
-                    {collabType}
-                  </Badge>
-                ) : collabType === 'Blog Post Feature' ? (
-                  <Badge variant="outline" className="text-sm px-4 py-2 bg-emerald-500/10 border-emerald-500/20 text-emerald-700 w-full justify-center">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Blog Post Feature
-                  </Badge>
-                ) : collabType === 'Newsletter Feature' ? (
-                  <Badge variant="outline" className="text-sm px-4 py-2 bg-indigo-500/10 border-indigo-500/20 text-indigo-700 w-full justify-center">
-                    <Mail className="w-4 h-4 mr-2" />
-                    Newsletter Feature
-                  </Badge>
-                ) : collabType === 'Report & Research Feature' ? (
-                  <Badge variant="outline" className="text-sm px-4 py-2 bg-amber-500/10 border-amber-500/20 text-amber-700 w-full justify-center">
-                    <FileSearch className="w-4 h-4 mr-2" />
-                    Report & Research Feature
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="text-sm px-4 py-2 w-full justify-center">
-                    {collabType}
-                  </Badge>
-                )}
+                <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium w-full justify-center ${getTypeColor(collabType)}`}>
+                  {getCollabTypeIcon(collabType)}
+                  <span>{collabType}</span>
+                </span>
               </div>
                 
               {/* Description */}
