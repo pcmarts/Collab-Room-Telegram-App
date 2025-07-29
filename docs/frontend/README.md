@@ -21,6 +21,7 @@ The frontend of The Collab Room is built with React and modern web technologies.
 
 - [Notifications System](./notifications.md) - Documentation of the simplified notification system
 - [UI Components](./ui-components.md) - Documentation of specialized UI components including TextLoop, GlowButton, and scrollable containers
+- [Collaboration Type Pill Consistency](./collaboration-type-pill-consistency.md) - Implementation of consistent styling for collaboration type pills across components
 - [Form Field Isolation](./form-field-isolation.md) - Guide to preventing data bleeding between form fields in multi-step forms
 - [Navigation Updates](./navigation-updates.md) - Documentation of bottom navigation simplification and dashboard button improvements
 - [Splash Screen Implementation](./splash-screen.md) - Guide to the ultra-light splash screen that renders in under 100ms

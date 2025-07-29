@@ -274,6 +274,35 @@ The CollaborationDetailsDialog component displays detailed information about a c
 - Removed redundant "Collaboration details" text for a cleaner header
 - Improved information hierarchy with better spacing and organization
 
+### Collaboration Type Pill Consistency (v1.10.36 Update)
+
+In version 1.10.36, the collaboration type pills were standardized across all components to ensure visual consistency:
+
+**Implementation Details:**
+- Added matching `getTypeColor()` and `getCollabTypeIcon()` helper functions to CollaborationDetailsDialog.tsx
+- Replaced hardcoded badge styling with dynamic color scheme matching CollaborationListItem.tsx
+- Added missing icon imports (PenTool, Coffee) for complete collaboration type coverage
+- Maintained full-width centered styling while ensuring consistent visual appearance
+
+**Color Scheme:**
+- Blue (`bg-blue-100 text-blue-800`): Twitter/Social Media collaborations
+- Purple (`bg-purple-100 text-purple-800`): Podcast collaborations  
+- Emerald (`bg-emerald-100 text-emerald-800`): Blog/Content collaborations
+- Amber (`bg-amber-100 text-amber-800`): Research/Report collaborations
+- Indigo (`bg-indigo-100 text-indigo-800`): Newsletter collaborations
+- Red (`bg-red-100 text-red-800`): Live Stream/Video collaborations
+- Gray (`bg-gray-100 text-gray-800`): Default/Other collaborations
+
+**Icon Mapping:**
+- Mic icon: Podcast collaborations
+- Twitter icon: Social media collaborations
+- Video icon: Live stream/webinar collaborations  
+- Mail icon: Newsletter collaborations
+- PenTool icon: Blog collaborations
+- FileSearch icon: Research/report collaborations
+- Coffee icon: Conference coffee collaborations
+- MessageSquare icon: Default collaboration type
+
 **Implementation**
 
 Located at `client/src/components/CollaborationDetailsDialog.tsx`, this component presents collaboration details in a modal dialog format.
