@@ -120,15 +120,6 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 
 ## Changelog
 
-- July 29, 2025. **COMPLETED**: Implemented directional page transition animations with Framer Motion
-  - Added smooth slide animations for navigation between menu pages with custom cubic-bezier easing [0.22, 1, 0.36, 1]
-  - Implemented directional logic: rightward navigation (Discover → My Collabs) slides new page from right, old page to left
-  - Leftward navigation (Matches → Requests) reverses direction: new page from left, old page to right  
-  - Created subtle movement animations: new page starts 90% offset, old page shifts only 10% opposite direction
-  - Synchronized opacity transitions: new page fades 25% → 100%, old page fades 100% → 25%
-  - Set snappy 0.4s timing with hardware acceleration optimizations for smooth performance
-  - Built comprehensive animation system with fallback behavior for non-main navigation routes
-  - Enhanced user experience with continuous sliding motion that feels natural and responsive
 - July 29, 2025. **COMPLETED**: Enhanced discovery cards UX with improved layout and visual hierarchy
   - Redesigned card layout: Company name → "Looking for" → Collaboration type pill → Description
   - Changed "Looking For" to lowercase "Looking for" for friendlier tone

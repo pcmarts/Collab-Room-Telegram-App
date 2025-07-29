@@ -11,7 +11,6 @@ import { MatchProvider } from "@/contexts/MatchContext";
 import { initTelegramButtonFix } from "./utils/telegram-button-fix";
 import { useTelegramInit } from "@/hooks/useTelegramInit";
 import { mobileKeyboardManager } from "./utils/mobile-keyboard";
-import { DirectionalPageTransition } from "@/components/AnimatedPageTransition";
 
 // Import RouteComponentProps type for proper router component typing
 import type { RouteComponentProps } from "wouter";
@@ -62,8 +61,6 @@ const BlockchainNetworksFilter = lazy(() => import("@/pages/filters/blockchain-n
 // Create wrapper components for components with custom props
 // These wrapper components convert RouteComponentProps to the specific props each component needs
 const MyCollaborations = (props: RouteComponentProps) => <MyCollaborationsComponent />;
-const CreateCollaboration = (props: RouteComponentProps) => <CreateCollaborationComponent />;
-const CreateCollaborationStepsWrapper = (props: RouteComponentProps) => <CreateCollaborationSteps />;
 
 // Navigation routes that are preloaded
 const PRELOADED_ROUTES = ['/discover', '/my-collaborations', '/requests', '/matches'];
@@ -104,84 +101,82 @@ function Router() {
     <div className="min-h-screen bg-background w-full">
       <ImpersonationBanner />
       <div className={`w-full ${showBottomNav ? 'pb-24' : ''}`}>
-        <DirectionalPageTransition>
-          <Suspense fallback={getSuspenseFallback()}>
-            <Switch>
-              {/* Welcome and Application Flow */}
-              <Route path="/welcome" component={Welcome} />
-              <Route path="/personal-info" component={PersonalInfo} />
-              <Route path="/company-basics" component={CompanyBasics} />
-              <Route path="/company-sector" component={CompanySector} />
-              <Route path="/company-details" component={CompanyDetails} />
-              <Route path="/application-status" component={ApplicationStatus} />
+        <Suspense fallback={getSuspenseFallback()}>
+          <Switch>
+            {/* Welcome and Application Flow */}
+            <Route path="/welcome" component={Welcome} />
+            <Route path="/personal-info" component={PersonalInfo} />
+            <Route path="/company-basics" component={CompanyBasics} />
+            <Route path="/company-sector" component={CompanySector} />
+            <Route path="/company-details" component={CompanyDetails} />
+            <Route path="/application-status" component={ApplicationStatus} />
 
-              <Route path="/apply/:id">
-                {(params) => <ApplyComponent id={params.id} />}
-              </Route>
+            <Route path="/apply/:id">
+              {(params) => <ApplyComponent id={params.id} />}
+            </Route>
 
-              {/* Main App Routes */}
-              <Route path="/">
-                <Redirect to="/discover" />
-              </Route>
+            {/* Main App Routes */}
+            <Route path="/">
+              <Redirect to="/discover" />
+            </Route>
 
-              {/* New Tab Routes */}
-              <Route path="/discover" component={DiscoverPage} />
-              <Route path="/my-collaborations" component={MyCollaborations} />
-              <Route path="/requests" component={RequestsPage} />
-              <Route path="/matches" component={MatchesPage} />
-              <Route path="/settings">
-                <Redirect to="/dashboard" />
-              </Route>
+            {/* New Tab Routes */}
+            <Route path="/discover" component={DiscoverPage} />
+            <Route path="/my-collaborations" component={MyCollaborations} />
+            <Route path="/requests" component={RequestsPage} />
+            <Route path="/matches" component={MatchesPage} />
+            <Route path="/settings">
+              <Redirect to="/dashboard" />
+            </Route>
 
-              {/* Existing Routes */}
-              <Route path="/dashboard" component={Dashboard} />
-              <Route path="/discovery-filters" component={DiscoveryFilters} />
-              <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
-              
-              {/* Filter Routes (New) */}
-              <Route path="/filters" component={FiltersDashboard} />
-              <Route path="/filters/collab-types" component={CollabTypesFilter} />
-              <Route path="/filters/topics" component={TopicsFilter} />
-              <Route path="/filters/company-sectors" component={CompanySectorsFilter} />
-              <Route path="/filters/company-followers" component={CompanyFollowersFilter} />
-              <Route path="/filters/user-followers" component={UserFollowersFilter} />
-              <Route path="/filters/funding-stages" component={FundingStagesFilter} />
-              <Route path="/filters/token-status" component={TokenStatusFilter} />
-              <Route path="/filters/blockchain-networks" component={BlockchainNetworksFilter} />
-              
-              {/* Conference coffee route removed 
-              <Route path="/conference-coffees" component={null} /> 
-              */}
+            {/* Existing Routes */}
+            <Route path="/dashboard" component={Dashboard} />
+            <Route path="/discovery-filters" component={DiscoveryFilters} />
+            <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
+            
+            {/* Filter Routes (New) */}
+            <Route path="/filters" component={FiltersDashboard} />
+            <Route path="/filters/collab-types" component={CollabTypesFilter} />
+            <Route path="/filters/topics" component={TopicsFilter} />
+            <Route path="/filters/company-sectors" component={CompanySectorsFilter} />
+            <Route path="/filters/company-followers" component={CompanyFollowersFilter} />
+            <Route path="/filters/user-followers" component={UserFollowersFilter} />
+            <Route path="/filters/funding-stages" component={FundingStagesFilter} />
+            <Route path="/filters/token-status" component={TokenStatusFilter} />
+            <Route path="/filters/blockchain-networks" component={BlockchainNetworksFilter} />
+            
+            {/* Conference coffee route removed 
+            <Route path="/conference-coffees" component={null} /> 
+            */}
 
-              {/* Admin Routes */}
-              <Route path="/admin">
-                <Redirect to="/admin/dashboard" />
-              </Route>
-              <Route path="/admin/dashboard" component={AdminDashboard} />
-              <Route path="/admin/users" component={AdminUsers} />
-              <Route path="/admin/applications" component={AdminApplications} />
-              <Route path="/admin/referrals" component={AdminReferralsPage} />
+            {/* Admin Routes */}
+            <Route path="/admin">
+              <Redirect to="/admin/dashboard" />
+            </Route>
+            <Route path="/admin/dashboard" component={AdminDashboard} />
+            <Route path="/admin/users" component={AdminUsers} />
+            <Route path="/admin/applications" component={AdminApplications} />
+            <Route path="/admin/referrals" component={AdminReferralsPage} />
 
-              {/* Collaboration Routes */}
-              <Route path="/create-collaboration-steps" component={CreateCollaborationStepsWrapper} />
-              <Route path="/create-collaboration-v2" component={CreateCollaborationV2} />
-              <Route path="/create-collaboration" component={CreateCollaboration} />
-              
-              {/* Profile Routes */}
-              <Route path="/profile-overview" component={ProfileOverview} />
-              <Route path="/company-info" component={CompanyInfo} />
-              
-              {/* Referral Routes */}
-              <Route path="/referrals" component={ReferralsPage} />
-              
-              {/* Testing Routes */}
-              <Route path="/auth-test" component={AuthTestPage} />
+            {/* Collaboration Routes */}
+            <Route path="/create-collaboration-steps" component={CreateCollaborationSteps} />
+            <Route path="/create-collaboration-v2" component={CreateCollaborationV2} />
+            <Route path="/create-collaboration" component={CreateCollaborationComponent} />
+            
+            {/* Profile Routes */}
+            <Route path="/profile-overview" component={ProfileOverview} />
+            <Route path="/company-info" component={CompanyInfo} />
+            
+            {/* Referral Routes */}
+            <Route path="/referrals" component={ReferralsPage} />
+            
+            {/* Testing Routes */}
+            <Route path="/auth-test" component={AuthTestPage} />
 
-              <Route path="/not-found" component={NotFound} />
-              <Route path="*" component={NotFound} />
-            </Switch>
-          </Suspense>
-        </DirectionalPageTransition>
+            <Route path="/not-found" component={NotFound} />
+            <Route path="*" component={NotFound} />
+          </Switch>
+        </Suspense>
         {showBottomNav && <BottomNavigation />}
       </div>
     </div>
