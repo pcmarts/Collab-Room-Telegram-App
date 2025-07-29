@@ -2906,17 +2906,24 @@ export async function registerRoutes(app: Express) {
         // Database notifications removed - notifications are sent directly via Telegram
         console.log(`📝 Database notifications removed - using Telegram notifications only`);
 
-        // Send Telegram notification to collaboration host
+        // Send Telegram notifications to both host and requester
         try {
           console.log(`📧 About to send Telegram notification to host ${collaboration.creator_id} about application from user ${user.id}`);
           console.log(`📧 DEBUG: collaboration.creator_id = ${collaboration.creator_id}`);
           console.log(`📧 DEBUG: user.id = ${user.id}`);
           console.log(`📧 DEBUG: collaboration.id = ${collaboration.id}`);
-          const notificationResult = await notifyNewCollabRequest(collaboration.creator_id, user.id, collaboration.id);
-          console.log(`📧 DEBUG: notificationResult = ${notificationResult}`);
+          
+          // Send notification to the host (existing functionality)
+          const hostNotificationResult = await notifyNewCollabRequest(collaboration.creator_id, user.id, collaboration.id);
+          console.log(`📧 DEBUG: hostNotificationResult = ${hostNotificationResult}`);
           console.log(`✅ Sent Telegram notification to host ${collaboration.creator_id} about new collaboration application`);
+
+          // Send confirmation notification to the requester (new functionality)
+          const requesterNotificationResult = await notifyRequesterRequestSent(user.id, collaboration.creator_id, collaboration.id);
+          console.log(`📧 DEBUG: requesterNotificationResult = ${requesterNotificationResult}`);
+          console.log(`✅ Sent Telegram confirmation to requester ${user.id} about collab request sent`);
         } catch (notificationError) {
-          console.error('❌ Error sending collaboration application notification:', notificationError);
+          console.error('❌ Error sending collaboration application notifications:', notificationError);
           console.error('❌ Error stack:', notificationError.stack);
           // Continue processing even if notification fails
         }
