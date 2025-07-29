@@ -95,7 +95,7 @@ const BottomNavigation = () => {
     },
     {
       label: "My Collabs",
-      icon: SquareStack,
+      icon: FolderPlus,
       href: "/my-collaborations",
       requiresAuth: true,
     },
