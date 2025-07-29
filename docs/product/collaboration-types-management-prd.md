@@ -272,17 +272,84 @@ client/src/components/
 - [ ] Remove legacy code and hardcoded references
 - [ ] Documentation and migration guides
 
-## 8. Risk Mitigation
+## 8. Risk Assessment & Mitigation
 
-### 8.1 Technical Risks
-- **Data Loss**: Comprehensive backup and testing before migration
-- **Performance Impact**: Registry caching and optimization
-- **Breaking Changes**: Gradual migration with backward compatibility
+### 8.1 High-Impact Technical Risks
 
-### 8.2 Business Risks  
-- **User Disruption**: Maintain exact same user experience during migration
-- **Development Velocity**: Implement in phases to minimize blocking
-- **Rollback Plan**: Ability to revert to old system if needed
+**Risk: Database Query Breakage**
+- **Impact**: 15+ server files with hardcoded collab_type string queries
+- **Affected Systems**: Search, filtering, collaboration creation, statistics
+- **Mitigation**: Gradual migration with dual-column support, comprehensive testing
+- **Rollback**: Maintain legacy collab_type column during transition
+
+**Risk: External Integration Failures**
+- **Impact**: Telegram notifications, webhook payloads, analytics systems
+- **Affected Systems**: Real-time notifications to users, external automation workflows
+- **Mitigation**: Registry provides backward compatibility methods, legacy string mapping
+- **Testing**: Dedicated testing scripts for each external integration
+
+**Risk: Form Validation Breaking**
+- **Impact**: 10+ form components with hardcoded type validation
+- **Affected Systems**: Collaboration creation, type selection, multi-step forms
+- **Mitigation**: Schema-based validation using stable IDs with display name mapping
+- **Rollback**: Maintain original validation schemas during transition
+
+### 8.2 Medium-Impact Technical Risks
+
+**Risk: UI/UX Inconsistencies**
+- **Impact**: 26+ frontend components with hardcoded styling logic
+- **Affected Systems**: Color schemes, icons, pill styling, card layouts
+- **Mitigation**: Centralized registry with consistent helper functions
+- **Testing**: Visual regression testing, comprehensive UI component audit
+
+**Risk: Search/Filter Logic Corruption**
+- **Impact**: Discovery page fuzzy matching, filter combinations, user preferences
+- **Affected Systems**: Collaboration discovery, saved filters, matching algorithms
+- **Mitigation**: Keyword-based search with type mapping, preference migration scripts
+- **Testing**: End-to-end testing of discovery workflows
+
+**Risk: Performance Degradation**
+- **Impact**: Registry lookups adding overhead to frequently-called functions
+- **Affected Systems**: Discovery page rendering, list components, notifications
+- **Mitigation**: Registry caching, singleton pattern, optimized lookup methods
+- **Monitoring**: Performance benchmarks before/after migration
+
+### 8.3 Business & User Experience Risks
+
+**Risk: User-Facing Type Name Changes**
+- **Impact**: Users may be confused by different collaboration type names
+- **Affected Systems**: All user-facing displays, saved preferences, bookmarks
+- **Mitigation**: Maintain exact same display names during migration
+- **Communication**: No user communication needed if names remain identical
+
+**Risk: Data Migration Corruption**
+- **Impact**: 50+ existing collaborations in database, user preferences
+- **Affected Systems**: Historical data, user discovery preferences, analytics
+- **Mitigation**: Comprehensive backup, gradual migration, data validation scripts
+- **Rollback**: Full database restoration plan
+
+**Risk: Developer Productivity Loss**
+- **Impact**: Team velocity during 4-week migration period
+- **Affected Systems**: New feature development, bug fixes, routine maintenance
+- **Mitigation**: Phased approach, clear documentation, pair programming
+- **Timeline**: Allow extra time for learning curve and testing
+
+### 8.4 Critical Migration Dependencies
+
+**External Service Dependencies:**
+- Telegram bot API reliability during notification testing
+- Webhook endpoint availability for integration testing
+- Database backup and restoration capabilities
+
+**Team Dependencies:**
+- QA team availability for comprehensive testing
+- DevOps support for database migration scripts
+- Frontend team coordination for UI component updates
+
+**Technical Dependencies:**
+- TypeScript compiler compatibility with new registry system
+- React component lifecycle with singleton registry pattern
+- Database query performance with dual-column approach
 
 ## 9. Success Metrics
 
@@ -314,17 +381,58 @@ client/src/components/
 ## 11. Appendix
 
 ### 11.1 Current Type Usage Analysis
-```
-File Impact Analysis:
-- shared/schema.ts: COLLAB_TYPES constant
-- TypeRegistry.ts: Hard-coded type definitions
-- requests-management-tab.tsx: Switch statement for icons
-- collab-utils.tsx: String matching for icons
-- TypeSelector.tsx: Hard-coded filtering
-- collab-types.tsx: Direct COLLAB_TYPES mapping
-- CollaborationListItem.tsx: Icon helper usage
-- Multiple forms: Hard-coded validation
-```
+
+#### Frontend Components (26+ files affected)
+**Core Schema & Constants:**
+- `shared/schema.ts`: COLLAB_TYPES constant exported everywhere
+- `CollaborationFormV2/utils/typeRegistry.ts`: Hardcoded type definitions with name mismatches
+
+**UI Components with Icon/Color Logic:**
+- `CollaborationListItem.tsx`: getTypeColor() with hardcoded color mapping
+- `requests-management-tab.tsx`: getCollabTypeIcon() switch statement
+- `lib/collab-utils.tsx`: getCollabTypeIcon() string matching logic
+- `CollaborationDetailsDialog.tsx`: Dynamic styling functions
+- `CollabTypesBanner.tsx`: Icon mapping object
+- `requests-summary-card.tsx`: Type-specific styling
+
+**Form Components:**
+- `TypeSelector.tsx`: COLLAB_TYPES filtering and hardcoded validation
+- `FormWizard/StepNavigation.tsx`: collab_type field validation
+- `TwitterCollabForm.tsx`: twitter_collab_types specific handling
+- `PodcastCollabForm.tsx`: collab_type literal validation
+- `hooks/useCollaborationForm.ts`: formatDetailsForType() switch logic
+
+**Filter & Search Components:**
+- `pages/filters/collab-types.tsx`: Direct COLLAB_TYPES mapping
+- `pages/DiscoverPage.tsx`: CARD_TYPE_MAPPING with fuzzy matching
+- Multiple filter components with hardcoded type lists
+
+#### Backend Systems (15+ files affected)
+**Database Layer:**
+- `server/storage.ts`: collab_type field queries and hardcoded type checks
+- `server/storage.optimized.ts`: Filtering logic with inArray(collab_type)
+- Database schema stores display names directly in collab_type field
+
+**API Endpoints:**
+- `server/routes.ts`: Collaboration creation/search endpoints
+- Form validation using hardcoded type strings
+- Query filtering based on exact string matches
+
+**External Integrations:**
+- `server/telegram.ts`: Notification messages using collab_type directly
+- `server/utils/webhook.ts`: Webhook payload includes collab_type string
+- Test scripts referencing specific collaboration type names
+
+**Notification System:**
+- Telegram bot messages format collab_type in user notifications
+- Admin notifications include collaboration type in message text
+- Match notifications reference type names directly
+
+#### Documentation & Testing (10+ files affected)
+- `docs/backend/webhook-integration.md`: Examples with hardcoded type names
+- `docs/frontend/specialized-cards.md`: CARD_TYPE_MAPPING variations
+- Multiple test scripts with hardcoded collaboration type references
+- Migration scripts and documentation assuming stable type names
 
 ### 11.2 Migration Checklist
 - [ ] All hardcoded type strings replaced with registry calls
