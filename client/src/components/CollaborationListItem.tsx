@@ -124,12 +124,14 @@ export function CollaborationListItem({
               </h3>
               
               {/* Looking For section */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Looking For</span>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(collabType)}`}>
-                  {getCollabTypeIcon(collabType)}
-                  <span>{collabType}</span>
-                </span>
+              <div className="space-y-2">
+                <span className="text-sm text-gray-600">Looking for</span>
+                <div>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(collabType)}`}>
+                    {getCollabTypeIcon(collabType)}
+                    <span>{collabType}</span>
+                  </span>
+                </div>
               </div>
             </div>
             
