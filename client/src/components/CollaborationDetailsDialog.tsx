@@ -452,7 +452,8 @@ export function CollaborationDetailsDialog({
                         // Check if this is a URL field and render as a button
                         const isUrl = (String(value).startsWith('http://') || String(value).startsWith('https://'));
                         const isStreamLink = key.toLowerCase().includes('stream') && key.toLowerCase().includes('link');
-                        const isPodcastLink = key.toLowerCase().includes('podcast') && key.toLowerCase().includes('url');
+                        const isPodcastLink = (key.toLowerCase().includes('podcast') && key.toLowerCase().includes('url')) || 
+                                            (key.toLowerCase().includes('podcast') && key.toLowerCase().includes('link'));
                         
                         if (isUrl && (isStreamLink || isPodcastLink)) {
                           const linkText = isStreamLink ? 'Previous Streams' : 'Previous Episodes';
