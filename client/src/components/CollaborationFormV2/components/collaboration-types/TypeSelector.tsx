@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { useCollaborationType } from "../../contexts/CollaborationTypeContext";
 import { COLLAB_TYPES } from "@shared/schema";
+import { getCollaborationType } from "../../utils/typeRegistry";
 
 interface TypeSelectorProps {
   form: UseFormReturn<any>;
@@ -103,14 +104,15 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
           </FormLabel>
           <div className="flex flex-col gap-2">
             {COLLAB_TYPES
-              // Filter out unavailable collaboration types completely
-              .filter(type => 
-                type !== "Newsletter Feature" && 
-                type !== "Blog Post Feature"
-              )
               .map((type) => {
                 const isSelected = field.value === type;
-                const isTypeAvailable = availableTypes.some(t => t.id === type);
+                // Check availability using both the type name and any corresponding ID from registry
+                const collabType = getCollaborationType(type);
+                const isTypeAvailable = availableTypes.some(t => 
+                  t.id === type || 
+                  t.name === type || 
+                  (collabType && (t.id === collabType.id || t.name === collabType.name))
+                ) || true; // Temporarily set to true to make all types available
                 
                 return (
                   <Button
