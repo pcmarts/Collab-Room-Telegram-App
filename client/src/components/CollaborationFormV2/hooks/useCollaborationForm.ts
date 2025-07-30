@@ -7,6 +7,8 @@ import { queryClient } from "@/lib/queryClient";
 import { useFormWizard } from "../contexts/FormWizardContext";
 import { useCollaborationType } from "../contexts/CollaborationTypeContext";
 import { useFormPersistence } from "../contexts/FormPersistenceContext";
+import { getCollaborationType } from "../utils/typeRegistry";
+import { COLLAB_TYPE_IDS } from "@shared/collaboration-types";
 
 /**
  * Custom hook for collaboration form operations
@@ -161,10 +163,6 @@ export const useCollaborationForm = <T extends Record<string, any>>(
    * Now supports both IDs and display names for flexible compatibility
    */
   const formatDetailsForType = (collabType: string, values: any): any => {
-    // Import registry functions for flexible lookup
-    const { getCollaborationType } = require("../utils/typeRegistry");
-    const { COLLAB_TYPE_IDS } = require("@shared/collaboration-types");
-    
     // Get the collaboration type to determine the ID
     const type = getCollaborationType(collabType);
     const typeId = type?.id || collabType;
