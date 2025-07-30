@@ -8,6 +8,15 @@ The Collab Room is a cutting-edge Web3 professional networking platform that int
 
 ## Recent Changes (July 2025)
 
+### ✓ Enhanced Collaboration Details Dialog with Interactive Media Links (July 30, 2025)
+- **Dynamic URL Detection**: Implemented automatic detection and conversion of media URLs to clickable buttons
+- **Podcast Links**: "Podcast Link" and "podcast_url" fields automatically become blue "Previous Episodes" buttons
+- **Live Stream Links**: "Previous Stream Link" and "stream_url" fields automatically become red "Previous Streams" buttons
+- **Clean UI**: Raw URLs are hidden from display, replaced with styled button links with external link icons
+- **Smart Field Detection**: System automatically identifies URL fields containing "podcast" + "link/url" or "stream" + "link" patterns
+- **User Experience**: Users can now easily access previous episodes/streams to evaluate content quality before requesting collaborations
+- **Cross-Platform Support**: Works with various URL formats (Spotify, Notion, YouTube, etc.)
+
 ### ✓ Implemented Dual Naming System for Forms vs App (July 30, 2025)
 - **Issue**: User wanted different labels for form creation vs rest of app without complex configuration
 - **Solution**: Created dual naming architecture with separate control points
