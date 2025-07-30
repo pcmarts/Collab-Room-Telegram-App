@@ -17,7 +17,7 @@ import { CollaborationType, CollaborationCategory } from "./types";
 export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
   {
     id: 'twitter_spaces_guest',
-    name: 'Twitter Spaces Guest',
+    name: 'Twitter Spaces Guests',
     shortName: 'Spaces Guest',
     icon: Twitter,
     color: 'blue',
@@ -31,7 +31,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
   },
   {
     id: 'twitter_comarketing',
-    name: 'Co-Marketing on Twitter',
+    name: 'Twitter Brand Collab',
     shortName: 'Co-Marketing',
     icon: Twitter,
     color: 'blue',
@@ -45,8 +45,8 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
   },
   {
     id: 'podcast_guest',
-    name: 'Podcast Guest Appearance',
-    shortName: 'Podcast Guest',
+    name: 'Podcast Guests',
+    shortName: 'Podcast Guests',
     icon: Mic,
     color: 'purple',
     category: CollaborationCategory.CONTENT,
@@ -59,7 +59,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
   },
   {
     id: 'livestream_guest',
-    name: 'Live Stream Guest Appearance',
+    name: 'Live Stream Guests',
     shortName: 'Live Stream',
     icon: Video,
     color: 'red',
@@ -138,6 +138,8 @@ export const LEGACY_NAME_MAPPINGS = [
     typeId: 'twitter_spaces_guest',
     legacyNames: [
       'Twitter Spaces Guest',
+      'Twitter Spaces Guests',
+      'Twitter Spaces Host',
       'Twitter Space',
       'Spaces Guest'
     ]
@@ -158,6 +160,7 @@ export const LEGACY_NAME_MAPPINGS = [
     legacyNames: [
       'Podcast Guest Appearance',
       'Podcast Guest',
+      'Podcast Guests',
       'Podcast'
     ]
   },
@@ -165,10 +168,11 @@ export const LEGACY_NAME_MAPPINGS = [
     typeId: 'livestream_guest',
     legacyNames: [
       'Live Stream Guest Appearance',
+      'Live Stream Guests',
       'Live Stream',
       'Livestream',
       'Live stream',
-      'Webinar'
+      'Webinar Guests'
     ]
   },
   {
@@ -190,6 +194,7 @@ export const LEGACY_NAME_MAPPINGS = [
     typeId: 'blog_post_feature',
     legacyNames: [
       'Blog Post Feature',
+      'Blog Post Collaboration',
       'Blog Post',
       'Blog'
     ]

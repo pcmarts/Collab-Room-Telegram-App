@@ -126,7 +126,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
     form.setValue("collab_type", value);
     
     // Set showTwitterFields based on the selected collaboration type
-    setShowTwitterFields(value === "Co-Marketing on Twitter");
+    setShowTwitterFields(value === "Twitter Brand Collab");
     
     // Clear the details object completely first to prevent field value bleed
     // We need to set a temporary empty object that matches the expected type
@@ -134,14 +134,14 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
     
     // Reset details object when collaboration type changes
     switch (value) {
-      case "Podcast Guest Appearance":
+      case "Podcast Guests":
         form.setValue('details', {
           podcast_name: "",
           short_description: "",
           podcast_link: ""
         });
         break;
-      case "Twitter Spaces Guest":
+      case "Twitter Spaces Guests":
         // Pre-fill with company Twitter URL if available, otherwise use default
         const companyTwitterUrl = profileData?.company?.twitter_handle 
           ? (profileData.company.twitter_handle.startsWith('https://') 
@@ -154,7 +154,7 @@ export default function CreateCollaboration({ id }: CreateCollaborationProps = {
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
         });
         break;
-      case "Live Stream Guest Appearance":
+      case "Live Stream Guests":
         form.setValue('details', {
           title: "",
           short_description: "",

@@ -643,7 +643,7 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
         // Render different fields based on the selected collaboration type
         return (
           <div className="space-y-6">
-            {selectedCollabType === "Podcast Guest Appearance" && (
+            {selectedCollabType === "Podcast Guests" && (
               <>
                 <FormField
                   control={form.control}
@@ -1161,9 +1161,9 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
             )}
             
             {/* Default message for collaboration types without custom fields */}
-            {!["Podcast Guest Appearance", "Twitter Spaces Guest", "Co-Marketing on Twitter", 
+            {!["Podcast Guests", "Twitter Spaces Guests", "Twitter Brand Collab", 
                "Blog Post Feature", "Newsletter Feature", "Report & Research Feature", 
-               "Live Stream Guest Appearance"].includes(selectedCollabType) && (
+               "Live Stream Guests"].includes(selectedCollabType) && (
               <div className="text-center py-8">
                 <p>Please provide details for your {selectedCollabType} collaboration.</p>
                 <p className="text-sm text-muted-foreground mt-2">
