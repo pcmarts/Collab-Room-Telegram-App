@@ -31,8 +31,8 @@ type CollabTypeId =
  */
 export const DISPLAY_NAMES: Record<CollabTypeId, string> = {
   twitter_spaces_guest: "Twitter Spaces Guest",
-  twitter_comarketing: "Co-Marketing on Twitter",
-  podcast_guest: "Podcast Guest Appearance",
+  twitter_comarketing: "Twitter Co-Marketing Opportunity",
+  podcast_guest: "Podcast",
   livestream_guest: "Live Stream Guest Appearance",
   research_feature: "Report & Research Feature",
   newsletter_feature: "Newsletter Feature",
