@@ -37,13 +37,17 @@ export class CollaborationTypeRegistry {
     COLLABORATION_TYPE_DEFINITIONS.forEach(type => {
       this.typesMap.set(type.id, type);
       // Map the canonical name to the ID
-      this.nameToIdMap.set(type.name.toLowerCase(), type.id);
+      if (type.name && typeof type.name === 'string') {
+        this.nameToIdMap.set(type.name.toLowerCase(), type.id);
+      }
     });
 
     // Add legacy name mappings for backward compatibility
     LEGACY_NAME_MAPPINGS.forEach(mapping => {
       mapping.legacyNames.forEach(legacyName => {
-        this.nameToIdMap.set(legacyName.toLowerCase(), mapping.typeId);
+        if (legacyName && typeof legacyName === 'string') {
+          this.nameToIdMap.set(legacyName.toLowerCase(), mapping.typeId);
+        }
       });
     });
   }
@@ -59,6 +63,9 @@ export class CollaborationTypeRegistry {
    * Get collaboration type by name (supports legacy names)
    */
   public getByName(name: string): CollaborationType | undefined {
+    if (!name || typeof name !== 'string') {
+      return undefined;
+    }
     const id = this.nameToIdMap.get(name.toLowerCase());
     return id ? this.typesMap.get(id) : undefined;
   }
@@ -146,11 +153,15 @@ export class CollaborationTypeRegistry {
    * Search collaboration types by keyword
    */
   public searchByKeyword(keyword: string): CollaborationType[] {
+    if (!keyword || typeof keyword !== 'string') {
+      return [];
+    }
     const searchTerm = keyword.toLowerCase();
     return Array.from(this.typesMap.values()).filter(type => 
       type.isActive && (
-        type.name.toLowerCase().includes(searchTerm) ||
-        type.metadata.keywords.some(k => k.toLowerCase().includes(searchTerm))
+        (type.name && type.name.toLowerCase().includes(searchTerm)) ||
+        (type.metadata && type.metadata.keywords && 
+         type.metadata.keywords.some(k => k && k.toLowerCase().includes(searchTerm)))
       )
     );
   }
