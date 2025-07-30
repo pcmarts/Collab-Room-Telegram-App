@@ -110,7 +110,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
               )
               .map((type) => {
                 const isSelected = field.value === type;
-                const isTypeAvailable = availableTypes.some(t => t.id === type);
+                const isTypeAvailable = availableTypes.some(t => t.id === type || t.name === type);
                 
                 return (
                   <Button

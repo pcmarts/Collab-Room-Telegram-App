@@ -22,29 +22,29 @@ import { blogPostSteps } from "../components/collaboration-types/BlogPostForm";
  */
 export const collaborationTypes: CollaborationTypeDefinition[] = [
   {
-    id: "Twitter Spaces Guest",
-    name: "Twitter Spaces Guest",
+    id: "Twitter Spaces Guests",
+    name: "Twitter Spaces Guests",
     schema: twitterSpacesSchema,
     defaultValues: twitterSpacesDefaults,
     steps: twitterSpacesSteps
   },
   {
-    id: "Co-Marketing on Twitter",
-    name: "Twitter Co-marketing",
+    id: "Twitter Brand Collab",
+    name: "Twitter Brand Collab",
     schema: twitterCollabSchema,
     defaultValues: twitterCollabDefaults,
     steps: twitterCollabSteps
   },
   {
-    id: "Podcast Guest Appearance",
-    name: "Podcast Guest Appearance",
+    id: "Podcast Guests",
+    name: "Podcast Guests",
     schema: podcastCollabSchema,
     defaultValues: podcastCollabDefaults,
     steps: podcastCollabSteps
   },
   {
-    id: "Live Stream Guest Appearance",
-    name: "Live Stream Guest Appearance",
+    id: "Live Stream Guests",
+    name: "Live Stream Guests",
     schema: liveStreamSchema,
     defaultValues: liveStreamDefaults,
     steps: liveStreamSteps
