@@ -8,6 +8,22 @@ The Collab Room is a cutting-edge Web3 professional networking platform that int
 
 ## Recent Changes (July 2025)
 
+### ✓ Enhanced Bottom Navigation with Signup Prompt Dialog for Unauthenticated Users (July 30, 2025)
+- **Signup Prompt Dialog**: Created new SignupPromptDialog component for unauthenticated users clicking "My Collabs"
+- **Smart Navigation Logic**: Made "My Collabs" clickable for non-authenticated users to show signup dialog instead of being disabled
+- **Professional Dialog Design**: Features Sparkles icon, clear messaging "To post a collab for others to join, please sign up"
+- **Navigation Flow**: "Sign Up" button redirects to /welcome, "Maybe Later" closes dialog
+- **Selective Behavior**: Only "My Collabs" gets clickable treatment, other restricted items remain disabled
+- **Enhanced UX**: Added haptic feedback and hover states for smooth interaction
+- **Component Architecture**: Reusable SignupPromptDialog with customizable title and description props
+
+### ✓ Repositioned Profile Icon to Far Right in Discover Page Header (July 30, 2025)
+- **Header Layout Update**: Moved UserCircle (profile) button from middle to far right position in Discover page
+- **New Button Order**: Sort → Refresh → Profile (for authenticated users) 
+- **Maintained Functionality**: All button interactions remain identical, profile still navigates to dashboard
+- **Clean Design**: Profile icon now sits at rightmost position after refresh button as requested
+- **Responsive Layout**: Header maintains proper spacing and alignment across all screen sizes
+
 ### ✓ Implemented Request Management System Enhancements and Conditional My Collab Navigation (July 30, 2025)
 - **Request Notes Enhancement**: Added "Your note:" label that only appears when actual note content exists (not empty)
 - **Sent Tab Counter**: Added dynamic count display to "Sent" tab showing "(X)" where X is the number of sent requests

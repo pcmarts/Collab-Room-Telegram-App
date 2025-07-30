@@ -4,6 +4,12 @@ Welcome to the comprehensive documentation for The Collab Room - a cutting-edge 
 
 ## Latest Updates (July 2025)
 
+### ✓ Enhanced Bottom Navigation with Signup Prompt Dialog (July 30, 2025)
+- **Signup Prompt Dialog**: Created professional SignupPromptDialog component for unauthenticated users
+- **Smart Navigation**: Made "My Collabs" clickable to show signup dialog instead of being disabled
+- **User Experience**: Clear messaging and seamless integration with signup flow
+- **Profile Icon**: Moved profile icon to far right position in Discover page header
+
 ### ✓ Collaboration Type Registry System (July 30, 2025)
 - **Centralized Management**: Implemented comprehensive collaboration type registry system
 - **Visual Enhancement**: Added color-coded types with professional Lucide React icons  
@@ -41,11 +47,13 @@ Welcome to the comprehensive documentation for The Collab Room - a cutting-edge 
 
 ### User Experience
 - **[Discovery Cards UX Improvements](frontend/discovery-cards-ux-improvements.md)** - July 2025 UX enhancements for improved browsing and visual hierarchy
+- **[UI Navigation Enhancements](frontend/ui-navigation-enhancements.md)** - Signup prompt dialog and profile icon repositioning for improved UX
 
 ### UI Components
 - **LogoAvatar** (`client/src/components/ui/logo-avatar.tsx`) - Displays company/user logos with fallback handling
 - **CollaborationListItem** (`client/src/components/CollaborationListItem.tsx`) - Shows collaboration cards with company logos
 - **RequestsManagementTab** (`client/src/components/requests-management-tab.tsx`) - Manages collaboration requests with company logos
+- **[SignupPromptDialog](frontend/signup-prompt-dialog.md)** - User-friendly signup prompts for restricted features with smart navigation integration
 
 ## API Documentation
 
