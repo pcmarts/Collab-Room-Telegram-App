@@ -237,7 +237,7 @@ export default function RequestsPage() {
         
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto">
-          <div className="py-4 px-4">
+          <div className="py-4 px-4 pb-24">
             <RequestsManagementTab
               requestGroups={requestGroups}
               isLoading={isLoadingRequests}
