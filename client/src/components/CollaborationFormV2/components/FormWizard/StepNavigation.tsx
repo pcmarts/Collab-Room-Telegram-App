@@ -5,6 +5,7 @@ import { useFormWizard } from "../../contexts/FormWizardContext";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { TWITTER_COLLAB_TYPES } from "@shared/schema";
+import { useLocation } from "wouter";
 
 interface StepNavigationProps {
   form: UseFormReturn<any>;
@@ -31,6 +32,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
   } = useFormWizard();
   
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   /**
    * Validate the current step before proceeding to the next
@@ -276,8 +278,18 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
   
   return (
     <div className="flex justify-between pt-6 mt-4 border-t">
-      {/* Hide back button on first step */}
-      {!isFirstStep && (
+      {/* Show appropriate back button based on step */}
+      {isFirstStep ? (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setLocation("/my-collaborations")}
+          disabled={isSubmitting}
+        >
+          <ChevronLeft className="w-4 h-4 mr-2" />
+          My Collabs
+        </Button>
+      ) : (
         <Button
           type="button"
           variant="outline"
@@ -288,9 +300,6 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
           Back
         </Button>
       )}
-      
-      {/* Empty div to maintain flex spacing when back button is hidden */}
-      {isFirstStep && <div></div>}
       
       {/* Special case for collaboration type selection page */}
       {currentStepId === "collab_type" ? (
