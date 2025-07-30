@@ -1115,7 +1115,13 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     <MobileCheck>
       <div className="min-h-[100svh] bg-background">
         <PageHeader 
-          title="My Collabs" 
+          title="My Collabs"
+          action={
+            <Button variant="default" size="sm" onClick={handleNavigateToCreateCollab}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Co-Lab
+            </Button>
+          }
         />
         
         <div className="container mx-auto py-4 px-4">
@@ -1125,79 +1131,25 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
               renderSkeletons()
             ) : collaborations && collaborations.length > 0 ? (
               <div>
-                {/* Create Collab Banner - matching discover page style */}
-                <div className="mb-4">
-                  <div className="border-2 border-dashed border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors rounded-lg">
-                    <div className="px-4 py-6 text-center">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-center mb-2">
-                          <div className="rounded-full bg-primary/10 p-2">
-                            <Plus className="h-5 w-5 text-primary" />
-                          </div>
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-foreground mb-1">
-                            Add your collab
-                          </h3>
-                          <p className="text-sm text-muted-foreground mb-3">
-                            Share your collaboration opportunity with the community
-                          </p>
-                          <Button 
-                            onClick={handleNavigateToCreateCollab}
-                            size="sm"
-                            className="bg-primary hover:bg-primary/90"
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Your Collab
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+
                 {collaborations.map(collab => renderCollaborationCard(collab))}
               </div>
             ) : (
               <div className="space-y-4">
-                {/* Simple Add Collab Banner */}
-                <div className="border-2 border-dashed border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors rounded-lg">
-                  <div className="px-4 py-6 text-center">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-center mb-2">
-                        <div className="rounded-full bg-primary/10 p-2">
-                          <Plus className="h-5 w-5 text-primary" />
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground mb-1">
-                          Add your collab
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Share your collaboration opportunity with the community
-                        </p>
-                        <Button 
-                          onClick={handleNavigateToCreateCollab}
-                          size="sm"
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Your Collab
-                        </Button>
+                {/* Empty state message */}
+                <div className="text-center py-8">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center mb-2">
+                      <div className="rounded-full bg-muted p-3">
+                        <Plus className="h-6 w-6 text-muted-foreground" />
                       </div>
                     </div>
-                  </div>
-                </div>
-                
-                {/* Privacy Section */}
-                <div className="flex flex-col items-center">
-                  <div className="flex items-stretch border border-muted-foreground/10 rounded-lg overflow-hidden">
-                    <div className="bg-yellow-500/65 flex-shrink-0 w-14 flex items-center justify-center">
-                      <span className="text-white"><Lock size={18} /></span>
-                    </div>
-                    <div className="p-3 text-left w-full" style={{ maxWidth: "calc(100% - 3.5rem)" }}>
-                      <p className="text-xs flex flex-col gap-1">
-                        <strong>PRIVACY FIRST</strong>
-                        <span className="text-muted-foreground">Contact details shared only upon successful match. Anyone you passed on won't be notified.</span>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">
+                        No collaborations yet
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Use the "Add Co-Lab" button above to create your first collaboration
                       </p>
                     </div>
                   </div>
