@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "../components/PageHeader";
+import { UserCollabCount } from "@/components/UserCollabCount";
 
 // Preload the CreateCollaborationV2 component
 const CreateCollaborationV2 = lazy(() => import("./create-collaboration-v2"));
@@ -1125,6 +1126,13 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         />
         
         <div className="container mx-auto py-4 px-4">
+          {/* User Collaboration Count */}
+          <UserCollabCount 
+            count={collaborations?.length || 0} 
+            isLoading={isLoadingCollabs} 
+            className="mb-4" 
+          />
+          
           {/* Main Content - Overview */}
           <div className="mt-4">
             {isLoadingCollabs ? (
