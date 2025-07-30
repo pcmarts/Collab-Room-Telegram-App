@@ -354,10 +354,11 @@ export function CollaborationDetailsDialog({
                             href={details.podcast_url} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="text-blue-600 hover:underline ml-2"
+                            className="inline-flex items-center gap-1 ml-2 px-2 py-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100 transition-colors"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            (Previous Episodes)
+                            <ExternalLink className="w-3 h-3" />
+                            Previous Episodes
                           </a>
                         )}
                       </div>
@@ -380,6 +381,18 @@ export function CollaborationDetailsDialog({
                       <div className="text-sm">
                         <span className="font-medium text-foreground">Platform: </span>
                         <span className="text-muted-foreground">{details.platform}</span>
+                        {details.stream_url && (
+                          <a 
+                            href={details.stream_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="inline-flex items-center gap-1 ml-2 px-2 py-1 text-xs bg-red-50 text-red-700 border border-red-200 rounded hover:bg-red-100 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Previous Streams
+                          </a>
+                        )}
                       </div>
                     )}
                     {collabType?.includes('Live Stream') && details.stream_duration && (

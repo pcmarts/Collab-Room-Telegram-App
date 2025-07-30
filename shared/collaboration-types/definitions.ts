@@ -159,6 +159,7 @@ export const LEGACY_NAME_MAPPINGS = [
     legacyNames: [
       'Podcast Guest Appearance',
       'Podcast Guest',
+      'Podcast Guests',
       'Podcast'
     ]
   },
@@ -167,6 +168,7 @@ export const LEGACY_NAME_MAPPINGS = [
     legacyNames: [
       'Live Stream Guest Appearance',
       'Live Stream',
+      'Live Stream Guests',
       'Livestream',
       'Live stream',
       'Webinar'
@@ -191,6 +193,7 @@ export const LEGACY_NAME_MAPPINGS = [
     typeId: 'blog_post_feature',
     legacyNames: [
       'Blog Post Feature',
+      'Blog Post Collaboration',
       'Blog Post',
       'Blog'
     ]
