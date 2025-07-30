@@ -55,6 +55,11 @@ interface CollaborationDetailsDialogProps {
     companyName?: string;
     company_logo_url?: string;
     creator_id?: string;
+    status?: string;
+    twitter_followers?: string;
+    company_twitter_followers?: string;
+    funding_stage?: string;
+    company_tags?: string[];
     company_data?: {
       name?: string;
       short_description?: string;
@@ -153,19 +158,11 @@ export function CollaborationDetailsDialog({
     return <MessageSquare className="h-4 w-4" />;
   };
   
-  // Debug log to see what data we're receiving
-  console.log('[CollabDetails] Full collaboration data received:', collaboration);
-  console.log('[CollabDetails] Is potential match?', collaboration.isPotentialMatch);
-  console.log('[CollabDetails] Potential match data:', collaboration.potentialMatchData);
-  console.log('[CollabDetails] Company data structure:', collaboration.company_data);
-  console.log('[CollabDetails] Company name from company_data:', collaboration.company_data?.name);
-  
   // Get collaboration data from the appropriate source
   let collabData = collaboration;
   
   // For potential matches, check if we have collaboration data in the collaboration field
   if (collaboration.isPotentialMatch && collaboration.collaboration) {
-    console.log('[CollabDetails] Found potential match with collaboration data');
     // Merge the collaboration data with the main object, but let the collaboration field take precedence
     collabData = {
       ...collaboration,
@@ -175,7 +172,6 @@ export function CollaborationDetailsDialog({
       topics: collaboration.collaboration.topics || collaboration.topics,
       details: collaboration.collaboration.details || collaboration.details
     };
-    console.log('[CollabDetails] Merged collaboration data:', collabData);
   }
 
   // Extract fields with fallbacks
@@ -201,118 +197,127 @@ export function CollaborationDetailsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] p-0 overflow-hidden flex flex-col">
+      <DialogContent 
+        className="w-full sm:max-w-lg md:max-w-xl max-w-[95vw] max-h-[90vh] mx-2 sm:mx-auto p-0 overflow-hidden flex flex-col"
+        aria-describedby="collaboration-description"
+      >
         <DialogHeader className="relative px-0 py-0 sticky top-0 bg-background z-10 border-b shrink-0">
-          <div className="relative flex items-center justify-center h-14 px-4">
+          <div className="relative flex items-center justify-between h-16 px-4">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={onClose} 
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full bg-background/80 hover:bg-muted border shadow-sm"
+              className="h-11 w-11 rounded-full bg-background/80 hover:bg-muted border shadow-sm"
+              aria-label="Close collaboration details dialog"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-6 w-6" />
             </Button>
-            <DialogTitle className="sr-only">Collaboration Details</DialogTitle>
+            <div className="flex-1 flex justify-center">
+              <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium ${getTypeColor(collabType)}`}>
+                {getCollabTypeIcon(collabType)}
+                <span>{collabType}</span>
+              </span>
+            </div>
+            <div className="w-11" /> {/* Spacer for balance */}
           </div>
+          <DialogTitle className="sr-only">{title}</DialogTitle>
+          <DialogDescription id="collaboration-description" className="sr-only">
+            {collabType} collaboration opportunity with {companyName}
+          </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 overflow-y-auto">
+        <ScrollArea className="flex-1 overflow-y-auto" role="region" aria-label="Collaboration details content">
           <div className="space-y-4 p-4 pb-6">
             {/* Company header at the very top */}
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-6">
               <LogoAvatar 
                 name={companyName}
                 logoUrl={collaboration.company_logo_url || companyData.logo_url} 
-                className="w-10 h-10"
+                className="w-12 h-12 sm:w-10 sm:h-10"
                 size="md"
               />
-              <h2 className="text-xl font-semibold">{companyName}</h2>
+              <h2 className="text-xl sm:text-xl font-semibold leading-tight">{companyName}</h2>
             </div>
             
             {/* Collaboration details section */}
             <Card className="p-4 bg-card/50 border shadow-sm">
-              {/* Collaboration Type as full-width Badge with consistent styling */}
-              <div className="mb-4">
-                <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium w-full justify-center ${getTypeColor(collabType)}`}>
-                  {getCollabTypeIcon(collabType)}
-                  <span>{collabType}</span>
-                </span>
+              {/* Description */}
+              <p className="text-sm text-muted-foreground mb-4">{description}</p>
+                
+              {/* Topics/Tags and Date - Combined section */}
+              <div className="mb-6 space-y-4">
+                {topics && topics.length > 0 && (
+                  <div>
+                    <h5 className="text-sm font-semibold mb-3 text-foreground flex items-center gap-2">
+                      <Tag className="w-4 h-4" />
+                      Topics
+                    </h5>
+                    <div className="flex flex-wrap gap-1.5">
+                      {topics.map((topic, index) => (
+                        <Badge key={index} variant="outline" className="text-sm px-3 py-1">
+                          {topic}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Date Information - simplified */}
+                {(collabData.date_type || collabData.specific_date) && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">Date:</span>
+                    <span>
+                      {collabData.date_type === 'specific_date' && collabData.specific_date ? (
+                        <span className="text-primary font-medium">
+                          {new Date(collabData.specific_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      ) : collabData.date_type === 'any_future_date' ? (
+                        <span>Any future date</span>
+                      ) : (
+                        <span>To be discussed</span>
+                      )}
+                    </span>
+                  </div>
+                )}
               </div>
                 
-              {/* Description */}
-              <p className="text-sm text-muted-foreground mb-3">{description}</p>
-                
-              {/* Topics/Tags if available */}
-              {topics && topics.length > 0 && (
-                <div className="mb-4">
-                  <h5 className="text-xs font-medium mb-2 text-muted-foreground">Topics</h5>
-                  <div className="flex flex-wrap gap-1.5">
-                    {topics.map((topic, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {topic}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-                
-              {/* Date Information */}
-              {(collabData.date_type || collabData.specific_date) && (
-                <div className="mb-4">
-                  <h5 className="text-xs font-medium mb-2 text-muted-foreground flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    Timeline
-                  </h5>
-                  <div className="text-sm">
-                    {collabData.date_type === 'specific_date' && collabData.specific_date ? (
-                      <span className="text-primary font-medium">
-                        {new Date(collabData.specific_date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </span>
-                    ) : collabData.date_type === 'any_future_date' ? (
-                      <span>Any future date</span>
-                    ) : (
-                      <span>Timeline to be discussed</span>
-                    )}
-                  </div>
-                </div>
-              )}
-                
               {/* Collaboration Requirements */}
-              {(collabData.twitter_followers || collabData.company_twitter_followers || collabData.funding_stage || collabData.company_tags?.length > 0) && (
-                <div className="mb-4">
-                  <h5 className="text-xs font-medium mb-2 text-muted-foreground flex items-center gap-1">
-                    <Filter className="w-3 h-3" />
+              {(collabData.twitter_followers || collabData.company_twitter_followers || collabData.funding_stage || (collabData.company_tags && collabData.company_tags.length > 0)) && (
+                <div className="mb-6">
+                  <h5 className="text-sm font-semibold mb-3 text-foreground flex items-center gap-2">
+                    <Filter className="w-4 h-4" />
                     Requirements
                   </h5>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {collabData.twitter_followers && (
-                      <div className="flex items-center gap-2 text-xs">
-                        <Twitter className="w-3 h-3 text-blue-500" />
+                      <div className="flex items-center gap-2 text-sm py-1">
+                        <Twitter className="w-4 h-4 text-blue-500 shrink-0" />
                         <span>Personal Twitter followers: {collabData.twitter_followers}</span>
                       </div>
                     )}
                     {collabData.company_twitter_followers && (
-                      <div className="flex items-center gap-2 text-xs">
-                        <Building className="w-3 h-3 text-gray-500" />
-                          <span>Company Twitter followers: {collabData.company_twitter_followers}</span>
+                      <div className="flex items-center gap-2 text-sm py-1">
+                        <Building className="w-4 h-4 text-gray-500 shrink-0" />
+                        <span>Company Twitter followers: {collabData.company_twitter_followers}</span>
                       </div>
                     )}
                     {collabData.funding_stage && (
-                      <div className="flex items-center gap-2 text-xs">
-                        <TrendingUp className="w-3 h-3 text-green-500" />
+                      <div className="flex items-center gap-2 text-sm py-1">
+                        <TrendingUp className="w-4 h-4 text-green-500 shrink-0" />
                         <span>Funding stage: {collabData.funding_stage}</span>
                       </div>
                     )}
                     {collabData.company_tags && collabData.company_tags.length > 0 && (
-                      <div className="flex items-start gap-2 text-xs">
-                        <Tag className="w-3 h-3 text-purple-500 mt-0.5" />
+                      <div className="flex items-start gap-2 text-sm py-1">
+                        <Tag className="w-4 h-4 text-purple-500 mt-0.5 shrink-0" />
                         <div>
-                          <span className="block mb-1">Company sectors:</span>
-                          <div className="flex flex-wrap gap-1">
+                          <span className="block mb-2">Company sectors:</span>
+                          <div className="flex flex-wrap gap-1.5">
                             {collabData.company_tags.map((tag, index) => (
                               <Badge key={index} variant="outline" className="text-xs">
                                 {tag}
@@ -328,87 +333,87 @@ export function CollaborationDetailsDialog({
                 
               {/* Type-specific Details */}
               {details && Object.keys(details).length > 0 && (
-                <div className="mb-4">
-                  <h5 className="text-xs font-medium mb-2 text-muted-foreground flex items-center gap-1">
-                    <Info className="w-3 h-3" />
+                <div className="mb-6">
+                  <h5 className="text-sm font-semibold mb-3 text-foreground flex items-center gap-2">
+                    <Info className="w-4 h-4" />
                     Additional Details
                   </h5>
-                  <div className="space-y-2">
+                  <div className="space-y-3 bg-muted/20 rounded-lg p-4">
                     {/* Twitter Co-Marketing specific details */}
                     {collabType?.includes('Twitter') && details.twittercomarketing_type && (
-                      <div className="text-xs">
-                        <span className="font-medium">Co-marketing types: </span>
-                        <span>{Array.isArray(details.twittercomarketing_type) ? details.twittercomarketing_type.join(', ') : details.twittercomarketing_type}</span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Co-marketing types: </span>
+                        <span className="text-muted-foreground">{Array.isArray(details.twittercomarketing_type) ? details.twittercomarketing_type.join(', ') : details.twittercomarketing_type}</span>
                       </div>
                     )}
                     {collabType?.includes('Twitter') && details.host_twitter_handle && (
-                      <div className="text-xs">
-                        <span className="font-medium">Host Twitter: </span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Host Twitter: </span>
                         <a href={details.host_twitter_handle} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                           {details.host_twitter_handle}
                         </a>
                       </div>
                     )}
                     {collabType?.includes('Twitter') && details.host_follower_count && (
-                      <div className="text-xs">
-                        <span className="font-medium">Host followers: </span>
-                        <span>{details.host_follower_count}</span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Host followers: </span>
+                        <span className="text-muted-foreground">{details.host_follower_count}</span>
                       </div>
                     )}
                     
                     {/* Podcast specific details */}
                     {collabType?.includes('Podcast') && details.podcast_name && (
-                      <div className="text-xs">
-                        <span className="font-medium">Podcast: </span>
-                        <span>{details.podcast_name}</span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Podcast: </span>
+                        <span className="text-muted-foreground">{details.podcast_name}</span>
                       </div>
                     )}
                     {collabType?.includes('Podcast') && details.episode_duration && (
-                      <div className="text-xs">
-                        <span className="font-medium">Duration: </span>
-                        <span>{details.episode_duration}</span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Duration: </span>
+                        <span className="text-muted-foreground">{details.episode_duration}</span>
                       </div>
                     )}
                     {collabType?.includes('Podcast') && details.podcast_audience_size && (
-                      <div className="text-xs">
-                        <span className="font-medium">Audience size: </span>
-                        <span>{details.podcast_audience_size}</span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Audience size: </span>
+                        <span className="text-muted-foreground">{details.podcast_audience_size}</span>
                       </div>
                     )}
                     
                     {/* Live Stream specific details */}
                     {collabType?.includes('Live Stream') && details.platform && (
-                      <div className="text-xs">
-                        <span className="font-medium">Platform: </span>
-                        <span>{details.platform}</span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Platform: </span>
+                        <span className="text-muted-foreground">{details.platform}</span>
                       </div>
                     )}
                     {collabType?.includes('Live Stream') && details.stream_duration && (
-                      <div className="text-xs">
-                        <span className="font-medium">Duration: </span>
-                        <span>{details.stream_duration}</span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Duration: </span>
+                        <span className="text-muted-foreground">{details.stream_duration}</span>
                       </div>
                     )}
                     
                     {/* Report & Research specific details */}
                     {collabType?.includes('Report') && details.report_type && (
-                      <div className="text-xs">
-                        <span className="font-medium">Report type: </span>
-                        <span>{details.report_type}</span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Report type: </span>
+                        <span className="text-muted-foreground">{details.report_type}</span>
                       </div>
                     )}
                     {collabType?.includes('Report') && details.publication_name && (
-                      <div className="text-xs">
-                        <span className="font-medium">Publication: </span>
-                        <span>{details.publication_name}</span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Publication: </span>
+                        <span className="text-muted-foreground">{details.publication_name}</span>
                       </div>
                     )}
                     
                     {/* Date information */}
                     {(collabData.date_type || collabData.specific_date) && (
-                      <div className="text-xs">
-                        <span className="font-medium">Date: </span>
-                        <span>
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">Date: </span>
+                        <span className="text-muted-foreground">
                           {collabData.date_type === 'specific_date' && collabData.specific_date
                             ? new Date(collabData.specific_date).toLocaleDateString('en-US', {
                                 year: 'numeric',
@@ -441,9 +446,9 @@ export function CollaborationDetailsDialog({
                         }
                         
                         return (
-                          <div key={key} className="text-xs">
-                            <span className="font-medium capitalize">{key.replace(/_/g, ' ')}: </span>
-                            <span>{Array.isArray(value) ? value.join(', ') : String(value)}</span>
+                          <div key={key} className="text-sm">
+                            <span className="font-medium text-foreground capitalize">{key.replace(/_/g, ' ')}: </span>
+                            <span className="text-muted-foreground">{Array.isArray(value) ? value.join(', ') : String(value)}</span>
                           </div>
                         );
                       })}
@@ -453,19 +458,22 @@ export function CollaborationDetailsDialog({
                 
               {/* Collaboration Status */}
               {collabData.status && collabData.status !== 'active' && (
-                <div className="mb-4">
-                  <h5 className="text-xs font-medium mb-2 text-muted-foreground">Status</h5>
-                  <Badge variant={collabData.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                <div className="mb-6">
+                  <h5 className="text-sm font-semibold mb-3 text-foreground flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    Status
+                  </h5>
+                  <Badge variant={collabData.status === 'active' ? 'default' : 'secondary'} className="text-sm px-3 py-1">
                     {collabData.status}
                   </Badge>
                 </div>
               )}
               
               {/* Action buttons - moved to bottom of collaboration details */}
-              <div className="mt-6 pt-4 border-t border-border/50 space-y-2">
+              <div className="mt-6 pt-4 border-t border-border/50 space-y-3">
                 {!isOwnCollaboration && (
                   <Button
-                    size="sm"
+                    size="default"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (!isAuthenticated) {
@@ -482,22 +490,24 @@ export function CollaborationDetailsDialog({
                         }
                       }
                     }}
-                    className="bg-primary hover:bg-primary/90 text-white px-4 w-full"
+                    className="bg-primary hover:bg-primary/90 text-white px-4 w-full min-h-[44px] text-base"
+                    aria-label={`Send collaboration request to ${companyName} for ${collabType}`}
                   >
-                    <MessageSquare className="w-4 h-4 mr-1" />
-                    Request to Collab (Free)
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Send Collab Request (Free)
                   </Button>
                 )}
                 
                 {/* Close button as secondary button */}
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="default"
                   onClick={(e) => {
                     e.stopPropagation();
                     onClose();
                   }}
-                  className="w-full bg-background hover:bg-muted border-2 font-medium"
+                  className="w-full bg-background hover:bg-muted border-2 font-medium min-h-[44px] text-base"
+                  aria-label="Close collaboration details dialog"
                 >
                   Close
                 </Button>
@@ -512,23 +522,6 @@ export function CollaborationDetailsDialog({
               </h3>
               
               <Separator className="my-3" />
-              
-              {/* Job title - Show for potential matches or from company data */}
-              {(isPotentialMatch && potentialMatchData.job_title) ? (
-                <div className="flex items-center mb-3 text-sm text-primary font-medium">
-                  <Briefcase className="h-4 w-4 mr-1 text-primary/70" />
-                  <span>
-                    {potentialMatchData.job_title}
-                  </span>
-                </div>
-              ) : companyData.job_title ? (
-                <div className="flex items-center mb-3 text-sm font-medium">
-                  <Briefcase className="h-4 w-4 mr-1 text-muted-foreground" />
-                  <span>
-                    {companyData.job_title}
-                  </span>
-                </div>
-              ) : null}
               
               {/* Company description - highlighted and more prominent */}
               {(companyData.short_description || companyData.long_description) && (
@@ -545,52 +538,52 @@ export function CollaborationDetailsDialog({
                 </div>
               )}
               
-              {/* Company social links and details */}
-              <div className="grid grid-cols-2 gap-2 mt-3">
+              {/* Company social links and details - single row */}
+              <div className="flex flex-wrap items-center gap-4 mt-4">
                 {companyData.website && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Globe className="h-3 w-3 text-muted-foreground" />
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
                     <a 
                       href={companyData.website} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      className="text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
                     >
-                      {companyData.website.replace(/https?:\/\/(www\.)?/, "")}
+                      Website
                     </a>
                   </div>
                 )}
                 
                 {companyData.twitter_handle && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Twitter className="h-3 w-3 text-[#1DA1F2]" />
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Twitter className="h-4 w-4 text-[#1DA1F2] shrink-0" />
                     <a 
                       href={companyData.twitter_handle.startsWith('https://') 
                         ? companyData.twitter_handle 
                         : `https://x.com/${companyData.twitter_handle.replace('@', '')}`}
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      className="text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
                     >
-                      @{companyData.twitter_handle.replace('@', '').replace('https://twitter.com/', '').replace('https://x.com/', '')}
+                      Twitter
                     </a>
                   </div>
                 )}
                 
                 {companyData.linkedin_url && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Linkedin className="h-3 w-3 text-[#0077B5]" />
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Linkedin className="h-4 w-4 text-[#0077B5] shrink-0" />
                     <a 
                       href={companyData.linkedin_url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="truncate text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
+                      className="text-blue-600 hover:text-blue-800 hover:underline pointer-events-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
@@ -601,22 +594,22 @@ export function CollaborationDetailsDialog({
                 )}
                 
                 {companyData.twitter_followers && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Users className="h-3 w-3 text-muted-foreground" />
-                    <span>{companyData.twitter_followers} Twitter followers</span>
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span>{companyData.twitter_followers} followers</span>
                   </div>
                 )}
                 
                 {companyData.funding_stage && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <DollarSign className="h-3 w-3 text-muted-foreground" />
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span>{companyData.funding_stage}</span>
                   </div>
                 )}
                 
                 {companyData.has_token && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Coins className="h-3 w-3 text-muted-foreground" />
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Coins className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span>
                       Token {companyData.token_ticker ? `(${companyData.token_ticker})` : ""}
                     </span>
@@ -624,8 +617,8 @@ export function CollaborationDetailsDialog({
                 )}
                 
                 {companyData.blockchain_networks && companyData.blockchain_networks.length > 0 && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Layers className="h-3 w-3 text-muted-foreground" />
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Layers className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span>
                       {Array.isArray(companyData.blockchain_networks) 
                         ? companyData.blockchain_networks.join(', ') 
@@ -636,20 +629,20 @@ export function CollaborationDetailsDialog({
               </div>
               
               {companyData.tags && companyData.tags.length > 0 && (
-                <div className="mt-3">
-                  <h4 className="text-xs font-medium mb-1 flex items-center gap-1">
-                    <Tag className="h-3 w-3" />
+                <div className="mt-4">
+                  <h4 className="text-sm font-semibold mb-3 text-foreground flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
                     Tags
                   </h4>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {Array.isArray(companyData.tags) 
                       ? companyData.tags.map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
+                          <Badge key={index} variant="outline" className="text-sm px-3 py-1">
                             {tag}
                           </Badge>
                         ))
                       : (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-sm px-3 py-1">
                           {String(companyData.tags)}
                         </Badge>
                       )
