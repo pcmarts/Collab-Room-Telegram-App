@@ -98,6 +98,7 @@ interface RequestsManagementTabProps {
   isLoadingMore?: boolean;
   filter: 'received' | 'hidden' | 'sent';
   onFilterChange: (filter: 'received' | 'hidden' | 'sent') => void;
+  sentRequestsCount?: number;
 }
 
 export function RequestsManagementTab({ 
@@ -107,7 +108,8 @@ export function RequestsManagementTab({
   hasMore = false,
   isLoadingMore = false,
   filter,
-  onFilterChange
+  onFilterChange,
+  sentRequestsCount = 0
 }: RequestsManagementTabProps) {
   const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<CollaborationRequest | null>(null);
   const { toast } = useToast();
@@ -222,7 +224,7 @@ export function RequestsManagementTab({
           <TabsList className="w-full">
             <TabsTrigger value="received" className="flex-1">Received</TabsTrigger>
             <TabsTrigger value="hidden" className="flex-1">Hidden</TabsTrigger>
-            <TabsTrigger value="sent" className="flex-1">Sent</TabsTrigger>
+            <TabsTrigger value="sent" className="flex-1">Sent ({sentRequestsCount})</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -318,8 +320,9 @@ export function RequestsManagementTab({
                 {/* Full width content below header */}
                 <div className="space-y-4">
                   {/* Main content - requester's note */}
-                  {request.note && (
+                  {request.note && request.note.trim() !== '' && (
                     <div className="bg-muted/50 rounded-lg p-4">
+                      <div className="text-xs text-muted-foreground mb-1">Your note:</div>
                       <p className="text-sm font-medium">{request.note}</p>
                     </div>
                   )}

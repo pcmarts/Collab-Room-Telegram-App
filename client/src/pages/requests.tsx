@@ -161,6 +161,32 @@ export default function RequestsPage() {
     return Array.from(groupsMap.values());
   }, [allRequestsData]);
 
+  // Fetch sent requests count for the tab label
+  const { data: sentRequestsData } = useQuery({
+    queryKey: ['/api/collaboration-requests', 'sent'],
+    queryFn: async () => {
+      try {
+        const data = await apiRequest('/api/collaboration-requests?filter=sent&limit=1000'); // Get all sent requests for count
+        return data;
+      } catch (error) {
+        console.error("Error fetching sent requests count:", error);
+        return { requests: [] };
+      }
+    },
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+
+  // Calculate sent requests count for the tab label
+  const sentRequestsCount = React.useMemo(() => {
+    if (requestsFilter === 'sent' && allRequestsData) {
+      return allRequestsData.length;
+    } else if (sentRequestsData?.requests) {
+      return sentRequestsData.requests.length;
+    }
+    return 0;
+  }, [allRequestsData, requestsFilter, sentRequestsData]);
+
 
 
 
@@ -220,6 +246,7 @@ export default function RequestsPage() {
               onLoadMore={loadMoreRequests}
               hasMore={hasMore}
               isLoadingMore={isLoadingMore}
+              sentRequestsCount={sentRequestsCount}
             />
           </div>
         </div>
