@@ -99,6 +99,8 @@ interface RequestsManagementTabProps {
   filter: 'received' | 'hidden' | 'sent';
   onFilterChange: (filter: 'received' | 'hidden' | 'sent') => void;
   sentRequestsCount?: number;
+  receivedRequestsCount?: number;
+  hiddenRequestsCount?: number;
 }
 
 export function RequestsManagementTab({ 
@@ -109,7 +111,9 @@ export function RequestsManagementTab({
   isLoadingMore = false,
   filter,
   onFilterChange,
-  sentRequestsCount = 0
+  sentRequestsCount = 0,
+  receivedRequestsCount = 0,
+  hiddenRequestsCount = 0
 }: RequestsManagementTabProps) {
   const [selectedRequestForDetails, setSelectedRequestForDetails] = useState<CollaborationRequest | null>(null);
   const { toast } = useToast();
@@ -222,8 +226,8 @@ export function RequestsManagementTab({
       <div className="flex items-center justify-center">
         <Tabs value={filter} onValueChange={(value) => onFilterChange(value as any)} className="w-full">
           <TabsList className="w-full">
-            <TabsTrigger value="received" className="flex-1">Received</TabsTrigger>
-            <TabsTrigger value="hidden" className="flex-1">Hidden</TabsTrigger>
+            <TabsTrigger value="received" className="flex-1">Received ({receivedRequestsCount})</TabsTrigger>
+            <TabsTrigger value="hidden" className="flex-1">Hidden ({hiddenRequestsCount})</TabsTrigger>
             <TabsTrigger value="sent" className="flex-1">Sent ({sentRequestsCount})</TabsTrigger>
           </TabsList>
         </Tabs>

@@ -177,7 +177,39 @@ export default function RequestsPage() {
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
-  // Calculate sent requests count for the tab label
+  // Fetch received requests count for the tab label
+  const { data: receivedRequestsData } = useQuery({
+    queryKey: ['/api/collaboration-requests', 'received'],
+    queryFn: async () => {
+      try {
+        const data = await apiRequest('/api/collaboration-requests?filter=received&limit=1000'); // Get all received requests for count
+        return data;
+      } catch (error) {
+        console.error("Error fetching received requests count:", error);
+        return { requests: [] };
+      }
+    },
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+
+  // Fetch hidden requests count for the tab label
+  const { data: hiddenRequestsData } = useQuery({
+    queryKey: ['/api/collaboration-requests', 'hidden'],
+    queryFn: async () => {
+      try {
+        const data = await apiRequest('/api/collaboration-requests?filter=hidden&limit=1000'); // Get all hidden requests for count
+        return data;
+      } catch (error) {
+        console.error("Error fetching hidden requests count:", error);
+        return { requests: [] };
+      }
+    },
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+
+  // Calculate request counts for the tab labels
   const sentRequestsCount = React.useMemo(() => {
     if (requestsFilter === 'sent' && allRequestsData) {
       return allRequestsData.length;
@@ -186,6 +218,24 @@ export default function RequestsPage() {
     }
     return 0;
   }, [allRequestsData, requestsFilter, sentRequestsData]);
+
+  const receivedRequestsCount = React.useMemo(() => {
+    if (requestsFilter === 'received' && allRequestsData) {
+      return allRequestsData.length;
+    } else if (receivedRequestsData?.requests) {
+      return receivedRequestsData.requests.length;
+    }
+    return 0;
+  }, [allRequestsData, requestsFilter, receivedRequestsData]);
+
+  const hiddenRequestsCount = React.useMemo(() => {
+    if (requestsFilter === 'hidden' && allRequestsData) {
+      return allRequestsData.length;
+    } else if (hiddenRequestsData?.requests) {
+      return hiddenRequestsData.requests.length;
+    }
+    return 0;
+  }, [allRequestsData, requestsFilter, hiddenRequestsData]);
 
 
 
@@ -247,6 +297,8 @@ export default function RequestsPage() {
               hasMore={hasMore}
               isLoadingMore={isLoadingMore}
               sentRequestsCount={sentRequestsCount}
+              receivedRequestsCount={receivedRequestsCount}
+              hiddenRequestsCount={hiddenRequestsCount}
             />
           </div>
         </div>
