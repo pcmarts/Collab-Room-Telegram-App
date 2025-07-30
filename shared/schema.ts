@@ -21,10 +21,10 @@ const activeCollabTypeNames = COLLABORATION_TYPE_DEFINITIONS
   .map(type => type.name);
 
 export const COLLAB_TYPES = [
-  "Twitter Spaces Guests",
-  "Twitter Brand Collab", 
-  "Podcast Guests",
-  "Live Stream Guests",
+  "Twitter Spaces Guest",
+  "Co-Marketing on Twitter", 
+  "Podcast Guest Appearance",
+  "Live Stream Guest Appearance",
   "Report & Research Feature",
   "Newsletter Feature",
   "Blog Post Feature",
@@ -36,11 +36,11 @@ if (process.env.NODE_ENV === 'development') {
   const hardcodedNames = new Set([...COLLAB_TYPES]);
   
   // Check if all hardcoded types exist in registry
-  COLLAB_TYPES.forEach(name => {
+  for (const name of hardcodedNames) {
     if (!registryNames.has(name)) {
       console.warn(`⚠️ Collaboration type "${name}" missing from registry`);
     }
-  });
+  }
 }
 
 // Standardized topic list used throughout the app

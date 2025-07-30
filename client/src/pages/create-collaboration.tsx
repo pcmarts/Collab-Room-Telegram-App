@@ -91,14 +91,14 @@ export default function CreateCollaboration() {
     
     // Reset details object when collaboration type changes
     switch (value) {
-      case "Podcast Guests":
+      case "Podcast Guest Appearance":
         form.setValue('details', {
           podcast_name: "",
           short_description: "",
           podcast_link: ""
         });
         break;
-      case "Twitter Spaces Guests":
+      case "Twitter Spaces Guest":
         form.setValue('details', {
           twitter_handle: "https://x.com/",
           space_topic: [],
@@ -194,7 +194,7 @@ export default function CreateCollaboration() {
   // Render specific details form based on selected collaboration type
   const renderCollabTypeSpecificFields = () => {
     switch (selectedCollabType) {
-      case "Podcast Guests":
+      case "Podcast Guest Appearance":
         // Set initial podcastDetailsSchema when this type is selected
         if (!form.getValues('details') || !('podcast_name' in form.getValues('details'))) {
           form.setValue('details', {
@@ -252,7 +252,7 @@ export default function CreateCollaboration() {
           </div>
         );
       
-      case "Twitter Spaces Guests":
+      case "Twitter Spaces Guest":
         // Set initial twitterSpacesDetailsSchema when this type is selected
         if (!form.getValues('details') || !('twitter_handle' in form.getValues('details'))) {
           form.setValue('details', {

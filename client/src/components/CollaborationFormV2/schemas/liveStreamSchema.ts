@@ -7,7 +7,7 @@ import { baseCollabFields } from "./baseSchema";
  */
 export const liveStreamSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Live Stream Guests"),
+  collab_type: z.literal("Live Stream Guest Appearance"),
   platform_name: z.string()
     .min(2, "Platform name is required"),
   stream_link: z.string()
@@ -23,7 +23,7 @@ export const liveStreamSchema = z.object({
  * Default values for Live Stream Guest Appearance collaborations
  */
 export const liveStreamDefaults = {
-  collab_type: "Live Stream Guests",
+  collab_type: "Live Stream Guest Appearance",
   platform_name: "",
   stream_link: "",
   audience_size: AUDIENCE_SIZE_RANGES[0],

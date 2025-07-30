@@ -194,7 +194,7 @@ export default function CreateCollaborationSteps({
       
       // Add type-specific fields
       switch (value) {
-        case "Podcast Guest":
+        case "Podcast Guest Appearance":
           newDetails.podcast_name = "";
           newDetails.short_description = "";
           newDetails.podcast_description = "";
@@ -215,7 +215,7 @@ export default function CreateCollaborationSteps({
           newDetails.short_description = ""; // Single field for topic description - ensure this field is present from the start
           break;
           
-        case "Live Stream Guests":
+        case "Live Stream Guest Appearance":
           newDetails.title = "";
           newDetails.short_description = "";
           newDetails.date_selection = "any_future_date";
@@ -550,7 +550,7 @@ export default function CreateCollaborationSteps({
       // Log the extracted common description
       console.log("Common description field:", data.description);
       
-      if (data.collab_type === "Podcast Guests") {
+      if (data.collab_type === "Podcast Guest Appearance") {
         data.details = {
           podcast_name: typeof rawDetails?.podcast_name === 'string' ? rawDetails.podcast_name : "",
           // No longer need to include short_description in details as it's moved to the common field
@@ -933,7 +933,7 @@ export default function CreateCollaborationSteps({
           }}
         />
       ),
-      shouldShow: () => selectedCollabType === "Podcast Guests"
+      shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
     },
     {
       id: "podcast_short_description",
@@ -980,7 +980,7 @@ export default function CreateCollaborationSteps({
           }}
         />
       ),
-      shouldShow: () => selectedCollabType === "Podcast Guests"
+      shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
     },
     {
       id: "podcast_link",
@@ -1038,7 +1038,7 @@ export default function CreateCollaborationSteps({
           />
         );
       },
-      shouldShow: () => selectedCollabType === "Podcast Guests"
+      shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
     },
     {
       id: "podcast_reach",
@@ -1075,7 +1075,7 @@ export default function CreateCollaborationSteps({
           )}
         />
       ),
-      shouldShow: () => selectedCollabType === "Podcast Guests"
+      shouldShow: () => selectedCollabType === "Podcast Guest Appearance"
     },
     {
       id: "twitter_handle",

@@ -59,10 +59,8 @@ const getCollaborationTypeIcon = (type: string) => {
 export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected }) => {
   const { availableTypes, selectType } = useCollaborationType();
 
-
-
   const handleTypeSelect = async (typeId: string) => {
-
+    console.log("Selected collaboration type:", typeId);
     
     // Set the value and validate it
     form.setValue("collab_type", typeId, { shouldValidate: true });
@@ -77,30 +75,19 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
     
     // Populate default values for the selected type
     const selectedType = availableTypes.find(type => type.id === typeId);
-    console.log("Found selectedType:", selectedType);
-    
-    if (selectedType) {
-      if (selectedType.defaultValues) {
-        console.log("Applying default values for type:", typeId, selectedType.defaultValues);
-        
-        // Apply default values for this type
-        form.reset({ 
-          collab_type: typeId,
-          ...selectedType.defaultValues 
-        });
-      } else {
-        console.log("No default values found for type:", typeId, "- using basic form reset");
-        // Even without default values, ensure the form is properly set
-        form.reset({ collab_type: typeId });
-      }
+    if (selectedType && selectedType.defaultValues) {
+      console.log("Applying default values for type:", typeId, selectedType.defaultValues);
       
-      // Always call the callback if provided to move to next step
+      // Apply default values for this type
+      form.reset({ 
+        collab_type: typeId,
+        ...selectedType.defaultValues 
+      });
+      
+      // Call the callback if provided to move to next step
       if (onTypeSelected) {
         onTypeSelected();
       }
-    } else {
-      console.error("Selected type not found in availableTypes:", typeId);
-      console.log("Available types:", availableTypes.map(t => ({ id: t.id, name: t.name })));
     }
   };
 
@@ -123,9 +110,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
               )
               .map((type) => {
                 const isSelected = field.value === type;
-                const isTypeAvailable = availableTypes.some(t => t.id === type || t.name === type);
-                
-
+                const isTypeAvailable = availableTypes.some(t => t.id === type);
                 
                 return (
                   <Button
