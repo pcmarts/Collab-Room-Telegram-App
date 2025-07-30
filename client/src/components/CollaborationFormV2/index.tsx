@@ -24,7 +24,7 @@ import { COLLAB_TYPE_IDS } from "@shared/collaboration-types";
  */
 const InitialStep = {
   id: "collab_type",
-  title: "Collaboration Type",
+  title: "I'm hosting a...",
   description: "", // Removed duplicate text
 };
 
