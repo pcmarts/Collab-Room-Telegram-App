@@ -36,11 +36,11 @@ if (process.env.NODE_ENV === 'development') {
   const hardcodedNames = new Set([...COLLAB_TYPES]);
   
   // Check if all hardcoded types exist in registry
-  for (const name of hardcodedNames) {
+  hardcodedNames.forEach(name => {
     if (!registryNames.has(name)) {
       console.warn(`⚠️ Collaboration type "${name}" missing from registry`);
     }
-  }
+  });
 }
 
 // Standardized topic list used throughout the app

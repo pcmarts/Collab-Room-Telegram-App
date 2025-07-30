@@ -2,7 +2,31 @@
 
 ## Overview
 
-The Collab Room is a Web3 professional networking platform built as a full-stack web application. It connects professionals for various types of marketing collaborations including podcast appearances, Twitter Spaces, blog posts, and other content partnerships. The platform features Telegram WebApp integration for authentication and notifications.
+The Collab Room is a cutting-edge Web3 professional networking platform that intelligently connects professionals through blockchain-powered collaboration tools and dynamic interaction design. Built as a modern full-stack web application, it facilitates various types of marketing collaborations including Twitter marketing campaigns, podcast appearances, live streams, research features, newsletter placements, blog posts, and networking events.
+
+**Current Status**: Production-ready platform with active collaboration matching, request management, and Telegram integration.
+
+## Recent Changes (July 2025)
+
+### ✓ Collaboration Type Registry System (July 30, 2025)
+- **Centralized Type Management**: Implemented comprehensive collaboration type registry in `shared/collaboration-types/`
+- **Enhanced Type Definitions**: Added structured collaboration types with icons, colors, categories, and metadata
+- **Legacy Compatibility**: Maintained backward compatibility through legacy name mappings
+- **Active Types**: Twitter Spaces Guest, Co-Marketing on Twitter, Podcast Guest, Live Stream Guest, Research Feature, Newsletter Feature, Blog Post Feature, Conference Coffee
+- **Type Categories**: Social Media, Marketing, Content, Events
+- **Visual Enhancement**: Color-coded collaboration types with Lucide React icons
+
+### ✓ Company Logo Loading System (July 25, 2025)
+- **CSP Configuration**: Added Supabase storage domain to Content Security Policy for image loading
+- **API Enhancement**: Added missing `company_logo_url` fields across all collaboration APIs
+- **Component Updates**: Enhanced LogoAvatar component with proper fallback handling
+- **Coverage**: Fixed logos across Discovery page, My Collaborations, My Matches, and Match Details
+
+### ✓ Telegram Bot Environment Architecture (July 14, 2025)
+- **Environment Separation**: Clean separation between development and production bot instances
+- **Security Enhancement**: Moved webapp URLs to environment secrets
+- **Graceful Shutdown**: Added proper bot cleanup to prevent 409 Conflict errors
+- **Simplified Logic**: Removed complex conditional environment detection
 
 ## System Architecture
 
@@ -22,10 +46,37 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 - **API Design**: RESTful endpoints with comprehensive error handling
 
 ### Database Architecture
-- **Primary Database**: PostgreSQL with connection pooling
-- **ORM**: Drizzle ORM for type-safe database operations
+- **Primary Database**: PostgreSQL with connection pooling and optimized indexing
+- **ORM**: Drizzle ORM for type-safe database operations with Zod validation
 - **Schema Management**: Drizzle Kit for migrations and schema management
 - **Connection**: Environment-based connection string with SSL support
+- **Key Tables**: users, companies, collaborations, requests, marketing_preferences, notification_preferences
+- **Advanced Features**: JSONB storage for collaboration details, array fields for tags/networks, GIN indexes for search optimization
+
+## Key Features
+
+### Collaboration Matching System
+- **Intelligent Discovery**: Advanced collaboration search with filtering by company sectors, funding stages, token status, blockchain networks
+- **Request Management**: Comprehensive request handling with accept/decline functionality and detailed match tracking
+- **Match Analytics**: Real-time match statistics and collaboration tracking with detailed user/company data enrichment
+
+### Collaboration Type System
+- **Registry Architecture**: Centralized collaboration type definitions with metadata, icons, and categories
+- **Type Categories**: Social Media, Marketing, Content, Events
+- **Legacy Support**: Backward compatibility with existing collaboration data through name mappings
+- **Visual Design**: Color-coded types with professional iconography
+
+### User & Company Management
+- **User Profiles**: Complete professional profiles with Twitter/LinkedIn integration
+- **Company Profiles**: Detailed company information with logos, funding stages, blockchain networks, and sector tags
+- **Marketing Preferences**: Granular collaboration and discovery preferences with filter controls
+- **Notification System**: Configurable notification preferences with Telegram integration
+
+### API Architecture
+- **RESTful Design**: Comprehensive API endpoints with proper error handling and validation
+- **Optimized Queries**: Advanced PostgreSQL queries with joins, indexing, and pagination
+- **Data Enrichment**: Rich API responses with user, company, and collaboration details
+- **Type Safety**: Full TypeScript integration with Zod validation schemas
 
 ## Key Components
 
@@ -86,31 +137,85 @@ The Collab Room is a Web3 professional networking platform built as a full-stack
 ## External Dependencies
 
 ### Core Dependencies
-- **Database**: PostgreSQL (environment-provided)
-- **Authentication**: Telegram Bot API
-- **UI Framework**: Radix UI components and TailwindCSS
-- **State Management**: TanStack React Query
-- **Form Handling**: React Hook Form with Zod validation
+- **Database**: PostgreSQL with connection pooling and advanced indexing
+- **Authentication**: Telegram Bot API with WebApp integration
+- **UI Framework**: Radix UI components, Shadcn/ui, and TailwindCSS with theme system
+- **State Management**: TanStack React Query for server state management
+- **Form Handling**: React Hook Form with Zod validation and type safety
+- **Icons**: Lucide React for collaboration type icons and UI elements
+- **Routing**: Wouter for client-side navigation
 
-### Optional Dependencies
-- **Twitter Integration**: RapidAPI Twitter241 service
-- **Image Processing**: Company logo download and storage
-- **Session Storage**: PostgreSQL-backed session management
-- **Logging**: Custom logging utility with configurable levels
+### Advanced Dependencies
+- **Twitter Integration**: RapidAPI Twitter241 service for social media features
+- **Object Storage**: Supabase for company logo storage and management
+- **Session Storage**: PostgreSQL-backed session management with Express sessions
+- **Logging**: Custom logging utility with configurable levels and environment detection
+- **Animation**: Framer Motion for sophisticated UI animations
+- **Type Registry**: Custom collaboration type registry system with metadata support
 
 ### Development Dependencies
-- **Build Tools**: Vite, ESBuild for production builds
-- **Type Checking**: TypeScript with strict configuration
-- **Database Tools**: Drizzle Kit for schema management
-- **Testing**: Manual testing scripts and utilities
+- **Build Tools**: Vite with custom plugins, ESBuild for production optimization
+- **Type Checking**: TypeScript with strict configuration and Drizzle type generation
+- **Database Tools**: Drizzle Kit for schema management and type-safe migrations  
+- **Testing**: Comprehensive test scripts for bot environment and API validation
+- **Development Server**: Express server with Vite integration for full-stack development
 
 ## Deployment Strategy
 
 ### Platform Configuration
-- **Deployment Target**: Google Cloud Run (configured in .replit)
+- **Deployment Target**: Replit Deployments with automatic scaling
 - **Build Process**: Vite build for frontend, ESBuild for backend bundling
-- **Environment**: Multi-environment support (development, production)
-- **Port Configuration**: Port 5000 for backend, 5001 for frontend development
+- **Environment**: Multi-environment support (development, production) with proper separation
+- **Port Configuration**: Port 5000 for unified server (serves both frontend and backend)
+
+### Environment Variables
+- **Production**: `WEBAPP_URL`, `TELEGRAM_BOT_TOKEN`, `DATABASE_URL`
+- **Development**: `WEBAPP_URL_DEV`, `TELEGRAM_TEST_BOT_TOKEN`, `DATABASE_URL`
+- **Security**: All sensitive URLs and tokens stored as environment secrets
+- **CSP Configuration**: Supabase storage domain included for logo loading
+
+### Deployment Features
+- **Automatic Restarts**: Workflow automatically restarts on code changes
+- **Health Checks**: Built-in health monitoring and error logging
+- **Environment Detection**: Automatic production/development environment detection
+- **Bot Management**: Graceful bot shutdown to prevent polling conflicts
+
+## Collaboration Type System Architecture
+
+### Registry Structure
+The collaboration type system is built around a centralized registry in `shared/collaboration-types/`:
+
+- **`definitions.ts`**: Core type definitions with metadata, icons, colors, and categories
+- **`types.ts`**: TypeScript interfaces and enums for type safety
+- **`registry.ts`**: Registry utilities and accessor functions
+- **`index.ts`**: Unified exports for the type system
+
+### Active Collaboration Types
+1. **Twitter Spaces Guest** (Social Media) - Join as guest speaker on Twitter Spaces
+2. **Co-Marketing on Twitter** (Marketing) - Collaborative marketing campaigns on Twitter
+3. **Podcast Guest Appearance** (Content) - Appear as guest on podcasts
+4. **Live Stream Guest Appearance** (Content) - Join live streams as guest
+5. **Report & Research Feature** (Content) - Be featured in research reports
+6. **Newsletter Feature** (Content) - Be featured in newsletters
+7. **Blog Post Feature** (Content) - Be featured in blog posts
+8. **Conference Coffee** (Events) - Meet for coffee at conferences
+
+### Type Categories
+- **Social Media**: Twitter-focused collaboration types
+- **Marketing**: Promotional and campaign-based collaborations
+- **Content**: Content creation and feature opportunities
+- **Events**: In-person networking and event-based collaborations
+
+### Legacy Compatibility
+The system maintains backward compatibility through:
+- **Legacy Name Mappings**: Maps old collaboration names to stable type IDs
+- **Database Migration**: Existing collaboration data works seamlessly
+- **API Compatibility**: Both old names and new IDs are supported
+
+## User Preferences
+- **Documentation Style**: Comprehensive and technical with clear section organization
+- **Code Architecture**: Favor centralized systems with type safety and backward compatibility
+- **Update Tracking**: Document all changes with dates and impact analysis
 
 ### Environment Variables
 - **Database**: `DATABASE_URL` for PostgreSQL connection

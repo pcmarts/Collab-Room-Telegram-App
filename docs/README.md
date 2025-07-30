@@ -1,4 +1,31 @@
-# Documentation Index
+# The Collab Room - Documentation Portal
+
+Welcome to the comprehensive documentation for The Collab Room - a cutting-edge Web3 professional networking platform that revolutionizes professional connections through intelligent blockchain-powered collaboration tools.
+
+## Latest Updates (July 2025)
+
+### ✓ Collaboration Type Registry System (July 30, 2025)
+- **Centralized Management**: Implemented comprehensive collaboration type registry system
+- **Visual Enhancement**: Added color-coded types with professional Lucide React icons  
+- **Legacy Compatibility**: Maintained backward compatibility with existing collaboration data
+- **Documentation**: Complete collaboration type system documentation
+
+### ✓ Company Logo Loading System (July 25, 2025)
+- **Fixed**: Company logos now display properly across all pages
+- **Enhanced**: CSP configuration and API field mappings
+- **Coverage**: Discovery, My Collaborations, My Matches, and Match Details
+
+### ✓ Telegram Bot Environment Architecture (July 14, 2025)
+- **Separation**: Clean development/production bot environment separation
+- **Security**: Environment secrets for webapp URLs and bot tokens
+- **Reliability**: Graceful shutdown and conflict prevention
+
+## Core System Documentation
+
+### Architecture & Systems
+- **[Collaboration Type System](./collaboration-types/README.md)** - Complete registry system guide
+- **[Frontend Documentation](./frontend/README.md)** - React component architecture and UI system
+- **[API Documentation](./api/README.md)** - Backend API endpoints and integration guide
 
 ## Troubleshooting Guides
 

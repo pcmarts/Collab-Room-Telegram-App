@@ -17,7 +17,7 @@ import { CollaborationType, CollaborationCategory } from "./types";
 export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
   {
     id: 'twitter_spaces_guest',
-    name: 'Twitter Spaces Guest',
+    name: 'Twitter Spaces Guests',
     shortName: 'Spaces Guest',
     icon: Twitter,
     color: 'blue',
@@ -31,7 +31,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
   },
   {
     id: 'twitter_comarketing',
-    name: 'Co-Marketing on Twitter',
+    name: 'Twitter Brand Collab',
     shortName: 'Co-Marketing',
     icon: Twitter,
     color: 'blue',
@@ -45,7 +45,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
   },
   {
     id: 'podcast_guest',
-    name: 'Podcast Guest Appearance',
+    name: 'Podcast Guests',
     shortName: 'Podcast Guest',
     icon: Mic,
     color: 'purple',
@@ -59,7 +59,7 @@ export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
   },
   {
     id: 'livestream_guest',
-    name: 'Live Stream Guest Appearance',
+    name: 'Live Stream Guests',
     shortName: 'Live Stream',
     icon: Video,
     color: 'red',

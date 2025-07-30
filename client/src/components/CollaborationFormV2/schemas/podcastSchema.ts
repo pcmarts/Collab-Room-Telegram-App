@@ -7,7 +7,7 @@ import { baseCollabFields } from "./baseSchema";
  */
 export const podcastCollabSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Podcast Guest Appearance"),
+  collab_type: z.literal("Podcast Guests"),
   podcast_name: z.string()
     .min(2, "Podcast name is required"),
   podcast_link: z.string()
@@ -21,7 +21,7 @@ export const podcastCollabSchema = z.object({
  * Default values for Podcast collaborations
  */
 export const podcastCollabDefaults = {
-  collab_type: "Podcast Guest Appearance",
+  collab_type: "Podcast Guests",
   podcast_name: "",
   podcast_link: "",
   estimated_reach: AUDIENCE_SIZE_RANGES[0],

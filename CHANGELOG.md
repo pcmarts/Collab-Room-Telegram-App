@@ -3,6 +3,15 @@
 ## [Unreleased]
 
 ### Added
+- **Collaboration Type Registry System** (July 30, 2025) - Comprehensive centralized collaboration type management
+  - **Registry Architecture**: Implemented centralized type definitions in `shared/collaboration-types/`
+  - **Visual Enhancement**: Added color-coded collaboration types with professional Lucide React icons
+  - **Type Categories**: Organized types into Social Media, Marketing, Content, and Events categories
+  - **Legacy Compatibility**: Maintained backward compatibility through legacy name mappings
+  - **Metadata System**: Rich type metadata including descriptions, keywords, and estimated durations
+  - **Active Types**: Twitter Spaces Guest, Co-Marketing on Twitter, Podcast Guest, Live Stream Guest, Research Feature, Newsletter Feature, Blog Post Feature, Conference Coffee
+  - **Documentation**: Created comprehensive documentation in `/docs/collaboration-types/`
+
 - **Telegram Bot Environment Architecture Overhaul** - Complete redesign of bot environment management
   - **Environment Separation**: Clean separation between development and production bot instances
   - **Security Enhancement**: Moved webapp URLs to environment secrets (`WEBAPP_URL`, `WEBAPP_URL_DEV`)

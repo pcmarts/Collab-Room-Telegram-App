@@ -7,7 +7,7 @@ import { baseCollabFields } from "./baseSchema";
  */
 export const twitterCollabSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Co-Marketing on Twitter"),
+  collab_type: z.literal("Twitter Brand Collab"),
   twitter_collab_types: z
     .array(z.enum(TWITTER_COLLAB_TYPES))
     .min(1, "Select at least one collaboration type"),
