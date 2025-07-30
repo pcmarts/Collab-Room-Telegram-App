@@ -250,7 +250,7 @@ export function RequestsManagementTab({
         {flattenedRequests.map((request) => (
           <Card 
             key={request.id}
-            className={filter !== 'sent' ? 'cursor-pointer hover:bg-muted/30 transition-colors' : ''}
+            className={filter !== 'sent' ? 'cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all duration-200' : ''}
             onClick={filter !== 'sent' ? () => handleShowDetails(request) : undefined}
           >
             <CardContent className="pt-4">
