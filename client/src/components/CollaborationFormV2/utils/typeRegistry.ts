@@ -22,38 +22,49 @@ import { COLLAB_TYPE_IDS, getCollabTypeId, getCollabTypeDisplayName } from "@sha
  * 
  * Add new collaboration types here to make them available in the form
  */
+// Form-specific display names - hardcoded for creation form UI
+export const formDisplayNames = {
+  [COLLAB_TYPE_IDS.TWITTER_SPACES]: "Twitter Spaces Guest",
+  [COLLAB_TYPE_IDS.TWITTER_COMARKETING]: "Twitter Co-Marketing Opportunity", 
+  [COLLAB_TYPE_IDS.PODCAST]: "Podcast",
+  [COLLAB_TYPE_IDS.LIVESTREAM]: "Live Stream Guest Appearance",
+  [COLLAB_TYPE_IDS.RESEARCH]: "Report & Research Feature",
+  [COLLAB_TYPE_IDS.NEWSLETTER]: "Newsletter Feature",
+  [COLLAB_TYPE_IDS.BLOG_POST]: "Blog Post Feature",
+};
+
 export const collaborationTypes: CollaborationTypeDefinition[] = [
   {
     id: COLLAB_TYPE_IDS.TWITTER_SPACES,
-    name: getCollabTypeDisplayName(COLLAB_TYPE_IDS.TWITTER_SPACES),
+    name: formDisplayNames[COLLAB_TYPE_IDS.TWITTER_SPACES],
     schema: twitterSpacesSchema,
     defaultValues: twitterSpacesDefaults,
     steps: twitterSpacesSteps
   },
   {
     id: COLLAB_TYPE_IDS.TWITTER_COMARKETING,
-    name: getCollabTypeDisplayName(COLLAB_TYPE_IDS.TWITTER_COMARKETING),
+    name: formDisplayNames[COLLAB_TYPE_IDS.TWITTER_COMARKETING],
     schema: twitterCollabSchema,
     defaultValues: twitterCollabDefaults,
     steps: twitterCollabSteps
   },
   {
     id: COLLAB_TYPE_IDS.PODCAST,
-    name: getCollabTypeDisplayName(COLLAB_TYPE_IDS.PODCAST),
+    name: formDisplayNames[COLLAB_TYPE_IDS.PODCAST],
     schema: podcastCollabSchema,
     defaultValues: podcastCollabDefaults,
     steps: podcastCollabSteps
   },
   {
     id: COLLAB_TYPE_IDS.LIVESTREAM,
-    name: getCollabTypeDisplayName(COLLAB_TYPE_IDS.LIVESTREAM),
+    name: formDisplayNames[COLLAB_TYPE_IDS.LIVESTREAM],
     schema: liveStreamSchema,
     defaultValues: liveStreamDefaults,
     steps: liveStreamSteps
   },
   {
     id: COLLAB_TYPE_IDS.RESEARCH,
-    name: getCollabTypeDisplayName(COLLAB_TYPE_IDS.RESEARCH),
+    name: formDisplayNames[COLLAB_TYPE_IDS.RESEARCH],
     schema: reportSchema,
     defaultValues: reportDefaults,
     steps: reportSteps

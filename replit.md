@@ -8,6 +8,18 @@ The Collab Room is a cutting-edge Web3 professional networking platform that int
 
 ## Recent Changes (July 2025)
 
+### ✓ Implemented Dual Naming System for Forms vs App (July 30, 2025)
+- **Dual Architecture**: Created separate naming systems for form creation vs rest of app
+- **Form-Specific Names**: Added `formDisplayNames` object in form registry for hardcoded form labels
+- **Configuration Names**: Rest of app continues using configurable names from `/shared/collaboration-types/config.ts`
+- **User Control**: Form creation labels can be edited directly in `/client/src/components/CollaborationFormV2/utils/typeRegistry.ts`
+- **App-Wide Labels**: Discovery page, matches, etc. use configurable names that can be changed in config file
+- **Architecture Benefits**: Allows different UX for form creation vs general app without complexity
+- **Files Updated**:
+  - Added `formDisplayNames` constant for hardcoded form labels
+  - Form registry now uses these hardcoded names instead of config system
+  - Config system remains active for all other parts of the app
+
 ### ✓ Fixed Form Logic for Fully Flexible Naming System (July 30, 2025)
 - **Issue Resolved**: Form was still using hardcoded legacy names alongside stable IDs, causing mismatches when display names changed
 - **Root Cause**: Switch statements in form logic contained both `COLLAB_TYPE_IDS.TWITTER_SPACES` and `"Twitter Spaces Guest"` cases
