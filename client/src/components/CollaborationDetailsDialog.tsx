@@ -438,7 +438,8 @@ export function CollaborationDetailsDialog({
                           'twittercomarketing_type', 'host_twitter_handle', 'host_follower_count',
                           'podcast_name', 'episode_duration', 'podcast_audience_size',
                           'platform', 'stream_duration', 'report_type', 'publication_name',
-                          'date_type', 'specific_date' // Skip date fields as they're handled above
+                          'date_type', 'specific_date', // Skip date fields as they're handled above
+                          'podcast_url', 'stream_url' // Skip URL fields as they're handled as buttons
                         ].includes(key)) {
                           return null;
                         }
@@ -446,6 +447,32 @@ export function CollaborationDetailsDialog({
                         // Skip empty values
                         if (!value || (Array.isArray(value) && value.length === 0)) {
                           return null;
+                        }
+                        
+                        // Check if this is a URL field and render as a button
+                        const isUrl = (String(value).startsWith('http://') || String(value).startsWith('https://'));
+                        const isStreamLink = key.toLowerCase().includes('stream') && key.toLowerCase().includes('link');
+                        const isPodcastLink = key.toLowerCase().includes('podcast') && key.toLowerCase().includes('url');
+                        
+                        if (isUrl && (isStreamLink || isPodcastLink)) {
+                          const linkText = isStreamLink ? 'Previous Streams' : 'Previous Episodes';
+                          const colorClass = isStreamLink ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100';
+                          
+                          return (
+                            <div key={key} className="text-sm">
+                              <span className="font-medium text-foreground capitalize">{key.replace(/_/g, ' ')}: </span>
+                              <a 
+                                href={String(value)} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className={`inline-flex items-center gap-1 ml-2 px-2 py-1 text-xs border rounded transition-colors ${colorClass}`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                {linkText}
+                              </a>
+                            </div>
+                          );
                         }
                         
                         return (
