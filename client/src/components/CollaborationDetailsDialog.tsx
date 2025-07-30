@@ -204,13 +204,13 @@ export function CollaborationDetailsDialog({
         <DialogHeader className="relative px-0 py-0 sticky top-0 bg-background z-10 border-b shrink-0">
           <div className="relative flex items-center justify-between h-16 px-4">
             <Button 
-              variant="ghost" 
-              size="icon" 
+              variant="outline" 
               onClick={onClose} 
-              className="h-11 w-11 rounded-full bg-background/80 hover:bg-muted border shadow-sm"
+              className="flex items-center gap-2"
               aria-label="Close collaboration details dialog"
             >
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronLeft className="w-4 h-4" />
+              Back
             </Button>
             <div className="flex-1 flex justify-center">
               <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium ${getTypeColor(collabType)}`}>
@@ -244,25 +244,8 @@ export function CollaborationDetailsDialog({
               {/* Description */}
               <p className="text-sm text-muted-foreground mb-4">{description}</p>
                 
-              {/* Topics/Tags and Date - Combined section */}
-              <div className="mb-6 space-y-4">
-                {topics && topics.length > 0 && (
-                  <div>
-                    <h5 className="text-sm font-semibold mb-3 text-foreground flex items-center gap-2">
-                      <Tag className="w-4 h-4" />
-                      Topics
-                    </h5>
-                    <div className="flex flex-wrap gap-1.5">
-                      {topics.map((topic, index) => (
-                        <Badge key={index} variant="outline" className="text-sm px-3 py-1">
-                          {topic}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Date Information - simplified */}
+              {/* Date Information - simplified */}
+              <div className="mb-6">
                 {(collabData.date_type || collabData.specific_date) && (
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="w-4 h-4 text-muted-foreground" />
@@ -319,7 +302,7 @@ export function CollaborationDetailsDialog({
                           <span className="block mb-2">Company sectors:</span>
                           <div className="flex flex-wrap gap-1.5">
                             {collabData.company_tags.map((tag, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
+                              <Badge key={index} variant="outline" className="text-xs px-2 py-0.5">
                                 {tag}
                               </Badge>
                             ))}
@@ -364,8 +347,19 @@ export function CollaborationDetailsDialog({
                     {/* Podcast specific details */}
                     {collabType?.includes('Podcast') && details.podcast_name && (
                       <div className="text-sm">
-                        <span className="font-medium text-foreground">Podcast: </span>
+                        <span className="font-medium text-foreground">Podcast Name: </span>
                         <span className="text-muted-foreground">{details.podcast_name}</span>
+                        {details.podcast_url && (
+                          <a 
+                            href={details.podcast_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-blue-600 hover:underline ml-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            (Previous Episodes)
+                          </a>
+                        )}
                       </div>
                     )}
                     {collabType?.includes('Podcast') && details.episode_duration && (
@@ -409,24 +403,20 @@ export function CollaborationDetailsDialog({
                       </div>
                     )}
                     
-                    {/* Date information */}
-                    {(collabData.date_type || collabData.specific_date) && (
+                    {/* Topics section under additional details */}
+                    {topics && topics.length > 0 && (
                       <div className="text-sm">
-                        <span className="font-medium text-foreground">Date: </span>
-                        <span className="text-muted-foreground">
-                          {collabData.date_type === 'specific_date' && collabData.specific_date
-                            ? new Date(collabData.specific_date).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long', 
-                                day: 'numeric'
-                              })
-                            : collabData.date_type === 'any_future_date'
-                            ? 'Flexible timing'
-                            : 'Date not specified'
-                          }
-                        </span>
+                        <span className="font-medium text-foreground">Topics: </span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {topics.map((topic, index) => (
+                            <Badge key={index} variant="outline" className="text-xs px-2 py-0.5">
+                              {topic}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     )}
+
                     
                     {/* Generic details for other fields */}
                     {Object.entries(details).map(([key, value]) => {
@@ -490,7 +480,7 @@ export function CollaborationDetailsDialog({
                         }
                       }
                     }}
-                    className="bg-primary hover:bg-primary/90 text-white px-4 w-full min-h-[44px] text-base"
+                    className="bg-primary hover:bg-primary/90 text-white px-4 w-full min-h-[44px] text-sm"
                     aria-label={`Send collaboration request to ${companyName} for ${collabType}`}
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
@@ -506,7 +496,7 @@ export function CollaborationDetailsDialog({
                     e.stopPropagation();
                     onClose();
                   }}
-                  className="w-full bg-background hover:bg-muted border-2 font-medium min-h-[44px] text-base"
+                  className="w-full bg-background hover:bg-muted border-2 font-medium min-h-[44px] text-sm"
                   aria-label="Close collaboration details dialog"
                 >
                   Close
