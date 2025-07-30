@@ -7,7 +7,7 @@ import { baseCollabFields } from "./baseSchema";
  */
 export const twitterSpacesSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Twitter Spaces Guest"),
+  collab_type: z.literal("Twitter Space Guests"),
   spaces_theme: z.string()
     .min(2, "Spaces theme is required"),
   estimated_audience: z.enum(AUDIENCE_SIZE_RANGES),
@@ -22,7 +22,7 @@ export const twitterSpacesSchema = z.object({
  * Default values for Twitter Spaces collaborations
  */
 export const twitterSpacesDefaults = {
-  collab_type: "Twitter Spaces Guest",
+  collab_type: "Twitter Space Guests",
   spaces_theme: "",
   estimated_audience: AUDIENCE_SIZE_RANGES[0],
   duration_minutes: "",

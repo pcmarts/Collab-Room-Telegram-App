@@ -75,19 +75,30 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
     
     // Populate default values for the selected type
     const selectedType = availableTypes.find(type => type.id === typeId);
-    if (selectedType && selectedType.defaultValues) {
-      console.log("Applying default values for type:", typeId, selectedType.defaultValues);
+    console.log("Found selectedType:", selectedType);
+    
+    if (selectedType) {
+      if (selectedType.defaultValues) {
+        console.log("Applying default values for type:", typeId, selectedType.defaultValues);
+        
+        // Apply default values for this type
+        form.reset({ 
+          collab_type: typeId,
+          ...selectedType.defaultValues 
+        });
+      } else {
+        console.log("No default values found for type:", typeId, "- using basic form reset");
+        // Even without default values, ensure the form is properly set
+        form.reset({ collab_type: typeId });
+      }
       
-      // Apply default values for this type
-      form.reset({ 
-        collab_type: typeId,
-        ...selectedType.defaultValues 
-      });
-      
-      // Call the callback if provided to move to next step
+      // Always call the callback if provided to move to next step
       if (onTypeSelected) {
         onTypeSelected();
       }
+    } else {
+      console.error("Selected type not found in availableTypes:", typeId);
+      console.log("Available types:", availableTypes.map(t => ({ id: t.id, name: t.name })));
     }
   };
 
