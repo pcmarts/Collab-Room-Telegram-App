@@ -30,7 +30,7 @@ type CollabTypeId =
  * Change these values to update how collaboration types appear in the UI
  */
 export const DISPLAY_NAMES: Record<CollabTypeId, string> = {
-  twitter_spaces_guest: "Twitter Spaces Guest",
+  twitter_spaces_guest: "Twitter Spaces",
   twitter_comarketing: "Twitter Co-Marketing Opportunity",
   podcast_guest: "Podcast",
   livestream_guest: "Live Stream Guest Appearance",

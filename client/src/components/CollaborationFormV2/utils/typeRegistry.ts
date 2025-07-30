@@ -25,35 +25,35 @@ import { COLLAB_TYPE_IDS, getCollabTypeId, getCollabTypeDisplayName } from "@sha
 export const collaborationTypes: CollaborationTypeDefinition[] = [
   {
     id: COLLAB_TYPE_IDS.TWITTER_SPACES,
-    name: "Twitter Spaces Guest",
+    name: getCollabTypeDisplayName(COLLAB_TYPE_IDS.TWITTER_SPACES),
     schema: twitterSpacesSchema,
     defaultValues: twitterSpacesDefaults,
     steps: twitterSpacesSteps
   },
   {
     id: COLLAB_TYPE_IDS.TWITTER_COMARKETING,
-    name: "Co-Marketing on Twitter",
+    name: getCollabTypeDisplayName(COLLAB_TYPE_IDS.TWITTER_COMARKETING),
     schema: twitterCollabSchema,
     defaultValues: twitterCollabDefaults,
     steps: twitterCollabSteps
   },
   {
     id: COLLAB_TYPE_IDS.PODCAST,
-    name: "Podcast Guest Appearance",
+    name: getCollabTypeDisplayName(COLLAB_TYPE_IDS.PODCAST),
     schema: podcastCollabSchema,
     defaultValues: podcastCollabDefaults,
     steps: podcastCollabSteps
   },
   {
     id: COLLAB_TYPE_IDS.LIVESTREAM,
-    name: "Live Stream Guest Appearance",
+    name: getCollabTypeDisplayName(COLLAB_TYPE_IDS.LIVESTREAM),
     schema: liveStreamSchema,
     defaultValues: liveStreamDefaults,
     steps: liveStreamSteps
   },
   {
     id: COLLAB_TYPE_IDS.RESEARCH,
-    name: "Report & Research Feature",
+    name: getCollabTypeDisplayName(COLLAB_TYPE_IDS.RESEARCH),
     schema: reportSchema,
     defaultValues: reportDefaults,
     steps: reportSteps
