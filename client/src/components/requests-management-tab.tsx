@@ -248,9 +248,13 @@ export function RequestsManagementTab({
       ) : (
         <div className="space-y-4">
         {flattenedRequests.map((request) => (
-          <Card key={request.id}>
+          <Card 
+            key={request.id}
+            className={filter !== 'sent' ? 'cursor-pointer hover:bg-muted/30 transition-colors' : ''}
+            onClick={filter !== 'sent' ? () => handleShowDetails(request) : undefined}
+          >
             <CardContent className="pt-4">
-              <div className="space-y-4">
+              <div className="space-y-4 relative">
                 {/* Header section with logo, collaboration type and timestamp */}
                 <div className="flex items-start space-x-4">
                   <LogoAvatar
@@ -259,7 +263,7 @@ export function RequestsManagementTab({
                     size="lg"
                     className="h-12 w-12 flex-shrink-0"
                   />
-                  <div className="flex-1 flex items-start justify-between">
+                  <div className="flex-1">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <Badge 
@@ -277,6 +281,7 @@ export function RequestsManagementTab({
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:underline"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             {request.company.name}
                           </a>
@@ -285,31 +290,27 @@ export function RequestsManagementTab({
                         )}
                       </p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {filter !== 'sent' && (
-                        <button
-                          onClick={() => handleShowDetails(request)}
-                          className="p-1 rounded-full hover:bg-muted transition-colors"
-                          aria-label="More details"
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-muted-foreground"
-                          >
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
                   </div>
                 </div>
+
+                {/* Centered right arrow for received/hidden requests */}
+                {filter !== 'sent' && (
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-muted-foreground"
+                    >
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </div>
+                )}
                 
                 {/* Full width content below header */}
                 <div className="space-y-4">
@@ -356,7 +357,10 @@ export function RequestsManagementTab({
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleHideRequest(request.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleHideRequest(request.id);
+                            }}
                             disabled={hideRequestMutation.isPending}
                             className="flex-1"
                           >
@@ -365,7 +369,10 @@ export function RequestsManagementTab({
                           </Button>
                           <Button
                             size="sm"
-                            onClick={() => handleAcceptRequest(request.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAcceptRequest(request.id);
+                            }}
                             disabled={acceptRequestMutation.isPending}
                             className="flex-1"
                           >
