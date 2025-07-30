@@ -260,10 +260,13 @@ export function RequestsManagementTab({
                   <div className="flex-1 flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        {getCollabTypeIcon(request.collaboration.type)}
-                        <h4 className="font-medium">
-                          {request.collaboration.type}
-                        </h4>
+                        <Badge 
+                          variant="outline" 
+                          className={getCollabTypeBadgeClass(request.collaboration.type)}
+                        >
+                          {getCollabTypeIcon(request.collaboration.type)}
+                          <span className="ml-1">{request.collaboration.type}</span>
+                        </Badge>
                       </div>
                       <p className="text-lg font-semibold">
                         {request.company.twitter_handle ? (
@@ -280,11 +283,32 @@ export function RequestsManagementTab({
                         )}
                       </p>
                     </div>
-                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span>
-                        {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
-                      </span>
+                    <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span>
+                          {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleShowDetails(request)}
+                        className="p-1 rounded-full hover:bg-muted transition-colors"
+                        aria-label="More details"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-muted-foreground"
+                        >
+                          <path d="m9 18 6-6-6-6" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -336,17 +360,6 @@ export function RequestsManagementTab({
                         </div>
                       </>
                     )}
-                    
-                    {/* Details on its own line */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleShowDetails(request)}
-                      className="w-full"
-                    >
-                      <User className="h-4 w-4 mr-1" />
-                      More Details
-                    </Button>
                   </div>
                 </div>
               </div>
