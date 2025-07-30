@@ -138,6 +138,7 @@ export const LEGACY_NAME_MAPPINGS = [
     typeId: 'twitter_spaces_guest',
     legacyNames: [
       'Twitter Spaces Guest',
+      'Twitter Spaces Guests',
       'Twitter Space',
       'Spaces Guest'
     ]
