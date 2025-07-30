@@ -158,16 +158,26 @@ export const useCollaborationForm = <T extends Record<string, any>>(
   
   /**
    * Helper function to format type-specific details for the API
+   * Now supports both IDs and display names for flexible compatibility
    */
   const formatDetailsForType = (collabType: string, values: any): any => {
-    switch (collabType) {
+    // Import registry functions for flexible lookup
+    const { getCollaborationType } = require("../utils/typeRegistry");
+    const { COLLAB_TYPE_IDS } = require("@shared/collaboration-types");
+    
+    // Get the collaboration type to determine the ID
+    const type = getCollaborationType(collabType);
+    const typeId = type?.id || collabType;
+    
+    switch (typeId) {
+      case COLLAB_TYPE_IDS.TWITTER_SPACES:
       case "Twitter Spaces Guest":
         return {
           twitter_handle: values.twitter_handle || "https://x.com/",
           host_follower_count: values.follower_count || "0-1K",
-          // No longer include short_description in details as it's moved to the common field
         };
         
+      case COLLAB_TYPE_IDS.TWITTER_COMARKETING:
       case "Co-Marketing on Twitter":
         return {
           twittercomarketing_type: Array.isArray(values.twitter_collab_types) 
@@ -175,9 +185,9 @@ export const useCollaborationForm = <T extends Record<string, any>>(
             : ["Thread Collab"],
           host_twitter_handle: values.twitter_handle || "https://x.com/",
           host_follower_count: values.follower_count || "0-1K",
-          // No longer include short_description in details
         };
         
+      case COLLAB_TYPE_IDS.PODCAST:
       case "Podcast Guest Appearance":
         return {
           podcast_name: values.podcast_name || "",
@@ -185,42 +195,40 @@ export const useCollaborationForm = <T extends Record<string, any>>(
           estimated_reach: values.audience_size || "Under 100",
         };
         
+      case COLLAB_TYPE_IDS.LIVESTREAM:
       case "Live Stream Guest Appearance":
         return {
-          // Map the fields correctly based on the LiveStreamForm component field names
-          title: values.platform_name || "", // Using platform_name from form as title
+          title: values.platform_name || "",
           date_selection: values.date_type || "any_future_date",
           specific_date: values.specific_date || "",
-          previous_stream_link: values.stream_link || "", // stream_link from form as previous_stream_link
+          previous_stream_link: values.stream_link || "",
           expected_audience_size: values.audience_size || "Under 100",
-          // Add any additional fields that might be needed for the API
           topics: Array.isArray(values.topics) ? values.topics : []
         };
         
+      case COLLAB_TYPE_IDS.RESEARCH:
       case "Report & Research Feature":
         return {
-          // Map fields correctly based on the ReportForm component field names
           research_topic: Array.isArray(values.topics) ? values.topics : [],
-          target_audience: values.report_type || "Market Report", // Using report_type as target_audience
+          target_audience: values.report_type || "Market Report",
           estimated_release_date: values.date_type === "specific_date" ? values.specific_date : "",
-          // Additional fields from the form
           report_name: values.report_name || "",
           report_link: values.report_link || "",
           audience_reach: values.audience_reach || "Under 100"
         };
         
+      case COLLAB_TYPE_IDS.NEWSLETTER:
       case "Newsletter Feature":
         return {
-          // Map fields correctly based on the NewsletterForm component field names
           newsletter_name: values.newsletter_name || "",
-          newsletter_url: values.newsletter_url || "", // The newsletter URL field is not present in the form
+          newsletter_url: values.newsletter_url || "",
           audience_reach: values.audience_reach || values.subscriber_count || "Under 100",
           total_subscribers: values.subscriber_count || "Under 100"
         };
         
+      case COLLAB_TYPE_IDS.BLOG_POST:
       case "Blog Post Feature":
         return {
-          // Map fields correctly based on the BlogPostForm component field names
           blog_topic: values.topics ? (Array.isArray(values.topics) ? values.topics[0] : values.topics) : "",
           blog_link: values.blog_url || "",
           blog_name: values.blog_name || "",

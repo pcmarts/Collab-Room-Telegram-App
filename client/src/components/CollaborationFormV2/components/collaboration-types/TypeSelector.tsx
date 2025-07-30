@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/form";
 import { useCollaborationType } from "../../contexts/CollaborationTypeContext";
 import { COLLAB_TYPES } from "@shared/schema";
-import { getCollaborationType } from "../../utils/typeRegistry";
+import { getCollaborationType, collaborationTypes } from "../../utils/typeRegistry";
 
 interface TypeSelectorProps {
   form: UseFormReturn<any>;
@@ -71,11 +71,11 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
     // We preserve only the type field to avoid complete form reset
     form.reset({ collab_type: typeId });
     
-    // Update the selected type in context
+    // Update the selected type in context using the ID
     selectType(typeId);
     
-    // Populate default values for the selected type
-    const selectedType = availableTypes.find(type => type.id === typeId);
+    // Get the collaboration type definition from the registry
+    const selectedType = getCollaborationType(typeId);
     if (selectedType && selectedType.defaultValues) {
       console.log("Applying default values for type:", typeId, selectedType.defaultValues);
       
@@ -86,6 +86,11 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
       });
       
       // Call the callback if provided to move to next step
+      if (onTypeSelected) {
+        onTypeSelected();
+      }
+    } else {
+      // If no specific defaults found, still call the callback to proceed
       if (onTypeSelected) {
         onTypeSelected();
       }
@@ -103,20 +108,16 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
             <span className="text-destructive ml-1">*</span>
           </FormLabel>
           <div className="flex flex-col gap-2">
-            {COLLAB_TYPES
+            {collaborationTypes
               .map((type) => {
-                const isSelected = field.value === type;
-                // Check availability using both the type name and any corresponding ID from registry
-                const collabType = getCollaborationType(type);
-                const isTypeAvailable = availableTypes.some(t => 
-                  t.id === type || 
-                  t.name === type || 
-                  (collabType && (t.id === collabType.id || t.name === collabType.name))
-                ) || true; // Temporarily set to true to make all types available
+                // Use the display name for consistency with the old system
+                const typeName = type.name;
+                const isSelected = field.value === type.id || field.value === typeName;
+                const isTypeAvailable = true; // All registered types are available
                 
                 return (
                   <Button
-                    key={type}
+                    key={type.id}
                     type="button"
                     variant={isSelected ? "default" : "outline"}
                     className={`
@@ -124,17 +125,17 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
                       ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-card'}
                       ${!isTypeAvailable && !isSelected ? 'opacity-60' : ''}
                     `}
-                    onClick={() => handleTypeSelect(type)}
+                    onClick={() => handleTypeSelect(type.id)}
                     disabled={!isTypeAvailable && !isSelected}
                   >
                     {isSelected ? (
                       <CheckIcon className="mr-2 h-4 w-4" />
                     ) : (
                       <div className="mr-2 h-4 w-4 flex items-center justify-center">
-                        {React.createElement(getCollaborationTypeIcon(type), { size: 16 })}
+                        {React.createElement(getCollaborationTypeIcon(typeName), { size: 16 })}
                       </div>
                     )}
-                    {type}
+                    {typeName}
                     {!isTypeAvailable && !isSelected && (
                       <span className="ml-auto text-xs text-muted-foreground">
                         Coming soon
