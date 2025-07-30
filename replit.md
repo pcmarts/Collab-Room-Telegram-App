@@ -8,6 +8,16 @@ The Collab Room is a cutting-edge Web3 professional networking platform that int
 
 ## Recent Changes (July 2025)
 
+### ✓ Implemented Request Management System Enhancements and Conditional My Collab Navigation (July 30, 2025)
+- **Request Notes Enhancement**: Added "Your note:" label that only appears when actual note content exists (not empty)
+- **Sent Tab Counter**: Added dynamic count display to "Sent" tab showing "(X)" where X is the number of sent requests
+- **Conditional My Collab Navigation**: Users with no existing collaborations are automatically redirected to collaboration creation form
+- **Improved Request Card Layout**: 
+  - Sent requests: Pending badge (bottom-left), timestamp (bottom-right)
+  - Received/Hidden: Timestamp and right arrow in header, action buttons at bottom
+- **Enhanced Privacy Design**: Maintained host name hiding and clean interface across all request types
+- **Architecture**: Used React useEffect with proper loading checks to prevent premature redirects
+
 ### ✓ Enhanced Collaboration Details Dialog with Interactive Media Links (July 30, 2025)
 - **Dynamic URL Detection**: Implemented automatic detection and conversion of media URLs to clickable buttons
 - **Podcast Links**: "Podcast Link" and "podcast_url" fields automatically become blue "Previous Episodes" buttons

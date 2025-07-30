@@ -550,6 +550,14 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
     setLocation('/create-collaboration-v2');
   };
 
+  // Redirect to create form if user has no collaborations
+  React.useEffect(() => {
+    // Only redirect if we have loaded collaborations data and there are no collaborations
+    if (!isLoadingCollabs && collaborations && collaborations.length === 0) {
+      setLocation('/create-collaboration-v2');
+    }
+  }, [isLoadingCollabs, collaborations, setLocation]);
+
   // If showing create collab, render that component instead
   if (showCreateCollab) {
     return (
