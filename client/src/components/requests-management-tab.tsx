@@ -249,7 +249,7 @@ export function RequestsManagementTab({
           <Card key={request.id}>
             <CardContent className="pt-4">
               <div className="space-y-4">
-                {/* Header section with logo, name and timestamp */}
+                {/* Header section with logo, collaboration type and timestamp */}
                 <div className="flex items-start space-x-4">
                   <LogoAvatar
                     name={request.company.name || "Company"}
@@ -259,22 +259,14 @@ export function RequestsManagementTab({
                   />
                   <div className="flex-1 flex items-start justify-between">
                     <div>
-                      <h4 className="font-medium">
-                        {request.requester.twitter_url ? (
-                          <a 
-                            href={request.requester.twitter_url}
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            {request.requester.first_name} {request.requester.last_name || ''}
-                          </a>
-                        ) : (
-                          <span>{request.requester.first_name} {request.requester.last_name || ''}</span>
-                        )}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {request.company.job_title} at {request.company.twitter_handle ? (
+                      <div className="flex items-center gap-2 mb-1">
+                        {getCollabTypeIcon(request.collaboration.type)}
+                        <h4 className="font-medium">
+                          {request.collaboration.type}
+                        </h4>
+                      </div>
+                      <p className="text-lg font-semibold">
+                        {request.company.twitter_handle ? (
                           <a 
                             href={`https://twitter.com/${request.company.twitter_handle}`}
                             target="_blank" 
@@ -305,17 +297,7 @@ export function RequestsManagementTab({
                       <p className="text-sm font-medium">{request.note}</p>
                     </div>
                   )}
-                  
-                  {/* Collaboration type pill */}
-                  <div className="flex items-center gap-2">
-                    <Badge 
-                      variant="outline" 
-                      className={getCollabTypeBadgeClass(request.collaboration.type)}
-                    >
-                      {getCollabTypeIcon(request.collaboration.type)}
-                      <span className="ml-1">{request.collaboration.type}</span>
-                    </Badge>
-                  </div>
+
                   
                   {/* Action buttons */}
                   <div className="space-y-2">
