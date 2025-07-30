@@ -254,9 +254,9 @@ export function RequestsManagementTab({
             onClick={filter !== 'sent' ? () => handleShowDetails(request) : undefined}
           >
             <CardContent className="pt-4">
-              <div className="space-y-4 relative">
+              <div className="space-y-4">
                 {/* Header section with logo, collaboration type and timestamp */}
-                <div className="flex items-start space-x-4">
+                <div className="flex items-start space-x-4 relative">
                   <LogoAvatar
                     name={request.company.name || "Company"}
                     logoUrl={request.company.logo_url}
@@ -291,26 +291,26 @@ export function RequestsManagementTab({
                       </p>
                     </div>
                   </div>
-                </div>
 
-                {/* Centered right arrow for received/hidden requests */}
-                {filter !== 'sent' && (
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-muted-foreground"
-                    >
-                      <path d="m9 18 6-6-6-6" />
-                    </svg>
-                  </div>
-                )}
+                  {/* Right arrow positioned relative to header section only */}
+                  {filter !== 'sent' && (
+                    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="text-muted-foreground"
+                      >
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
                 
                 {/* Full width content below header */}
                 <div className="space-y-4">
