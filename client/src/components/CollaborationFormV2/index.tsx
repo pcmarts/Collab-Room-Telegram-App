@@ -36,17 +36,17 @@ const CollaborationFormContent: React.FC = () => {
   const { availableTypes, selectedTypeId, registerType, selectType } = useCollaborationType();
   const { form, isSubmitting, handleSubmit } = useCollaborationForm();
   
-  // Register all available collaboration types
+  // Register all available collaboration types only once on mount
   useEffect(() => {
     collaborationTypes.forEach(type => {
       registerType(type);
     });
-  }, [registerType]);
+  }, []); // Empty dependency array - run only on mount
   
-  // Set up the initial step
+  // Set up the initial step only once on mount
   useEffect(() => {
     setSteps([InitialStep]);
-  }, [setSteps]);
+  }, []); // Empty dependency array - run only on mount
   
   // Handle form submission
   const onSubmit = () => {
