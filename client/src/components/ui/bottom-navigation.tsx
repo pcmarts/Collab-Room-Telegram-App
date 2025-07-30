@@ -8,12 +8,14 @@ import { useQuery } from "@tanstack/react-query"
 import { apiRequest } from "@/lib/queryClient"
 import { useNavigationPreloader } from "@/hooks/useNavigationPreloader"
 import { triggerHapticFeedback } from "@/lib/haptics"
+import { SignupPromptDialog } from "@/components/SignupPromptDialog"
 
 const BottomNavigation = () => {
-  const [location] = useLocation()
+  const [location, setLocation] = useLocation()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userProfile, setUserProfile] = useState<any>(null)
   const { preloadRoute, preloadAllNavigation, isPreloaded } = useNavigationPreloader()
+  const [showSignupDialog, setShowSignupDialog] = useState(false)
   
   // Check authentication status and get user profile
   useEffect(() => {
@@ -128,6 +130,23 @@ const BottomNavigation = () => {
     preloadRoute(href);
   };
 
+  // Handle restricted item click (show signup dialog)
+  const handleRestrictedItemClick = (item: any) => {
+    // Trigger haptic feedback
+    triggerHapticFeedback('selection');
+    
+    // Show signup dialog for My Collabs specifically
+    if (item.href === '/my-collaborations' && !isAuthenticated) {
+      setShowSignupDialog(true);
+    }
+  };
+
+  // Handle signup navigation
+  const handleSignup = () => {
+    setShowSignupDialog(false);
+    setLocation('/welcome');
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 z-50 w-full h-24 bg-background border-t border-border pb-6" style={{ bottom: '0px', position: 'fixed' }}>
       <div className="grid h-full grid-cols-4 mx-auto">
@@ -137,7 +156,27 @@ const BottomNavigation = () => {
           const isActive = location === item.href;
           
           if (isRestricted || isPendingRestricted) {
-            // Render as disabled for unauthenticated users or users with pending applications
+            // For My Collabs, render as clickable for unauthenticated users to show signup dialog
+            if (item.href === '/my-collaborations' && !isAuthenticated) {
+              return (
+                <div
+                  key={item.href}
+                  className={cn(
+                    "flex flex-col items-center justify-center px-1 pt-2 relative cursor-pointer hover:bg-accent",
+                    "text-muted-foreground"
+                  )}
+                  onMouseEnter={() => handleItemHover(item.href)}
+                  onClick={() => handleRestrictedItemClick(item)}
+                >
+                  <div className="relative">
+                    <item.icon className="w-5 h-5 mb-1" />
+                  </div>
+                  <span className="text-xs">{item.label}</span>
+                </div>
+              );
+            }
+            
+            // Render as disabled for other restricted items
             return (
               <div
                 key={item.href}
@@ -189,6 +228,16 @@ const BottomNavigation = () => {
           );
         })}
       </div>
+      
+      {/* Signup Prompt Dialog */}
+      <SignupPromptDialog
+        open={showSignupDialog}
+        onOpenChange={setShowSignupDialog}
+        onSignup={handleSignup}
+        title="Sign Up Required"
+        description="To post a collab for others to join, please sign up."
+      />
+      
     </nav>
   )
 }
