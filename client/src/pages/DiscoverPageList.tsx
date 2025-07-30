@@ -551,12 +551,6 @@ export default function DiscoverPageList() {
             currentSort={sortBy}
             onSortChange={handleSortChange}
           />
-          {/* Show Account button for authenticated users */}
-          {isAuthenticated && (
-            <Button variant="outline" size="sm" onClick={() => setLocation('/dashboard')}>
-              <UserCircle className="w-4 h-4" />
-            </Button>
-          )}
           {/* Show Refresh and Sign Up buttons for non-authenticated users */}
           {!isAuthenticated && (
             <>
@@ -573,6 +567,12 @@ export default function DiscoverPageList() {
           {isAuthenticated && (
             <Button variant="outline" size="sm" onClick={handleRefresh}>
               <RefreshCw className="w-4 h-4" />
+            </Button>
+          )}
+          {/* Show Account button for authenticated users - moved to far right */}
+          {isAuthenticated && (
+            <Button variant="outline" size="sm" onClick={() => setLocation('/dashboard')}>
+              <UserCircle className="w-4 h-4" />
             </Button>
           )}
           {/* <Button variant="outline" size="sm" onClick={handleOpenFilters}>
