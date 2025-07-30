@@ -3602,7 +3602,7 @@ export async function registerRoutes(app: Express) {
 
       const cursor = req.query.cursor as string;
       const limit = parseInt(req.query.limit as string) || 20;
-      const filter = req.query.filter as string || 'all';
+      const filter = req.query.filter as string || 'received';
 
       const requests = await storage.getCollaborationRequests(user.id, { cursor, limit, filter });
       res.json(requests);

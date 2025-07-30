@@ -96,8 +96,8 @@ interface RequestsManagementTabProps {
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
-  filter: 'all' | 'hidden';
-  onFilterChange: (filter: 'all' | 'hidden') => void;
+  filter: 'received' | 'hidden' | 'sent';
+  onFilterChange: (filter: 'received' | 'hidden' | 'sent') => void;
 }
 
 export function RequestsManagementTab({ 
@@ -220,8 +220,9 @@ export function RequestsManagementTab({
       <div className="flex items-center justify-center">
         <Tabs value={filter} onValueChange={(value) => onFilterChange(value as any)} className="w-full">
           <TabsList className="w-full">
-            <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
+            <TabsTrigger value="received" className="flex-1">Received</TabsTrigger>
             <TabsTrigger value="hidden" className="flex-1">Hidden</TabsTrigger>
+            <TabsTrigger value="sent" className="flex-1">Sent</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -236,6 +237,8 @@ export function RequestsManagementTab({
           <p className="text-sm text-muted-foreground">
             {filter === 'hidden' 
               ? "No hidden collaboration requests found."
+              : filter === 'sent'
+              ? "You haven't sent any collaboration requests yet."
               : "When people apply to your collaborations, they'll appear here."
             }
           </p>
@@ -316,28 +319,41 @@ export function RequestsManagementTab({
                   
                   {/* Action buttons */}
                   <div className="space-y-2">
-                    {/* Hide and Accept on same line */}
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleHideRequest(request.id)}
-                        disabled={hideRequestMutation.isPending}
-                        className="flex-1"
-                      >
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Hide
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleAcceptRequest(request.id)}
-                        disabled={acceptRequestMutation.isPending}
-                        className="flex-1"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Accept
-                      </Button>
-                    </div>
+                    {filter === 'sent' ? (
+                      /* For sent requests, only show pending status */
+                      <div className="flex items-center justify-center py-2">
+                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Pending
+                        </Badge>
+                      </div>
+                    ) : (
+                      /* For received/hidden requests, show action buttons */
+                      <>
+                        {/* Hide and Accept on same line */}
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleHideRequest(request.id)}
+                            disabled={hideRequestMutation.isPending}
+                            className="flex-1"
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Hide
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleAcceptRequest(request.id)}
+                            disabled={acceptRequestMutation.isPending}
+                            className="flex-1"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Accept
+                          </Button>
+                        </div>
+                      </>
+                    )}
                     
                     {/* Details on its own line */}
                     <Button

@@ -8,7 +8,7 @@ import { RequestsManagementTab } from "@/components/requests-management-tab";
 import { useToast } from "@/hooks/use-toast";
 
 export default function RequestsPage() {
-  const [requestsFilter, setRequestsFilter] = useState<"all" | "hidden">("all");
+  const [requestsFilter, setRequestsFilter] = useState<"received" | "hidden" | "sent">("received");
   const [allRequestsData, setAllRequestsData] = useState<any[]>([]);
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(false);

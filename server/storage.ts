@@ -2092,14 +2092,73 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  async getSentRequestsForUser(userId: string): Promise<any[]> {
+    console.log(`Getting sent requests for user ${userId}`);
+    
+    try {
+      // Get requests sent by the user where collaboration still exists (not deleted/hidden)
+      const results = await db.execute(sql`
+        SELECT 
+          r.id as request_id,
+          r.collaboration_id,
+          r.requester_id,
+          r.host_id,
+          r.status,
+          r.note,
+          r.created_at,
+          co.collab_type as collaboration_type,
+          co.description as collaboration_description,
+          u.first_name as host_first_name,
+          u.last_name as host_last_name,
+          c.job_title as host_job_title,
+          u.twitter_followers as host_twitter_followers,
+          c.name as company_name,
+          c.twitter_handle as company_twitter_handle,
+          c.twitter_followers as company_twitter_followers,
+          c.website as company_website,
+          c.logo_url as company_logo_url,
+          c.tags as company_tags
+        FROM requests r
+        LEFT JOIN collaborations co ON r.collaboration_id = co.id
+        LEFT JOIN users u ON r.host_id = u.id
+        LEFT JOIN companies c ON u.id = c.user_id
+        WHERE r.requester_id = ${userId} 
+          AND r.status = 'pending'
+          AND co.id IS NOT NULL
+        ORDER BY r.created_at DESC
+      `);
+      
+      console.log(`Found ${results.rows.length} sent requests for user ${userId}`);
+      return results.rows.map(row => ({
+        ...row,
+        // For sent requests, the "requester" data is actually the host (the person we sent the request to)
+        requester_first_name: row.host_first_name,
+        requester_last_name: row.host_last_name,
+        requester_job_title: row.host_job_title,
+        requester_twitter_followers: row.host_twitter_followers
+      }));
+    } catch (error) {
+      console.error('Error getting sent requests:', error);
+      throw error;
+    }
+  }
   
   async getCollaborationRequests(userId: string, options: { cursor?: string; limit?: number; filter?: string }): Promise<any> {
-    const { cursor, limit = 20, filter = 'all' } = options;
+    const { cursor, limit = 20, filter = 'received' } = options;
     console.log(`Getting collaboration requests for user ${userId} with filter: ${filter}`);
     
     try {
-      // Get all pending requests for the user as host
-      const requests = await this.getPendingRequestsForHost(userId, filter as 'all' | 'hidden');
+      let requests;
+      
+      if (filter === 'sent') {
+        // Get requests sent by the user (where user is requester)
+        requests = await this.getSentRequestsForUser(userId);
+      } else {
+        // Get requests received by the user (where user is host) - 'received' or 'hidden'
+        const hostFilter = filter === 'hidden' ? 'hidden' : 'received';
+        requests = await this.getPendingRequestsForHost(userId, hostFilter === 'received' ? 'all' : 'hidden');
+      }
       
       // Apply pagination
       let startIndex = 0;
