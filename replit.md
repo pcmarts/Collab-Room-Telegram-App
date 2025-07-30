@@ -8,6 +8,17 @@ The Collab Room is a cutting-edge Web3 professional networking platform that int
 
 ## Recent Changes (July 2025)
 
+### ✓ Flexible Collaboration Type Naming System (July 30, 2025)
+- **Editable Display Names**: Collaboration type names can now be changed without breaking the form
+- **Configuration File**: Edit names in `/shared/collaboration-types/config.ts`
+- **Stable ID System**: Uses internal IDs (`twitter_spaces_guest`, `twitter_comarketing`, etc.) for database stability
+- **Schema Flexibility**: Form schemas accept both IDs and display names
+- **Backward Compatibility**: Legacy names continue to work through mapping system
+- **How to Edit Names**:
+  1. Open `/shared/collaboration-types/config.ts`
+  2. Edit the `DISPLAY_NAMES` object
+  3. Changes apply immediately without database migration
+
 ### ✓ Collaboration Type Registry System (July 30, 2025)
 - **Centralized Type Management**: Implemented comprehensive collaboration type registry in `shared/collaboration-types/`
 - **Enhanced Type Definitions**: Added structured collaboration types with icons, colors, categories, and metadata

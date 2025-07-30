@@ -14,43 +14,45 @@ import { liveStreamSteps } from "../components/collaboration-types/LiveStreamFor
 import { reportSteps } from "../components/collaboration-types/ReportForm";
 import { newsletterSteps } from "../components/collaboration-types/NewsletterForm";
 import { blogPostSteps } from "../components/collaboration-types/BlogPostForm";
+import { COLLAB_TYPE_IDS, getCollabTypeId, getCollabTypeDisplayName } from "@shared/collaboration-types";
 
 /**
  * Registry of available collaboration types
+ * Uses stable IDs internally while maintaining flexible display names
  * 
  * Add new collaboration types here to make them available in the form
  */
 export const collaborationTypes: CollaborationTypeDefinition[] = [
   {
-    id: "Twitter Spaces Guest",
+    id: COLLAB_TYPE_IDS.TWITTER_SPACES,
     name: "Twitter Spaces Guest",
     schema: twitterSpacesSchema,
     defaultValues: twitterSpacesDefaults,
     steps: twitterSpacesSteps
   },
   {
-    id: "Co-Marketing on Twitter",
-    name: "Twitter Co-marketing",
+    id: COLLAB_TYPE_IDS.TWITTER_COMARKETING,
+    name: "Co-Marketing on Twitter",
     schema: twitterCollabSchema,
     defaultValues: twitterCollabDefaults,
     steps: twitterCollabSteps
   },
   {
-    id: "Podcast Guest Appearance",
+    id: COLLAB_TYPE_IDS.PODCAST,
     name: "Podcast Guest Appearance",
     schema: podcastCollabSchema,
     defaultValues: podcastCollabDefaults,
     steps: podcastCollabSteps
   },
   {
-    id: "Live Stream Guest Appearance",
+    id: COLLAB_TYPE_IDS.LIVESTREAM,
     name: "Live Stream Guest Appearance",
     schema: liveStreamSchema,
     defaultValues: liveStreamDefaults,
     steps: liveStreamSteps
   },
   {
-    id: "Report & Research Feature",
+    id: COLLAB_TYPE_IDS.RESEARCH,
     name: "Report & Research Feature",
     schema: reportSchema,
     defaultValues: reportDefaults,
@@ -58,14 +60,14 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
   },
   /* Temporarily hidden while fixing validation issues
   {
-    id: "Newsletter Feature",
+    id: COLLAB_TYPE_IDS.NEWSLETTER,
     name: "Newsletter Feature",
     schema: newsletterSchema,
     defaultValues: newsletterDefaults,
     steps: newsletterSteps
   },
   {
-    id: "Blog Post Feature",
+    id: COLLAB_TYPE_IDS.BLOG_POST,
     name: "Blog Post Feature",
     schema: blogPostSchema,
     defaultValues: blogPostDefaults,
@@ -75,10 +77,27 @@ export const collaborationTypes: CollaborationTypeDefinition[] = [
 ];
 
 /**
- * Get a collaboration type definition by ID
+ * Get a collaboration type definition by ID or display name
+ * Supports both stable IDs and display names for flexibility
  */
-export function getCollaborationType(id: string): CollaborationTypeDefinition | undefined {
-  return collaborationTypes.find(type => type.id === id);
+export function getCollaborationType(identifier: string): CollaborationTypeDefinition | undefined {
+  // First try to find by ID
+  let type = collaborationTypes.find(type => type.id === identifier);
+  
+  // If not found by ID, try to find by display name
+  if (!type) {
+    type = collaborationTypes.find(type => type.name === identifier);
+  }
+  
+  // If still not found, try to convert display name to ID
+  if (!type) {
+    const typeId = getCollabTypeId(identifier);
+    if (typeId) {
+      type = collaborationTypes.find(type => type.id === typeId);
+    }
+  }
+  
+  return type;
 }
 
 /**

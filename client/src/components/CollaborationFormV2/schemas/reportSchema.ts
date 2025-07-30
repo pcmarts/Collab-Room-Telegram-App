@@ -1,13 +1,18 @@
 import { z } from "zod";
 import { AUDIENCE_SIZE_RANGES } from "@shared/schema";
 import { baseCollabFields } from "./baseSchema";
+import { createFlexibleCollabTypeSchema } from './utils';
+import { COLLAB_TYPE_IDS } from '@shared/collaboration-types';
 
 /**
  * Schema for Report & Research Feature collaborations
  */
 export const reportSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Report & Research Feature"),
+  collab_type: createFlexibleCollabTypeSchema(
+    COLLAB_TYPE_IDS.RESEARCH,
+    [] // No known legacy names
+  ),
   report_name: z.string()
     .min(2, "Report name is required"),
   report_link: z.string()

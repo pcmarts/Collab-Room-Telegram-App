@@ -1,13 +1,18 @@
 import { z } from "zod";
 import { TWITTER_COLLAB_TYPES, AUDIENCE_SIZE_RANGES } from "@shared/schema";
 import { baseCollabFields } from "./baseSchema";
+import { createFlexibleCollabTypeSchema } from './utils';
+import { COLLAB_TYPE_IDS } from '@shared/collaboration-types';
 
 /**
  * Schema for Twitter Co-marketing collaborations
  */
 export const twitterCollabSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Co-Marketing on Twitter"),
+  collab_type: createFlexibleCollabTypeSchema(
+    COLLAB_TYPE_IDS.TWITTER_COMARKETING,
+    ["Twitter Brand Collab"] // Legacy name support
+  ),
   twitter_collab_types: z
     .array(z.enum(TWITTER_COLLAB_TYPES))
     .min(1, "Select at least one collaboration type"),

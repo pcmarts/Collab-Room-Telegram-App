@@ -15,8 +15,9 @@ import { ReportForm } from "./components/collaboration-types/ReportForm";
 import { NewsletterForm } from "./components/collaboration-types/NewsletterForm";
 import { BlogPostForm } from "./components/collaboration-types/BlogPostForm";
 import { useCollaborationForm } from "./hooks/useCollaborationForm";
-import { collaborationTypes } from "./utils/typeRegistry";
+import { collaborationTypes, getCollaborationType } from "./utils/typeRegistry";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { COLLAB_TYPE_IDS } from "@shared/collaboration-types";
 
 /**
  * The type selector step shown first
@@ -107,19 +108,32 @@ const CollaborationFormContent: React.FC = () => {
     // For other steps, render the appropriate type-specific form based on selected type
     const stepId = currentStepId || "";
     
-    switch (selectedTypeId) {
+    // Get the collaboration type using the flexible registry lookup
+    const collabType = getCollaborationType(selectedTypeId);
+    
+    // Use the stable ID for routing to the correct form
+    const typeId = collabType?.id || selectedTypeId;
+    
+    switch (typeId) {
+      case COLLAB_TYPE_IDS.TWITTER_COMARKETING:
       case "Co-Marketing on Twitter":
         return <TwitterCollabForm step={stepId} />;
+      case COLLAB_TYPE_IDS.PODCAST:
       case "Podcast Guest Appearance":
         return <PodcastCollabForm step={stepId} />;
+      case COLLAB_TYPE_IDS.TWITTER_SPACES:
       case "Twitter Spaces Guest":
         return <TwitterSpacesForm step={stepId} />;
+      case COLLAB_TYPE_IDS.LIVESTREAM:
       case "Live Stream Guest Appearance":
         return <LiveStreamForm step={stepId} />;
+      case COLLAB_TYPE_IDS.RESEARCH:
       case "Report & Research Feature":
         return <ReportForm step={stepId} />;
+      case COLLAB_TYPE_IDS.NEWSLETTER:
       case "Newsletter Feature":
         return <NewsletterForm step={stepId} />;
+      case COLLAB_TYPE_IDS.BLOG_POST:
       case "Blog Post Feature":
         return <BlogPostForm step={stepId} />;
       default:

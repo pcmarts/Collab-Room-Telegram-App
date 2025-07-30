@@ -1,13 +1,18 @@
 import { z } from "zod";
 import { AUDIENCE_SIZE_RANGES } from "@shared/schema";
 import { baseCollabFields } from "./baseSchema";
+import { createFlexibleCollabTypeSchema } from './utils';
+import { COLLAB_TYPE_IDS } from '@shared/collaboration-types';
 
 /**
  * Schema for Podcast Guest Appearance collaborations
  */
 export const podcastCollabSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Podcast Guest Appearance"),
+  collab_type: createFlexibleCollabTypeSchema(
+    COLLAB_TYPE_IDS.PODCAST,
+    ["Podcast Guests"] // Legacy name support
+  ),
   podcast_name: z.string()
     .min(2, "Podcast name is required"),
   podcast_link: z.string()

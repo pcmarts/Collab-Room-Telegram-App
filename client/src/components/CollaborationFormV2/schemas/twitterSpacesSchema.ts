@@ -1,13 +1,18 @@
 import { z } from "zod";
 import { AUDIENCE_SIZE_RANGES } from "@shared/schema";
 import { baseCollabFields } from "./baseSchema";
+import { createFlexibleCollabTypeSchema } from './utils';
+import { COLLAB_TYPE_IDS } from '@shared/collaboration-types';
 
 /**
  * Schema for Twitter Spaces Guest collaborations
  */
 export const twitterSpacesSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Twitter Spaces Guest"),
+  collab_type: createFlexibleCollabTypeSchema(
+    COLLAB_TYPE_IDS.TWITTER_SPACES,
+    ["Twitter Spaces Guests"] // Legacy name support
+  ),
   spaces_theme: z.string()
     .min(2, "Spaces theme is required"),
   estimated_audience: z.enum(AUDIENCE_SIZE_RANGES),

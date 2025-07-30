@@ -1,13 +1,18 @@
 import { z } from "zod";
 import { AUDIENCE_SIZE_RANGES } from "@shared/schema";
 import { baseCollabFields } from "./baseSchema";
+import { createFlexibleCollabTypeSchema } from './utils';
+import { COLLAB_TYPE_IDS } from '@shared/collaboration-types';
 
 /**
  * Schema for Live Stream Guest Appearance collaborations
  */
 export const liveStreamSchema = z.object({
   ...baseCollabFields,
-  collab_type: z.literal("Live Stream Guest Appearance"),
+  collab_type: createFlexibleCollabTypeSchema(
+    COLLAB_TYPE_IDS.LIVESTREAM,
+    ["Live Stream Guests"] // Legacy name support
+  ),
   platform_name: z.string()
     .min(2, "Platform name is required"),
   stream_link: z.string()

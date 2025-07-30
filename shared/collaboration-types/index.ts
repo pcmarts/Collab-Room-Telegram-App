@@ -27,6 +27,9 @@ export {
   COLOR_SCHEMES 
 } from './definitions';
 
+// Export constants for ID-based system
+export * from './constants';
+
 // Convenience functions for common operations
 import { getCollaborationTypeRegistry } from './registry';
 
