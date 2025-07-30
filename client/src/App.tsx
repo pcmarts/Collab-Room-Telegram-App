@@ -123,6 +123,7 @@ function Router() {
             {/* New Tab Routes */}
             <Route path="/discover" component={DiscoverPage} />
             <Route path="/my-collaborations" component={MyCollaborations} />
+            <Route path="/my-collabs" component={MyCollaborations} />
             <Route path="/requests" component={RequestsPage} />
             <Route path="/matches" component={MatchesPage} />
             <Route path="/settings">

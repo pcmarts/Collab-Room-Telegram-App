@@ -278,6 +278,23 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   
 
   
+  // Fetch user profile for company logo
+  const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ['/api/profile'],
+    queryFn: async () => {
+      try {
+        const data = await apiRequest('/api/profile');
+        return data;
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
   // Prefetch strategy: Start loading most important data first
   // Fetch user's collaborations with optimized options
   const { data: collaborations, isLoading: isLoadingCollabs } = useQuery({
@@ -595,21 +612,6 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
-              {/* Company logo and name */}
-              <div className="flex items-center gap-3 mb-3">
-                <LogoAvatar 
-                  name={collab.company_name || "Company"} 
-                  logoUrl={collab.company_logo_url} 
-                  size="md" 
-                />
-                <div>
-                  <p className="font-medium text-sm">{collab.company_name}</p>
-                  {collab.company_job_title && (
-                    <p className="text-xs text-muted-foreground">{collab.company_job_title}</p>
-                  )}
-                </div>
-              </div>
-              
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="outline" className={`${getCollaborationBadgeClass(collab.collab_type)} p-1.5`}>
                   <span className="mr-1.5">
@@ -1147,7 +1149,9 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           {/* User Collaboration Count */}
           <UserCollabCount 
             count={collaborations?.length || 0} 
-            isLoading={isLoadingCollabs} 
+            isLoading={isLoadingCollabs || isLoadingProfile}
+            companyName={userProfile?.company?.name}
+            companyLogoUrl={userProfile?.company?.logo_url}
             className="mb-4" 
           />
           
