@@ -206,11 +206,11 @@ export function CollaborationDetailsDialog({
             <Button 
               variant="outline" 
               onClick={onClose} 
-              className="flex items-center gap-2"
+              size="icon"
+              className="rounded-full"
               aria-label="Close collaboration details dialog"
             >
               <ChevronLeft className="w-4 h-4" />
-              Back
             </Button>
             <div className="flex-1 flex justify-center">
               <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium ${getTypeColor(collabType)}`}>
@@ -624,15 +624,15 @@ export function CollaborationDetailsDialog({
                     <Tag className="h-4 w-4" />
                     Tags
                   </h4>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1">
                     {Array.isArray(companyData.tags) 
                       ? companyData.tags.map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-sm px-3 py-1">
+                          <Badge key={index} variant="outline" className="text-xs px-2 py-0.5">
                             {tag}
                           </Badge>
                         ))
                       : (
-                        <Badge variant="outline" className="text-sm px-3 py-1">
+                        <Badge variant="outline" className="text-xs px-2 py-0.5">
                           {String(companyData.tags)}
                         </Badge>
                       )
