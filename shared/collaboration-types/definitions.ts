@@ -17,7 +17,7 @@ import { CollaborationType, CollaborationCategory } from "./types";
 export const COLLABORATION_TYPE_DEFINITIONS: CollaborationType[] = [
   {
     id: 'twitter_spaces_guest',
-    name: 'Twitter Spaces Guests',
+    name: 'Twitter Space Guests',
     shortName: 'Spaces Guest',
     icon: Twitter,
     color: 'blue',

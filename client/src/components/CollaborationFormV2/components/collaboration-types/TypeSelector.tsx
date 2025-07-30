@@ -59,8 +59,13 @@ const getCollaborationTypeIcon = (type: string) => {
 export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected }) => {
   const { availableTypes, selectType } = useCollaborationType();
 
+  // Debug logging
+  console.log("TypeSelector - availableTypes:", availableTypes.map(t => ({ id: t.id, name: t.name })));
+  console.log("TypeSelector - COLLAB_TYPES:", COLLAB_TYPES);
+
   const handleTypeSelect = async (typeId: string) => {
-    console.log("Selected collaboration type:", typeId);
+    console.log("🔥 handleTypeSelect called with typeId:", typeId);
+    console.log("🔥 availableTypes at time of selection:", availableTypes.map(t => ({ id: t.id, name: t.name })));
     
     // Set the value and validate it
     form.setValue("collab_type", typeId, { shouldValidate: true });
@@ -123,6 +128,9 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
                 const isSelected = field.value === type;
                 const isTypeAvailable = availableTypes.some(t => t.id === type || t.name === type);
                 
+                // Debug logging for each type
+                console.log(`Type: ${type}, isSelected: ${isSelected}, isTypeAvailable: ${isTypeAvailable}`);
+                
                 return (
                   <Button
                     key={type}
@@ -134,7 +142,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
                       ${!isTypeAvailable && !isSelected ? 'opacity-60' : ''}
                     `}
                     onClick={() => handleTypeSelect(type)}
-                    disabled={!isTypeAvailable && !isSelected}
+                    disabled={false} // Temporarily disable the availability check
                   >
                     {isSelected ? (
                       <CheckIcon className="mr-2 h-4 w-4" />

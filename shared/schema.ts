@@ -21,7 +21,7 @@ const activeCollabTypeNames = COLLABORATION_TYPE_DEFINITIONS
   .map(type => type.name);
 
 export const COLLAB_TYPES = [
-  "Twitter Spaces Guests",
+  "Twitter Space Guests",
   "Twitter Brand Collab", 
   "Podcast Guests",
   "Live Stream Guests",
