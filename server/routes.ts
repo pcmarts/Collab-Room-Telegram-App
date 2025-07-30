@@ -2339,10 +2339,29 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: 'User not found' });
       }
 
-      // Get collaborations for this user
+      // Get collaborations for this user with company data
       const myCollaborations = await db
-        .select()
+        .select({
+          id: collaborations.id,
+          creator_id: collaborations.creator_id,
+          collab_type: collaborations.collab_type,
+          title: collaborations.title,
+          description: collaborations.description,
+          details: collaborations.details,
+          topics: collaborations.topics,
+          status: collaborations.status,
+          created_at: collaborations.created_at,
+          updated_at: collaborations.updated_at,
+          // Add company data
+          company_name: companies.name,
+          company_logo_url: companies.logo_url,
+          company_short_description: companies.short_description,
+          company_website: companies.website,
+          company_twitter_handle: companies.twitter_handle,
+          company_job_title: companies.job_title,
+        })
         .from(collaborations)
+        .leftJoin(companies, eq(companies.user_id, collaborations.creator_id))
         .where(eq(collaborations.creator_id, user.id))
         .orderBy(desc(collaborations.created_at));
         

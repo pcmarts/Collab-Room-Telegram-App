@@ -55,6 +55,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileCheck } from "@/components/MobileCheck";
+import { LogoAvatar } from "@/components/ui/logo-avatar";
 
 
 
@@ -594,6 +595,21 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <div>
+              {/* Company logo and name */}
+              <div className="flex items-center gap-3 mb-3">
+                <LogoAvatar 
+                  name={collab.company_name || "Company"} 
+                  logoUrl={collab.company_logo_url} 
+                  size="md" 
+                />
+                <div>
+                  <p className="font-medium text-sm">{collab.company_name}</p>
+                  {collab.company_job_title && (
+                    <p className="text-xs text-muted-foreground">{collab.company_job_title}</p>
+                  )}
+                </div>
+              </div>
+              
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="outline" className={`${getCollaborationBadgeClass(collab.collab_type)} p-1.5`}>
                   <span className="mr-1.5">
