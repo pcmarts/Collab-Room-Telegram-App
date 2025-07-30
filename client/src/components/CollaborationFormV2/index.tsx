@@ -24,7 +24,7 @@ import { COLLAB_TYPE_IDS } from "@shared/collaboration-types";
  */
 const InitialStep = {
   id: "collab_type",
-  title: "I'm hosting a...",
+  title: "Collaboration Type",
   description: "", // Removed duplicate text
 };
 
@@ -134,25 +134,18 @@ const CollaborationFormContent: React.FC = () => {
     
     switch (typeId) {
       case COLLAB_TYPE_IDS.TWITTER_COMARKETING:
-      case "Co-Marketing on Twitter":
         return <TwitterCollabForm step={stepId} />;
       case COLLAB_TYPE_IDS.PODCAST:
-      case "Podcast Guest Appearance":
         return <PodcastCollabForm step={stepId} />;
       case COLLAB_TYPE_IDS.TWITTER_SPACES:
-      case "Twitter Spaces Guest":
         return <TwitterSpacesForm step={stepId} />;
       case COLLAB_TYPE_IDS.LIVESTREAM:
-      case "Live Stream Guest Appearance":
         return <LiveStreamForm step={stepId} />;
       case COLLAB_TYPE_IDS.RESEARCH:
-      case "Report & Research Feature":
         return <ReportForm step={stepId} />;
       case COLLAB_TYPE_IDS.NEWSLETTER:
-      case "Newsletter Feature":
         return <NewsletterForm step={stepId} />;
       case COLLAB_TYPE_IDS.BLOG_POST:
-      case "Blog Post Feature":
         return <BlogPostForm step={stepId} />;
       default:
         // Fallback when no collaboration type is selected or supported

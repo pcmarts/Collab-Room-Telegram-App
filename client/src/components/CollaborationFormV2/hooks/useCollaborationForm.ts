@@ -169,14 +169,12 @@ export const useCollaborationForm = <T extends Record<string, any>>(
     
     switch (typeId) {
       case COLLAB_TYPE_IDS.TWITTER_SPACES:
-      case "Twitter Spaces Guest":
         return {
           twitter_handle: values.twitter_handle || "https://x.com/",
           host_follower_count: values.follower_count || "0-1K",
         };
         
       case COLLAB_TYPE_IDS.TWITTER_COMARKETING:
-      case "Co-Marketing on Twitter":
         return {
           twittercomarketing_type: Array.isArray(values.twitter_collab_types) 
             ? values.twitter_collab_types 
@@ -186,7 +184,6 @@ export const useCollaborationForm = <T extends Record<string, any>>(
         };
         
       case COLLAB_TYPE_IDS.PODCAST:
-      case "Podcast Guest Appearance":
         return {
           podcast_name: values.podcast_name || "",
           podcast_link: values.podcast_link || "",
@@ -194,7 +191,6 @@ export const useCollaborationForm = <T extends Record<string, any>>(
         };
         
       case COLLAB_TYPE_IDS.LIVESTREAM:
-      case "Live Stream Guest Appearance":
         return {
           title: values.platform_name || "",
           date_selection: values.date_type || "any_future_date",
@@ -205,7 +201,6 @@ export const useCollaborationForm = <T extends Record<string, any>>(
         };
         
       case COLLAB_TYPE_IDS.RESEARCH:
-      case "Report & Research Feature":
         return {
           research_topic: Array.isArray(values.topics) ? values.topics : [],
           target_audience: values.report_type || "Market Report",
@@ -216,7 +211,6 @@ export const useCollaborationForm = <T extends Record<string, any>>(
         };
         
       case COLLAB_TYPE_IDS.NEWSLETTER:
-      case "Newsletter Feature":
         return {
           newsletter_name: values.newsletter_name || "",
           newsletter_url: values.newsletter_url || "",
@@ -225,7 +219,6 @@ export const useCollaborationForm = <T extends Record<string, any>>(
         };
         
       case COLLAB_TYPE_IDS.BLOG_POST:
-      case "Blog Post Feature":
         return {
           blog_topic: values.topics ? (Array.isArray(values.topics) ? values.topics[0] : values.topics) : "",
           blog_link: values.blog_url || "",
