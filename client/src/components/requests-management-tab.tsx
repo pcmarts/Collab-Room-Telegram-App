@@ -287,33 +287,25 @@ export function RequestsManagementTab({
                     </div>
                     <div className="flex items-center space-x-2">
                       {filter !== 'sent' && (
-                        <>
-                          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span>
-                              {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => handleShowDetails(request)}
-                            className="p-1 rounded-full hover:bg-muted transition-colors"
-                            aria-label="More details"
+                        <button
+                          onClick={() => handleShowDetails(request)}
+                          className="p-1 rounded-full hover:bg-muted transition-colors"
+                          aria-label="More details"
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-muted-foreground"
                           >
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="text-muted-foreground"
-                            >
-                              <path d="m9 18 6-6-6-6" />
-                            </svg>
-                          </button>
-                        </>
+                            <path d="m9 18 6-6-6-6" />
+                          </svg>
+                        </button>
                       )}
                     </div>
                   </div>
@@ -321,6 +313,16 @@ export function RequestsManagementTab({
                 
                 {/* Full width content below header */}
                 <div className="space-y-4">
+                  {/* Request date for received and hidden requests */}
+                  {filter !== 'sent' && (
+                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span>
+                        {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                      </span>
+                    </div>
+                  )}
+
                   {/* Main content - requester's note */}
                   {request.note && request.note.trim() !== '' && (
                     <div className="bg-muted/50 rounded-lg p-4">
