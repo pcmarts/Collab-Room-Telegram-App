@@ -148,7 +148,9 @@ export const LEGACY_NAME_MAPPINGS = [
       'Co-Marketing on Twitter',
       'Twitter Co-Marketing',
       'Twitter Co-marketing',
-      'Twitter Comarketing'
+      'Twitter Comarketing',
+      'Twitter Brand Collab',
+      'Twitter Marketing'
     ]
   },
   {
