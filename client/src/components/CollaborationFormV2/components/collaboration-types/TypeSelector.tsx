@@ -103,10 +103,7 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
       name="collab_type"
       render={({ field }) => (
         <FormItem className="space-y-1 pt-1">
-          <FormLabel className="mb-1 text-sm">
-            What type of collaboration are you looking to host?
-            <span className="text-destructive ml-1">*</span>
-          </FormLabel>
+
           <div className="flex flex-col gap-2">
             {collaborationTypes
               .map((type) => {
