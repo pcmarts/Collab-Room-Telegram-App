@@ -286,32 +286,34 @@ export function RequestsManagementTab({
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span>
-                          {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
-                        </span>
-                      </div>
                       {filter !== 'sent' && (
-                        <button
-                          onClick={() => handleShowDetails(request)}
-                          className="p-1 rounded-full hover:bg-muted transition-colors"
-                          aria-label="More details"
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-muted-foreground"
+                        <>
+                          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>
+                              {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => handleShowDetails(request)}
+                            className="p-1 rounded-full hover:bg-muted transition-colors"
+                            aria-label="More details"
                           >
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </button>
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-muted-foreground"
+                            >
+                              <path d="m9 18 6-6-6-6" />
+                            </svg>
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -331,12 +333,18 @@ export function RequestsManagementTab({
                   {/* Action buttons */}
                   <div className="space-y-2">
                     {filter === 'sent' ? (
-                      /* For sent requests, only show pending status aligned right */
-                      <div className="flex items-center justify-end py-2">
+                      /* For sent requests, show pending status and timestamp at bottom */
+                      <div className="flex items-center justify-between py-2">
                         <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
                           <Clock className="h-3 w-3 mr-1" />
                           Pending
                         </Badge>
+                        <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          <span>
+                            {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                          </span>
+                        </div>
                       </div>
                     ) : (
                       /* For received/hidden requests, show action buttons */
