@@ -33,7 +33,7 @@ export const COLLAB_TYPES = [
 // Verify that our registry contains all the expected types
 if (process.env.NODE_ENV === 'development') {
   const registryNames = new Set(activeCollabTypeNames);
-  const hardcodedNames = new Set(COLLAB_TYPES);
+  const hardcodedNames = new Set([...COLLAB_TYPES]);
   
   // Check if all hardcoded types exist in registry
   for (const name of hardcodedNames) {

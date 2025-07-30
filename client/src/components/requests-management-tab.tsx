@@ -15,11 +15,12 @@ import {
   XCircle, 
   User
 } from "lucide-react";
+import { Twitter } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { getCollabTypeIcon } from "@/lib/collaboration-utils";
+import { getCollabTypeIcon, getCollabTypeColors } from "@/lib/collaboration-utils";
 
 interface CollaborationRequest {
   id: string;
@@ -120,28 +121,10 @@ export function RequestsManagementTab({
     }))
   );
 
-  // Using centralized collaboration types registry
-
+  // Using centralized collaboration types registry - replaced hardcoded badge styling with registry
   const getCollabTypeBadgeClass = (collabType: string) => {
-    const typeLower = collabType.toLowerCase();
-    
-    if (typeLower.includes('twitter') || typeLower.includes('spaces')) {
-      return "bg-blue-500/10 border-blue-500/20 text-blue-700";
-    } else if (typeLower.includes('podcast')) {
-      return "bg-purple-500/10 border-purple-500/20 text-purple-700";
-    } else if (typeLower.includes('blog')) {
-      return "bg-emerald-500/10 border-emerald-500/20 text-emerald-700";
-    } else if (typeLower.includes('livestream') || typeLower.includes('live stream')) {
-      return "bg-red-500/10 border-red-500/20 text-red-700";
-    } else if (typeLower.includes('newsletter')) {
-      return "bg-indigo-500/10 border-indigo-500/20 text-indigo-700";
-    } else if (typeLower.includes('research') || typeLower.includes('report')) {
-      return "bg-amber-500/10 border-amber-500/20 text-amber-700";
-    } else if (typeLower.includes('coffee')) {
-      return "bg-orange-500/10 border-orange-500/20 text-orange-700";
-    }
-    
-    return "bg-gray-500/10 border-gray-500/20 text-gray-700";
+    const colors = getCollabTypeColors(collabType);
+    return `${colors.bg} ${colors.text}`;
   };
 
   const acceptRequestMutation = useMutation({

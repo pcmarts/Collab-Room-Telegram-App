@@ -89,9 +89,9 @@ export class CollaborationTypeRegistry {
   /**
    * Get icon for a collaboration type
    */
-  public getIcon(identifier: string): LucideIcon {
+  public getIcon(identifier: string): LucideIcon | undefined {
     const type = this.getByIdOrName(identifier);
-    return type?.icon || this.getDefaultIcon();
+    return type?.icon;
   }
 
   /**
@@ -186,8 +186,8 @@ export class CollaborationTypeRegistry {
    * Get default icon when type is not found
    */
   private getDefaultIcon(): LucideIcon {
-    // Import default icon dynamically to avoid circular imports
-    return require('lucide-react').Megaphone;
+    // Return undefined and handle in getIcon method
+    return undefined as any;
   }
 }
 

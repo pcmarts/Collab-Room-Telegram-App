@@ -24,11 +24,14 @@ import {
  */
 export function getCollabTypeIcon(identifier: string | undefined, className: string = "h-4 w-4"): React.ReactNode {
   if (!identifier) {
-    const DefaultIcon = getCoreIcon('default');
-    return React.createElement(DefaultIcon, { className });
+    return null;
   }
   
   const IconComponent = getCoreIcon(identifier);
+  if (!IconComponent) {
+    return null;
+  }
+  
   return React.createElement(IconComponent, { className });
 }
 
@@ -39,8 +42,7 @@ export function getCollabTypeIcon(identifier: string | undefined, className: str
  */
 export function getCollabTypeColorClasses(identifier: string | undefined): string {
   if (!identifier) {
-    const colors = getCoreColors('default');
-    return `${colors.bg} ${colors.text}`;
+    return "bg-gray-100 text-gray-800";
   }
   
   const colors = getCoreColors(identifier);
