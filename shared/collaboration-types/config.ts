@@ -30,10 +30,10 @@ type CollabTypeId =
  * Change these values to update how collaboration types appear in the UI
  */
 export const DISPLAY_NAMES: Record<CollabTypeId, string> = {
-  twitter_spaces_guest: "Twitter Spaces Guest",
-  twitter_comarketing: "Co-Marketing on Twitter",
-  podcast_guest: "Podcast Guest Appearance",
-  livestream_guest: "Live Stream Guest Appearance",
+  twitter_spaces_guest: "Twitter Spaces Guests",
+  twitter_comarketing: "Twitter Brand Collab",
+  podcast_guest: "Podcast Guests",
+  livestream_guest: "Live Stream Guests",
   research_feature: "Report & Research Feature",
   newsletter_feature: "Newsletter Feature",
   blog_post_feature: "Blog Post Feature",
@@ -45,7 +45,7 @@ export const DISPLAY_NAMES: Record<CollabTypeId, string> = {
  */
 export const SHORT_NAMES: Partial<Record<CollabTypeId, string>> = {
   twitter_spaces_guest: "Spaces",
-  twitter_comarketing: "Twitter",
+  twitter_comarketing: "Twitter Brand",
   podcast_guest: "Podcast",
   livestream_guest: "Live Stream",
   research_feature: "Research",
