@@ -3,7 +3,6 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { PageHeader } from "../components/PageHeader";
 import { UserCollabCount } from "@/components/UserCollabCount";
 
 // Preload the CreateCollaborationV2 component
@@ -1115,15 +1114,18 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   return (
     <MobileCheck>
       <div className="min-h-[100svh] bg-background">
-        <PageHeader 
-          title="My Collabs"
-          action={
+        {/* Header - matching Discover page styling */}
+        <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+          <div>
+            <h1 className="text-xl font-semibold">My Collabs</h1>
+          </div>
+          <div className="flex gap-2">
             <Button variant="default" size="sm" onClick={handleNavigateToCreateCollab}>
               <Plus className="w-4 h-4 mr-2" />
-              Add Co-Lab
+              New
             </Button>
-          }
-        />
+          </div>
+        </div>
         
         <div className="container mx-auto py-4 px-4">
           {/* User Collaboration Count */}
