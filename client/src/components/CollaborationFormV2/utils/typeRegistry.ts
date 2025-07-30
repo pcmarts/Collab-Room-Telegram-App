@@ -24,13 +24,13 @@ import { COLLAB_TYPE_IDS, getCollabTypeId, getCollabTypeDisplayName } from "@sha
  */
 // Form-specific display names - hardcoded for creation form UI
 export const formDisplayNames = {
-  [COLLAB_TYPE_IDS.TWITTER_SPACES]: "Twitter Spaces Guest",
+  [COLLAB_TYPE_IDS.TWITTER_SPACES]: "Twitter Space",
   [COLLAB_TYPE_IDS.TWITTER_COMARKETING]: "Twitter Co-Marketing Opportunity", 
   [COLLAB_TYPE_IDS.PODCAST]: "Podcast",
-  [COLLAB_TYPE_IDS.LIVESTREAM]: "Live Stream Guest Appearance",
-  [COLLAB_TYPE_IDS.RESEARCH]: "Report & Research Feature",
-  [COLLAB_TYPE_IDS.NEWSLETTER]: "Newsletter Feature",
-  [COLLAB_TYPE_IDS.BLOG_POST]: "Blog Post Feature",
+  [COLLAB_TYPE_IDS.LIVESTREAM]: "Live Stream",
+  [COLLAB_TYPE_IDS.RESEARCH]: "Report",
+  [COLLAB_TYPE_IDS.NEWSLETTER]: "Newsletter",
+  [COLLAB_TYPE_IDS.BLOG_POST]: "Blog",
 };
 
 export const collaborationTypes: CollaborationTypeDefinition[] = [
