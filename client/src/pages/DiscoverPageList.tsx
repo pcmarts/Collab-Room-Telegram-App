@@ -12,7 +12,7 @@ import AddNoteDialog from "../components/AddNoteDialog";
 import { SortByButton, type SortOption } from "../components/SortByButton";
 import { AddCollabBanner } from "../components/AddCollabBanner";
 
-import { NetworkStatus } from "@/components/NetworkStatus";
+
 import { CollaborationTypeFilters, FILTER_OPTIONS } from "../components/CollaborationTypeFilters";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -691,18 +691,7 @@ export default function DiscoverPageList() {
         ) : (
           <div className="p-4 space-y-4">
 
-            {/* Network Statistics */}
-            <div 
-              className={`transition-all duration-500 ${
-                showAnimatedItems 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-4'
-              }`}
-              style={{ transitionDelay: '100ms' }}
-            >
-              <NetworkStatus className="mb-4" />
-            </div>
-            
+
             {allItems.map((item, index) => (
               <div key={`${item.isPotentialMatch ? 'match' : 'collab'}-${item.id}`}>
                 <div 
