@@ -18,6 +18,7 @@ The Collab Room is a cutting-edge Web3 professional networking platform that int
 - **ID Mapping System**: Backend converts stable type IDs to all possible database values (current and legacy names)
 - **Mobile First Design**: Pills support horizontal swiping on thin mobile screens with scrollbar-hide styling
 - **Responsive Layout**: Filter pills now wrap to multiple rows on mobile screens for better accessibility
+- **Instant Filter Switching**: Eliminated flash effect during filter changes, filters now feel instant with smooth transitions
 - **UI Cleanup**: Removed CollabTypesBanner "discover collaborations like" box to streamline discovery interface
 - **Interface Simplification**: Removed NetworkStatus collaboration count section with lightning icon for cleaner layout
 

@@ -78,6 +78,7 @@ export default function DiscoverPageList() {
   const [matchData, setMatchData] = useState<{title: string; companyName: string; collaborationType: string; userName?: string} | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [isFilterTransitioning, setIsFilterTransitioning] = useState(false);
   const [authError, setAuthError] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAnimatedItems, setShowAnimatedItems] = useState(false);
@@ -515,25 +516,35 @@ export default function DiscoverPageList() {
     }
   };
 
-  // Handle filter change without loading state
+  // Handle filter change with smooth transition (no flash, keep previous data visible)
   const handleFilterChange = async (newFilter: string) => {
+    const previousFilter = selectedFilter;
+    
+    // Set transition state and update filter immediately
+    setIsFilterTransitioning(true);
     setSelectedFilter(newFilter);
-    // Reset pagination state immediately
-    setCollaborations([]);
-    setNextCursor(undefined);
-    setHasMore(true);
     
     try {
       // Fetch fresh data with new filter
       const result = await fetchCollaborations('initial', sortBy, newFilter);
+      
+      // Smoothly update data after fetch completes
       setCollaborations(result.items || []);
       setHasMore(result.hasMore || false);
       setNextCursor(result.nextCursor);
+      
     } catch (error) {
       console.error('[Discovery] Error changing filter:', error);
-      setCollaborations([]);
-      setHasMore(false);
-      setNextCursor(undefined);
+      // Revert filter on error to prevent broken state
+      setSelectedFilter(previousFilter);
+      toast({
+        title: "Filter Error",
+        description: "Failed to load collaborations for this filter. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      // Always clear transition state
+      setTimeout(() => setIsFilterTransitioning(false), 100);
     }
   };
 
@@ -689,7 +700,9 @@ export default function DiscoverPageList() {
             )}
           </div>
         ) : (
-          <div className="p-4 space-y-4">
+          <div className={`p-4 space-y-4 transition-opacity duration-200 ${
+            isFilterTransitioning ? 'opacity-60' : 'opacity-100'
+          }`}>
 
 
             {allItems.map((item, index) => (
