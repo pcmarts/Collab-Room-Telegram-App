@@ -27,7 +27,7 @@ interface CollaborationListItemProps {
   onViewDetails: () => void;
   onRequestCollaboration?: () => void;
   isPotentialMatch?: boolean;
-  collaborationStatus?: 'requested' | 'matched';
+  collaborationStatus?: 'pending' | 'matched';
   onNavigateToMatches?: () => void;
   currentUserId?: string;
   isApplicationPending?: boolean;
@@ -102,7 +102,12 @@ export function CollaborationListItem({
             
             <div className="flex items-center gap-2 flex-shrink-0">
               {/* Status Indicator with colored dot and text label */}
-              {collaborationStatus && (
+              {isOwnCollaboration ? (
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-xs text-gray-400 italic">My Collab</span>
+                </div>
+              ) : collaborationStatus && (
                 <div className="flex items-center gap-1.5">
                   {collaborationStatus === 'pending' && (
                     <>

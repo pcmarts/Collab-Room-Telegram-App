@@ -60,7 +60,7 @@ interface CollaborationDetailsDialogProps {
     company_twitter_followers?: string;
     funding_stage?: string;
     company_tags?: string[];
-    requestStatus?: 'pending' | 'accepted' | 'hidden' | 'skipped' | null;
+    requestStatus?: 'pending' | 'matched' | 'hidden' | 'skipped' | null;
     company_data?: {
       name?: string;
       short_description?: string;
@@ -525,19 +525,19 @@ export function CollaborationDetailsDialog({
                     className={`px-4 w-full min-h-[44px] text-sm ${
                       collaboration?.requestStatus === 'pending' 
                         ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
-                        : collaboration?.requestStatus === 'accepted'
+                        : collaboration?.requestStatus === 'matched'
                           ? 'bg-purple-500 hover:bg-purple-600 text-white'
                           : 'bg-primary hover:bg-primary/90 text-white'
                     }`}
-                    disabled={collaboration?.requestStatus === 'pending' || collaboration?.requestStatus === 'accepted'}
+                    disabled={collaboration?.requestStatus === 'pending' || collaboration?.requestStatus === 'matched'}
                     aria-label={`Send collaboration request to ${companyName} for ${collabType}`}
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
                     {collaboration?.requestStatus === 'pending' 
-                      ? 'Request Pending' 
-                      : collaboration?.requestStatus === 'accepted' 
-                        ? 'Already Matched' 
-                        : 'Send Collab Request (Free)'
+                      ? 'Request Pending...' 
+                      : collaboration?.requestStatus === 'matched' 
+                        ? 'View Match in My Matches' 
+                        : 'Request to Collab (Free)'
                     }
                   </Button>
                 )}

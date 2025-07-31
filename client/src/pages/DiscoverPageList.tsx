@@ -799,7 +799,14 @@ export default function DiscoverPageList() {
           isPotentialMatch: selectedCardDetails.isPotentialMatch,
           potentialMatchData: selectedCardDetails.potentialMatchData,
           date_type: selectedCardDetails.date_type,
-          specific_date: selectedCardDetails.specific_date
+          specific_date: selectedCardDetails.specific_date,
+          requestStatus: (() => {
+            const status = getCollaborationStatus(selectedCardDetails.id);
+            // Map our UI status to dialog status
+            if (status === 'matched') return 'matched';
+            if (status === 'pending') return 'pending';
+            return null;
+          })()
         } : undefined}
       />
 
