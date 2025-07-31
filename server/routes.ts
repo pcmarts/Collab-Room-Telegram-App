@@ -3780,17 +3780,19 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: 'User not found' });
       }
       
-      // Get all requests for this user from the requests table
-      const userRequests = await storage.getUserSwipes(user.id);
+      // Get all requests for this user from the requests table (not legacy swipes)
+      const userRequests = await db.select()
+        .from(requests)
+        .where(eq(requests.requester_id, user.id));
       
       console.log(`Found ${userRequests.length} requests for user ${user.id}`);
       
-      // Convert to the format expected by the frontend
+      // Convert to the format expected by the frontend (with status field, not action)
       const formattedRequests = userRequests.map(request => ({
         id: request.id,
         collaboration_id: request.collaboration_id,
-        user_id: request.user_id,
-        action: request.direction === 'right' ? 'request' : 'skip',
+        user_id: request.requester_id,
+        status: request.status,  // Use status field instead of action
         created_at: request.created_at,
         note: request.note
       }));

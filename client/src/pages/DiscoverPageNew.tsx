@@ -528,11 +528,16 @@ export default function DiscoverPage() {
     const requestStatusMap = new Map<string, 'pending' | 'accepted' | 'hidden' | 'skipped'>();
     
     if (serverRequestHistory && serverRequestHistory.length > 0) {
+      console.log('[Discovery] Processing server request history for status indicators:', serverRequestHistory);
       serverRequestHistory.forEach((request: any) => {
         if (request.collaboration_id && request.status) {
           requestStatusMap.set(request.collaboration_id, request.status);
+          console.log(`[Discovery] Set status ${request.status} for collaboration ${request.collaboration_id}`);
         }
       });
+      console.log('[Discovery] Request status map:', Object.fromEntries(requestStatusMap));
+    } else {
+      console.log('[Discovery] No server request history available for status indicators');
     }
     
     // Enrich each card with its request status

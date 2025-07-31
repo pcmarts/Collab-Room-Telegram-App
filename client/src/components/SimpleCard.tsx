@@ -238,12 +238,18 @@ export default function SimpleCard({
               </div>
               
               <div className="flex items-center gap-2">
-                {/* Request Status Indicator */}
+                {/* Request Status Indicator with dot and text */}
                 {data.requestStatus === 'pending' && (
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full shadow-sm" title="Request Pending" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full shadow-sm" />
+                    <span className="text-xs text-gray-500 italic">Pending</span>
+                  </div>
                 )}
                 {data.requestStatus === 'accepted' && (
-                  <div className="w-3 h-3 bg-purple-500 rounded-full shadow-sm" title="Matched" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full shadow-sm" />
+                    <span className="text-xs text-gray-500 italic">Matched</span>
+                  </div>
                 )}
                 
                 <Button 
