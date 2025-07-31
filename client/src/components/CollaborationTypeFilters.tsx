@@ -13,7 +13,6 @@ interface CollaborationTypeFiltersProps {
   selectedFilter: string;
   onFilterChange: (filterId: string) => void;
   collaborationCount: number;
-  isLoading?: boolean;
 }
 
 const FILTER_OPTIONS: FilterOption[] = [
@@ -29,13 +28,12 @@ const FILTER_OPTIONS: FilterOption[] = [
 export function CollaborationTypeFilters({
   selectedFilter,
   onFilterChange,
-  collaborationCount,
-  isLoading = false
+  collaborationCount
 }: CollaborationTypeFiltersProps) {
   return (
     <div className="w-full">
       {/* Filter Pills Container */}
-      <div className="overflow-x-auto scrollbar-hide">
+      <div className="overflow-x-auto scrollbar-hide scroll-smooth">
         <div className="flex space-x-2 px-4 py-3 min-w-max">
           {FILTER_OPTIONS.map((filter) => {
             const isSelected = selectedFilter === filter.id;

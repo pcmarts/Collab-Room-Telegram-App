@@ -515,14 +515,13 @@ export default function DiscoverPageList() {
     }
   };
 
-  // Handle filter change
+  // Handle filter change without loading state
   const handleFilterChange = async (newFilter: string) => {
     setSelectedFilter(newFilter);
     // Reset pagination state immediately
     setCollaborations([]);
     setNextCursor(undefined);
     setHasMore(true);
-    setIsLoading(true);
     
     try {
       // Fetch fresh data with new filter
@@ -535,8 +534,6 @@ export default function DiscoverPageList() {
       setCollaborations([]);
       setHasMore(false);
       setNextCursor(undefined);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -670,7 +667,6 @@ export default function DiscoverPageList() {
         selectedFilter={selectedFilter}
         onFilterChange={handleFilterChange}
         collaborationCount={collaborations.length}
-        isLoading={isLoading}
       />
 
       {/* Content */}

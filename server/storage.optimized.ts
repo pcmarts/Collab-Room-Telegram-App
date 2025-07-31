@@ -231,6 +231,43 @@ export async function searchCollaborationsPaginatedOptimized(
       }
     }
     
+    // ===== DIRECT API FILTER SUPPORT: Apply direct collaboration type filtering =====
+    // This supports the filter pills functionality in the UI
+    if (filters.collabTypes && filters.collabTypes.length > 0) {
+      logger.info(`Applying direct collaboration type filter: ${JSON.stringify(filters.collabTypes)}`);
+      
+      // Import the mapping functions to convert stable IDs to database display names
+      const { getCollabTypeDisplayName, DISPLAY_NAME_TO_ID_MAP } = await import("@shared/collaboration-types/constants");
+      
+      // Convert stable IDs to all possible database values (current and legacy)
+      const dbCollabTypes: string[] = [];
+      for (const typeId of filters.collabTypes) {
+        // Add the current display name
+        const displayName = getCollabTypeDisplayName(typeId as any);
+        if (displayName) {
+          dbCollabTypes.push(displayName);
+        }
+        
+        // Also add any legacy names that map to this ID
+        for (const [legacyName, id] of Object.entries(DISPLAY_NAME_TO_ID_MAP)) {
+          if (id === typeId) {
+            dbCollabTypes.push(legacyName);
+          }
+        }
+        
+        // Also add the ID itself in case it's stored directly
+        dbCollabTypes.push(typeId);
+      }
+      
+      // Remove duplicates
+      const uniqueDbTypes = [...new Set(dbCollabTypes)];
+      logger.info(`Converted type IDs to database values: ${JSON.stringify(uniqueDbTypes)}`);
+      
+      baseConditions.push(
+        inArray(collaborations.collab_type, uniqueDbTypes)
+      );
+    }
+    
     // Add all conditions to the query
     query = query.where(and(...baseConditions));
     
