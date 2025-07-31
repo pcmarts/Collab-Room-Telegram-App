@@ -55,7 +55,7 @@ export function CollaborationTypeFilters({
                     : "hover:bg-accent hover:text-accent-foreground"
                   }
                 `}
-                disabled={isLoading}
+
               >
                 {Icon && <Icon className="w-4 h-4" />}
                 <span className="font-medium">{filter.label}</span>
@@ -67,7 +67,7 @@ export function CollaborationTypeFilters({
                       : "bg-muted text-muted-foreground"
                     }
                   `}>
-                    {isLoading ? "..." : collaborationCount}
+                    {collaborationCount}
                   </span>
                 )}
               </Button>
@@ -79,17 +79,11 @@ export function CollaborationTypeFilters({
       {/* Collaboration Count Summary */}
       <div className="px-4 pb-2">
         <div className="text-xs text-muted-foreground">
-          {isLoading ? (
-            "Loading collaborations..."
-          ) : (
-            <>
-              {collaborationCount} {collaborationCount === 1 ? "collaboration" : "collaborations"}
-              {selectedFilter !== "all" && (
-                <span className="ml-1">
-                  for {FILTER_OPTIONS.find(f => f.id === selectedFilter)?.label.toLowerCase()}
-                </span>
-              )}
-            </>
+          {collaborationCount} {collaborationCount === 1 ? "collaboration" : "collaborations"}
+          {selectedFilter !== "all" && (
+            <span className="ml-1">
+              for {FILTER_OPTIONS.find(f => f.id === selectedFilter)?.label.toLowerCase()}
+            </span>
           )}
         </div>
       </div>

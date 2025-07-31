@@ -8,6 +8,16 @@ The Collab Room is a cutting-edge Web3 professional networking platform that int
 
 ## Recent Changes (July 2025)
 
+### ✓ Implemented Swipeable Collaboration Type Filter Pills (July 31, 2025)
+- **Horizontal Scrolling Pills**: Created CollaborationTypeFilters component with smooth horizontal scrolling for mobile screens
+- **Dynamic Count Updates**: Added real-time collaboration count display without loading states for instant feedback
+- **Backend Filtering Logic**: Fixed collaboration type filtering to properly handle stable IDs vs database display names
+- **Enhanced Touch Scrolling**: Added smooth scrolling CSS properties and touch-optimized behavior for mobile users
+- **Complete Filter Coverage**: All (27), Twitter Spaces (7), Podcasts (2), Live Streams (3), Twitter Co-marketing (7), Reports (2), Blog Posts (3)
+- **Optimized Performance**: Removed unnecessary loading states for instant filter switching experience
+- **ID Mapping System**: Backend converts stable type IDs to all possible database values (current and legacy names)
+- **Mobile First Design**: Pills support horizontal swiping on thin mobile screens with scrollbar-hide styling
+
 ### ✓ Enhanced "View Match in My Matches" Button with Direct Navigation (July 31, 2025)
 - **Direct Navigation**: "View Match in My Matches" button now navigates directly to My Matches page (/matches)
 - **Improved UX**: Clicking the button closes the dialog and takes users straight to their matches
