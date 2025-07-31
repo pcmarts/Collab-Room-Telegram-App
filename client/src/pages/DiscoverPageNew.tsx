@@ -64,6 +64,7 @@ interface CardData {
   creator_company_name?: string;
   company_data?: any;
   isPotentialMatch?: boolean;
+  requestStatus?: 'pending' | 'accepted' | 'hidden' | 'skipped' | null; // Request status for this collaboration
   potentialMatchData?: {
     user_id: string;
     first_name: string;
@@ -449,6 +450,7 @@ export default function DiscoverPage() {
             description: match.collaboration_description || match.description || '',
             topics: match.collaboration_topics || match.topics || [],
             creator_company_name: potentialMatchData.company_name || '',
+            requestStatus: 'accepted' as const, // Potential matches are automatically accepted status
             // Keep these for backward compatibility
             requester_company: match.requester_company || potentialMatchData.company_name || '',
             requester_role: match.requester_role || potentialMatchData.job_title || '',
@@ -518,26 +520,52 @@ export default function DiscoverPage() {
     loadUserCollaborations();
   }, []);
   
+  // Helper function to enrich cards with request status
+  const enrichCardsWithRequestStatus = (cards: CardData[]): CardData[] => {
+    if (!cards || !Array.isArray(cards)) return [];
+    
+    // Create a lookup map for request status based on collaboration_id
+    const requestStatusMap = new Map<string, 'pending' | 'accepted' | 'hidden' | 'skipped'>();
+    
+    if (serverRequestHistory && serverRequestHistory.length > 0) {
+      serverRequestHistory.forEach((request: any) => {
+        if (request.collaboration_id && request.status) {
+          requestStatusMap.set(request.collaboration_id, request.status);
+        }
+      });
+    }
+    
+    // Enrich each card with its request status
+    return cards.map(card => ({
+      ...card,
+      requestStatus: requestStatusMap.get(card.id) || null
+    }));
+  };
+
   // Helper function to validate card data and filter out incomplete cards
   const validateCardData = (cards: CardData[]): CardData[] => {
     if (!cards || !Array.isArray(cards)) return [];
     
     console.log('[Discovery] Validating card data, original count:', cards.length);
     
+    // First, enrich cards with request status information
+    const enrichedCards = enrichCardsWithRequestStatus(cards);
+    
     // Log complete card data for the first card to debug field names/structure
-    if (cards.length > 0) {
+    if (enrichedCards.length > 0) {
       console.log('[Discovery] First card data structure sample:', {
-        id: cards[0].id,
-        collab_type: cards[0].collab_type,
-        creator_company_name: cards[0].creator_company_name,
-        title: cards[0].title,
+        id: enrichedCards[0].id,
+        collab_type: enrichedCards[0].collab_type,
+        creator_company_name: enrichedCards[0].creator_company_name,
+        title: enrichedCards[0].title,
+        requestStatus: enrichedCards[0].requestStatus,
         // Log all available fields for debugging
-        availableFields: Object.keys(cards[0])
+        availableFields: Object.keys(enrichedCards[0])
       });
     }
     
     // ENHANCED VALIDATION: Accept all cards with ID and fix missing fields
-    const validCards = cards.filter(card => {
+    const validCards = enrichedCards.filter(card => {
       // Card structure validation and debug logging
       if (!card) {
         console.log('[Discovery] Filtering out null/undefined card');
@@ -574,7 +602,7 @@ export default function DiscoverPage() {
       }
       
       // Enhanced field checking with detailed logs for debugging
-      console.log(`[Discovery] Processing card ${card.id} - isPotentialMatch: ${!!card.isPotentialMatch}, hasType: ${!!card.collab_type}`);
+      console.log(`[Discovery] Processing card ${card.id} - isPotentialMatch: ${!!card.isPotentialMatch}, hasType: ${!!card.collab_type}, requestStatus: ${card.requestStatus}`);
       
       // If collab_type is missing, provide a default
       if (!card.collab_type) {
@@ -606,7 +634,7 @@ export default function DiscoverPage() {
       return true;
     });
     
-    console.log('[Discovery] Validation complete, kept cards:', validCards.length, 'out of', cards.length);
+    console.log('[Discovery] Validation complete, kept cards:', validCards.length, 'out of', enrichedCards.length);
     return validCards;
   };
 

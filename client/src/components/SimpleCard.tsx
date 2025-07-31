@@ -60,6 +60,7 @@ export interface SimpleCardProps {
     specific_date?: string;
     isPotentialMatch?: boolean;
     isActive?: boolean;
+    requestStatus?: 'pending' | 'accepted' | 'hidden' | 'skipped' | null;
     details?: Record<string, any>;
     // Add company_data for enriched company information
     company_data?: {
@@ -236,14 +237,24 @@ export default function SimpleCard({
                 </div>
               </div>
               
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="shrink-0 h-8 w-8 text-muted-foreground hover:text-primary relative z-50"
-                onClick={onInfoClick}
-              >
-                <Info className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* Request Status Indicator */}
+                {data.requestStatus === 'pending' && (
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full shadow-sm" title="Request Pending" />
+                )}
+                {data.requestStatus === 'accepted' && (
+                  <div className="w-3 h-3 bg-purple-500 rounded-full shadow-sm" title="Matched" />
+                )}
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="shrink-0 h-8 w-8 text-muted-foreground hover:text-primary relative z-50"
+                  onClick={onInfoClick}
+                >
+                  <Info className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             
             {/* Second row with collaboration title */}
