@@ -32,9 +32,10 @@ export function CollaborationTypeFilters({
 }: CollaborationTypeFiltersProps) {
   return (
     <div className="w-full">
-      {/* Filter Pills Container */}
-      <div className="overflow-x-auto scrollbar-hide scroll-smooth">
-        <div className="flex space-x-2 px-4 py-3 min-w-max">
+      {/* Filter Pills Container - Responsive: Wrap on mobile, scroll on very small screens */}
+      <div className="px-4 py-3">
+        {/* Flexbox container that wraps on small screens */}
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           {FILTER_OPTIONS.map((filter) => {
             const isSelected = selectedFilter === filter.id;
             const Icon = filter.collabTypeId ? getCollabTypeIcon(filter.collabTypeId) : null;
@@ -47,7 +48,8 @@ export function CollaborationTypeFilters({
                 size="sm"
                 onClick={() => onFilterChange(filter.id)}
                 className={`
-                  flex items-center gap-2 whitespace-nowrap transition-all duration-200
+                  flex items-center gap-1.5 sm:gap-2 whitespace-nowrap transition-all duration-200
+                  text-xs sm:text-sm
                   ${isSelected 
                     ? colors 
                       ? `${colors.bg} ${colors.text} hover:${colors.hover} border-transparent` 
@@ -55,9 +57,8 @@ export function CollaborationTypeFilters({
                     : "hover:bg-accent hover:text-accent-foreground"
                   }
                 `}
-
               >
-                {Icon && <Icon className="w-4 h-4" />}
+                {Icon && <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                 <span className="font-medium">{filter.label}</span>
                 {isSelected && (
                   <span className={`
