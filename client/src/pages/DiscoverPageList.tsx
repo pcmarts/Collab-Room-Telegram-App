@@ -13,6 +13,7 @@ import { SortByButton, type SortOption } from "../components/SortByButton";
 import { AddCollabBanner } from "../components/AddCollabBanner";
 import { CollabTypesBanner } from "../components/CollabTypesBanner";
 import { NetworkStatus } from "@/components/NetworkStatus";
+import { CollaborationTypeFilters, FILTER_OPTIONS } from "../components/CollaborationTypeFilters";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useMatchContext } from "@/contexts/MatchContext";
@@ -88,6 +89,9 @@ export default function DiscoverPageList() {
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
+  
+  // State for collaboration type filters
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
   
   // State for tracking requested collaborations (for immediate UI updates)
   const [requestedCollaborations, setRequestedCollaborations] = useState<Set<string>>(new Set());
@@ -184,7 +188,7 @@ export default function DiscoverPageList() {
   const shouldShowLimitedView = !isAuthenticated || isAuthenticatedButNotApproved;
 
   // Fetch collaborations
-  const fetchCollaborations = async (cursor?: string, customSortBy?: SortOption) => {
+  const fetchCollaborations = async (cursor?: string, customSortBy?: SortOption, customFilter?: string) => {
     const now = Date.now();
     if (now - lastFetchTimeRef.current < 1000) {
       return { items: [], hasMore: false, nextCursor: undefined };
@@ -199,6 +203,15 @@ export default function DiscoverPageList() {
       
       if (cursor && cursor !== 'initial') {
         params.append('cursor', cursor);
+      }
+
+      // Add collaboration type filter if not "all"
+      const filterToUse = customFilter || selectedFilter;
+      if (filterToUse !== "all") {
+        const filterOption = FILTER_OPTIONS.find(f => f.id === filterToUse);
+        if (filterOption?.collabTypeId) {
+          params.append('collabTypes', filterOption.collabTypeId);
+        }
       }
 
       const url = `/api/collaborations/search?${params.toString()}`;
@@ -231,7 +244,7 @@ export default function DiscoverPageList() {
 
     setLoadingMore(true);
     try {
-      const result = await fetchCollaborations(nextCursor);
+      const result = await fetchCollaborations(nextCursor, sortBy, selectedFilter);
       
       setCollaborations(prev => [...prev, ...result.items]);
       setNextCursor(result.nextCursor);
@@ -256,7 +269,7 @@ export default function DiscoverPageList() {
       // Fetch potential matches and collaborations in parallel
       const [matchesResult, collabsResult] = await Promise.allSettled([
         fetchPotentialMatches(),
-        fetchCollaborations('initial')
+        fetchCollaborations('initial', sortBy, selectedFilter)
       ]);
 
       // Handle potential matches
@@ -488,12 +501,37 @@ export default function DiscoverPageList() {
     
     try {
       // Fetch fresh data with new sort immediately - pass the new sort value directly
-      const result = await fetchCollaborations('initial', newSort);
+      const result = await fetchCollaborations('initial', newSort, selectedFilter);
       setCollaborations(result.items || []);
       setHasMore(result.hasMore || false);
       setNextCursor(result.nextCursor);
     } catch (error) {
       console.error('[Discovery] Error changing sort:', error);
+      setCollaborations([]);
+      setHasMore(false);
+      setNextCursor(undefined);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle filter change
+  const handleFilterChange = async (newFilter: string) => {
+    setSelectedFilter(newFilter);
+    // Reset pagination state immediately
+    setCollaborations([]);
+    setNextCursor(undefined);
+    setHasMore(true);
+    setIsLoading(true);
+    
+    try {
+      // Fetch fresh data with new filter
+      const result = await fetchCollaborations('initial', sortBy, newFilter);
+      setCollaborations(result.items || []);
+      setHasMore(result.hasMore || false);
+      setNextCursor(result.nextCursor);
+    } catch (error) {
+      console.error('[Discovery] Error changing filter:', error);
       setCollaborations([]);
       setHasMore(false);
       setNextCursor(undefined);
@@ -626,6 +664,14 @@ export default function DiscoverPageList() {
           </Button> */}
         </div>
       </div>
+
+      {/* Filter Pills */}
+      <CollaborationTypeFilters
+        selectedFilter={selectedFilter}
+        onFilterChange={handleFilterChange}
+        collaborationCount={collaborations.length}
+        isLoading={isLoading}
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
