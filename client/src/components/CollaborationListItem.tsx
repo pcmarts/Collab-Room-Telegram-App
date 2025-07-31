@@ -101,6 +101,24 @@ export function CollaborationListItem({
             </div>
             
             <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Status Indicator with colored dot and text label */}
+              {collaborationStatus && (
+                <div className="flex items-center gap-1.5">
+                  {collaborationStatus === 'pending' && (
+                    <>
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      <span className="text-xs text-gray-400 italic">Pending</span>
+                    </>
+                  )}
+                  {collaborationStatus === 'matched' && (
+                    <>
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span className="text-xs text-gray-400 italic">Matched</span>
+                    </>
+                  )}
+                </div>
+              )}
+              
               {isPotentialMatch && (
                 <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">
                   Match

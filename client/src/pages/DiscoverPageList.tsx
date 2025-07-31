@@ -157,6 +157,15 @@ export default function DiscoverPageList() {
     refetchOnWindowFocus: false,
   });
 
+  // Query for user request history (for status indicators)
+  const { data: userRequestHistory } = useQuery({
+    queryKey: ['/api/user-requests'],
+    queryFn: () => apiRequest('/api/user-requests'),
+    enabled: isAuthenticated,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
   // Check if filters are active
   const hasActiveFilters = marketingPrefs && (
     (marketingPrefs.collaboration_types && marketingPrefs.collaboration_types.length > 0) ||
@@ -493,6 +502,40 @@ export default function DiscoverPageList() {
     }
   };
 
+  // Create a mapping from collaboration ID to request status
+  const getCollaborationStatus = (collaborationId: string) => {
+    // Check if locally requested first (for immediate UI update)
+    if (requestedCollaborations.has(collaborationId)) {
+      return 'pending';
+    }
+    
+    // Check userRequestHistory for actual status from database
+    if (userRequestHistory && userRequestHistory.length > 0) {
+      const request = userRequestHistory.find((req: any) => req.collaboration_id === collaborationId);
+      if (request && request.status) {
+        // Map database status to UI status
+        switch (request.status) {
+          case 'pending':
+            return 'pending';
+          case 'accepted':
+            return 'matched';
+          case 'hidden':
+          case 'skipped':
+            return undefined; // Don't show status for hidden/skipped
+          default:
+            return undefined;
+        }
+      }
+    }
+    
+    // Fallback to legacy collaborationInteractions data
+    if (collaborationInteractions && collaborationInteractions[collaborationId]) {
+      return collaborationInteractions[collaborationId].status;
+    }
+    
+    return undefined;
+  };
+
   // Combine potential matches and regular collaborations
   const allItems = [
     ...potentialMatches.map(pm => ({ ...pm.collaboration, isPotentialMatch: true, potentialMatchId: pm.id })),
@@ -501,8 +544,10 @@ export default function DiscoverPageList() {
 
   // Debug logging
   console.log('[Discovery] All items for rendering:', allItems);
+  console.log('[Discovery] User request history:', userRequestHistory);
   if (allItems.length > 0) {
     console.log('[Discovery] First item structure:', allItems[0]);
+    console.log('[Discovery] Status for first item:', getCollaborationStatus(allItems[0].id));
   }
 
   // Trigger animation after loading completes and items are available
@@ -647,12 +692,8 @@ export default function DiscoverPageList() {
                       // Never show collaboration status for user's own collaborations
                       userProfile?.user?.id && item.creator_id === userProfile.user.id
                         ? undefined
-                        : // Check if locally requested first (for immediate UI update)
-                          requestedCollaborations.has(item.id)
-                          ? 'requested'
-                          : collaborationInteractions && collaborationInteractions[item.id]
-                          ? collaborationInteractions[item.id].status
-                          : undefined
+                        : // Get status from the new function
+                          getCollaborationStatus(item.id) as 'pending' | 'matched' | undefined
                     }
                     onNavigateToMatches={() => setLocation('/matches')}
                     currentUserId={userProfile?.user?.id}
