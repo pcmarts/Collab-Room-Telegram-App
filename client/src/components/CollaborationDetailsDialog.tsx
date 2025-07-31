@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
+import { useLocation } from "wouter";
 import {
   Calendar,
   Globe,
@@ -115,6 +116,7 @@ export function CollaborationDetailsDialog({
   isAuthenticated = false,
   collaboration
 }: CollaborationDetailsDialogProps) {
+  const [, setLocation] = useLocation();
   
   if (!collaboration) return null;
 
@@ -508,7 +510,11 @@ export function CollaborationDetailsDialog({
                     size="default"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (!isAuthenticated) {
+                      if (collaboration?.requestStatus === 'matched') {
+                        // Navigate to matches page for matched collaborations
+                        onClose(); // Close dialog first
+                        setLocation('/matches');
+                      } else if (!isAuthenticated) {
                         // Trigger signup dialog via callback and close this dialog
                         if (onShowSignupDialog) {
                           onShowSignupDialog();

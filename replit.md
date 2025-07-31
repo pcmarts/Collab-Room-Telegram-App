@@ -8,6 +8,13 @@ The Collab Room is a cutting-edge Web3 professional networking platform that int
 
 ## Recent Changes (July 2025)
 
+### ✓ Enhanced "View Match in My Matches" Button with Direct Navigation (July 31, 2025)
+- **Direct Navigation**: "View Match in My Matches" button now navigates directly to My Matches page (/matches)
+- **Improved UX**: Clicking the button closes the dialog and takes users straight to their matches
+- **Smart Behavior**: Only applies to matched collaborations, other status buttons maintain existing behavior
+- **Implementation**: Added useLocation hook from wouter and updated click handler logic
+- **Seamless Flow**: Users can now go directly from discovery to matches without manual navigation
+
 ### ✓ Enhanced Bottom Navigation with Signup Prompt Dialog for Unauthenticated Users (July 30, 2025)
 - **Signup Prompt Dialog**: Created new SignupPromptDialog component for unauthenticated users clicking "My Collabs"
 - **Smart Navigation Logic**: Made "My Collabs" clickable for non-authenticated users to show signup dialog instead of being disabled
