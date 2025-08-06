@@ -5,6 +5,40 @@ All notable changes to the Collab Room project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 1.10.36] - 2025-08-06
+
+### Enhanced
+- **Form UX Improvements**: Comprehensive cleanup of collaboration creation forms
+  - Fixed critical validation bug where description field backend validation (200 chars) didn't match frontend limit (280 chars)
+  - Updated all components to consistently allow 280 characters for descriptions
+  - Removed cluttering validation text from Co-Marketing forms including "(min 1, max 3)" and "0/3" selection counters
+  - Hidden red validation error messages to create cleaner user experience
+  - Implemented clean UX design philosophy relying on visual cues rather than text guidance
+
+- **CollaborationTypePill Component**: New reusable component for type display
+  - Created consistent collaboration type pill showing icon, colors, and short name
+  - Integrated into form headers across all collaboration creation steps
+  - Uses collaboration type registry for metadata and maintains type safety
+
+### Fixed
+- **Validation Consistency**: Synchronized frontend and backend validation limits
+  - Updated `shared/schema.ts` to match 280-character description limit
+  - Fixed form submission errors caused by validation mismatches
+  - Enhanced `CharLimitedTextarea` component with consistent limits
+
+### Technical Details
+- Created `client/src/components/CollaborationFormV2/components/CollaborationTypePill.tsx`
+- Enhanced `LimitedTopicSelector` with `hideDetails` prop for UI verbosity control
+- Updated `TwitterCollabForm` to use clean interface with `hideDetails={true}`
+- Modified `StepContainer` to integrate collaboration type pill display
+- Fixed TypeScript null handling issues in main form component
+
+### User Experience
+- Cleaner, more intuitive collaboration creation forms
+- Visual collaboration type indicators in form headers
+- Reduced cognitive load by removing excessive validation text
+- Consistent character limits preventing submission errors
+
 ## [Version 1.10.35] - 2025-07-25
 
 ### Enhanced

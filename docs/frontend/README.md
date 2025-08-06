@@ -27,6 +27,7 @@ The frontend of The Collab Room is built with React and modern web technologies.
 - [Splash Screen Implementation](./splash-screen.md) - Guide to the ultra-light splash screen that renders in under 100ms
 - [Code Splitting Implementation](./code-splitting.md) - Documentation of route-based code splitting for performance optimization
 - [Collaboration Request System](./collaboration-request-system.md) - Comprehensive documentation of the note-adding workflow and collaboration request functionality
+- [Form UX Improvements - August 2025](./form-ux-improvements-august-2025.md) - Recent improvements to form validation consistency and clean interface design
 
 ## Collaboration Request System
 
