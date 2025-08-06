@@ -66,7 +66,7 @@ The webhook call is non-blocking and will not cause collaboration creation to fa
 The webhook endpoint is currently configured in the `sendCollaborationWebhook` function:
 
 ```typescript
-const webhookUrl = 'https://paulsworkspace.app.n8n.cloud/webhook-test/1d92b7d4-9a9b-4211-bc0a-53dc8d4c5aaa';
+const webhookUrl = 'https://paulsworkspace.app.n8n.cloud/webhook/1d92b7d4-9a9b-4211-bc0a-53dc8d4c5aaa';
 ```
 
 ### Timeout and Error Handling
