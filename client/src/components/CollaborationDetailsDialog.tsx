@@ -252,7 +252,9 @@ export function CollaborationDetailsDialog({
                 {(collabData.date_type || collabData.specific_date) && (
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">Date:</span>
+                    <span className="font-medium">
+                      {collabType?.toLowerCase().includes('report') ? 'Est. Release Date:' : 'Date:'}
+                    </span>
                     <span>
                       {collabData.date_type === 'specific_date' && collabData.specific_date ? (
                         <span className="text-primary font-medium">
