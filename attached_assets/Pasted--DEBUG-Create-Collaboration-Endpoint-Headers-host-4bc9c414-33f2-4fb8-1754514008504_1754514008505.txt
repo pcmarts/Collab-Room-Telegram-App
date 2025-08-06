@@ -1,0 +1,134 @@
+=========== DEBUG: Create Collaboration Endpoint ============
+Headers: {
+  host: '4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)',
+  'content-length': '1235',
+  accept: '*/*',
+  'accept-encoding': 'gzip, deflate, br',
+  'accept-language': 'en-GB,en;q=0.9',
+  'content-type': 'application/json',
+  cookie: 'connect.sid=s%3AKUonD_5hZic4b5c6QdQna9-7wCnt_sF4.8YKiwcdPFMGHXzEmhTW5jiJQ01ODJFAaEwnI%2BzKpuRA',
+  origin: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev',
+  referer: 'https://4bc9c414-33f2-4fb8-8d65-1bc3e032276d-00-i4wrml6gmvd4.kirk.replit.dev/create-collaboration-v2',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'x-forwarded-for': '85.244.246.144, 10.82.1.36',
+  'x-forwarded-proto': 'https',
+  'x-replit-user-bio': '',
+  'x-replit-user-id': '',
+  'x-replit-user-name': '',
+  'x-replit-user-profile-image': '',
+  'x-replit-user-roles': '',
+  'x-replit-user-teams': '',
+  'x-replit-user-url': '',
+  'x-telegram-init-data': 'query_id=AAGl3C5IAAAAAKXcLkgvkZXX&user=%7B%22id%22%3A1211030693%2C%22first_name%22%3A%22Paul%22%2C%22last_name%22%3A%22Martin%22%2C%22username%22%3A%22thisispaulm%22%2C%22language_code%22%3A%22en%22%2C%22is_premium%22%3Atrue%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FHNhIgguD8vf2nhThq8H8z9p_LglSPwa1BuNm7frXTVU.svg%22%7D&auth_date=1754513909&signature=5XWjj8RHXRdF6u1Jrmo6PEWSjGsGlfY_3kiaoVpEeAbxe0Zl9-grQMxdvD4T7KFwzUZqOaMy64lGNMNcE6JlDA&hash=77d972ea5cbb8fe3320c0e52f5984657b7b00e9fd26d8cb9bdb4d697502c15cf'
+}
+Body: {
+  collab_type: 'Podcast Guest Appearance',
+  podcast_name: 'Test',
+  podcast_link: 'https://youtube.com',
+  estimated_reach: '1,000-5,000',
+  details: {
+    podcast_name: 'Test',
+    podcast_link: 'https://youtube.com',
+    estimated_reach: 'Under 100'
+  },
+  topics: [ 'AI', 'Memes & Culture' ],
+  description: 'test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test test tes test ',
+  date_type: 'any_future_date',
+  specific_date: '2025-08-06',
+  is_free_collab: true,
+  required_company_sectors: [],
+  required_funding_stages: [],
+  required_blockchain_networks: [],
+  required_token_status: false,
+  min_company_followers: '0-1K',
+  min_user_followers: '0-1K',
+  filter_company_sectors_enabled: false,
+  filter_company_followers_enabled: false,
+  filter_user_followers_enabled: false,
+  filter_funding_stages_enabled: false,
+  filter_token_status_enabled: false,
+  filter_blockchain_networks_enabled: false,
+  company_tags: [],
+  company_twitter_followers: '0-1K',
+  twitter_followers: '0-1K',
+  funding_stage: 'Not Applicable',
+  company_has_token: false,
+  company_blockchain_networks: []
+}
+Validation error: ZodError: [
+  {
+    "code": "too_big",
+    "maximum": 200,
+    "type": "string",
+    "inclusive": true,
+    "exact": false,
+    "message": "Description must be less than 200 characters",
+    "path": [
+      "description"
+    ]
+  }
+]
+    at get error [as error] (file:///home/runner/workspace/node_modules/zod/lib/index.mjs:587:31)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:2081:51)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/runner/workspace/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/runner/workspace/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at <anonymous> (/home/runner/workspace/server/index.ts:150:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at <anonymous> (/home/runner/workspace/server/middleware/rate-limiter.ts:50:14)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at requestLogger (/home/runner/workspace/server/middleware/logger-middleware.ts:127:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at Immediate._onImmediate (/home/runner/workspace/node_modules/express-session/index.js:514:7)
+    at process.processImmediate (node:internal/timers:485:21) {
+  issues: [
+    {
+      code: 'too_big',
+      maximum: 200,
+      type: 'string',
+      inclusive: true,
+      exact: false,
+      message: 'Description must be less than 200 characters',
+      path: [Array]
+    }
+  ],
+  addIssue: [Function (anonymous)],
+  addIssues: [Function (anonymous)],
+  errors: [
+    {
+      code: 'too_big',
+      maximum: 200,
+      type: 'string',
+      inclusive: true,
+      exact: false,
+      message: 'Description must be less than 200 characters',
+      path: [Array]
+    }
+  ]
+}
+[2025-08-06T20:59:24.420Z] [WARN] POST /api/collaborations 400 in 19ms {
+  method: 'POST',
+  url: '/api/collaborations',
+  status: 400,
+  responseTime: '19ms',
+  ip: '172.31.71.66'
+}
