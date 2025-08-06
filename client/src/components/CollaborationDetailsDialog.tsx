@@ -444,6 +444,7 @@ export function CollaborationDetailsDialog({
                           'podcast_name', 'episode_duration', 'podcast_audience_size',
                           'platform', 'stream_duration', 'report_type', 'publication_name',
                           'date_type', 'specific_date', // Skip date fields as they're handled above
+                          'estimated_release_date', // Skip estimated release date for reports
                           'podcast_url', 'stream_url' // Skip URL fields as they're handled as buttons
                         ].includes(key)) {
                           return null;
