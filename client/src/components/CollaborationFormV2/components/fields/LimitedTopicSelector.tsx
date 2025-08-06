@@ -156,8 +156,8 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
               })}
             </div>
             
-            {/* Only show error message for exceeded max count */}
-            {form.formState.errors[name]?.message && 
+            {/* Only show error message for exceeded max count when hideDetails is false */}
+            {!hideDetails && form.formState.errors[name]?.message && 
              form.formState.errors[name]?.message !== " " && 
              <FormMessage />}
           </FormItem>

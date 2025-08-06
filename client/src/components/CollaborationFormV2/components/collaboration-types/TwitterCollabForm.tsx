@@ -196,7 +196,7 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) =>
                 form={form}
                 options={TWITTER_COLLAB_TYPES as unknown as string[]}
                 required
-                hideDetails={false}
+                hideDetails={true}
               />
             )}
           />
