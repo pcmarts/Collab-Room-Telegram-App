@@ -960,7 +960,7 @@ export default function CreateCollaborationSteps({
                   <Textarea 
                     placeholder="What is your podcast about? Briefly describe it." 
                     className="min-h-[60px] text-xs"
-                    maxLength={200}
+                    maxLength={280}
                     value={displayValue}
                     onChange={(e) => {
                       field.onChange(e.target.value);
@@ -972,7 +972,7 @@ export default function CreateCollaborationSteps({
                   />
                 </FormControl>
                 <FormDescription className="text-xs">
-                  {displayValue?.length || 0}/200 characters
+                  {displayValue?.length || 0}/280 characters
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -1568,7 +1568,7 @@ export default function CreateCollaborationSteps({
                   <Textarea 
                     placeholder="What is your research report about? Briefly describe it." 
                     className="min-h-[60px] text-xs"
-                    maxLength={200}
+                    maxLength={280}
                     value={displayValue}
                     onChange={(e) => {
                       field.onChange(e.target.value);
@@ -1579,7 +1579,7 @@ export default function CreateCollaborationSteps({
                   />
                 </FormControl>
                 <FormDescription className="text-[10px]">
-                  A brief description of your research report (max 200 characters)
+                  A brief description of your research report (max 280 characters)
                 </FormDescription>
                 <FormMessage />
               </FormItem>

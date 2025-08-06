@@ -907,12 +907,12 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                         <Textarea 
                           placeholder="Brief description of your blog" 
                           className="min-h-[80px]"
-                          maxLength={200}
+                          maxLength={280}
                           {...field} 
                         />
                       </FormControl>
                       <FormDescription>
-                        A brief description of your blog (max 200 characters)
+                        A brief description of your blog (max 280 characters)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -989,12 +989,12 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                         <Textarea 
                           placeholder="Brief description of your newsletter" 
                           className="min-h-[80px]"
-                          maxLength={200}
+                          maxLength={280}
                           {...field} 
                         />
                       </FormControl>
                       <FormDescription>
-                        A brief description of your newsletter (max 200 characters)
+                        A brief description of your newsletter (max 280 characters)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -1057,12 +1057,12 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                         <Textarea 
                           placeholder="Brief description of your report or research" 
                           className="min-h-[80px]"
-                          maxLength={200}
+                          maxLength={280}
                           {...field} 
                         />
                       </FormControl>
                       <FormDescription>
-                        A brief description of your report (max 200 characters)
+                        A brief description of your report (max 280 characters)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

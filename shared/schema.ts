@@ -791,7 +791,7 @@ export const createCollaborationSchema = z.object({
   collab_type: z.enum(COLLAB_TYPES),
   description: z
     .string()
-    .max(200, "Description must be less than 200 characters"),
+    .max(280, "Description must be less than 280 characters"),
   date_type: z.enum(["any_future_date", "specific_date"]),
   specific_date: z.string().optional(),
 
