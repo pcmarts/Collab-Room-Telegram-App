@@ -127,10 +127,10 @@ const CollaborationFormContent: React.FC = () => {
     const stepId = currentStepId || "";
     
     // Get the collaboration type using the flexible registry lookup
-    const collabType = getCollaborationType(selectedTypeId);
+    const collabType = getCollaborationType(selectedTypeId || "");
     
     // Use the stable ID for routing to the correct form
-    const typeId = collabType?.id || selectedTypeId;
+    const typeId = collabType?.id || selectedTypeId || "";
     
     switch (typeId) {
       case COLLAB_TYPE_IDS.TWITTER_COMARKETING:
@@ -165,6 +165,7 @@ const CollaborationFormContent: React.FC = () => {
             <StepContainer
               title={currentStep === 0 ? InitialStep.title : getStepTitle()}
               description={currentStep === 0 ? InitialStep.description : getStepDescription()}
+              selectedTypeId={currentStepId !== "collab_type" ? (selectedTypeId || undefined) : undefined}
             >
               {renderStepContent()}
             </StepContainer>
