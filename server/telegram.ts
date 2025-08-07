@@ -449,7 +449,26 @@ bot.on("message", async (msg) => {
 
       const collab = collabBroadcastState.selectedCollaboration;
       
-      // Create preview message
+      // Get recipient count for preview as required by PRD FR-4
+      const usersWithJoinedPreferences = await db
+        .select({
+          id: users.id,
+          telegram_id: users.telegram_id,
+          notifications_enabled: notification_preferences.notifications_enabled,
+        })
+        .from(users)
+        .leftJoin(
+          notification_preferences,
+          eq(users.id, notification_preferences.user_id),
+        )
+        .where(eq(users.is_approved, true));
+
+      // Filter users with notifications enabled
+      const eligibleUsers = usersWithJoinedPreferences.filter(
+        (user) => user.notifications_enabled === true && user.telegram_id,
+      );
+      
+      // Create preview message with recipient count as required by PRD
       const confirmationMessage =
         "🚀 <b>Collab Broadcast Preview</b>\n\n" +
         `<b>Selected Collaboration:</b> ${collab.companyName} - ${collab.collab_type}\n\n` +
@@ -459,7 +478,8 @@ bot.on("message", async (msg) => {
         "🚀 <b>Request Collab</b> | 👁️ <b>View Details</b> | <b>View More Collabs</b>\n" +
         "---------------------\n\n" +
         "<i>Note: The buttons will be context-aware based on each user's relationship to this collaboration.</i>\n\n" +
-        "Do you want to send this to all approved users with notifications enabled?";
+        `📊 <b>Will be sent to ${eligibleUsers.length} users who have notifications enabled</b>\n\n` +
+        "Do you want to send this broadcast?";
 
       // Create keyboard with confirm/cancel buttons
       const keyboard = {
@@ -1264,7 +1284,7 @@ async function notifyReferrerWithRecord(
       }`);
     } catch (logError) {
       console.log(
-        `[REFERRAL NOTIFICATION] Error logging referrer details: ${logError.message}`,
+        `[REFERRAL NOTIFICATION] Error logging referrer details: ${logError instanceof Error ? logError.message : 'Unknown error'}`,
       );
     }
 
@@ -1279,7 +1299,7 @@ async function notifyReferrerWithRecord(
       }`);
     } catch (logError) {
       console.log(
-        `[REFERRAL NOTIFICATION] Error logging referral record details: ${logError.message}`,
+        `[REFERRAL NOTIFICATION] Error logging referral record details: ${logError instanceof Error ? logError.message : 'Unknown error'}`,
       );
     }
 
@@ -1596,7 +1616,7 @@ export async function notifyUserCollabCreated(
     const message =
       `🎉 <b>Your Collaboration is Live!</b>\n\n` +
       `Your ${collaboration.collab_type} collaboration has been successfully created and is now visible to other users.\n\n` +
-      `<b>Title:</b> ${collaboration.title || "No title"}\n` +
+      `<b>Type:</b> ${collaboration.collab_type}\n` +
       `<b>Description:</b> ${collaboration.description || "No description"}\n` +
       `<b>Company:</b> ${companyName}\n` +
       `${topicsText}` +
@@ -1659,7 +1679,7 @@ export async function notifyUserCollabCreated(
     } catch (error) {
       // Check specifically for "chat not found" errors which indicate the user hasn't interacted with the bot
       if (
-        error?.response?.body?.description === "Bad Request: chat not found"
+        (error as any)?.response?.body?.description === "Bad Request: chat not found"
       ) {
         console.log(
           `[COLLAB_NOTIFICATION] User ${user.first_name} ${user.last_name || ""} (ID: ${telegramId}) hasn't interacted with the bot yet`,
@@ -1738,7 +1758,7 @@ export async function notifyAdminsNewCollaboration(
 
         if (companies_result.length > 0) {
           company = companies_result[0];
-          companyName = company.name;
+          companyName = company?.name || "Unknown";
         }
       }
 
@@ -1751,7 +1771,7 @@ export async function notifyAdminsNewCollaboration(
 
         if (companies_by_user.length > 0) {
           company = companies_by_user[0];
-          companyName = company.name;
+          companyName = company?.name || "Unknown";
         }
       }
 
@@ -1797,7 +1817,7 @@ export async function notifyAdminsNewCollaboration(
     // Enhanced with more details about the collaboration
     const message =
       `🆕 <b>New Collaboration Created!</b>\n\n` +
-      `<b>Title:</b> ${collaboration.title || "No title"}\n` +
+      `<b>Type:</b> ${collaboration.collab_type}\n` +
       `<b>Type:</b> ${collaboration.collab_type}\n` +
       `<b>Description:</b> ${collaboration.description || "Not provided"}\n` +
       `${topicsText}` +
@@ -1867,7 +1887,7 @@ export async function notifyAdminsNewCollaboration(
 
           // Log the admin notification
           logAdminMessage(
-            admin.telegram_id,
+            admin.telegram_id.toString(),
             "NEW_COLLABORATION",
             `New collaboration created by ${creator.first_name} ${creator.last_name || ""} (ID: ${collaborationId}, Company: ${companyName})`,
             `${creator.first_name} ${creator.last_name || ""} (${creator.telegram_id || "No Telegram ID"}) - ${collaboration.collab_type}`,
@@ -1875,7 +1895,7 @@ export async function notifyAdminsNewCollaboration(
         } catch (sendError) {
           // Check specifically for "chat not found" errors which indicate the admin hasn't interacted with the bot
           if (
-            sendError?.response?.body?.description ===
+            (sendError as any)?.response?.body?.description ===
             "Bad Request: chat not found"
           ) {
             console.log(
@@ -3703,7 +3723,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       const requesterResults = await db.execute(
         sql`SELECT * FROM users WHERE SUBSTRING(CAST(id as TEXT), 1, 8) = ${shortRequesterId}`,
       );
-      const requester = requesterResults.rows[0];
+      const requester = requesterResults.rows[0] as any;
 
       if (!requester) {
         console.error(
