@@ -194,7 +194,7 @@ async function isValidChatId(chatId: number): Promise<boolean> {
 // PHASE 1 OPTIMIZATION: Performance monitoring for command setup
 const botPerformanceLogger = {
   startupTime: Date.now(),
-  commandSetupTime: null,
+  commandSetupTime: null as number | null,
 
   logCommandSetup() {
     this.commandSetupTime = Date.now() - this.startupTime;
@@ -225,6 +225,7 @@ export async function setupBotCommands() {
     const adminCommands = [
       ...regularCommands,
       { command: "broadcast", description: "Send message to all users" },
+      { command: "broadcastcollab", description: "Promote a specific collaboration" },
     ];
 
     // OPTIMIZATION: Set basic commands immediately for immediate functionality
@@ -354,7 +355,7 @@ bot.on("message", async (msg) => {
 
   if (!telegramId) return;
 
-  // Check if this is an admin in broadcast flow
+  // Check if this is an admin in regular broadcast flow
   const broadcastState = adminBroadcastState.get(telegramId);
   if (
     broadcastState &&
@@ -420,6 +421,80 @@ bot.on("message", async (msg) => {
       await bot.sendMessage(
         chatId,
         "❌ <b>Error</b>\n\nThere was an error processing your broadcast message. Please try again with /broadcast.",
+        { parse_mode: "HTML" },
+      );
+    }
+  }
+
+  // Check if this is an admin in collaboration broadcast flow  
+  const collabBroadcastState = adminCollabBroadcastState.get(telegramId);
+  if (
+    collabBroadcastState &&
+    collabBroadcastState.state === "awaiting_message" &&
+    msg.text
+  ) {
+    try {
+      console.log(
+        "[COLLAB_BROADCAST] Received message from admin for collaboration broadcast:",
+        msg.text,
+      );
+
+      // Store the message in the state
+      adminCollabBroadcastState.set(telegramId, {
+        ...collabBroadcastState,
+        state: "awaiting_confirmation",
+        message: msg.text,
+        timestamp: Date.now(),
+      });
+
+      const collab = collabBroadcastState.selectedCollaboration;
+      
+      // Create preview message
+      const confirmationMessage =
+        "🚀 <b>Collab Broadcast Preview</b>\n\n" +
+        `<b>Selected Collaboration:</b> ${collab.companyName} - ${collab.collab_type}\n\n` +
+        "This is how your promotional message will appear:\n\n" +
+        "----- <b>Preview</b> -----\n" +
+        `📣 <b>Admin Announcement</b>\n\n${msg.text}\n\n` +
+        "🚀 <b>Request Collab</b> | 👁️ <b>View Details</b> | <b>View More Collabs</b>\n" +
+        "---------------------\n\n" +
+        "<i>Note: The buttons will be context-aware based on each user's relationship to this collaboration.</i>\n\n" +
+        "Do you want to send this to all approved users with notifications enabled?";
+
+      // Create keyboard with confirm/cancel buttons
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: "✅ Send Broadcast", callback_data: "collab_broadcast_confirm" },
+            { text: "❌ Cancel", callback_data: "collab_broadcast_cancel" },
+          ],
+        ],
+      };
+
+      // Send confirmation message with buttons
+      await bot.sendMessage(chatId, confirmationMessage, {
+        parse_mode: "HTML",
+        reply_markup: keyboard,
+      });
+
+      logAdminMessage(
+        telegramId,
+        "COLLAB_BROADCAST_PREVIEW",
+        "Admin provided message for collaboration broadcast and is awaiting confirmation",
+        `${collab.companyName} - ${collab.collab_type}: ${msg.text.substring(0, 50)}${msg.text.length > 50 ? "..." : ""}`,
+      );
+    } catch (error) {
+      console.error(
+        "[COLLAB_BROADCAST] Error processing admin collaboration broadcast message:",
+        error,
+      );
+
+      // Reset state
+      adminCollabBroadcastState.delete(telegramId);
+
+      await bot.sendMessage(
+        chatId,
+        "❌ <b>Error</b>\n\nThere was an error processing your collaboration broadcast message. Please try again with /broadcastcollab.",
         { parse_mode: "HTML" },
       );
     }
@@ -565,7 +640,13 @@ async function handleStart(
 
     // Check user cache first for faster lookups
     const userCacheKey = `user_${telegramId}`;
-    let existingUser = null;
+    let existingUser: {
+      id: any;
+      telegram_id: any;
+      is_approved: any;
+      first_name: any;
+      last_name: any;
+    } | null = null;
 
     const cachedUser = userCache.get(userCacheKey);
     if (cachedUser && Date.now() - cachedUser.timestamp < CACHE_TTL) {
@@ -823,7 +904,7 @@ export async function notifyAdminsNewUser(userData: NewUserNotification) {
 
         // Log the admin notification
         logAdminMessage(
-          admin.telegram_id,
+          admin.telegram_id.toString(),
           "NEW_USER_APPLICATION",
           `New user application from ${userData.first_name} ${userData.last_name || ""} (${userData.telegram_id})`,
           `${userData.first_name} ${userData.last_name || ""} (${userData.telegram_id})`,
@@ -924,7 +1005,7 @@ export async function notifyReferrerAboutApproval(
     );
 
     // Attempt multiple ways to find the referrer
-    let referrerUser = null;
+    let referrerUser: any = null;
 
     // Check if the referrer ID is a valid UUID (the ID format in our database)
     const isValidUuid =
@@ -1895,6 +1976,120 @@ async function handleBroadcast(msg: TelegramBot.Message) {
 // Register broadcast command handler
 bot.onText(/\/broadcast/, handleBroadcast);
 
+// Collaboration Broadcast Command Handler
+async function handleCollabBroadcast(msg: TelegramBot.Message) {
+  const chatId = msg.chat.id;
+  const telegramId = msg.from?.id.toString();
+
+  console.log("=== Handling /broadcastcollab command ===");
+  console.log("Chat ID:", chatId);
+  console.log("Telegram ID:", telegramId);
+
+  try {
+    if (!telegramId) {
+      throw new Error("No Telegram ID found in message");
+    }
+
+    // Check if user is an admin
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.telegram_id, telegramId));
+
+    if (!user || !user.is_admin) {
+      console.log("[COLLAB_BROADCAST] Rejected: User not an admin:", telegramId);
+      await bot.sendMessage(
+        chatId,
+        "Sorry, this command is only available to administrators.",
+      );
+      return;
+    }
+
+    // Get 5 most recent active collaborations
+    const recentCollaborations = await db
+      .select({
+        id: collaborations.id,
+        creator_id: collaborations.creator_id,
+        collab_type: collaborations.collab_type,
+        description: collaborations.description,
+        created_at: collaborations.created_at,
+        status: collaborations.status,
+      })
+      .from(collaborations)
+      .leftJoin(companies, eq(collaborations.creator_id, companies.user_id))
+      .where(eq(collaborations.status, "active"))
+      .orderBy(sql`${collaborations.created_at} DESC`)
+      .limit(5);
+
+    if (recentCollaborations.length === 0) {
+      await bot.sendMessage(
+        chatId,
+        "❌ <b>No Active Collaborations</b>\n\nThere are no active collaborations to broadcast at the moment.",
+        { parse_mode: "HTML" }
+      );
+      return;
+    }
+
+    // Get company names for each collaboration
+    const collaborationWithCompanies = await Promise.all(
+      recentCollaborations.map(async (collab) => {
+        const [company] = await db
+          .select({ name: companies.name })
+          .from(companies)
+          .where(eq(companies.user_id, collab.creator_id));
+        
+        return {
+          ...collab,
+          companyName: company?.name || "Unknown Company"
+        };
+      })
+    );
+
+    // Set the state to "selecting_collaboration"
+    adminCollabBroadcastState.set(telegramId, {
+      state: "selecting_collaboration",
+      timestamp: Date.now(),
+    });
+
+    // Create inline keyboard for collaboration selection
+    const keyboard = {
+      inline_keyboard: collaborationWithCompanies.map((collab, index) => [
+        {
+          text: `${collab.companyName} - ${collab.collab_type}`,
+          callback_data: `select_collab_${collab.id}`
+        }
+      ])
+    };
+
+    await bot.sendMessage(
+      chatId,
+      "🚀 <b>Collab Broadcast</b>\n\n" +
+        "Select a collaboration to promote:\n\n" +
+        "<i>Choose from the 5 most recent active collaborations:</i>",
+      {
+        parse_mode: "HTML",
+        reply_markup: keyboard,
+      }
+    );
+
+    logAdminMessage(
+      telegramId,
+      "COLLAB_BROADCAST_INITIATED",
+      "Admin initiated collaboration broadcast flow",
+      `${collaborationWithCompanies.length} collaborations available`,
+    );
+  } catch (error) {
+    console.error("Error handling collaboration broadcast command:", error);
+    await bot.sendMessage(
+      chatId,
+      "Sorry, something went wrong. Please try again later.",
+    );
+  }
+}
+
+// Register collaboration broadcast command handler
+bot.onText(/\/broadcastcollab/, handleCollabBroadcast);
+
 // Cancel command handler
 bot.onText(/\/cancel/, async (msg) => {
   const chatId = msg.chat.id;
@@ -1902,16 +2097,32 @@ bot.onText(/\/cancel/, async (msg) => {
 
   if (!telegramId) return;
 
+  let cancelled = false;
+
   // Check if this user has an active broadcast state
   if (adminBroadcastState.has(telegramId)) {
     adminBroadcastState.delete(telegramId);
-    await bot.sendMessage(chatId, "✅ Broadcast cancelled.");
-
+    cancelled = true;
     logAdminMessage(
       telegramId,
       "BROADCAST_CANCELLED",
       "Admin cancelled broadcast message flow",
     );
+  }
+
+  // Check if this user has an active collaboration broadcast state
+  if (adminCollabBroadcastState.has(telegramId)) {
+    adminCollabBroadcastState.delete(telegramId);
+    cancelled = true;
+    logAdminMessage(
+      telegramId,
+      "COLLAB_BROADCAST_CANCELLED",
+      "Admin cancelled collaboration broadcast flow",
+    );
+  }
+
+  if (cancelled) {
+    await bot.sendMessage(chatId, "✅ Broadcast cancelled.");
   }
 });
 
@@ -1921,6 +2132,18 @@ const adminBroadcastState = new Map<
   string,
   {
     state: "awaiting_message" | "awaiting_confirmation" | "sending";
+    message?: string;
+    timestamp: number;
+  }
+>();
+
+// Initialize collaboration broadcast state storage
+// Maps telegramId to collaboration broadcast state
+const adminCollabBroadcastState = new Map<
+  string,
+  {
+    state: "selecting_collaboration" | "awaiting_message" | "awaiting_confirmation" | "sending";
+    selectedCollaboration?: any;
     message?: string;
     timestamp: number;
   }
@@ -2169,6 +2392,219 @@ Message content: ${finalPersonalizedMessage}`);
   }
 }
 
+// Function to broadcast a collaboration to all active users with notifications enabled and context-aware buttons
+export async function broadcastCollaborationToUsers(
+  collaboration: any,
+  message: string,
+  senderTelegramId: string,
+  chatId: number,
+) {
+  try {
+    console.log("[COLLAB_BROADCAST] Starting collaboration broadcast process");
+
+    // Update admin state to sending
+    adminCollabBroadcastState.set(senderTelegramId, {
+      state: "sending",
+      selectedCollaboration: collaboration,
+      message,
+      timestamp: Date.now(),
+    });
+
+    // Let admin know the process has started
+    await bot.sendMessage(
+      chatId,
+      "📤 <b>Collaboration broadcast process started</b>\n\nSending your promotional message to all eligible users...",
+      { parse_mode: "HTML" },
+    );
+
+    // Get all users that are approved and have notifications enabled
+    const usersWithJoinedPreferences = await db
+      .select({
+        id: users.id,
+        telegram_id: users.telegram_id,
+        first_name: users.first_name,
+        last_name: users.last_name,
+        handle: users.handle,
+        notifications_enabled: notification_preferences.notifications_enabled,
+      })
+      .from(users)
+      .leftJoin(
+        notification_preferences,
+        eq(users.id, notification_preferences.user_id),
+      )
+      .where(eq(users.is_approved, true));
+
+    // Filter users with notifications enabled
+    const eligibleUsers = usersWithJoinedPreferences.filter(
+      (user) => user.notifications_enabled === true && user.telegram_id,
+    );
+
+    console.log(
+      `[COLLAB_BROADCAST] Found ${eligibleUsers.length} eligible users out of ${usersWithJoinedPreferences.length} total approved users`,
+    );
+
+    // Get all company names for personalization
+    const companyNamesQuery = await db
+      .select({
+        user_id: companies.user_id,
+        company_name: companies.name,
+        job_title: companies.job_title,
+      })
+      .from(companies);
+
+    // Create lookup maps for efficient access
+    const companyLookup = new Map(
+      companyNamesQuery.map((c) => [c.user_id, { name: c.company_name, job_title: c.job_title }])
+    );
+
+    // Get existing requests for this collaboration to determine button context
+    const existingRequests = await db
+      .select({
+        requester_id: requests.requester_id,
+        status: requests.status,
+      })
+      .from(requests)
+      .where(eq(requests.collaboration_id, collaboration.id));
+
+    const requestLookup = new Map(
+      existingRequests.map((r) => [r.requester_id, r.status])
+    );
+
+    let successCount = 0;
+    let failCount = 0;
+    const failedIds: string[] = [];
+
+    // Process each user
+    for (const user of eligibleUsers) {
+      try {
+        const userChatId = parseInt(user.telegram_id);
+        if (isNaN(userChatId)) {
+          console.error(
+            `[COLLAB_BROADCAST] Invalid Telegram ID for user ${user.id}: ${user.telegram_id}`,
+          );
+          continue;
+        }
+
+        // Personalize the message
+        let personalizedMessage = message;
+        
+        // Replace personalization placeholders
+        personalizedMessage = personalizedMessage.replace(/\{\{first_name\}\}/g, user.first_name || "");
+        personalizedMessage = personalizedMessage.replace(/\{\{last_name\}\}/g, user.last_name || "");
+        
+        const company = companyLookup.get(user.id);
+        personalizedMessage = personalizedMessage.replace(/\{\{company_name\}\}/g, company?.name || "");
+        personalizedMessage = personalizedMessage.replace(/\{\{role_title\}\}/g, company?.job_title || "");
+        
+        const formattedHandle = user.handle ? `@${user.handle.replace(/^@/, "")}` : "";
+        personalizedMessage = personalizedMessage.replace(/\{\{handle\}\}/g, formattedHandle);
+
+        // Create context-aware buttons based on user's relationship to the collaboration
+        let buttons;
+        
+        // Check if user is the host of the collaboration
+        if (collaboration.creator_id === user.id) {
+          buttons = [
+            [{ text: "You are the host of this collaboration", callback_data: "host_info" }],
+            [{ text: "View More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }],
+          ];
+        }
+        // Check if user has already requested this collaboration
+        else if (requestLookup.has(user.id)) {
+          const requestStatus = requestLookup.get(user.id);
+          buttons = [
+            [{ text: "✅ Request Already Sent", callback_data: "request_sent" }],
+            [{ text: "👁️ View Details", web_app: { url: `${WEBAPP_URL}/collaboration/${collaboration.id}` } }],
+            [{ text: "View More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }],
+          ];
+        }
+        // Check if collaboration is still active
+        else if (collaboration.status !== "active") {
+          buttons = [
+            [{ text: "This collaboration is no longer available", callback_data: "unavailable" }],
+            [{ text: "View More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }],
+          ];
+        }
+        // User is eligible to request the collaboration
+        else {
+          buttons = [
+            [{ text: "🚀 Request Collab", callback_data: `request_collab_${collaboration.id}` }],
+            [{ text: "👁️ View Details", web_app: { url: `${WEBAPP_URL}/collaboration/${collaboration.id}` } }],
+            [{ text: "View More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }],
+          ];
+        }
+
+        // Create the keyboard
+        const keyboard = { inline_keyboard: buttons };
+
+        // Format the final message with the header
+        const finalPersonalizedMessage = `📣 <b>Admin Announcement</b>\n\n${personalizedMessage}`;
+
+        // Send message with context-aware buttons
+        await bot.sendMessage(userChatId, finalPersonalizedMessage, {
+          parse_mode: "HTML",
+          disable_web_page_preview: true,
+          reply_markup: keyboard,
+        });
+
+        console.log(
+          `[COLLAB_BROADCAST] Message sent to user ${user.first_name} ${user.last_name || ""} (${user.telegram_id})`,
+        );
+        successCount++;
+
+        // Add delay to avoid API limits
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      } catch (error) {
+        console.error(
+          `[COLLAB_BROADCAST] Failed to send to user ${user.telegram_id}:`,
+          error,
+        );
+        failCount++;
+        failedIds.push(user.telegram_id);
+      }
+    }
+
+    // Remove admin from broadcast state
+    adminCollabBroadcastState.delete(senderTelegramId);
+
+    // Send summary back to admin
+    const summaryMessage =
+      `✅ <b>Collaboration broadcast completed</b>\n\n` +
+      `<b>Collaboration:</b> ${collaboration.companyName} - ${collaboration.collab_type}\n\n` +
+      `Message sent to ${successCount} user${successCount !== 1 ? "s" : ""}\n` +
+      `Failed: ${failCount} user${failCount !== 1 ? "s" : ""}` +
+      (failCount > 0
+        ? `\n\nSome users may have blocked the bot or have invalid Telegram IDs.`
+        : "");
+
+    await bot.sendMessage(chatId, summaryMessage, { parse_mode: "HTML" });
+
+    // Log the broadcast action
+    logAdminMessage(
+      senderTelegramId,
+      "COLLAB_BROADCAST_COMPLETED",
+      `Collaboration promotional message sent to ${successCount} users, failed for ${failCount} users`,
+      `${collaboration.companyName} - ${collaboration.collab_type}`,
+    );
+
+    return { successCount, failCount, failedIds };
+  } catch (error) {
+    console.error("[COLLAB_BROADCAST] Error in collaboration broadcast process:", error);
+
+    // Remove admin from broadcast state
+    adminCollabBroadcastState.delete(senderTelegramId);
+
+    // Notify admin of the error
+    await bot.sendMessage(
+      chatId,
+      "❌ <b>Collaboration Broadcast Error</b>\n\nThere was an error while sending your collaboration broadcast. Please try again later.",
+      { parse_mode: "HTML" },
+    );
+
+    throw error;
+  }
+}
+
 async function handleStatus(msg: TelegramBot.Message) {
   const chatId = msg.chat.id;
   const telegramId = msg.from?.id.toString();
@@ -2271,6 +2707,26 @@ bot.on("callback_query", async (callbackQuery) => {
       console.log(`[CALLBACK] Handling broadcast cancellation`);
       await handleBroadcastCancel(callbackQuery);
     }
+    // Handle collaboration selection
+    else if (action.startsWith("select_collab_")) {
+      console.log(`[CALLBACK] Handling collaboration selection: ${action}`);
+      await handleCollabSelection(callbackQuery);
+    }
+    // Handle collaboration broadcast confirmation
+    else if (action === "collab_broadcast_confirm") {
+      console.log(`[CALLBACK] Handling collaboration broadcast confirmation`);
+      await handleCollabBroadcastConfirm(callbackQuery);
+    }
+    // Handle collaboration broadcast cancellation
+    else if (action === "collab_broadcast_cancel") {
+      console.log(`[CALLBACK] Handling collaboration broadcast cancellation`);
+      await handleCollabBroadcastCancel(callbackQuery);
+    }
+    // Handle collaboration request from broadcast
+    else if (action.startsWith("request_collab_")) {
+      console.log(`[CALLBACK] Handling collaboration request from broadcast: ${action}`);
+      await handleCollabRequestFromBroadcast(callbackQuery);
+    }
     // Handle user approval
     else if (action.startsWith("approve_user_")) {
       console.log(`[CALLBACK] Handling user approval: ${action}`);
@@ -2316,8 +2772,8 @@ bot.on("callback_query", async (callbackQuery) => {
     }
   } catch (error) {
     console.error("[CALLBACK] Error handling callback query:", error);
-    console.error("[CALLBACK] Error details:", error.message);
-    console.error("[CALLBACK] Error stack:", error.stack);
+    console.error("[CALLBACK] Error details:", (error as Error).message);
+    console.error("[CALLBACK] Error stack:", (error as Error).stack);
     try {
       await bot.answerCallbackQuery(callbackQuery.id, {
         text: "Sorry, something went wrong. Please try again.",
@@ -2427,6 +2883,310 @@ async function handleBroadcastCancel(callbackQuery: TelegramBot.CallbackQuery) {
       "❌ <b>Error</b>\n\nThere was an error cancelling your broadcast, but the broadcast has been stopped.",
       { parse_mode: "HTML" },
     );
+  }
+}
+
+// Collaboration Broadcast Callback Handlers
+async function handleCollabSelection(callbackQuery: TelegramBot.CallbackQuery) {
+  if (!callbackQuery.from.id || !callbackQuery.message?.chat.id) {
+    console.log("Missing required callback data for collaboration selection");
+    return;
+  }
+
+  const telegramId = callbackQuery.from.id.toString();
+  const chatId = callbackQuery.message.chat.id;
+
+  try {
+    // Extract collaboration ID from callback data
+    const collaborationId = callbackQuery.data!.replace("select_collab_", "");
+
+    // Get collaboration details with company name
+    const [collaboration] = await db
+      .select({
+        id: collaborations.id,
+        creator_id: collaborations.creator_id,
+        collab_type: collaborations.collab_type,
+        description: collaborations.description,
+        status: collaborations.status,
+      })
+      .from(collaborations)
+      .where(eq(collaborations.id, collaborationId));
+
+    if (!collaboration || collaboration.status !== "active") {
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "This collaboration is no longer available.",
+        show_alert: true,
+      });
+      return;
+    }
+
+    // Get company name
+    const [company] = await db
+      .select({ name: companies.name })
+      .from(companies)
+      .where(eq(companies.user_id, collaboration.creator_id));
+
+    const companyName = company?.name || "Unknown Company";
+
+    // Update state with selected collaboration
+    adminCollabBroadcastState.set(telegramId, {
+      state: "awaiting_message",
+      selectedCollaboration: {
+        ...collaboration,
+        companyName: companyName,
+      },
+      timestamp: Date.now(),
+    });
+
+    // Answer the callback
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: `Selected: ${companyName} - ${collaboration.collab_type}`,
+    });
+
+    // Update the message to show instructions
+    await bot.editMessageText(
+      `🚀 <b>Collab Broadcast</b>\n\n` +
+        `<b>Selected Collaboration:</b> ${companyName} - ${collaboration.collab_type}\n\n` +
+        `📝 <b>Write your promotional message:</b>\n\n` +
+        `<i>Your message can include:</i>\n` +
+        `• <b>Bold text</b> using &lt;b&gt;text&lt;/b&gt;\n` +
+        `• <i>Italic text</i> using &lt;i&gt;text&lt;/i&gt;\n` +
+        `• <u>Underlined text</u> using &lt;u&gt;text&lt;/u&gt;\n` +
+        `• Links like &lt;a href="https://example.com"&gt;this&lt;/a&gt;\n\n` +
+        `<i>Personalization placeholders:</i>\n` +
+        `• {{first_name}} - User's first name\n` +
+        `• {{last_name}} - User's last name\n` +
+        `• {{company_name}} - User's company name\n` +
+        `• {{role_title}} - User's job title\n` +
+        `• {{handle}} - User's Telegram handle\n\n` +
+        `Send your message now, or type /cancel to abort.`,
+      {
+        chat_id: chatId,
+        message_id: callbackQuery.message.message_id,
+        parse_mode: "HTML",
+        reply_markup: { inline_keyboard: [] },
+      }
+    );
+
+    logAdminMessage(
+      telegramId,
+      "COLLAB_SELECTED",
+      "Admin selected collaboration for broadcast",
+      `${companyName} - ${collaboration.collab_type}`,
+    );
+  } catch (error) {
+    console.error("Error handling collaboration selection:", error);
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Error selecting collaboration. Please try again.",
+      show_alert: true,
+    });
+  }
+}
+
+async function handleCollabBroadcastConfirm(callbackQuery: TelegramBot.CallbackQuery) {
+  if (!callbackQuery.from.id || !callbackQuery.message?.chat.id) {
+    console.log("Missing required callback data for collaboration broadcast confirm");
+    return;
+  }
+
+  const telegramId = callbackQuery.from.id.toString();
+  const chatId = callbackQuery.message.chat.id;
+
+  // Check collaboration broadcast state
+  const state = adminCollabBroadcastState.get(telegramId);
+
+  if (!state || state.state !== "awaiting_confirmation" || !state.message || !state.selectedCollaboration) {
+    console.log(`Invalid collaboration broadcast state for user ${telegramId}`);
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Broadcast session expired. Please start again.",
+      show_alert: true,
+    });
+    adminCollabBroadcastState.delete(telegramId);
+    return;
+  }
+
+  try {
+    // Answer the callback to show processing
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Your collaboration broadcast is being processed...",
+    });
+
+    // Update original message to show confirmation
+    await bot.editMessageText(
+      "📤 <b>Collaboration Broadcast confirmed</b>\n\nYour promotional message is being sent to all eligible users. Please wait...",
+      {
+        chat_id: chatId,
+        message_id: callbackQuery.message.message_id,
+        parse_mode: "HTML",
+        reply_markup: { inline_keyboard: [] },
+      }
+    );
+
+    // Process the collaboration broadcast
+    await broadcastCollaborationToUsers(
+      state.selectedCollaboration,
+      state.message,
+      telegramId,
+      chatId
+    );
+  } catch (error) {
+    console.error("Error processing collaboration broadcast confirmation:", error);
+    adminCollabBroadcastState.delete(telegramId);
+
+    await bot.sendMessage(
+      chatId,
+      "❌ <b>Error</b>\n\nThere was an error processing your collaboration broadcast. Please try again with /broadcastcollab.",
+      { parse_mode: "HTML" }
+    );
+  }
+}
+
+async function handleCollabBroadcastCancel(callbackQuery: TelegramBot.CallbackQuery) {
+  if (!callbackQuery.from.id || !callbackQuery.message?.chat.id) {
+    console.log("Missing required callback data for collaboration broadcast cancel");
+    return;
+  }
+
+  const telegramId = callbackQuery.from.id.toString();
+  const chatId = callbackQuery.message.chat.id;
+
+  try {
+    // Answer the callback
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Collaboration broadcast cancelled",
+    });
+
+    // Remove from collaboration broadcast state
+    adminCollabBroadcastState.delete(telegramId);
+
+    // Update the message
+    await bot.editMessageText(
+      "✅ <b>Collaboration broadcast cancelled</b>\n\nYour message will not be sent. Use /broadcastcollab to start again if needed.",
+      {
+        chat_id: chatId,
+        message_id: callbackQuery.message.message_id,
+        parse_mode: "HTML",
+        reply_markup: { inline_keyboard: [] },
+      }
+    );
+
+    // Log the cancellation
+    logAdminMessage(
+      telegramId,
+      "COLLAB_BROADCAST_CANCELLED",
+      "Admin cancelled collaboration broadcast at confirmation step",
+    );
+  } catch (error) {
+    console.error("Error cancelling collaboration broadcast:", error);
+
+    await bot.sendMessage(
+      chatId,
+      "❌ <b>Error</b>\n\nThere was an error cancelling your collaboration broadcast, but the broadcast has been stopped.",
+      { parse_mode: "HTML" }
+    );
+  }
+}
+
+async function handleCollabRequestFromBroadcast(callbackQuery: TelegramBot.CallbackQuery) {
+  if (!callbackQuery.data || !callbackQuery.from.id || !callbackQuery.message?.chat.id) {
+    return;
+  }
+
+  const collaborationId = callbackQuery.data.replace("request_collab_", "");
+  const requesterId = callbackQuery.from.id.toString();
+
+  try {
+    // Get requester user ID from telegram ID
+    const [requesterUser] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.telegram_id, requesterId));
+
+    if (!requesterUser) {
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Please register first by visiting the platform.",
+        show_alert: true,
+      });
+      return;
+    }
+
+    // Get collaboration details
+    const [collaboration] = await db
+      .select({
+        id: collaborations.id,
+        creator_id: collaborations.creator_id,
+        status: collaborations.status,
+      })
+      .from(collaborations)
+      .where(eq(collaborations.id, collaborationId));
+
+    if (!collaboration || collaboration.status !== "active") {
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "This collaboration is no longer available.",
+        show_alert: true,
+      });
+      return;
+    }
+
+    // Check if user is the host
+    if (collaboration.creator_id === requesterUser.id) {
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "You cannot request your own collaboration.",
+        show_alert: true,
+      });
+      return;
+    }
+
+    // Check if request already exists
+    const [existingRequest] = await db
+      .select()
+      .from(requests)
+      .where(
+        and(
+          eq(requests.collaboration_id, collaborationId),
+          eq(requests.requester_id, requesterUser.id)
+        )
+      );
+
+    if (existingRequest) {
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "You have already requested this collaboration.",
+        show_alert: true,
+      });
+      return;
+    }
+
+    // Create the request
+    await db.insert(requests).values({
+      collaboration_id: collaborationId,
+      requester_id: requesterUser.id,
+      host_id: collaboration.creator_id,
+      status: "pending",
+    });
+
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Your collaboration request has been sent!",
+    });
+
+    // Notify the host
+    await notifyNewCollabRequest(
+      collaboration.creator_id,
+      requesterUser.id,
+      collaborationId
+    );
+
+    logAdminMessage(
+      "SYSTEM",
+      "COLLAB_REQUEST_FROM_BROADCAST",
+      "User requested collaboration from broadcast",
+      `Requester: ${requesterId}, Collaboration: ${collaborationId}`,
+    );
+  } catch (error) {
+    console.error("Error handling collaboration request from broadcast:", error);
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: "Error processing request. Please try again.",
+      show_alert: true,
+    });
   }
 }
 
@@ -2730,16 +3490,16 @@ async function handleMatchInfoCallback(
 
     console.log(`[MATCH_INFO] Fetching info for match ${matchId}`);
 
-    // Find the match by ID
-    const [match] = await db
+    // Find the request by ID (requests table replaced matches)
+    const [request] = await db
       .select()
-      .from(matches)
-      .where(eq(matches.id, matchId));
+      .from(requests)
+      .where(eq(requests.id, matchId));
 
-    if (!match) {
-      console.error(`[MATCH_INFO] Match with ID ${matchId} not found`);
+    if (!request) {
+      console.error(`[MATCH_INFO] Request with ID ${matchId} not found`);
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "Match not found in database.",
+        text: "Request not found in database.",
         show_alert: true,
       });
       return;
@@ -2749,11 +3509,11 @@ async function handleMatchInfoCallback(
     const [collaboration] = await db
       .select()
       .from(collaborations)
-      .where(eq(collaborations.id, match.collaboration_id));
+      .where(eq(collaborations.id, request.collaboration_id));
 
     if (!collaboration) {
       console.error(
-        `[MATCH_INFO] Collaboration with ID ${match.collaboration_id} not found`,
+        `[MATCH_INFO] Collaboration with ID ${request.collaboration_id} not found`,
       );
       await bot.answerCallbackQuery(callbackQuery.id, {
         text: "Collaboration details not found.",
@@ -2766,13 +3526,13 @@ async function handleMatchInfoCallback(
     const [requester] = await db
       .select()
       .from(users)
-      .where(eq(users.id, match.requester_id));
+      .where(eq(users.id, request.requester_id));
 
     // Get host user details
     const [host] = await db
       .select()
       .from(users)
-      .where(eq(users.id, match.host_id));
+      .where(eq(users.id, request.host_id));
 
     if (!requester || !host) {
       console.error(`[MATCH_INFO] User details not found for match ${matchId}`);
@@ -2783,23 +3543,23 @@ async function handleMatchInfoCallback(
       return;
     }
 
-    // Build a detailed message with match information
+    // Build a detailed message with request information
     const matchInfo =
-      `<b>📋 Match Details</b>\n\n` +
-      `<b>Match Type:</b> ${collaboration.collab_type}\n` +
-      `<b>Created:</b> ${format(match.created_at || new Date(), "MMM d, yyyy")}\n\n` +
+      `<b>📋 Request Details</b>\n\n` +
+      `<b>Collaboration Type:</b> ${collaboration.collab_type}\n` +
+      `<b>Created:</b> ${format(request.created_at || new Date(), "MMM d, yyyy")}\n\n` +
       `<b>👤 Host:</b> ${host.first_name} ${host.last_name || ""} ${host.handle ? `(@${host.handle})` : ""}\n` +
       `<b>👤 Requester:</b> ${requester.first_name} ${requester.last_name || ""} ${requester.handle ? `(@${requester.handle})` : ""}\n\n` +
-      `<b>Status:</b> ${match.status.charAt(0).toUpperCase() + match.status.slice(1)}\n\n` +
+      `<b>Status:</b> ${request.status.charAt(0).toUpperCase() + request.status.slice(1)}\n\n` +
       `Click below to view full details:`;
 
-    // Create inline keyboard with button to view match
+    // Create inline keyboard with button to view request
     const keyboard = {
       inline_keyboard: [
         [
           {
             text: "🔍 View Full Details",
-            web_app: { url: `${WEBAPP_URL}/matches/${matchId}` },
+            web_app: { url: `${WEBAPP_URL}/requests/${matchId}` },
           },
         ],
       ],
