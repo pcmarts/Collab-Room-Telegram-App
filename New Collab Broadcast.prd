@@ -1,302 +1,436 @@
-Broadcast
-Objective
+# New Collab Broadcast Feature - Product Requirements Document
 
-Allow admins (users marked admin in database) to create and send a broadcast message within Telegram that promotes a newly posted collab. The message includes a CTA button that lets users instantly send a collab request without leaving Telegram.
+## Executive Summary
 
-⸻
+**Feature Name**: Collab Broadcast System
+**Priority**: High
+**Timeline**: 4 weeks
+**Team**: Backend, Product
 
-User Flow (Admin)
-        1.      Trigger Action
-        •       Admin initiates the “New Collab Broadcast” command via the Telegram bot.
-        2.      Collab Selection Menu
-        •       Bot displays a list of the 5 most recent collabs (Company Name + Collab Type).
-  Fetch last 5 collabs from DB (filter: active only, not expired or deleted)
-        •       Admin selects one collab from the list.
-        3.      Message Builder
-        •       Admin is prompted to write a custom broadcast message (with basic markdown support and abilitiy to mention the user handle, so the user gets a "mention" notification on telegrram, increasing the chances of them opening the message
-        •       Bot confirms the selected collab and previews the message + CTA button. Admin then has a option to send. 
-        4.      Broadcast
-        •       Bot sends the message to all users who have opted into notifications
-        •       Message includes:
-        •       Admin-written message body
-        •       Primary CTA button: “Request Collab” → triggers collab request for the selected collab
-  •     Secondary CTA button: View More Collabs → Takes the user to the discover page
-•       Consider a /cancel command to reset state.
-Confirmation Tracking
-•       Show admins how many users were sent the notification
-- 
-⸻
+Allow platform administrators to create targeted broadcast messages within Telegram that promote recently posted collaborations. Users can instantly send collaboration requests without leaving Telegram through smart call-to-action buttons.
 
-User Flow (End User)
-        1.      Receives Message
-        •       User receives the broadcast via Telegram. The message has action buttons beneath it. 
-        2.      Taps “Request Collab”
-        •       A collab request is sent on behalf of the user to the collab host.
-        3.      Confirmation
-        •       Bot sends a confirmation message to the user: “Your collab request has been sent to [HostName]. You’ll be notified if it’s accepted.”
-  - the CTA button be disabled/removed if the user has already sent a request. 
+---
+
+## Problem Statement
+
+Currently, new collaborations posted on the platform have limited visibility. Users must actively browse the discovery page to find relevant opportunities. This creates:
+
+- Low collaboration discovery rates
+- Reduced user engagement with new postings
+- Missed collaboration opportunities for both hosts and participants
+- Inefficient promotion of high-value collaborations
+
+---
+
+## Solution Overview
+
+Introduce a Telegram-native broadcast system where admins can:
+1. Select from recently posted collaborations
+2. Compose custom promotional messages with personalization
+3. Send targeted broadcasts to users who have opted into notifications
+4. Enable instant collaboration requests through inline buttons
+
+---
+
+## User Personas & Use Cases
+
+### Primary Users
+
+**Platform Administrators**
+- Need: Efficiently promote high-value collaborations to increase platform engagement
+- Goal: Drive more applications and matches for posted collaborations
+- Pain Point: Manual outreach is time-consuming and ineffective
+
+**End Users (Collaboration Seekers)**
+- Need: Discover relevant collaboration opportunities quickly
+- Goal: Find and apply to collaborations that match their interests
+- Pain Point: Missing opportunities due to lack of proactive notifications
+
+**Collaboration Hosts**
+- Need: Get quality applications for their posted collaborations
+- Goal: Fill collaboration slots with suitable partners
+- Pain Point: Low visibility of posted collaborations
+
+---
+
+## Detailed User Flows
+
+### Admin Flow: Creating a Collab Broadcast
+
+#### Step 1: Initiation
+- **Trigger**: Admin types `/newcollab` command in Telegram bot
+- **Validation**: System verifies user has admin permissions
+- **Action**: Display recent collaborations selection menu
+
+#### Step 2: Collaboration Selection
+- **Display**: List of 5 most recent active collaborations
+- **Format**: "Company Name - Collab Type" (e.g., "Acme Corp - Podcast Guest Appearance")
+- **Data Source**: Active collaborations from database (status = "active", not expired/deleted)
+- **Selection**: Admin taps on desired collaboration
+- **Storage**: System stores selected collaboration in session state
+
+#### Step 3: Message Composition
+- **Prompt**: "Write your broadcast message to promote this collaboration"
+- **Features**:
+  - Markdown formatting support (bold, italic, links)
+  - User mention capability using @username syntax
+  - Personalization placeholders: {first_name}, {company_name}, {handle}
+- **Character Limit**: 1000 characters
+- **Cancel Option**: `/cancel` command available at any time
+
+#### Step 4: Message Preview & Confirmation
+- **Display Components**:
+  - Selected collaboration details (Company + Type)
+  - Formatted message preview with sample personalization
+  - Mock-up of user-facing message with CTA buttons
+  - Recipient count ("Will be sent to X users")
+- **Actions**: 
+  - "✅ Send Broadcast" button
+  - "❌ Cancel" button
+- **Final Validation**: Confirm collaboration is still active
+
+#### Step 5: Broadcast Execution
+- **Process**:
+  - Send to all approved users with notifications enabled
+  - Personalize each message with user-specific data
+  - Generate appropriate CTA buttons based on user context
+  - Log broadcast details for audit trail
+- **Feedback**: Real-time status updates to admin
+- **Completion**: Summary report with delivery statistics
+
+### End User Flow: Receiving & Acting on Broadcast
+
+#### Step 1: Message Receipt
+- **Delivery**: User receives broadcast message in Telegram
+- **Format**: 
+  ```
+  📣 Admin Announcement
   
-
-⸻
-
-Requirements
-        •       All interactions must be fully Telegram-native. No external app or UI loading.
-        •       Admin should not need to reference a dashboard or external link.
-        •       Message sending respects notification opt-in logic.
-        •       Admin should be able to cancel or restart at any step.
-  - Should be a fail safe for if a collab is deleted, and teh button is pressed - user given message that the collab has been deleted
-•       If the user receiving the broadcast is the host of the collab being promoted, do not display the “Request Collab” button.
-        •       Instead, optionally show a note as a button - 
-“You’re the host of this collab – no action needed.”
-The message be broadcast in just one language for now
-Only allow admin accounts to initiate broadcast flow
-•       Log all admin broadcasts with timestamp, collab ID, and message content for audit
-
-⸻
-
-## Implementation Planning
-
-### Overview
-Based on the existing codebase analysis, this feature will extend the current Telegram bot's broadcast functionality (`server/telegram.ts`) to specifically focus on collaboration promotion. The current system already supports general admin broadcasts with personalization and state management, which we'll build upon.
-
-### Technical Architecture
-
-#### 1. Database Schema Extensions
-**No new tables required** - leveraging existing schema:
-- `users.is_admin` - Admin permission validation
-- `collaborations` table - Source for recent collabs list
-- `requests` table - Check existing requests to disable CTA
-- `notification_preferences` - Target user filtering
-- Existing admin logging in `logs/admin_messages.log`
-
-#### 2. Core Implementation Components
-
-**A. New Telegram Bot Command: `/newcollab`**
-- Location: `server/telegram.ts` 
-- Add to `adminCommands` array in `setupBotCommands()` function
-- Register handler: `bot.onText(/\/newcollab/, handleNewCollabBroadcast)`
-
-**B. State Management Enhancement**
-- Extend existing `adminBroadcastState` Map to support:
-```typescript
-type NewCollabBroadcastState = {
-  state: "awaiting_collab_selection" | "awaiting_message" | "awaiting_confirmation" | "sending";
-  selectedCollabId?: string;
-  selectedCollabData?: CollabData;
-  message?: string;
-  timestamp: number;
-}
-```
-
-**C. Database Query Functions**
-- `getRecentActiveCollabs()` - Fetch last 5 active collaborations
-- `checkExistingCollabRequest()` - Check if user already requested specific collab
-- `logCollabBroadcast()` - Enhanced logging with collab ID
-
-### 3. Implementation Flow
-
-#### Phase 1: Command Handler Setup
-```typescript
-async function handleNewCollabBroadcast(msg: TelegramBot.Message) {
-  // 1. Validate admin permissions (reuse existing logic)
-  // 2. Query recent active collaborations
-  // 3. Create inline keyboard with collab selection options
-  // 4. Set state to "awaiting_collab_selection"
-}
-```
-
-#### Phase 2: Collab Selection Processing
-```typescript
-// Extend existing callback_query handler for "select_collab_{id}" actions
-// 1. Store selected collaboration in state
-// 2. Transition to message composition state
-// 3. Show message composition prompt with mention capability
-```
-
-#### Phase 3: Message Composition & Preview
-```typescript
-// Leverage existing message processing from current broadcast system
-// 1. Support markdown formatting and @mentions
-// 2. Show preview with selected collab details
-// 3. Include both CTA buttons in preview
-```
-
-#### Phase 4: Broadcast Distribution
-```typescript
-async function broadcastCollabPromotion(collabData, message, adminId) {
-  // 1. Reuse existing user filtering logic (approved + notifications enabled)
-  // 2. For each user, check if they're the collab host
-  // 3. Check existing requests to customize CTA
-  // 4. Generate personalized message with appropriate buttons
-  // 5. Send with enhanced error handling and logging
-}
-```
-
-### 4. Button Implementation Strategy
-
-#### Dynamic Button Generation
-```typescript
-function generateCollabPromotionKeyboard(user, collab) {
-  const buttons = [];
+  [Personalized message content with @mentions]
   
-  if (user.id === collab.creator_id) {
-    // Host gets informational button
-    buttons.push([{
-      text: "You're the host of this collab – no action needed",
-      callback_data: `host_info_${collab.id}`
-    }]);
-  } else if (hasExistingRequest(user.id, collab.id)) {
-    // User already requested - disabled state
-    buttons.push([{
-      text: "Request Already Sent ✓",
-      callback_data: `already_requested_${collab.id}`
-    }]);
-  } else if (collabStillActive(collab)) {
-    // Active collab - show request button
-    buttons.push([{
-      text: "Request Collab",
-      callback_data: `request_collab_${collab.id}`
-    }]);
-  } else {
-    // Collab deleted/expired - show info
-    buttons.push([{
-      text: "This collab is no longer available",
-      callback_data: `collab_unavailable_${collab.id}`
-    }]);
-  }
-  
-  // Always include secondary CTA
-  buttons.push([{
-    text: "View More Collabs",
-    web_app: { url: `${WEBAPP_URL}/discover` }
-  }]);
-  
-  return { inline_keyboard: buttons };
-}
-```
+  [Smart CTA buttons based on user context]
+  ```
 
-### 5. Integration Points
+#### Step 2: Smart CTA Button Display
+- **For Collaboration Host**: 
+  - Button: "You're the host of this collab – no action needed"
+  - Action: Display informational message
+- **For Users Who Haven't Applied**:
+  - Primary Button: "Request Collab"
+  - Secondary Button: "View More Collabs"
+- **For Users Who Already Applied**:
+  - Button: "Request Already Sent ✓" (disabled state)
+  - Secondary Button: "View More Collabs"
+- **For Expired/Deleted Collabs**:
+  - Button: "This collab is no longer available"
+  - Secondary Button: "View More Collabs"
 
-#### A. Request Creation Endpoint
-- Extend existing `/api/requests` endpoint to handle direct Telegram requests
-- Auto-create request when "Request Collab" button pressed
-- Send confirmation via `sendRequestNotification()` function
+#### Step 3: Collaboration Request (If Eligible)
+- **Action**: User taps "Request Collab" button
+- **Process**: 
+  - System creates collaboration request in database
+  - Links requester to collaboration and host
+  - Sends confirmation to requester
+  - Notifies collaboration host
+- **Confirmation**: "Your collab request has been sent to [Host Name]. You'll be notified if it's accepted."
+- **Button Update**: Button becomes disabled with "Request Already Sent ✓" text
 
-#### B. Callback Query Extensions
-```typescript
-// Add new handlers to existing callback_query processor:
-// - "select_collab_{id}" - Collab selection
-// - "request_collab_{id}" - Direct collab request
-// - "host_info_{id}" - Host information
-// - "already_requested_{id}" - Already requested handler
-// - "collab_unavailable_{id}" - Unavailable collab handler
-```
+---
 
-### 6. Error Handling & Edge Cases
+## Functional Requirements
 
-#### A. Collab Validation
-- Check collab still exists before sending requests
-- Validate collab is still active/not expired
-- Handle deleted collaborations gracefully
+### Core Features
 
-#### B. User State Management
-- Timeout inactive broadcast sessions (reuse existing logic)
-- Clear state on /cancel command
-- Handle concurrent admin operations
+#### FR-1: Admin Command Registration
+- System shall register `/newcollab` command for admin users only
+- Command shall be visible only in admin user command menus
+- Non-admin users shall not see or access this command
 
-#### C. Request Deduplication
-- Check existing requests before allowing new ones
-- Handle race conditions in request creation
-- Provide clear feedback for duplicate requests
+#### FR-2: Collaboration Selection Interface
+- System shall display 5 most recent active collaborations
+- Display format: "Company Name - Collaboration Type"
+- Filter: Only active, non-expired, non-deleted collaborations
+- Include collaboration creation date for admin context
 
-### 7. Performance Considerations
+#### FR-3: Message Composition System
+- Support markdown formatting (bold, italic, links)
+- Enable @username mentions for notification triggers
+- Provide personalization placeholders: {first_name}, {company_name}, {handle}
+- Enforce 1000 character limit with real-time counter
+- Allow message cancellation via `/cancel` command
 
-#### A. Query Optimization
-- Single query for recent collabs with creator info
-- Batch user preference queries (reuse existing patterns)
-- Cache collab data during broadcast session
+#### FR-4: Preview & Confirmation System
+- Display selected collaboration details
+- Show formatted message preview with sample personalization
+- Preview user-facing message with actual CTA buttons
+- Show recipient count before sending
+- Require explicit confirmation before broadcast
 
-#### B. Rate Limiting
-- Reuse existing broadcast rate limiting
-- Add specific limits for collab request creation
-- Monitor Telegram API compliance
+#### FR-5: Smart CTA Button Generation
+- Generate context-aware buttons based on user relationship to collaboration
+- Host Exclusion: Show informational button for collaboration creators
+- Duplicate Prevention: Disable request button for users who already applied
+- Status Validation: Handle expired/deleted collaborations gracefully
+- Secondary CTA: Always include "View More Collabs" option
 
-### 8. Testing Strategy
+#### FR-6: Broadcast Distribution System
+- Target: Approved users with notifications enabled
+- Personalization: Replace placeholders with user-specific data
+- Rate Limiting: Comply with Telegram API limits
+- Error Handling: Gracefully handle delivery failures
+- Progress Tracking: Provide real-time delivery status to admin
 
-#### A. Admin Flow Testing
-1. Command registration verification
-2. Collab selection UI testing
-3. Message composition validation
-4. Preview accuracy testing
-5. Send confirmation testing
+#### FR-7: Request Creation Integration
+- Create collaboration request when user taps "Request Collab"
+- Link requester, collaboration, and host in database
+- Send confirmation message to requester
+- Notify collaboration host of new request
+- Prevent duplicate requests through button state management
 
-#### B. User Experience Testing
-1. Button behavior validation
-2. Request creation testing
-3. Duplicate request handling
-4. Host exclusion verification
-5. Deleted collab handling
+### Technical Requirements
 
-#### C. Integration Testing
-1. End-to-end broadcast flow
-2. Database state consistency
-3. Notification delivery testing
-4. Error recovery testing
+#### TR-1: Database Integration
+- Leverage existing users, collaborations, requests tables
+- No new table creation required
+- Utilize notification_preferences for user targeting
+- Maintain referential integrity across all operations
 
-### 9. Rollout Plan
+#### TR-2: State Management
+- Extend existing adminBroadcastState system
+- Support multi-step workflow with session persistence
+- Handle timeout scenarios gracefully
+- Allow concurrent admin operations without conflicts
 
-#### Phase 1: Core Infrastructure (Week 1)
-- Implement command handler and state management
-- Add collab selection interface
-- Test admin command registration
+#### TR-3: Performance Standards
+- Query response time: <2 seconds for collaboration selection
+- Message delivery: <30 seconds for 1000 users
+- Button response time: <1 second for CTA actions
+- System availability: 99.9% uptime during broadcasts
 
-#### Phase 2: Message Composition (Week 2) 
-- Implement message builder with preview
-- Add mention functionality
-- Test message formatting
+#### TR-4: Security & Permissions
+- Validate admin permissions at every step
+- Sanitize all user input to prevent injection attacks
+- Audit log all admin actions with timestamps
+- Rate limit command usage to prevent abuse
 
-#### Phase 3: Distribution & CTA Logic (Week 3)
-- Implement smart button generation
-- Add request creation integration
-- Test user targeting logic
+---
 
-#### Phase 4: Polish & Testing (Week 4)
+## Non-Functional Requirements
+
+### Scalability
+- Support up to 10,000 concurrent broadcast recipients
+- Handle multiple admin users creating broadcasts simultaneously
+- Scale message delivery based on user base growth
+
+### Reliability
+- 99.9% message delivery success rate
+- Graceful degradation during Telegram API outages
+- Automatic retry mechanism for failed deliveries
+- Comprehensive error logging and monitoring
+
+### Usability
+- Intuitive admin workflow requiring no training
+- Clear error messages and recovery instructions
+- Responsive button interactions with immediate feedback
+- Consistent experience across different Telegram clients
+
+### Performance
+- Sub-second response times for all user interactions
+- Efficient database queries with proper indexing
+- Memory-efficient message processing for large user bases
+- Optimized API calls to minimize rate limiting
+
+---
+
+## Success Metrics
+
+### Primary KPIs
+- **Broadcast Engagement Rate**: % of users who interact with CTA buttons
+- **Request Conversion Rate**: % of broadcasts leading to collaboration requests
+- **Admin Adoption Rate**: % of admins regularly using the feature
+- **Feature Usage Frequency**: Average broadcasts per week
+
+### Secondary KPIs
+- **Message Delivery Success Rate**: % of broadcasts successfully delivered
+- **User Satisfaction**: Feedback scores from broadcast recipients
+- **Collaboration Fill Rate**: % of promoted collaborations receiving applications
+- **Time to Request**: Average time from broadcast receipt to collaboration request
+
+### Success Criteria
+- 40% engagement rate with CTA buttons within first month
+- 15% conversion rate from broadcast to collaboration request
+- 100% of admin users adopt feature within 2 weeks
+- <5% user complaints about broadcast frequency/relevance
+
+---
+
+## Risk Assessment & Mitigation
+
+### High Risk Items
+
+#### Risk: Telegram API Rate Limiting
+- **Impact**: Broadcast delivery failures
+- **Probability**: Medium
+- **Mitigation**: Implement intelligent rate limiting, batch processing, retry mechanisms
+
+#### Risk: User Notification Fatigue
+- **Impact**: Decreased engagement, user complaints
+- **Probability**: Medium
+- **Mitigation**: Admin guidelines for broadcast frequency, user opt-out mechanisms
+
+#### Risk: Spam/Abuse by Admins
+- **Impact**: Platform reputation damage
+- **Probability**: Low
+- **Mitigation**: Admin training, audit logging, approval workflows
+
+### Medium Risk Items
+
+#### Risk: Database Performance Impact
+- **Impact**: Slower query response times
+- **Probability**: Low
+- **Mitigation**: Query optimization, proper indexing, load testing
+
+#### Risk: Edge Case Handling
+- **Impact**: User experience degradation
+- **Probability**: Medium
+- **Mitigation**: Comprehensive testing, graceful error handling, user feedback collection
+
+---
+
+## Technical Implementation Plan
+
+### Phase 1: Foundation (Week 1)
+**Deliverables:**
+- Admin command registration and permissions
+- Basic collaboration selection interface
+- State management system setup
+- Database query functions
+
+**Acceptance Criteria:**
+- `/newcollab` command available to admins only
+- Recent collaborations display correctly
+- Admin session state persists throughout workflow
+
+### Phase 2: Message System (Week 2)
+**Deliverables:**
+- Message composition interface with formatting support
+- Personalization placeholder system
+- Preview functionality with sample data
+- Cancel command integration
+
+**Acceptance Criteria:**
+- Markdown formatting renders correctly
+- Personalization placeholders work with real user data
+- Preview accurately represents final user experience
+- Cancel command clears session state
+
+### Phase 3: Broadcast Engine (Week 3)
+**Deliverables:**
+- Smart CTA button generation logic
+- Broadcast distribution system
+- Request creation integration
+- User notification system
+
+**Acceptance Criteria:**
+- Context-aware buttons display correctly for all user types
+- Messages deliver to all eligible users within performance standards
+- Collaboration requests create successfully
+- Confirmations send to both requesters and hosts
+
+### Phase 4: Polish & Launch (Week 4)
+**Deliverables:**
 - Comprehensive error handling
 - Performance optimization
-- Full integration testing
+- Monitoring and analytics
+- Admin documentation
 
-### 10. Monitoring & Analytics
+**Acceptance Criteria:**
+- All edge cases handle gracefully
+- Performance meets defined standards
+- Monitoring captures all key metrics
+- Admin users trained on feature usage
 
-#### A. Admin Analytics
-- Track broadcast success rates per collab type
-- Monitor user engagement with CTAs
-- Log admin usage patterns
+---
 
-#### B. User Behavior Tracking
-- Track CTA click rates
-- Monitor request conversion rates
-- Measure feature adoption
+## Dependencies
 
-#### C. System Health Monitoring
-- Monitor broadcast delivery rates
-- Track API error rates
-- Alert on high failure rates
+### Internal Dependencies
+- Existing Telegram bot infrastructure (`server/telegram.ts`)
+- Database schema stability (users, collaborations, requests tables)
+- Admin permission system
+- Notification preference system
 
-### 11. Future Enhancements
+### External Dependencies
+- Telegram Bot API availability and stability
+- Database connection reliability
+- Server infrastructure capacity
 
-#### A. Personalization
-- AI-powered message suggestions based on collab type
-- Dynamic content based on user preferences
+### Team Dependencies
+- Backend engineer for core implementation
+- Product manager for admin user training
+- DevOps for monitoring setup
+
+---
+
+## Launch Strategy
+
+### Beta Phase (Week 3-4)
+- Limited rollout to 2-3 trusted admin users
+- Monitor performance and gather feedback
+- Iterate on UX based on real usage patterns
+
+### Full Launch (Week 5)
+- Enable feature for all admin users
+- Announce via admin communication channels
+- Provide usage documentation and best practices
+
+### Post-Launch (Week 6+)
+- Monitor success metrics and user feedback
+- Iterate on feature based on usage data
+- Plan future enhancements based on user needs
+
+---
+
+## Future Enhancements
+
+### Short-term (Next Quarter)
+- Scheduled broadcasts for optimal timing
 - A/B testing for message effectiveness
+- Advanced user segmentation options
 
-#### B. Automation
-- Scheduled broadcasts for high-value collabs
-- Auto-broadcast new collabs from premium users
-- Smart timing based on user activity patterns
+### Medium-term (Next 6 Months)
+- AI-powered message suggestions
+- Automated broadcasts for high-value collaborations
+- Rich media support (images, videos)
 
-#### C. Advanced Targeting
-- Segment users by collab type preferences
-- Geographic targeting for events
-- Company size/stage targeting
+### Long-term (Next Year)
+- Machine learning for optimal broadcast timing
+- Predictive collaboration matching
+- Cross-platform broadcast distribution
 
-This implementation leverages 90% of existing infrastructure while adding focused collaboration promotion capabilities. The modular approach ensures minimal disruption to current functionality while providing a comprehensive solution for the new broadcast requirements.
+---
+
+## Appendix
+
+### Database Schema Reference
+```sql
+-- Existing tables leveraged by this feature
+users (id, telegram_id, first_name, is_admin, is_approved)
+collaborations (id, creator_id, collab_type, status, created_at)
+requests (id, collaboration_id, requester_id, host_id, status)
+notification_preferences (user_id, notifications_enabled)
+```
+
+### API Endpoints Referenced
+```
+GET /api/collaborations (filtered for recent active)
+POST /api/requests (for direct collaboration requests)
+```
+
+### Telegram Bot Commands
+```
+/newcollab - Initiate collab broadcast (admin only)
+/cancel - Cancel current broadcast session
+```
+
+This comprehensive PRD serves as the complete blueprint for implementing the New Collab Broadcast feature, covering all aspects from user experience to technical implementation details.
