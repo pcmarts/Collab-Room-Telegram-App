@@ -474,8 +474,8 @@ bot.on("message", async (msg) => {
         `<b>Selected Collaboration:</b> ${collab.companyName} - ${collab.collab_type}\n\n` +
         "This is how your promotional message will appear:\n\n" +
         "----- <b>Preview</b> -----\n" +
-        `📣 <b>Admin Announcement</b>\n\n${msg.text}\n\n` +
-        "🚀 <b>Request Collab</b> | 👁️ <b>View Details</b> | <b>View More Collabs</b>\n" +
+        `🤝 <b>New Collab</b>\n\n${msg.text}\n\n` +
+        "✅ <b>Request Collab</b> | <b>View More Collabs</b>\n" +
         "---------------------\n\n" +
         "<i>Note: The buttons will be context-aware based on each user's relationship to this collaboration.</i>\n\n" +
         `📊 <b>Will be sent to ${eligibleUsers.length} users who have notifications enabled</b>\n\n` +
@@ -2534,7 +2534,6 @@ export async function broadcastCollaborationToUsers(
           const requestStatus = requestLookup.get(user.id);
           buttons = [
             [{ text: "✅ Request Already Sent", callback_data: "request_sent" }],
-            [{ text: "👁️ View Details", web_app: { url: `${WEBAPP_URL}/collaboration/${collaboration.id}` } }],
             [{ text: "View More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }],
           ];
         }
@@ -2548,8 +2547,7 @@ export async function broadcastCollaborationToUsers(
         // User is eligible to request the collaboration
         else {
           buttons = [
-            [{ text: "🚀 Request Collab", callback_data: `request_collab_${collaboration.id}` }],
-            [{ text: "👁️ View Details", web_app: { url: `${WEBAPP_URL}/collaboration/${collaboration.id}` } }],
+            [{ text: "✅ Request Collab", callback_data: `request_collab_${collaboration.id}` }],
             [{ text: "View More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }],
           ];
         }
@@ -2558,7 +2556,7 @@ export async function broadcastCollaborationToUsers(
         const keyboard = { inline_keyboard: buttons };
 
         // Format the final message with the header
-        const finalPersonalizedMessage = `📣 <b>Admin Announcement</b>\n\n${personalizedMessage}`;
+        const finalPersonalizedMessage = `🤝 <b>New Collab</b>\n\n${personalizedMessage}`;
 
         // Send message with context-aware buttons
         await bot.sendMessage(userChatId, finalPersonalizedMessage, {
