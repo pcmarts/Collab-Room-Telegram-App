@@ -58,7 +58,7 @@ Introduce a Telegram-native broadcast system where admins can:
 ### Admin Flow: Creating a Collab Broadcast
 
 #### Step 1: Initiation
-- **Trigger**: Admin types `/newcollab` command in Telegram bot
+- **Trigger**: Admin types `/broadcastcollab` command in Telegram bot
 - **Validation**: System verifies user has admin permissions
 - **Action**: Display recent collaborations selection menu
 
@@ -72,9 +72,9 @@ Introduce a Telegram-native broadcast system where admins can:
 #### Step 3: Message Composition
 - **Prompt**: "Write your broadcast message to promote this collaboration"
 - **Features**:
-  - Markdown formatting support (bold, italic, links)
+  - Markdown formatting support (e.g., *bold*, _italic_, [link](URL))
   - User mention capability using @username syntax
-  - Personalization placeholders: {first_name}, {company_name}, {handle}
+  - Personalization placeholders: {{first_name}}, {{last_name}}, {{company_name}}, {{role_title}}, {{handle}}
 - **Character Limit**: 1000 characters
 - **Cancel Option**: `/cancel` command available at any time
 
@@ -83,7 +83,7 @@ Introduce a Telegram-native broadcast system where admins can:
   - Selected collaboration details (Company + Type)
   - Formatted message preview with sample personalization
   - Mock-up of user-facing message with CTA buttons
-  - Recipient count ("Will be sent to X users")
+  - Recipient count ("Will be sent to X users who have notifications enabled")
 - **Actions**: 
   - "✅ Send Broadcast" button
   - "❌ Cancel" button
@@ -112,18 +112,20 @@ Introduce a Telegram-native broadcast system where admins can:
   ```
 
 #### Step 2: Smart CTA Button Display
-- **For Collaboration Host**: 
-  - Button: "You're the host of this collab – no action needed"
-  - Action: Display informational message
+- **For Collaboration Host**:
+  - Button 1: "You are the host of this collaboration" (disabled)
+  - Button 2: "View More Collabs" (links to discovery page)
 - **For Users Who Haven't Applied**:
-  - Primary Button: "Request Collab"
-  - Secondary Button: "View More Collabs"
-- **For Users Who Already Applied**:
-  - Button: "Request Already Sent ✓" (disabled state)
-  - Secondary Button: "View More Collabs"
-- **For Expired/Deleted Collabs**:
-  - Button: "This collab is no longer available"
-  - Secondary Button: "View More Collabs"
+  - Button 1: "🚀 Request Collab" (triggers request flow)
+  - Button 2: "👁️ View Details" (opens collaboration details view)
+  - Button 3: "View More Collabs" (links to discovery page)
+- **For Users Who Have Already Applied**:
+  - Button 1: "✅ Request Sent" (disabled)
+  - Button 2: "👁️ View Details" (opens collaboration details view)
+  - Button 3: "View More Collabs" (links to discovery page)
+- **For Collaborations That Are No Longer Active (Expired, Deleted, or Filled)**:
+  - Button 1: "This collaboration is no longer available" (disabled)
+  - Button 2: "View More Collabs" (links to discovery page)
 
 #### Step 3: Collaboration Request (If Eligible)
 - **Action**: User taps "Request Collab" button
@@ -132,7 +134,7 @@ Introduce a Telegram-native broadcast system where admins can:
   - Links requester to collaboration and host
   - Sends confirmation to requester
   - Notifies collaboration host
-- **Confirmation**: "Your collab request has been sent to [Host Name]. You'll be notified if it's accepted."
+- **Confirmation**: "Your collab request has been sent to [Host Company Name]. You'll be notified if it's accepted."
 - **Button Update**: Button becomes disabled with "Request Already Sent ✓" text
 
 ---
@@ -142,7 +144,7 @@ Introduce a Telegram-native broadcast system where admins can:
 ### Core Features
 
 #### FR-1: Admin Command Registration
-- System shall register `/newcollab` command for admin users only
+- System shall register `/broadcastcollab` command for admin users only
 - Command shall be visible only in admin user command menus
 - Non-admin users shall not see or access this command
 
@@ -153,9 +155,9 @@ Introduce a Telegram-native broadcast system where admins can:
 - Include collaboration creation date for admin context
 
 #### FR-3: Message Composition System
-- Support markdown formatting (bold, italic, links)
+- Support Markdown formatting (bold, italic, links)
 - Enable @username mentions for notification triggers
-- Provide personalization placeholders: {first_name}, {company_name}, {handle}
+- Provide personalization placeholders: {{first_name}}, {{last_name}}, {{company_name}}, {{role_title}}, {{handle}}
 - Enforce 1000 character limit with real-time counter
 - Allow message cancellation via `/cancel` command
 
@@ -163,7 +165,7 @@ Introduce a Telegram-native broadcast system where admins can:
 - Display selected collaboration details
 - Show formatted message preview with sample personalization
 - Preview user-facing message with actual CTA buttons
-- Show recipient count before sending
+- Show recipient count (based on users with notifications enabled) before sending
 - Require explicit confirmation before broadcast
 
 #### FR-5: Smart CTA Button Generation
@@ -186,6 +188,12 @@ Introduce a Telegram-native broadcast system where admins can:
 - Send confirmation message to requester
 - Notify collaboration host of new request
 - Prevent duplicate requests through button state management
+
+#### FR-8: Error Handling
+- **User Blocking Bot**: If a user has blocked the bot, the system should log the error and continue sending to other users.
+- **Telegram API Errors**: The system should handle Telegram API errors gracefully, with a retry mechanism for transient errors.
+- **Invalid Collaboration**: If a collaboration becomes invalid during the broadcast process, the system should skip it and notify the admin.
+- **User Not Found**: If a user's Telegram ID is not found, the system should log the error and continue.
 
 ### Technical Requirements
 
@@ -226,7 +234,7 @@ Introduce a Telegram-native broadcast system where admins can:
 - 99.9% message delivery success rate
 - Graceful degradation during Telegram API outages
 - Automatic retry mechanism for failed deliveries
-- Comprehensive error logging and monitoring
+- Comprehensive error logging - make sure to connect this to the .env file LOG_LEVEL  
 
 ### Usability
 - Intuitive admin workflow requiring no training
@@ -242,26 +250,6 @@ Introduce a Telegram-native broadcast system where admins can:
 
 ---
 
-## Success Metrics
-
-### Primary KPIs
-- **Broadcast Engagement Rate**: % of users who interact with CTA buttons
-- **Request Conversion Rate**: % of broadcasts leading to collaboration requests
-- **Admin Adoption Rate**: % of admins regularly using the feature
-- **Feature Usage Frequency**: Average broadcasts per week
-
-### Secondary KPIs
-- **Message Delivery Success Rate**: % of broadcasts successfully delivered
-- **User Satisfaction**: Feedback scores from broadcast recipients
-- **Collaboration Fill Rate**: % of promoted collaborations receiving applications
-- **Time to Request**: Average time from broadcast receipt to collaboration request
-
-### Success Criteria
-- 40% engagement rate with CTA buttons within first month
-- 15% conversion rate from broadcast to collaboration request
-- 100% of admin users adopt feature within 2 weeks
-- <5% user complaints about broadcast frequency/relevance
-
 ---
 
 ## Risk Assessment & Mitigation
@@ -273,27 +261,6 @@ Introduce a Telegram-native broadcast system where admins can:
 - **Probability**: Medium
 - **Mitigation**: Implement intelligent rate limiting, batch processing, retry mechanisms
 
-#### Risk: User Notification Fatigue
-- **Impact**: Decreased engagement, user complaints
-- **Probability**: Medium
-- **Mitigation**: Admin guidelines for broadcast frequency, user opt-out mechanisms
-
-#### Risk: Spam/Abuse by Admins
-- **Impact**: Platform reputation damage
-- **Probability**: Low
-- **Mitigation**: Admin training, audit logging, approval workflows
-
-### Medium Risk Items
-
-#### Risk: Database Performance Impact
-- **Impact**: Slower query response times
-- **Probability**: Low
-- **Mitigation**: Query optimization, proper indexing, load testing
-
-#### Risk: Edge Case Handling
-- **Impact**: User experience degradation
-- **Probability**: Medium
-- **Mitigation**: Comprehensive testing, graceful error handling, user feedback collection
 
 ---
 
@@ -305,9 +272,10 @@ Introduce a Telegram-native broadcast system where admins can:
 - Basic collaboration selection interface
 - State management system setup
 - Database query functions
+- documentation updated to /docs
 
 **Acceptance Criteria:**
-- `/newcollab` command available to admins only
+- `/broadcastcollab` command visable and available to admins only
 - Recent collaborations display correctly
 - Admin session state persists throughout workflow
 
@@ -317,12 +285,14 @@ Introduce a Telegram-native broadcast system where admins can:
 - Personalization placeholder system
 - Preview functionality with sample data
 - Cancel command integration
+- documentation updated to /docs
 
 **Acceptance Criteria:**
 - Markdown formatting renders correctly
 - Personalization placeholders work with real user data
 - Preview accurately represents final user experience
 - Cancel command clears session state
+- documentation updated to /docs
 
 ### Phase 3: Broadcast Engine (Week 3)
 **Deliverables:**
@@ -330,6 +300,7 @@ Introduce a Telegram-native broadcast system where admins can:
 - Broadcast distribution system
 - Request creation integration
 - User notification system
+- documentation updated to /docs
 
 **Acceptance Criteria:**
 - Context-aware buttons display correctly for all user types
@@ -341,11 +312,10 @@ Introduce a Telegram-native broadcast system where admins can:
 **Deliverables:**
 - Comprehensive error handling
 - Performance optimization
-- Monitoring and analytics
-- Admin documentation
+- Logging and error logging
+- Admin documentation updated to /docs
 
 **Acceptance Criteria:**
-- All edge cases handle gracefully
 - Performance meets defined standards
 - Monitoring captures all key metrics
 - Admin users trained on feature usage
@@ -429,8 +399,9 @@ POST /api/requests (for direct collaboration requests)
 
 ### Telegram Bot Commands
 ```
-/newcollab - Initiate collab broadcast (admin only)
+/broadcastcollab - Initiate collab broadcast (admin only)
 /cancel - Cancel current broadcast session
 ```
 
 This comprehensive PRD serves as the complete blueprint for implementing the New Collab Broadcast feature, covering all aspects from user experience to technical implementation details.
+
