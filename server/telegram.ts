@@ -355,12 +355,15 @@ bot.on("message", async (msg) => {
 
   if (!telegramId) return;
 
-  // Check if this is an admin in regular broadcast flow
+  // Check if this is an admin in regular broadcast flow (only if not in collab broadcast flow)
   const broadcastState = adminBroadcastState.get(telegramId);
+  const collabBroadcastState = adminCollabBroadcastState.get(telegramId);
+  
   if (
     broadcastState &&
     broadcastState.state === "awaiting_message" &&
-    msg.text
+    msg.text &&
+    !collabBroadcastState // Ensure we're not in collaboration broadcast flow
   ) {
     try {
       console.log(
@@ -426,9 +429,8 @@ bot.on("message", async (msg) => {
     }
   }
 
-  // Check if this is an admin in collaboration broadcast flow  
-  const collabBroadcastState = adminCollabBroadcastState.get(telegramId);
-  if (
+  // Check if this is an admin in collaboration broadcast flow (only if not in regular broadcast flow)
+  else if (
     collabBroadcastState &&
     collabBroadcastState.state === "awaiting_message" &&
     msg.text
@@ -1950,6 +1952,9 @@ async function handleBroadcast(msg: TelegramBot.Message) {
       return;
     }
 
+    // Clear any existing collaboration broadcast state to ensure mutual exclusivity
+    adminCollabBroadcastState.delete(telegramId);
+    
     // Set the state to "awaiting message" for this admin
     adminBroadcastState.set(telegramId, {
       state: "awaiting_message",
@@ -2065,6 +2070,9 @@ async function handleCollabBroadcast(msg: TelegramBot.Message) {
       })
     );
 
+    // Clear any existing regular broadcast state to ensure mutual exclusivity
+    adminBroadcastState.delete(telegramId);
+    
     // Set the state to "selecting_collaboration"
     adminCollabBroadcastState.set(telegramId, {
       state: "selecting_collaboration",
