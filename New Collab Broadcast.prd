@@ -1,20 +1,3 @@
-Customization and notifications so that users can switch on:
-/// 1. New collabs notifications
-on the /dashboard the user has a notification preference
-I want to create a new feature that gives the user the option to switch on and off the following notifications
-- New Collabs Added (I want to add a feature that notifies every user as soon as a new collab is added... i'd like this to have a step in the process in which the admin gets the message
-- Collab Requests  & Matches notifications (this would mute collab requests )
-- App Updates (this would be the abilbity to opt out of broadcast message)
-
-2. Collab requests notifications
-
-Submission to the telegram app store
-
-Website Build
-
-
-
-
 Broadcast
 Objective
 
