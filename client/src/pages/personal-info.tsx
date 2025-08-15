@@ -27,7 +27,6 @@ export default function PersonalInfo() {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
-    linkedin_url: 'https://linkedin.com/in/',
     email: '',
     twitter_url: 'https://x.com/'
   });
@@ -37,7 +36,6 @@ export default function PersonalInfo() {
       setFormData({
         first_name: profileData.user.first_name,
         last_name: profileData.user.last_name || '',
-        linkedin_url: profileData.user.linkedin_url || 'https://linkedin.com/in/',
         email: profileData.user.email || '',
         twitter_url: profileData.user.twitter_url || 'https://x.com/'
       });
@@ -74,7 +72,7 @@ export default function PersonalInfo() {
   };
 
   const handleNext = () => {
-    if (!formData.first_name || !formData.last_name || !formData.linkedin_url || !formData.email) {
+    if (!formData.first_name || !formData.last_name || !formData.email) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -91,7 +89,7 @@ export default function PersonalInfo() {
     // Store all form data including social media info and referral code
     const completeFormData = {
       ...formData,
-      linkedin_url: formData.linkedin_url || 'https://linkedin.com/in/',  // Ensure this is never undefined
+      linkedin_url: null, // LinkedIn URL removed from signup, set to null
       referralCode: referralCode || null, // Add referral code to form data
     };
 
@@ -138,17 +136,7 @@ export default function PersonalInfo() {
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="linkedin_url">LinkedIn URL *</Label>
-              <Input
-                id="linkedin_url"
-                name="linkedin_url"
-                type="url"
-                value={formData.linkedin_url}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+
 
             <div>
               <Label htmlFor="email">Company Email Address *</Label>

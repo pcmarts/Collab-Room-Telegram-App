@@ -87,7 +87,7 @@ export default function CompanyBasics() {
         // User data from personal-info step
         first_name: userFormData.first_name,
         last_name: userFormData.last_name,
-        linkedin_url: userFormData.linkedin_url,
+        linkedin_url: null, // LinkedIn URL removed from signup
         email: userFormData.email,
         twitter_url: userFormData.twitter_url,
         referral_code: userFormData.referralCode,
