@@ -1,18 +1,8 @@
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useLocation } from "wouter";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { TextLoop } from "@/components/ui/text-loop";
-import {
-  TelegramButton,
-  TelegramFixedButtonContainer,
-} from "@/components/ui/telegram-button";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
-import { X } from "lucide-react";
 import { COLLAB_TYPES, TWITTER_COLLAB_TYPES } from "@shared/schema";
-import { applyButtonFix } from "@/App";
 
 export default function Welcome() {
   const [_, setLocation] = useLocation();
@@ -35,20 +25,6 @@ export default function Welcome() {
     "Co-Marketing on Twitter": "🤝",
     // ... add more
   };
-
-  // Apply button fix when component mounts - reduced aggressive fixing
-  useEffect(() => {
-    // Apply once on mount
-    applyButtonFix();
-
-    // Single timeout to apply again after initial render
-    const timeoutId = setTimeout(() => {
-      applyButtonFix();
-    }, 500);
-
-    // Cleanup on unmount
-    return () => clearTimeout(timeoutId);
-  }, []);
 
   // Extract referral code from URL when component mounts
   useEffect(() => {
@@ -83,7 +59,7 @@ export default function Welcome() {
     <div className="min-h-screen bg-background">
       {/* Header matching personal-info page */}
       <OnboardingHeader
-        title="Signup to Collab Room"
+        title="Apply for Early Access"
         step={0}
         totalSteps={0}
         backUrl="/discover"
@@ -95,6 +71,9 @@ export default function Welcome() {
       >
         <div className="max-w-md mx-auto space-y-8 w-full">
           <div className="text-center space-y-6">
+            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+              The #1 Collaboration Platform for Web3 Leaders
+            </h1>
             <div className="text-center w-full">
               <TextLoop
                 interval={0.5}
@@ -156,18 +135,7 @@ export default function Welcome() {
             <button
               type="button"
               onClick={handleContinue}
-              className="w-full text-center py-3 px-4 rounded font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-              style={{
-                cursor: "pointer",
-                backgroundColor: "#4034B9",
-                color: "white",
-                border: "none",
-                fontSize: "16px",
-                fontWeight: "bold",
-                height: "48px",
-                minHeight: "48px",
-                borderRadius: "6px",
-              }}
+              className="w-full text-center py-3 px-4 rounded-md font-bold text-white bg-[#4034B9] hover:bg-[#4034B9]/90 transition-colors h-12 text-base"
             >
               Apply for early access →
             </button>
