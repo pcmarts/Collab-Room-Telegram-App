@@ -96,9 +96,9 @@ function Router() {
   const getSuspenseFallback = () => <NoLoadingFallback />;
 
   return (
-    <div className="min-h-screen bg-background w-full">
+    <div className="min-h-screen bg-background w-full flex flex-col">
       <ImpersonationBanner />
-      <div className={`w-full ${showBottomNav ? 'pb-24' : ''}`}>
+      <div className={`w-full flex-grow overflow-auto ${showBottomNav ? 'pb-24' : ''}`}>
         <Suspense fallback={getSuspenseFallback()}>
           <Switch>
             {/* Welcome and Application Flow */}

@@ -19,7 +19,7 @@ export function PendingApplicationCard({ userFirstName, companyName, companyLogo
     }
   };
   return (
-    <Card className="p-4 mb-4 border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+    <Card className="p-5 mb-6 border-2 border-orange-300 bg-gradient-to-r from-orange-50 to-yellow-50 shadow-lg ring-1 ring-orange-200/50 hover:shadow-xl transition-shadow duration-200">
       <div className="flex items-center space-x-4">
         {/* Company Logo */}
         <div className="flex-shrink-0">
@@ -39,13 +39,13 @@ export function PendingApplicationCard({ userFirstName, companyName, companyLogo
           <div 
             className={`w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center ${companyLogoUrl ? 'hidden' : 'flex'}`}
           >
-            <Clock className="w-6 h-6 text-orange-600" />
+            <Clock className="w-6 h-6 text-orange-700" />
           </div>
         </div>
         
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-gray-900 mb-1">
+          <h3 className="text-base font-bold text-orange-800 mb-1">
             Your application is under review
           </h3>
           <div className="space-y-1">
