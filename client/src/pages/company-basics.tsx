@@ -162,7 +162,7 @@ export default function CompanyBasics() {
           onClick={handleNext}
           isLoading={isSubmitting}
           loadingText="Saving..."
-          text="Continue to Collaboration Preferences"
+          text="Submit Application"
           disabled={isSubmitting}
         />
       </TelegramFixedButtonContainer>
