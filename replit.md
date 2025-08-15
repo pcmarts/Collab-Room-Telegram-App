@@ -55,6 +55,13 @@ UX preferences: Clean interfaces without excessive validation text, rely on UX r
 
 ## Recent Changes (August 2025)
 
+### Simplified Signup Flow (August 2025)
+- **Removed Fields from Signup**: Eliminated Twitter follower counts, company funding stage, LinkedIn URL, company sectors, and token information from signup process to enable faster registration.
+- **Optional Field Backend**: Updated backend validation to make removed fields optional while preserving database structure for future editing.
+- **Dashboard Editing**: All removed fields remain editable in dashboard company-info page for later completion.
+- **Streamlined Flow**: Simplified signup now goes: Welcome → Personal Info → Company Basics → Application Status (removed unwanted collab-preferences intermediate step).
+- **Schema Compatibility**: Updated both frontend validation and backend routes to handle optional fields properly without breaking existing functionality.
+
 ### Form UX Improvements
 - **Validation Consistency**: Fixed critical validation bug where description field backend validation (200 chars) didn't match frontend limit (280 chars). Updated to consistently allow 280 characters across all components.
 - **Clean Interface Design**: Removed cluttering validation text from Co-Marketing forms. Hidden "(min 1, max 3)" text, "0/3" selection counters, and red validation error messages to create cleaner user experience.

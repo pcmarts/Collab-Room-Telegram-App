@@ -73,7 +73,7 @@ const APPLICATION_ROUTES = [
   '/welcome',
   '/personal-info',
   '/company-basics',
-  '/collab-preferences',
+
   '/application-status',
   '/company-info',
   '/profile-overview',
@@ -106,7 +106,7 @@ function Router() {
             <Route path="/welcome" component={Welcome} />
             <Route path="/personal-info" component={PersonalInfo} />
             <Route path="/company-basics" component={CompanyBasics} />
-            <Route path="/collab-preferences" component={MarketingCollabsNew} />
+
             <Route path="/application-status" component={ApplicationStatus} />
 
             <Route path="/apply/:id">

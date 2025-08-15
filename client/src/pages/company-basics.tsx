@@ -86,8 +86,8 @@ export default function CompanyBasics() {
     // Save to session storage
     sessionStorage.setItem('companyFormData', JSON.stringify(completeFormData));
 
-    // Navigate to preferences page instead of company-sector (which we're removing)
-    setLocation('/collab-preferences');
+    // Navigate directly to application submission (simplified flow)
+    setLocation('/application-status');
   };
 
   return (
