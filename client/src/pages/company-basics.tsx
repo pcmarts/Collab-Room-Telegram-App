@@ -3,8 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FUNDING_STAGES, TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
+
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
@@ -26,10 +25,7 @@ export default function CompanyBasics() {
     company_name: '',
     job_title: '',
     website: 'https://www.',
-    twitter_url: 'https://x.com/',
-    linkedin_url: 'https://linkedin.com/company/',
-    funding_stage: '',
-    twitter_followers: ''
+    twitter_url: 'https://x.com/'
   });
 
   // Load data when available
@@ -39,10 +35,7 @@ export default function CompanyBasics() {
         company_name: profileData.company.name || '',
         job_title: profileData.company.job_title || '',
         website: profileData.company.website || 'https://www.',
-        twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : 'https://x.com/',
-        linkedin_url: profileData.company.linkedin_url || 'https://linkedin.com/company/',
-        funding_stage: profileData.company.funding_stage || '',
-        twitter_followers: profileData.company.twitter_followers || ''
+        twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : 'https://x.com/'
       });
     } else {
       const savedData = sessionStorage.getItem('companyFormData');
@@ -67,10 +60,8 @@ export default function CompanyBasics() {
   }, []);
 
   const handleNext = () => {
-    // Validate all required fields
-    if (!formData.company_name || !formData.job_title || !formData.website || 
-        !formData.twitter_url || !formData.linkedin_url || !formData.funding_stage || 
-        !formData.twitter_followers) {
+    // Validate only the required fields (removed linkedin, funding_stage, twitter_followers)
+    if (!formData.company_name || !formData.job_title || !formData.website || !formData.twitter_url) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -80,18 +71,13 @@ export default function CompanyBasics() {
       return;
     }
 
-    // Create complete form data object with trimming
+    // Create complete form data object with trimming (removed removed fields)
     const completeFormData = {
       company_name: formData.company_name.trim(),
       job_title: formData.job_title.trim(),
       website: formData.website.trim(),
       twitter_url: formData.twitter_url.trim(),
-      twitter_handle: formData.twitter_url.trim(), 
-      linkedin_url: formData.linkedin_url.trim(),
-      company_linkedin_url: formData.linkedin_url.trim(), 
-      funding_stage: formData.funding_stage,
-      twitter_followers: formData.twitter_followers,
-      company_twitter_followers: formData.twitter_followers 
+      twitter_handle: formData.twitter_url.trim()
     };
 
     // Debug log
@@ -100,8 +86,8 @@ export default function CompanyBasics() {
     // Save to session storage
     sessionStorage.setItem('companyFormData', JSON.stringify(completeFormData));
 
-    // Navigate to next page
-    setLocation('/company-sector');
+    // Navigate to preferences page instead of company-sector (which we're removing)
+    setLocation('/collab-preferences');
   };
 
   return (
@@ -164,57 +150,7 @@ export default function CompanyBasics() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="twitter_followers">Company Twitter Follower Count *</Label>
-              <Select
-                value={formData.twitter_followers}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, twitter_followers: value }))}
-                required
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select follower count" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TWITTER_FOLLOWER_COUNTS.map(count => (
-                    <SelectItem key={count} value={count}>
-                      {count}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
-            <div>
-              <Label htmlFor="linkedin_url">Company LinkedIn *</Label>
-              <Input
-                id="linkedin_url"
-                name="linkedin_url"
-                type="url"
-                value={formData.linkedin_url}
-                onChange={(e) => setFormData(prev => ({ ...prev, linkedin_url: e.target.value }))}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="funding_stage">Company Funding Stage *</Label>
-              <Select
-                value={formData.funding_stage}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, funding_stage: value }))}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select funding stage" />
-                </SelectTrigger>
-                <SelectContent>
-                  {FUNDING_STAGES.map(stage => (
-                    <SelectItem key={stage} value={stage}>
-                      {stage}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </div>
       </div>
@@ -226,7 +162,7 @@ export default function CompanyBasics() {
           onClick={handleNext}
           isLoading={isSubmitting}
           loadingText="Saving..."
-          text="Continue to Company Sector"
+          text="Continue to Collaboration Preferences"
           disabled={isSubmitting}
         />
       </TelegramFixedButtonContainer>

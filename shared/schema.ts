@@ -630,7 +630,7 @@ export const applicationSchema = z.object({
     .url("Please enter a valid Twitter URL")
     .optional()
     .nullable(),
-  twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(),
+  twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional().nullable(),
 
   // Company Information
   company_name: z.string().min(2, "Company name is required"),
@@ -649,13 +649,13 @@ export const applicationSchema = z.object({
     .max(1000, "Long description must be less than 1000 characters")
     .optional(),
   twitter_handle: z.string().min(1, "Twitter handle is required"),
-  company_twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional(), // Added company Twitter followers
+  company_twitter_followers: z.enum(TWITTER_FOLLOWER_COUNTS).optional().nullable(), // Made optional for simplified signup
   job_title: z.string().min(1, "Job title is required"),
-  funding_stage: z.enum(FUNDING_STAGES),
-  has_token: z.boolean(),
-  token_ticker: z.string().optional(),
-  blockchain_networks: z.array(z.enum(BLOCKCHAIN_NETWORKS)).optional(),
-  company_tags: z.array(z.string()).optional(),
+  funding_stage: z.enum(FUNDING_STAGES).optional().nullable(), // Made optional for simplified signup
+  has_token: z.boolean().optional().default(false), // Made optional for simplified signup
+  token_ticker: z.string().optional().nullable(),
+  blockchain_networks: z.array(z.enum(BLOCKCHAIN_NETWORKS)).optional().default([]),
+  company_tags: z.array(z.string()).optional().default([]), // Made optional for simplified signup
 
   // Telegram data
   initData: z.string(),

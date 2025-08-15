@@ -7,7 +7,7 @@ import {
   collaborations, requests,
   referral_events, user_referrals,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
-  InsertCollaboration, CollabApplication, InsertCollabApplication,
+  InsertCollaboration, CollabApplication, insertCollabApplicationSchema,
   type NotificationPreferences, type MarketingPreferences
 } from "../shared/schema";
 import { eq, and, not, desc, inArray, or } from 'drizzle-orm';
@@ -729,7 +729,7 @@ export async function registerRoutes(app: Express) {
         }
 
         if (!isProfileUpdate) {
-          if (!company_name || !job_title || !company_website || !funding_stage) {
+          if (!company_name || !job_title || !company_website) {
             throw new Error('Missing required company fields for new user');
           }
 
@@ -798,12 +798,12 @@ export async function registerRoutes(app: Express) {
               job_title,
               website: company_website,
               twitter_handle,
-              twitter_followers: company_twitter_followers,
-              linkedin_url: company_linkedin_url,
-              funding_stage,
-              has_token: Boolean(has_token),
+              twitter_followers: company_twitter_followers || null,
+              linkedin_url: company_linkedin_url || null,
+              funding_stage: funding_stage || null,
+              has_token: Boolean(has_token || false),
               token_ticker: has_token ? token_ticker : null,
-              blockchain_networks: has_token ? blockchain_networks : [],
+              blockchain_networks: has_token ? blockchain_networks || [] : [],
               tags: tags || []
             });
 
@@ -950,7 +950,7 @@ export async function registerRoutes(app: Express) {
         short_description, long_description 
       } = req.body;
 
-      if (!company_name || !job_title || !website || !funding_stage) {
+      if (!company_name || !job_title || !website) {
         console.error('Missing required fields');
         res.status(400);
         return res.json({ error: 'Missing required fields' });

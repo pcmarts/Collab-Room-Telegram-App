@@ -6,8 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TWITTER_FOLLOWER_COUNTS } from "../../../shared/schema";
+
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
 import { applyButtonFix } from "@/App";
@@ -30,8 +29,7 @@ export default function PersonalInfo() {
     last_name: '',
     linkedin_url: 'https://linkedin.com/in/',
     email: '',
-    twitter_url: 'https://x.com/',
-    twitter_followers: ''
+    twitter_url: 'https://x.com/'
   });
 
   useEffect(() => {
@@ -41,8 +39,7 @@ export default function PersonalInfo() {
         last_name: profileData.user.last_name || '',
         linkedin_url: profileData.user.linkedin_url || 'https://linkedin.com/in/',
         email: profileData.user.email || '',
-        twitter_url: profileData.user.twitter_url || 'https://x.com/',
-        twitter_followers: profileData.user.twitter_followers || ''
+        twitter_url: profileData.user.twitter_url || 'https://x.com/'
       });
     } else {
       const savedData = sessionStorage.getItem('userFormData');
@@ -94,7 +91,6 @@ export default function PersonalInfo() {
     // Store all form data including social media info and referral code
     const completeFormData = {
       ...formData,
-      twitter_followers: formData.twitter_followers || '',  // Ensure this is never undefined
       linkedin_url: formData.linkedin_url || 'https://linkedin.com/in/',  // Ensure this is never undefined
       referralCode: referralCode || null, // Add referral code to form data
     };
@@ -177,31 +173,7 @@ export default function PersonalInfo() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="twitter_followers">My Twitter Follower Count</Label>
-              <Select
-                value={formData.twitter_followers}
-                onValueChange={(value) => {
-                  const newFormData = {
-                    ...formData,
-                    twitter_followers: value
-                  };
-                  setFormData(newFormData);
-                  sessionStorage.setItem('userFormData', JSON.stringify(newFormData));
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select follower count" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TWITTER_FOLLOWER_COUNTS.map((count) => (
-                    <SelectItem key={count} value={count}>
-                      {count}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
 
             <div>
               <Label htmlFor="telegram_username">My Telegram Username</Label>
