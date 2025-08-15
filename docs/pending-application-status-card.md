@@ -19,7 +19,7 @@ Added a prominent status card that appears at the top of the discover page for u
 - **Compact Design**: Similar size to collaboration cards for consistent UI
 - **Clear Headline**: "Your application is under review" as the main message
 - **Submission Timestamp**: Shows when application was submitted in natural language (e.g., "2 days ago")
-- **Minimal Information**: User and company name without cluttering
+- **Structured Information**: Clear "Name:" and "Company:" labels for easy scanning
 - **No Action Buttons**: Clean design focused on status communication
 - **Branded Design**: Orange/yellow gradient matching platform theme
 

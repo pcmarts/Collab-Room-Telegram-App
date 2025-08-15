@@ -716,7 +716,7 @@ export default function DiscoverPageList() {
                 style={{ transitionDelay: '200ms' }}
               >
                 <PendingApplicationCard 
-                  userFirstName={userProfile?.user?.first_name}
+                  userFirstName={`${userProfile?.user?.first_name || ''} ${userProfile?.user?.last_name || ''}`.trim()}
                   companyName={userProfile?.company?.name}
                   companyLogoUrl={userProfile?.company?.logo_url}
                   submissionDate={userProfile?.user?.created_at}

@@ -48,13 +48,21 @@ export function PendingApplicationCard({ userFirstName, companyName, companyLogo
           <h3 className="text-sm font-semibold text-gray-900 mb-1">
             Your application is under review
           </h3>
-          <p className="text-sm text-gray-600">
-            {companyName && userFirstName 
-              ? `${userFirstName} from ${companyName}`
-              : userFirstName 
-              ? userFirstName
-              : "Application status"}
-          </p>
+          <div className="space-y-1">
+            {userFirstName && (
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Name:</span> {userFirstName}
+              </p>
+            )}
+            {companyName && (
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Company:</span> {companyName}
+              </p>
+            )}
+            {!userFirstName && !companyName && (
+              <p className="text-sm text-gray-600">Application status</p>
+            )}
+          </div>
           {getSubmissionTime() && (
             <p className="text-xs text-gray-500 mt-1">
               Submitted {getSubmissionTime()}

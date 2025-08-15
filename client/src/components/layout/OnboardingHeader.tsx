@@ -26,7 +26,7 @@ export function OnboardingHeader({
       <Progress value={progress} className="h-1 rounded-none" />
       
       {/* Header content */}
-      <div className="px-4 py-2">
+      <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setLocation(backUrl)}
@@ -36,15 +36,15 @@ export function OnboardingHeader({
             <ChevronLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-lg font-medium leading-none">{title}</h1>
+            <h1 className="text-xl font-semibold leading-none">{title}</h1>
             {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
           </div>
-          {step > 0 && totalSteps > 0 && (
-            <div className="ml-auto text-sm text-muted-foreground">
-              Step {step} of {totalSteps}
-            </div>
-          )}
         </div>
+        {step > 0 && totalSteps > 0 && (
+          <div className="text-sm text-muted-foreground">
+            Step {step} of {totalSteps}
+          </div>
+        )}
       </div>
     </div>
   );
