@@ -15,7 +15,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useMatchContext } from "@/contexts/MatchContext";
 import { useToast } from "@/hooks/use-toast";
-import { PendingApplicationCard, type PendingApplication } from "../components/PendingApplicationCard";
 
 // Define props for CardStack component
 interface CardStackProps {
@@ -124,13 +123,6 @@ export default function DiscoverPage() {
   // State for UI components
   const [selectedCardDetails, setSelectedCardDetails] = useState<CardData | null>(null);
   const [cardDialogOpen, setCardDialogOpen] = useState(false);
-  
-  // Query for pending applications
-  const { data: pendingApplications = [] } = useQuery<PendingApplication[]>({
-    queryKey: ['/api/pending-applications'],
-    staleTime: 30000, // Cache for 30 seconds
-    refetchOnWindowFocus: true, // Refetch when user returns to the tab
-  });
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [showMatch, setShowMatch] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -1262,8 +1254,6 @@ export default function DiscoverPage() {
       // Invalidate queries to ensure fresh data
       // For user requests, we need this data to be up-to-date
       await queryClient.invalidateQueries({ queryKey: ['/api/user-requests'] });
-      // Also invalidate pending applications cache to update the status card
-      await queryClient.invalidateQueries({ queryKey: ['/api/pending-applications'] });
       
       // Force a refresh of the user requests to ensure they're in memory before the next batch fetch
       try {
@@ -1754,16 +1744,6 @@ export default function DiscoverPage() {
   
   return (
     <div className="relative h-full w-full flex flex-col">
-      {/* Pending Applications Card */}
-      {pendingApplications.length > 0 && (
-        <div className="px-4 pt-4 pb-2">
-          <PendingApplicationCard 
-            application={pendingApplications[0]} // Show the most recent pending application
-            onViewDetails={handleDetailsClick}
-          />
-        </div>
-      )}
-      
       {/* Card Stack Container */}
       <div className="flex-grow relative flex items-center justify-center p-4">
         <div 
