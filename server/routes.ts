@@ -3807,6 +3807,74 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Get pending applications with collaboration details for discover page
+  app.get("/api/pending-applications", async (req: TelegramRequest, res: Response) => {
+    console.log('============ DEBUG: Get Pending Applications Endpoint ============');
+    
+    try {
+      // Get user from Telegram data
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        console.error('No Telegram user ID found');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Get user from database
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        console.error('User not found in database');
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Get all pending requests for this user with collaboration details
+      const pendingRequests = await db.select({
+        request: requests,
+        collaboration: collaborations,
+        creator: users,
+        company: companies
+      })
+      .from(requests)
+      .leftJoin(collaborations, eq(requests.collaboration_id, collaborations.id))
+      .leftJoin(users, eq(collaborations.creator_id, users.id))
+      .leftJoin(companies, eq(users.id, companies.user_id))
+      .where(and(
+        eq(requests.requester_id, user.id),
+        eq(requests.status, 'pending')
+      ))
+      .orderBy(desc(requests.created_at));
+      
+      console.log(`Found ${pendingRequests.length} pending applications for user ${user.id}`);
+      
+      // Format the response with collaboration details
+      const formattedApplications = pendingRequests.map(item => ({
+        id: item.request.id,
+        collaboration_id: item.request.collaboration_id,
+        status: item.request.status,
+        created_at: item.request.created_at,
+        note: item.request.note,
+        collaboration: {
+          id: item.collaboration?.id || '',
+          collab_type: item.collaboration?.collab_type || '',
+          description: item.collaboration?.description || '',
+          creator_company_name: item.company?.name || '',
+          creator_company_logo_url: item.company?.logo_url || '',
+          topics: item.collaboration?.topics || []
+        }
+      }));
+      
+      return res.json(formattedApplications);
+    } catch (error) {
+      console.error('Failed to fetch pending applications:', error);
+      return res.status(500).json({ 
+        error: 'Failed to fetch pending applications', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   // NOTE: POST /api/requests endpoint is already defined above - this duplicate has been removed
 
   // Twitter API routes removed
