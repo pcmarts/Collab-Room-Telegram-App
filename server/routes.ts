@@ -800,7 +800,7 @@ export async function registerRoutes(app: Express) {
               twitter_handle,
               twitter_followers: company_twitter_followers || null,
               linkedin_url: company_linkedin_url || null,
-              funding_stage: funding_stage || null,
+              funding_stage: funding_stage || 'Pre-seed',
               has_token: Boolean(has_token || false),
               token_ticker: has_token ? token_ticker : null,
               blockchain_networks: has_token ? blockchain_networks || [] : [],

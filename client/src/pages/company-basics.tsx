@@ -99,7 +99,7 @@ export default function CompanyBasics() {
         twitter_handle: formData.twitter_url.trim(),
         
         // Default values for optional fields that were removed from signup
-        funding_stage: null,
+        funding_stage: 'Pre-seed', // Default value to match database constraint
         has_token: false,
         token_ticker: null,
         blockchain_networks: [],
