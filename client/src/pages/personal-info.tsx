@@ -102,8 +102,8 @@ export default function PersonalInfo() {
       <OnboardingHeader
         title="Tell Us About Yourself"
         subtitle=""
-        step={0}
-        totalSteps={0}
+        step={1}
+        totalSteps={2}
         backUrl="/welcome"
       />
 

@@ -715,7 +715,11 @@ export default function DiscoverPageList() {
                 }`}
                 style={{ transitionDelay: '200ms' }}
               >
-                <PendingApplicationCard userFirstName={userProfile?.user?.first_name} />
+                <PendingApplicationCard 
+                  userFirstName={userProfile?.user?.first_name}
+                  companyName={userProfile?.company?.name}
+                  companyLogoUrl={userProfile?.company?.logo_url}
+                />
               </div>
             )}
 

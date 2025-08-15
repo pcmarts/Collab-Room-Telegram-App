@@ -79,7 +79,8 @@ Completed major simplification of the user signup process to reduce friction and
 - **Component**: `client/src/components/PendingApplicationCard.tsx`
 - **Integration**: `client/src/pages/DiscoverPageList.tsx`
 - **Trigger**: Shows when `isAuthenticated && !userProfile.user.is_approved`
-- **Design**: Orange/yellow gradient with progress indicators and action button
+- **Design**: Compact card with company logo, minimal text, and action button
+- **Props**: Accepts userFirstName, companyName, and companyLogoUrl
 
 **User Experience**:
 - Users see immediate feedback after signup completion

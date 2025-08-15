@@ -94,7 +94,7 @@ export default function Welcome() {
 
           <div className="text-center space-y-2 py-4">
             <p className="text-sm text-gray-500">
-              Join 50+ Web3 professionals already collaborating
+              Join 50+ Web3 companies sharing powerful co-marketing opportunities
             </p>
             <div className="flex justify-center gap-1">
               <img

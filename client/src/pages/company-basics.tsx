@@ -164,8 +164,8 @@ export default function CompanyBasics() {
       <OnboardingHeader
         title="Company Basics"
         subtitle=""
-        step={0}
-        totalSteps={0}
+        step={2}
+        totalSteps={2}
         backUrl="/personal-info"
       />
 
