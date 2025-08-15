@@ -11,6 +11,7 @@ import { MatchMoment } from "../components/MatchMoment";
 import AddNoteDialog from "../components/AddNoteDialog";
 import { SortByButton, type SortOption } from "../components/SortByButton";
 import { AddCollabBanner } from "../components/AddCollabBanner";
+import { PendingApplicationCard } from "../components/PendingApplicationCard";
 
 
 import { CollaborationTypeFilters, FILTER_OPTIONS } from "../components/CollaborationTypeFilters";
@@ -704,6 +705,19 @@ export default function DiscoverPageList() {
             isFilterTransitioning ? 'opacity-60' : 'opacity-100'
           }`}>
 
+            {/* Show pending application card for authenticated but not approved users */}
+            {isAuthenticatedButNotApproved && (
+              <div 
+                className={`transition-all duration-500 ${
+                  showAnimatedItems 
+                    ? 'opacity-100 translate-y-0' 
+                    : 'opacity-0 translate-y-4'
+                }`}
+                style={{ transitionDelay: '200ms' }}
+              >
+                <PendingApplicationCard userFirstName={userProfile?.user?.first_name} />
+              </div>
+            )}
 
             {allItems.map((item, index) => (
               <div key={`${item.isPotentialMatch ? 'match' : 'collab'}-${item.id}`}>

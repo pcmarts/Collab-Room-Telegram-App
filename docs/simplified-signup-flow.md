@@ -88,3 +88,8 @@ All removed fields remain fully editable in the dashboard's company-info page, a
 - Telegram notifications functioning
 - Admin approval process unchanged
 - Dashboard editing confirmed functional
+- Pending application status card displays correctly for unapproved users
+
+## Related Features
+- **Pending Application Status Card**: Users see clear status feedback on discover page after signup
+- **Twitter URL Processing**: Clean handle extraction from full URLs during form submission

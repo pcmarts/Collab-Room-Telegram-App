@@ -68,6 +68,24 @@ Completed major simplification of the user signup process to reduce friction and
 - ✅ Telegram notifications functioning  
 - ✅ Admin approval process unchanged
 - ✅ Dashboard editing confirmed functional
+- ✅ Pending application status card displays correctly
+
+### New Feature: Pending Application Status Card
+**Implementation Date**: August 15, 2025
+
+**Overview**: Added prominent status card at top of discover page for users awaiting approval.
+
+**Technical Details**:
+- **Component**: `client/src/components/PendingApplicationCard.tsx`
+- **Integration**: `client/src/pages/DiscoverPageList.tsx`
+- **Trigger**: Shows when `isAuthenticated && !userProfile.user.is_approved`
+- **Design**: Orange/yellow gradient with progress indicators and action button
+
+**User Experience**:
+- Users see immediate feedback after signup completion
+- Clear status communication reduces support inquiries
+- Professional onboarding experience with next steps
+- Card disappears automatically upon admin approval
 
 ### User Experience
 **Before**: Welcome → Personal Info (8 fields) → Company Basics (7 fields) → Company Sectors → Token Info → Collab Preferences → Application Status
