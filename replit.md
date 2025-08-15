@@ -31,11 +31,11 @@ UX preferences: Clean interfaces without excessive validation text, rely on UX r
 - **Advanced Features**: JSONB for collaboration details, array fields for tags/networks, GIN indexes
 
 ### Core Features
-- **Collaboration Matching**: Intelligent discovery with filtering, comprehensive request handling, match analytics.
+
 - **Collaboration Type System**: Centralized registry with metadata, icons, colors, categories (Social Media, Marketing, Content, Events), and legacy compatibility. Features CollaborationTypePill component for consistent type display.
 - **User & Company Management**: Professional profiles (Twitter/LinkedIn integration), detailed company info (logos, funding, blockchain networks), granular marketing and notification preferences.
 - **Authentication**: Telegram WebApp initData validation, Express sessions with PostgreSQL storage.
-- **Discovery**: Card-based (transitioning to list view), multi-parameter filtering, cursor-based pagination, bidirectional swipe matching.
+- **Discovery**: list view, multi-parameter filtering, cursor-based pagination
 - **Collaboration Management**: Form-based creation with multi-step wizard, 7 predefined types, clean UX without cluttering validation text, lifecycle management, application tracking.
 - **Notification System**: Real-time Telegram integration for request confirmations, host notifications, and match notifications.
 
@@ -51,8 +51,6 @@ UX preferences: Clean interfaces without excessive validation text, rely on UX r
 - **Routing**: Wouter
 
 ### Advanced
-- **Twitter Integration**: RapidAPI (Twitter241 service)
-- **Object Storage**: Supabase (company logos)
 - **Session Storage**: PostgreSQL-backed Express sessions
 
 ## Recent Changes (August 2025)
