@@ -1,13 +1,23 @@
 import { Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { formatDistanceToNow } from "date-fns";
 
 interface PendingApplicationCardProps {
   userFirstName?: string;
   companyName?: string;
   companyLogoUrl?: string;
+  submissionDate?: string;
 }
 
-export function PendingApplicationCard({ userFirstName, companyName, companyLogoUrl }: PendingApplicationCardProps) {
+export function PendingApplicationCard({ userFirstName, companyName, companyLogoUrl, submissionDate }: PendingApplicationCardProps) {
+  const getSubmissionTime = () => {
+    if (!submissionDate) return null;
+    try {
+      return formatDistanceToNow(new Date(submissionDate), { addSuffix: true });
+    } catch {
+      return null;
+    }
+  };
   return (
     <Card className="p-4 mb-4 border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
       <div className="flex items-center space-x-4">
@@ -44,6 +54,9 @@ export function PendingApplicationCard({ userFirstName, companyName, companyLogo
               : userFirstName 
               ? userFirstName
               : "Application status"}
+            {getSubmissionTime() && (
+              <span className="text-gray-500"> • Submitted {getSubmissionTime()}</span>
+            )}
           </p>
         </div>
       </div>

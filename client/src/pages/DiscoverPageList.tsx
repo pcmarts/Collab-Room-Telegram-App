@@ -719,6 +719,7 @@ export default function DiscoverPageList() {
                   userFirstName={userProfile?.user?.first_name}
                   companyName={userProfile?.company?.name}
                   companyLogoUrl={userProfile?.company?.logo_url}
+                  submissionDate={userProfile?.user?.created_at}
                 />
               </div>
             )}

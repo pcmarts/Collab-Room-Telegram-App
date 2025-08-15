@@ -18,6 +18,7 @@ Added a prominent status card that appears at the top of the discover page for u
 - **Circular Company Logo**: Displays user's company logo in circular format like collaboration cards
 - **Compact Design**: Similar size to collaboration cards for consistent UI
 - **Clear Headline**: "Your application is under review" as the main message
+- **Submission Timestamp**: Shows when application was submitted in natural language (e.g., "2 days ago")
 - **Minimal Information**: User and company name without cluttering
 - **No Action Buttons**: Clean design focused on status communication
 - **Branded Design**: Orange/yellow gradient matching platform theme
@@ -50,7 +51,12 @@ const isAuthenticatedButNotApproved = isAuthenticated && userProfile && !userPro
 ### Conditional Rendering
 ```tsx
 {isAuthenticatedButNotApproved && (
-  <PendingApplicationCard userFirstName={userProfile?.user?.first_name} />
+  <PendingApplicationCard 
+    userFirstName={userProfile?.user?.first_name}
+    companyName={userProfile?.company?.name}
+    companyLogoUrl={userProfile?.company?.logo_url}
+    submissionDate={userProfile?.user?.created_at}
+  />
 )}
 ```
 
