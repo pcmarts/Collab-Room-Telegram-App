@@ -15,11 +15,11 @@ Added a prominent status card that appears at the top of the discover page for u
 **File**: `client/src/components/PendingApplicationCard.tsx`
 
 **Features**:
-- **Company Logo Integration**: Displays user's company logo with fallback to clock icon
+- **Circular Company Logo**: Displays user's company logo in circular format like collaboration cards
 - **Compact Design**: Similar size to collaboration cards for consistent UI
-- **Minimal Text**: Clean "Application Submitted" message with user/company details
-- **Status Indicator**: Green checkmark shows successful submission
-- **Action Button**: Quick access to dashboard
+- **Clear Headline**: "Your application is under review" as the main message
+- **Minimal Information**: User and company name without cluttering
+- **No Action Buttons**: Clean design focused on status communication
 - **Branded Design**: Orange/yellow gradient matching platform theme
 
 ### Integration
@@ -56,9 +56,10 @@ const isAuthenticatedButNotApproved = isAuthenticated && userProfile && !userPro
 
 ### Styling
 - **Brand Colors**: Orange/yellow gradient (`from-orange-50 to-yellow-50`)
-- **Company Logo**: 48x48px rounded logo with error fallback to clock icon
-- **Status Icons**: Green checkmark for successful submission
+- **Company Logo**: 48x48px circular logo with error fallback to clock icon
+- **Headline**: "Your application is under review" as primary message
 - **Compact Layout**: Single row design matching collaboration card dimensions
+- **Clean Design**: No action buttons, focused on status communication
 - **Responsive Design**: Adapts to mobile and desktop layouts
 
 ## User Benefits

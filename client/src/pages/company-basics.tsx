@@ -8,8 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
-import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
-import { applyButtonFix } from "@/App";
+import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
 
 export default function CompanyBasics() {
   const { toast } = useToast();
@@ -45,20 +44,6 @@ export default function CompanyBasics() {
     }
   }, [profileData]);
   
-  // Apply button fix when component mounts and after any render
-  useEffect(() => {
-    // Apply immediately on mount
-    applyButtonFix();
-    
-    // Set up interval to keep applying the fix
-    const fixInterval = setInterval(() => {
-      applyButtonFix();
-    }, 300);
-    
-    // Cleanup on unmount
-    return () => clearInterval(fixInterval);
-  }, []);
-
   const handleNext = async () => {
     // Validate only the required fields (removed linkedin, funding_stage, twitter_followers)
     if (!formData.company_name || !formData.job_title || !formData.website || !formData.twitter_url) {
@@ -225,16 +210,14 @@ export default function CompanyBasics() {
       </div>
       
       {/* Button container directly at the root level */}
-      <TelegramFixedButtonContainer>
-        <TelegramButton
-          type="button"
-          onClick={handleNext}
-          isLoading={isSubmitting}
-          loadingText="Saving..."
-          text="Submit Application"
-          disabled={isSubmitting}
-        />
-      </TelegramFixedButtonContainer>
+      <FixedBottomButton
+        type="button"
+        onClick={handleNext}
+        isLoading={isSubmitting}
+        loadingText="Saving..."
+        text="Submit Application"
+        disabled={isSubmitting}
+      />
     </div>
   );
 }

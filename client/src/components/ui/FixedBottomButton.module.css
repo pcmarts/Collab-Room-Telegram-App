@@ -1,0 +1,40 @@
+/* client/src/components/ui/FixedBottomButton.module.css */
+.container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding: 16px;
+  background-color: #ffffff; /* Or a theme variable */
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  pointer-events: auto;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.button {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 48px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #4034b9; /* Primary button color */
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background-color: #362a9d; /* A slightly darker shade for hover */
+}
+
+.button:disabled {
+  background-color: #a09cb8;
+  cursor: not-allowed;
+}

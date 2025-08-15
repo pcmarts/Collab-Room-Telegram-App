@@ -84,8 +84,9 @@ Completed major simplification of the user signup process to reduce friction and
 
 **User Experience**:
 - Users see immediate feedback after signup completion
-- Clear status communication reduces support inquiries
-- Professional onboarding experience with next steps
+- Clear "Your application is under review" headline
+- Circular company logo matching collaboration card design
+- Clean interface without action buttons for focused messaging
 - Card disappears automatically upon admin approval
 
 ### User Experience

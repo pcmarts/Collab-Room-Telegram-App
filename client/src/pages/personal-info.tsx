@@ -8,8 +8,7 @@ import type { ProfileData } from "@/types/profile";
 import { useLocation } from "wouter";
 
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
-import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
-import { applyButtonFix } from "@/App";
+import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
 
 export default function PersonalInfo() {
   const { toast } = useToast();
@@ -46,20 +45,6 @@ export default function PersonalInfo() {
       }
     }
   }, [profileData]);
-
-  // Apply button fix when component mounts and after any render
-  useEffect(() => {
-    // Apply immediately on mount
-    applyButtonFix();
-    
-    // Set up interval to keep applying the fix
-    const fixInterval = setInterval(() => {
-      applyButtonFix();
-    }, 500);
-    
-    // Cleanup on unmount
-    return () => clearInterval(fixInterval);
-  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -177,16 +162,14 @@ export default function PersonalInfo() {
       </div>
       
       {/* Button container directly at the root level */}
-      <TelegramFixedButtonContainer>
-        <TelegramButton
-          type="button"
-          onClick={(e) => { e.preventDefault(); handleNext(); }}
-          isLoading={isSubmitting}
-          loadingText="Saving..."
-          text="Continue to Company Info"
-          disabled={isSubmitting}
-        />
-      </TelegramFixedButtonContainer>
+      <FixedBottomButton
+        type="button"
+        onClick={(e) => { e.preventDefault(); handleNext(); }}
+        isLoading={isSubmitting}
+        loadingText="Saving..."
+        text="Continue to Company Info"
+        disabled={isSubmitting}
+      />
     </div>
   );
 }
