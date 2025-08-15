@@ -797,7 +797,7 @@ export async function registerRoutes(app: Express) {
               name: company_name,
               job_title,
               website: company_website,
-              twitter_handle,
+              twitter_handle: twitter_handle ? twitter_handle.replace(/https?:\/\/(www\.)?(x\.com|twitter\.com)\//, '') : null,
               twitter_followers: company_twitter_followers || null,
               linkedin_url: company_linkedin_url || null,
               funding_stage: funding_stage || 'Pre-seed',
@@ -987,7 +987,7 @@ export async function registerRoutes(app: Express) {
           name: company_name,
           job_title,
           website,
-          twitter_handle, // Store full URL without parsing
+          twitter_handle: twitter_handle ? twitter_handle.replace(/https?:\/\/(www\.)?(x\.com|twitter\.com)\//, '') : null, // Extract handle from URL
           twitter_followers,
           linkedin_url,
           funding_stage,

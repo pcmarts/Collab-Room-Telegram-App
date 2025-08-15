@@ -96,7 +96,7 @@ export default function CompanyBasics() {
         company_name: formData.company_name.trim(),
         job_title: formData.job_title.trim(),
         company_website: formData.website.trim(),
-        twitter_handle: formData.twitter_url.trim(),
+        twitter_handle: formData.twitter_url.trim().replace(/https?:\/\/(www\.)?(x\.com|twitter\.com)\//, ''),
         
         // Default values for optional fields that were removed from signup
         funding_stage: 'Pre-seed', // Default value to match database constraint
