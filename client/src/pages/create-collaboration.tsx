@@ -49,7 +49,11 @@ import {
   type CreateCollaboration
 } from "@shared/schema";
 
-export default function CreateCollaboration() {
+interface CreateCollaborationProps {
+  id?: string;
+}
+
+export default function CreateCollaboration({ id }: CreateCollaborationProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
