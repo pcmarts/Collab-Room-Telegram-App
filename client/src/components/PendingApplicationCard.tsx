@@ -54,10 +54,12 @@ export function PendingApplicationCard({ userFirstName, companyName, companyLogo
               : userFirstName 
               ? userFirstName
               : "Application status"}
-            {getSubmissionTime() && (
-              <span className="text-gray-500"> • Submitted {getSubmissionTime()}</span>
-            )}
           </p>
+          {getSubmissionTime() && (
+            <p className="text-xs text-gray-500 mt-1">
+              Submitted {getSubmissionTime()}
+            </p>
+          )}
         </div>
       </div>
     </Card>
