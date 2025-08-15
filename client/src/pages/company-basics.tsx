@@ -59,7 +59,7 @@ export default function CompanyBasics() {
     return () => clearInterval(fixInterval);
   }, []);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     // Validate only the required fields (removed linkedin, funding_stage, twitter_followers)
     if (!formData.company_name || !formData.job_title || !formData.website || !formData.twitter_url) {
       toast({
@@ -71,23 +71,92 @@ export default function CompanyBasics() {
       return;
     }
 
-    // Create complete form data object with trimming (removed removed fields)
-    const completeFormData = {
-      company_name: formData.company_name.trim(),
-      job_title: formData.job_title.trim(),
-      website: formData.website.trim(),
-      twitter_url: formData.twitter_url.trim(),
-      twitter_handle: formData.twitter_url.trim()
-    };
+    setIsSubmitting(true);
 
-    // Debug log
-    console.log('Saving company form data:', completeFormData);
+    try {
+      // Get user form data from session storage
+      const userFormDataString = sessionStorage.getItem('userFormData');
+      if (!userFormDataString) {
+        throw new Error('Missing personal information. Please start over.');
+      }
+      
+      const userFormData = JSON.parse(userFormDataString);
 
-    // Save to session storage
-    sessionStorage.setItem('companyFormData', JSON.stringify(completeFormData));
+      // Create complete application data combining user and company data
+      const applicationData = {
+        // User data from personal-info step
+        first_name: userFormData.first_name,
+        last_name: userFormData.last_name,
+        linkedin_url: userFormData.linkedin_url,
+        email: userFormData.email,
+        twitter_url: userFormData.twitter_url,
+        referral_code: userFormData.referralCode,
+        
+        // Company data from current step  
+        company_name: formData.company_name.trim(),
+        job_title: formData.job_title.trim(),
+        company_website: formData.website.trim(),
+        twitter_handle: formData.twitter_url.trim(),
+        
+        // Default values for optional fields that were removed from signup
+        funding_stage: null,
+        has_token: false,
+        token_ticker: null,
+        blockchain_networks: [],
+        tags: [],
+        company_linkedin_url: null,
+        company_twitter_followers: null,
+        twitter_followers: null,
+        
+        // Default preferences
+        collabs_to_host: [],
+        notification_frequency: 'Daily',
+        filtered_marketing_topics: []
+      };
 
-    // Navigate directly to application submission (simplified flow)
-    setLocation('/application-status');
+      console.log('Submitting application:', applicationData);
+
+      // Submit to onboarding endpoint
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(applicationData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit application');
+      }
+
+      // Clear session storage on successful submission
+      sessionStorage.removeItem('userFormData');
+      sessionStorage.removeItem('companyFormData');
+
+      console.log('Application submitted successfully:', result);
+
+      // Navigate to application status page
+      setLocation('/application-status');
+
+      toast({
+        title: "Application Submitted!",
+        description: "Your application has been submitted successfully. You'll be notified when it's reviewed.",
+        duration: 3000
+      });
+
+    } catch (error) {
+      console.error('Application submission error:', error);
+      toast({
+        variant: "destructive",
+        title: "Submission Failed",
+        description: error instanceof Error ? error.message : "Failed to submit application. Please try again.",
+        duration: 4000
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
