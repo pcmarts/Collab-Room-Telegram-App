@@ -42,6 +42,12 @@ Welcome → Personal Info → Company Basics → Application Status
 
 ### Technical Implementation
 
+#### Twitter URL Processing
+- **Frontend**: Extracts handle from full URLs before submission using regex pattern
+- **Backend**: Processes both onboarding and company update endpoints to store only handles
+- **Database**: Stores clean handles (e.g., "web3career") instead of full URLs
+- **Supported Formats**: https://x.com/handle, https://twitter.com/handle, https://www.x.com/handle
+
 #### Frontend Changes
 - Updated form validation to only require essential fields
 - Removed form fields and UI components for optional data
@@ -53,6 +59,8 @@ Welcome → Personal Info → Company Basics → Application Status
 - Set sensible defaults for database constraints (e.g., funding_stage: 'Pre-seed')
 - Maintained database schema compatibility
 - Fixed database insertion issues with proper null handling
+- Added Twitter URL parsing in both onboarding and company update endpoints
+- Fixed database to store only handles, not full URLs
 
 #### Database Defaults
 - `funding_stage`: 'Pre-seed' (matches database constraint)

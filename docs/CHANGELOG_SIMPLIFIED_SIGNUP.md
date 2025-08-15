@@ -36,11 +36,13 @@ Completed major simplification of the user signup process to reduce friction and
    - ✅ Updated: Removed funding_stage from required field validation
    - ✅ Fixed: Set proper defaults for database constraints
    - ✅ Improved: Better error handling for missing fields
+   - ✅ Added: Twitter URL parsing to extract handles from full URLs
 
 2. **Database Integration**
    - ✅ Fixed: Database insertion issues with proper default values
    - ✅ Maintained: Schema compatibility for dashboard editing
    - ✅ Defaults: funding_stage='Pre-seed', linkedin_url=null, has_token=false
+   - ✅ Updated: Twitter handles stored as clean handles, not full URLs
 
 #### Documentation
 1. **Created**: `docs/simplified-signup-flow.md` - Comprehensive documentation

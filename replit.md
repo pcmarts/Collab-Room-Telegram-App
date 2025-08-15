@@ -62,6 +62,7 @@ UX preferences: Clean interfaces without excessive validation text, rely on UX r
 - **Database Compatibility**: Fixed submission issues by using proper defaults (funding_stage: 'Pre-seed') while maintaining schema integrity
 - **Dashboard Editing**: All removed fields remain editable in dashboard company-info page for later completion
 - **Form Submission Fix**: Resolved database insertion errors and improved user experience with proper error handling
+- **Twitter URL Processing**: Implemented proper URL-to-handle conversion - users can enter full URLs (https://x.com/handle) but only the handle is stored in database
 
 ### Form UX Improvements
 - **Validation Consistency**: Fixed critical validation bug where description field backend validation (200 chars) didn't match frontend limit (280 chars). Updated to consistently allow 280 characters across all components.
