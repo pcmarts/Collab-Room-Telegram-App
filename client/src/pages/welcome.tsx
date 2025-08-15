@@ -72,7 +72,7 @@ export default function Welcome() {
         <div className="max-w-md mx-auto space-y-8 w-full">
           <div className="text-center space-y-6">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-              The #1 Collaboration Platform for Web3 Leaders
+              The Collaboration Platform for Web3 Marketers
             </h1>
             <div className="text-center w-full">
               <TextLoop
