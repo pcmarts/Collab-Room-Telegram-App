@@ -139,7 +139,7 @@ export default function PersonalInfo() {
 
 
             <div>
-              <Label htmlFor="email">Company Email Address *</Label>
+              <Label htmlFor="email">My Company Email Address *</Label>
               <Input
                 id="email"
                 name="email"
