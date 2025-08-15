@@ -73,6 +73,16 @@ const isAuthenticatedButNotApproved = isAuthenticated && userProfile && !userPro
 - **Reduced Support**: Users understand they're waiting for approval
 - **Professional Experience**: Polished onboarding process
 - **Immediate Feedback**: Status visible right after signup
+- **Consistent UX**: Disabled collaboration requests across all views until approved
+
+## Related Features
+
+### Collaboration Details Dialog Protection
+Users with pending applications (`is_approved=false`) also see:
+- **Grayed out "Request Collab" button** in collaboration detail dialogs
+- **Clear messaging**: Button shows "Application Pending Approval" 
+- **Disabled interaction**: Cannot accidentally submit collaboration requests
+- **Consistent experience**: Same approval logic across discover page and detail views
 
 ## Implementation Date
 August 15, 2025

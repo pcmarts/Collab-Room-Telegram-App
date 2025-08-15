@@ -836,6 +836,7 @@ export default function DiscoverPageList() {
         }}
         currentUserId={userProfile?.user?.id}
         isAuthenticated={isAuthenticated}
+        isUserApproved={userProfile?.user?.is_approved}
         collaboration={selectedCardDetails ? {
           id: selectedCardDetails.id,
           title: selectedCardDetails.title,

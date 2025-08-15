@@ -88,6 +88,7 @@ Completed major simplification of the user signup process to reduce friction and
 - Circular company logo matching collaboration card design
 - Clean interface without action buttons for focused messaging
 - Card disappears automatically upon admin approval
+- Protected collaboration requests: "Request Collab" buttons disabled in detail dialogs until approved
 
 ### User Experience
 **Before**: Welcome → Personal Info (8 fields) → Company Basics (7 fields) → Company Sectors → Token Info → Collab Preferences → Application Status

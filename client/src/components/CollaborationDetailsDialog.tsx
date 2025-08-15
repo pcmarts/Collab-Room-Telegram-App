@@ -44,6 +44,7 @@ interface CollaborationDetailsDialogProps {
   onShowSignupDialog?: () => void;
   currentUserId?: string;
   isAuthenticated?: boolean;
+  isUserApproved?: boolean;
   collaboration?: {
     id?: string;
     title?: string;
@@ -114,6 +115,7 @@ export function CollaborationDetailsDialog({
   onShowSignupDialog,
   currentUserId,
   isAuthenticated = false,
+  isUserApproved = true,
   collaboration
 }: CollaborationDetailsDialogProps) {
   const [, setLocation] = useLocation();
@@ -532,21 +534,25 @@ export function CollaborationDetailsDialog({
                       }
                     }}
                     className={`px-4 w-full min-h-[44px] text-sm ${
-                      collaboration?.requestStatus === 'pending' 
-                        ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
-                        : collaboration?.requestStatus === 'matched'
-                          ? 'bg-purple-500 hover:bg-purple-600 text-white'
-                          : 'bg-primary hover:bg-primary/90 text-white'
+                      !isUserApproved && isAuthenticated
+                        ? 'bg-gray-400 hover:bg-gray-400 text-gray-200 cursor-not-allowed'
+                        : collaboration?.requestStatus === 'pending' 
+                          ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
+                          : collaboration?.requestStatus === 'matched'
+                            ? 'bg-purple-500 hover:bg-purple-600 text-white'
+                            : 'bg-primary hover:bg-primary/90 text-white'
                     }`}
-                    disabled={collaboration?.requestStatus === 'pending' || collaboration?.requestStatus === 'matched'}
+                    disabled={(!isUserApproved && isAuthenticated) || collaboration?.requestStatus === 'pending' || collaboration?.requestStatus === 'matched'}
                     aria-label={`Send collaboration request to ${companyName} for ${collabType}`}
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    {collaboration?.requestStatus === 'pending' 
-                      ? 'Request Pending...' 
-                      : collaboration?.requestStatus === 'matched' 
-                        ? 'View Match in My Matches' 
-                        : 'Request to Collab (Free)'
+                    {!isUserApproved && isAuthenticated
+                      ? 'Application Pending Approval'
+                      : collaboration?.requestStatus === 'pending' 
+                        ? 'Request Pending...' 
+                        : collaboration?.requestStatus === 'matched' 
+                          ? 'View Match in My Matches' 
+                          : 'Request to Collab (Free)'
                     }
                   </Button>
                 )}
