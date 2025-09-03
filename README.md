@@ -18,10 +18,9 @@ This repository contains comprehensive documentation for designing and implement
 
 The Collab Room is a professional networking platform built specifically for the Web3 space, focusing on connecting professionals for various types of collaborations. Key features include:
 
-- **Discovery Feed**: Swipeable cards showing collaboration opportunities
+- **Discovery Feed**: list of cards showing collaboration opportunities
 - **Matching System**: Intelligent matching based on user preferences
 - **Collaboration Creation**: Create various types of collaboration opportunities
-- **Blockchain Integration**: Support for multiple blockchain networks
 - **Telegram Integration**: Seamless login, chat, and notifications via Telegram
 
 ## Core Technologies

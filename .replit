@@ -18,6 +18,11 @@ externalPort = 80
 localPort = 5001
 externalPort = 3000
 
+[[ports]]
+localPort = 20683
+externalPort = 3001
+exposeLocalhost = true
+
 [workflows]
 runButton = "Restart Manual "
 

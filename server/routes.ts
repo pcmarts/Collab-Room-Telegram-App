@@ -19,6 +19,7 @@ import { logger } from './utils/logger';
 // Twitter routes removed to fix deployment issues
 import referralRoutes from './routes/referral-routes';
 import { sendCollaborationWebhook, sendTestWebhookForAlchemy } from "./utils/webhook";
+import type TelegramBot from 'node-telegram-bot-api';
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -3838,6 +3839,22 @@ export async function registerRoutes(app: Express) {
         success: false, 
         error: 'Failed to send test webhook' 
       });
+    }
+  });
+
+  // Telegram Webhook endpoint for production
+  app.post("/api/telegram-webhook", async (req: Request, res: Response) => {
+    try {
+      const update = req.body as TelegramBot.Update;
+      console.log("[WEBHOOK] Received Telegram update:", JSON.stringify(update, null, 2));
+      
+      // Process the update using the bot's processUpdate method
+      await bot.processUpdate(update);
+      
+      res.sendStatus(200);
+    } catch (error) {
+      console.error("[WEBHOOK] Error processing Telegram update:", error);
+      res.sendStatus(500);
     }
   });
 

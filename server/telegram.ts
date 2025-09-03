@@ -126,31 +126,60 @@ if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
   console.log("WebApp URL:", WEBAPP_URL);
 }
 
-// PHASE 1 OPTIMIZATION: Initialize bot with optimized polling settings
-export const bot = new TelegramBot(BOT_TOKEN, {
-  polling: {
-    params: {
-      timeout: 10, // Reduce from default 30 seconds to 10 seconds
-      limit: 100, // Process more updates per request
-    },
-    retryTimeout: 2000, // Faster retry on network issues (default 5000)
-  },
-  webHook: false,
-});
+// PHASE 1 OPTIMIZATION: Use environment-appropriate connection method
+// Production: Use webhooks to avoid polling conflicts
+// Development: Use polling for easier development
+export const bot = isProduction
+  ? new TelegramBot(BOT_TOKEN, {
+      webHook: {
+        port: process.env.WEBHOOK_PORT ? parseInt(process.env.WEBHOOK_PORT) : 8443,
+        host: '0.0.0.0',
+      },
+    })
+  : new TelegramBot(BOT_TOKEN, {
+      polling: {
+        params: {
+          timeout: 10, // Reduce from default 30 seconds to 10 seconds
+          limit: 100, // Process more updates per request
+        },
+        retryTimeout: 2000, // Faster retry on network issues (default 5000)
+      },
+      webHook: false,
+    });
 
-// PHASE 1 OPTIMIZATION: Defer command setup to background process after server starts
-setTimeout(async () => {
-  try {
-    console.log("[BOT_SETUP] Starting deferred command setup...");
-    await setupBotCommands();
-    console.log("[BOT_SETUP] Commands configured successfully");
-  } catch (error) {
-    console.error(
-      "[BOT_SETUP] Command setup failed, but bot remains functional:",
-      error,
-    );
-  }
-}, 1000); // Allow server to start first
+// PHASE 1 OPTIMIZATION: Setup webhook for production
+if (isProduction) {
+  const webhookUrl = `${WEBAPP_URL}/api/telegram-webhook`;
+  console.log(`[BOT_SETUP] Setting up webhook: ${webhookUrl}`);
+  
+  setTimeout(async () => {
+    try {
+      await bot.setWebHook(webhookUrl, {
+        allowed_updates: ['message', 'callback_query'],
+        drop_pending_updates: true, // Clear any pending updates
+      });
+      console.log("[BOT_SETUP] Webhook configured successfully");
+      await setupBotCommands();
+      console.log("[BOT_SETUP] Commands configured successfully");
+    } catch (error) {
+      console.error("[BOT_SETUP] Webhook/command setup failed:", error);
+    }
+  }, 2000); // Wait for server to be fully ready
+} else {
+  // PHASE 1 OPTIMIZATION: Defer command setup to background process after server starts
+  setTimeout(async () => {
+    try {
+      console.log("[BOT_SETUP] Starting deferred command setup...");
+      await setupBotCommands();
+      console.log("[BOT_SETUP] Commands configured successfully");
+    } catch (error) {
+      console.error(
+        "[BOT_SETUP] Command setup failed, but bot remains functional:",
+        error,
+      );
+    }
+  }, 1000); // Allow server to start first
+}
 
 // PHASE 1 OPTIMIZATION: Graceful bot cleanup on shutdown to prevent 409 Conflict errors
 const gracefulShutdown = (signal: string) => {

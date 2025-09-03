@@ -18,8 +18,8 @@ import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 import {
   TelegramButton,
   TelegramFixedButtonContainer,
-} from "@/components/ui/telegram-button";
-import { applyButtonFix } from "@/App";
+} from "@/components/ui/telegram-link";
+// import { applyButtonFix } from "@/App"; // Removed - not exported
 
 // Type helper to extract network strings from the const object
 type NetworkString = string;

@@ -10,8 +10,8 @@ import { COMPANY_TAG_CATEGORIES } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
-import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
-import { applyButtonFix } from "@/App";
+import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-link";
+// import { applyButtonFix } from "@/App"; // Removed - not exported
 
 // Type helper for tag strings
 type TagString = string;
