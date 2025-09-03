@@ -58,11 +58,11 @@ export default function CompanyDetails() {
   // Apply button fix when component mounts and after any render
   useEffect(() => {
     // Apply immediately on mount
-    applyButtonFix();
+
 
     // Set up interval to keep applying the fix
     const fixInterval = setInterval(() => {
-      applyButtonFix();
+  
     }, 300);
 
     // Cleanup on unmount
