@@ -18,8 +18,8 @@ import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
 import {
   TelegramButton,
   TelegramFixedButtonContainer,
-} from "@/components/ui/telegram-link";
-// import { applyButtonFix } from "@/App"; // Removed - not exported
+} from "@/components/ui/telegram-button";
+import { applyButtonFix } from "@/App";
 
 // Type helper to extract network strings from the const object
 type NetworkString = string;
@@ -58,11 +58,11 @@ export default function CompanyDetails() {
   // Apply button fix when component mounts and after any render
   useEffect(() => {
     // Apply immediately on mount
-
+    applyButtonFix();
 
     // Set up interval to keep applying the fix
     const fixInterval = setInterval(() => {
-  
+      applyButtonFix();
     }, 300);
 
     // Cleanup on unmount

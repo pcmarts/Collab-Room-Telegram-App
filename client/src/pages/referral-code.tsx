@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { useLocation } from "wouter";
-import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-link";
+import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
 
 export default function ReferralCodeForm() {
   const { toast } = useToast();

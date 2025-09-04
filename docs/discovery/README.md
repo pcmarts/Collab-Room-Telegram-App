@@ -23,14 +23,16 @@ The latest updates (v1.10.7) have significantly improved Discovery card performa
 - [Potential Matches](./potential-matches.md) - Documentation for the potential matches feature
 - [Authentication Timing Fix](./authentication-timing-fix.md) - Fix for blank discovery page on initial load
 - [Twitter Engagement Display](./twitter-engagement-display.md) - Improved display of Twitter engagement types in collaboration details
-- [UI Improvements](./ui-improvements.md) - Documentation of SpeableCard button fixes and Discovery page UI enhancements
+- [UI Improvements](./ui-improvements.md) - Documentation of SwipeableCard button fixes and Discovery page UI enhancements
 - [Reset Left Swipes](./reset-left-swipes.md) - Feature to allow users to see previously rejected collaborations again
 - [Sort By Functionality](./sort-by-functionality.md) - Comprehensive documentation of the Sort By feature implementation
 
 ## Key Features
 
 1. **Card-Based Discovery Interface**:
-   - list of cards for easy collaboration discovery
+   - Swipeable cards for easy collaboration discovery
+   - "Right" swipe indicates interest, "Left" swipe indicates disinterest
+   - Potential match cards shown first, followed by regular collaboration cards
 
 2. **Cursor-Based Pagination**:
    - Efficient loading of cards in batches
@@ -45,8 +47,8 @@ The latest updates (v1.10.7) have significantly improved Discovery card performa
    - Combined OR/AND logic for intuitive filtering
    - Sort By functionality with three options: Newest first, Oldest first, Collab Type
 
-4. ** History Tracking**:
-   - Server-side tracking of all requests
+4. **Swipe History Tracking**:
+   - Server-side tracking of all swipes
    - Prevention of duplicate card displays
    - Integration with the authentication system for consistent user identity
 
@@ -87,7 +89,7 @@ The discovery system uses cursor-based pagination for efficient data loading:
 
 The `searchCollaborationsPaginated` function in `server/storage.ts` implements the core discovery logic:
 
-1. Filters out previously requested collaborations
+1. Filters out previously swiped collaborations
 2. Includes the user's own collaborations with special handling (shows "My Collab" instead of interaction buttons)
 3. Applies any additional filters (collaboration type, company attributes, etc.)
 4. Applies sorting based on the selected sort option

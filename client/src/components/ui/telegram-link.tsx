@@ -1,6 +1,4 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 
 interface TelegramLinkProps {
   url: string;
@@ -8,21 +6,6 @@ interface TelegramLinkProps {
   className?: string;
   style?: React.CSSProperties;
   debugLog?: boolean;
-}
-
-interface TelegramButtonProps {
-  type?: 'button' | 'submit' | 'reset';
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  isLoading?: boolean;
-  loadingText?: string;
-  text: string;
-  disabled?: boolean;
-  className?: string;
-}
-
-interface TelegramFixedButtonContainerProps {
-  children: React.ReactNode;
-  className?: string;
 }
 
 /**
@@ -73,7 +56,7 @@ export function TelegramLink({
  * @param url The URL to open when clicked
  * @returns A wrapped component
  */
-export function withTelegramLink<P extends object>(
+export function withTelegramLink<P>(
   Component: React.ComponentType<P>,
   url: string
 ): React.FC<P> {
@@ -81,48 +64,6 @@ export function withTelegramLink<P extends object>(
     <TelegramLink url={url}>
       <Component {...props} />
     </TelegramLink>
-  );
-}
-
-/**
- * A button component optimized for Telegram WebApp functionality
- */
-export function TelegramButton({
-  type = 'button',
-  onClick,
-  isLoading = false,
-  loadingText = 'Loading...',
-  text,
-  disabled = false,
-  className = ''
-}: TelegramButtonProps) {
-  return (
-    <Button
-      type={type}
-      onClick={onClick}
-      disabled={disabled || isLoading}
-      className={`w-full ${className}`}
-    >
-      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {isLoading ? loadingText : text}
-    </Button>
-  );
-}
-
-/**
- * A fixed position container for buttons in Telegram WebApp
- * This ensures buttons remain visible even when virtual keyboard is open
- */
-export function TelegramFixedButtonContainer({
-  children,
-  className = ''
-}: TelegramFixedButtonContainerProps) {
-  return (
-    <div 
-      className={`fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border p-4 ${className}`}
-    >
-      {children}
-    </div>
   );
 }
 

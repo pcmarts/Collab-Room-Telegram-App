@@ -38,6 +38,7 @@ Add a requests summary section to the top of "My Collabs" page showing the lates
 - `POST /api/collaboration-requests/:id/decline` - Decline request
 
 ### Database Schema
+- Utilize existing `swipes` table with `direction: 'right'` for requests
 - Join with `users`, `companies`, and `collaborations` tables for complete request data
 
 ## UI Specifications

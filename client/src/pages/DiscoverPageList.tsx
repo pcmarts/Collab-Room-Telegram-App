@@ -623,151 +623,149 @@ export default function DiscoverPageList() {
       </div>
 
       {/* Filter Pills */}
-      <div className="overflow-auto">
-        <CollaborationTypeFilters
-          selectedFilter={selectedFilter}
-          onFilterChange={handleFilterChange}
-          collaborationCount={collaborations.length}
-        />
+      <CollaborationTypeFilters
+        selectedFilter={selectedFilter}
+        onFilterChange={handleFilterChange}
+        collaborationCount={collaborations.length}
+      />
 
-        {/* Content */}
-        <div className="flex-1">
-          {allItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-center p-8">
-              <SearchX className="w-12 h-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No collaborations found</h3>
-              <p className="text-muted-foreground max-w-md">
-                {hasActiveFilters 
-                  ? "No collaborations match your current filters. Try adjusting your filter settings."
-                  : "There are no collaboration opportunities available at the moment."
-                }
-              </p>
-              {hasActiveFilters && (
-                <Button variant="outline" onClick={handleOpenFilters} className="mt-4">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Adjust Filters
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className={`p-4 space-y-4 transition-opacity duration-200 ${
-              isFilterTransitioning ? 'opacity-60' : 'opacity-100'
-            }`}>
+      {/* Content */}
+      <div className="flex-1 overflow-auto">
+        {allItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-center p-8">
+            <SearchX className="w-12 h-12 text-muted-foreground/50 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No collaborations found</h3>
+            <p className="text-muted-foreground max-w-md">
+              {hasActiveFilters 
+                ? "No collaborations match your current filters. Try adjusting your filter settings."
+                : "There are no collaboration opportunities available at the moment."
+              }
+            </p>
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={handleOpenFilters} className="mt-4">
+                <Settings className="w-4 h-4 mr-2" />
+                Adjust Filters
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className={`p-4 space-y-4 transition-opacity duration-200 ${
+            isFilterTransitioning ? 'opacity-60' : 'opacity-100'
+          }`}>
 
-              {/* Show pending application card for authenticated but not approved users */}
-              {isAuthenticatedButNotApproved && (
+            {/* Show pending application card for authenticated but not approved users */}
+            {isAuthenticatedButNotApproved && (
+              <div 
+                className={`transition-all duration-500 ${
+                  showAnimatedItems 
+                    ? 'opacity-100 translate-y-0' 
+                    : 'opacity-0 translate-y-4'
+                }`}
+                style={{ transitionDelay: '200ms' }}
+              >
+                <PendingApplicationCard 
+                  userFirstName={`${userProfile?.user?.first_name || ''} ${userProfile?.user?.last_name || ''}`.trim()}
+                  companyName={userProfile?.company?.name}
+                  companyLogoUrl={userProfile?.company?.logo_url}
+                  submissionDate={userProfile?.user?.created_at}
+                />
+              </div>
+            )}
+
+            {allItems.map((item, index) => (
+              <div key={`${item.isPotentialMatch ? 'match' : 'collab'}-${item.id}`}>
                 <div 
                   className={`transition-all duration-500 ${
                     showAnimatedItems 
                       ? 'opacity-100 translate-y-0' 
                       : 'opacity-0 translate-y-4'
                   }`}
-                  style={{ transitionDelay: '200ms' }}
+                  style={{ transitionDelay: `${200 + index * 150}ms` }}
                 >
-                  <PendingApplicationCard 
-                    userFirstName={`${userProfile?.user?.first_name || ''} ${userProfile?.user?.last_name || ''}`.trim()}
-                    companyName={userProfile?.company?.name}
-                    companyLogoUrl={userProfile?.company?.logo_url}
-                    submissionDate={userProfile?.user?.created_at}
+                  <CollaborationListItem
+                    collaboration={item}
+                    isAuthenticated={isAuthenticated}
+                    onViewDetails={() => handleViewDetails(item)}
+                    onRequestCollaboration={() => handleRequestCollaboration(item, item.isPotentialMatch)}
+                    isPotentialMatch={item.isPotentialMatch}
+                    collaborationStatus={
+                      // Never show collaboration status for user's own collaborations
+                      userProfile?.user?.id && item.creator_id === userProfile.user.id
+                        ? undefined
+                        : // Get status from the new function
+                          getCollaborationStatus(item.id) as 'pending' | 'matched' | undefined
+                    }
+                    onNavigateToMatches={() => setLocation('/matches')}
+                    currentUserId={userProfile?.user?.id}
+                    isApplicationPending={isAuthenticatedButNotApproved}
                   />
                 </div>
-              )}
-
-              {allItems.map((item, index) => (
-                <div key={`${item.isPotentialMatch ? 'match' : 'collab'}-${item.id}`}>
+                
+                {/* Add banner after the 5th item (index 4) */}
+                {index === 4 && (
                   <div 
-                    className={`transition-all duration-500 ${
+                    className={`my-4 transition-all duration-500 ${
                       showAnimatedItems 
                         ? 'opacity-100 translate-y-0' 
                         : 'opacity-0 translate-y-4'
                     }`}
-                    style={{ transitionDelay: `${200 + index * 150}ms` }}
+                    style={{ transitionDelay: `${200 + (index + 1) * 150}ms` }}
                   >
-                    <CollaborationListItem
-                      collaboration={item}
+                    <AddCollabBanner
                       isAuthenticated={isAuthenticated}
-                      onViewDetails={() => handleViewDetails(item)}
-                      onRequestCollaboration={() => handleRequestCollaboration(item, item.isPotentialMatch)}
-                      isPotentialMatch={item.isPotentialMatch}
-                      collaborationStatus={
-                        // Never show collaboration status for user's own collaborations
-                        userProfile?.user?.id && item.creator_id === userProfile.user.id
-                          ? undefined
-                          : // Get status from the new function
-                            getCollaborationStatus(item.id) as 'pending' | 'matched' | undefined
-                      }
-                      onNavigateToMatches={() => setLocation('/matches')}
-                      currentUserId={userProfile?.user?.id}
-                      isApplicationPending={isAuthenticatedButNotApproved}
+                      isApproved={userProfile?.user?.is_approved || false}
+                      onSignIn={handleAuthenticationPrompt}
                     />
                   </div>
-                  
-                  {/* Add banner after the 5th item (index 4) */}
-                  {index === 4 && (
-                    <div 
-                      className={`my-4 transition-all duration-500 ${
-                        showAnimatedItems 
-                          ? 'opacity-100 translate-y-0' 
-                          : 'opacity-0 translate-y-4'
-                      }`}
-                      style={{ transitionDelay: `${200 + (index + 1) * 150}ms` }}
-                    >
-                      <AddCollabBanner
-                        isAuthenticated={isAuthenticated}
-                        isApproved={userProfile?.user?.is_approved || false}
-                        onSignIn={handleAuthenticationPrompt}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-              {/* Add banner at the end if there are collaborations */}
-              {allItems.length > 0 && !loadingMore && (
-                <div 
-                  className={`mt-4 transition-all duration-500 ${
-                    showAnimatedItems 
-                      ? 'opacity-100 translate-y-0' 
-                      : 'opacity-0 translate-y-4'
-                  }`}
-                  style={{ transitionDelay: `${200 + allItems.length * 150}ms` }}
-                >
-                  <AddCollabBanner
-                    isAuthenticated={isAuthenticated}
-                    isApproved={userProfile?.user?.is_approved || false}
-                    onSignIn={handleAuthenticationPrompt}
-                  />
-                </div>
-              )}
+                )}
+              </div>
+            ))}
+            
+            {/* Add banner at the end if there are collaborations */}
+            {allItems.length > 0 && !loadingMore && (
+              <div 
+                className={`mt-4 transition-all duration-500 ${
+                  showAnimatedItems 
+                    ? 'opacity-100 translate-y-0' 
+                    : 'opacity-0 translate-y-4'
+                }`}
+                style={{ transitionDelay: `${200 + allItems.length * 150}ms` }}
+              >
+                <AddCollabBanner
+                  isAuthenticated={isAuthenticated}
+                  isApproved={userProfile?.user?.is_approved || false}
+                  onSignIn={handleAuthenticationPrompt}
+                />
+              </div>
+            )}
 
-              {/* Loading more indicator */}
-              {loadingMore && (
-                <div className="flex justify-center py-8">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm text-muted-foreground">Loading more...</span>
-                  </div>
+            {/* Loading more indicator */}
+            {loadingMore && (
+              <div className="flex justify-center py-8">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm text-muted-foreground">Loading more...</span>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* End of list indicator */}
-              {!hasMore && allItems.length > 0 && (
-                <div 
-                  className={`text-center py-8 transition-all duration-500 ${
-                    showAnimatedItems 
-                      ? 'opacity-100 translate-y-0' 
-                      : 'opacity-0 translate-y-4'
-                  }`}
-                  style={{ transitionDelay: `${200 + (allItems.length + 1) * 150}ms` }}
-                >
-                  <p className="text-sm text-muted-foreground">
-                    You've reached the end of available collaborations
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+            {/* End of list indicator */}
+            {!hasMore && allItems.length > 0 && (
+              <div 
+                className={`text-center py-8 transition-all duration-500 ${
+                  showAnimatedItems 
+                    ? 'opacity-100 translate-y-0' 
+                    : 'opacity-0 translate-y-4'
+                }`}
+                style={{ transitionDelay: `${200 + (allItems.length + 1) * 150}ms` }}
+              >
+                <p className="text-sm text-muted-foreground">
+                  You've reached the end of available collaborations
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Dialogs */}

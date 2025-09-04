@@ -60,8 +60,6 @@ const BlockchainNetworksFilter = lazy(() => import("@/pages/filters/blockchain-n
 // Create wrapper components for components with custom props
 // These wrapper components convert RouteComponentProps to the specific props each component needs
 const MyCollaborations = (props: RouteComponentProps) => <MyCollaborationsComponent />;
-const CreateCollaboration = (props: RouteComponentProps<{ id?: string }>) => <CreateCollaborationComponent id={props.params?.id} />;
-const CreateCollaborationStepsWrapper = (props: RouteComponentProps<{ id?: string }>) => <CreateCollaborationSteps id={props.params?.id} />;
 
 // Navigation routes that are preloaded
 const PRELOADED_ROUTES = ['/discover', '/my-collaborations', '/requests', '/matches'];
@@ -87,12 +85,7 @@ const APPLICATION_ROUTES = [
   '/filters/user-followers',
   '/filters/funding-stages',
   '/filters/token-status',
-  '/filters/blockchain-networks',
-
-  // Collaboration form pages
-  '/create-collaboration-v2',
-  '/create-collaboration-steps',
-  '/create-collaboration'
+  '/filters/blockchain-networks'
 ];
 
 function Router() {
@@ -103,7 +96,7 @@ function Router() {
   const getSuspenseFallback = () => <NoLoadingFallback />;
 
   return (
-    <div className="min-h-screen bg-background w-full flex flex-col h-full">
+    <div className="min-h-screen bg-background w-full flex flex-col">
       <ImpersonationBanner />
       <div className={`w-full flex-grow overflow-auto ${showBottomNav ? 'pb-24' : ''}`}>
         <Suspense fallback={getSuspenseFallback()}>
@@ -164,9 +157,9 @@ function Router() {
             <Route path="/admin/referrals" component={AdminReferralsPage} />
 
             {/* Collaboration Routes */}
-            <Route path="/create-collaboration-steps" component={CreateCollaborationStepsWrapper} />
+            <Route path="/create-collaboration-steps" component={CreateCollaborationSteps} />
             <Route path="/create-collaboration-v2" component={CreateCollaborationV2} />
-            <Route path="/create-collaboration" component={CreateCollaboration} />
+            <Route path="/create-collaboration" component={CreateCollaborationComponent} />
             
             {/* Profile Routes */}
             <Route path="/profile-overview" component={ProfileOverview} />
