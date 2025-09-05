@@ -13,40 +13,63 @@ import { eq, sql, inArray, and } from "drizzle-orm";
 import { format } from "date-fns";
 import fs from "fs";
 import path from "path";
+import { config } from '../shared/config';
 
-// Simple bot token configuration - one token per environment
+// Determine which bot token to use
+// In production, always use the main TELEGRAM_BOT_TOKEN
 // In development, use TELEGRAM_TEST_BOT_TOKEN if available, otherwise fall back to TELEGRAM_BOT_TOKEN
-const BOT_TOKEN =
-  process.env.NODE_ENV === "production"
-    ? process.env.TELEGRAM_BOT_TOKEN
-    : process.env.TELEGRAM_TEST_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+const botToken =
+  config.NODE_ENV === 'production'
+    ? config.TELEGRAM_BOT_TOKEN
+    : config.TELEGRAM_TEST_BOT_TOKEN || config.TELEGRAM_BOT_TOKEN;
+
+// Throw an error if the bot token is not defined, ensuring the bot does not start without a token.
+if (!botToken) {
+  // Determine the missing token based on the environment
+  const missingToken =
+    config.NODE_ENV === 'production'
+      ? 'TELEGRAM_BOT_TOKEN'
+      : 'TELEGRAM_TEST_BOT_TOKEN';
+      
+  // Log a fatal error with specific instructions
+  console.error(
+    `Telegram bot token (${missingToken}) is not defined. Please set it in your environment variables.`
+  );
+  console.error(`The application cannot start without the Telegram bot token.`);
+  console.error(`Missing token: ${missingToken}`);
+  console.error(`Environment: ${config.NODE_ENV}`);
+  
+  // Exit the process with a failure code
+  process.exit(1);
+}
+
 const currentEnvironment =
-  process.env.NODE_ENV === "production" ? "PRODUCTION" : "DEVELOPMENT";
-const isProduction = process.env.NODE_ENV === "production";
+  config.NODE_ENV === "production" ? "PRODUCTION" : "DEVELOPMENT";
+const isProduction = config.NODE_ENV === "production";
 
 // Simplified environment logging
 console.log(`🔧 TELEGRAM BOT CONFIGURATION:`);
-console.log(`🔧 NODE_ENV: "${process.env.NODE_ENV || "undefined"}"`);
+console.log(`🔧 NODE_ENV: "${config.NODE_ENV || "undefined"}"`);
 console.log(`🔧 Environment: ${currentEnvironment}`);
 console.log(
   `🔧 Bot token source: ${
-    process.env.NODE_ENV === "production"
+    config.NODE_ENV === "production"
       ? "TELEGRAM_BOT_TOKEN"
-      : process.env.TELEGRAM_TEST_BOT_TOKEN
+      : config.TELEGRAM_TEST_BOT_TOKEN
         ? "TELEGRAM_TEST_BOT_TOKEN"
         : "TELEGRAM_BOT_TOKEN (fallback)"
   }`,
 );
-console.log(`🔧 Bot token present: ${BOT_TOKEN ? "YES" : "NO"}`);
+console.log(`🔧 Bot token present: ${botToken ? "YES" : "NO"}`);
 console.log(
-  `🔧 Bot token length: ${BOT_TOKEN ? BOT_TOKEN.length : 0} characters`,
+  `🔧 Bot token length: ${botToken ? botToken.length : 0} characters`,
 );
 
-if (!BOT_TOKEN) {
+if (!botToken) {
   throw new Error("Telegram bot token is required");
 }
 
-if (!process.env.REPLIT_DOMAINS) {
+if (!config.REPLIT_DOMAINS) {
   throw new Error("REPLIT_DOMAINS is required");
 }
 
@@ -84,17 +107,17 @@ function logAdminMessage(
 // Get the webapp URL from environment
 // Production uses WEBAPP_URL, development uses WEBAPP_URL_DEV
 const WEBAPP_URL =
-  process.env.NODE_ENV === "production"
-    ? process.env.WEBAPP_URL
-    : process.env.WEBAPP_URL_DEV;
+  config.NODE_ENV === "production"
+    ? config.WEBAPP_URL
+    : config.WEBAPP_URL_DEV;
 
 // Simplified webapp URL logging
 console.log(`🔧 WEBAPP_URL CONFIGURATION:`);
-if (process.env.NODE_ENV === "production") {
-  console.log(`🔧 WEBAPP_URL: "${process.env.WEBAPP_URL || "not set"}"`);
+if (config.NODE_ENV === "production") {
+  console.log(`🔧 WEBAPP_URL: "${config.WEBAPP_URL || "not set"}"`);
 } else {
   console.log(
-    `🔧 WEBAPP_URL_DEV: "${process.env.WEBAPP_URL_DEV || "not set"}"`,
+    `🔧 WEBAPP_URL_DEV: "${config.WEBAPP_URL_DEV || "not set"}"`,
   );
 }
 console.log(
@@ -107,27 +130,26 @@ if (!WEBAPP_URL) {
     `🔧 ❌ ERROR: ${currentEnvironment} webapp URL not configured!`,
   );
   console.error(
-    `🔧 ❌ Please set ${process.env.NODE_ENV === "production" ? "WEBAPP_URL" : "WEBAPP_URL_DEV"} environment variable`,
+    `🔧 ❌ Please set ${config.NODE_ENV === "production" ? "WEBAPP_URL" : "WEBAPP_URL_DEV"} environment variable`,
   );
 }
 
-// Import config to respect LOG_LEVEL setting
-import { config } from "../shared/config";
+// Note: config already imported above
 
 // Only log if LOG_LEVEL permits INFO logs or higher
 if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
   console.log("=== Telegram Bot Configuration ===");
-  console.log("Environment:", process.env.NODE_ENV);
+  console.log("Environment:", config.NODE_ENV);
   console.log(
     "Using token type:",
-    process.env.NODE_ENV === "production" ? "Production" : "Development",
+    config.NODE_ENV === "production" ? "Production" : "Development",
   );
   console.log("Telegram Bot configured successfully");
   console.log("WebApp URL:", WEBAPP_URL);
 }
 
 // PHASE 1 OPTIMIZATION: Initialize bot with optimized polling settings
-export const bot = new TelegramBot(BOT_TOKEN, {
+export const bot = new TelegramBot(botToken, {
   polling: {
     params: {
       timeout: 10, // Reduce from default 30 seconds to 10 seconds

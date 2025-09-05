@@ -41,7 +41,8 @@ const configSchema = z.object({
     }),
   
   // Authentication
-  TELEGRAM_BOT_TOKEN: z.string().min(1, 'TELEGRAM_BOT_TOKEN is required').optional(),
+  TELEGRAM_BOT_TOKEN: z.string().min(1, 'TELEGRAM_BOT_TOKEN is required'),
+  TELEGRAM_TEST_BOT_TOKEN: z.string().min(1, 'TELEGRAM_TEST_BOT_TOKEN is required for development').optional(),
   
   // External APIs
   X_RAPIDAPI_KEY: z.string().min(1, 'X_RAPIDAPI_KEY is required for Twitter API').optional(),
@@ -52,6 +53,11 @@ const configSchema = z.object({
   // CORS settings
   CORS_ALLOWED_ORIGINS: z.string().optional()
     .transform(val => val ? val.split(',') : ['https://telegram.org']),
+    
+  // Replit and webapp settings
+  REPLIT_DOMAINS: z.string().optional(),
+  WEBAPP_URL: z.string().optional(),
+  WEBAPP_URL_DEV: z.string().optional(),
 });
 
 // Infer the type from the schema
@@ -71,6 +77,7 @@ function loadConfig(): Config {
     
     // Authentication
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    TELEGRAM_TEST_BOT_TOKEN: process.env.TELEGRAM_TEST_BOT_TOKEN,
     
     // External APIs
     X_RAPIDAPI_KEY: process.env.X_RAPIDAPI_KEY,
@@ -84,6 +91,11 @@ function loadConfig(): Config {
     
     // Logging settings
     LOG_LEVEL: process.env.LOG_LEVEL,
+    
+    // Replit and webapp settings
+    REPLIT_DOMAINS: process.env.REPLIT_DOMAINS,
+    WEBAPP_URL: process.env.WEBAPP_URL,
+    WEBAPP_URL_DEV: process.env.WEBAPP_URL_DEV,
   };
 
   // Validate configuration
@@ -109,6 +121,9 @@ function loadConfig(): Config {
     
     // In production, we enforce stricter validation
     if (process.env.NODE_ENV === 'production') {
+      if (!process.env.TELEGRAM_BOT_TOKEN) {
+          throw new Error('TELEGRAM_BOT_TOKEN must be provided in production');
+      }
       // Override defaults that should not be used in production
       const prodConfig = {
         ...config,
@@ -132,6 +147,12 @@ function loadConfig(): Config {
     } 
     // In development, we can use defaults and show warnings
     else {
+      if (!process.env.TELEGRAM_TEST_BOT_TOKEN) {
+          console.warn('==============================================================');
+          console.warn('⚠️ WARNING: TELEGRAM_TEST_BOT_TOKEN is not set for development.');
+          console.warn('    The application may not function correctly without it.');
+          console.warn('==============================================================');
+      }
       const validated = configSchema.parse(config);
       
       // Show warnings for development defaults
