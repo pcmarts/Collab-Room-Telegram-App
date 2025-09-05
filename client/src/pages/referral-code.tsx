@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { useLocation } from "wouter";
-import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
+import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
 
 export default function ReferralCodeForm() {
   const { toast } = useToast();
@@ -188,16 +188,14 @@ export default function ReferralCodeForm() {
               </div>
             )}
 
-            {/* Floating Save Button */}
-            <TelegramFixedButtonContainer>
-              <TelegramButton
-                type="submit"
-                isLoading={isSubmitting}
-                loadingText="Submitting..."
-                text="Submit Application"
-                disabled={isSubmitting}
-              />
-            </TelegramFixedButtonContainer>
+            {/* Fixed bottom button */}
+            <FixedBottomButton
+              type="submit"
+              isLoading={isSubmitting}
+              loadingText="Submitting..."
+              text="Submit Application"
+              disabled={isSubmitting}
+            />
           </form>
         </div>
       </div>

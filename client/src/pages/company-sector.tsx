@@ -10,8 +10,7 @@ import { COMPANY_TAG_CATEGORIES } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
-import { TelegramButton, TelegramFixedButtonContainer } from "@/components/ui/telegram-button";
-import { applyButtonFix } from "@/App";
+import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
 
 // Type helper for tag strings
 type TagString = string;
@@ -43,19 +42,6 @@ export default function CompanySector() {
     }
   }, [profileData]);
   
-  // Apply button fix when component mounts and after any render
-  useEffect(() => {
-    // Apply immediately on mount
-    applyButtonFix();
-    
-    // Set up interval to keep applying the fix
-    const fixInterval = setInterval(() => {
-      applyButtonFix();
-    }, 300);
-    
-    // Cleanup on unmount
-    return () => clearInterval(fixInterval);
-  }, []);
 
   const toggleCategory = (category: string) => {
     setExpandedCategories(prev =>
@@ -191,17 +177,15 @@ export default function CompanySector() {
         </div>
       </div>
 
-      {/* Button container directly at the root level - outside any form or scrollable container */}
-      <TelegramFixedButtonContainer>
-        <TelegramButton
-          type="button"
-          onClick={handleNext}
-          isLoading={isSubmitting}
-          loadingText="Saving..."
-          text="Continue to Company Details"
-          disabled={isSubmitting}
-        />
-      </TelegramFixedButtonContainer>
+      {/* Fixed bottom button */}
+      <FixedBottomButton
+        type="button"
+        onClick={handleNext}
+        isLoading={isSubmitting}
+        loadingText="Saving..."
+        text="Continue to Company Details"
+        disabled={isSubmitting}
+      />
     </div>
   );
 }

@@ -15,11 +15,7 @@ import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { OnboardingHeader } from "@/components/layout/OnboardingHeader";
-import {
-  TelegramButton,
-  TelegramFixedButtonContainer,
-} from "@/components/ui/telegram-button";
-import { applyButtonFix } from "@/App";
+import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
 
 // Type helper to extract network strings from the const object
 type NetworkString = string;
@@ -55,19 +51,6 @@ export default function CompanyDetails() {
     }
   }, [profileData]);
 
-  // Apply button fix when component mounts and after any render
-  useEffect(() => {
-    // Apply immediately on mount
-    applyButtonFix();
-
-    // Set up interval to keep applying the fix
-    const fixInterval = setInterval(() => {
-      applyButtonFix();
-    }, 300);
-
-    // Cleanup on unmount
-    return () => clearInterval(fixInterval);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -394,17 +377,15 @@ export default function CompanyDetails() {
         </div>
       </div>
 
-      {/* Button container directly at the root level - outside any form or scrollable container */}
-      <TelegramFixedButtonContainer>
-        <TelegramButton
-          type="button"
-          onClick={handleSubmit}
-          isLoading={isSubmitting}
-          loadingText="Submitting..."
-          text="Submit Application"
-          disabled={isSubmitting}
-        />
-      </TelegramFixedButtonContainer>
+      {/* Fixed bottom button */}
+      <FixedBottomButton
+        type="button"
+        onClick={handleSubmit}
+        isLoading={isSubmitting}
+        loadingText="Submitting..."
+        text="Submit Application"
+        disabled={isSubmitting}
+      />
     </div>
   );
 }
