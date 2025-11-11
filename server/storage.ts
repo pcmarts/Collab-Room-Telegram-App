@@ -2392,28 +2392,37 @@ export class DatabaseStorage implements IStorage {
 
   async incrementReferralUsage(referralId: string): Promise<UserReferral | undefined> {
     try {
-      const [referral] = await db
-        .select()
-        .from(user_referrals)
-        .where(eq(user_referrals.id, referralId));
+      // Use atomic increment within a transaction to prevent race conditions
+      const result = await db.transaction(async (tx) => {
+        // Use atomic SQL increment to prevent race conditions
+        const [updatedReferral] = await tx
+          .update(user_referrals)
+          .set({ 
+            total_used: sql`${user_referrals.total_used} + 1`,
+            updated_at: new Date()
+          })
+          .where(eq(user_referrals.id, referralId))
+          .returning();
 
-      if (!referral) {
-        console.error(`Referral with ID ${referralId} not found`);
-        return undefined;
-      }
+        if (!updatedReferral) {
+          throw new Error(`Referral with ID ${referralId} not found`);
+        }
 
-      const [updatedReferral] = await db
-        .update(user_referrals)
-        .set({ 
-          total_used: referral.total_used + 1,
-          updated_at: new Date()
-        })
-        .where(eq(user_referrals.id, referralId))
-        .returning();
+        return updatedReferral;
+      });
 
-      return updatedReferral;
+      console.log(`Successfully incremented referral usage for ID ${referralId}`);
+      return result;
     } catch (error) {
       console.error("Error incrementing referral usage:", error);
+      
+      // If it's a transaction serialization error, we could retry
+      if (error instanceof Error && error.message.includes('serialization_failure')) {
+        console.log("Retrying referral increment due to serialization failure");
+        // Simple retry logic - in production, consider exponential backoff
+        return this.incrementReferralUsage(referralId);
+      }
+      
       throw error;
     }
   }

@@ -61,12 +61,63 @@ interface TelegramRequest extends Request {
   }
 }
 
+// Authentication validation helper functions
+function isValidTelegramUserId(id: string | number): boolean {
+  // Telegram user IDs are 64-bit positive integers
+  // Allow up to 20 digits to accommodate the full range
+  const idStr = typeof id === 'number' ? id.toString() : id;
+  
+  // Basic format check: must be all digits, no leading zero, reasonable length
+  const telegramIdRegex = /^[1-9]\d{0,19}$/;
+  if (!telegramIdRegex.test(idStr)) {
+    return false;
+  }
+  
+  // Parse and validate it's a safe integer
+  const parsed = Number(idStr);
+  return Number.isSafeInteger(parsed) && parsed > 0;
+}
+
+function validateTelegramInitData(initData: string): { valid: boolean; userId?: string; } {
+  try {
+    if (!initData || typeof initData !== 'string') {
+      return { valid: false };
+    }
+
+    const decodedData = new URLSearchParams(initData);
+    const userJson = decodedData.get('user');
+    
+    if (!userJson) {
+      return { valid: false };
+    }
+    
+    const userData = JSON.parse(userJson);
+    
+    // Validate required fields exist and are valid
+    const isValid = (
+      userData.id && 
+      isValidTelegramUserId(userData.id) &&
+      userData.first_name && 
+      typeof userData.first_name === 'string' &&
+      userData.first_name.length > 0
+    );
+
+    return {
+      valid: isValid,
+      userId: isValid ? userData.id.toString() : undefined
+    };
+  } catch {
+    return { valid: false };
+  }
+}
+
 // Helper function to extract Telegram user data from request
 // This type allows us to accept either a full Request or just an object with the header we need
 type TelegramReq = TelegramRequest | { 
   headers: { 'x-telegram-init-data': string } | any;
   path?: string;
   session?: ImpersonationSession;
+  ip?: string;
 };
 
 function getTelegramUserFromRequest(req: TelegramReq) {
@@ -79,49 +130,95 @@ function getTelegramUserFromRequest(req: TelegramReq) {
     // Check if we have valid cached Telegram user data in the session
     // and it's less than 30 minutes old
     const SESSION_DATA_TTL = 30 * 60 * 1000; // 30 minutes
+    
+    // Enhanced validation with proper timestamp checking
     if (req.session?.telegramUser && 
         req.session.telegramUser.id && 
+        typeof req.session.telegramUser.cachedAt === 'number' &&
+        !isNaN(req.session.telegramUser.cachedAt) &&
         (Date.now() - req.session.telegramUser.cachedAt < SESSION_DATA_TTL)) {
-      // Use the cached data from session
+      
+      logger.debug('Using cached session data for user:', req.session.telegramUser.id);
       return req.session.telegramUser;
+    }
+
+    // Clear invalid session data if cachedAt is missing or invalid
+    if (req.session?.telegramUser && 
+        (!req.session.telegramUser.cachedAt || 
+         typeof req.session.telegramUser.cachedAt !== 'number' ||
+         isNaN(req.session.telegramUser.cachedAt))) {
+      
+      logger.warn('Clearing invalid session data - missing or invalid cachedAt timestamp');
+      delete req.session.telegramUser;
     }
 
     // STEP 1: First try to get from the standard Telegram init data
     const initData = req.headers['x-telegram-init-data'] as string;
     if (initData) {
-      try {
-        // Parse Telegram data
-        const decodedInitData = new URLSearchParams(initData);
-        const userJson = decodedInitData.get('user') || '{}';
-        logger.debug('Parsed Telegram user data:', userJson);
-        const telegramUser = JSON.parse(userJson);
-        
-        if (telegramUser.id) {
-          // Store the parsed data in session for future requests
-          if (req.session) {
-            req.session.telegramUser = {
-              ...telegramUser,
-              cachedAt: Date.now()
-            };
+      // Validate init data format first
+      const validationResult = validateTelegramInitData(initData);
+      
+      if (!validationResult.valid) {
+        logger.warn('Invalid Telegram init data format received', { 
+          ip: req.ip || 'unknown',
+          path: req.path || 'unknown',
+          userAgent: req.headers?.['user-agent'] || 'unknown'
+        });
+        // Don't continue with invalid data - try fallback method
+      } else {
+        try {
+          // Parse Telegram data
+          const decodedInitData = new URLSearchParams(initData);
+          const userJson = decodedInitData.get('user') || '{}';
+          const telegramUser = JSON.parse(userJson);
+          
+          if (telegramUser.id && isValidTelegramUserId(telegramUser.id)) {
+            // Store the parsed data in session for future requests
+            if (req.session) {
+              req.session.telegramUser = {
+                ...telegramUser,
+                cachedAt: Date.now()
+              };
+            }
+            
+            logger.info('Successful authentication via Telegram init data', {
+              userId: telegramUser.id,
+              method: 'init_data'
+            });
+            
+            return telegramUser;
           }
-          return telegramUser;
+        } catch (parseError) {
+          logger.error('Error parsing Telegram init data:', parseError, {
+            ip: req.ip || 'unknown'
+          });
+          // Continue to try the next authentication method
         }
-      } catch (parseError) {
-        logger.error('Error parsing Telegram init data:', parseError);
-        // Continue to try the next authentication method
       }
     }
     
     // STEP 2: Check for direct Telegram user ID in header (fallback mechanism)
     const telegramUserId = req.headers['x-telegram-user-id'] as string;
     if (telegramUserId) {
-      logger.debug('Using Telegram user ID from headers:', telegramUserId);
+      // Validate user ID format
+      if (!isValidTelegramUserId(telegramUserId)) {
+        logger.warn('Invalid Telegram user ID format in header', {
+          userId: telegramUserId,
+          ip: req.ip || 'unknown',
+          path: req.path || 'unknown'
+        });
+        return null;
+      }
+
+      logger.warn('Using fallback header authentication - potential security risk', {
+        userId: telegramUserId,
+        ip: req.ip || 'unknown',
+        path: req.path || 'unknown'
+      });
       
       // Create a minimal Telegram user object with just the ID
-      // This is enough for authentication purposes
       const minimalTelegramUser = {
         id: telegramUserId,
-        // We might not have these values, but they're needed for type compatibility
         first_name: 'User', // Generic placeholder
         cachedAt: Date.now()
       };
