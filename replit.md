@@ -53,6 +53,27 @@ UX preferences: Clean interfaces without excessive validation text, rely on UX r
 ### Advanced
 - **Session Storage**: PostgreSQL-backed Express sessions
 
+## Recent Changes (November 2025)
+
+### Dashboard Navigation & Account Management (November 11, 2025)
+- **Back Button Updates**: Updated navigation flow for better UX - Profile Overview and Company Info pages now navigate back to Dashboard instead of Discover page
+- **Delete Account Feature**: Added self-service account deletion functionality on Dashboard with comprehensive data removal:
+  - **"Danger Zone" Section**: Clearly marked destructive action area with warning styling
+  - **Confirmation Dialog**: Multi-step confirmation process preventing accidental deletion
+  - **Complete Data Removal**: Deletes user account and all associated data via database cascade:
+    - User profile and company information
+    - All created collaborations
+    - All collaboration requests (sent and received)
+    - All notification and marketing preferences
+    - All referral codes and events
+  - **Session Cleanup**: Automatically destroys user session and redirects to home page after deletion
+  - **Error Handling**: Comprehensive error handling with user-friendly toast notifications
+  - **UI/UX**: AlertDialog with detailed list of what will be deleted, loading states, and disabled states during deletion
+- **Backend Implementation**: 
+  - New `DELETE /api/user/delete-account` endpoint with Telegram authentication
+  - Storage layer `deleteUser()` method leveraging existing cascade delete constraints
+  - Proper session destruction to ensure complete logout after deletion
+
 ## Recent Changes (August 2025)
 
 ### Simplified Signup Flow (August 2025)
