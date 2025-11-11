@@ -208,7 +208,7 @@ export default function ProfileOverview() {
     <div className="min-h-[100svh] bg-background">
       <PageHeader
         title="My Profile"
-        backUrl="/discover"
+        backUrl="/dashboard"
         showBackButton={true}
       />
 

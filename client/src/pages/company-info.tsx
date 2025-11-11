@@ -201,7 +201,7 @@ export default function CompanyInfoForm() {
     <div className="min-h-[100svh] bg-background">
       <PageHeader 
         title="My Company"
-        backUrl="/discover"
+        backUrl="/dashboard"
         showBackButton={true}
       />
 

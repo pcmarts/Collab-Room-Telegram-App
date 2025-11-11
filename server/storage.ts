@@ -24,6 +24,7 @@ export interface IStorage {
   getUserByTelegramId(telegramId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   setUserAdminStatus(id: string, isAdmin: boolean): Promise<User | undefined>;
+  deleteUser(id: string): Promise<boolean>;
   
   // Collaboration methods
   createCollaboration(collaboration: any): Promise<Collaboration>;
@@ -140,6 +141,19 @@ export class DatabaseStorage implements IStorage {
       return updatedUser;
     } catch (error) {
       console.error("Error updating user admin status:", error);
+      throw error;
+    }
+  }
+  
+  async deleteUser(id: string): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(users)
+        .where(eq(users.id, id))
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      console.error("Error deleting user:", error);
       throw error;
     }
   }

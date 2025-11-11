@@ -1,12 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 import { useLocation } from 'wouter';
-import { UserIcon, Users, Building, Star, Bell, Calendar, Plus, Settings, Clock } from 'lucide-react';
+import { UserIcon, Users, Building, Star, Bell, Calendar, Plus, Settings, Clock, Trash2 } from 'lucide-react';
 import { FaLinkedin, FaTwitter } from 'react-icons/fa';
 
 import { PageHeader } from "../components/PageHeader";
@@ -43,6 +53,36 @@ export default function Dashboard() {
   // Initial state - will be updated when profile loads
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [notificationFrequency, setNotificationFrequency] = useState('Instant');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  // Delete account mutation
+  const deleteAccountMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('/api/user/delete-account', 'DELETE');
+    },
+    onSuccess: () => {
+      toast({
+        title: "Account Deleted",
+        description: "Your account and all associated data have been permanently deleted.",
+      });
+      // Redirect to home or landing page after a short delay
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete account. Please try again.",
+      });
+    },
+  });
+
+  const handleDeleteAccount = () => {
+    setShowDeleteDialog(false);
+    deleteAccountMutation.mutate();
+  };
   
   // Update state when profile loads
   useEffect(() => {
@@ -310,7 +350,69 @@ export default function Dashboard() {
           </CardHeader>
         </Card>
         
+        {/* Delete Account Section */}
+        <Card className="shadow-sm border-destructive/50">
+          <CardHeader className="pb-3 px-4 pt-3">
+            <CardTitle className="text-sm flex items-center gap-2 text-destructive">
+              <Trash2 className="h-4 w-4" />
+              Danger Zone
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <p className="text-sm text-muted-foreground mb-3">
+              Permanently delete your account and all associated data including your profile, company information, and collaborations. This action cannot be undone.
+            </p>
+            <Button
+              data-testid="button-delete-account"
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={deleteAccountMutation.isPending}
+            >
+              {deleteAccountMutation.isPending ? (
+                <>
+                  <Clock className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Account
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
 
+        {/* Delete Account Confirmation Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete your account and remove all your data from our servers. 
+                This includes:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>Your profile and company information</li>
+                  <li>All your collaborations</li>
+                  <li>All collaboration requests and matches</li>
+                  <li>Your preferences and settings</li>
+                </ul>
+                <strong className="block mt-3 text-destructive">This action cannot be undone.</strong>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                data-testid="button-confirm-delete"
+                onClick={handleDeleteAccount}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Yes, delete my account
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Footer with credits */}
         <div className="text-center pt-2 pb-8 text-sm text-muted-foreground">

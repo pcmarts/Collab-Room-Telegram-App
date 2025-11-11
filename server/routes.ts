@@ -404,6 +404,51 @@ export async function registerRoutes(app: Express) {
     }
   });
   
+  // Delete account endpoint
+  app.delete("/api/user/delete-account", async (req: TelegramRequest, res: Response) => {
+    try {
+      const telegramUser = getTelegramUserFromRequest(req);
+      if (!telegramUser) {
+        res.status(401);
+        return res.json({ error: "Unauthorized" });
+      }
+
+      // Get user from database
+      const [user] = await db.select()
+        .from(users)
+        .where(eq(users.telegram_id, telegramUser.id.toString()));
+
+      if (!user) {
+        res.status(404);
+        return res.json({ error: "User not found" });
+      }
+
+      // Delete the user (cascade will handle related data)
+      const deleted = await storage.deleteUser(user.id);
+      
+      if (!deleted) {
+        res.status(500);
+        return res.json({ error: "Failed to delete account" });
+      }
+
+      // Destroy the session to log out the user
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err);
+        }
+      });
+
+      return res.json({ 
+        success: true, 
+        message: "Account deleted successfully" 
+      });
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      res.status(500);
+      return res.json({ error: "Failed to delete account" });
+    }
+  });
+  
   // Admin API endpoints
   app.get("/api/admin/check", async (req, res) => {
     try {
