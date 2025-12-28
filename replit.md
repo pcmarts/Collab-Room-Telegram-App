@@ -1,127 +1,70 @@
-# The Collab Room - Replit Development Guide
+# The Collab Room
 
-## Overview
-The Collab Room is a Web3 professional networking platform designed to intelligently connect professionals. It facilitates various marketing collaborations, including Twitter campaigns, podcast appearances, live streams, research features, newsletter placements, blog posts, and networking events. The platform aims to be production-ready, featuring active collaboration matching, request management, and Telegram integration.
+A Web3 professional networking platform for marketing collaborations via Telegram.
 
-## User Preferences
-Preferred communication style: Simple, everyday language.
-UX preferences: Clean interfaces without excessive validation text, rely on UX rather than text guidance.
+## Quick Start
 
-## System Architecture
+```bash
+cp .env.example .env
+# Fill in DATABASE_URL, SESSION_SECRET, TELEGRAM_BOT_TOKEN
+npm install
+npm run db:push
+npm run dev
+```
 
-### Frontend
-- **Framework**: React with TypeScript
-- **UI**: Shadcn/ui components (Radix UI primitives), TailwindCSS (light theme)
-- **State Management**: TanStack React Query
-- **Routing**: Wouter
-- **Build**: Vite
+## Project Structure
 
-### Backend
-- **Runtime**: Node.js with Express.js
-- **Language**: TypeScript (ES modules)
-- **ORM**: Drizzle ORM (PostgreSQL)
-- **Authentication**: Telegram WebApp integration, session fallback
-- **API**: RESTful with error handling
+```
+├── client/           # React frontend (Vite)
+│   └── src/
+│       ├── components/   # UI components
+│       ├── pages/        # Route pages
+│       ├── hooks/        # Custom hooks
+│       └── lib/          # Utilities
+├── server/           # Express backend
+│   ├── routes.ts     # API routes
+│   ├── storage.ts    # Database layer
+│   └── index.ts      # Entry point
+├── shared/           # Shared code
+│   ├── schema.ts     # Drizzle schema
+│   └── config.ts     # Configuration
+├── public/           # Static assets
+└── docs/             # Documentation
+```
 
-### Database
-- **Primary**: PostgreSQL (connection pooling, optimized indexing)
-- **ORM**: Drizzle ORM (type-safe, Zod validation)
-- **Schema Management**: Drizzle Kit (migrations)
-- **Key Tables**: users, companies, collaborations, requests, marketing_preferences, notification_preferences
-- **Advanced Features**: JSONB for collaboration details, array fields for tags/networks, GIN indexes
+## Tech Stack
 
-### Core Features
+- **Frontend**: React, TypeScript, TailwindCSS, shadcn/ui
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: PostgreSQL with Drizzle ORM
+- **Auth**: Telegram WebApp integration
 
-- **Collaboration Type System**: Centralized registry with metadata, icons, colors, categories (Social Media, Marketing, Content, Events), and legacy compatibility. Features CollaborationTypePill component for consistent type display.
-- **User & Company Management**: Professional profiles (Twitter/LinkedIn integration), detailed company info (logos, funding, blockchain networks), granular marketing and notification preferences.
-- **Authentication**: Telegram WebApp initData validation, Express sessions with PostgreSQL storage.
-- **Discovery**: list view, multi-parameter filtering, cursor-based pagination
-- **Collaboration Management**: Form-based creation with multi-step wizard, 7 predefined types, clean UX without cluttering validation text, lifecycle management, application tracking.
-- **Notification System**: Real-time Telegram integration for request confirmations, host notifications, and match notifications.
+## Key Files
 
-## External Dependencies
+- `shared/schema.ts` - Database schema and types
+- `server/routes.ts` - API endpoints
+- `server/storage.ts` - Database queries
+- `client/src/App.tsx` - Frontend routing
 
-### Core
-- **Database**: PostgreSQL
-- **Authentication**: Telegram Bot API
-- **UI**: Radix UI, Shadcn/ui, TailwindCSS
-- **State Management**: TanStack React Query
-- **Form Handling**: React Hook Form, Zod
-- **Icons**: Lucide React
-- **Routing**: Wouter
+## Commands
 
-### Advanced
-- **Session Storage**: PostgreSQL-backed Express sessions
+```bash
+npm run dev          # Start development server
+npm run db:push      # Push schema to database
+npm run db:generate  # Generate migrations
+npm run db:studio    # Database GUI
+```
 
-## Recent Changes (November 2025)
+## Environment Variables
 
-### Dashboard Navigation & Account Management (November 11, 2025)
-- **Back Button Updates**: Updated navigation flow for better UX - Profile Overview and Company Info pages now navigate back to Dashboard instead of Discover page
-- **Delete Account Feature**: Added self-service account deletion functionality on Dashboard with comprehensive data removal:
-  - **"Danger Zone" Section**: Clearly marked destructive action area with warning styling
-  - **Confirmation Dialog**: Multi-step confirmation process preventing accidental deletion
-  - **Complete Data Removal**: Deletes user account and all associated data via database cascade:
-    - User profile and company information
-    - All created collaborations
-    - All collaboration requests (sent and received)
-    - All notification and marketing preferences
-    - All referral codes and events
-  - **Session Cleanup**: Automatically destroys user session and redirects to home page after deletion
-  - **Error Handling**: Comprehensive error handling with user-friendly toast notifications
-  - **UI/UX**: AlertDialog with detailed list of what will be deleted, loading states, and disabled states during deletion
-- **Backend Implementation**: 
-  - New `DELETE /api/user/delete-account` endpoint with Telegram authentication
-  - Storage layer `deleteUser()` method leveraging existing cascade delete constraints
-  - Proper session destruction to ensure complete logout after deletion
+Required:
+- `DATABASE_URL` - PostgreSQL connection
+- `SESSION_SECRET` - Session encryption (32+ chars)
+- `TELEGRAM_BOT_TOKEN` - Telegram bot token
+- `WEBAPP_URL` - Production URL
 
-## Recent Changes (August 2025)
+Optional:
+- `VITE_SUPABASE_URL` - Supabase for image storage
+- `X_RAPIDAPI_KEY` - Twitter API access
 
-### Simplified Signup Flow (August 2025)
-- **Streamlined Process**: Reduced signup from complex multi-step process to simple 3-step flow: Welcome → Personal Info → Company Basics → Application Status
-- **Removed Fields**: Eliminated Twitter follower counts, personal/company LinkedIn URLs, company funding stage, company sectors, and token information from signup process to enable faster registration
-- **Required Fields Only**: Personal Info requires only: Name, Company Email, Personal Twitter (optional). Company Basics requires: Company Name, Job Title, Website, Company Twitter
-- **Database Compatibility**: Fixed submission issues by using proper defaults (funding_stage: 'Pre-seed') while maintaining schema integrity
-- **Dashboard Editing**: All removed fields remain editable in dashboard company-info page for later completion
-- **Form Submission Fix**: Resolved database insertion errors and improved user experience with proper error handling
-- **Twitter URL Processing**: Implemented proper URL-to-handle conversion - users can enter full URLs (https://x.com/handle) but only the handle is stored in database
-- **Pending Application Status Card**: Added prominent status card at top of discover page for users awaiting approval, providing clear feedback on application progress and next steps. Also implemented collaboration request protection - users with pending applications cannot submit collaboration requests until approved
-
-### Form UX Improvements
-- **Validation Consistency**: Fixed critical validation bug where description field backend validation (200 chars) didn't match frontend limit (280 chars). Updated to consistently allow 280 characters across all components.
-- **Clean Interface Design**: Removed cluttering validation text from Co-Marketing forms. Hidden "(min 1, max 3)" text, "0/3" selection counters, and red validation error messages to create cleaner user experience.
-- **CollaborationTypePill Component**: Created reusable component displaying selected collaboration type with icon, colors, and short name in form headers.
-
-### Architecture Updates
-- **Type System Enhancement**: Improved collaboration type registry with flexible lookup and legacy compatibility.
-- **Form Validation**: Unified validation approach using hideDetails prop in LimitedTopicSelector to control UI verbosity.
-- **Component Consistency**: Enhanced StepContainer component to integrate collaboration type pills across all form steps.
-
-### New Collab Broadcast Feature (Completed August 2025)
-- **Implementation Complete**: Successfully implemented and deployed the `/broadcastcollab` command for admin-driven collaboration promotion via Telegram bot. Feature extends existing broadcast system with collaboration-specific targeting, smart CTA buttons, and automated request processing.
-
-#### Feature Components:
-- **Admin Command**: `/broadcastcollab` command with collaboration selection interface
-- **Interactive Flow**: Multi-step workflow with collaboration selection → message composition → preview → confirmation
-- **Smart CTA Buttons**: Context-aware buttons based on user relationship to collaboration:
-  - Host users: "You are the host" informational button + "View More Collabs"
-  - Already requested: "Request Already Sent" + "View Details" + "View More Collabs" 
-  - Eligible users: "Request Collab" + "View Details" + "View More Collabs"
-  - Inactive collaborations: Unavailable status + "View More Collabs"
-- **Message Personalization**: Support for dynamic placeholders (first_name, last_name, company_name, role_title, handle)
-- **Request Automation**: Direct collaboration requests through broadcast buttons with full validation
-- **State Management**: Extended existing broadcast state system for collaboration-specific flows
-
-#### Technical Implementation:
-- **Enhanced Telegram Bot**: Added collaboration broadcast handlers in `server/telegram.ts`
-- **Callback System**: New callback handlers for collaboration selection and request processing
-- **Database Integration**: Leverages existing schemas (collaborations, requests, users, notification_preferences)
-- **Schema Compatibility**: Updated legacy code to use `requests` table (replaced deprecated `matches` table)
-- **Type Safety**: Full TypeScript implementation with proper error handling and null safety
-- **Admin Logging**: Comprehensive logging for audit and debugging purposes
-
-#### Deployment Status:
-- **Production Ready**: Feature fully tested with all TypeScript errors resolved
-- **Server Status**: Successfully running with no LSP diagnostics
-- **Integration**: Seamlessly integrated with existing platform architecture
-
-The feature is production-ready and ready for admin use through the Telegram bot interface.
+See `.env.example` for all options.
