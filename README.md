@@ -18,6 +18,8 @@ A professional networking platform for Web3 marketers, enabling collaboration di
 - **Authentication**: Telegram WebApp integration
 - **Storage**: Supabase (optional, for company logos)
 
+See the [Architecture Overview](./docs/ARCHITECTURE.md) for system design and data flow diagrams.
+
 ## Quick Start
 
 ### Prerequisites
@@ -119,19 +121,13 @@ npm run db:studio
 
 ## Telegram Bot Setup
 
-1. Create a bot with [@BotFather](https://t.me/BotFather)
-2. Get your bot token
-3. Set the WebApp URL:
-   ```
-   /setmenubutton
-   ```
-   Select your bot and set the URL to your deployed app
+See the complete [Telegram Setup Guide](./docs/TELEGRAM_SETUP.md) for step-by-step instructions.
 
-4. Configure environment:
-   ```env
-   TELEGRAM_BOT_TOKEN=your-bot-token
-   WEBAPP_URL=https://your-production-domain.com
-   ```
+Quick overview:
+1. Create a bot with [@BotFather](https://t.me/BotFather)
+2. Get your bot token and save it as `TELEGRAM_BOT_TOKEN`
+3. Configure the WebApp menu button to point to your deployed URL
+4. Set `WEBAPP_URL` to your production domain
 
 ## Image Storage (Optional)
 
@@ -214,8 +210,9 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines.
 
 MIT License - see [LICENSE](./LICENSE) for details.
 
-## Support
+## Documentation
 
-- [Documentation](./docs/README.md)
-- [Troubleshooting](./docs/troubleshooting/README.md)
-- [API Reference](./docs/api/README.md)
+- [Architecture Overview](./docs/ARCHITECTURE.md) - System design and data flow
+- [Telegram Setup](./docs/TELEGRAM_SETUP.md) - Bot configuration guide
+- [Database Setup](./docs/database/SETUP.md) - Database configuration and migrations
+- [Contributing](./CONTRIBUTING.md) - Development guidelines
