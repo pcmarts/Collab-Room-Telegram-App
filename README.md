@@ -1,58 +1,221 @@
-# The Collab Room - Documentation Overview
+# The Collab Room
 
-Welcome to the documentation for The Collab Room - a cutting-edge Web3 professional networking platform that revolutionizes global professional connections through intelligent blockchain-powered technologies.
+A professional networking platform for Web3 marketers, enabling collaboration discovery and matching through Telegram integration.
 
-## Documentation Files
-
-This repository contains comprehensive documentation for designing and implementing The Collab Room application:
-
-1. **[Scope of Work](./scope.md)**: Detailed description of the project's features, components, and requirements.
-
-2. **[Application Design Outline](./app_design_outline.md)**: Comprehensive technical design including architecture, database schema, API endpoints, and UI components.
-
-3. **[Development Roadmap](./development_roadmap.md)**: Phased implementation plan with timeline estimates and task breakdowns.
-
-4. **[Implementation Guide](./implementation_guide.md)**: Specific technical recommendations, best practices, and code examples for development.
-
-## Project Overview
-
-The Collab Room is a professional networking platform built specifically for the Web3 space, focusing on connecting professionals for various types of collaborations. Key features include:
+## Features
 
 - **Discovery Feed**: Swipeable cards showing collaboration opportunities
 - **Matching System**: Intelligent matching based on user preferences
-- **Collaboration Creation**: Create various types of collaboration opportunities
-- **Blockchain Integration**: Support for multiple blockchain networks
-- **Telegram Integration**: Seamless login, chat, and notifications via Telegram
+- **Collaboration Creation**: Create various types of collaboration opportunities (podcasts, Twitter spaces, newsletters, etc.)
+- **Telegram Integration**: Seamless login and notifications via Telegram bot
+- **Twitter Integration**: Fetch company data and engagement metrics
 
-## Core Technologies
+## Tech Stack
 
-The application is built with the following technologies:
-
-- **Frontend**: React, Shadcn/UI, TailwindCSS, Framer Motion
+- **Frontend**: React, TypeScript, TailwindCSS, shadcn/ui
 - **Backend**: Node.js, Express, TypeScript
 - **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Telegram WebApp integration
-- **Integrations**: Telegram Bot API, Twitter API
+- **Storage**: Supabase (optional, for company logos)
 
-## Getting Started
+## Quick Start
 
-To get started with the project, review the documentation files in the following order:
+### Prerequisites
 
-1. Begin with the **Scope of Work** to understand the project's objectives and features
-2. Review the **Application Design Outline** for the technical architecture and components
-3. Follow the **Development Roadmap** to understand the implementation phases
-4. Use the **Implementation Guide** for specific development recommendations and examples
+- Node.js 18+ 
+- PostgreSQL database
+- Telegram Bot (create via [@BotFather](https://t.me/BotFather))
 
-## Quick Reference
+### 1. Clone and Install
 
-### 🚨 Common Issues & Troubleshooting
-- **[Documentation Portal](./docs/index.md)** → Quick access to troubleshooting guides
-- **[Company Logo Loading Issues](./docs/troubleshooting/company-logos.md)** → Fix logos not displaying
-- **[AI Assistant Guides](./docs/ai-assistant-guides/)** → Quick reference guides for AI assistance
+```bash
+git clone https://github.com/your-username/collab-room.git
+cd collab-room
+npm install
+```
 
-### 📝 Project Documentation  
-- **[Complete Documentation](./docs/README.md)** → Full technical documentation
+### 2. Configure Environment
 
-## Contact
+```bash
+cp .env.example .env
+```
 
-For more information or support, please contact the project maintainers.
+Edit `.env` with your configuration:
+
+```env
+# Required
+DATABASE_URL=postgres://user:password@localhost:5432/collabroom
+SESSION_SECRET=your-32-character-secret-here
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+WEBAPP_URL=https://your-domain.com
+
+# Optional (for image storage)
+VITE_SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-supabase-key
+```
+
+### 3. Setup Database
+
+```bash
+# Generate and run migrations
+npm run db:generate
+npm run db:migrate
+
+# Or push schema directly (for development)
+npm run db:push
+```
+
+### 4. Run the Application
+
+```bash
+# Development
+npm run dev
+
+# Production
+npm run build
+npm start
+```
+
+The app will be available at `http://localhost:5000`.
+
+## Database Setup
+
+The app uses PostgreSQL with Drizzle ORM. You can use any PostgreSQL provider:
+
+### Option 1: Local PostgreSQL
+
+```bash
+# Install PostgreSQL locally
+# Create a database
+createdb collabroom
+
+# Set DATABASE_URL in .env
+DATABASE_URL=postgres://localhost:5432/collabroom
+```
+
+### Option 2: Managed PostgreSQL (Recommended for Production)
+
+Supported providers:
+- [Neon](https://neon.tech) - Serverless PostgreSQL
+- [Supabase](https://supabase.com) - PostgreSQL with extras
+- [Railway](https://railway.app) - Simple deployment
+- [AWS RDS](https://aws.amazon.com/rds/) - Enterprise-grade
+
+### Schema Management
+
+```bash
+# Generate migrations from schema changes
+npm run db:generate
+
+# Apply migrations
+npm run db:migrate
+
+# Push schema directly (development only)
+npm run db:push
+
+# Open Drizzle Studio (database GUI)
+npm run db:studio
+```
+
+## Telegram Bot Setup
+
+1. Create a bot with [@BotFather](https://t.me/BotFather)
+2. Get your bot token
+3. Set the WebApp URL:
+   ```
+   /setmenubutton
+   ```
+   Select your bot and set the URL to your deployed app
+
+4. Configure environment:
+   ```env
+   TELEGRAM_BOT_TOKEN=your-bot-token
+   WEBAPP_URL=https://your-production-domain.com
+   ```
+
+## Image Storage (Optional)
+
+Company logos can be stored in Supabase Storage:
+
+1. Create a Supabase project
+2. Create a public bucket named `logos`
+3. Configure environment:
+   ```env
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_SERVICE_KEY=your-service-key
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_STORAGE_BUCKET=logos
+   ```
+
+Alternatively, you can use any S3-compatible storage by modifying `shared/utils/image-url.ts`.
+
+## Project Structure
+
+```
+├── client/               # React frontend
+│   ├── src/
+│   │   ├── components/   # UI components
+│   │   ├── pages/        # Route pages
+│   │   ├── hooks/        # Custom hooks
+│   │   └── lib/          # Utilities
+├── server/               # Express backend
+│   ├── routes.ts         # API routes
+│   ├── storage.ts        # Data access layer
+│   └── index.ts          # Server entry
+├── shared/               # Shared code
+│   ├── schema.ts         # Database schema
+│   └── config.ts         # Configuration
+└── docs/                 # Documentation
+```
+
+## API Endpoints
+
+### Authentication
+- `GET /api/auth/telegram` - Telegram authentication callback
+
+### Users
+- `GET /api/users/:id` - Get user profile
+- `PATCH /api/users/:id` - Update user profile
+
+### Collaborations
+- `GET /api/collaborations` - List collaborations
+- `POST /api/collaborations` - Create collaboration
+- `GET /api/collaborations/:id` - Get collaboration details
+
+### Discovery
+- `GET /api/discover` - Get discovery feed
+- `POST /api/swipe` - Record swipe action
+
+### Matches
+- `GET /api/matches` - Get user matches
+- `GET /api/matches/:id` - Get match details
+
+## Environment Variables Reference
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `SESSION_SECRET` | Yes | Session encryption key (32+ chars) |
+| `TELEGRAM_BOT_TOKEN` | Yes | Telegram bot token |
+| `WEBAPP_URL` | Yes | Production URL for Telegram WebApp |
+| `SUPABASE_URL` | No | Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | No | Supabase service key |
+| `VITE_SUPABASE_URL` | No | Supabase URL (frontend) |
+| `X_RAPIDAPI_KEY` | No | RapidAPI key for Twitter data |
+| `LOG_LEVEL` | No | Logging level (0-4) |
+
+See `.env.example` for all configuration options.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines.
+
+## License
+
+MIT License - see [LICENSE](./LICENSE) for details.
+
+## Support
+
+- [Documentation](./docs/README.md)
+- [Troubleshooting](./docs/troubleshooting/README.md)
+- [API Reference](./docs/api/README.md)

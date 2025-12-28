@@ -94,39 +94,14 @@ export default function Welcome() {
 
           <div className="text-center space-y-2 py-4">
             <p className="text-sm text-gray-500">
-              Join 50+ Web3 companies sharing powerful co-marketing opportunities
+              Join Web3 companies sharing powerful co-marketing opportunities
             </p>
-            <div className="flex justify-center gap-1">
-              <img
-                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//bondexapp_sd.jpg"
-                alt="Bondex"
-                className="w-6 h-6 rounded-full object-cover border border-gray-600"
-              />
-              <img
-                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//Cookie3_com_sd.jpg"
-                alt="Cookie3"
-                className="w-6 h-6 rounded-full object-cover border border-gray-600"
-              />
-              <img
-                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//poapxyz_sd.jpg"
-                alt="POAP"
-                className="w-6 h-6 rounded-full object-cover border border-gray-600"
-              />
-              <img
-                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//XBorgHQ_sd.jpg"
-                alt="XBorg"
-                className="w-6 h-6 rounded-full object-cover border border-gray-600"
-              />
-              <img
-                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//Flight3official_sd.jpg"
-                alt="Flight3"
-                className="w-6 h-6 rounded-full object-cover border border-gray-600"
-              />
-              <img
-                src="https://gunifdyywvzgntaubezl.supabase.co/storage/v1/object/public/logos//re_sd.jpg"
-                alt="RE"
-                className="w-6 h-6 rounded-full object-cover border border-gray-600"
-              />
+            <div className="flex justify-center gap-2 text-2xl">
+              <span>🎙️</span>
+              <span>🐦</span>
+              <span>📰</span>
+              <span>📺</span>
+              <span>🤝</span>
             </div>
           </div>
 
