@@ -22,6 +22,8 @@ Whether you want to contribute a feature, fix a bug, spin up your own instance, 
 
 **Let's make finding collaborations as easy as swiping right.**
 
+> **Try it live:** [t.me/collab_Room_bot](https://t.me/collab_Room_bot) | **Learn more:** [collabroom.xyz](https://collabroom.xyz)
+
 ---
 
 ## What is The Collab Room?
