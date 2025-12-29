@@ -4,6 +4,26 @@
 
 Collab on Twitter Spaces, podcasts, and co-marketing campaigns, right inside Telegram.
 
+---
+
+## Why Open Source?
+
+After launching 57 marketing partnerships in two years, I built the tool I wish I had. Now I'm opening it up to the community.
+
+**This isn't just code — it's a foundation.** The Collab Room solves a real problem for Web3 teams, but there's so much more it could become. New collaboration types, better matching algorithms, integrations with other platforms, mobile apps — the possibilities are endless.
+
+I'm open-sourcing this because:
+
+- **Builders build better together.** The best ideas come from people actually using the product.
+- **Web3 is about community.** It only makes sense that a Web3 networking tool is built by the community.
+- **Innovation needs iteration.** Fork it, improve it, make it your own. Build the version your community needs.
+
+Whether you want to contribute a feature, fix a bug, spin up your own instance, or take it in an entirely new direction — this codebase is yours to build on.
+
+**Let's make finding collaborations as easy as swiping right.**
+
+---
+
 ## What is The Collab Room?
 
 The Collab Room is a professional networking platform for Web3 marketers. Think "Tinder for partnerships" — browse opportunities, request to join, and connect instantly via Telegram. No contact info is shared until both parties match.
