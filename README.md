@@ -1,14 +1,31 @@
 # The Collab Room
 
-A professional networking platform for Web3 marketers, enabling collaboration discovery and matching through Telegram integration.
+**Find & Host Web3 Brand Collaborations.**
 
-## Features
+Collab on Twitter Spaces, podcasts, and co-marketing campaigns, right inside Telegram.
 
-- **Discovery Feed**: Swipeable cards showing collaboration opportunities
-- **Matching System**: Intelligent matching based on user preferences
-- **Collaboration Creation**: Create various types of collaboration opportunities (podcasts, Twitter spaces, newsletters, etc.)
-- **Telegram Integration**: Seamless login and notifications via Telegram bot
-- **Twitter Integration**: Fetch company data and engagement metrics
+## What is The Collab Room?
+
+The Collab Room is a professional networking platform for Web3 marketers. Think "Tinder for partnerships" — browse opportunities, request to join, and connect instantly via Telegram. No contact info is shared until both parties match.
+
+### How It Works
+
+1. **Browse Opportunities** — Scroll through live requests from verified Web3 brands. Filter by Twitter Spaces, podcasts, AMAs, newsletters, and more.
+
+2. **Request to Join** — See a match? Tap to request. Your profile is sent to the host. No contact info shared until approved.
+
+3. **Connect Instantly** — Once approved, a private Telegram chat opens automatically. Start planning immediately.
+
+### Collaboration Types
+
+| Type | Description |
+|------|-------------|
+| **Twitter Spaces** | Find guests or co-hosts for your next audio event |
+| **Podcast Guest** | Get featured on top Web3 podcasts |
+| **Newsletters** | Swap shoutouts in email blasts |
+| **Co-Marketing** | Joint campaigns, giveaways & threads |
+| **Research Reports** | Get featured in industry deep-dives |
+| **Live Streams** | Join YouTube or Twitch panels |
 
 ## Tech Stack
 
@@ -24,7 +41,7 @@ See the [Architecture Overview](./docs/ARCHITECTURE.md) for system design and da
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - PostgreSQL database
 - Telegram Bot (create via [@BotFather](https://t.me/BotFather))
 
@@ -59,12 +76,12 @@ SUPABASE_SERVICE_KEY=your-supabase-key
 ### 3. Setup Database
 
 ```bash
-# Generate and run migrations
+# Push schema directly (recommended for development)
+npm run db:push
+
+# Or generate and run migrations
 npm run db:generate
 npm run db:migrate
-
-# Or push schema directly (for development)
-npm run db:push
 ```
 
 ### 4. Run the Application
@@ -80,45 +97,6 @@ npm start
 
 The app will be available at `http://localhost:5000`.
 
-## Database Setup
-
-The app uses PostgreSQL with Drizzle ORM. You can use any PostgreSQL provider:
-
-### Option 1: Local PostgreSQL
-
-```bash
-# Install PostgreSQL locally
-# Create a database
-createdb collabroom
-
-# Set DATABASE_URL in .env
-DATABASE_URL=postgres://localhost:5432/collabroom
-```
-
-### Option 2: Managed PostgreSQL (Recommended for Production)
-
-Supported providers:
-- [Neon](https://neon.tech) - Serverless PostgreSQL
-- [Supabase](https://supabase.com) - PostgreSQL with extras
-- [Railway](https://railway.app) - Simple deployment
-- [AWS RDS](https://aws.amazon.com/rds/) - Enterprise-grade
-
-### Schema Management
-
-```bash
-# Generate migrations from schema changes
-npm run db:generate
-
-# Apply migrations
-npm run db:migrate
-
-# Push schema directly (development only)
-npm run db:push
-
-# Open Drizzle Studio (database GUI)
-npm run db:studio
-```
-
 ## Telegram Bot Setup
 
 See the complete [Telegram Setup Guide](./docs/TELEGRAM_SETUP.md) for step-by-step instructions.
@@ -129,31 +107,43 @@ Quick overview:
 3. Configure the WebApp menu button to point to your deployed URL
 4. Set `WEBAPP_URL` to your production domain
 
+## Database Options
+
+The app uses PostgreSQL with Drizzle ORM. You can use any PostgreSQL provider:
+
+**Local Development:**
+```bash
+createdb collabroom
+DATABASE_URL=postgres://localhost:5432/collabroom
+```
+
+**Managed PostgreSQL (Recommended for Production):**
+- [Neon](https://neon.tech) — Serverless PostgreSQL
+- [Supabase](https://supabase.com) — PostgreSQL with extras
+- [Railway](https://railway.app) — Simple deployment
+- [AWS RDS](https://aws.amazon.com/rds/) — Enterprise-grade
+
+See [Database Setup](./docs/database/SETUP.md) for detailed configuration.
+
 ## Image Storage (Optional)
 
 Company logos can be stored in Supabase Storage:
 
 1. Create a Supabase project
 2. Create a public bucket named `logos`
-3. Configure environment:
-   ```env
-   SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_SERVICE_KEY=your-service-key
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_STORAGE_BUCKET=logos
-   ```
+3. Configure environment variables (see `.env.example`)
 
-Alternatively, you can use any S3-compatible storage by modifying `shared/utils/image-url.ts`.
+The app works without image storage — logos will fall back to initials.
 
 ## Project Structure
 
 ```
 ├── client/               # React frontend
-│   ├── src/
-│   │   ├── components/   # UI components
-│   │   ├── pages/        # Route pages
-│   │   ├── hooks/        # Custom hooks
-│   │   └── lib/          # Utilities
+│   └── src/
+│       ├── components/   # UI components
+│       ├── pages/        # Route pages
+│       ├── hooks/        # Custom hooks
+│       └── lib/          # Utilities
 ├── server/               # Express backend
 │   ├── routes.ts         # API routes
 │   ├── storage.ts        # Data access layer
@@ -164,55 +154,36 @@ Alternatively, you can use any S3-compatible storage by modifying `shared/utils/
 └── docs/                 # Documentation
 ```
 
-## API Endpoints
-
-### Authentication
-- `GET /api/auth/telegram` - Telegram authentication callback
-
-### Users
-- `GET /api/users/:id` - Get user profile
-- `PATCH /api/users/:id` - Update user profile
-
-### Collaborations
-- `GET /api/collaborations` - List collaborations
-- `POST /api/collaborations` - Create collaboration
-- `GET /api/collaborations/:id` - Get collaboration details
-
-### Discovery
-- `GET /api/discover` - Get discovery feed
-- `POST /api/swipe` - Record swipe action
-
-### Matches
-- `GET /api/matches` - Get user matches
-- `GET /api/matches/:id` - Get match details
-
-## Environment Variables Reference
+## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `SESSION_SECRET` | Yes | Session encryption key (32+ chars) |
-| `TELEGRAM_BOT_TOKEN` | Yes | Telegram bot token |
+| `TELEGRAM_BOT_TOKEN` | Yes | Telegram bot token from BotFather |
 | `WEBAPP_URL` | Yes | Production URL for Telegram WebApp |
-| `SUPABASE_URL` | No | Supabase project URL |
+| `VITE_SUPABASE_URL` | No | Supabase project URL for logos |
 | `SUPABASE_SERVICE_KEY` | No | Supabase service key |
-| `VITE_SUPABASE_URL` | No | Supabase URL (frontend) |
 | `X_RAPIDAPI_KEY` | No | RapidAPI key for Twitter data |
-| `LOG_LEVEL` | No | Logging level (0-4) |
+| `LOG_LEVEL` | No | Logging verbosity (0-4) |
 
-See `.env.example` for all configuration options.
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines.
-
-## License
-
-MIT License - see [LICENSE](./LICENSE) for details.
+See `.env.example` for all options with descriptions.
 
 ## Documentation
 
-- [Architecture Overview](./docs/ARCHITECTURE.md) - System design and data flow
-- [Telegram Setup](./docs/TELEGRAM_SETUP.md) - Bot configuration guide
-- [Database Setup](./docs/database/SETUP.md) - Database configuration and migrations
-- [Contributing](./CONTRIBUTING.md) - Development guidelines
+- [Architecture Overview](./docs/ARCHITECTURE.md) — System design and data flow
+- [Telegram Setup](./docs/TELEGRAM_SETUP.md) — Bot configuration guide
+- [Database Setup](./docs/database/SETUP.md) — Database configuration and migrations
+- [Contributing](./CONTRIBUTING.md) — Development guidelines
+
+## Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines, coding standards, and how to submit pull requests.
+
+## License
+
+MIT License — see [LICENSE](./LICENSE) for details.
+
+---
+
+Built by [Paul Martin](https://twitter.com/paul_web3) | [Website](https://collabroom.xyz) | [Telegram Bot](https://t.me/collab_Room_bot)
