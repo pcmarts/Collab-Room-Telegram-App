@@ -102,10 +102,12 @@ export default function CompanyBasics() {
       console.log('Submitting application:', applicationData);
 
       // Submit to onboarding endpoint
+      const telegramInitData = window.Telegram?.WebApp?.initData || '';
       const response = await fetch('/api/onboarding', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-telegram-init-data': telegramInitData,
         },
         body: JSON.stringify(applicationData),
       });
