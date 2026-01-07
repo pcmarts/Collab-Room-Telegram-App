@@ -20,9 +20,7 @@ I'm open-sourcing this because:
 
 Whether you want to contribute a feature, fix a bug, spin up your own instance, or take it in an entirely new direction — this codebase is yours to build on.
 
-**Let's make finding collaborations as easy as swiping right.**
-
-> **Try it live:** [t.me/collab_Room_bot](https://t.me/collab_Room_bot) | **Learn more:** [collabroom.xyz](https://collabroom.xyz)
+**Let's make finding collaborations easy.**
 
 ---
 
