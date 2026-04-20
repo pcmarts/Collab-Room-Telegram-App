@@ -2,9 +2,9 @@ import type { Express, Request, Response, NextFunction } from "express";
 import type { Session } from 'express-session';
 import { createServer } from "http";
 import { db } from "./db";
-import { 
-  users, companies, notification_preferences, marketing_preferences, 
-  collaborations, requests,
+import {
+  users, companies, notification_preferences, marketing_preferences,
+  collaborations, collab_applications, requests,
   referral_events, user_referrals,
   createCollaborationSchema, applicationSchema, collabApplicationSchema,
   InsertCollaboration, CollabApplication, insertCollabApplicationSchema,
@@ -814,22 +814,25 @@ export async function registerRoutes(app: Express) {
         return res.json({ error: 'Invalid Telegram data' });
       }
 
-      const existingUsers = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      const isProfileUpdate = existingUsers.length > 0;
-
       if (!first_name) {
         res.status(400);
         return res.json({ error: 'First name is required' });
       }
 
       const result = await db.transaction(async (tx) => {
-        let user;
-        
+        // Re-check inside the transaction to narrow the race window; the UNIQUE
+        // constraint on telegram_id still protects correctness if two parallel
+        // transactions race past this point — the losing INSERT throws and is
+        // caught below to return a 409 instead of a 500.
+        const existingUsers = await tx.select()
+          .from(users)
+          .where(eq(users.telegram_id, telegramUser.id.toString()));
+        const isProfileUpdate = existingUsers.length > 0;
+
+        let user: any;
+
         if (isProfileUpdate) {
-          [user] = await tx
+          const updatedRows = await tx
             .update(users)
             .set({
               first_name,
@@ -842,14 +845,15 @@ export async function registerRoutes(app: Express) {
             })
             .where(eq(users.telegram_id, telegramUser.id.toString()))
             .returning();
+          user = (updatedRows as any[])[0];
         } else {
           // Create a display handle if the user doesn't have a Telegram username
           const handle = telegramUser.username || `user_${telegramUser.id.toString().substring(0, 8)}`;
-          
+
           // Log what we're using to help with debugging
           logger.debug(`Creating user with Telegram ID: ${telegramUser.id} and handle: ${handle}`);
-          
-          [user] = await tx
+
+          const insertedRows = await tx
             .insert(users)
             .values({
               telegram_id: telegramUser.id.toString(),
@@ -864,6 +868,7 @@ export async function registerRoutes(app: Express) {
               applied_at: new Date()
             })
             .returning();
+          user = (insertedRows as any[])[0];
         }
 
         if (!user) {
@@ -984,23 +989,26 @@ export async function registerRoutes(app: Express) {
               ],
               collabs_to_host: collabs_to_host || [],
               filtered_marketing_topics: filtered_marketing_topics || [],
-              // Enable all filters by default
-              matchingEnabled: true,
-              filter_company_sectors_enabled: true,
-              filter_company_followers_enabled: true,
-              filter_user_followers_enabled: true,
-              filter_funding_stages_enabled: true,
-              filter_token_status_enabled: true
+              // Enable all discovery filters by default. Column names are
+              // `discovery_filter_*_enabled` — older code used the shorter
+              // `filter_*_enabled` / `matchingEnabled` names which don't exist
+              // on the table and cause the INSERT to fail.
+              discovery_filter_enabled: true,
+              discovery_filter_company_sectors_enabled: true,
+              discovery_filter_company_followers_enabled: true,
+              discovery_filter_user_followers_enabled: true,
+              discovery_filter_funding_stages_enabled: true,
+              discovery_filter_token_status_enabled: true
             });
         
 
         }
 
-        return { user };
+        return { user, isProfileUpdate };
       });
 
       // If this is a new user application (not a profile update), notify admins and the user
-      if (!isProfileUpdate && result.user) {
+      if (!result.isProfileUpdate && result.user) {
         try {
           // Get company data for the notification
           const [company] = await db
@@ -1019,26 +1027,31 @@ export async function registerRoutes(app: Express) {
               company_website: company.website,
               job_title: company.job_title,
               twitter_url: result.user.twitter_url,
-              company_twitter_handle: company.twitter_handle
+              company_twitter_handle: company.twitter_handle ?? undefined
             });
             console.log('Admin notification sent for new user application');
             
             // Fire webhook after successful company creation
             try {
-              const webhookUrl = `https://paulsworkspace.app.n8n.cloud/webhook/f4798a20-63b4-41e5-b799-749ca660caa4?id=${company.id}`;
-              const webhookResponse = await fetch(webhookUrl, {
-                method: 'GET',
-                headers: {
-                  'User-Agent': 'CollabRoom/1.0',
-                  'Content-Type': 'application/json'
-                }
-              });
-              
-              if (webhookResponse.ok) {
-                const webhookData = await webhookResponse.text();
-                logger.info(`Webhook fired successfully for company ${company.id}. Response: ${webhookData}`);
+              const baseWebhookUrl = process.env.N8N_COMPANY_SIGNUP_WEBHOOK_URL;
+              if (!baseWebhookUrl) {
+                logger.warn(`N8N_COMPANY_SIGNUP_WEBHOOK_URL not set; skipping signup webhook for company ${company.id}`);
               } else {
-                logger.error(`Webhook failed for company ${company.id}. Status: ${webhookResponse.status}`);
+                const webhookUrl = `${baseWebhookUrl}${baseWebhookUrl.includes('?') ? '&' : '?'}id=${company.id}`;
+                const webhookResponse = await fetch(webhookUrl, {
+                  method: 'GET',
+                  headers: {
+                    'User-Agent': 'CollabRoom/1.0',
+                    'Content-Type': 'application/json'
+                  }
+                });
+
+                if (webhookResponse.ok) {
+                  const webhookData = await webhookResponse.text();
+                  logger.info(`Webhook fired successfully for company ${company.id}. Response: ${webhookData}`);
+                } else {
+                  logger.error(`Webhook failed for company ${company.id}. Status: ${webhookResponse.status}`);
+                }
               }
             } catch (webhookError) {
               // Don't fail the signup process if webhook fails
@@ -1068,11 +1081,18 @@ export async function registerRoutes(app: Express) {
 
       return res.json({
         success: true,
-        message: isProfileUpdate ? 'Profile updated successfully' : 'Application submitted successfully',
+        message: result.isProfileUpdate ? 'Profile updated successfully' : 'Application submitted successfully',
         ...result
       });
 
     } catch (error) {
+      // Postgres unique-violation code for the telegram_id UNIQUE constraint — occurs
+      // when two signups for the same telegram_id race past the in-transaction check.
+      const pgCode = (error as { code?: string })?.code;
+      if (pgCode === '23505') {
+        logger.warn('User-creation race: concurrent signup for same telegram_id');
+        return res.status(409).json({ error: 'Signup already in progress, please retry' });
+      }
       console.error('Error in onboarding:', error instanceof Error ? error.message : 'Unknown error');
       res.status(500);
       return res.json({ error: 'Server error' });
@@ -1846,10 +1866,8 @@ export async function registerRoutes(app: Express) {
         .from(marketing_preferences)
         .where(eq(marketing_preferences.user_id, user.id));
         
-      // Get conference preferences
-      const [conferencePreferences] = await db.select()
-        .from(conference_preferences)
-        .where(eq(conference_preferences.user_id, user.id));
+      // Conference preferences feature was removed; stub out for response-shape compatibility.
+      const conferencePreferences = null;
         
       // Get notification preferences
       const [notificationPrefs] = await db.select()
@@ -2068,10 +2086,13 @@ export async function registerRoutes(app: Express) {
       if (!id) {
         return res.status(400).json({ error: 'Collaboration ID is required' });
       }
-      
+
       // Get Telegram user ID from request
       const telegramData = getTelegramUserFromRequest(req);
-      const telegramId = telegramData?.id?.toString() || process.env.DEV_USER_ID || '';
+      if (!telegramData?.id) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      const telegramId = telegramData.id.toString();
       console.log(`Telegram ID: ${telegramId} attempting to update collaboration: ${id}`);
       
       // First, get the actual user from the database using telegram_id
@@ -2124,6 +2145,7 @@ export async function registerRoutes(app: Express) {
           updateData.details = JSON.parse(updateData.details);
         } catch (e) {
           console.error('Error parsing details JSON:', e);
+          return res.status(400).json({ error: 'Invalid JSON in `details` field' });
         }
       }
       
@@ -2154,10 +2176,11 @@ export async function registerRoutes(app: Express) {
             updateData.required_funding_stages = JSON.parse(updateData.required_funding_stages);
           } catch (e) {
             console.error('Error parsing required_funding_stages:', e);
+            return res.status(400).json({ error: 'Invalid JSON in `required_funding_stages` field' });
           }
         }
       }
-      
+
       // Process required_company_sectors
       if (updateData.required_company_sectors) {
         console.log('Found required_company_sectors:', updateData.required_company_sectors);
@@ -2167,6 +2190,7 @@ export async function registerRoutes(app: Express) {
             updateData.required_company_sectors = JSON.parse(updateData.required_company_sectors);
           } catch (e) {
             console.error('Error parsing required_company_sectors:', e);
+            return res.status(400).json({ error: 'Invalid JSON in `required_company_sectors` field' });
           }
         }
       }
@@ -2890,10 +2914,13 @@ export async function registerRoutes(app: Express) {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      
+
       // Get Telegram user ID from request
       const telegramData = getTelegramUserFromRequest(req);
-      const telegramId = telegramData?.id?.toString() || process.env.DEV_USER_ID || '';
+      if (!telegramData?.id) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      const telegramId = telegramData.id.toString();
       console.log(`Telegram ID: ${telegramId} attempting to update collaboration: ${id}`);
       
       // First, get the actual user from the database using telegram_id
@@ -2954,10 +2981,13 @@ export async function registerRoutes(app: Express) {
     
     try {
       const { id } = req.params;
-      
+
       // Get Telegram user ID from request
       const telegramData = getTelegramUserFromRequest(req);
-      const telegramId = telegramData?.id?.toString() || process.env.DEV_USER_ID || '';
+      if (!telegramData?.id) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      const telegramId = telegramData.id.toString();
       console.log(`Telegram ID: ${telegramId} attempting to delete collaboration: ${id}`);
       
       // First, get the actual user from the database using telegram_id
@@ -3085,7 +3115,7 @@ export async function registerRoutes(app: Express) {
           console.log(`✅ Sent Telegram confirmation to requester ${user.id} about collab request sent`);
         } catch (notificationError) {
           console.error('❌ Error sending collaboration application notifications:', notificationError);
-          console.error('❌ Error stack:', notificationError.stack);
+          console.error('❌ Error stack:', notificationError instanceof Error ? notificationError.stack : notificationError);
           // Continue processing even if notification fails
         }
 
@@ -3597,18 +3627,18 @@ export async function registerRoutes(app: Express) {
               
               if (!matchedUserCollab) {
                 console.log(`Warning: Could not find user's collaboration ${matchedCollaboration.collaboration_id}`);
-                return res.status(201).json(swipe);
+                return res.status(201).json(requestResult);
               }
-              
+
               // Create a match record in the database
               console.log('Creating match record for mutual right swipes with parameters:', {
                 collaboration_id: matchedCollaboration.collaboration_id,
                 host_id: user.id, // In this case, the user is the host of their own collaboration
                 requester_id: hostId // And the host of the other collaboration is the requester for this match
               });
-              
-              // Get the note from the current swipe to include in the match
-              const note = swipe.note;
+
+              // Get the note from the current request to include in the match
+              const note = requestResult.note;
               
               const match = await storage.createMatch({
                 collaboration_id: matchedCollaboration.collaboration_id,
@@ -3678,7 +3708,7 @@ export async function registerRoutes(app: Express) {
   });
 
   // Endpoint to reset skipped requests (delete all requests with status="skipped" for a user)
-  app.post("/api/reset-left-swipes", async (req: TelegramRequest, res: Response) => {
+  app.post("/api/reset-skipped", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Reset Skipped Requests Endpoint ============');
     console.log('Request timestamp:', new Date().toISOString());
     console.log('Headers:', JSON.stringify(req.headers, null, 2));
@@ -3705,13 +3735,13 @@ export async function registerRoutes(app: Express) {
       console.log(`Found database user: ${user.id}`);
       
       // Delete skipped requests for this user
-      const deletedCount = await storage.deleteLeftSwipes(user.id);
+      const deletedCount = await storage.deleteSkippedRequests(user.id);
       
       console.log(`Success: Deleted ${deletedCount} skipped requests for user ${user.id}`);
       
       // Clear client-side cache to ensure next discovery feed load is fresh
       // This sets a header that the client can check to know it should reset local state
-      res.setHeader('X-Reset-Swipes', 'true');
+      res.setHeader('X-Reset-Skipped', 'true');
       
       return res.status(200).json({ 
         success: true,
@@ -3721,13 +3751,12 @@ export async function registerRoutes(app: Express) {
       });
       
     } catch (error) {
-      console.error('Error resetting left swipes:', error);
+      console.error('Error resetting skipped requests:', error);
       console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
-      return res.status(500).json({ error: 'Failed to reset left swipes' });
+      return res.status(500).json({ error: 'Failed to reset skipped requests' });
     }
   });
 
-  // Endpoint to retrieve a user's swipe history
   // Collaboration requests endpoints
   app.get("/api/collaboration-requests/summary", async (req: TelegramRequest, res: Response) => {
     try {
@@ -3825,81 +3854,6 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/user-swipes", async (req: TelegramRequest, res: Response) => {
-    console.log('============ DEBUG: Get User Swipes Endpoint ============');
-    console.log('Headers:', req.headers);
-
-    try {
-      // Get user from impersonation session or Telegram data
-      const telegramUser = getTelegramUserFromRequest(req);
-      if (!telegramUser) {
-        console.error('No Telegram user ID found');
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      // Get user from database
-      const [user] = await db.select()
-        .from(users)
-        .where(eq(users.telegram_id, telegramUser.id.toString()));
-
-      if (!user) {
-        console.error('User not found in database');
-        return res.status(404).json({ error: 'User not found' });
-      }
-      
-      // Get all swipes for this user (both left and right)
-      const userSwipes = await storage.getUserSwipes(user.id);
-      
-      // Enhanced debugging for swipe discrepancy investigation
-      console.log(`Found ${userSwipes.length} swipes for user ${user.id}`);
-      
-      // Get collaboration details for debugging
-      const activeCollabsCount = await storage.getActiveCollaborationsCount();
-      console.log(`Total active collaborations in database: ${activeCollabsCount}`);
-      
-      // Log detailed information about each swipe for investigation
-      if (userSwipes.length > 0) {
-        console.log(`===== SWIPE DETAIL INVESTIGATION =====`);
-        console.log(`Swipe count (${userSwipes.length}) vs Active collabs (${activeCollabsCount})`);
-        
-        // Group swipes by collaboration ID to check for duplicates
-        const swipesByCollab = userSwipes.reduce((acc, swipe) => {
-          const collabId = swipe.collaboration_id;
-          if (!acc[collabId]) {
-            acc[collabId] = [];
-          }
-          acc[collabId].push({
-            id: swipe.id,
-            direction: swipe.direction,
-            created_at: swipe.created_at
-          });
-          return acc;
-        }, {});
-        
-        // Log the grouped swipes
-        console.log(`Swipes grouped by collaboration (${Object.keys(swipesByCollab).length} unique collaborations):`);
-        for (const [collabId, swipes] of Object.entries(swipesByCollab)) {
-          console.log(`Collaboration ${collabId}: ${swipes.length} swipe(s)`);
-          if (swipes.length > 1) {
-            console.log(`  Possible duplicate swipes for collab ${collabId}:`);
-            swipes.forEach(s => console.log(`    ${s.id} - ${s.direction} - ${s.created_at}`));
-          }
-        }
-        console.log(`========================================`);
-      }
-      
-      // Return swipes
-      return res.json(userSwipes);
-    } catch (error) {
-      console.error('Failed to fetch user swipes:', error);
-      return res.status(500).json({ 
-        error: 'Failed to fetch user swipes', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
-      });
-    }
-  });
-
-  // Add user-requests endpoint (alias for user-swipes since they're now the same)
   app.get("/api/user-requests", async (req: TelegramRequest, res: Response) => {
     console.log('============ DEBUG: Get User Requests Endpoint ============');
     console.log('Headers:', req.headers);
@@ -3985,6 +3939,3 @@ export async function registerRoutes(app: Express) {
 
   return httpServer;
 }
-
-// Export the sendApplicationStatusUpdate function so it can be used elsewhere
-export { sendApplicationStatusUpdate };

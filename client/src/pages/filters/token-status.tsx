@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
+import type { MarketingPreferences } from "@/../../shared/schema";
 import { MobileCheck } from "@/components/MobileCheck";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Form, FormField, FormItem } from "@/components/ui/form";
@@ -70,7 +71,7 @@ export default function TokenStatusFilter() {
   const watchedValues = form.watch();
   
   // Fetch user's current marketing preferences
-  const { data: marketingPrefs = {}, isLoading } = useQuery({
+  const { data: marketingPrefs = {}, isLoading } = useQuery<any>({
     queryKey: ['/api/marketing-preferences'],
     staleTime: 0,
     refetchOnWindowFocus: true,

@@ -262,7 +262,7 @@ export const users = pgTable("users", {
   telegram_id: text("telegram_id").unique().notNull(),
   first_name: text("first_name").notNull(),
   last_name: text("last_name"),
-  handle: text("handle").notNull(),
+  handle: text("handle"),
   linkedin_url: text("linkedin_url"),
   email: text("email"),
   referral_code: text("referral_code"),
@@ -298,7 +298,7 @@ export const companies = pgTable("companies", {
   twitter_handle: text("twitter_handle"),
   twitter_followers: text("twitter_followers"),
   linkedin_url: text("linkedin_url"),
-  funding_stage: text("funding_stage").notNull(),
+  funding_stage: text("funding_stage"),
   has_token: boolean("has_token").default(false),
   token_ticker: text("token_ticker"),
   blockchain_networks: text("blockchain_networks").array(),
@@ -403,7 +403,11 @@ export const collaborations = pgTable("collaborations", {
     .references(() => users.id, { onDelete: "cascade" }),
   collab_type: text("collab_type").notNull(),
   status: text("status").notNull().default("active"),
+  title: text("title").notNull().default(""),
   description: text("description"), // Common description field for all collaboration types
+  has_compensation: boolean("has_compensation").notNull().default(false),
+  compensation_details: text("compensation_details"),
+  additional_requirements: text("additional_requirements"),
   // Common filtering criteria
   topics: text("topics").array(), // Standardized topics for the collaboration
 
@@ -585,10 +589,34 @@ export type NotificationPreferences =
   typeof notification_preferences.$inferSelect;
 export type MarketingPreferences = typeof marketing_preferences.$inferSelect;
 export type Collaboration = typeof collaborations.$inferSelect;
+export type CollabApplication = typeof collab_applications.$inferSelect;
 
 // CollabNotification type removed - notifications are sent directly via Telegram
-// Legacy types removed - swipes and matches tables have been deleted
 export type Request = typeof requests.$inferSelect;
+
+// Match is a view over accepted Requests — kept as a distinct type because the
+// matches UI consumes this specific shape. No `matches` table exists in the DB.
+export type Match = {
+  id: string;
+  collaboration_id: string;
+  host_id: string;
+  requester_id: string;
+  status: string;
+  note: string | null;
+  host_accepted: boolean;
+  requester_accepted: boolean;
+  created_at: Date | null;
+  updated_at: Date | null;
+};
+export type InsertMatch = {
+  collaboration_id: string;
+  host_id: string;
+  requester_id: string;
+  status?: string;
+  note?: string | null;
+  host_accepted?: boolean;
+  requester_accepted?: boolean;
+};
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
@@ -601,6 +629,7 @@ export type InsertMarketingPreferences = z.infer<
 >;
 // Event and conference preference types removed - features have been simplified
 export type InsertCollaboration = z.infer<typeof insertCollaborationSchema>;
+export type InsertCollabApplication = z.infer<typeof insertCollabApplicationSchema>;
 // InsertCollabNotification type removed - notifications are sent directly via Telegram
 // Legacy insert types removed - swipes and matches tables have been deleted
 export type InsertRequest = z.infer<typeof insertRequestSchema>;
@@ -676,9 +705,8 @@ export const collabApplicationSchema = z.object({
 });
 
 export type CollabApplicationData = z.infer<typeof collabApplicationSchema>;
-
-// Use the actual table type
-export type CollabApplication = typeof collab_applications.$inferSelect;
+// `CollabApplication` table type is declared earlier (near the other table
+// inferSelect exports) — removed the duplicate declaration that was here.
 
 // Collaboration type schemas
 // Podcast Guest Appearance
@@ -789,9 +817,13 @@ export const twitterCoMarketingDetailsSchema = z.object({
 // Create a Collaboration schema that combines all the types
 export const createCollaborationSchema = z.object({
   collab_type: z.enum(COLLAB_TYPES),
+  title: z.string().max(120, "Title must be less than 120 characters").optional().default(""),
   description: z
     .string()
     .max(280, "Description must be less than 280 characters"),
+  has_compensation: z.boolean().optional().default(false),
+  compensation_details: z.string().optional(),
+  additional_requirements: z.string().optional(),
   date_type: z.enum(["any_future_date", "specific_date"]),
   specific_date: z.string().optional(),
 

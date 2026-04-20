@@ -285,10 +285,10 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
         // Removed space_topic validation as topics are captured at the top level
       }
       else if (collabType === "Co-Marketing on Twitter") {
-        const coMarketingDetails = details as { 
-          collaboration_types: string[]; 
-          host_twitter_handle: string; 
-          host_follower_count: string 
+        const coMarketingDetails = details as unknown as {
+          collaboration_types: string[];
+          host_twitter_handle: string;
+          host_follower_count: string
         };
         
         if (!coMarketingDetails.collaboration_types || !Array.isArray(coMarketingDetails.collaboration_types) || coMarketingDetails.collaboration_types.length === 0) {
@@ -774,7 +774,7 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
               <>
                 <FormField
                   control={form.control}
-                  name="details.collaboration_types"
+                  name={"details.collaboration_types" as any}
                   render={() => (
                     <FormItem>
                       <div className="mb-4">
@@ -789,8 +789,9 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                           <FormField
                             key={type}
                             control={form.control}
-                            name="details.collaboration_types"
+                            name={"details.collaboration_types" as any}
                             render={({ field }) => {
+                              const current = (field.value as string[] | undefined) || [];
                               return (
                                 <FormItem
                                   key={type}
@@ -798,13 +799,11 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                                 >
                                   <FormControl>
                                     <Checkbox
-                                      checked={field.value?.includes(type)}
+                                      checked={current.includes(type)}
                                       onCheckedChange={(checked) => {
                                         const updatedTypes = checked
-                                          ? [...(field.value || []), type as any]
-                                          : (field.value || [])?.filter(
-                                              (t) => t !== type
-                                            );
+                                          ? [...current, type]
+                                          : current.filter((t) => t !== type);
                                         field.onChange(updatedTypes);
                                       }}
                                     />
@@ -1529,8 +1528,8 @@ export default function EditCollaborationSteps({ id }: EditCollaborationProps = 
                         <div className="space-y-3">
                           {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
                             // Count how many networks are selected in this category
-                            const selectedCount = (field.value || []).filter(
-                              (network) => networks.includes(network as any)
+                            const selectedCount = ((field.value as string[] | undefined) || []).filter(
+                              (network: string) => (networks as readonly string[]).includes(network)
                             ).length;
                             
                             return (

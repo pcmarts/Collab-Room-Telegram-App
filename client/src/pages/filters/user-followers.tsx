@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { FilterSaveButton } from "./FilterSaveButton";
 
-import { TWITTER_FOLLOWER_COUNTS } from "@/../../shared/schema";
+import { TWITTER_FOLLOWER_COUNTS, type MarketingPreferences } from "@/../../shared/schema";
 
 // Form schema for this specific filter page
 const filterSchema = z.object({
@@ -73,7 +73,7 @@ export default function UserFollowersFilter() {
   const watchedValues = form.watch();
   
   // Fetch user's current marketing preferences
-  const { data: marketingPrefs = {}, isLoading } = useQuery({
+  const { data: marketingPrefs = {}, isLoading } = useQuery<any>({
     queryKey: ['/api/marketing-preferences'],
     staleTime: 0,
     refetchOnWindowFocus: true,

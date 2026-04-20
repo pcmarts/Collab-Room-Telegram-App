@@ -52,6 +52,10 @@ import {
   type Collaboration,
 } from "@shared/schema";
 
+// Widen Collaboration's JSON details field so callers can read type-specific
+// fields (short_description, goals, etc.) without individual casts.
+type CollaborationWithDetails = Omit<Collaboration, "details"> & { details: any };
+
 // Filter interface for collaborations
 interface CollaborationFilters {
   collabTypes: string[];
@@ -106,13 +110,7 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
     queryKey: ["/api/collaborations/get", id],
     queryFn: async () => {
       if (!id) return null;
-      
-      const response = await apiRequest('GET', `/api/collaborations/get/${id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch collaboration");
-      }
-      
-      return response.json() as Promise<Collaboration>;
+      return (await apiRequest(`/api/collaborations/get/${id}`)) as CollaborationWithDetails;
     },
     enabled: !!id
   });
@@ -176,7 +174,7 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
         throw new Error("Failed to fetch collaborations");
       }
       
-      return response.json() as Promise<Collaboration[]>;
+      return response.json() as Promise<CollaborationWithDetails[]>;
     },
     enabled: !id
   });
@@ -410,7 +408,7 @@ export default function BrowseCollaborations({ id }: BrowseCollaborationsProps =
   );
   
   // Render collaboration card
-  const renderCollaborationCard = (collab: Collaboration) => (
+  const renderCollaborationCard = (collab: CollaborationWithDetails) => (
     <Card key={collab.id} className="mb-4">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">

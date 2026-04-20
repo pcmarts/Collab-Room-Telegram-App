@@ -49,11 +49,7 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
   const { data: collaboration, isLoading, isError } = useQuery({
     queryKey: [`/api/collaborations/${collabId}`],
     queryFn: async () => {
-      const response = await apiRequest(`/api/collaborations/${collabId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch collaboration details");
-      }
-      return response.json() as Promise<Collaboration>;
+      return (await apiRequest(`/api/collaborations/${collabId}`)) as Collaboration;
     },
     enabled: !!collabId
   });
@@ -77,27 +73,14 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
     
     setIsSubmitting(true);
     try {
-      const response = await apiRequest(`/api/collaborations/${collabId}/apply`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      await apiRequest(`/api/collaborations/${collabId}/apply`, 'POST', data);
+
+      toast({
+        title: "Application Submitted",
+        description: "Your application has been submitted successfully!",
       });
-      
-      if (response.ok) {
-        // Show success message
-        toast({
-          title: "Application Submitted",
-          description: "Your application has been submitted successfully!",
-        });
-        
-        // Redirect to application status page
-        setLocation('/application-status');
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit application');
-      }
+
+      setLocation('/application-status');
     } catch (error) {
       // Show error message
       toast({
@@ -198,7 +181,7 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
                 </span>
               </div>
               
-              {collaboration.has_token && (
+              {collaboration.company_has_token && (
                 <div className="flex items-center gap-2">
                   <Coins className="h-4 w-4 text-gray-500" />
                   <span className="text-sm text-gray-600">Has token</span>
@@ -214,23 +197,23 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
             </div>
             
             {/* Requirements */}
-            {(collaboration.required_company_sectors?.length > 0 || 
-              collaboration.required_blockchain_networks?.length > 0 || 
-              collaboration.required_min_followers || 
+            {((collaboration.required_company_sectors?.length ?? 0) > 0 ||
+              (collaboration.required_blockchain_networks?.length ?? 0) > 0 ||
+              collaboration.min_user_followers ||
               collaboration.additional_requirements) && (
               <>
                 <h3 className="font-medium mb-3">Requirements</h3>
                 <div className="space-y-3 mb-6">
-                  {collaboration.required_min_followers && (
+                  {collaboration.min_user_followers && (
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-500" />
                       <span className="text-sm">
-                        Minimum {collaboration.required_min_followers} Twitter followers
+                        Minimum {collaboration.min_user_followers} Twitter followers
                       </span>
                     </div>
                   )}
                   
-                  {collaboration.required_company_sectors?.length > 0 && (
+                  {(collaboration.required_company_sectors?.length ?? 0) > 0 && (
                     <div>
                       <p className="text-sm font-medium mb-2">Required Company Sectors:</p>
                       <div className="flex flex-wrap gap-1">
@@ -245,7 +228,7 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
                     </div>
                   )}
                   
-                  {collaboration.required_blockchain_networks?.length > 0 && (
+                  {(collaboration.required_blockchain_networks?.length ?? 0) > 0 && (
                     <div>
                       <p className="text-sm font-medium mb-2">Required Blockchain Networks:</p>
                       <div className="flex flex-wrap gap-1">

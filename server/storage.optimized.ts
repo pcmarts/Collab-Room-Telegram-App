@@ -4,12 +4,10 @@
  * and utilizes the new database indexes for better performance.
  */
 
-import { 
-  users, companies, collaborations, swipes, marketing_preferences,
+import {
+  users, companies, collaborations, marketing_preferences,
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration,
-  type Swipe, type InsertSwipe,
-  type Match, type InsertMatch,
   type NotificationPreferences, type MarketingPreferences
 } from "@shared/schema";
 import { db } from "./db";
@@ -74,8 +72,10 @@ export async function searchCollaborationsPaginatedOptimized(
 
     const marketingPrefs = marketingPrefsQuery.length > 0 ? marketingPrefsQuery[0] : null;
     
-    // Prepare the base query with necessary joins
-    let query = db
+    // Prepare the base query with necessary joins.
+    // Cast to any — conditional .where() reassignments further down lose type
+    // narrowing on the drizzle builder; runtime is unaffected.
+    let query: any = db
       .select({
         // Select specific fields instead of entire tables to reduce payload size
         // ===== KEY OPTIMIZATION: Only select fields that are actually needed =====
@@ -148,8 +148,8 @@ export async function searchCollaborationsPaginatedOptimized(
       baseConditions.push(not(inArray(collaborations.id, allExcludeIds)));
     }
     
-    // REMOVED: Swipe filtering - all collaborations should always be visible
-    // Users can see collaborations regardless of previous swipe interactions
+    // Note: we intentionally do NOT exclude already-requested collaborations here;
+    // the discovery feed shows all active collabs and lets the UI reflect request state.
     
     // Apply marketing preference filters directly in SQL if they exist
     if (marketingPrefs) {

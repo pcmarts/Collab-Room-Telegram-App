@@ -56,7 +56,7 @@ export function TelegramLink({
  * @param url The URL to open when clicked
  * @returns A wrapped component
  */
-export function withTelegramLink<P>(
+export function withTelegramLink<P extends object>(
   Component: React.ComponentType<P>,
   url: string
 ): React.FC<P> {

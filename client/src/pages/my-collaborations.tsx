@@ -71,12 +71,21 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import { 
-  type Collaboration, 
-  type CollabApplication, 
-  type ApplicationData 
+import {
+  type Collaboration,
+  type CollabApplication,
+  type ApplicationData
 } from "@shared/schema";
 import { Switch } from "@/components/ui/switch";
+
+// The /api/collaborations/my endpoint enriches each row with an `applications`
+// array (pending applications) and returns `details` as an arbitrarily-shaped
+// JSON object keyed by collab_type. Widen the base Collaboration type here
+// so caller code can read those fields without individual casts.
+type CollaborationWithExtras = Omit<Collaboration, "details"> & {
+  details: any;
+  applications?: CollabApplication[];
+};
 
 import {
   CalendarDays,
@@ -268,8 +277,13 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   // Live collaborations toggle state
   const [activeCollabs, setActiveCollabs] = useState<Record<string, boolean>>({});
   
-  // Application detail dialog state
-  const [selectedApplication, setSelectedApplication] = useState<CollabApplication | null>(null);
+  // Application detail dialog state — widen the CollabApplication shape to
+  // include the server-enriched `application_data` and `collaboration` fields.
+  type ApplicationWithExtras = CollabApplication & {
+    application_data?: any;
+    collaboration?: any;
+  };
+  const [selectedApplication, setSelectedApplication] = useState<ApplicationWithExtras | null>(null);
   const [applicationDialogOpen, setApplicationDialogOpen] = useState(false);
   
   // Application status update
@@ -306,12 +320,12 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
         
         // Initialize activeCollabs state based on fetched data
         const statusMap: Record<string, boolean> = {};
-        data.forEach((collab: Collaboration) => {
+        data.forEach((collab: CollaborationWithExtras) => {
           statusMap[collab.id] = collab.status === 'active';
         });
         setActiveCollabs(statusMap);
-        
-        return data as Collaboration[];
+
+        return data as CollaborationWithExtras[];
       } catch (error) {
         console.error("Error fetching collaborations:", error);
         throw error;
@@ -590,7 +604,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   }
 
   // Render a collaboration card
-  const renderCollaborationCard = (collab: Collaboration) => {
+  const renderCollaborationCard = (collab: CollaborationWithExtras) => {
     // Check if there are any pending applications
     const pendingApplications = collab.applications?.filter(app => app.status === 'pending') || [];
     const hasApplications = pendingApplications.length > 0;
@@ -813,7 +827,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
             
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Clock className="h-3 w-3" />
-              <span>Created on {new Date(collab.created_at).toLocaleDateString()}</span>
+              <span>Created on {new Date(collab.created_at ?? Date.now()).toLocaleDateString()}</span>
             </div>
           </div>
           
@@ -858,20 +872,31 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   };
   
   // Render an application card
-  const renderApplicationCard = (application: CollabApplication) => {
+  const renderApplicationCard = (application: CollabApplication & { application_data?: any; collaboration?: { title?: string } }) => {
+    // Shape of the collab-application form submission (separate from the
+    // onboarding ApplicationData in @shared/schema).
+    type CollabApplicationFormData = {
+      reason: string;
+      experience: string;
+      portfolioLinks: string;
+      twitterHandle: string;
+      githubHandle: string;
+      notes: string;
+    };
+
     // Parse the application data with safe defaults
-    let applicationData: ApplicationData = {
+    let applicationData: CollabApplicationFormData = {
       reason: '',
       experience: '',
       portfolioLinks: '',
       twitterHandle: '',
       githubHandle: '',
       notes: ''
-    } as ApplicationData;
-    
+    };
+
     try {
       if (application.application_data && typeof application.application_data === 'object') {
-        applicationData = { ...applicationData, ...(application.application_data as ApplicationData) };
+        applicationData = { ...applicationData, ...(application.application_data as CollabApplicationFormData) };
       }
     } catch (error) {
       console.error("Error parsing application data:", error);
@@ -882,7 +907,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       switch (application.status) {
         case 'approved':
           return (
-            <Badge variant="success" className="flex items-center gap-1">
+            <Badge variant="default" className="flex items-center gap-1">
               <Check className="h-3 w-3" /> Approved
             </Badge>
           );
@@ -907,7 +932,7 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">
-                Applied on {new Date(application.created_at).toLocaleDateString()}
+                Applied on {new Date(application.created_at ?? Date.now()).toLocaleDateString()}
               </p>
               <CardTitle className="text-xl">
                 {application.collaboration?.title || "Collaboration Title"}
@@ -947,20 +972,30 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
   // Render application details in dialog
   const renderApplicationDetails = () => {
     if (!selectedApplication) return null;
-    
+
+    // Same local shape as renderApplicationCard uses.
+    type CollabApplicationFormData = {
+      reason: string;
+      experience: string;
+      portfolioLinks: string;
+      twitterHandle: string;
+      githubHandle: string;
+      notes: string;
+    };
+
     // Parse the application data with safe defaults
-    let applicationData: ApplicationData = {
+    let applicationData: CollabApplicationFormData = {
       reason: '',
       experience: '',
       portfolioLinks: '',
       twitterHandle: '',
       githubHandle: '',
       notes: ''
-    } as ApplicationData;
-    
+    };
+
     try {
       if (selectedApplication.application_data && typeof selectedApplication.application_data === 'object') {
-        applicationData = { ...applicationData, ...(selectedApplication.application_data as ApplicationData) };
+        applicationData = { ...applicationData, ...(selectedApplication.application_data as CollabApplicationFormData) };
       }
     } catch (error) {
       console.error("Error parsing application data:", error);
@@ -970,10 +1005,10 @@ export default function MyCollaborations({ collaborationId }: MyCollaborationsPr
       <div className="space-y-6">
         <div>
           <h3 className="font-medium mb-1">Application Status</h3>
-          <Badge 
+          <Badge
             variant={
-              selectedApplication.status === 'approved' ? 'success' : 
-              selectedApplication.status === 'rejected' ? 'destructive' : 
+              selectedApplication.status === 'approved' ? 'default' :
+              selectedApplication.status === 'rejected' ? 'destructive' :
               'outline'
             }
           >

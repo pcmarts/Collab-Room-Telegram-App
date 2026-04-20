@@ -54,8 +54,7 @@ const configSchema = z.object({
   CORS_ALLOWED_ORIGINS: z.string().optional()
     .transform(val => val ? val.split(',') : ['https://telegram.org']),
     
-  // Replit and webapp settings
-  REPLIT_DOMAINS: z.string().optional(),
+  // Webapp URLs (prod + dev)
   WEBAPP_URL: z.string().optional(),
   WEBAPP_URL_DEV: z.string().optional(),
 });
@@ -92,8 +91,7 @@ function loadConfig(): Config {
     // Logging settings
     LOG_LEVEL: process.env.LOG_LEVEL,
     
-    // Replit and webapp settings
-    REPLIT_DOMAINS: process.env.REPLIT_DOMAINS,
+    // Webapp URLs
     WEBAPP_URL: process.env.WEBAPP_URL,
     WEBAPP_URL_DEV: process.env.WEBAPP_URL_DEV,
   };

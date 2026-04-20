@@ -131,13 +131,9 @@ export const insertCollaborationSchema = createInsertSchema(collaborations);
 // etc.
 ```
 
-### Collaboration Requests (Unified System)
+### Collaboration Requests
 
-**⚠️ IMPORTANT: As of v1.10.19 (2025-07-13), the legacy `swipes` and `matches` tables have been permanently deleted and replaced with a unified `requests` table.**
-
-**✅ REFACTORING COMPLETED: As of v1.10.20 (2025-07-13), all swipe-related terminology has been comprehensively refactored to use requests table format throughout the codebase.**
-
-The application implements a Tinder-like swiping system for collaborations using a unified requests table:
+The product model: a user submits a **request** to join a collaboration, and the host either accepts, hides, or lets it sit as pending. There is no swipe concept — everything lives in a single `requests` table.
 
 ```typescript
 export const requests = pgTable("requests", {
@@ -151,49 +147,52 @@ export const requests = pgTable("requests", {
   host_id: uuid("host_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  status: text("status").notNull().default("pending"), // 'pending', 'accepted', 'hidden', 'skipped'
+  status: text("status").notNull().default("pending"),
   note: text("note"), // Personalized message from requester
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 ```
 
-#### Request Status Types
+#### Request status
 
-The unified requests table handles all user interactions with collaborations:
+| Status | Meaning |
+|---|---|
+| `pending` | Requester has asked to join; host hasn't decided yet |
+| `accepted` | Host accepted — this is a "match" |
+| `hidden` | Host declined the request |
+| `skipped` | Requester dismissed the collaboration from discovery without requesting |
 
-- **`pending`**: Right swipe (collaboration request) awaiting host decision
-- **`accepted`**: Mutual match - both users interested in collaboration
-- **`hidden`**: Request hidden by host (declined)
-- **`skipped`**: Left swipe (passed on collaboration)
+#### Match view
 
-#### System Benefits
+A "match" in this product is an accepted `request`. There is no `matches` table — `server/storage.ts#getUserMatches` and related helpers read `requests` where `status = 'accepted'` and return a match-shaped row for the existing matches UI.
 
-The unified system provides several advantages over the legacy dual-table approach:
+#### API endpoints
 
-1. **Data Consistency**: All user interactions stored in single table eliminates synchronization issues
-2. **Simplified Queries**: No complex JOINs between swipes and matches tables
-3. **Better Performance**: Single table queries with proper indexing
-4. **Easier Maintenance**: One source of truth for all collaboration interactions
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/requests` | Create a new request. Body: `{ collaboration_id, action: 'request' \| 'skip', note? }` |
+| `GET /api/user-requests` | List the current user's requests (as requester) |
+| `GET /api/collaboration-requests` | Host inbox: requests on the user's own collaborations. Supports `filter=sent \| received \| hidden` |
+| `GET /api/collaboration-requests/summary` | Short summary (recent requests + pending count) for the host's dashboard |
+| `POST /api/collaboration-requests/:id/accept` | Accept a request → creates a match |
+| `POST /api/collaboration-requests/:id/hide` | Hide a request |
+| `POST /api/requests/reset-skipped` | Delete the current user's skipped requests so those collaborations re-appear in discovery |
 
-#### API Integration (v1.10.20 Updates)
+#### Storage methods
 
-The refactored system now uses consistent request-based terminology:
-
-**New Primary Endpoint:**
-- `POST /api/requests` - Accepts `action` parameter ("request" or "skip") instead of legacy `direction` ("left" or "right")
-
-**Storage Methods:**
-- `createCollaborationRequest()` - Creates new requests with proper action-based parameters
-- `acceptCollaborationRequest()` - Handles request acceptance and match creation
-- `hideCollaborationRequest()` - Manages request hiding functionality
-
-**Legacy Compatibility:**
-- `POST /api/swipes` - Deprecated endpoint maintained for backward compatibility
-- `createSwipe()` - Legacy method that converts old format to new requests table
-- `getUserSwipes()` - Returns request data in legacy swipe format for compatibility
-
-All new development should use the request-based endpoints and methods, while legacy methods ensure existing code continues to function during transition.
+| Method | Purpose |
+|---|---|
+| `createCollaborationRequest(userId, collaborationId, action, note?)` | Create or return the existing request for this (user, collab) pair |
+| `getUserRequestsAsRequester(userId)` | All requests where the user is the requester |
+| `getUserRequestsAsHost(userId)` | All requests where the user is the host |
+| `getRequestsForCollaboration(collaborationId)` | All requests on a specific collaboration |
+| `getCollaborationRequests(userId, options)` | Paginated inbox view with filter support |
+| `getCollaborationRequestsSummary(userId)` | Recent + pending counts for the dashboard |
+| `acceptCollaborationRequest(userId, requestId)` | Accept and fire match notification |
+| `hideCollaborationRequest(userId, requestId)` | Mark request hidden |
+| `deleteSkippedRequests(userId)` | Clear the user's skipped requests |
+| `getUserMatches(userId)` / `createMatch(...)` / `getMatchById(id)` / `updateMatchStatus(id, status)` | Match view helpers; internally read/write accepted requests |
 
 #### Note Display in Matches
 
@@ -224,20 +223,9 @@ Key relationships in the database:
 
 ## Database Migrations
 
-The project includes several migration scripts for evolving the database schema:
+Current workflow: `npm run db:push` diffs `shared/schema.ts` against the live database and applies the change set. There are no checked-in migration files.
 
-- `db-migrate-add-indexes.js`: Adds database indexes for query optimization
-- `db-migrate-add-description.js`: Adds the 'description' column to collaborations
-- `db-migrate-add-note-to-swipes-matches.js`: Adds note column to swipes and matches tables
-- `db-migrate-add-twitter-rest-id.js`: Adds Twitter REST ID field
-- `db-migrate-add-details-to-swipes.js`: Adds the 'details' JSON column to the swipes table
-- `db-migrate-blockchain-networks.js`: Adds blockchain networks related fields
-- `db-migrate-blockchain-filters.js`: Adds blockchain filter fields
-- `db-migrate-collab-fields.js`: Restructures collaboration fields
-- `db-migrate-preferences.js`: Updates preference tables
-- `db-migrate-referral-system.js`: Adds referral tables and fields
-- `db-migrate-twitter-profiles.js`: Adds company_twitter_data table
-- `db-migrate-fix-matches-table.js`: Drops and recreates the matches table with correct foreign key references
+Older one-off migration scripts referenced in the history below (e.g. `db-migrate-add-note-to-swipes-matches.js`) are historical — the tables they targeted (`swipes`, `matches`) no longer exist.
 
 ### Recent Database Optimizations
 
@@ -258,7 +246,7 @@ In version 1.9.4, strategic database indexes were added to improve query perform
 
 - Indexes for key join columns: `users.id`, `companies.user_id`, `collaborations.creator_id`
 - Index on `collaborations.created_at` for improved pagination performance
-- Composite indexes for frequently used query patterns, such as `swipes.user_id + swipes.collaboration_id`
+- Composite indexes for frequently used query patterns, such as `requests.requester_id + requests.collaboration_id`
 - Indexes on filter fields to optimize the performance of frequently used filter operations
 
 For detailed information about the database indexing strategy, see [Database Indexing for Discovery Cards](../discovery/database-indexing.md).
@@ -284,24 +272,24 @@ In version 1.10.19, a major database restructuring was completed that unified th
 - API endpoints converted to use unified requests table
 - Database queries optimized for single-table operations
 
-**Benefits Achieved:**
-- Eliminated data consistency issues between separate swipe and match tables
-- Improved query performance with single-table operations
-- Simplified maintenance with unified data structure
-- Resolved discover page anomalies where users had match status but missing request data
+**Benefits:**
+- Single source of truth for all host/requester interactions
+- Simpler queries (no JOIN between swipes and matches)
+- Resolved discover-page anomalies where users had match status but missing request data
 
-For technical details on the migration process, see `scripts/migrate-legacy-data.ts`.
+For technical details on the original data migration, see `scripts/migrate-legacy-data.ts`.
 
-#### Table Cleanup (v1.3.1)
+#### Table cleanup
 
-In version 1.3.1, the redundant `match_requests` table was removed from the database as it was not being used by the application. The table contained no data and had no code references. All matching functionality is properly handled by the `matches` table, which tracks relationships between hosts and requesters.
+Tables that have been removed from the schema over time:
+- `match_requests` (v1.3.1) — unused
+- `swipes`, `matches` (v1.10.19) — merged into `requests`
+- `collab_notifications`, `conference_preferences` — feature removed
 
-### Database Update Process
+### Updating the schema
 
-When updating the database schema:
+1. Edit `shared/schema.ts`
+2. Run `npm run db:push`
+3. Review the SQL drizzle-kit proposes before confirming
 
-1. Update models in `shared/schema.ts`
-2. Create a migration script if needed (see examples in project root)
-3. Run `npm run db:push` to apply changes
-
-For database indexing, use the `index` function from `drizzle-orm/pg-core` within table definitions to create appropriate indexes.
+For indexes, use the `index` function from `drizzle-orm/pg-core` within table definitions.

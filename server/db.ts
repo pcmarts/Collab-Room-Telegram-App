@@ -2,14 +2,17 @@
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
+import { config } from "../shared/config";
 
 // Get Pool constructor from pg
 const { Pool } = pg;
 
-// Create a PostgreSQL connection pool
+// Create a PostgreSQL connection pool.
+// Importing from ../shared/config ensures DATABASE_URL is validated at startup
+// (throws early instead of producing a pool with an undefined connection string).
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production',
+  connectionString: config.DATABASE_URL,
+  ssl: config.NODE_ENV === 'production',
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000 // Increased timeout for better reliability

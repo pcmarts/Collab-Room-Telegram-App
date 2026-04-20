@@ -15,10 +15,12 @@ This guide walks you through creating a Telegram bot and configuring it for The 
    - Enter a **display name** for your bot (e.g., "The Collab Room")
    - Enter a **username** ending in `bot` (e.g., `TheCollabRoomBot`)
 4. BotFather will respond with your **bot token**:
+
    ```
    Use this token to access the HTTP API:
    1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
    ```
+
 5. **Save this token** - you'll need it for the `TELEGRAM_BOT_TOKEN` environment variable
 
 ## Step 2: Configure the WebApp
@@ -28,9 +30,11 @@ This guide walks you through creating a Telegram bot and configuring it for The 
 3. Click **Bot Settings** → **Menu Button**
 4. Click **Configure menu button**
 5. Enter your WebApp URL (must be HTTPS):
+
    ```
-   https://your-app-url.replit.app
+   https://your-app.example.com
    ```
+
 6. Enter a title for the button (e.g., "Open App")
 
 ## Step 3: Set Bot Commands (Optional)
@@ -38,6 +42,7 @@ This guide walks you through creating a Telegram bot and configuring it for The 
 1. Send `/setcommands` to BotFather
 2. Select your bot
 3. Send the commands in this format:
+
    ```
    start - Open the app
    help - Get help
@@ -52,7 +57,7 @@ Add these to your `.env` file:
 TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
 
 # Your public app URL (no trailing slash)
-WEBAPP_URL=https://your-app-url.replit.app
+WEBAPP_URL=https://your-app.example.com
 ```
 
 ## Step 5: Verify the Setup
@@ -65,21 +70,25 @@ WEBAPP_URL=https://your-app-url.replit.app
 ## Troubleshooting
 
 ### Bot not responding to commands
+
 - Verify `TELEGRAM_BOT_TOKEN` is correct
 - Check server logs for connection errors
 - Ensure your server is running
 
 ### WebApp not opening
+
 - Confirm the URL is HTTPS (required by Telegram)
 - Verify `WEBAPP_URL` matches your deployed URL exactly
 - Check that the menu button is configured in BotFather
 
 ### Authentication errors in browser
+
 - This is **expected behavior** when opening the app directly in a browser
 - The app must be opened from within Telegram to authenticate
 - Telegram injects `initData` that the backend uses for verification
 
 ### WebApp shows blank or errors
+
 - Open browser dev tools to check for JavaScript errors
 - Verify the app builds and runs correctly locally
 - Check that all environment variables are set
@@ -95,16 +104,19 @@ WEBAPP_URL=https://your-app-url.replit.app
 ## Additional Configuration
 
 ### Bot Profile Picture
+
 1. Send `/setuserpic` to BotFather
 2. Select your bot
 3. Send an image (recommended: 512x512 pixels)
 
 ### Bot Description
+
 1. Send `/setdescription` to BotFather
 2. Select your bot
 3. Enter a description shown when users first open the bot
 
 ### Bot About Text
+
 1. Send `/setabouttext` to BotFather
 2. Select your bot
 3. Enter text shown on the bot's profile page
@@ -115,7 +127,7 @@ For local development, you can use a tunnel service to expose your local server:
 
 ```bash
 # Using ngrok (install separately)
-ngrok http 5000
+ngrok http 3000
 ```
 
 Then update `WEBAPP_URL` in `.env` to the ngrok HTTPS URL and reconfigure the menu button in BotFather.

@@ -33,7 +33,6 @@ const DiscoveryFilters = lazy(() => import("@/pages/discovery-filters"));
 const ProfileOverview = lazy(() => import("@/pages/profile-overview"));
 const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
 const AdminUsers = lazy(() => import("@/pages/admin/users"));
-const CreateCollaborationFixed = lazy(() => import("@/pages/create-collaboration-fixed"));
 const CreateCollaborationSteps = lazy(() => import("@/pages/create-collaboration-steps"));
 const CreateCollaborationV2 = lazy(() => import("@/pages/create-collaboration-v2"));
 const EditCollaborationSteps = lazy(() => import("@/pages/edit-collaboration-steps"));
@@ -157,9 +156,9 @@ function Router() {
             <Route path="/admin/referrals" component={AdminReferralsPage} />
 
             {/* Collaboration Routes */}
-            <Route path="/create-collaboration-steps" component={CreateCollaborationSteps} />
+            <Route path="/create-collaboration-steps" component={CreateCollaborationSteps as any} />
             <Route path="/create-collaboration-v2" component={CreateCollaborationV2} />
-            <Route path="/create-collaboration" component={CreateCollaborationComponent} />
+            <Route path="/create-collaboration" component={CreateCollaborationComponent as any} />
             
             {/* Profile Routes */}
             <Route path="/profile-overview" component={ProfileOverview} />

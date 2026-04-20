@@ -16,7 +16,7 @@
  */
 
 // Define type locally to avoid circular dependency
-type CollabTypeId = 
+type CollabTypeId =
   | 'twitter_spaces_guest'
   | 'twitter_comarketing'
   | 'podcast_guest'
@@ -63,7 +63,7 @@ export const LEGACY_NAMES: Record<string, CollabTypeId> = {
   "Twitter Brand Collab": "twitter_comarketing",
   "Podcast Guests": "podcast_guest",
   "Live Stream Guests": "livestream_guest",
-  
+
   // Add any other legacy names here as needed
 };
 

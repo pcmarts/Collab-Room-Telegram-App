@@ -1,36 +1,37 @@
-import { useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect, useRef } from 'react';
 
 /**
  * Custom hook to optimize Telegram WebApp initialization
- * 
+ *
  * This hook provides an improved initialization process with minimal impact on rendering:
  * 1. Uses useLayoutEffect to execute initialization outside of render cycle
  * 2. Uses dynamic import to keep initialization code out of main bundle
- * 3. Only runs initialization once per component mount
+ * 3. Only runs initialization once per component mount (guarded by a ref so Strict Mode
+ *    re-invocation or state-triggered re-renders don't retrigger import)
  * 4. Returns initialization status for dependent operations
- * 
+ *
  * @returns boolean indicating whether Telegram WebApp is initialized
  */
 export function useTelegramInit() {
   const [isInitialized, setIsInitialized] = useState(false);
-  
-  // Initialize outside of render cycle using a layout effect
+  const initStartedRef = useRef(false);
+
   useLayoutEffect(() => {
-    // Only attempt to initialize once and in client
-    if (typeof window !== 'undefined' && !isInitialized) {
-      // Use dynamic import to keep initialization code out of main bundle
-      import('../utils/TelegramHelper').then(({ initTelegramWebApp }) => {
-        initTelegramWebApp({
-          expandApp: true,
-          debugLog: false // Reduce console output
-        });
-        setIsInitialized(true);
-      }).catch(err => {
-        console.error('[TelegramInit] Failed to load helper:', err);
+    if (typeof window === 'undefined' || initStartedRef.current) return;
+    initStartedRef.current = true;
+
+    import('../utils/TelegramHelper').then(({ initTelegramWebApp }) => {
+      initTelegramWebApp({
+        expandApp: true,
+        debugLog: false,
       });
-    }
-  }, [isInitialized]);
-  
+      setIsInitialized(true);
+    }).catch(err => {
+      console.error('[TelegramInit] Failed to load helper:', err);
+      initStartedRef.current = false; // allow retry on transient load failure
+    });
+  }, []);
+
   return isInitialized;
 }
 

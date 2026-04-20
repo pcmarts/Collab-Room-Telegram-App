@@ -8,6 +8,7 @@ import {
   requests,
   user_referrals,
   referral_events,
+  type Company,
 } from "@shared/schema";
 import { eq, sql, inArray, and } from "drizzle-orm";
 import { format } from "date-fns";
@@ -67,10 +68,6 @@ console.log(
 
 if (!botToken) {
   throw new Error("Telegram bot token is required");
-}
-
-if (!config.REPLIT_DOMAINS) {
-  throw new Error("REPLIT_DOMAINS is required");
 }
 
 // Setup admin message logging
@@ -148,17 +145,59 @@ if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
   console.log("WebApp URL:", WEBAPP_URL);
 }
 
-// PHASE 1 OPTIMIZATION: Initialize bot with optimized polling settings
-export const bot = new TelegramBot(botToken, {
-  polling: {
-    params: {
-      timeout: 10, // Reduce from default 30 seconds to 10 seconds
-      limit: 100, // Process more updates per request
-    },
-    retryTimeout: 2000, // Faster retry on network issues (default 5000)
-  },
-  webHook: false,
-});
+// On serverless platforms (Vercel), the process can't maintain a long-running poll —
+// the bot must run in webhook mode. `VERCEL=1` is set automatically on Vercel.
+const isServerless = !!process.env.VERCEL;
+
+export const bot = isServerless
+  ? new TelegramBot(botToken, { polling: false, webHook: false })
+  : new TelegramBot(botToken, {
+      polling: {
+        params: {
+          timeout: 10,
+          limit: 100,
+        },
+        retryTimeout: 2000,
+      },
+      webHook: false,
+    });
+
+/**
+ * Register a Telegram webhook URL. Gated behind REGISTER_TELEGRAM_WEBHOOK so
+ * the first Vercel deploy doesn't immediately yank updates away from any bot
+ * that's currently polling elsewhere. Set REGISTER_TELEGRAM_WEBHOOK=1 on the
+ * Vercel project only when you're ready to cut traffic over.
+ *
+ * Idempotent once enabled — Telegram accepts the same URL repeatedly and we
+ * skip the call if the current URL already matches.
+ */
+export async function ensureWebhookConfigured(): Promise<void> {
+  if (!isServerless) return;
+  if (process.env.REGISTER_TELEGRAM_WEBHOOK !== "1") {
+    console.log("[Bot] Webhook registration skipped (REGISTER_TELEGRAM_WEBHOOK not set to 1)");
+    return;
+  }
+
+  // Prefer explicit WEBAPP_URL (user-set domain). Fall back to VERCEL_URL
+  // (Vercel's auto-generated *.vercel.app URL available on every deployment).
+  const baseUrl = process.env.WEBAPP_URL || process.env.VERCEL_URL;
+  if (!baseUrl) {
+    console.error("[Bot] ensureWebhookConfigured: no WEBAPP_URL or VERCEL_URL");
+    return;
+  }
+
+  const normalized = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`;
+  const webhookUrl = `${normalized.replace(/\/$/, "")}/api/telegram/webhook`;
+
+  try {
+    const info = await bot.getWebHookInfo();
+    if (info.url === webhookUrl) return; // already configured
+    await bot.setWebHook(webhookUrl);
+    console.log(`[Bot] Webhook configured: ${webhookUrl}`);
+  } catch (err) {
+    console.error("[Bot] setWebHook failed:", err);
+  }
+}
 
 // PHASE 1 OPTIMIZATION: Defer command setup to background process after server starts
 setTimeout(async () => {
@@ -1769,7 +1808,7 @@ export async function notifyAdminsNewCollaboration(
     }
 
     // Get creator's company details
-    let company = null;
+    let company: Company | null = null;
     let companyName = "Unknown";
 
     try {
@@ -3734,7 +3773,7 @@ async function handleSwipeCallback(callbackQuery: TelegramBot.CallbackQuery) {
       const collaborationResults = await db.execute(
         sql`SELECT * FROM collaborations WHERE SUBSTRING(CAST(id as TEXT), 1, 8) = ${shortCollabId}`,
       );
-      const collaboration = collaborationResults.rows[0];
+      const collaboration = collaborationResults.rows[0] as any;
 
       if (!collaboration) {
         console.error(

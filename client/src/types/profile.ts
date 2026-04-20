@@ -1,4 +1,4 @@
-import type { User, Company, NotificationPreferences, MarketingPreferences, ConferencePreferences } from '@shared/schema';
+import type { User, Company, NotificationPreferences, MarketingPreferences } from '@shared/schema';
 
 export interface ProfileData {
   user: User;
@@ -7,5 +7,5 @@ export interface ProfileData {
   preferences: any;
   notificationPreferences: NotificationPreferences;
   marketingPreferences: MarketingPreferences;
-  conferencePreferences: ConferencePreferences;
+  conferencePreferences: null;
 }

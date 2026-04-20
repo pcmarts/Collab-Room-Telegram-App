@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import type { MarketingPreferences } from "@/../../shared/schema";
 import { MobileCheck } from "@/components/MobileCheck";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +22,7 @@ export default function FiltersDashboard() {
   const [, navigate] = useLocation();
 
   // Fetch user's current marketing preferences
-  const { data: marketingPrefs = {}, isLoading } = useQuery({
+  const { data: marketingPrefs = {}, isLoading } = useQuery<any>({
     queryKey: ['/api/marketing-preferences'],
     staleTime: 0,
     refetchOnWindowFocus: true,

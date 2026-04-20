@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { FilterSaveButton } from "./FilterSaveButton";
 
-import { BLOCKCHAIN_NETWORK_CATEGORIES } from "@/../../shared/schema";
+import { BLOCKCHAIN_NETWORK_CATEGORIES, type MarketingPreferences } from "@/../../shared/schema";
 
 // Form schema for this specific filter page
 const filterSchema = z.object({
@@ -77,7 +77,7 @@ export default function BlockchainNetworksFilter() {
   const watchedValues = form.watch();
   
   // Fetch user's current marketing preferences
-  const { data: marketingPrefs = {}, isLoading } = useQuery({
+  const { data: marketingPrefs = {}, isLoading } = useQuery<any>({
     queryKey: ['/api/marketing-preferences'],
     staleTime: 0,
     refetchOnWindowFocus: true,
@@ -128,9 +128,9 @@ export default function BlockchainNetworksFilter() {
       if (formValues.company_blockchain_networks.length > 0) {
         // Find which categories contain the selected networks
         const categoriesWithSelectedNetworks = Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES)
-          .filter(([_, networks]) => 
-            formValues.company_blockchain_networks.some(selected => 
-              networks.includes(selected)
+          .filter(([_, networks]) =>
+            formValues.company_blockchain_networks.some((selected: string) =>
+              (networks as readonly string[]).includes(selected)
             )
           )
           .map(([category]) => category);

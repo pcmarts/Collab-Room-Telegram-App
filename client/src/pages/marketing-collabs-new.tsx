@@ -141,7 +141,7 @@ export default function MarketingCollabs() {
   
   // Collaborations and applications management
   const [activeCollabs, setActiveCollabs] = useState<Record<string, boolean>>({});
-  const [selectedApplication, setSelectedApplication] = useState<CollabApplication | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<(CollabApplication & { message?: string; application_data?: any }) | null>(null);
   const [collabToDelete, setCollabToDelete] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [processingApplicationId, setProcessingApplicationId] = useState<string | null>(null);
@@ -168,12 +168,15 @@ export default function MarketingCollabs() {
     refetchOnWindowFocus: false,
   });
   
-  const { data: collaborations = [], isLoading: isCollabsLoading } = useQuery<Collaboration[]>({
+  // Server enriches collaborations with applications + returns details as arbitrary JSON.
+  type CollaborationRow = Omit<Collaboration, "details"> & { details: any; applications?: CollabApplication[] };
+  type ApplicationRow = CollabApplication & { message?: string; application_data?: any };
+  const { data: collaborations = [], isLoading: isCollabsLoading } = useQuery<CollaborationRow[]>({
     queryKey: ['/api/collaborations/my'],
     refetchOnWindowFocus: false,
   });
 
-  const { data: applications = [], isLoading: isAppsLoading } = useQuery<CollabApplication[]>({
+  const { data: applications = [], isLoading: isAppsLoading } = useQuery<ApplicationRow[]>({
     queryKey: ['/api/my-applications'],
     refetchOnWindowFocus: false,
   });
@@ -617,7 +620,7 @@ export default function MarketingCollabs() {
   };
 
   // Render a collaboration card
-  const renderCollaborationCard = (collab: Collaboration) => {
+  const renderCollaborationCard = (collab: CollaborationRow) => {
     // Get pending applications
     const pendingApplications = applications?.filter(app => 
       app.collaboration_id === collab.id && app.status === 'pending'
@@ -731,7 +734,7 @@ export default function MarketingCollabs() {
   };
 
   // Render an application card
-  const renderApplicationCard = (application: CollabApplication) => {
+  const renderApplicationCard = (application: ApplicationRow) => {
     // Get status badge
     const getStatusBadge = () => {
       switch (application.status) {

@@ -66,15 +66,23 @@ interface CardData {
   isPotentialMatch?: boolean;
   requestStatus?: 'pending' | 'accepted' | 'hidden' | 'skipped' | null; // Request status for this collaboration
   potentialMatchData?: {
+    id?: string;
     user_id: string;
     first_name: string;
     last_name?: string;
     company_name: string;
+    company_logo_url?: string;
+    company_description?: string;
+    company_website?: string;
+    company_twitter?: string;
+    company_linkedin?: string;
+    industry?: string;
     job_title?: string;
     twitter_followers?: string;
     company_twitter_followers?: string;
     swipe_created_at?: string;
     collaboration_id: string;
+    [key: string]: any;
   };
   [key: string]: any;
 }
@@ -129,7 +137,7 @@ export default function DiscoverPage() {
   const [allCardsViewed, setAllCardsViewed] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [authError, setAuthError] = useState<boolean>(false);
-  const [isResettingSwipes, setIsResettingSwipes] = useState(false);
+  const [isResettingSkipped, setIsResettingSkipped] = useState(false);
   const [showBannerAfterFifth, setShowBannerAfterFifth] = useState(false);
   const [cardViewCount, setCardViewCount] = useState(0);
   const { toast } = useToast();
@@ -162,14 +170,14 @@ export default function DiscoverPage() {
   // Mutation for resetting skipped collaborations
   const resetSkippedCollaborationsMutation = useMutation({
     mutationFn: async () => {
-      setIsResettingSwipes(true);
+      setIsResettingSkipped(true);
       try {
         const response = await apiRequest('/api/reset-skipped', 'POST');
         return response;
       } catch (error) {
         throw error;
       } finally {
-        setIsResettingSwipes(false);
+        setIsResettingSkipped(false);
       }
     },
     onSuccess: async (data) => {
@@ -187,8 +195,8 @@ export default function DiscoverPage() {
       setHasMore(true);
       setAllCardsViewed(false);
       
-      // Also reset session swipe history
-      setSwipeHistory([]);
+      // Also reset session request history
+      setRequestHistory([]);
       
       // Reset any local storage swipe records
       try {
@@ -199,13 +207,13 @@ export default function DiscoverPage() {
       }
       
       // Invalidate ALL relevant queries to force fresh data fetches
-      await queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/user-requests'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/collaborations/search'] });
       
       // Explicitly fetch fresh swipe data before getting new cards
       try {
-        const updatedSwipes = await apiRequest('/api/user-swipes');
+        const updatedSwipes = await apiRequest('/api/user-requests');
         console.log(`[Discovery] Fetched ${updatedSwipes.length} swipes after reset`);
       } catch (refreshError) {
         console.warn('[Discovery] Error refreshing swipes after reset:', refreshError);
@@ -221,7 +229,7 @@ export default function DiscoverPage() {
         variant: "destructive",
         duration: 3000,
       });
-      setIsResettingSwipes(false);
+      setIsResettingSkipped(false);
     }
   });
   
@@ -946,9 +954,9 @@ export default function DiscoverPage() {
   
   // Update the refs whenever the state changes
   useEffect(() => {
-    // Update swipe history ref to always have the latest value
-    swipeHistoryRef.current = swipeHistory;
-  }, [swipeHistory]);
+    // Update request history ref to always have the latest value
+    requestHistoryRef.current = requestHistory;
+  }, [requestHistory]);
 
   // Keep cardsRef in sync with actual cards state
   useEffect(() => {
@@ -1005,9 +1013,7 @@ export default function DiscoverPage() {
     } else {
       console.error('[Auth] Telegram WebApp is not available - this app must be opened from Telegram');
       setAuthError(true);
-      
-      // When testing in Replit webview, we need to show a helpful error
-      console.log('[Auth] If testing in Replit webview, you need to use Telegram WebApp integration');
+      console.log('[Auth] If testing outside Telegram, you need to open the app from the bot in Telegram');
     }
   }, []);
   
@@ -1452,7 +1458,7 @@ export default function DiscoverPage() {
       
       // Invalidate and refetch queries to ensure we have fresh data
       await queryClient.invalidateQueries({ queryKey: ['/api/potential-matches'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/user-swipes'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/user-requests'] });
       
       try {
         // Handle matches invalidation separately to prevent errors from /api/matches from breaking the card flow
@@ -1468,12 +1474,12 @@ export default function DiscoverPage() {
         // Get swipe IDs directly from the server - THE SINGLE SOURCE OF TRUTH
         // The server already tracks which cards have been swiped and excludes them
         // No need for additional client-side tracking
-        const latestSwipes = await apiRequest('/api/user-swipes') as any[];
+        const latestSwipes = await apiRequest('/api/user-requests') as any[];
         console.log(`[Discovery] Refresh: Server reports ${latestSwipes?.length || 0} swipes`);
         
         // We only use the local session history for cards swiped in the current session
         // that might not have been saved to the server yet
-        const sessionCardIds = swipeHistory
+        const sessionCardIds = requestHistory
           .map(hist => hist.card?.id)
           .filter(Boolean) as string[];
         console.log(`[Discovery] Refresh: Current session has ${sessionCardIds.length} cards in local swipe history`);
@@ -1693,14 +1699,14 @@ export default function DiscoverPage() {
                 </GlowButton>
               )}
               
-              {/* Add Reset Swipes button */}
-              <Button 
+              {/* Reset previously-skipped collaborations so they appear again */}
+              <Button
                 variant="secondary"
-                onClick={() => resetLeftSwipesMutation.mutate()}
-                disabled={isResettingSwipes}
+                onClick={() => resetSkippedCollaborationsMutation.mutate()}
+                disabled={isResettingSkipped}
                 className="flex items-center justify-center gap-2"
               >
-                {isResettingSwipes ? (
+                {isResettingSkipped ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Resetting...
@@ -1708,7 +1714,7 @@ export default function DiscoverPage() {
                 ) : (
                   <>
                     <RefreshCw className="h-4 w-4" />
-                    Reset Left Swipes
+                    Show Skipped Again
                   </>
                 )}
               </Button>
@@ -1814,7 +1820,7 @@ export default function DiscoverPage() {
       <CollaborationDetailsDialog
         isOpen={cardDialogOpen}
         onClose={() => setCardDialogOpen(false)}
-        collaboration={selectedCardDetails || undefined}
+        collaboration={(selectedCardDetails as any) || undefined}
       />
       
       {/* Match Moment Dialog */}

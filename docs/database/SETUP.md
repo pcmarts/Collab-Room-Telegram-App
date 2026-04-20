@@ -52,7 +52,7 @@ Any PostgreSQL provider works. Popular options:
 
 ## Schema Setup
 
-### Quick Setup (Development)
+### Setup
 
 Push the schema directly to your database:
 
@@ -60,29 +60,17 @@ Push the schema directly to your database:
 npm run db:push
 ```
 
-This is fast but doesn't create migration files.
-
-### Production Setup
-
-Generate and apply migrations:
-
-```bash
-# Generate migration files from schema
-npm run db:generate
-
-# Apply pending migrations
-npm run db:migrate
-```
+`drizzle-kit push` diffs `shared/schema.ts` against the live database and applies the necessary `ALTER`s. This project currently uses push-based workflow only — there are no migration files checked in.
 
 ### View Database
 
-Use Drizzle Studio to browse your data:
+`drizzle-kit` ships Drizzle Studio; you can run it directly:
 
 ```bash
-npm run db:studio
+npx drizzle-kit studio
 ```
 
-Opens at `https://local.drizzle.studio`
+Opens at `https://local.drizzle.studio`.
 
 ## Schema Structure
 
@@ -92,13 +80,18 @@ The database schema is defined in `shared/schema.ts`. Main tables:
 ```typescript
 users: {
   id: uuid (primary key)
-  telegram_id: text (unique)
-  telegram_username: text
-  first_name: text
+  telegram_id: text (unique, not null)
+  handle: text                  // Telegram username if any
+  first_name: text (not null)
   last_name: text
-  role: text
-  company_id: uuid (foreign key)
-  // ... preferences and settings
+  email: text
+  linkedin_url: text
+  twitter_url: text
+  twitter_followers: text
+  referral_code: text
+  referred_by: uuid             // self-reference to users.id
+  applied_at: timestamp
+  // ... other profile fields
 }
 ```
 
@@ -106,12 +99,21 @@ users: {
 ```typescript
 companies: {
   id: uuid (primary key)
-  name: text
-  description: text
+  user_id: uuid (foreign key -> users, unique)   // one company per user
+  name: text (not null)
+  job_title: text (not null)
+  website: text (not null)
   logo_url: text
-  website: text
   twitter_handle: text
-  // ... company details
+  twitter_followers: text
+  linkedin_url: text
+  funding_stage: text
+  has_token: boolean
+  token_ticker: text
+  blockchain_networks: text[]
+  tags: text[]
+  short_description: text
+  long_description: text
 }
 ```
 
@@ -120,62 +122,72 @@ companies: {
 collaborations: {
   id: uuid (primary key)
   creator_id: uuid (foreign key -> users)
-  collab_type: text
-  status: text
+  collab_type: text (not null)
+  status: text (default 'active')
+  title: text
   description: text
+  has_compensation: boolean
+  compensation_details: text
+  additional_requirements: text
   topics: text[]
-  // ... collaboration details
+  date_type: text ('any_future_date' | 'specific_date')
+  specific_date: text             // YYYY-MM-DD
+  details: jsonb (not null)       // type-specific fields per collab_type
+  // ... filter criteria for matching
 }
 ```
 
-### Swipes & Matches
-```typescript
-swipes: {
-  id: uuid (primary key)
-  user_id: uuid
-  collaboration_id: uuid
-  direction: text ('left' | 'right')
-}
+### Requests (unified table)
 
-matches: {
+The app previously used separate `swipes` and `matches` tables. Both were merged
+into a single `requests` table — a row represents a user asking to join a
+collaboration and the host's response.
+
+```typescript
+requests: {
   id: uuid (primary key)
-  requester_id: uuid
-  owner_id: uuid
-  collaboration_id: uuid
-  status: text
+  collaboration_id: uuid (foreign key -> collaborations)
+  requester_id: uuid (foreign key -> users)
+  host_id: uuid (foreign key -> users)
+  status: text           // 'pending' | 'accepted' | 'hidden' | 'skipped'
+  note: text
+  created_at: timestamp
+}
+```
+
+An accepted request is conceptually a "match" — the legacy `createMatch`
+helper in `server/storage.ts` wraps accepted-request lookups.
+
+### Collab applications
+```typescript
+collab_applications: {
+  id: uuid (primary key)
+  collaboration_id: uuid (foreign key -> collaborations)
+  applicant_id: uuid (foreign key -> users)
+  status: text (default 'pending')
+  details: jsonb (not null)
 }
 ```
 
 ## Making Schema Changes
 
-1. **Edit the schema** in `shared/schema.ts`
-
-2. **Generate migration**:
+1. **Edit the schema** in `shared/schema.ts`.
+2. **Push** to the live database:
    ```bash
-   npm run db:generate
+   npm run db:push
    ```
+3. `drizzle-kit` prints the proposed SQL before running it. Review and confirm.
 
-3. **Review** the generated SQL in `drizzle/` folder
-
-4. **Apply migration**:
-   ```bash
-   npm run db:migrate
-   ```
+Migration-file workflow (`db:generate` + `db:migrate`) is not currently configured in `package.json` — if you need auditable migrations, add those scripts and the `drizzle/` migration folder.
 
 ## Common Commands
 
 ```bash
-# Push schema (dev only)
+# Push schema to database
 npm run db:push
 
-# Generate migrations
-npm run db:generate
-
-# Apply migrations
-npm run db:migrate
-
 # Open database GUI
-npm run db:studio
+npx drizzle-kit studio
 ```
 
 ## Troubleshooting
@@ -205,24 +217,17 @@ Some providers require SSL. Add to your connection string:
 ?sslmode=require
 ```
 
-### Migration Conflicts
+### Schema Drift
 
-If migrations are out of sync:
+If `db:push` reports a conflict it can't resolve automatically (e.g., dropping a column with data, or renaming that looks like drop+add), it will prompt or require a flag. When in doubt, back up first:
+
 ```bash
-# Drop and recreate (DESTROYS DATA - dev only!)
-npm run db:push --force
+pg_dump DATABASE_URL > backup.sql
 ```
 
 ## Seeding Data
 
-For development, you can seed sample data:
-
-```bash
-# Run seed script (if available)
-npm run db:seed
-```
-
-Or manually insert via Drizzle Studio.
+There is no seed script in this repo. For development, insert sample rows manually via Drizzle Studio or `psql`.
 
 ## Backups
 

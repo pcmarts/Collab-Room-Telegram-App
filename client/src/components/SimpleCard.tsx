@@ -2,19 +2,7 @@ import React, { useState } from "react";
 import { openTelegramLink, createTwitterUrl, createTelegramLinkHandler, isIOSDevice } from "@/utils/TelegramHelper";
 import DirectButton from "@/components/ui/direct-button";
 
-// TypeScript definitions for Telegram WebApp API
-interface TelegramWebApp {
-  openLink: (url: string) => void;
-  // Include other WebApp methods as needed
-}
-
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: TelegramWebApp;
-    }
-  }
-}
+// Telegram types are declared centrally in client/src/types/telegram.d.ts
 
 import {
   Calendar,

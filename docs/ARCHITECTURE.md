@@ -59,6 +59,7 @@ The Collab Room uses a three-tier architecture connecting Telegram users to a we
 ## Data Flow
 
 ### 1. User Authentication
+
 ```
 User opens Telegram → Clicks bot button → WebApp opens
      │
@@ -70,6 +71,7 @@ Session created → User can access protected routes
 ```
 
 ### 2. Collaboration Discovery
+
 ```
 User browses collaborations → Frontend fetches /api/collaborations
      │
@@ -81,6 +83,7 @@ Frontend renders cards → User can request to collaborate
 ```
 
 ### 3. Collaboration Request
+
 ```
 User clicks "Request" → POST /api/requests
      │
@@ -106,7 +109,7 @@ Host approves/declines → Both parties notified via Telegram
 
 | Service | Port | Description |
 |---------|------|-------------|
-| Frontend (dev) | 5000 | Vite dev server |
-| Backend | 5000 | Express serves both API and static files |
+| Frontend (dev) | 3000 | Vite dev server |
+| Backend | 3000 | Express serves both API and static files |
 
 In production, the Express server serves the built React app from `/dist/public`.

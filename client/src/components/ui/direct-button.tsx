@@ -135,15 +135,4 @@ export default function DirectButton({
   );
 }
 
-// For TypeScript
-interface TelegramWebApp {
-  openLink: (url: string) => void;
-}
-
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: TelegramWebApp;
-    };
-  }
-}
+// Telegram types are declared centrally in client/src/types/telegram.d.ts

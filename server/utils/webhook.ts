@@ -66,10 +66,13 @@ export async function sendCollaborationWebhook(collaborationId: string) {
     };
     
     console.log('[Webhook] Sending payload:', JSON.stringify(payload, null, 2));
-    
-    // Send webhook to the specified URL
-    const webhookUrl = 'https://paulsworkspace.app.n8n.cloud/webhook/1d92b7d4-9a9b-4211-bc0a-53dc8d4c5aaa';
-    
+
+    const webhookUrl = process.env.N8N_COLLABORATION_WEBHOOK_URL;
+    if (!webhookUrl) {
+      console.warn('[Webhook] N8N_COLLABORATION_WEBHOOK_URL not set; skipping webhook for collaboration', collaborationId);
+      return;
+    }
+
     const response = await axios.post(webhookUrl, payload, {
       headers: {
         'Content-Type': 'application/json'

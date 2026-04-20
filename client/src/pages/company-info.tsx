@@ -97,7 +97,7 @@ export default function CompanyInfoForm() {
         twitter_url: profileData.company.twitter_handle ? `https://x.com/${profileData.company.twitter_handle}` : '',
         twitter_followers: profileData.company.twitter_followers || '',
         linkedin_url: profileData.company.linkedin_url || '',
-        funding_stage: profileData.company.funding_stage,
+        funding_stage: profileData.company.funding_stage || '',
         has_token: profileData.company.has_token || false,
         token_ticker: profileData.company.token_ticker || '$',
         blockchain_networks: profileData.company.blockchain_networks || [],
@@ -427,7 +427,7 @@ export default function CompanyInfoForm() {
                 {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
                   // Count how many networks from this category are selected
                   const selectedCount = formData.blockchain_networks.filter(
-                    (network) => networks.includes(network)
+                    (network: string) => (networks as readonly string[]).includes(network)
                   ).length;
 
                   return (

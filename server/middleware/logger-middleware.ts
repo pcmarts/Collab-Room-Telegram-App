@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger, LogLevel } from '../utils/logger';
+import { logger } from '../utils/logger';
 import { config } from '../../shared/config';
 
 /**

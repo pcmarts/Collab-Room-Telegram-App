@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { FilterSaveButton } from "./FilterSaveButton";
 
-import { COMPANY_TAG_CATEGORIES } from "@/../../shared/schema";
+import { COMPANY_TAG_CATEGORIES, type MarketingPreferences } from "@/../../shared/schema";
 
 // Form schema for this specific filter page
 const filterSchema = z.object({
@@ -77,7 +77,7 @@ export default function CompanySectorsFilter() {
   const watchedValues = form.watch();
   
   // Fetch user's current marketing preferences
-  const { data: marketingPrefs = {}, isLoading } = useQuery({
+  const { data: marketingPrefs = {}, isLoading } = useQuery<any>({
     queryKey: ['/api/marketing-preferences'],
     staleTime: 0,
     refetchOnWindowFocus: true,
@@ -128,9 +128,9 @@ export default function CompanySectorsFilter() {
       if (formValues.company_tags.length > 0) {
         // Find which categories contain the selected networks
         const categoriesWithSelectedTags = Object.entries(COMPANY_TAG_CATEGORIES)
-          .filter(([_, tags]) => 
-            formValues.company_tags.some(selected => 
-              tags.includes(selected)
+          .filter(([_, tags]) =>
+            formValues.company_tags.some((selected: string) =>
+              (tags as readonly string[]).includes(selected)
             )
           )
           .map(([category]) => category);

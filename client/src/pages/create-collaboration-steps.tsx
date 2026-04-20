@@ -93,25 +93,19 @@ export default function CreateCollaborationSteps({
       required_blockchain_networks: [],
       min_company_followers: TWITTER_FOLLOWER_COUNTS[0],
       min_user_followers: TWITTER_FOLLOWER_COUNTS[0],
+      // Cast to any — details is a discriminated union across collab-type
+      // schemas; this default is a superset used only as scaffolding before
+      // the user picks a type.
       details: {
-        // Default values for different collaboration types to prevent field bleeding
-        // Twitter spaces defaults
-        short_description: "", // Will be removed in favor of common description field
+        short_description: "",
         topic: "",
         host_twitter_handle: "",
-        host_follower_count: "",
-        
-        // Twitter co-marketing defaults
         twitter_description: "",
         twittercomarketing_type: [],
-        
-        // Podcast defaults 
         podcast_name: "",
         podcast_description: "",
-        // Each collaboration type should have its own description
-        estimated_reach: "",
         podcast_link: "",
-      },
+      } as any,
     },
   });
 
@@ -185,7 +179,7 @@ export default function CreateCollaborationSteps({
     form.setValue("collab_type", value as (typeof COLLAB_TYPES)[number]);
 
     // IMPORTANT: COMPLETELY reset the form details field to prevent field bleeding
-    form.setValue("details", {});
+    form.setValue("details", {} as any);
     
     // Use setTimeout to ensure that the form details reset happens first
     setTimeout(() => {
@@ -260,7 +254,7 @@ export default function CreateCollaborationSteps({
       }
 
       // Apply the new details after reset
-      form.setValue("details", newDetails);
+      form.setValue("details", newDetails as any);
     }, 10); // Small delay to ensure reset happens first
   };
 
@@ -284,7 +278,7 @@ export default function CreateCollaborationSteps({
           updatedDetails[fieldKey] = "";
         }
         
-        form.setValue('details', updatedDetails);
+        form.setValue('details', updatedDetails as any);
       }
     }
   };
@@ -579,12 +573,12 @@ export default function CreateCollaborationSteps({
         data.details = {
           title: typeof rawDetails?.title === 'string' ? rawDetails.title : "",
           // No longer include short_description in details object
-          date_selection: typeof rawDetails?.date_selection === 'string' ? rawDetails.date_selection : "any_future_date",
+          date_selection: (typeof rawDetails?.date_selection === 'string' ? rawDetails.date_selection : "any_future_date") as "any_future_date" | "specific_date",
           specific_date: typeof rawDetails?.specific_date === 'string' ? rawDetails.specific_date : "",
           previous_stream_link: typeof rawDetails?.previous_stream_link === 'string' ? rawDetails.previous_stream_link : "",
           expected_audience_size: AUDIENCE_SIZE_RANGES.includes(rawDetails?.expected_audience_size) ? rawDetails.expected_audience_size : AUDIENCE_SIZE_RANGES[0],
           topics: Array.isArray(rawDetails?.topics) ? rawDetails.topics : [],
-        };
+        } as any;
       } else if (data.collab_type === "Report & Research Feature") {
         // Using the root-level description field, ensure it's a string
         if (typeof data.description !== 'string') {
@@ -989,23 +983,23 @@ export default function CreateCollaborationSteps({
       render: () => {
         // Force reset the podcast link field value to prevent bleeding
         // This is important to ensure the previous description doesn't show up here
-        const currentDetails = form.getValues("details");
-        if (currentDetails?.podcast_link && 
-            typeof currentDetails.podcast_link === 'string' && 
-            currentDetails.podcast_link.trim() !== "" && 
+        const currentDetails = form.getValues("details") as any;
+        if (currentDetails?.podcast_link &&
+            typeof currentDetails.podcast_link === 'string' &&
+            currentDetails.podcast_link.trim() !== "" &&
             currentDetails.podcast_link.indexOf(" ") > -1) {
           // If the current value has spaces, it's likely the description that was copied over
           console.log("Resetting podcast link that appears to be a description:", currentDetails.podcast_link);
-          form.setValue("details.podcast_link", "");
+          form.setValue("details.podcast_link" as any, "");
         }
-        
+
         return (
           <FormField
             control={form.control}
-            name="details.podcast_link"
+            name={"details.podcast_link" as any}
             render={({ field }) => {
               // Get a completely fresh value for the link field
-              const podcastLinkValue = form.getValues("details.podcast_link");
+              const podcastLinkValue = form.getValues("details.podcast_link" as any);
               
               // Only accept string values that look like URLs (no spaces)
               let displayValue = "";

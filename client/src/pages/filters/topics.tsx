@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { FilterSaveButton } from "./FilterSaveButton";
 
-import { COLLAB_TOPICS } from "@/../../shared/schema";
+import { COLLAB_TOPICS, type MarketingPreferences } from "@/../../shared/schema";
 
 // Form schema for this specific filter page
 const filterSchema = z.object({
@@ -74,7 +74,7 @@ export default function TopicsFilter() {
   const watchedValues = form.watch();
   
   // Fetch user's current marketing preferences
-  const { data: marketingPrefs = {}, isLoading } = useQuery({
+  const { data: marketingPrefs = {}, isLoading } = useQuery<any>({
     queryKey: ['/api/marketing-preferences'],
     staleTime: 0,
     refetchOnWindowFocus: true,

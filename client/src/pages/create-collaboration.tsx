@@ -96,25 +96,25 @@ export default function CreateCollaboration() {
           podcast_name: "",
           short_description: "",
           podcast_link: ""
-        });
+        } as any);
         break;
       case "Twitter Spaces Guest":
         form.setValue('details', {
           twitter_handle: "https://x.com/",
           space_topic: [],
           host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
-        });
+        } as any);
         break;
       case "Newsletter Feature":
         form.setValue('details', {
           newsletter_name: "",
           subscriber_count: AUDIENCE_SIZE_RANGES[0],
           format: "feature"
-        });
+        } as any);
         break;
       // Add other collaboration types as needed
       default:
-        form.setValue('details', {});
+        form.setValue('details', {} as any);
         break;
     }
   }
@@ -151,33 +151,23 @@ export default function CreateCollaboration() {
       // Log the data being submitted
       console.log("Submitting collaboration with standardized fields:", formattedData);
       
-      const response = await apiRequest('/api/collaborations', {
-        method: 'POST',
-        body: JSON.stringify(formattedData),
+      const responseData = await apiRequest('/api/collaborations', 'POST', formattedData);
+      const newCollaborationId = responseData?.collaboration?.id;
+
+      // Force refetch queries to refresh collaboration lists and wait for completion
+      await queryClient.refetchQueries({ queryKey: ['/api/collaborations/my'] });
+
+      toast({
+        title: "Success!",
+        description: "Your collaboration has been posted.",
       });
 
-      if (response.ok) {
-        const responseData = await response.json();
-        const newCollaborationId = responseData.collaboration?.id;
-        
-        // Force refetch queries to refresh collaboration lists and wait for completion
-        await queryClient.refetchQueries({ queryKey: ['/api/collaborations/my'] });
-        
-        toast({
-          title: "Success!",
-          description: "Your collaboration has been posted.",
-        });
-        
-        // Redirect to My Collaborations page with new collaboration ID for highlighting
-        if (newCollaborationId) {
-          setLocation(`/my-collaborations?newCollab=${newCollaborationId}`);
-        } else {
-          // Fallback to marketing-collabs-new without highlighting
-          setLocation('/marketing-collabs-new?tab=my');
-        }
+      // Redirect to My Collaborations page with new collaboration ID for highlighting
+      if (newCollaborationId) {
+        setLocation(`/my-collaborations?newCollab=${newCollaborationId}`);
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create collaboration');
+        // Fallback to marketing-collabs-new without highlighting
+        setLocation('/marketing-collabs-new?tab=my');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -259,7 +249,7 @@ export default function CreateCollaboration() {
             twitter_handle: "https://x.com/",
             space_topic: [],
             host_follower_count: TWITTER_FOLLOWER_COUNTS[0]
-          });
+          } as any);
         }
         
         return (
@@ -311,7 +301,7 @@ export default function CreateCollaboration() {
             newsletter_name: "",
             subscriber_count: AUDIENCE_SIZE_RANGES[0],
             format: "feature"
-          });
+          } as any);
         }
         
         return (
@@ -331,11 +321,11 @@ export default function CreateCollaboration() {
             />
             <FormField
               control={form.control}
-              name="details.subscriber_count"
+              name={"details.subscriber_count" as any}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Subscriber Count</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value as string | undefined}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select subscriber count" />
@@ -355,11 +345,11 @@ export default function CreateCollaboration() {
             />
             <FormField
               control={form.control}
-              name="details.format"
+              name={"details.format" as any}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Format</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value as string | undefined}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select format" />
@@ -439,7 +429,7 @@ export default function CreateCollaboration() {
                       <FormItem>
                         <FormLabel>Collaboration Type</FormLabel>
                         <Select 
-                          onValueChange={(value) => handleCollabTypeChange(value)} 
+                          onValueChange={(value) => handleCollabTypeChange(value as typeof COLLAB_TYPES[number])}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -622,8 +612,8 @@ export default function CreateCollaboration() {
                           {/* Categorized network selection with collapsible sections */}
                           {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => {
                             // Count selected networks in this category
-                            const selectedCount = (field.value || []).filter(
-                              network => networks.includes(network as typeof BLOCKCHAIN_NETWORKS[number])
+                            const selectedCount = ((field.value as string[] | undefined) || []).filter(
+                              (network: string) => (networks as readonly string[]).includes(network)
                             ).length;
                             
                             return (

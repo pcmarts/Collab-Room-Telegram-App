@@ -119,16 +119,4 @@ export function IsolatedLinkButton({
   );
 }
 
-// For TypeScript
-interface TelegramWebApp {
-  openLink: (url: string) => void;
-  // Include other WebApp methods as needed
-}
-
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: TelegramWebApp;
-    };
-  }
-}
+// Telegram types are declared centrally in client/src/types/telegram.d.ts

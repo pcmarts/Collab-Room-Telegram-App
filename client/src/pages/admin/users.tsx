@@ -40,7 +40,7 @@ export default function AdminUsers() {
   const [, setLocation] = useLocation();
 
   // Check if current user is admin
-  const { data: currentUserData, isLoading: checkingAdmin } = useQuery({
+  const { data: currentUserData, isLoading: checkingAdmin } = useQuery<{ user?: { is_admin?: boolean } } | null>({
     queryKey: ['/api/profile']
   });
 

@@ -24,22 +24,30 @@ const logger = {
   }
 };
 
-// Helper function to check for Telegram initialization - NO AUTOMATIC RETRY
-// This has been modified to prevent authentication refresh loops
+// Poll for Telegram WebApp initData with a bounded timeout.
+// Early requests (fired before useTelegramInit finishes the dynamic import) would
+// otherwise race against init and send unauthenticated. This polls for up to
+// INIT_DATA_WAIT_MS so the first few requests after app start can succeed without
+// enabling infinite re-auth loops — if initData never shows up, we return false
+// and let the request fail normally (server returns 401, surfaced to the user).
+const INIT_DATA_WAIT_MS = 2000;
+const INIT_DATA_POLL_MS = 50;
 const waitForTelegramInitData = async (): Promise<boolean> => {
-  // Only check if Telegram WebApp is already initialized with initData
-  // Do not attempt to initialize it automatically
   if (window.Telegram?.WebApp?.initData) {
-    // Telegram initData is available, this is our primary authentication method
-    logger.debug('Telegram WebApp initData is available');
     return true;
   }
-  
-  // Log the missing authentication but don't attempt to fix it automatically
-  logger.error('No Telegram initData available - authentication will fail');
+
+  const deadline = Date.now() + INIT_DATA_WAIT_MS;
+  while (Date.now() < deadline) {
+    await new Promise(resolve => setTimeout(resolve, INIT_DATA_POLL_MS));
+    if (window.Telegram?.WebApp?.initData) {
+      logger.debug('Telegram WebApp initData became available after polling');
+      return true;
+    }
+  }
+
+  logger.error('No Telegram initData after waiting — authentication will fail');
   logger.error('This app must be opened from Telegram to function correctly');
-  
-  // Return false to indicate that we don't have Telegram data
   return false;
 };
 
@@ -172,16 +180,18 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
+      // Mobile Telegram WebView rarely gets a "focus" event; skip window-focus refetch.
       refetchOnWindowFocus: false,
-      refetchOnMount: false,
+      // Respect staleTime: remount re-fetches only if data is actually stale.
+      refetchOnMount: true,
       refetchOnReconnect: false,
-      staleTime: Infinity, // Changed to Infinity to prevent all auto-refresh
+      staleTime: 5 * 60 * 1000, // 5 minutes — long enough to avoid chatter, short enough that returning to a page shows fresh data.
       retry: false,
-      enabled: true, // Queries will run when initialized but not refresh
     },
     mutations: {
       retry: false,
-      // Removed the onSuccess handler that was invalidating profile data queries
+      // Mutations should invalidate their own downstream queries via onSuccess
+      // at each call site. No global invalidation — it over-fetches.
     },
   },
 });
