@@ -3,7 +3,7 @@ import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useFormWizard } from "../../contexts/FormWizardContext";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Loader2 } from "lucide-react";
 import { TWITTER_COLLAB_TYPES } from "@shared/schema";
 import { useLocation } from "wouter";
 
@@ -277,72 +277,69 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
   const collabTypeSelected = form.watch("collab_type");
   
   return (
-    <div className="flex justify-between pt-6 mt-4 border-t">
-      {/* Show appropriate back button based on step */}
+    <div className="mt-6 flex items-center justify-between gap-3 border-t border-hairline pt-5">
       {isFirstStep ? (
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
+          size="sm"
           onClick={() => setLocation("/my-collaborations")}
           disabled={isSubmitting}
         >
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          My Collabs
+          <ChevronLeft className="h-4 w-4" />
+          My collabs
         </Button>
       ) : (
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
+          size="sm"
           onClick={goToPrevStep}
           disabled={isSubmitting}
         >
-          <ChevronLeft className="w-4 h-4 mr-2" />
+          <ChevronLeft className="h-4 w-4" />
           Back
         </Button>
       )}
-      
-      {/* Special case for collaboration type selection page */}
+
       {currentStepId === "collab_type" ? (
-        /* Show Next button on type selection page, disabled until selection is made */
-        <Button 
-          type="button" 
+        <Button
+          type="button"
+          size="sm"
           onClick={handleNextClick}
           disabled={isSubmitting || !collabTypeSelected}
         >
-          Next
-          <ChevronRight className="w-4 h-4 ml-2" />
+          Continue
+          <ChevronRight className="h-4 w-4" />
         </Button>
       ) : isLastStep ? (
-        /* On other last steps, show Submit button */
         <Button
           type="button"
+          size="sm"
           onClick={handleSubmitClick}
           disabled={isSubmitting}
         >
           {isSubmitting ? (
             <>
-              <svg className="w-4 h-4 mr-2 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Submitting...
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Publishing
             </>
           ) : (
             <>
-              <Check className="w-4 h-4 mr-2" />
-              Submit
+              <Check className="h-4 w-4" />
+              Publish collab
             </>
           )}
         </Button>
       ) : (
-        /* On other intermediate steps, show Next button */
-        <Button 
-          type="button" 
+        <Button
+          type="button"
+          size="sm"
           onClick={handleNextClick}
           disabled={isSubmitting}
         >
-          Next
-          <ChevronRight className="w-4 h-4 ml-2" />
+          Continue
+          <ChevronRight className="h-4 w-4" />
         </Button>
       )}
     </div>

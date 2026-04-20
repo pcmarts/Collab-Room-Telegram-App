@@ -11,7 +11,7 @@ import {
   type NotificationPreferences, type MarketingPreferences,
   type UserReferral, type InsertUserReferral, // Added referral types
   type ReferralEvent, type InsertReferralEvent
-} from "@shared/schema";
+} from "../shared/schema";
 import { z } from 'zod';
 import { db } from "./db";
 import { eq, and, or, inArray, isNull, not, desc, sql, ilike, lt, arrayOverlaps } from "drizzle-orm";

@@ -9,7 +9,7 @@ import {
   user_referrals,
   referral_events,
   type Company,
-} from "@shared/schema";
+} from "../shared/schema";
 import { eq, sql, inArray, and } from "drizzle-orm";
 import { format } from "date-fns";
 import fs from "fs";

@@ -1,7 +1,7 @@
 
 import { Express, Request, Response } from "express";
 import { db } from "../db";
-import { users, collaborations, requests } from "@shared/schema";
+import { users, collaborations, requests } from "../../shared/schema";
 import { eq } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 

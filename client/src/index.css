@@ -3,74 +3,195 @@
 @tailwind utilities;
 
 /*
- * shadcn/ui CSS variables. Derived from the old theme.json:
- *   variant: "professional", primary: hsl(245, 58%, 51%), appearance: "light", radius: 0.5
- * The previous @replit/vite-plugin-shadcn-theme-json used to inject these at
- * build time. Inlined here so the build doesn't depend on Replit tooling.
+ * Design tokens — OKLCH, perceptually uniform, tinted toward brand indigo (hue 280).
+ * Light and dark are first-class; both must read well. Shadcn-compatible variable
+ * names are preserved so existing components keep working, and the tailwind config
+ * uses `var(--token)` directly (no hsl() wrapper) so raw OKLCH strings pass through.
+ *
+ * Sizing/motion tokens live below the color palette.
  */
 @layer base {
   :root {
     --vh: 1vh;
 
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Brand */
+    --brand: oklch(48% 0.18 280);
+    --brand-hover: oklch(43% 0.195 280);
+    --brand-subtle: oklch(95% 0.02 280);
+    --brand-fg: oklch(99% 0.004 280);
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Semantic surfaces */
+    --background: oklch(99.2% 0.002 280);
+    --foreground: oklch(17% 0.015 280);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --surface: oklch(97.3% 0.004 280);
+    --surface-raised: oklch(100% 0 0);
 
-    --primary: 245 58% 51%;
-    --primary-foreground: 210 40% 98%;
+    --text: oklch(17% 0.015 280);
+    --text-muted: oklch(45% 0.012 280);
+    --text-subtle: oklch(60% 0.01 280);
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --border-hairline: oklch(93% 0.006 280);
+    --border-strong: oklch(85% 0.01 280);
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Shadcn-compatible aliases (consumed by existing components) */
+    --card: oklch(100% 0 0);
+    --card-foreground: oklch(17% 0.015 280);
+    --popover: oklch(100% 0 0);
+    --popover-foreground: oklch(17% 0.015 280);
+    --primary: oklch(48% 0.18 280);
+    --primary-foreground: oklch(99% 0.004 280);
+    --secondary: oklch(97.3% 0.004 280);
+    --secondary-foreground: oklch(17% 0.015 280);
+    --muted: oklch(97.3% 0.004 280);
+    --muted-foreground: oklch(45% 0.012 280);
+    --accent: oklch(95% 0.02 280);
+    --accent-foreground: oklch(17% 0.015 280);
+    --destructive: oklch(58% 0.22 28);
+    --destructive-foreground: oklch(99% 0.004 280);
+    --success: oklch(60% 0.15 155);
+    --warning: oklch(68% 0.15 75);
+    --border: oklch(93% 0.006 280);
+    --input: oklch(93% 0.006 280);
+    --ring: oklch(48% 0.18 280);
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Radius scale — tighter than shadcn default; insider-tool precision */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius: 8px;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Spacing scale (4pt grid) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+    --space-9: 96px;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 245 58% 51%;
+    /* Typography — fixed rem scale, app UI (not fluid) */
+    --font-sans: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-    --radius: 0.5rem;
+    --text-xs: 0.75rem;      /* 12 */
+    --text-sm: 0.8125rem;    /* 13 */
+    --text-base: 0.9375rem;  /* 15 — body */
+    --text-md: 1.0625rem;    /* 17 */
+    --text-lg: 1.3125rem;    /* 21 */
+    --text-xl: 1.625rem;     /* 26 */
+    --text-2xl: 2rem;        /* 32 */
+    --text-3xl: 2.5rem;      /* 40 */
+
+    --leading-tight: 1.15;
+    --leading-snug: 1.3;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.65;
+
+    /* Motion — exponential easing, no bounce */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+    --dur-instant: 80ms;
+    --dur-fast: 140ms;
+    --dur-base: 220ms;
+    --dur-slow: 360ms;
+
+    /* Telegram bridge (populated at runtime by telegramTheme.ts) */
+    --tg-bg: transparent;
+    --tg-header: transparent;
+
+    color-scheme: light;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --brand: oklch(70% 0.16 280);
+    --brand-hover: oklch(75% 0.15 280);
+    --brand-subtle: oklch(28% 0.05 280);
+    --brand-fg: oklch(16% 0.02 280);
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --background: oklch(16% 0.01 280);
+    --foreground: oklch(95% 0.006 280);
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --surface: oklch(20% 0.012 280);
+    --surface-raised: oklch(24% 0.014 280);
 
-    --primary: 245 58% 51%;
-    --primary-foreground: 210 40% 98%;
+    --text: oklch(95% 0.006 280);
+    --text-muted: oklch(68% 0.012 280);
+    --text-subtle: oklch(52% 0.015 280);
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --border-hairline: oklch(28% 0.015 280);
+    --border-strong: oklch(35% 0.018 280);
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --card: oklch(20% 0.012 280);
+    --card-foreground: oklch(95% 0.006 280);
+    --popover: oklch(24% 0.014 280);
+    --popover-foreground: oklch(95% 0.006 280);
+    --primary: oklch(70% 0.16 280);
+    --primary-foreground: oklch(16% 0.02 280);
+    --secondary: oklch(24% 0.014 280);
+    --secondary-foreground: oklch(95% 0.006 280);
+    --muted: oklch(24% 0.014 280);
+    --muted-foreground: oklch(68% 0.012 280);
+    --accent: oklch(28% 0.05 280);
+    --accent-foreground: oklch(95% 0.006 280);
+    --destructive: oklch(68% 0.2 28);
+    --destructive-foreground: oklch(99% 0.004 280);
+    --success: oklch(72% 0.14 155);
+    --warning: oklch(78% 0.14 75);
+    --border: oklch(28% 0.015 280);
+    --input: oklch(28% 0.015 280);
+    --ring: oklch(70% 0.16 280);
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    color-scheme: dark;
+  }
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+  /* Respect reduced motion globally */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 245 58% 51%;
+  html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-synthesis: none;
+    font-optical-sizing: auto;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    color: var(--text);
+    background: var(--background);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    letter-spacing: -0.02em;
+    line-height: var(--leading-tight);
+    color: var(--text);
+  }
+
+  code, kbd, samp, pre, .font-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Tabular numerals wherever they appear in UI — stats, counts, dates */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
   }
 }
 

@@ -1,19 +1,13 @@
 import React, { ReactNode } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CollaborationTypePill } from "../CollaborationTypePill";
 
 interface StepContainerProps {
   title: string;
   description?: string;
   children: ReactNode;
-  selectedTypeId?: string; // Add prop for showing collaboration type pill
+  selectedTypeId?: string;
 }
 
-/**
- * Container component for each form step
- * Provides consistent UI with title and description
- * Shows collaboration type pill when a type is selected
- */
 export const StepContainer: React.FC<StepContainerProps> = ({
   title,
   description,
@@ -21,25 +15,25 @@ export const StepContainer: React.FC<StepContainerProps> = ({
   selectedTypeId,
 }) => {
   return (
-    <Card className="shadow-sm border-0">
-      <CardHeader className="py-3 px-6">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg">{title}</CardTitle>
-            {description && (
-              <CardDescription className="text-sm mt-1">{description}</CardDescription>
-            )}
-          </div>
-          {selectedTypeId && (
-            <div className="ml-4">
-              <CollaborationTypePill typeId={selectedTypeId} />
-            </div>
+    <section className="py-2">
+      <header className="mb-5 flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-xl font-semibold tracking-tight text-text leading-tight">
+            {title}
+          </h2>
+          {description && (
+            <p className="mt-1 text-sm text-text-muted leading-snug">
+              {description}
+            </p>
           )}
         </div>
-      </CardHeader>
-      <CardContent>
-        {children}
-      </CardContent>
-    </Card>
+        {selectedTypeId && (
+          <div className="shrink-0">
+            <CollaborationTypePill typeId={selectedTypeId} />
+          </div>
+        )}
+      </header>
+      <div>{children}</div>
+    </section>
   );
 };

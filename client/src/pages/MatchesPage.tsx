@@ -2,34 +2,21 @@ import * as React from "react";
 import { lazy, Suspense, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { GlowButton } from "@/components/GlowButton";
-import { MessageCircle, ChevronRight, Info } from "lucide-react";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiRequest } from "@/lib/queryClient";
-import { getCollabTypeIcon } from "@/lib/collab-utils";
 import { useMatchContext } from "@/contexts/MatchContext";
 import { useLocation } from "wouter";
 import { PageHeader } from "../components/PageHeader";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
+import { MessageCircle, Info, Linkedin, Twitter, Loader2 } from "lucide-react";
 
-// Define Match type for API response
 interface Match {
   id: string;
   matchDate: string;
@@ -42,22 +29,18 @@ interface Match {
   roleTitle: string;
   companyDescription?: string;
   userDescription?: string;
-  username?: string; // Telegram username for chat links
-  note?: string; // Personalized note from connection request
-
-  // Additional user information
+  username?: string;
+  note?: string;
   linkedinUrl?: string;
   twitterUrl?: string;
   twitterHandle?: string;
   twitterFollowers?: string | number;
   email?: string;
-
-  // Additional company information
   companyWebsite?: string;
   companyLinkedinUrl?: string;
   companyTwitterHandle?: string;
   companyTwitterFollowers?: string | number;
-  companyLogoUrl?: string; // FIX: Add missing company logo URL field
+  companyLogoUrl?: string;
   fundingStage?: string;
   hasToken?: boolean;
   tokenTicker?: string;
@@ -65,7 +48,6 @@ interface Match {
   companyTags?: string[];
 }
 
-// Import Match Detail component lazily
 const MatchDetail = lazy(() => import("@/components/MatchDetail"));
 
 export default function MatchesPage() {
@@ -73,69 +55,32 @@ export default function MatchesPage() {
   const { newMatchCreated, refreshMatches } = useMatchContext();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const [isFirstRender, setIsFirstRender] = React.useState(true);
-  
-  // Immediately mark first render as complete to avoid any loading screens
-  React.useEffect(() => {
-    if (isFirstRender) {
-      // Use requestAnimationFrame to update state right after browser paint
-      requestAnimationFrame(() => setIsFirstRender(false));
-    }
-  }, [isFirstRender]);
-  
-  // Removed duplicate prefetch to prevent double API calls
 
-  // Optimized query with more aggressive caching and stale time
-  const { 
-    data: matches,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: matches, isLoading, error } = useQuery({
     queryKey: ["/api/matches"],
     queryFn: async () => {
-      try {
-        console.log("⚡️ Fetching matches from API...");
-        
-        // Add cache-busting query parameter only once per request
-        const timestamp = new Date().getTime();
-        
-        // Use standard apiRequest without signal
-        const response = await apiRequest(`/api/matches?_=${timestamp}`);
-        
-        console.log(`⚡️ Found ${Array.isArray(response) ? response.length : 0} matches`);
-        return response;
-      } catch (err) {
-        console.error("⚡️ Error fetching matches:", err);
-        throw err;
-      }
+      const timestamp = new Date().getTime();
+      return apiRequest(`/api/matches?_=${timestamp}`);
     },
-    staleTime: 60 * 1000, // Keep data fresh for 1 minute
-    gcTime: 5 * 60 * 1000, // Cache for 5 minutes (formerly cacheTime)
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     retry: 2,
-    retryDelay: attempt => Math.min(attempt > 1 ? 2000 : 1000, 30 * 1000),
-    // Get data from cache immediately while updating in background
+    retryDelay: (attempt) => Math.min(attempt > 1 ? 2000 : 1000, 30 * 1000),
     placeholderData: (previousData) => previousData,
   });
 
-  // Check if we have a new match created flag and refresh matches if needed
   React.useEffect(() => {
-    if (newMatchCreated) {
-      console.log("[MatchesPage] New match created, refreshing matches...");
-      refreshMatches();
-    }
+    if (newMatchCreated) refreshMatches();
   }, [newMatchCreated, refreshMatches]);
 
-  // Apply scroll and style fixes - optimized to run only once
   React.useEffect(() => {
-    // Save the original style
     const originalOverflow = document.body.style.overflow;
     const originalPosition = document.body.style.position;
     const originalWidth = document.body.style.width;
     const originalHeight = document.body.style.height;
 
-    // Modify for this page to allow scrolling - apply all changes in a single batch
     requestAnimationFrame(() => {
       document.body.style.cssText = `
         overflow: auto;
@@ -143,12 +88,8 @@ export default function MatchesPage() {
         width: auto;
         height: auto;
       `;
-      
-      // Add scrollable-page class to html and body
       document.documentElement.classList.add("scrollable-page");
       document.body.classList.add("scrollable-page");
-      
-      // Also fix the root element
       const rootElement = document.getElementById("root");
       if (rootElement) {
         rootElement.style.cssText = `
@@ -160,7 +101,6 @@ export default function MatchesPage() {
       }
     });
 
-    // Restore original style when component unmounts
     return () => {
       document.body.style.overflow = originalOverflow;
       document.body.style.position = originalPosition;
@@ -168,7 +108,6 @@ export default function MatchesPage() {
       document.body.style.height = originalHeight;
       document.documentElement.classList.remove("scrollable-page");
       document.body.classList.remove("scrollable-page");
-      
       const rootElement = document.getElementById("root");
       if (rootElement) {
         rootElement.style.overflow = "";
@@ -179,238 +118,194 @@ export default function MatchesPage() {
     };
   }, []);
 
-  // Close the match detail dialog - memoized to prevent rerenders
-  const handleCloseMatchDetail = useCallback(() => {
-    setSelectedMatch(null);
+  const handleCloseMatchDetail = useCallback(() => setSelectedMatch(null), []);
+  const handleChatClick = useCallback((username: string | undefined) => {
+    if (username) window.open(`https://t.me/${username}`, "_blank");
   }, []);
 
-  // Render Skeleton cards for loading state - memoized to improve performance
-  const renderSkeletonCards = useMemo(() => (
-    <div className="space-y-4 animate-fade-in">
-      {[1, 2, 3].map((i) => (
-        <Card key={i}>
-          <div className="p-4">
-            <div className="flex flex-col mb-3 space-y-2">
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
-                <div className="flex-1">
-                  <Skeleton className="h-6 w-48" />
-                </div>
-                <div className="flex items-center shrink-0">
-                  <Skeleton className="h-6 w-32" />
-                </div>
+  const skeletonRows = useMemo(
+    () => (
+      <div>
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="flex items-start gap-3 py-5 border-b border-hairline"
+          >
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-3 w-32" />
+              <div className="flex gap-2 pt-2">
+                <Skeleton className="h-9 flex-1" />
+                <Skeleton className="h-9 flex-1" />
               </div>
             </div>
-            <div className="space-y-2 mb-3">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-3 w-24" />
-            </div>
-            <div className="flex justify-between gap-3 mt-3 pt-2 border-t border-border/50">
-              <Skeleton className="h-9 w-full" />
-              <Skeleton className="h-9 w-full" />
-            </div>
           </div>
-        </Card>
-      ))}
-    </div>
-  ), []);
+        ))}
+      </div>
+    ),
+    []
+  );
 
-  // Render error message - memoized
-  const renderErrorMessage = useMemo(() => (
-    <Card className="p-6 m-4 text-center">
-      <p className="text-muted-foreground mb-4">Error loading matches</p>
-      <p className="text-sm text-destructive mb-4">
-        {error instanceof Error ? error.message : "Unknown error"}
-      </p>
-      <Button variant="outline" onClick={() => window.location.reload()}>
-        Retry
-      </Button>
-    </Card>
-  ), [error]);
+  const errorState = useMemo(
+    () => (
+      <div className="py-12">
+        <h3 className="text-lg font-semibold tracking-tight text-text">
+          Couldn't load matches
+        </h3>
+        <p className="mt-1 text-sm text-text-muted">
+          {error instanceof Error ? error.message : "Try again in a moment."}
+        </p>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="mt-4"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </Button>
+      </div>
+    ),
+    [error]
+  );
 
-  // Chat button handler - memoized
-  const handleChatClick = useCallback((username: string | undefined) => {
-    if (username) {
-      window.open(`https://t.me/${username}`, "_blank");
-    } else {
-      alert("No Telegram username found for this contact");
-    }
-  }, []);
-
-  // Pre-render the match cards with memoization to avoid unnecessary re-renders
-  const matchCards = useMemo(() => {
+  const content = useMemo(() => {
     if (!matches || !Array.isArray(matches) || matches.length === 0) {
       return (
-        <Card className="p-6 text-center">
-          <p className="text-muted-foreground mb-4">No matches yet</p>
-          <GlowButton onClick={() => setLocation("/discover")}>
-            Start Discovering
-          </GlowButton>
-        </Card>
+        <div className="py-12">
+          <h3 className="text-lg font-semibold tracking-tight text-text">
+            No matches yet.
+          </h3>
+          <p className="mt-1 text-sm text-text-muted max-w-[42ch]">
+            When a host accepts your request, you'll land here with a direct
+            Telegram chat.
+          </p>
+          <Button
+            size="sm"
+            className="mt-4"
+            onClick={() => setLocation("/discover")}
+          >
+            Browse opportunities
+          </Button>
+        </div>
       );
     }
 
     return (
-      <div className="space-y-4">
-        {matches.map((match) => (
-          <Card key={match.id} className="overflow-visible">
-            <div className="p-4">
-              {/* Header with company logo, name and collaboration type */}
-              <div className="flex items-start gap-3 mb-3">
-                {/* Company Logo */}
-                <LogoAvatar
-                  name={match.companyName || "Company"}
-                  logoUrl={match.companyLogoUrl}
-                  className="w-12 h-12"
-                  size="lg"
-                />
-                
-                {/* Company name and collaboration type */}
-                <div className="flex-1 space-y-2">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-base break-words pr-2">
-                        {match.companyName}
-                      </h3>
-                    </div>
-                    <div className="flex items-center shrink-0">
-                      <div className="mr-1.5">
-                        {getCollabTypeIcon(match.collaborationType)}
-                      </div>
-                      <Badge className="bg-primary/10 hover:bg-primary/15 text-primary border-0 whitespace-normal text-center">
-                        {match.collaborationType}
-                      </Badge>
-                    </div>
-                  </div>
+      <div>
+        {matches.map((match: Match) => (
+          <article
+            key={match.id}
+            className="border-b border-hairline py-5 last:border-b-0"
+          >
+            <div className="flex items-start gap-3">
+              <LogoAvatar
+                name={match.companyName || "Company"}
+                logoUrl={match.companyLogoUrl}
+                size="md"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h3 className="truncate text-md font-semibold text-text">
+                    {match.companyName}
+                  </h3>
+                  <span className="shrink-0 text-xs tabular text-text-subtle">
+                    {match.matchDate}
+                  </span>
                 </div>
-              </div>
+                <p className="mt-0.5 truncate text-sm text-text-muted">
+                  {match.collaborationType}
+                </p>
 
-              {/* Contact info - with full text visible */}
-              <div className="space-y-2 mb-3">
-                <div>
-                  <p className="text-sm font-medium break-words">
-                    {match.matchedPerson}
-                  </p>
+                <div className="mt-2">
+                  <p className="text-sm text-text">{match.matchedPerson}</p>
                   {match.roleTitle && (
-                    <p className="text-sm text-muted-foreground break-words">
-                      {match.roleTitle}
-                    </p>
+                    <p className="text-sm text-text-muted">{match.roleTitle}</p>
                   )}
-                  
-                  {/* Host's personal social links */}
                   {(match.linkedinUrl || match.twitterUrl) && (
-                    <div className="flex items-center gap-3 mt-1">
+                    <div className="mt-1 flex items-center gap-4">
                       {match.linkedinUrl && (
                         <a
-                          href={match.linkedinUrl.startsWith("http") ? match.linkedinUrl : `https://${match.linkedinUrl}`}
+                          href={
+                            match.linkedinUrl.startsWith("http")
+                              ? match.linkedinUrl
+                              : `https://${match.linkedinUrl}`
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center text-xs text-primary hover:underline"
+                          className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-text"
                         >
-                          <svg
-                            className="w-3 h-3 mr-1"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                            <rect x="2" y="9" width="4" height="12"></rect>
-                            <circle cx="4" cy="4" r="2"></circle>
-                          </svg>
+                          <Linkedin className="h-3 w-3" />
                           LinkedIn
                         </a>
                       )}
                       {match.twitterUrl && (
                         <a
-                          href={match.twitterUrl.startsWith("http") ? match.twitterUrl : `https://${match.twitterUrl}`}
+                          href={
+                            match.twitterUrl.startsWith("http")
+                              ? match.twitterUrl
+                              : `https://${match.twitterUrl}`
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center text-xs text-primary hover:underline"
+                          className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-text"
                         >
-                          <svg
-                            className="w-3 h-3 mr-1"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
-                          </svg>
+                          <Twitter className="h-3 w-3" />
                           Twitter
                         </a>
                       )}
                     </div>
                   )}
                 </div>
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <span>Matched on {match.matchDate}</span>
-                </div>
-              </div>
 
-              {/* Original note from collaboration request */}
-              {match.note && (
-                <div className="mb-3 p-3 bg-muted/50 rounded-lg border-l-4 border-primary/50">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">
-                    Original message:
-                  </p>
-                  <p className="text-sm break-words">
-                    {match.note}
-                  </p>
+                {match.note && (
+                  <blockquote className="mt-3 rounded-sm bg-surface px-3 py-2 text-sm text-text-muted">
+                    <span className="text-text-subtle text-xs font-medium">
+                      Message
+                    </span>
+                    <p className="mt-0.5 text-text">{match.note}</p>
+                  </blockquote>
+                )}
+
+                <div className="mt-3 flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setSelectedMatch(match)}
+                    className="flex-1"
+                  >
+                    <Info className="h-4 w-4" />
+                    Details
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleChatClick(match.username)}
+                    className="flex-1"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Open chat
+                  </Button>
                 </div>
-              )}
-              
-              {/* Action buttons */}
-              <div className="flex justify-between gap-3 mt-3 pt-2 border-t border-border/50">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedMatch(match)}
-                  className="flex-1"
-                >
-                  <Info className="w-4 h-4 mr-1.5" />
-                  Details
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => handleChatClick(match.username)}
-                  className="flex-1"
-                >
-                  <MessageCircle className="w-4 h-4 mr-1.5" />
-                  Chat
-                </Button>
               </div>
             </div>
-          </Card>
+          </article>
         ))}
       </div>
     );
   }, [matches, setLocation, handleChatClick]);
 
-  // Determine what to render - show UI immediately without loading state for faster perception
-  const content = error ? renderErrorMessage : 
-                  (isLoading && !matches) ? renderSkeletonCards : 
-                  matchCards;
-
   return (
     <div className="page-scrollable pb-20">
-      <PageHeader title="My Matches" />
-
-      <div className="px-4 pt-4">
-        {content}
+      <PageHeader title="Matches" />
+      <div className="px-4 pt-2">
+        {error ? errorState : isLoading && !matches ? skeletonRows : content}
       </div>
 
-      {/* Match Detail Dialog with Suspense */}
       <Dialog
         open={!!selectedMatch}
         onOpenChange={(open) => !open && setSelectedMatch(null)}
       >
-        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="sr-only">
               {selectedMatch
@@ -422,11 +317,13 @@ export default function MatchesPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedMatch && (
-            <Suspense fallback={
-              <div className="flex justify-center items-center py-6">
-                <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            }>
+            <Suspense
+              fallback={
+                <div className="flex justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-text-subtle" />
+                </div>
+              }
+            >
               <MatchDetail
                 match={selectedMatch}
                 onBack={handleCloseMatchDetail}

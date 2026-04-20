@@ -21,9 +21,6 @@ import { Step } from "../../contexts/FormWizardContext";
 const TOPICS = [...COLLAB_TOPICS];
 const COLLAB_TYPES = [...TWITTER_COLLAB_TYPES];
 
-// Add debugging to see available types
-console.log("Available Twitter collab types:", COLLAB_TYPES);
-
 // Define the steps for Twitter collaboration form
 export const twitterCollabSteps: Step[] = [
   {

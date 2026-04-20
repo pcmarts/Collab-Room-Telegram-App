@@ -5,95 +5,88 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useLocation } from "wouter";
 
-// UI Components
 import { MobileCheck } from "@/components/MobileCheck";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
 } from "@/components/ui/form";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription, 
-  CardFooter 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-// Icons
-import { 
-  Loader2, 
-  MessageSquare, 
-  Tag, 
-  Building, 
-  Users, 
-  DollarSign, 
-  CoinsIcon,
-  Network,
-  ChevronDown, 
-  ChevronUp,
-  Save
-} from "lucide-react";
-
-// Import constants directly
-import { 
-  COLLAB_TYPES, 
+import {
+  COLLAB_TYPES,
   COLLAB_TOPICS,
   COMPANY_TAG_CATEGORIES,
   BLOCKCHAIN_NETWORK_CATEGORIES,
   TWITTER_FOLLOWER_COUNTS,
-  FUNDING_STAGES
+  FUNDING_STAGES,
 } from "@shared/schema";
 
-// Define the filter form schema
 const filterFormSchema = z.object({
-  // Collaboration types filter
   collabTypes: z.array(z.string()).default([]),
-  
-  // Topics filter
   topics: z.array(z.string()).default([]),
-  
-  // Company sectors filter
   companySectors: z.array(z.string()).default([]),
-  
-  // Follower filters
   companyFollowers: z.string().optional(),
   userFollowers: z.string().optional(),
-  
-  // Funding and token filters
   fundingStages: z.array(z.string()).default([]),
   hasToken: z.boolean().default(false),
-  
-  // Blockchain networks filter
-  blockchainNetworks: z.array(z.string()).default([])
+  blockchainNetworks: z.array(z.string()).default([]),
 });
 
 type FilterFormValues = z.infer<typeof filterFormSchema>;
+
+type FilterKey = keyof Omit<FilterFormValues, never>;
+
+const FILTER_LABELS: { key: FilterKey; label: string; hint: string }[] = [
+  {
+    key: "collabTypes",
+    label: "Collab type",
+    hint: "Spaces, podcasts, co-marketing, newsletters…",
+  },
+  { key: "topics", label: "Topics", hint: "What the collab is about" },
+  { key: "companySectors", label: "Sectors", hint: "DeFi, infra, gaming, L2s…" },
+  {
+    key: "blockchainNetworks",
+    label: "Chains",
+    hint: "What chains the company supports",
+  },
+  {
+    key: "companyFollowers",
+    label: "Company reach",
+    hint: "Minimum Twitter followers for the company",
+  },
+  {
+    key: "userFollowers",
+    label: "Personal reach",
+    hint: "Minimum Twitter followers for the host",
+  },
+  { key: "fundingStages", label: "Funding stage", hint: "Seed, Series A, etc." },
+  { key: "hasToken", label: "Has token", hint: "Only show companies with a live token" },
+];
 
 export default function DiscoveryFilters() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   const [isSaving, setIsSaving] = useState(false);
-  
-  // Constants are now directly imported
 
-  // Filter toggle states
-  const [filtersEnabled, setFiltersEnabled] = useState({
+  const [enabled, setEnabled] = useState<Record<FilterKey, boolean>>({
     collabTypes: false,
     topics: false,
     companySectors: false,
@@ -101,11 +94,10 @@ export default function DiscoveryFilters() {
     userFollowers: false,
     fundingStages: false,
     hasToken: false,
-    blockchainNetworks: false
+    blockchainNetworks: false,
   });
 
-  // Filter expansion states (UI only)
-  const [filtersExpanded, setFiltersExpanded] = useState({
+  const [expanded, setExpanded] = useState<Record<FilterKey, boolean>>({
     collabTypes: false,
     topics: false,
     companySectors: false,
@@ -113,13 +105,11 @@ export default function DiscoveryFilters() {
     userFollowers: false,
     fundingStages: false,
     hasToken: false,
-    blockchainNetworks: false
+    blockchainNetworks: false,
   });
 
-  // Category expansion states for nested sections
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
-  // Form setup
   const form = useForm<FilterFormValues>({
     resolver: zodResolver(filterFormSchema),
     defaultValues: {
@@ -130,26 +120,19 @@ export default function DiscoveryFilters() {
       userFollowers: undefined,
       fundingStages: [],
       hasToken: false,
-      blockchainNetworks: []
-    }
+      blockchainNetworks: [],
+    },
   });
 
-  // Define type for API response
   interface MarketingPreferencesResponse {
-    id?: string;
-    user_id?: string;
     collabs_to_discover?: string[];
-    collabs_to_host?: string[];
-    twitter_collabs?: string[];
     filtered_marketing_topics?: string[];
+    company_tags?: string[];
     twitter_followers?: string;
     company_twitter_followers?: string;
     funding_stage?: string;
     company_has_token?: boolean;
-    company_token_ticker?: string;
     company_blockchain_networks?: string[];
-    company_tags?: string[];
-    discovery_filter_enabled?: boolean;
     discovery_filter_collab_types_enabled?: boolean;
     discovery_filter_topics_enabled?: boolean;
     discovery_filter_company_followers_enabled?: boolean;
@@ -158,882 +141,490 @@ export default function DiscoveryFilters() {
     discovery_filter_token_status_enabled?: boolean;
     discovery_filter_company_sectors_enabled?: boolean;
     discovery_filter_blockchain_networks_enabled?: boolean;
-    created_at?: string;
   }
 
-  // Fetch current preferences from API with better caching
-  const { data: marketingPrefs = {} as MarketingPreferencesResponse } = useQuery<MarketingPreferencesResponse>({
-    queryKey: ['/api/marketing-preferences'],
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    refetchOnWindowFocus: false,
-    refetchOnMount: false
-  });
+  const { data: marketingPrefs = {} as MarketingPreferencesResponse } =
+    useQuery<MarketingPreferencesResponse>({
+      queryKey: ["/api/marketing-preferences"],
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    });
 
-  // Memoized form values to avoid unnecessary recalculations
-  const formValues = useMemo(() => {
+  const preloaded = useMemo(() => {
     if (!marketingPrefs) return null;
-    
     return {
-      collabTypes: Array.isArray(marketingPrefs.collabs_to_discover) ? 
-        marketingPrefs.collabs_to_discover : [],
-      
-      topics: Array.isArray(marketingPrefs.filtered_marketing_topics) ? 
-        marketingPrefs.filtered_marketing_topics : [],
-      
-      companySectors: Array.isArray(marketingPrefs.company_tags) ? 
-        marketingPrefs.company_tags : [],
-      
-      companyFollowers: marketingPrefs.company_twitter_followers || undefined,
-      userFollowers: marketingPrefs.twitter_followers || undefined,
-      
-      // Handle funding_stage as a comma-separated string
-      fundingStages: marketingPrefs.funding_stage ? 
-        marketingPrefs.funding_stage.split(',') : [],
-      
-      hasToken: marketingPrefs.company_has_token === true,
-      
-      blockchainNetworks: Array.isArray(marketingPrefs.company_blockchain_networks) ? 
-        marketingPrefs.company_blockchain_networks : []
-    };
-  }, [marketingPrefs]);
-
-  // Memoized filter states to avoid unnecessary recalculations
-  const filterStates = useMemo(() => {
-    if (!marketingPrefs) return null;
-    
-    return {
-      enabled: {
-        collabTypes: marketingPrefs.discovery_filter_collab_types_enabled || false,
-        topics: marketingPrefs.discovery_filter_topics_enabled || false,
-        companySectors: marketingPrefs.discovery_filter_company_sectors_enabled || false,
-        companyFollowers: marketingPrefs.discovery_filter_company_followers_enabled || false,
-        userFollowers: marketingPrefs.discovery_filter_user_followers_enabled || false,
-        fundingStages: marketingPrefs.discovery_filter_funding_stages_enabled || false,
-        hasToken: marketingPrefs.discovery_filter_token_status_enabled || false,
-        blockchainNetworks: marketingPrefs.discovery_filter_blockchain_networks_enabled || false
+      values: {
+        collabTypes: marketingPrefs.collabs_to_discover || [],
+        topics: marketingPrefs.filtered_marketing_topics || [],
+        companySectors: marketingPrefs.company_tags || [],
+        companyFollowers: marketingPrefs.company_twitter_followers,
+        userFollowers: marketingPrefs.twitter_followers,
+        fundingStages: marketingPrefs.funding_stage
+          ? marketingPrefs.funding_stage.split(",")
+          : [],
+        hasToken: marketingPrefs.company_has_token === true,
+        blockchainNetworks: marketingPrefs.company_blockchain_networks || [],
       },
-      expanded: {
-        collabTypes: marketingPrefs.discovery_filter_collab_types_enabled || false,
-        topics: marketingPrefs.discovery_filter_topics_enabled || false,
-        companySectors: marketingPrefs.discovery_filter_company_sectors_enabled || false,
-        companyFollowers: marketingPrefs.discovery_filter_company_followers_enabled || false,
-        userFollowers: marketingPrefs.discovery_filter_user_followers_enabled || false,
-        fundingStages: marketingPrefs.discovery_filter_funding_stages_enabled || false,
-        hasToken: marketingPrefs.discovery_filter_token_status_enabled || false,
-        blockchainNetworks: marketingPrefs.discovery_filter_blockchain_networks_enabled || false
-      }
+      enabled: {
+        collabTypes: !!marketingPrefs.discovery_filter_collab_types_enabled,
+        topics: !!marketingPrefs.discovery_filter_topics_enabled,
+        companySectors: !!marketingPrefs.discovery_filter_company_sectors_enabled,
+        companyFollowers:
+          !!marketingPrefs.discovery_filter_company_followers_enabled,
+        userFollowers:
+          !!marketingPrefs.discovery_filter_user_followers_enabled,
+        fundingStages:
+          !!marketingPrefs.discovery_filter_funding_stages_enabled,
+        hasToken: !!marketingPrefs.discovery_filter_token_status_enabled,
+        blockchainNetworks:
+          !!marketingPrefs.discovery_filter_blockchain_networks_enabled,
+      },
     };
   }, [marketingPrefs]);
 
-  // Constants are now directly imported, no need to load them
-
-  // Load saved preferences into form - optimized
   useEffect(() => {
-    if (formValues && filterStates) {
-      // Reset form with saved values
-      form.reset(formValues);
-      
-      // Set filter states
-      setFiltersEnabled(filterStates.enabled);
-      setFiltersExpanded(filterStates.expanded);
+    if (preloaded) {
+      form.reset(preloaded.values);
+      setEnabled(preloaded.enabled);
+      setExpanded(preloaded.enabled);
     }
-  }, [formValues, filterStates, form]);
+  }, [preloaded, form]);
 
-  // Toggle filter enabled state
-  const toggleFilter = (filterName: keyof typeof filtersEnabled) => {
-    const newState = !filtersEnabled[filterName];
-    
-    setFiltersEnabled(prev => ({
-      ...prev,
-      [filterName]: newState
-    }));
-
-    // Also expand the section when enabling
-    if (newState) {
-      setFiltersExpanded(prev => ({
-        ...prev,
-        [filterName]: true
-      }));
+  useEffect(() => {
+    document.documentElement.classList.add("scrollable-page");
+    document.body.classList.add("scrollable-page");
+    const rootElement = document.getElementById("root");
+    if (rootElement) {
+      rootElement.style.overflow = "auto";
+      rootElement.style.height = "auto";
+      rootElement.style.position = "static";
+      rootElement.style.width = "100%";
     }
-
-    // Clear values if disabling a filter
-    if (!newState) {
-      switch (filterName) {
-        case 'collabTypes':
-          form.setValue('collabTypes', []);
-          break;
-        case 'topics':
-          form.setValue('topics', []);
-          break;
-        case 'companySectors':
-          form.setValue('companySectors', []);
-          break;
-        case 'companyFollowers':
-          form.setValue('companyFollowers', undefined);
-          break;
-        case 'userFollowers':
-          form.setValue('userFollowers', undefined);
-          break;
-        case 'fundingStages':
-          form.setValue('fundingStages', []);
-          break;
-        case 'hasToken':
-          form.setValue('hasToken', false);
-          break;
-        case 'blockchainNetworks':
-          form.setValue('blockchainNetworks', []);
-          break;
+    return () => {
+      document.documentElement.classList.remove("scrollable-page");
+      document.body.classList.remove("scrollable-page");
+      if (rootElement) {
+        rootElement.style.removeProperty("overflow");
+        rootElement.style.removeProperty("height");
+        rootElement.style.removeProperty("position");
+        rootElement.style.removeProperty("width");
       }
-    }
+    };
+  }, []);
+
+  const toggleExpanded = (key: FilterKey) => {
+    const nextOpen = !expanded[key];
+    setExpanded((prev) => ({ ...prev, [key]: nextOpen }));
+    if (nextOpen) setEnabled((prev) => ({ ...prev, [key]: true }));
   };
 
-  // Toggle filter section expansion
-  const toggleFilterExpansion = (filterName: keyof typeof filtersExpanded) => {
-    // Check current expansion state
-    const isCurrentlyExpanded = filtersExpanded[filterName];
-    
-    // Toggle expansion state
-    setFiltersExpanded(prev => ({
-      ...prev,
-      [filterName]: !isCurrentlyExpanded
-    }));
-    
-    // Automatically enable/disable the filter based on whether section is being expanded/collapsed
-    // and whether there are any values selected
-    if (!isCurrentlyExpanded) {
-      // Expanding - automatically turn on the filter
-      setFiltersEnabled(prev => ({
-        ...prev,
-        [filterName]: true
-      }));
-    } else {
-      // Collapsing - check if there are any selected values
-      // If no values are selected, turn off the filter
-      let hasSelectedValues = false;
-      
-      switch (filterName) {
-        case 'collabTypes':
-          hasSelectedValues = form.getValues('collabTypes')?.length > 0;
-          break;
-        case 'topics':
-          hasSelectedValues = form.getValues('topics')?.length > 0;
-          break;
-        case 'companySectors':
-          hasSelectedValues = form.getValues('companySectors')?.length > 0;
-          break;
-        case 'companyFollowers':
-          hasSelectedValues = !!form.getValues('companyFollowers');
-          break;
-        case 'userFollowers':
-          hasSelectedValues = !!form.getValues('userFollowers');
-          break;
-        case 'fundingStages':
-          hasSelectedValues = form.getValues('fundingStages')?.length > 0;
-          break;
-        case 'hasToken':
-          hasSelectedValues = !!form.getValues('hasToken');
-          break;
-        case 'blockchainNetworks':
-          hasSelectedValues = form.getValues('blockchainNetworks')?.length > 0;
-          break;
-      }
-      
-      if (!hasSelectedValues) {
-        // If no values selected when collapsing, turn off the filter
-        setFiltersEnabled(prev => ({
-          ...prev,
-          [filterName]: false
-        }));
-      }
-    }
-  };
-
-  // Toggle category expansion
-  const toggleCategory = (category: string) => {
-    setExpandedCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category) 
-        : [...prev, category]
+  const toggleCategory = (cat: string) =>
+    setExpandedCategories((prev) =>
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
     );
-  };
 
-  // Save filters to API
+  const activeCount = () => Object.values(enabled).filter(Boolean).length;
+
   const savePreferences = async (values: FilterFormValues) => {
-    try {
-      // Prepare data in the format expected by the API
-      const data = {
-        // Array fields
-        collabs_to_discover: values.collabTypes,
-        filtered_marketing_topics: values.topics,
-        company_tags: values.companySectors,
-        company_blockchain_networks: values.blockchainNetworks,
-        
-        // Scalar fields
-        company_twitter_followers: filtersEnabled.companyFollowers ? values.companyFollowers : null,
-        twitter_followers: filtersEnabled.userFollowers ? values.userFollowers : null,
-        // Convert array of funding stages to a comma-separated string to match the backend schema
-        funding_stage: filtersEnabled.fundingStages && values.fundingStages.length > 0 ? 
-          values.fundingStages.join(',') : null,
-        company_has_token: filtersEnabled.hasToken ? values.hasToken : null,
-        
-        // Filter enabled states
-        discovery_filter_enabled: Object.values(filtersEnabled).some(v => v),
-        discovery_filter_collab_types_enabled: filtersEnabled.collabTypes,
-        discovery_filter_topics_enabled: filtersEnabled.topics,
-        discovery_filter_company_sectors_enabled: filtersEnabled.companySectors,
-        discovery_filter_company_followers_enabled: filtersEnabled.companyFollowers,
-        discovery_filter_user_followers_enabled: filtersEnabled.userFollowers,
-        discovery_filter_funding_stages_enabled: filtersEnabled.fundingStages,
-        discovery_filter_token_status_enabled: filtersEnabled.hasToken,
-        discovery_filter_blockchain_networks_enabled: filtersEnabled.blockchainNetworks,
-      };
-
-      console.log("Saving discovery filters:", data);
-
-      // Send to API
-      await apiRequest('/api/marketing-preferences', 'POST', data);
-
-      // Invalidate cache and refetch
-      queryClient.removeQueries({ queryKey: ['/api/marketing-preferences'] });
-      await queryClient.fetchQuery({ 
-        queryKey: ['/api/marketing-preferences'],
-        staleTime: 0
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Error saving preferences:', error);
-      return false;
-    }
+    const data = {
+      collabs_to_discover: values.collabTypes,
+      filtered_marketing_topics: values.topics,
+      company_tags: values.companySectors,
+      company_blockchain_networks: values.blockchainNetworks,
+      company_twitter_followers: enabled.companyFollowers
+        ? values.companyFollowers
+        : null,
+      twitter_followers: enabled.userFollowers ? values.userFollowers : null,
+      funding_stage:
+        enabled.fundingStages && values.fundingStages.length > 0
+          ? values.fundingStages.join(",")
+          : null,
+      company_has_token: enabled.hasToken ? values.hasToken : null,
+      discovery_filter_enabled: Object.values(enabled).some((v) => v),
+      discovery_filter_collab_types_enabled: enabled.collabTypes,
+      discovery_filter_topics_enabled: enabled.topics,
+      discovery_filter_company_sectors_enabled: enabled.companySectors,
+      discovery_filter_company_followers_enabled: enabled.companyFollowers,
+      discovery_filter_user_followers_enabled: enabled.userFollowers,
+      discovery_filter_funding_stages_enabled: enabled.fundingStages,
+      discovery_filter_token_status_enabled: enabled.hasToken,
+      discovery_filter_blockchain_networks_enabled: enabled.blockchainNetworks,
+    };
+    await apiRequest("/api/marketing-preferences", "POST", data);
+    queryClient.removeQueries({ queryKey: ["/api/marketing-preferences"] });
+    await queryClient.fetchQuery({
+      queryKey: ["/api/marketing-preferences"],
+      staleTime: 0,
+    });
   };
 
-  // Handle form submission
   const onSubmit = async (values: FilterFormValues) => {
     setIsSaving(true);
-    
     try {
-      const success = await savePreferences(values);
-      
-      if (success) {
-        toast({
-          title: "Filters saved",
-          description: "Your discovery filters have been updated",
-        });
-        
-        // Navigate to discover page immediately (smooth transition)
-        navigate('/discover');
-      } else {
-        toast({
-          title: "Error saving filters",
-          description: "There was a problem saving your filters. Please try again.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Error in form submission:', error);
+      await savePreferences(values);
       toast({
-        title: "Error saving filters",
-        description: "There was a problem saving your filters. Please try again.",
-        variant: "destructive"
+        title: "Filters saved",
+        description: "Your feed is tighter now.",
+      });
+      navigate("/discover");
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Couldn't save",
+        description: "Try again in a moment.",
       });
     } finally {
       setIsSaving(false);
     }
   };
 
-  // For scrollable layout
-  useEffect(() => {
-    document.documentElement.classList.add('scrollable-page');
-    document.body.classList.add('scrollable-page');
-    
-    const rootElement = document.getElementById('root');
-    if (rootElement) {
-      rootElement.style.overflow = 'auto';
-      rootElement.style.height = 'auto';
-      rootElement.style.position = 'static';
-      rootElement.style.width = '100%';
-    }
-    
-    return () => {
-      document.documentElement.classList.remove('scrollable-page');
-      document.body.classList.remove('scrollable-page');
-      
-      if (rootElement) {
-        rootElement.style.removeProperty('overflow');
-        rootElement.style.removeProperty('height');
-        rootElement.style.removeProperty('position');
-        rootElement.style.removeProperty('width');
-      }
-    };
-  }, []);
+  const handleClearAll = () => {
+    form.reset({
+      collabTypes: [],
+      topics: [],
+      companySectors: [],
+      companyFollowers: undefined,
+      userFollowers: undefined,
+      fundingStages: [],
+      hasToken: false,
+      blockchainNetworks: [],
+    });
+    setEnabled({
+      collabTypes: false,
+      topics: false,
+      companySectors: false,
+      companyFollowers: false,
+      userFollowers: false,
+      fundingStages: false,
+      hasToken: false,
+      blockchainNetworks: false,
+    });
+    setExpanded({
+      collabTypes: false,
+      topics: false,
+      companySectors: false,
+      companyFollowers: false,
+      userFollowers: false,
+      fundingStages: false,
+      hasToken: false,
+      blockchainNetworks: false,
+    });
+  };
 
   return (
     <MobileCheck>
-      <div className="container pb-28 pt-4 space-y-6">
-        <PageHeader 
-          title="Discovery Filters" 
-          subtitle="Customize what collaborations you want to discover"
+      <div className="min-h-[100svh] bg-background pb-28">
+        <PageHeader
+          title="Filters"
+          subtitle={
+            activeCount() > 0
+              ? `${activeCount()} active`
+              : "Tighten your feed."
+          }
           backUrl="/discover"
+          trailing={
+            activeCount() > 0 ? (
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className="text-sm font-medium text-text-muted hover:text-text"
+              >
+                Clear all
+              </button>
+            ) : undefined
+          }
         />
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            
 
-                {/* Filter: Collaboration Types */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <MessageSquare className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-xl">Collaboration Types</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={filtersEnabled.collabTypes}
-                          onCheckedChange={() => toggleFilter('collabTypes')}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => toggleFilterExpansion('collabTypes')}
-                        >
-                          {filtersExpanded.collabTypes ? <ChevronUp /> : <ChevronDown />}
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Filter by the type of collaboration
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  {filtersExpanded.collabTypes && (
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="collabTypes"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {COLLAB_TYPES?.map((type) => (
-                                <FormItem key={type} className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      disabled={!filtersEnabled.collabTypes}
-                                      checked={field.value?.includes(type)}
-                                      onCheckedChange={(checked) => {
-                                        const updatedValue = checked
-                                          ? [...field.value, type]
-                                          : field.value?.filter((value) => value !== type);
-                                        field.onChange(updatedValue);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    {type}
-                                  </FormLabel>
-                                </FormItem>
-                              ))}
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-                
-                {/* Filter: Topics */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Tag className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-xl">Content Topics</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={filtersEnabled.topics}
-                          onCheckedChange={() => toggleFilter('topics')}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => toggleFilterExpansion('topics')}
-                        >
-                          {filtersExpanded.topics ? <ChevronUp /> : <ChevronDown />}
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Filter by content topics you're interested in
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  {filtersExpanded.topics && (
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="topics"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {COLLAB_TOPICS?.map((topic) => (
-                                <FormItem key={topic} className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      disabled={!filtersEnabled.topics}
-                                      checked={field.value?.includes(topic)}
-                                      onCheckedChange={(checked) => {
-                                        const updatedValue = checked
-                                          ? [...field.value, topic]
-                                          : field.value?.filter((value) => value !== topic);
-                                        field.onChange(updatedValue);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    {topic}
-                                  </FormLabel>
-                                </FormItem>
-                              ))}
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-                
-                {/* Filter: Company Sectors */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Building className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-xl">Company Sectors</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={filtersEnabled.companySectors}
-                          onCheckedChange={() => toggleFilter('companySectors')}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => toggleFilterExpansion('companySectors')}
-                        >
-                          {filtersExpanded.companySectors ? <ChevronUp /> : <ChevronDown />}
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Filter by company sectors you want to collaborate with
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  {filtersExpanded.companySectors && (
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="companySectors"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="space-y-4">
-                              {Object.entries(COMPANY_TAG_CATEGORIES).map(([category, tags]) => (
-                                <div key={category} className="space-y-2">
-                                  <div 
-                                    className="flex items-center gap-2 cursor-pointer" 
-                                    onClick={() => toggleCategory(category)}
-                                  >
-                                    <Badge variant="outline" className="py-1">
-                                      {expandedCategories.includes(category) ? 
-                                        <ChevronUp className="h-3 w-3 mr-1" /> : 
-                                        <ChevronDown className="h-3 w-3 mr-1" />
-                                      }
-                                      {category}
-                                    </Badge>
-                                  </div>
-                                  
-                                  {expandedCategories.includes(category) && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-4">
-                                      {tags.map((tag) => (
-                                        <FormItem 
-                                          key={tag} 
-                                          className="flex flex-row items-start space-x-3 space-y-0"
-                                        >
-                                          <FormControl>
-                                            <Checkbox
-                                              disabled={!filtersEnabled.companySectors}
-                                              checked={field.value?.includes(tag)}
-                                              onCheckedChange={(checked) => {
-                                                const updatedValue = checked
-                                                  ? [...field.value, tag]
-                                                  : field.value?.filter((value) => value !== tag);
-                                                field.onChange(updatedValue);
-                                              }}
-                                            />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">
-                                            {tag}
-                                          </FormLabel>
-                                        </FormItem>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-                
-                {/* Filter: Chain */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Network className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-xl">Chain</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={filtersEnabled.blockchainNetworks}
-                          onCheckedChange={() => toggleFilter('blockchainNetworks')}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => toggleFilterExpansion('blockchainNetworks')}
-                        >
-                          {filtersExpanded.blockchainNetworks ? <ChevronUp /> : <ChevronDown />}
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Filter by blockchain networks
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  {filtersExpanded.blockchainNetworks && (
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="blockchainNetworks"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="space-y-4">
-                              {Object.entries(BLOCKCHAIN_NETWORK_CATEGORIES).map(([category, networks]) => (
-                                <div key={category} className="space-y-2">
-                                  <div 
-                                    className="flex items-center gap-2 cursor-pointer" 
-                                    onClick={() => toggleCategory(category)}
-                                  >
-                                    <Badge variant="outline" className="py-1">
-                                      {expandedCategories.includes(category) ? 
-                                        <ChevronUp className="h-3 w-3 mr-1" /> : 
-                                        <ChevronDown className="h-3 w-3 mr-1" />
-                                      }
-                                      {category}
-                                    </Badge>
-                                  </div>
-                                  
-                                  {expandedCategories.includes(category) && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-4">
-                                      {networks.map((network) => (
-                                        <FormItem 
-                                          key={network} 
-                                          className="flex flex-row items-start space-x-3 space-y-0"
-                                        >
-                                          <FormControl>
-                                            <Checkbox
-                                              disabled={!filtersEnabled.blockchainNetworks}
-                                              checked={field.value?.includes(network)}
-                                              onCheckedChange={(checked) => {
-                                                const updatedValue = checked
-                                                  ? [...field.value, network]
-                                                  : field.value?.filter((value) => value !== network);
-                                                field.onChange(updatedValue);
-                                              }}
-                                            />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">
-                                            {network}
-                                          </FormLabel>
-                                        </FormItem>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-                
-                {/* Filter: Company Followers */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-xl">Company Followers</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={filtersEnabled.companyFollowers}
-                          onCheckedChange={() => toggleFilter('companyFollowers')}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => toggleFilterExpansion('companyFollowers')}
-                        >
-                          {filtersExpanded.companyFollowers ? <ChevronUp /> : <ChevronDown />}
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Filter by minimum company Twitter followers
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  {filtersExpanded.companyFollowers && (
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="companyFollowers"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select
-                              disabled={!filtersEnabled.companyFollowers}
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select minimum followers" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {TWITTER_FOLLOWER_COUNTS?.map((count) => (
-                                  <SelectItem key={count} value={count}>
-                                    {count}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-                
-                {/* Filter: User Followers */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-xl">User Followers</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={filtersEnabled.userFollowers}
-                          onCheckedChange={() => toggleFilter('userFollowers')}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => toggleFilterExpansion('userFollowers')}
-                        >
-                          {filtersExpanded.userFollowers ? <ChevronUp /> : <ChevronDown />}
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Filter by minimum user Twitter followers
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  {filtersExpanded.userFollowers && (
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="userFollowers"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select
-                              disabled={!filtersEnabled.userFollowers}
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select minimum followers" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {TWITTER_FOLLOWER_COUNTS?.map((count) => (
-                                  <SelectItem key={count} value={count}>
-                                    {count}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-                
-                {/* Filter: Funding Stages */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-xl">Funding Stages</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={filtersEnabled.fundingStages}
-                          onCheckedChange={() => toggleFilter('fundingStages')}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => toggleFilterExpansion('fundingStages')}
-                        >
-                          {filtersExpanded.fundingStages ? <ChevronUp /> : <ChevronDown />}
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Filter by company funding stage
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  {filtersExpanded.fundingStages && (
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="fundingStages"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {FUNDING_STAGES?.map((stage) => (
-                                <FormItem key={stage} className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      disabled={!filtersEnabled.fundingStages}
-                                      checked={field.value?.includes(stage)}
-                                      onCheckedChange={(checked) => {
-                                        const updatedValue = checked
-                                          ? [...field.value, stage]
-                                          : field.value?.filter((value) => value !== stage);
-                                        field.onChange(updatedValue);
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    {stage}
-                                  </FormLabel>
-                                </FormItem>
-                              ))}
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-                
-                {/* Filter: Has Token */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CoinsIcon className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-xl">Token Status</CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch 
-                          checked={filtersEnabled.hasToken}
-                          onCheckedChange={() => toggleFilter('hasToken')}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => toggleFilterExpansion('hasToken')}
-                        >
-                          {filtersExpanded.hasToken ? <ChevronUp /> : <ChevronDown />}
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription>
-                      Filter by whether the company has a token
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  {filtersExpanded.hasToken && (
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="hasToken"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center gap-2 space-y-0">
-                            <FormControl>
-                              <Switch
-                                disabled={!filtersEnabled.hasToken}
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Only show companies with a token
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  )}
-                </Card>
-                
-                {/* Submit Button */}
-                <div className="fixed bottom-4 left-0 right-0 bg-background border-t rounded-lg shadow-md mx-4 p-6 flex justify-center">
-                  <Button 
-                    type="submit" 
-                    className="w-full max-w-md py-6"
-                    disabled={isSaving || form.formState.isSubmitting}
-                  >
-                    {isSaving || form.formState.isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Filters
-                      </>
-                    )}
-                  </Button>
-                </div>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mx-auto max-w-xl"
+          >
+            {FILTER_LABELS.map(({ key, label, hint }) => (
+              <FilterSection
+                key={key}
+                label={label}
+                hint={hint}
+                enabled={enabled[key]}
+                expanded={expanded[key]}
+                onToggleEnabled={(v) =>
+                  setEnabled((prev) => ({ ...prev, [key]: v }))
+                }
+                onToggleExpanded={() => toggleExpanded(key)}
+              >
+                <FilterBody
+                  filterKey={key}
+                  form={form}
+                  enabled={enabled[key]}
+                  expandedCategories={expandedCategories}
+                  onToggleCategory={toggleCategory}
+                />
+              </FilterSection>
+            ))}
           </form>
         </Form>
+
+        <FixedBottomButton
+          type="button"
+          onClick={() => form.handleSubmit(onSubmit)()}
+          isLoading={isSaving}
+          loadingText="Saving…"
+          text="Apply filters"
+        />
       </div>
     </MobileCheck>
   );
+}
+
+function FilterSection({
+  label,
+  hint,
+  enabled,
+  expanded,
+  onToggleEnabled,
+  onToggleExpanded,
+  children,
+}: {
+  label: string;
+  hint: string;
+  enabled: boolean;
+  expanded: boolean;
+  onToggleEnabled: (v: boolean) => void;
+  onToggleExpanded: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-b border-hairline">
+      <button
+        type="button"
+        onClick={onToggleExpanded}
+        className="flex w-full items-center gap-3 px-4 py-4 text-left transition-colors duration-fast ease-out active:bg-surface"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-medium text-text">{label}</p>
+          <p className="truncate text-sm text-text-muted">{hint}</p>
+        </div>
+        <Switch
+          checked={enabled}
+          onCheckedChange={(v) => {
+            onToggleEnabled(v);
+            if (v) onToggleExpanded();
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+        {expanded ? (
+          <ChevronUp className="h-4 w-4 text-text-subtle" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-text-subtle" />
+        )}
+      </button>
+      {expanded && <div className="px-4 pb-4 pt-1">{children}</div>}
+    </div>
+  );
+}
+
+function FilterBody({
+  filterKey,
+  form,
+  enabled,
+  expandedCategories,
+  onToggleCategory,
+}: {
+  filterKey: FilterKey;
+  form: any;
+  enabled: boolean;
+  expandedCategories: string[];
+  onToggleCategory: (category: string) => void;
+}) {
+  const renderFlatList = (
+    name: FilterKey,
+    items: readonly string[]
+  ) => (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            {items.map((item) => (
+              <FormItem
+                key={item}
+                className="flex items-center gap-2 space-y-0"
+              >
+                <FormControl>
+                  <Checkbox
+                    disabled={!enabled}
+                    checked={field.value?.includes(item)}
+                    onCheckedChange={(checked) => {
+                      const next = checked
+                        ? [...(field.value || []), item]
+                        : (field.value || []).filter((v: string) => v !== item);
+                      field.onChange(next);
+                    }}
+                  />
+                </FormControl>
+                <FormLabel className="mb-0 font-normal text-text">
+                  {item}
+                </FormLabel>
+              </FormItem>
+            ))}
+          </div>
+        </FormItem>
+      )}
+    />
+  );
+
+  const renderCategorized = (
+    name: FilterKey,
+    categories: Record<string, readonly string[]>
+  ) => (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <div className="space-y-2">
+            {Object.entries(categories).map(([category, items]) => {
+              const isOpen = expandedCategories.includes(category);
+              const count = (field.value || []).filter((v: string) =>
+                (items as readonly string[]).includes(v)
+              ).length;
+              return (
+                <div
+                  key={category}
+                  className="overflow-hidden rounded-md border border-hairline"
+                >
+                  <button
+                    type="button"
+                    onClick={() => onToggleCategory(category)}
+                    className="flex w-full items-center justify-between px-3 py-2.5 text-left transition-colors duration-fast ease-out hover:bg-surface"
+                  >
+                    <span className="text-sm font-medium text-text">
+                      {category}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {count > 0 && (
+                        <span className="rounded-full bg-brand-subtle px-2 py-0.5 text-xs font-medium tabular text-brand">
+                          {count}
+                        </span>
+                      )}
+                      {isOpen ? (
+                        <ChevronUp className="h-4 w-4 text-text-muted" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-text-muted" />
+                      )}
+                    </div>
+                  </button>
+                  {isOpen && (
+                    <div className="border-t border-hairline p-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {(items as readonly string[]).map((item) => {
+                          const selected = (field.value || []).includes(item);
+                          return (
+                            <button
+                              key={item}
+                              type="button"
+                              disabled={!enabled}
+                              onClick={() =>
+                                field.onChange(
+                                  selected
+                                    ? (field.value || []).filter(
+                                        (v: string) => v !== item
+                                      )
+                                    : [...(field.value || []), item]
+                                )
+                              }
+                              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors duration-fast ease-out ${
+                                selected
+                                  ? "bg-brand text-brand-fg"
+                                  : "border border-hairline text-text-muted hover:text-text"
+                              } ${!enabled ? "opacity-50" : ""}`}
+                            >
+                              {item}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </FormItem>
+      )}
+    />
+  );
+
+  const renderSelect = (name: FilterKey) => (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <Select
+          disabled={!enabled}
+          value={field.value}
+          onValueChange={field.onChange}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a range" />
+          </SelectTrigger>
+          <SelectContent>
+            {TWITTER_FOLLOWER_COUNTS.map((count) => (
+              <SelectItem key={count} value={count}>
+                {count}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    />
+  );
+
+  const renderTokenSwitch = () => (
+    <FormField
+      control={form.control}
+      name="hasToken"
+      render={({ field }) => (
+        <div className="flex items-center gap-3">
+          <Switch
+            disabled={!enabled}
+            checked={field.value}
+            onCheckedChange={field.onChange}
+          />
+          <FormLabel className="mb-0 font-normal text-text">
+            Only show companies with a live token
+          </FormLabel>
+        </div>
+      )}
+    />
+  );
+
+  switch (filterKey) {
+    case "collabTypes":
+      return renderFlatList("collabTypes", COLLAB_TYPES);
+    case "topics":
+      return renderFlatList("topics", COLLAB_TOPICS);
+    case "fundingStages":
+      return renderFlatList("fundingStages", FUNDING_STAGES);
+    case "companySectors":
+      return renderCategorized(
+        "companySectors",
+        COMPANY_TAG_CATEGORIES as Record<string, readonly string[]>
+      );
+    case "blockchainNetworks":
+      return renderCategorized(
+        "blockchainNetworks",
+        BLOCKCHAIN_NETWORK_CATEGORIES as Record<string, readonly string[]>
+      );
+    case "companyFollowers":
+      return renderSelect("companyFollowers");
+    case "userFollowers":
+      return renderSelect("userFollowers");
+    case "hasToken":
+      return renderTokenSwitch();
+    default:
+      return null;
+  }
 }

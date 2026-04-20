@@ -8,3 +8,6 @@ vite.config.ts.*
 .env.*
 !.env.example
 .vercel
+
+# Vercel function handler — bundled by `npm run build` from server/vercel-handler.ts
+api/index.js

@@ -10,11 +10,8 @@ import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
 import { MatchProvider } from "@/contexts/MatchContext";
 import { useTelegramInit } from "@/hooks/useTelegramInit";
 import { mobileKeyboardManager } from "./utils/mobile-keyboard";
+import { initTelegramTheme } from "@/lib/telegramTheme";
 
-// Import RouteComponentProps type for proper router component typing
-import type { RouteComponentProps } from "wouter";
-
-// Lazy load all page components
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const DiscoverPage = lazy(() => import("@/pages/DiscoverPageList"));
 const MatchesPage = lazy(() => import("@/pages/MatchesPage"));
@@ -22,22 +19,14 @@ const AuthTestPage = lazy(() => import("@/pages/auth-test"));
 const Welcome = lazy(() => import("@/pages/welcome"));
 const PersonalInfo = lazy(() => import("@/pages/personal-info"));
 const CompanyBasics = lazy(() => import("@/pages/company-basics"));
-const CompanySector = lazy(() => import("@/pages/company-sector"));
-const CompanyDetails = lazy(() => import("@/pages/company-details"));
 const CompanyInfo = lazy(() => import("@/pages/company-info"));
 const ApplicationStatus = lazy(() => import("@/pages/application-status"));
-
-const MarketingCollabsNew = lazy(() => import("@/pages/marketing-collabs-new"));
 const DiscoveryFilters = lazy(() => import("@/pages/discovery-filters"));
-// Conference coffee feature removed
 const ProfileOverview = lazy(() => import("@/pages/profile-overview"));
 const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
 const AdminUsers = lazy(() => import("@/pages/admin/users"));
-const CreateCollaborationSteps = lazy(() => import("@/pages/create-collaboration-steps"));
 const CreateCollaborationV2 = lazy(() => import("@/pages/create-collaboration-v2"));
-const EditCollaborationSteps = lazy(() => import("@/pages/edit-collaboration-steps"));
-const CreateCollaborationComponent = lazy(() => import("@/pages/create-collaboration"));
-const MyCollaborationsComponent = lazy(() => import("@/pages/my-collaborations"));
+const MyCollaborations = lazy(() => import("@/pages/my-collaborations"));
 const ApplyComponent = lazy(() => import("@/pages/apply"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 const AdminApplications = lazy(() => import("@/pages/admin/applications"));
@@ -45,108 +34,61 @@ const AdminReferralsPage = lazy(() => import("@/pages/admin/referrals"));
 const ReferralsPage = lazy(() => import("@/pages/referrals"));
 const RequestsPage = lazy(() => import("@/pages/requests"));
 
-// Lazy load filter sub-pages
-const FiltersDashboard = lazy(() => import("@/pages/filters/dashboard"));
-const CollabTypesFilter = lazy(() => import("@/pages/filters/collab-types"));
-const TopicsFilter = lazy(() => import("@/pages/filters/topics"));
-const CompanySectorsFilter = lazy(() => import("@/pages/filters/company-sectors"));
-const CompanyFollowersFilter = lazy(() => import("@/pages/filters/company-followers"));
-const UserFollowersFilter = lazy(() => import("@/pages/filters/user-followers"));
-const FundingStagesFilter = lazy(() => import("@/pages/filters/funding-stages"));
-const TokenStatusFilter = lazy(() => import("@/pages/filters/token-status"));
-const BlockchainNetworksFilter = lazy(() => import("@/pages/filters/blockchain-networks"));
-
-// Create wrapper components for components with custom props
-// These wrapper components convert RouteComponentProps to the specific props each component needs
-const MyCollaborations = (props: RouteComponentProps) => <MyCollaborationsComponent />;
-
-// Navigation routes that are preloaded
-const PRELOADED_ROUTES = ['/discover', '/my-collaborations', '/requests', '/matches'];
-
-// No loading fallback for preloaded routes - just an empty div to prevent flashing
 const NoLoadingFallback = () => null;
 
-// Application form routes that should not show bottom navigation
 const APPLICATION_ROUTES = [
-  '/welcome',
-  '/personal-info',
-  '/company-basics',
-
-  '/application-status',
-  '/company-info',
-  '/profile-overview',
-  '/discovery-filters',
-  '/filters',
-  '/filters/collab-types',
-  '/filters/topics',
-  '/filters/company-sectors',
-  '/filters/company-followers',
-  '/filters/user-followers',
-  '/filters/funding-stages',
-  '/filters/token-status',
-  '/filters/blockchain-networks'
+  "/welcome",
+  "/personal-info",
+  "/company-basics",
+  "/application-status",
+  "/company-info",
+  "/profile-overview",
+  "/discovery-filters",
 ];
 
 function Router() {
   const [location] = useLocation();
   const showBottomNav = !APPLICATION_ROUTES.includes(location);
 
-  // Use no loading fallback for all routes to prevent multiple loading screens
-  const getSuspenseFallback = () => <NoLoadingFallback />;
-
   return (
     <div className="min-h-screen bg-background w-full flex flex-col">
       <ImpersonationBanner />
-      <div className={`w-full flex-grow overflow-auto ${showBottomNav ? 'pb-24' : ''}`}>
-        <Suspense fallback={getSuspenseFallback()}>
+      <div
+        className="w-full flex-grow overflow-auto"
+        style={
+          showBottomNav
+            ? { paddingBottom: "calc(56px + env(safe-area-inset-bottom, 0px) + 16px)" }
+            : undefined
+        }
+      >
+        <Suspense fallback={<NoLoadingFallback />}>
           <Switch>
-            {/* Welcome and Application Flow */}
             <Route path="/welcome" component={Welcome} />
             <Route path="/personal-info" component={PersonalInfo} />
             <Route path="/company-basics" component={CompanyBasics} />
-
             <Route path="/application-status" component={ApplicationStatus} />
-
             <Route path="/apply/:id">
               {(params) => <ApplyComponent id={params.id} />}
             </Route>
 
-            {/* Main App Routes */}
             <Route path="/">
               <Redirect to="/discover" />
             </Route>
 
-            {/* New Tab Routes */}
             <Route path="/discover" component={DiscoverPage} />
             <Route path="/my-collaborations" component={MyCollaborations} />
-            <Route path="/my-collabs" component={MyCollaborations} />
+            <Route path="/my-collabs">
+              <Redirect to="/my-collaborations" />
+            </Route>
             <Route path="/requests" component={RequestsPage} />
             <Route path="/matches" component={MatchesPage} />
             <Route path="/settings">
               <Redirect to="/dashboard" />
             </Route>
 
-            {/* Existing Routes */}
             <Route path="/dashboard" component={Dashboard} />
             <Route path="/discovery-filters" component={DiscoveryFilters} />
-            <Route path="/marketing-collabs-new" component={MarketingCollabsNew} />
-            
-            {/* Filter Routes (New) */}
-            <Route path="/filters" component={FiltersDashboard} />
-            <Route path="/filters/collab-types" component={CollabTypesFilter} />
-            <Route path="/filters/topics" component={TopicsFilter} />
-            <Route path="/filters/company-sectors" component={CompanySectorsFilter} />
-            <Route path="/filters/company-followers" component={CompanyFollowersFilter} />
-            <Route path="/filters/user-followers" component={UserFollowersFilter} />
-            <Route path="/filters/funding-stages" component={FundingStagesFilter} />
-            <Route path="/filters/token-status" component={TokenStatusFilter} />
-            <Route path="/filters/blockchain-networks" component={BlockchainNetworksFilter} />
-            
-            {/* Conference coffee route removed 
-            <Route path="/conference-coffees" component={null} /> 
-            */}
 
-            {/* Admin Routes */}
             <Route path="/admin">
               <Redirect to="/admin/dashboard" />
             </Route>
@@ -155,19 +97,13 @@ function Router() {
             <Route path="/admin/applications" component={AdminApplications} />
             <Route path="/admin/referrals" component={AdminReferralsPage} />
 
-            {/* Collaboration Routes */}
-            <Route path="/create-collaboration-steps" component={CreateCollaborationSteps as any} />
             <Route path="/create-collaboration-v2" component={CreateCollaborationV2} />
-            <Route path="/create-collaboration" component={CreateCollaborationComponent as any} />
-            
-            {/* Profile Routes */}
+
             <Route path="/profile-overview" component={ProfileOverview} />
             <Route path="/company-info" component={CompanyInfo} />
-            
-            {/* Referral Routes */}
+
             <Route path="/referrals" component={ReferralsPage} />
-            
-            {/* Testing Routes */}
+
             <Route path="/auth-test" component={AuthTestPage} />
 
             <Route path="/not-found" component={NotFound} />
@@ -181,45 +117,29 @@ function Router() {
 }
 
 function App() {
-  // Single loading state - much simpler!
   const [isAppReady, setIsAppReady] = useState(false);
-  
-  // Use the optimized Telegram WebApp initialization hook
   const telegramInitialized = useTelegramInit();
-  
-  // Initialize app once on mount
+
   useEffect(() => {
-    console.log('[App] Initializing app...');
-    
-    // Initialize mobile keyboard manager to handle bottom navigation behavior
-    console.log('[App] Initializing mobile keyboard manager...');
-    // The mobileKeyboardManager is a singleton that automatically handles keyboard detection
-    
-    // Check if Telegram is initialized
-    if (!telegramInitialized) {
-      console.warn('[App] Telegram WebApp initialization pending...');
-    }
-    
-    // Short delay to ensure smooth transition
-    const timer = setTimeout(() => {
-      setIsAppReady(true);
-    }, 300); // Reduced from 850ms total to just 300ms
-    
-    return () => {
-      clearTimeout(timer);
-      // Mobile keyboard manager cleanup happens automatically
-    };
+    const teardown = initTelegramTheme();
+    return teardown;
+  }, []);
+
+  useEffect(() => {
+    if (telegramInitialized) setIsAppReady(true);
   }, [telegramInitialized]);
-  
-  // Render single loading screen or app
+
+  useEffect(() => {
+    const fallback = setTimeout(() => setIsAppReady(true), 600);
+    return () => clearTimeout(fallback);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <MatchProvider>
         {!isAppReady ? (
-          // Single loading screen - no more multiple phases
           <LoadingScreen />
         ) : (
-          // Main application
           <MobileCheck>
             <Router />
           </MobileCheck>

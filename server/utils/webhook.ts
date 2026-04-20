@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { db } from '../db';
-import { collaborations, companies, users } from '@shared/schema';
+import { collaborations, companies, users } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 
 interface WebhookPayload {

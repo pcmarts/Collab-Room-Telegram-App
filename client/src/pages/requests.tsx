@@ -241,17 +241,21 @@ export default function RequestsPage() {
 
 
 
+  const Header = () => (
+    <header className="flex items-center justify-between gap-2 border-b border-hairline bg-background px-4 py-3">
+      <h1 className="text-xl font-semibold tracking-tight text-text">
+        Requests
+      </h1>
+    </header>
+  );
+
   if (isLoadingProfile) {
     return (
       <MobileCheck>
-        <div className="flex flex-col h-[100svh]">
-          <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-            <div>
-              <h1 className="text-xl font-semibold">Requests</h1>
-            </div>
-          </div>
-          <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin" />
+        <div className="flex h-[100svh] flex-col">
+          <Header />
+          <div className="flex flex-1 items-center justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-text-subtle" />
           </div>
         </div>
       </MobileCheck>
@@ -261,14 +265,12 @@ export default function RequestsPage() {
   if (!isAuthenticated) {
     return (
       <MobileCheck>
-        <div className="flex flex-col h-[100svh]">
-          <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-            <div>
-              <h1 className="text-xl font-semibold">Requests</h1>
-            </div>
-          </div>
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-muted-foreground">Please log in to view your collaboration requests.</p>
+        <div className="flex h-[100svh] flex-col">
+          <Header />
+          <div className="flex flex-1 items-center justify-center px-6 text-center">
+            <p className="text-sm text-text-muted">
+              Sign in to see requests coming your way.
+            </p>
           </div>
         </div>
       </MobileCheck>
@@ -277,17 +279,10 @@ export default function RequestsPage() {
 
   return (
     <MobileCheck>
-      <div className="flex flex-col h-[100svh]">
-        {/* Header - matching discover page style */}
-        <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-          <div>
-            <h1 className="text-xl font-semibold">Requests</h1>
-          </div>
-        </div>
-        
-        {/* Scrollable content area */}
+      <div className="flex h-[100svh] flex-col">
+        <Header />
         <div className="flex-1 overflow-y-auto">
-          <div className="py-4 px-4 pb-24">
+          <div className="mx-auto max-w-xl px-4 pb-24 pt-4">
             <RequestsManagementTab
               requestGroups={requestGroups}
               isLoading={isLoadingRequests}

@@ -9,7 +9,7 @@ import {
   type User, type InsertUser,
   type Collaboration, type InsertCollaboration,
   type NotificationPreferences, type MarketingPreferences
-} from "@shared/schema";
+} from "../shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, isNull, not, desc, sql, ilike, lt, gt, exists } from "drizzle-orm";
 // Using SQL array operators directly with sql tag instead of importing helpers

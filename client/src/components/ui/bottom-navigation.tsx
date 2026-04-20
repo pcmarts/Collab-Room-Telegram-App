@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "wouter"
-import { User, MessageSquare, FolderPlus, Users, Inbox, Layers, Copy, SquareStack, Combine, Sparkles, Search } from "lucide-react"
+import { MessageSquare, Inbox, Sparkles, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { DiscoveryIcon } from "@/components/icons/DiscoveryIcon"
-import { Badge } from "@/components/ui/badge"
 import { useQuery } from "@tanstack/react-query"
 import { apiRequest } from "@/lib/queryClient"
 import { useNavigationPreloader } from "@/hooks/useNavigationPreloader"
@@ -147,99 +145,97 @@ const BottomNavigation = () => {
     setLocation('/welcome');
   };
 
+  const itemClass = (active: boolean, disabled: boolean) =>
+    cn(
+      "flex flex-col items-center justify-center gap-1 h-full relative select-none",
+      "transition-colors duration-fast ease-out",
+      disabled && "opacity-40 cursor-not-allowed",
+      !disabled && "active:bg-surface",
+      active ? "text-brand" : "text-text-muted"
+    );
+
   return (
-    <nav className="fixed bottom-0 left-0 z-50 w-full h-24 bg-background border-t border-border pb-6" style={{ bottom: '0px', position: 'fixed' }}>
-      <div className="grid h-full grid-cols-4 mx-auto">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 w-full border-t border-hairline bg-background"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
+      <div className="grid grid-cols-4 h-14">
         {navItems.map((item) => {
           const isRestricted = item.requiresAuth && !isAuthenticated;
           const isPendingRestricted = item.requiresAuth && isApplicationPending;
           const isActive = location === item.href;
-          
+          const Icon = item.icon;
+
+          const iconEl = (
+            <div className="relative">
+              <Icon className="w-5 h-5" />
+              {item.notificationCount &&
+                isAuthenticated &&
+                !isApplicationPending && (
+                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full text-[10px] font-semibold tabular bg-brand text-brand-fg">
+                    {item.notificationCount}
+                  </span>
+                )}
+            </div>
+          );
+          const labelEl = (
+            <span className="text-[11px] font-medium tracking-tight">
+              {item.label}
+            </span>
+          );
+
           if (isRestricted || isPendingRestricted) {
-            // For My Collabs, render as clickable for unauthenticated users to show signup dialog
-            if (item.href === '/my-collaborations' && !isAuthenticated) {
+            if (item.href === "/my-collaborations" && !isAuthenticated) {
               return (
-                <div
+                <button
+                  type="button"
                   key={item.href}
-                  className={cn(
-                    "flex flex-col items-center justify-center px-1 pt-2 relative cursor-pointer hover:bg-accent",
-                    "text-muted-foreground"
-                  )}
+                  className={itemClass(false, false)}
                   onMouseEnter={() => handleItemHover(item.href)}
                   onClick={() => handleRestrictedItemClick(item)}
                 >
-                  <div className="relative">
-                    <item.icon className="w-5 h-5 mb-1" />
-                  </div>
-                  <span className="text-xs">{item.label}</span>
-                </div>
+                  {iconEl}
+                  {labelEl}
+                </button>
               );
             }
-            
-            // Render as disabled for other restricted items
+
             return (
               <div
                 key={item.href}
-                className={cn(
-                  "flex flex-col items-center justify-center px-1 pt-2 relative opacity-50 cursor-not-allowed",
-                  "text-muted-foreground"
-                )}
+                className={itemClass(false, true)}
                 onMouseEnter={() => handleItemHover(item.href)}
               >
-                <div className="relative">
-                  <item.icon className="w-5 h-5 mb-1" />
-                  {item.notificationCount && isAuthenticated && !isApplicationPending && (
-                    <Badge 
-                      className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center rounded-full text-xs font-bold opacity-50 bg-primary text-primary-foreground"
-                    >
-                      {item.notificationCount}
-                    </Badge>
-                  )}
-                </div>
-                <span className="text-xs">{item.label}</span>
+                {iconEl}
+                {labelEl}
               </div>
             );
           }
-          
-          // Render as normal link for unrestricted items or authenticated users
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center px-1 pt-2 hover:bg-accent relative",
-                isActive ? "text-primary" : "text-muted-foreground"
-              )}
+              className={itemClass(isActive, false)}
               onMouseEnter={() => handleItemHover(item.href)}
               onClick={() => handleItemClick(item.href)}
             >
-              <div className="relative">
-                <item.icon className="w-5 h-5 mb-1" />
-                {item.notificationCount && isAuthenticated && (
-                  <Badge 
-                    className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center rounded-full text-xs font-bold bg-primary text-primary-foreground"
-                  >
-                    {item.notificationCount}
-                  </Badge>
-                )}
-              </div>
-              <span className="text-xs">{item.label}</span>
+              {iconEl}
+              {labelEl}
             </Link>
           );
         })}
       </div>
-      
-      {/* Signup Prompt Dialog */}
+
       <SignupPromptDialog
         open={showSignupDialog}
         onOpenChange={setShowSignupDialog}
         onSignup={handleSignup}
-        title="Sign Up Required"
-        description="To post a collab for others to join, please sign up."
+        title="Sign up to post"
+        description="Share what you're looking for — hosts will request to join."
       />
-      
     </nav>
-  )
-}
+  );
+};
 
 export { BottomNavigation }

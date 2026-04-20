@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'wouter';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, Clock, AlertTriangle, AlertCircle, Compass } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CheckCircle, Clock, AlertTriangle } from "lucide-react";
 
 interface StatusUpdate {
   status: string;
@@ -16,206 +15,185 @@ interface ProfileData {
   user: {
     id: string;
     is_approved: boolean;
-    // include other user properties as needed
   };
   company?: any;
   preferences?: any;
   marketingPreferences?: any;
-
 }
+
+type StatusKind = "approved" | "rejected" | "processing";
+
+const STATUS_COPY: Record<
+  StatusKind,
+  {
+    kicker: string;
+    headline: string;
+    Icon: typeof CheckCircle;
+    iconClass: string;
+  }
+> = {
+  approved: {
+    kicker: "Approved",
+    headline: "You're in.",
+    Icon: CheckCircle,
+    iconClass: "text-success",
+  },
+  rejected: {
+    kicker: "Declined",
+    headline: "Not this time.",
+    Icon: AlertTriangle,
+    iconClass: "text-destructive",
+  },
+  processing: {
+    kicker: "In review",
+    headline: "We're reviewing your profile.",
+    Icon: Clock,
+    iconClass: "text-text-muted",
+  },
+};
 
 export default function ApplicationStatusPage() {
   const [statusUpdates, setStatusUpdates] = useState<StatusUpdate[]>([]);
-  const [connectionActive, setConnectionActive] = useState<boolean>(false);
-  
-  // Fetch current user profile to get the user ID
-  const { data: profile, isLoading: isLoadingProfile, error: profileError } = useQuery<ProfileData>({
-    queryKey: ['/api/profile'],
+  const [connectionActive, setConnectionActive] = useState(false);
+
+  const { data: profile, isLoading, error } = useQuery<ProfileData>({
+    queryKey: ["/api/profile"],
     refetchOnWindowFocus: false,
   });
-  
+
   useEffect(() => {
     if (!profile?.user?.id) return;
-    
+
     const userId = profile.user.id;
     let eventSource: EventSource | null = null;
-    
-    // Create SSE connection
+
     try {
-      eventSource = new EventSource(`/api/application-status-updates/${userId}`);
-      
-      eventSource.onopen = () => {
-        console.log('SSE connection established');
-        setConnectionActive(true);
-      };
-      
-      // Handle status update events
+      eventSource = new EventSource(
+        `/api/application-status-updates/${userId}`
+      );
+      eventSource.onopen = () => setConnectionActive(true);
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log('Status update received:', data);
-        
-        // Add new status update to the list
-        setStatusUpdates(prev => [data, ...prev]);
-        
-        // If status is final or connection is closing, close the connection
-        if (data.status === 'connection_closing') {
+        setStatusUpdates((prev) => [data, ...prev]);
+        if (data.status === "connection_closing") {
           eventSource?.close();
           setConnectionActive(false);
         }
       };
-      
-      eventSource.onerror = (error) => {
-        console.error('SSE connection error:', error);
+      eventSource.onerror = () => {
         setConnectionActive(false);
         eventSource?.close();
       };
-    } catch (error) {
-      console.error('Failed to establish SSE connection:', error);
+    } catch {
       setConnectionActive(false);
     }
-    
-    // Clean up on component unmount
+
     return () => {
-      if (eventSource) {
-        console.log('Cleaning up SSE connection');
-        eventSource.close();
-        setConnectionActive(false);
-      }
+      eventSource?.close();
+      setConnectionActive(false);
     };
   }, [profile?.user?.id]);
-  
-  // Get the current status from the latest update or the profile
-  const currentStatus = statusUpdates.length > 0 
-    ? statusUpdates[0].status 
-    : profile?.user?.is_approved 
-      ? 'approved' 
-      : 'processing';
-  
-  // Loading state
-  if (isLoadingProfile) {
+
+  const currentStatus: StatusKind =
+    statusUpdates.length > 0
+      ? (statusUpdates[0].status as StatusKind)
+      : profile?.user?.is_approved
+      ? "approved"
+      : "processing";
+
+  if (isLoading) {
     return (
-      <div className="container mx-auto p-4 max-w-3xl bg-gray-50 min-h-screen">
-        <Card className="bg-white border-gray-200">
-          <CardHeader>
-            <Skeleton className="h-8 w-3/4 mb-2 bg-gray-200" />
-            <Skeleton className="h-4 w-1/2 bg-gray-200" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-24 w-full mb-4 bg-gray-200" />
-            <Skeleton className="h-4 w-full mb-2 bg-gray-200" />
-            <Skeleton className="h-4 w-full mb-2 bg-gray-200" />
-            <Skeleton className="h-4 w-3/4 bg-gray-200" />
-          </CardContent>
-        </Card>
+      <div className="mx-auto max-w-xl px-6 pt-14">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="mt-4 h-8 w-72" />
+        <Skeleton className="mt-3 h-4 w-full" />
+        <Skeleton className="mt-2 h-4 w-4/5" />
       </div>
     );
   }
-  
-  // Error state
-  if (profileError) {
+
+  if (error) {
     return (
-      <div className="container mx-auto p-4 max-w-3xl bg-gray-50 min-h-screen">
-        <Card className="bg-white border-red-200">
-          <CardHeader>
-            <CardTitle className="text-red-600 flex items-center">
-              <AlertCircle className="mr-2" /> Error Loading Application Status
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              We couldn't load your application status. Please try again later.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              If this problem persists, please contact support.
-            </p>
-          </CardContent>
-        </Card>
+      <div className="mx-auto max-w-xl px-6 pt-14">
+        <h1 className="text-xl font-semibold tracking-tight text-text">
+          Couldn't load status
+        </h1>
+        <p className="mt-2 text-sm text-text-muted">
+          Try again in a moment. If it persists, reach out on Telegram.
+        </p>
       </div>
     );
   }
-  
+
+  const { kicker, headline, Icon, iconClass } = STATUS_COPY[currentStatus];
+  const latestMessage =
+    statusUpdates.length > 0
+      ? statusUpdates[0].message
+      : currentStatus === "approved"
+      ? "You can post collabs and send requests now."
+      : "Usually within a day. We'll notify you on Telegram.";
+  const lastUpdated =
+    statusUpdates.length > 0
+      ? new Date(statusUpdates[0].timestamp).toLocaleString()
+      : null;
+
   return (
-    <div className="container mx-auto p-4 max-w-3xl bg-gray-50 min-h-screen">
-      <Card className="mb-6 bg-white border-gray-200">
-        <CardHeader>
-          <CardTitle className="flex items-center text-gray-900">
-            {currentStatus === 'approved' ? (
-              <><CheckCircle className="text-green-600 mr-2" /> Application Approved</>
-            ) : currentStatus === 'rejected' ? (
-              <><AlertTriangle className="text-red-600 mr-2" /> Application Rejected</>
-            ) : (
-              <><Clock className="text-yellow-600 mr-2" /> Application Processing</>
-            )}
-          </CardTitle>
-          <CardDescription className="text-gray-600">
-            {connectionActive ? 'Receiving real-time status updates...' : 'Status updates paused.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div className="bg-gray-100 p-4 rounded-md text-gray-900">
-              <h3 className="font-medium mb-2">Current Status</h3>
-              <p className="text-sm mb-1">
-                {statusUpdates.length > 0 ? statusUpdates[0].message : 
-                  profile?.user?.is_approved 
-                    ? 'Your application has been approved! You can now access all platform features.'
-                    : 'Your application is currently being processed...'}
-              </p>
-              <p className="text-xs text-gray-600">
-                Last updated: {statusUpdates.length > 0 
-                  ? new Date(statusUpdates[0].timestamp).toLocaleString()
-                  : 'Initial status'}
-              </p>
-            </div>
-            
-            {statusUpdates.length > 1 && (
-              <div className="bg-gray-100 p-4 rounded-md text-gray-900">
-                <h3 className="font-medium mb-2">Update History</h3>
-                <div className="space-y-3">
-                  {statusUpdates.slice(1).map((update, index) => (
-                    <div key={index} className="border-l-2 pl-3 py-1 border-gray-300">
-                      <p className="text-sm">{update.message}</p>
-                      <p className="text-xs text-gray-600">
-                        {new Date(update.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {currentStatus === 'approved' && (
-              <div className="bg-blue-50 p-4 rounded-md text-gray-900 border border-blue-200">
-                <h3 className="font-medium text-blue-900 mb-2">What's Next?</h3>
-                <p className="text-sm mb-3">
-                  Your application has been approved! You can now access all platform features:
+    <div className="mx-auto min-h-screen max-w-xl bg-background px-6 pb-16 pt-14">
+      <div className="flex items-center gap-2">
+        <Icon className={`h-4 w-4 ${iconClass}`} />
+        <span className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
+          {kicker}
+        </span>
+      </div>
+
+      <h1 className="mt-3 text-2xl font-semibold tracking-tight text-text leading-tight">
+        {headline}
+      </h1>
+      <p className="mt-2 text-base text-text-muted">{latestMessage}</p>
+
+      {lastUpdated && (
+        <p className="mt-4 text-xs tabular text-text-subtle">
+          Last updated {lastUpdated}
+          {!connectionActive ? " · listening paused" : ""}
+        </p>
+      )}
+
+      {currentStatus === "approved" && (
+        <div className="mt-8 space-y-2 text-sm text-text-muted">
+          <p className="font-medium text-text">Next steps</p>
+          <ul className="space-y-1 list-disc pl-4 marker:text-text-subtle">
+            <li>Post what you're looking for</li>
+            <li>Request to join other hosts' collabs</li>
+            <li>Set up preferences so the feed stays relevant</li>
+          </ul>
+        </div>
+      )}
+
+      {statusUpdates.length > 1 && (
+        <div className="mt-8">
+          <p className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
+            History
+          </p>
+          <div className="mt-3 space-y-3">
+            {statusUpdates.slice(1).map((update, i) => (
+              <div key={i} className="border-b border-hairline pb-3 last:border-b-0">
+                <p className="text-sm text-text">{update.message}</p>
+                <p className="mt-1 text-xs tabular text-text-subtle">
+                  {new Date(update.timestamp).toLocaleString()}
                 </p>
-                <ul className="list-disc list-inside text-sm space-y-1 mb-3">
-                  <li>Create and manage collaborations</li>
-                  <li>Browse the marketplace for opportunities</li>
-                  <li>Apply to others' collaborations</li>
-                  <li>Set up your detailed preferences</li>
-                </ul>
               </div>
-            )}
-            
-            {currentStatus !== 'approved' && (
-              <div className="bg-blue-50 p-4 rounded-md text-gray-900 border border-blue-200">
-                <h3 className="font-medium text-blue-900 mb-2">While You Wait</h3>
-                <p className="text-sm mb-3">
-                  While your application is being processed, you can explore the collaboration room to see what opportunities are available.
-                </p>
-                <Link href="/discover">
-                  <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-                    <Compass className="h-4 w-4" />
-                    Explore Collab Room
-                  </Button>
-                </Link>
-              </div>
-            )}
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
+
+      <div className="mt-10 flex gap-2">
+        <Link href="/discover">
+          <Button size="sm" variant={currentStatus === "approved" ? "default" : "secondary"}>
+            Browse the feed
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }

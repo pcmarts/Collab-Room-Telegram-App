@@ -1,80 +1,114 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useLocation } from 'wouter';
-import { UserIcon, Users, Building, Star, Bell, Calendar, Plus, Settings, Clock, Trash2 } from 'lucide-react';
-import { FaLinkedin, FaTwitter } from 'react-icons/fa';
+import { useLocation } from "wouter";
+import {
+  UserIcon,
+  Users,
+  Building,
+  Bell,
+  ChevronRight,
+  Settings,
+  Trash2,
+  Loader2,
+  ExternalLink,
+} from "lucide-react";
+import { FaLinkedin, FaTwitter } from "react-icons/fa";
 
 import { PageHeader } from "../components/PageHeader";
-import type { 
-  User as UserType, 
-  Company, 
-  NotificationPreferences, 
-  MarketingPreferences 
-} from '@shared/schema';
-import { NOTIFICATION_FREQUENCIES } from '@shared/schema';
+import type {
+  User as UserType,
+  Company,
+  NotificationPreferences,
+  MarketingPreferences,
+} from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ProfileData {
   user: UserType;
   company: Company;
-  // Keep preferences for backward compatibility
   preferences: any;
   notificationPreferences: NotificationPreferences;
   marketingPreferences: MarketingPreferences;
 }
 
+function parseNotificationFlag(raw: unknown): boolean {
+  if (typeof raw === "string") {
+    return ["t", "true"].includes(raw.toLowerCase());
+  }
+  if (typeof raw === "boolean") return raw;
+  if (typeof raw === "number") return raw > 0;
+  return false;
+}
+
+type NavRowProps = {
+  Icon: typeof UserIcon;
+  label: string;
+  hint?: string;
+  onClick: () => void;
+};
+
+function NavRow({ Icon, label, hint, onClick }: NavRowProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex w-full items-center gap-3 border-b border-hairline px-4 py-4 text-left transition-colors duration-fast ease-out active:bg-surface"
+    >
+      <Icon className="h-4 w-4 shrink-0 text-text-muted" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-base font-medium text-text">{label}</p>
+        {hint && <p className="text-sm text-text-muted truncate">{hint}</p>}
+      </div>
+      <ChevronRight className="h-4 w-4 shrink-0 text-text-subtle" />
+    </button>
+  );
+}
+
 export default function Dashboard() {
-  const [_, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { data: profile, isLoading, refetch } = useQuery<ProfileData>({
-    queryKey: ['/api/profile'],
-    // Use refetchOnMount and staleTime: 0 to ensure fresh data each time
+    queryKey: ["/api/profile"],
     staleTime: 0,
-    refetchOnMount: true
+    refetchOnMount: true,
   });
 
-  // Initial state - will be updated when profile loads
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [notificationFrequency, setNotificationFrequency] = useState('Instant');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  
-  // Delete account mutation
+
   const deleteAccountMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest('/api/user/delete-account', 'DELETE');
-    },
+    mutationFn: async () =>
+      apiRequest("/api/user/delete-account", "DELETE"),
     onSuccess: () => {
       toast({
-        title: "Account Deleted",
-        description: "Your account and all associated data have been permanently deleted.",
+        title: "Account deleted",
+        description: "All your data has been removed.",
       });
-      // Redirect to home or landing page after a short delay
       setTimeout(() => {
-        window.location.href = '/';
-      }, 1500);
+        window.location.href = "/";
+      }, 1200);
     },
     onError: (error) => {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete account. Please try again.",
+        title: "Couldn't delete",
+        description:
+          error instanceof Error ? error.message : "Try again in a moment.",
       });
     },
   });
@@ -83,153 +117,39 @@ export default function Dashboard() {
     setShowDeleteDialog(false);
     deleteAccountMutation.mutate();
   };
-  
-  // Update state when profile loads
+
   useEffect(() => {
-    console.log('Dashboard - Profile data received:', profile);
-    
     if (profile?.notificationPreferences) {
-      console.log('Dashboard - Raw notification preferences:', JSON.stringify(profile.notificationPreferences, null, 2));
-      
-      // Make sure we explicitly convert the value to boolean to handle PostgreSQL boolean values properly
-      // PostgreSQL can return 'f', 'false', false, or 0 for false values
-      // And 't', 'true', true, or 1 for true values
-      let notificationsEnabled = false;
-      
-      if (typeof profile.notificationPreferences.notifications_enabled === 'string') {
-        // Handle string values: 't', 'true', 'f', 'false'
-        const strValue = String(profile.notificationPreferences.notifications_enabled).toLowerCase();
-        notificationsEnabled = ['t', 'true'].includes(strValue);
-        console.log('Dashboard - String value detected:', profile.notificationPreferences.notifications_enabled);
-        console.log('Dashboard - Parsed string value to boolean:', notificationsEnabled);
-      } else if (typeof profile.notificationPreferences.notifications_enabled === 'boolean') {
-        // Handle boolean values: true, false
-        notificationsEnabled = profile.notificationPreferences.notifications_enabled;
-        console.log('Dashboard - Boolean value detected:', profile.notificationPreferences.notifications_enabled);
-      } else if (typeof profile.notificationPreferences.notifications_enabled === 'number') {
-        // Handle number values: 1, 0
-        notificationsEnabled = profile.notificationPreferences.notifications_enabled > 0;
-        console.log('Dashboard - Number value detected:', profile.notificationPreferences.notifications_enabled);
-        console.log('Dashboard - Parsed number value to boolean:', notificationsEnabled);
-      } else {
-        // Default behavior for null, undefined or other types
-        notificationsEnabled = false;
-        console.log('Dashboard - Unknown value type detected:', 
-          typeof profile.notificationPreferences.notifications_enabled, 
+      setNotificationsEnabled(
+        parseNotificationFlag(
           profile.notificationPreferences.notifications_enabled
-        );
-      }
-      
-      console.log('Dashboard - Final interpreted notification setting:', notificationsEnabled);
-      
-      // Log the current state before setting it
-      console.log('Dashboard - Current notificationsEnabled state:', notificationsEnabled);
-      
-      // Force the value to be explicitly a boolean
-      const forcedBoolean = Boolean(notificationsEnabled);
-      console.log('Dashboard - Forced boolean value:', forcedBoolean);
-      
-      setNotificationsEnabled(forcedBoolean);
-      console.log('Dashboard - State updated to:', forcedBoolean);
-      
-      setNotificationFrequency(profile.notificationPreferences.notification_frequency || 'Instant');
-      console.log('Dashboard - Notification frequency set to:', profile.notificationPreferences.notification_frequency || 'Instant');
-    } else {
-      console.log('Dashboard - No notification preferences found in profile data');
+        )
+      );
     }
   }, [profile]);
 
-  const handleNotificationSettingsChange = async (enabled: boolean) => {
-    console.log('Dashboard - Notification toggle button clicked with value:', enabled);
-    console.log('Dashboard - Notification toggle clicked with value type:', typeof enabled);
-    
-    // Update local state first for immediate UI feedback
+  const handleNotificationToggle = async (enabled: boolean) => {
     setNotificationsEnabled(enabled);
-    console.log('Dashboard - Local state updated to:', enabled);
-    
     try {
       setIsSubmitting(true);
-      
-      // Add a timestamp to ensure a unique request and prevent caching
-      const uniqueEndpoint = `/api/notification-toggle?_t=${Date.now()}`;
-      console.log('Dashboard - Making API request to:', uniqueEndpoint);
-      
-      // Create the payload and log it for debugging
-      const payload = { enabled };
-      console.log('Dashboard - API request payload:', JSON.stringify(payload));
-      console.log('Dashboard - API request payload type:', typeof payload.enabled);
-      
-      // Use the simplified notification toggle endpoint that only updates notification preferences
-      const response = await apiRequest(uniqueEndpoint, 'POST', payload);
-      
-      console.log('Dashboard - Toggle API response:', response);
-      console.log('Dashboard - Response preferences:', response.preferences);
-      
-      // Check if the response has what we expect
-      if (response.preferences) {
-        console.log('Dashboard - Response notifications_enabled:', response.preferences.notifications_enabled);
-        console.log('Dashboard - Response notifications_enabled type:', typeof response.preferences.notifications_enabled);
-      }
-      
-      // Update the frequency state based on the toggle
-      const newFrequency = enabled ? 'Instant' : 'Daily';
-      setNotificationFrequency(newFrequency);
-      console.log('Dashboard - Set notification frequency to:', newFrequency);
-      
-      // Force refresh profile data to get the latest notification preferences
-      console.log('Dashboard - Refreshing profile data...');
-      const refreshedData = await refetch();
-      console.log('Dashboard - Refreshed profile data:', refreshedData);
-
+      await apiRequest(
+        `/api/notification-toggle?_t=${Date.now()}`,
+        "POST",
+        { enabled }
+      );
+      await refetch();
       toast({
-        title: "Success",
-        description: enabled ? "Notifications have been enabled" : "Notifications have been disabled",
+        title: enabled ? "Notifications on" : "Notifications off",
+        description: enabled
+          ? "We'll ping you on Telegram when things match."
+          : "You won't get Telegram pings.",
       });
-    } catch (error) {
-      console.error('Dashboard - Error updating notification settings:', error);
-      
-      // Revert local state if the API call fails
+    } catch {
       setNotificationsEnabled(!enabled);
-      
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to update notification settings"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleFrequencyChange = async (frequency: string) => {
-    try {
-      setIsSubmitting(true);
-      
-      // Update notification preferences
-      await apiRequest('/api/preferences', 'POST', {
-        // Notification preferences
-        notification_frequency: frequency,
-        notifications_enabled: notificationsEnabled,
-        
-        // Include marketing preferences
-        collabs_to_discover: profile?.marketingPreferences?.collabs_to_discover || [],
-        collabs_to_host: profile?.marketingPreferences?.collabs_to_host || [],
-        filtered_marketing_topics: profile?.marketingPreferences?.filtered_marketing_topics || [],
-        twitter_collabs: profile?.marketingPreferences?.twitter_collabs || [],
-        
-        // No conference preferences - removed as part of simplification
-      });
-
-      setNotificationFrequency(frequency);
-      toast({
-        title: "Success",
-        description: "Notification frequency updated",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update notification frequency"
+        title: "Couldn't update",
+        description: "Try again in a moment.",
       });
     } finally {
       setIsSubmitting(false);
@@ -238,207 +158,201 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[100svh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-5 w-5 animate-spin text-text-subtle" />
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="p-4 text-center min-h-[100svh] flex flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold mb-4">Profile Not Found</h1>
-        <p className="text-muted-foreground mb-4">Please complete the application process.</p>
-        <Button className="w-full max-w-xs" onClick={() => setLocation('/apply')}>
-          Apply to Join
+      <div className="mx-auto max-w-md px-6 pt-14">
+        <h1 className="text-xl font-semibold tracking-tight text-text">
+          Profile not found
+        </h1>
+        <p className="mt-2 text-sm text-text-muted">
+          Finish signup to see your account.
+        </p>
+        <Button
+          size="sm"
+          className="mt-4"
+          onClick={() => setLocation("/welcome")}
+        >
+          Get started
         </Button>
       </div>
     );
   }
 
-  // User needs to be approved to access the dashboard
   if (!profile.user.is_approved) {
-    // Show a pending status but don't redirect to application status
     return (
-      <div className="p-4 text-center min-h-[100svh] flex flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold mb-4">Application Pending</h1>
-        <p className="text-muted-foreground mb-4">Your application is currently being processed.</p>
+      <div className="mx-auto max-w-md px-6 pt-14">
+        <h1 className="text-xl font-semibold tracking-tight text-text">
+          Application in review
+        </h1>
+        <p className="mt-2 text-sm text-text-muted">
+          We'll ping you the moment you're approved.
+        </p>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="mt-4"
+          onClick={() => setLocation("/application-status")}
+        >
+          View status
+        </Button>
       </div>
     );
   }
 
   const { user } = profile;
 
-  // Close Telegram WebApp loading when dashboard is ready
   if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.ready();
   }
 
   return (
-    <div className="min-h-[100svh] bg-background">
-      {/* Welcome Section with standardized PageHeader */}
-      <PageHeader 
-        title={`Welcome, ${user.first_name}!`}
-        backUrl="/discover"
-        showBackButton={true}
-      />
+    <div className="min-h-[100svh] bg-background pb-20">
+      <PageHeader title="Account" showBackButton backUrl="/discover" />
 
-      <div className="p-4 space-y-4 pb-safe">
-        {/* Profile Actions */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/profile-overview')}
-          >
-            <UserIcon className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">My Profile</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-20 flex-col"
-            onClick={() => setLocation('/company-info')}
-          >
-            <Building className="h-5 w-5 mb-1.5" />
-            <span className="text-xs">My Company</span>
-          </Button>
+      <div className="mx-auto max-w-md">
+        <div className="px-4 py-5">
+          <p className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
+            Signed in as
+          </p>
+          <p className="mt-1 text-md font-semibold text-text">
+            {user.first_name}
+            {user.last_name ? ` ${user.last_name}` : ""}
+          </p>
+          <p className="text-sm text-text-muted">@{user.handle}</p>
         </div>
 
-        {/* Referrals Button */}
-        <Button
-          variant="outline"
-          className="w-full h-16 flex items-center justify-start gap-3"
-          onClick={() => setLocation('/referrals')}
-        >
-          <Users className="h-5 w-5" />
-          <span>Invite Your Friends</span>
-        </Button>
-        
-        {/* Admin Panel Button - Only shown to admins */}
-        {profile?.user?.is_admin && (
-          <Button
-            variant="outline"
-            className="w-full h-16 flex items-center justify-start gap-3 mt-2"
-            onClick={() => setLocation('/admin')}
-          >
-            <Settings className="h-5 w-5" />
-            <span>Admin Panel</span>
-          </Button>
-        )}
+        <nav>
+          <NavRow
+            Icon={UserIcon}
+            label="Profile"
+            hint="Name, email, social"
+            onClick={() => setLocation("/profile-overview")}
+          />
+          <NavRow
+            Icon={Building}
+            label="Company"
+            hint="Description, sectors, token"
+            onClick={() => setLocation("/company-info")}
+          />
+          <NavRow
+            Icon={Users}
+            label="Invite friends"
+            hint="Share your referral link"
+            onClick={() => setLocation("/referrals")}
+          />
+          {user.is_admin && (
+            <NavRow
+              Icon={Settings}
+              label="Admin"
+              hint="Internal tools"
+              onClick={() => setLocation("/admin")}
+            />
+          )}
+        </nav>
 
-        {/* Notification Settings */}
-        <Card className="shadow-sm">
-          <CardHeader className="pb-2 px-4 pt-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                Notifications
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                {notificationsEnabled && (
-                  <div className="h-7 text-xs px-2 text-primary">
-                    {notificationFrequency}
-                  </div>
-                )}
-                <Switch
-                  checked={notificationsEnabled}
-                  onCheckedChange={handleNotificationSettingsChange}
-                  className="scale-75"
-                />
-              </div>
+        <div className="mt-6 border-y border-hairline">
+          <div className="flex items-center gap-3 px-4 py-4">
+            <Bell className="h-4 w-4 shrink-0 text-text-muted" />
+            <div className="min-w-0 flex-1">
+              <p className="text-base font-medium text-text">
+                Telegram notifications
+              </p>
+              <p className="text-sm text-text-muted">
+                New requests and matches
+              </p>
             </div>
-          </CardHeader>
-        </Card>
-        
-        {/* Delete Account Section */}
-        <Card className="shadow-sm border-destructive/50">
-          <CardHeader className="pb-3 px-4 pt-3">
-            <CardTitle className="text-sm flex items-center gap-2 text-destructive">
-              <Trash2 className="h-4 w-4" />
-              Danger Zone
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <p className="text-sm text-muted-foreground mb-3">
-              Permanently delete your account and all associated data including your profile, company information, and collaborations. This action cannot be undone.
-            </p>
-            <Button
-              data-testid="button-delete-account"
-              variant="destructive"
-              size="sm"
-              onClick={() => setShowDeleteDialog(true)}
-              disabled={deleteAccountMutation.isPending}
-            >
-              {deleteAccountMutation.isPending ? (
-                <>
-                  <Clock className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Account
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Delete Account Confirmation Dialog */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete your account and remove all your data from our servers. 
-                This includes:
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Your profile and company information</li>
-                  <li>All your collaborations</li>
-                  <li>All collaboration requests and matches</li>
-                  <li>Your preferences and settings</li>
-                </ul>
-                <strong className="block mt-3 text-destructive">This action cannot be undone.</strong>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                data-testid="button-confirm-delete"
-                onClick={handleDeleteAccount}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Yes, delete my account
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* Footer with credits */}
-        <div className="text-center pt-2 pb-8 text-sm text-muted-foreground">
-          <p className="mb-2">Made with ❤️ by Paul Martin</p>
-          <div className="flex justify-center gap-4">
-            <a 
-              href="https://www.linkedin.com/in/thisispaulmartin/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-primary hover:underline"
-            >
-              <FaLinkedin className="h-4 w-4" />
-              <span>LinkedIn</span>
-            </a>
-            <a 
-              href="https://x.com/pcmarts" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-primary hover:underline"
-            >
-              <FaTwitter className="h-4 w-4" />
-              <span>Twitter</span>
-            </a>
+            <Switch
+              checked={notificationsEnabled}
+              onCheckedChange={handleNotificationToggle}
+              disabled={isSubmitting}
+            />
           </div>
         </div>
+
+        <div className="mt-8 px-4">
+          <p className="text-xs font-medium uppercase tracking-wider tabular text-text-subtle">
+            Danger zone
+          </p>
+          <p className="mt-2 text-sm text-text-muted">
+            Deleting your account removes your profile, company, posted collabs,
+            applications, and matches. There's no undo.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 text-destructive border-destructive/50 hover:bg-destructive/5"
+            onClick={() => setShowDeleteDialog(true)}
+            disabled={deleteAccountMutation.isPending}
+          >
+            {deleteAccountMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Deleting…
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-4 w-4" />
+                Delete account
+              </>
+            )}
+          </Button>
+        </div>
+
+        <footer className="mt-10 px-4 pb-8">
+          <p className="text-xs tabular text-text-subtle">
+            Built by Paul Martin
+          </p>
+          <div className="mt-2 flex gap-3">
+            <a
+              href="https://www.linkedin.com/in/thisispaulmartin/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-text"
+            >
+              <FaLinkedin className="h-3 w-3" />
+              LinkedIn
+              <ExternalLink className="h-2.5 w-2.5" />
+            </a>
+            <a
+              href="https://x.com/pcmarts"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-text-muted hover:text-text"
+            >
+              <FaTwitter className="h-3 w-3" />
+              Twitter
+              <ExternalLink className="h-2.5 w-2.5" />
+            </a>
+          </div>
+        </footer>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes your profile, company info, posted collabs,
+              applications, and matches. There's no undo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

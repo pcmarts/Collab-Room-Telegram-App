@@ -10,44 +10,46 @@ interface PageHeaderProps {
   showBackButton?: boolean;
 }
 
-/**
- * A consistent page header component for use across all main navigation tabs.
- * This ensures pixel-perfect positioning of headers throughout the app.
- */
-export function PageHeader({ 
-  title, 
-  subtitle, 
-  action, 
-  backUrl = '/dashboard',
-  showBackButton = false
+export function PageHeader({
+  title,
+  subtitle,
+  action,
+  backUrl,
+  showBackButton = false,
 }: PageHeaderProps) {
-  const [_, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
+
+  const handleBack = () => {
+    if (backUrl) {
+      setLocation(backUrl);
+    } else if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      setLocation("/discover");
+    }
+  };
 
   return (
-    <div className="p-4 border-b flex items-center justify-between bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-      <div className="flex items-center">
-        {showBackButton && (
-          <button 
-            onClick={() => setLocation(backUrl)}
-            className="mr-3 p-1 rounded-full hover:bg-muted transition-colors"
-            aria-label="Back"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-        )}
-        <div>
-          <h1 className="text-xl font-semibold">{title}</h1>
-          {subtitle && (
-            <p className="text-muted-foreground mt-1">{subtitle}</p>
-          )}
-        </div>
-      </div>
-      
-      {action && (
-        <div>
-          {action}
-        </div>
+    <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-hairline bg-background px-4 py-3">
+      {showBackButton && (
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label="Back"
+          className="-ml-2 flex h-11 w-11 items-center justify-center rounded-sm text-text-muted transition-colors duration-fast ease-out hover:bg-surface hover:text-text active:bg-accent"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
       )}
-    </div>
+      <div className="min-w-0 flex-1">
+        <h1 className="truncate text-lg font-semibold tracking-tight text-text">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="truncate text-sm text-text-muted">{subtitle}</p>
+        )}
+      </div>
+      {action}
+    </header>
   );
 }

@@ -1,30 +1,50 @@
-import { ChevronLeft } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { ChevronLeft } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
   backUrl?: string;
+  trailing?: React.ReactNode;
 }
 
-export function PageHeader({ title, subtitle, backUrl = '/dashboard' }: PageHeaderProps) {
-  const [_, setLocation] = useLocation();
+export function PageHeader({
+  title,
+  subtitle,
+  backUrl,
+  trailing,
+}: PageHeaderProps) {
+  const [, setLocation] = useLocation();
+
+  const handleBack = () => {
+    if (backUrl) {
+      setLocation(backUrl);
+    } else if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      setLocation("/discover");
+    }
+  };
 
   return (
-    <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10 px-4 py-2">
-      <div className="flex items-center">
-        <button 
-          onClick={() => setLocation(backUrl)}
-          className="mr-2 p-1 rounded-full hover:bg-muted transition-colors"
-          aria-label="Back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <h1 className="text-xl font-semibold">{title}</h1>
-          {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
-        </div>
+    <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-hairline bg-background px-4 py-3">
+      <button
+        type="button"
+        onClick={handleBack}
+        aria-label="Back"
+        className="-ml-2 flex h-11 w-11 items-center justify-center rounded-sm text-text-muted transition-colors duration-fast ease-out hover:bg-surface hover:text-text active:bg-accent"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+      <div className="min-w-0 flex-1">
+        <h1 className="truncate text-lg font-semibold tracking-tight text-text">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="truncate text-sm text-text-muted">{subtitle}</p>
+        )}
       </div>
-    </div>
+      {trailing}
+    </header>
   );
 }

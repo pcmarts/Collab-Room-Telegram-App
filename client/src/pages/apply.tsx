@@ -142,7 +142,7 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
         <div className="container mx-auto py-6 px-4 text-center">
           <h1 className="text-2xl font-bold mb-4">Collaboration Not Found</h1>
           <p className="mb-6">The collaboration you're looking for doesn't exist or couldn't be loaded.</p>
-          <Button onClick={() => setLocation('/browse-collaborations')}>
+          <Button onClick={() => setLocation('/discover')}>
             Browse Collaborations
           </Button>
         </div>
@@ -155,7 +155,7 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
       <div className="container mx-auto py-6 px-4 max-w-4xl">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Apply for Collaboration</h1>
-          <Button variant="ghost" onClick={() => setLocation(`/browse-collaborations`)}>
+          <Button variant="ghost" onClick={() => setLocation(`/discover`)}>
             Back
           </Button>
         </div>
@@ -384,7 +384,7 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => setLocation('/browse-collaborations')}
+                    onClick={() => setLocation('/discover')}
                   >
                     Cancel
                   </Button>

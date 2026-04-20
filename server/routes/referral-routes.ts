@@ -1,7 +1,7 @@
 import express from 'express';
 import { z } from 'zod';
 import { db } from '../db';
-import { users, user_referrals, referral_events } from '@shared/schema';
+import { users, user_referrals, referral_events } from '../../shared/schema';
 import { eq, desc } from 'drizzle-orm';
 import { storage } from '../storage';
 import crypto from 'crypto';

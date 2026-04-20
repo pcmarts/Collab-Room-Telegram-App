@@ -1,14 +1,6 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { SignupToCollaborateDialog } from "@/components/SignupToCollaborateDialog";
-import { Building2, Eye, ChevronRight } from "lucide-react";
-import { useState } from "react";
-import { 
-  getCollabTypeIcon, 
-  getCollabTypeColorClasses 
-} from "@/lib/collaboration-utils";
 
 interface CollaborationListItemProps {
   collaboration: {
@@ -27,128 +19,98 @@ interface CollaborationListItemProps {
   onViewDetails: () => void;
   onRequestCollaboration?: () => void;
   isPotentialMatch?: boolean;
-  collaborationStatus?: 'pending' | 'matched';
+  collaborationStatus?: "pending" | "matched";
   onNavigateToMatches?: () => void;
   currentUserId?: string;
   isApplicationPending?: boolean;
+}
+
+type StatusKind = "own" | "pending" | "matched" | "incoming" | null;
+
+function StatusLabel({ kind }: { kind: StatusKind }) {
+  if (!kind) return null;
+
+  const map: Record<Exclude<StatusKind, null>, { text: string; className: string }> = {
+    own: { text: "Yours", className: "text-text-subtle" },
+    pending: { text: "Requested", className: "text-text-muted" },
+    matched: { text: "Matched", className: "text-brand" },
+    incoming: { text: "Incoming", className: "text-brand" },
+  };
+
+  const { text, className } = map[kind];
+  return (
+    <span className={`shrink-0 text-xs font-medium tabular ${className}`}>
+      {text}
+    </span>
+  );
 }
 
 export function CollaborationListItem({
   collaboration,
   isAuthenticated,
   onViewDetails,
-  onRequestCollaboration,
   isPotentialMatch = false,
   collaborationStatus,
-  onNavigateToMatches,
   currentUserId,
-  isApplicationPending = false
 }: CollaborationListItemProps) {
   const [showSignupDialog, setShowSignupDialog] = useState(false);
-  // Get company initials for fallback avatar
-  const getCompanyInitials = (name?: string) => {
-    if (!name) return "CO";
-    return name
-      .split(" ")
-      .map(word => word.charAt(0).toUpperCase())
-      .slice(0, 2)
-      .join("");
+
+  const collabType =
+    collaboration.type || collaboration.collab_type || "Collaboration";
+  const description =
+    collaboration.short_description || collaboration.description;
+  const isOwnCollaboration =
+    isAuthenticated && currentUserId && collaboration.creator_id === currentUserId;
+
+  const status: StatusKind = isOwnCollaboration
+    ? "own"
+    : isPotentialMatch
+    ? "incoming"
+    : collaborationStatus === "matched"
+    ? "matched"
+    : collaborationStatus === "pending"
+    ? "pending"
+    : null;
+
+  const handleClick = () => {
+    if (isAuthenticated) onViewDetails();
+    else setShowSignupDialog(true);
   };
 
-  // Now using the centralized collaboration types registry
-
-  const collabType = collaboration.type || collaboration.collab_type || "Collaboration";
-  const description = collaboration.short_description || collaboration.description;
-  
-  // Check if this is the user's own collaboration
-  const isOwnCollaboration = isAuthenticated && currentUserId && collaboration.creator_id === currentUserId;
-
   return (
-    <Card 
-      className={`p-3 mb-3 hover:shadow-md hover:scale-[1.01] transition-all duration-200 cursor-pointer ${
-        isPotentialMatch ? "ring-2 ring-primary/20 bg-primary/5" : ""
-      }`}
-      onClick={isAuthenticated ? onViewDetails : () => setShowSignupDialog(true)}
-    >
-      <div className="flex items-start gap-3">
-        {/* Company Logo */}
-        <LogoAvatar 
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        className="group w-full text-left flex items-start gap-3 py-4 px-4 -mx-4 border-b border-hairline active:bg-surface transition-colors duration-fast ease-out"
+      >
+        <LogoAvatar
           name={collaboration.creator_company_name || "Company"}
-          logoUrl={collaboration.company_logo_url} 
-          className="w-10 h-10"
+          logoUrl={collaboration.company_logo_url}
           size="md"
+          className="mt-0.5"
         />
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-2 mb-3">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 text-base truncate mb-2">
-                {collaboration.creator_company_name || "Unknown Company"}
-              </h3>
-              
-              {/* Looking For section */}
-              <div className="space-y-1">
-                <span className="text-sm text-gray-600">Looking for</span>
-                <div>
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getCollabTypeColorClasses(collabType)}`}>
-                    {getCollabTypeIcon(collabType)}
-                    <span>{collabType}</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Status Indicator with colored dot and text label */}
-              {isOwnCollaboration ? (
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-xs text-gray-400 italic">My Collab</span>
-                </div>
-              ) : collaborationStatus && (
-                <div className="flex items-center gap-1.5">
-                  {collaborationStatus === 'pending' && (
-                    <>
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                      <span className="text-xs text-gray-400 italic">Pending</span>
-                    </>
-                  )}
-                  {collaborationStatus === 'matched' && (
-                    <>
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <span className="text-xs text-gray-400 italic">Matched</span>
-                    </>
-                  )}
-                </div>
-              )}
-              
-              {isPotentialMatch && (
-                <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">
-                  Match
-                </span>
-              )}
-            </div>
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="truncate text-md font-semibold text-text">
+              {collaboration.creator_company_name || "Unknown Company"}
+            </h3>
+            <StatusLabel kind={status} />
           </div>
 
-          {/* Topics - Hidden on discover page, still available in details dialog */}
+          <p className="mt-0.5 truncate text-sm text-text-muted">
+            Looking for <span className="text-text">{collabType}</span>
+          </p>
 
-          {/* Description */}
           {description && (
-            <p className="text-sm text-gray-500 italic line-clamp-3 mb-2">
+            <p className="mt-2 text-sm text-text-subtle line-clamp-2 leading-snug">
               {description}
             </p>
           )}
         </div>
-        
-        {/* Right Arrow Indicator */}
-        <div className="flex items-center justify-center self-center flex-shrink-0">
-          <ChevronRight className="w-5 h-5 text-gray-400" />
-        </div>
-      </div>
-      
-      {/* Signup Dialog for non-authenticated users */}
+      </button>
+
       <SignupToCollaborateDialog
         open={showSignupDialog}
         onOpenChange={setShowSignupDialog}
@@ -156,6 +118,6 @@ export function CollaborationListItem({
         companyLogoUrl={collaboration.company_logo_url}
         collaborationType={collabType}
       />
-    </Card>
+    </>
   );
 }
