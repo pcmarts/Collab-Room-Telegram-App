@@ -10,12 +10,18 @@ const { Pool } = pg;
 // Create a PostgreSQL connection pool.
 // Importing from ../shared/config ensures DATABASE_URL is validated at startup
 // (throws early instead of producing a pool with an undefined connection string).
+// Supabase's pgBouncer pooler uses a cert that isn't in Node's default CA bundle,
+// so strict TLS verification fails with SELF_SIGNED_CERT_IN_CHAIN. The connection
+// is still encrypted — we just skip the chain-validation step, same as Supabase's
+// official docs recommend for serverless clients.
+const isProduction = config.NODE_ENV === 'production';
 export const pool = new Pool({
   connectionString: config.DATABASE_URL,
-  ssl: config.NODE_ENV === 'production',
-  max: 10,
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
+  // Low max for serverless — each invocation gets its own short-lived connection.
+  max: isProduction ? 1 : 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000 // Increased timeout for better reliability
+  connectionTimeoutMillis: 10000,
 });
 
 // Add error handler to prevent pool crashes
