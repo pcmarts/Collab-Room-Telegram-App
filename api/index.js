@@ -1527,7 +1527,6 @@ var KEYBOARDS = {
     ]
   }
 };
-var lastStartError = null;
 async function handleStart(msg, match) {
   const chatId = msg.chat.id;
   const telegramId = msg.from?.id.toString();
@@ -1645,25 +1644,7 @@ Your application is currently under review. Click below to check your applicatio
       keyboard ? { reply_markup: keyboard } : void 0
     );
   } catch (error) {
-    const e = error;
-    lastStartError = {
-      ts: (/* @__PURE__ */ new Date()).toISOString(),
-      telegramId,
-      name: e?.name,
-      code: e?.code,
-      message: e?.message,
-      stack: (e?.stack || "").split("\n").slice(0, 20).join("\n"),
-      cause: e?.cause ? {
-        name: e.cause?.name,
-        code: e.cause?.code,
-        message: e.cause?.message
-      } : void 0,
-      query: e?.query,
-      params: e?.params
-    };
-    console.error(
-      `[START_ERR] name=${e?.name} code=${e?.code} msg=${String(e?.message).slice(0, 80)}`
-    );
+    console.error("Error in handleStart:", error);
     try {
       await bot.sendMessage(
         chatId,
@@ -9254,9 +9235,6 @@ async function createApp() {
       }
     })
   );
-  app.get("/api/debug/last-start-error", (_req, res) => {
-    res.json({ error: lastStartError ?? null });
-  });
   app.post("/api/telegram/webhook", async (req, res) => {
     const pending = [];
     const originalEmit = bot.emit.bind(bot);

@@ -641,10 +641,6 @@ const KEYBOARDS = {
   },
 };
 
-// Debug: retains the most recent handleStart error so /api/debug/last-start-error
-// can surface it without needing to scrape truncated Vercel logs.
-export let lastStartError: Record<string, unknown> | null = null;
-
 // Register command handlers first
 async function handleStart(
   msg: TelegramBot.Message,
@@ -813,25 +809,7 @@ async function handleStart(
       keyboard ? { reply_markup: keyboard } : undefined,
     );
   } catch (error) {
-    const e = error as any;
-    lastStartError = {
-      ts: new Date().toISOString(),
-      telegramId,
-      name: e?.name,
-      code: e?.code,
-      message: e?.message,
-      stack: (e?.stack || "").split("\n").slice(0, 20).join("\n"),
-      cause: e?.cause ? {
-        name: e.cause?.name,
-        code: e.cause?.code,
-        message: e.cause?.message,
-      } : undefined,
-      query: e?.query,
-      params: e?.params,
-    };
-    console.error(
-      `[START_ERR] name=${e?.name} code=${e?.code} msg=${String(e?.message).slice(0, 80)}`,
-    );
+    console.error("Error in handleStart:", error);
     try {
       await bot.sendMessage(
         chatId,
