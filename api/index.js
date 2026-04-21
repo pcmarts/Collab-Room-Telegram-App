@@ -493,6 +493,7 @@ var users = pgTable("users", {
   twitter_followers: text("twitter_followers"),
   is_approved: boolean("is_approved").default(false),
   is_admin: boolean("is_admin").default(false),
+  is_hidden: boolean("is_hidden").default(false),
   applied_at: timestamp("applied_at", { withTimezone: true }).defaultNow(),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
   // New referral-related fields
@@ -6608,13 +6609,48 @@ async function registerRoutes(app) {
   });
   app.get("/api/admin/users", checkAdminMiddleware, async (req, res) => {
     try {
-      const allUsers = await db.select().from(users);
-      console.log(`Found ${allUsers.length} users in database`);
-      return res.json(allUsers);
+      const includeHidden = req.query.includeHidden === "1" || req.query.includeHidden === "true";
+      const rows = await db.select({ user: users, company: companies }).from(users).leftJoin(companies, eq5(companies.user_id, users.id));
+      const payload = rows.filter(({ user }) => includeHidden || !user.is_hidden).map(({ user, company }) => ({
+        ...user,
+        company: company ?? void 0
+      }));
+      console.log(`Found ${payload.length} users in database`);
+      return res.json(payload);
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500);
       return res.json({ error: "Failed to fetch users" });
+    }
+  });
+  app.post("/api/admin/users/:userId/hide", checkAdminMiddleware, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const [updated] = await db.update(users).set({ is_hidden: true }).where(eq5(users.id, userId)).returning();
+      if (!updated) {
+        res.status(404);
+        return res.json({ error: "User not found" });
+      }
+      return res.json({ success: true, user: updated });
+    } catch (error) {
+      console.error("Error hiding user:", error);
+      res.status(500);
+      return res.json({ error: "Failed to hide user" });
+    }
+  });
+  app.post("/api/admin/users/:userId/unhide", checkAdminMiddleware, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const [updated] = await db.update(users).set({ is_hidden: false }).where(eq5(users.id, userId)).returning();
+      if (!updated) {
+        res.status(404);
+        return res.json({ error: "User not found" });
+      }
+      return res.json({ success: true, user: updated });
+    } catch (error) {
+      console.error("Error unhiding user:", error);
+      res.status(500);
+      return res.json({ error: "Failed to unhide user" });
     }
   });
   app.post("/api/admin/set-user-admin-status", checkAdminMiddleware, async (req, res) => {

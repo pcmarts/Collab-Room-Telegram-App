@@ -30,6 +30,7 @@ interface User {
   handle?: string;
   is_admin: boolean;
   is_approved: boolean;
+  is_hidden?: boolean;
   applied_at: string;
   created_at: string;
   linkedin_url?: string;
@@ -38,10 +39,12 @@ interface User {
   referral_code?: string;
   company?: {
     name: string;
+    short_description?: string;
+    long_description?: string;
     website?: string;
     job_title: string;
     twitter_handle?: string;
-    twitter_followers?: number;
+    twitter_followers?: string | number;
     linkedin_url?: string;
     funding_stage?: string;
     has_token?: boolean;
@@ -62,7 +65,6 @@ const SEGMENTS: AdminSegment<Segment>[] = [
 
 export default function AdminApplications() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [segment, setSegment] = useState<Segment>("pending");
 
@@ -88,17 +90,25 @@ export default function AdminApplications() {
     },
   });
 
+  const hideMutation = useMutation({
+    mutationFn: (userId: string) =>
+      apiRequest(`/api/admin/users/${userId}/hide`, "POST"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setSelectedUser(null);
+      toast({ title: "Hidden", description: "Applicant removed from the list." });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Couldn't hide",
+        description: "Try again in a moment.",
+      });
+    },
+  });
+
   const handleHide = (userId: string) => {
-    setHiddenIds((prev) => {
-      const next = new Set(prev);
-      next.add(userId);
-      return next;
-    });
-    setSelectedUser(null);
-    toast({
-      title: "Hidden from list",
-      description: "Refresh to restore.",
-    });
+    hideMutation.mutate(userId);
   };
 
   const handleMessage = (handle?: string) => {
@@ -115,18 +125,16 @@ export default function AdminApplications() {
 
   // Segment counts for the filter pills.
   const { pendingCount, approvedCount, allCount } = useMemo(() => {
-    const visible = users.filter((u) => !hiddenIds.has(u.id));
     return {
-      pendingCount: visible.filter((u) => !u.is_approved).length,
-      approvedCount: visible.filter((u) => u.is_approved).length,
-      allCount: visible.length,
+      pendingCount: users.filter((u) => !u.is_approved).length,
+      approvedCount: users.filter((u) => u.is_approved).length,
+      allCount: users.length,
     };
-  }, [users, hiddenIds]);
+  }, [users]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return users
-      .filter((u) => !hiddenIds.has(u.id))
       .filter((u) => {
         if (segment === "pending") return !u.is_approved;
         if (segment === "approved") return u.is_approved;
@@ -147,7 +155,7 @@ export default function AdminApplications() {
         (a, b) =>
           new Date(b.applied_at).getTime() - new Date(a.applied_at).getTime(),
       );
-  }, [users, hiddenIds, segment, search]);
+  }, [users, segment, search]);
 
   const segments = SEGMENTS.map((s) => ({
     ...s,
@@ -234,6 +242,7 @@ export default function AdminApplications() {
         onHide={handleHide}
         onMessage={handleMessage}
         approving={approveMutation.isPending}
+        hiding={hideMutation.isPending}
       />
     </AdminShell>
   );
@@ -292,6 +301,7 @@ interface ApplicationReviewSheetProps {
   onHide: (userId: string) => void;
   onMessage: (handle?: string) => void;
   approving: boolean;
+  hiding: boolean;
 }
 
 function ApplicationReviewSheet({
@@ -301,6 +311,7 @@ function ApplicationReviewSheet({
   onHide,
   onMessage,
   approving,
+  hiding,
 }: ApplicationReviewSheetProps) {
   const companyName =
     user?.company?.name ||
@@ -327,9 +338,9 @@ function ApplicationReviewSheet({
             <Button
               variant="ghost"
               onClick={() => onHide(user.id)}
-              disabled={user.is_approved}
+              disabled={user.is_approved || hiding}
             >
-              Hide
+              {hiding ? "Hiding…" : "Hide"}
             </Button>
             <Button
               variant="outline"
@@ -356,9 +367,10 @@ function ApplicationReviewSheet({
 
 function ApplicationDetails({ user }: { user: User }) {
   const company = user.company;
-  const twitterHref = company?.twitter_handle
+  const companyTwitterHref = company?.twitter_handle
     ? `https://twitter.com/${company.twitter_handle.replace(/^@/, "")}`
-    : user.twitter_url;
+    : undefined;
+  const personalTwitterHref = user.twitter_url;
 
   return (
     <>
@@ -387,6 +399,22 @@ function ApplicationDetails({ user }: { user: User }) {
         </div>
       </div>
 
+      {company?.short_description ? (
+        <BottomSheet.Section eyebrow="What they do">
+          <p className="text-[0.9375rem] leading-snug text-text">
+            {company.short_description}
+          </p>
+        </BottomSheet.Section>
+      ) : null}
+
+      {company?.long_description ? (
+        <BottomSheet.Section eyebrow="Details">
+          <p className="whitespace-pre-wrap text-[0.9375rem] leading-snug text-text">
+            {company.long_description}
+          </p>
+        </BottomSheet.Section>
+      ) : null}
+
       {user.referral_code ? (
         <BottomSheet.Section eyebrow="Referred with code">
           <code className="font-mono text-sm tabular text-text">
@@ -395,7 +423,11 @@ function ApplicationDetails({ user }: { user: User }) {
         </BottomSheet.Section>
       ) : null}
 
-      {(twitterHref || user.linkedin_url || company?.website) && (
+      {(companyTwitterHref ||
+        personalTwitterHref ||
+        user.linkedin_url ||
+        company?.website ||
+        company?.linkedin_url) && (
         <BottomSheet.Section eyebrow="Links">
           <div className="flex flex-wrap gap-2">
             {company?.website ? (
@@ -410,22 +442,28 @@ function ApplicationDetails({ user }: { user: User }) {
                 </a>
               </Button>
             ) : null}
-            {twitterHref ? (
-              <Button variant="outline" size="sm" asChild>
-                <a href={twitterHref} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="h-3 w-3" />
-                  Twitter
-                </a>
-              </Button>
-            ) : null}
-            {user.linkedin_url ? (
+            {companyTwitterHref ? (
               <Button variant="outline" size="sm" asChild>
                 <a
-                  href={user.linkedin_url}
+                  href={companyTwitterHref}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Linkedin className="h-3 w-3" />
+                  <Twitter className="h-3 w-3" />
+                  {company?.twitter_handle
+                    ? `@${company.twitter_handle.replace(/^@/, "")}`
+                    : "Company"}
+                </a>
+              </Button>
+            ) : null}
+            {personalTwitterHref ? (
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={personalTwitterHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Twitter className="h-3 w-3" />
                   Personal
                 </a>
               </Button>
@@ -439,6 +477,18 @@ function ApplicationDetails({ user }: { user: User }) {
                 >
                   <Linkedin className="h-3 w-3" />
                   Company
+                </a>
+              </Button>
+            ) : null}
+            {user.linkedin_url ? (
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={user.linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Linkedin className="h-3 w-3" />
+                  Personal
                 </a>
               </Button>
             ) : null}
