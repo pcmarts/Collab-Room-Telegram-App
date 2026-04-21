@@ -149,6 +149,24 @@ if (config.LOG_LEVEL === undefined || config.LOG_LEVEL >= 2) {
 // the bot must run in webhook mode. `VERCEL=1` is set automatically on Vercel.
 const isServerless = !!process.env.VERCEL;
 
+// Cold Fluid invocations occasionally fail their first pg connection with
+// "Connection terminated due to connection timeout" before the pool has a
+// warm socket. That kills webhook handlers (notably /start) because we never
+// get to sendMessage. Retry once on transport errors — real SQL errors fall
+// through unchanged so we don't mask query bugs.
+async function withDbRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err: any) {
+    const cause = err?.cause?.message ?? err?.message ?? "";
+    const transient =
+      /connection terminated|timeout|ECONNRESET|ECONNREFUSED|ENOTFOUND/i.test(cause);
+    if (!transient) throw err;
+    await new Promise((r) => setTimeout(r, 250));
+    return await fn();
+  }
+}
+
 export const bot = isServerless
   ? new TelegramBot(botToken, { polling: false, webHook: false })
   : new TelegramBot(botToken, {
@@ -681,17 +699,19 @@ async function handleStart(
           console.log(`[REFERRAL] Using cached referrer data`);
         } else {
           // Single optimized query with JOIN to get user and company data together
-          const referrerData = await db
-            .select({
-              id: users.id,
-              first_name: users.first_name,
-              last_name: users.last_name,
-              company_name: companies.name,
-            })
-            .from(users)
-            .leftJoin(companies, eq(companies.user_id, users.id))
-            .where(eq(users.telegram_id, telegramIdFromCode))
-            .limit(1);
+          const referrerData = await withDbRetry(() =>
+            db
+              .select({
+                id: users.id,
+                first_name: users.first_name,
+                last_name: users.last_name,
+                company_name: companies.name,
+              })
+              .from(users)
+              .leftJoin(companies, eq(companies.user_id, users.id))
+              .where(eq(users.telegram_id, telegramIdFromCode))
+              .limit(1),
+          );
 
           if (referrerData.length > 0) {
             const referrer = referrerData[0];
@@ -734,17 +754,19 @@ async function handleStart(
       console.log(`[START] Using cached user data for ${telegramId}`);
     } else {
       // Single optimized query to check existing user
-      const userData = await db
-        .select({
-          id: users.id,
-          telegram_id: users.telegram_id,
-          is_approved: users.is_approved,
-          first_name: users.first_name,
-          last_name: users.last_name,
-        })
-        .from(users)
-        .where(eq(users.telegram_id, telegramId))
-        .limit(1);
+      const userData = await withDbRetry(() =>
+        db
+          .select({
+            id: users.id,
+            telegram_id: users.telegram_id,
+            is_approved: users.is_approved,
+            first_name: users.first_name,
+            last_name: users.last_name,
+          })
+          .from(users)
+          .where(eq(users.telegram_id, telegramId))
+          .limit(1),
+      );
 
       if (userData.length > 0) {
         existingUser = userData[0];

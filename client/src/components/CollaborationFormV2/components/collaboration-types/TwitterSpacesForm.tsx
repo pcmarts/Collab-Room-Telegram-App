@@ -59,7 +59,6 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
     // Check if we're on the topics step
     if (step === "topics" && !form.getValues().topics) {
       form.setValue("topics", [], { shouldValidate: false, shouldDirty: false });
-      console.log("Initialized topics array for Twitter Spaces form:", form.getValues());
     }
   }, [step, form]);
 
@@ -74,7 +73,6 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
           : `https://x.com/${profileData.company.twitter_handle}`;
         
         form.setValue("twitter_handle", companyTwitterUrl, { shouldValidate: false, shouldDirty: false });
-        console.log("Pre-filled Twitter handle with company URL:", companyTwitterUrl);
       }
     }
   }, [profileData, step, form]);
@@ -157,11 +155,7 @@ export const TwitterSpacesForm: React.FC<{ step: string }> = ({ step }) => {
 
     case "topics":
       // Log current values for debugging
-      console.log("Rendering topics step with current values:", {
-        topics: form.getValues().topics,
-        formValues: form.getValues()
-      });
-      
+
       return (
         <div className="space-y-4" key={step}>
           <Eyebrow>Topics</Eyebrow>

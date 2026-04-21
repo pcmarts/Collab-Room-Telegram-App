@@ -20,7 +20,7 @@ import type {
   MarketingPreferences,
 } from "@shared/schema";
 import { TWITTER_FOLLOWER_COUNTS } from "@shared/schema";
-import { PageHeader } from "../components/PageHeader";
+import { PageHeader } from "@/components/PageHeader";
 import { FixedBottomButton } from "@/components/ui/FixedBottomButton";
 import { Eyebrow } from "@/components/brand";
 

@@ -41,9 +41,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     // Validation is handled at two levels: 
     // 1. Form validation via React Hook Form
     // 2. Custom step validation via the wizard context
-    
-    console.log("Validating current step:", currentStepId);
-    
+
     // Only validate the field(s) for the current step to avoid cross-step validation issues
     let isStepValid = true;
     
@@ -58,7 +56,6 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     else if (currentStepId === "topics") {
       // Validate only topics on this step
       isStepValid = await form.trigger("topics");
-      console.log("Topics validation result:", isStepValid, "Topics value:", form.getValues("topics"));
     }
     // When date is on a separate page
     else if (currentStepId === "date_selection") {
@@ -90,7 +87,6 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
     else if (currentStepId === "description") {
       // For form's description page (works for all collaboration types)
       isStepValid = await form.trigger("description");
-      console.log("Description validation:", isStepValid);
     }
     else if (currentStepId === "date") {
       // For any form's date page
@@ -104,12 +100,6 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       }
       
       isStepValid = dateTypeValid && specificDateValid && freeCollabValid;
-      console.log("Date validation:", {
-        dateType: dateTypeValid,
-        specificDate: specificDateValid,
-        freeCollab: freeCollabValid,
-        overall: isStepValid
-      });
     }
     // For Twitter collaboration type steps, validate only the relevant fields
     else if (currentStepId === "twitter_topics" || currentStepId === "podcast_topics") {
@@ -118,14 +108,9 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       isStepValid = await form.trigger("twitter_handle");
     } else if (currentStepId === "twitter_collab_types") {
       isStepValid = await form.trigger("twitter_collab_types");
-      console.log("Twitter collab types validation:", isStepValid);
-      console.log("Twitter collab types value:", form.getValues("twitter_collab_types"));
-      console.log("Twitter collab types field state:", form.getFieldState("twitter_collab_types"));
-      console.log("TWITTER_COLLAB_TYPES schema values:", TWITTER_COLLAB_TYPES);
-      
+
       // Show the exact validation schema zod is using
       const selectedType = form.getValues("collab_type");
-      console.log("Selected collaboration type:", selectedType);
     } else if (currentStepId === "twitter_followers") {
       isStepValid = await form.trigger("follower_count");
     } else if (currentStepId === "twitter_description" || currentStepId === "podcast_description") {
@@ -160,12 +145,6 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       }
       
       isStepValid = nameValid && subscriberValid && urlValid;
-      console.log("Newsletter info validation:", {
-        name: nameValid,
-        subscriber: subscriberValid,
-        url: urlValid,
-        overall: isStepValid
-      });
     }
     // For LiveStream stream_info step
     else if (currentStepId === "stream_info") {
@@ -180,35 +159,17 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
       }
       
       isStepValid = platformNameValid && audienceSizeValid && streamLinkValid;
-      console.log("LiveStream info validation:", {
-        platformName: platformNameValid,
-        streamLink: streamLinkValid,
-        audienceSize: audienceSizeValid,
-        overall: isStepValid
-      });
     } else {
       // If we don't recognize the step, do a general validation
       isStepValid = await form.trigger();
     }
-    
-    console.log("Step-specific validation result:", isStepValid);
-    console.log("Current form values:", form.getValues());
-    
+
     if (!isStepValid) {
       // Log form errors to help debug the issue
-      console.log("Form errors:", form.formState.errors);
-      console.log("Field states:", Object.keys(form.getFieldState));
-      
+
       // Log specific field validations for forms with topics_and_date step
       if (currentStepId === "topics_and_date") {
-        console.log("Topics field validation:", form.getFieldState("topics"));
-        console.log("Date type validation:", form.getFieldState("date_type"));
-        console.log("Is free collab validation:", form.getFieldState("is_free_collab"));
-        console.log("Description validation:", form.getFieldState("description"));
-        if (form.getValues("date_type") === "specific_date") {
-          console.log("Specific date validation:", form.getFieldState("specific_date"));
-        }
-        
+
         // Check if this is the newsletter form by testing for newsletter fields
         if (form.getValues("newsletter_name") !== undefined) {
           // Add specific validation for the newsletter form's topics_and_date step
@@ -223,14 +184,6 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
           }
           
           isStepValid = topicsValid && descriptionValid && dateTypeValid && freeCollabValid && specificDateValid;
-          console.log("Newsletter topics_and_date validation:", {
-            topics: topicsValid,
-            description: descriptionValid,
-            dateType: dateTypeValid,
-            specificDate: specificDateValid,
-            freeCollab: freeCollabValid,
-            overall: isStepValid
-          });
         }
       }
       

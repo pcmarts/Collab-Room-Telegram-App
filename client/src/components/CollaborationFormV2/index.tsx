@@ -83,22 +83,16 @@ const CollaborationFormContent: React.FC = () => {
   const handleTypeSelected = () => {
     // Get the form value (should be the type ID)
     const selectedTypeId = form.getValues("collab_type");
-    console.log("Form collab_type value:", selectedTypeId);
-    console.log("Available types in context:", availableTypes.map(t => t.id));
-    
+
     // First try to find in context
     let selectedType = availableTypes.find(type => type.id === selectedTypeId);
     
     // If not found in context, try the registry directly
     if (!selectedType) {
       selectedType = getCollaborationType(selectedTypeId);
-      console.log("Found type in registry:", selectedType);
     }
-    
+
     if (selectedType && selectedType.steps) {
-      console.log("Selected type:", selectedType.id);
-      console.log("Setting steps:", selectedType.steps);
-      
       // Set steps to type-specific steps
       setSteps([
         InitialStep,  // Keep the initial step 

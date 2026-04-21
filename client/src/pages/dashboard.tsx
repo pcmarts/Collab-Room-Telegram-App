@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { FaLinkedin, FaTwitter } from "react-icons/fa";
 
-import { PageHeader } from "../components/PageHeader";
+import { PageHeader } from "@/components/PageHeader";
 import { Eyebrow } from "@/components/brand";
 import type {
   User as UserType,

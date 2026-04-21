@@ -67,9 +67,7 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) =>
   // Initialize all form values on component mount
   useEffect(() => {
     if (!form) return;
-    
-    console.log("Initializing Podcast collaboration form with default values");
-    
+
     // Get current form values
     const currentValues = form.getValues();
     
@@ -93,16 +91,12 @@ export const PodcastCollabForm: React.FC<PodcastCollabFormProps> = ({ step }) =>
         form.setValue(key as any, value, { shouldValidate: false });
       }
     });
-    
-    console.log("Form initialized with:", completeDefaults);
   }, [form]);
   
   // Modify the validation effect to avoid pre-emptive validation
   useEffect(() => {
     if (!form) return;
-    
-    console.log("Current step ID:", currentStep);
-    
+
     // Don't immediately validate fields when step changes
     // Instead, only set up the form for the current step
     

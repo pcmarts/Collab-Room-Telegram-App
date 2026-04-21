@@ -1259,34 +1259,14 @@ export class DatabaseStorage implements IStorage {
     if (collabIds.length === 0) {
       return { recentRequests: [], totalPendingCount: 0 };
     }
-    
-    // Use raw SQL to avoid Drizzle ORM null object issues
-    const rawQuery = `
-      SELECT 
-        r.id as request_id,
-        r.collaboration_id,
-        r.note,
-        r.created_at as request_created_at,
-        u.id as user_id,
-        u.first_name,
-        u.last_name,
-        c.name as company_name,
-        c.twitter_handle,
-        c.logo_url,
-        co.collab_type,
-        co.description as collab_description
-      FROM requests r
-      INNER JOIN users u ON r.requester_id = u.id
-      INNER JOIN companies c ON u.id = c.user_id
-      INNER JOIN collaborations co ON r.collaboration_id = co.id
-      WHERE r.collaboration_id = ANY($1)
-        AND r.status = 'pending'
-        AND r.requester_id != $2
-      ORDER BY r.created_at DESC
-    `;
-    
+
+    // drizzle's sql`` expands a JS array as a tuple of params ($1, $2, ...),
+    // which ANY() rejects ("op ANY/ALL (array) requires array on right side").
+    // Use IN (...) with sql.join so the list binds as individual parameters.
+    const collabIdList = sql.join(collabIds.map(id => sql`${id}`), sql`, `);
+
     const results = await db.execute(sql`
-      SELECT 
+      SELECT
         r.id as request_id,
         r.collaboration_id,
         r.note,
@@ -1303,7 +1283,7 @@ export class DatabaseStorage implements IStorage {
       INNER JOIN users u ON r.requester_id = u.id
       INNER JOIN companies c ON u.id = c.user_id
       INNER JOIN collaborations co ON r.collaboration_id = co.id
-      WHERE r.collaboration_id = ANY(${collabIds})
+      WHERE r.collaboration_id IN (${collabIdList})
         AND r.status = 'pending'
         AND r.requester_id != ${userId}
       ORDER BY r.created_at DESC

@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PageHeader } from "../components/PageHeader";
+import { PageHeader } from "@/components/PageHeader";
 import { Switch } from "@/components/ui/switch";
 import {
   FUNDING_STAGES,

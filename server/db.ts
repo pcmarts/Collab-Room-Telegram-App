@@ -18,13 +18,14 @@ const isProduction = config.NODE_ENV === 'production';
 export const pool = new Pool({
   connectionString: config.DATABASE_URL,
   ssl: isProduction ? { rejectUnauthorized: false } : false,
-  // Small pool for serverless — pgBouncer on Supabase handles fan-out for us.
-  // `connectionTimeoutMillis` is generous because cold-start TLS to Supabase's
-  // pooler can stretch past the 10s default; 30s leaves headroom without
-  // causing functions to hang forever.
-  max: isProduction ? 3 : 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 30000,
+  // Each Fluid container gets its own pool. Supabase's pgbouncer multiplexes
+  // these onto a much smaller set of Postgres backends, so 10 sockets per
+  // container is plenty for ~50 concurrent users across multiple containers.
+  // Fail fast on connect (5s) so a dead socket doesn't stall the request; turn
+  // idle sockets over quickly (10s) so pgbouncer can reallocate capacity.
+  max: 10,
+  idleTimeoutMillis: 10_000,
+  connectionTimeoutMillis: 5_000,
 });
 
 // Add error handler to prevent pool crashes

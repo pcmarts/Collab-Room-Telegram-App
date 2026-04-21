@@ -18,9 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MobileCheck } from "@/components/MobileCheck";
 import { Eyebrow } from "@/components/brand";
@@ -98,40 +96,29 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
     return (
       <MobileCheck>
         <div className="container mx-auto py-6 px-4 max-w-4xl">
-          <div className="mb-6">
-            <Skeleton className="h-10 w-3/4 mb-2" />
-            <Skeleton className="h-4 w-1/2" />
+          <div className="mb-8">
+            <Skeleton className="h-4 w-16 mb-2" />
+            <Skeleton className="h-8 w-3/4" />
           </div>
-          
-          <Card className="mb-8">
-            <CardHeader>
-              <Skeleton className="h-6 w-40 mb-2" />
-              <Skeleton className="h-8 w-3/4" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4 mb-4" />
-              
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-6 w-20" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-40" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Skeleton className="h-8 w-full mb-6" />
-              <Skeleton className="h-24 w-full mb-6" />
-              <Skeleton className="h-24 w-full mb-6" />
-              <Skeleton className="h-8 w-full mb-6" />
-              <Skeleton className="h-8 w-full mb-6" />
-            </CardContent>
-          </Card>
+
+          <section className="mb-8 border-b border-hairline pb-8">
+            <Skeleton className="h-4 w-24 mb-3" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-3/4 mb-4" />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-20" />
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+          </section>
         </div>
       </MobileCheck>
     );
@@ -166,14 +153,12 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
           </Button>
         </div>
         
-        {/* Collaboration Details */}
-        <Card className="mb-8">
-          <CardHeader>
-            <Badge className="mb-2">{collaboration.collab_type}</Badge>
-            <CardTitle className="text-xl">{collaboration.title}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-text-muted mb-6">{collaboration.description}</p>
+        <section className="mb-8 border-b border-hairline pb-8">
+          <Badge className="mb-3">{collaboration.collab_type}</Badge>
+          <h2 className="text-xl font-semibold tracking-tight text-text mb-4">
+            {collaboration.title}
+          </h2>
+          <p className="text-text-muted mb-6">{collaboration.description}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="flex items-center gap-2">
@@ -261,26 +246,24 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
               </>
             )}
 
-            {/* Compensation Details */}
             {collaboration.has_compensation && collaboration.compensation_details && (
               <>
                 <Eyebrow className="mb-2">Compensation</Eyebrow>
-                <p className="text-sm text-text-muted mb-6">
+                <p className="text-sm text-text-muted">
                   {collaboration.compensation_details}
                 </p>
               </>
             )}
-          </CardContent>
-        </Card>
+        </section>
 
-        {/* Application Form */}
-        <Card>
-          <CardHeader>
+        <section>
+          <div className="mb-6">
             <Eyebrow className="mb-2">Application</Eyebrow>
-            <CardTitle>Your pitch</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
+            <h2 className="text-xl font-semibold tracking-tight text-text">
+              Your pitch
+            </h2>
+          </div>
+          <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
@@ -404,8 +387,7 @@ export default function Apply({ id: propId }: ApplyProps = {}) {
                 </div>
               </form>
             </Form>
-          </CardContent>
-        </Card>
+        </section>
       </div>
     </MobileCheck>
   );

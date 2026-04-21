@@ -73,9 +73,7 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) =>
   // Initialize all form values on component mount
   useEffect(() => {
     if (!form) return;
-    
-    console.log("Initializing Twitter collaboration form with default values");
-    
+
     // Get current form values
     const currentValues = form.getValues();
     
@@ -99,16 +97,12 @@ export const TwitterCollabForm: React.FC<TwitterCollabFormProps> = ({ step }) =>
         form.setValue(key as any, value, { shouldValidate: false });
       }
     });
-    
-    console.log("Form initialized with:", completeDefaults);
   }, [form]);
   
   // Validate only the current field whenever the step changes
   useEffect(() => {
     if (!form) return;
-    
-    console.log("Current step ID:", currentStep);
-    
+
     // Wait a short moment to ensure fields are set before validating
     setTimeout(() => {
       // Then validate only the current field

@@ -100,9 +100,7 @@ export const useCollaborationForm = <T extends Record<string, any>>(
         // Different structure per collaboration type
         details: formatDetailsForType(values.collab_type, values)
       };
-      
-      console.log("Formatted data for API:", formattedData);
-      
+
       // Make API request to create the collaboration
       const response = await fetch("/api/collaborations", {
         method: "POST",

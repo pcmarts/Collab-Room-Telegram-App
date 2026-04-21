@@ -56,7 +56,6 @@ export const ReportForm: React.FC<{ step: string }> = ({ step }) => {
     // Check if we're on the topics step
     if (step === "topics" && !form.getValues().topics) {
       form.setValue("topics", [], { shouldValidate: false, shouldDirty: false });
-      console.log("Initialized topics array for Report form:", form.getValues());
     }
   }, [step, form]);
   

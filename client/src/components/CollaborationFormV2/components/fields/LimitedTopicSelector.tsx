@@ -42,7 +42,6 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
   React.useEffect(() => {
     // If field value is not an array, initialize it
     if (!Array.isArray(fieldValue)) {
-      console.log(`Initializing ${name} field as empty array`);
       form.setValue(name, [], { shouldValidate: false });
     }
   }, [name, fieldValue, form]);
@@ -51,30 +50,14 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
   const atMaxSelections = selections.length >= maxSelections;
   
   // Add debugging to help troubleshoot
-  console.log(`LimitedTopicSelector for field "${name}"`, {
-    currentValue: selections,
-    rawValue: fieldValue,
-    valueType: typeof fieldValue,
-    isArray: Array.isArray(fieldValue),
-    selectionsLength: selections.length,
-    maxSelections,
-    atMaxSelections,
-    formValues: form.getValues(),
-    hasError: !!form.formState.errors[name],
-    error: form.formState.errors[name]
-  });
-  
+
   return (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => {
         // Log field value in render
-        console.log(`Rendering field "${name}"`, {
-          fieldValue: field.value,
-          isArray: Array.isArray(field.value)
-        });
-        
+
         return (
           <FormItem>
             {/* Conditionally render the label and count */}
@@ -122,24 +105,16 @@ export const LimitedTopicSelector: React.FC<LimitedTopicSelectorProps> = ({
                     onClick={() => {
                       // Prevent click action if disabled
                       if (isDisabled) return;
-                      
-                      console.log(`Button clicked for option "${option}"`, {
-                        isSelected,
-                        currentValue: field.value,
-                        isArray: Array.isArray(field.value)
-                      });
-                      
+
                       if (isSelected) {
                         // Remove from selection
                         const newValue = field.value.filter((val: string) => val !== option);
-                        console.log("Removing option, new value:", newValue);
                         field.onChange(newValue);
                       } else if (!atMaxSelections) {
                         // Add to selection if not at max
                         // Ensure we're starting with an array
                         const baseArray = Array.isArray(field.value) ? field.value : [];
                         const newValue = [...baseArray, option];
-                        console.log("Adding option, new value:", newValue);
                         field.onChange(newValue);
                       } else {
                         // Show toast that max selections reached

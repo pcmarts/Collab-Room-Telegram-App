@@ -1057,13 +1057,14 @@ var isProduction = config.NODE_ENV === "production";
 var pool = new Pool({
   connectionString: config.DATABASE_URL,
   ssl: isProduction ? { rejectUnauthorized: false } : false,
-  // Small pool for serverless — pgBouncer on Supabase handles fan-out for us.
-  // `connectionTimeoutMillis` is generous because cold-start TLS to Supabase's
-  // pooler can stretch past the 10s default; 30s leaves headroom without
-  // causing functions to hang forever.
-  max: isProduction ? 3 : 10,
-  idleTimeoutMillis: 3e4,
-  connectionTimeoutMillis: 3e4
+  // Each Fluid container gets its own pool. Supabase's pgbouncer multiplexes
+  // these onto a much smaller set of Postgres backends, so 10 sockets per
+  // container is plenty for ~50 concurrent users across multiple containers.
+  // Fail fast on connect (5s) so a dead socket doesn't stall the request; turn
+  // idle sockets over quickly (10s) so pgbouncer can reallocate capacity.
+  max: 10,
+  idleTimeoutMillis: 1e4,
+  connectionTimeoutMillis: 5e3
 });
 pool.on("error", (err) => {
   console.error("Unexpected error on idle database client", err);
@@ -1158,6 +1159,17 @@ if (config.LOG_LEVEL === void 0 || config.LOG_LEVEL >= 2) {
   console.log("WebApp URL:", WEBAPP_URL);
 }
 var isServerless = !!process.env.VERCEL;
+async function withDbRetry(fn) {
+  try {
+    return await fn();
+  } catch (err) {
+    const cause = err?.cause?.message ?? err?.message ?? "";
+    const transient = /connection terminated|timeout|ECONNRESET|ECONNREFUSED|ENOTFOUND/i.test(cause);
+    if (!transient) throw err;
+    await new Promise((r) => setTimeout(r, 250));
+    return await fn();
+  }
+}
 var bot = isServerless ? new TelegramBot(botToken, { polling: false, webHook: false }) : new TelegramBot(botToken, {
   polling: {
     params: {
@@ -1360,24 +1372,22 @@ bot.on("message", async (msg) => {
         message: msg.text,
         timestamp: Date.now()
       });
-      const confirmationMessage = `\u{1F4E3} <b>Broadcast Preview</b>
+      const confirmationMessage = `<b>Broadcast preview</b>
 
-This is how your message will appear (with HTML formatting applied and <b>link previews disabled</b>):
+Preview (HTML rendered, link previews disabled):
 
------ <b>Preview</b> -----
-\u{1F4E3} <b>Admin Announcement</b>
+\u2014 \u2014 \u2014
+<b>Announcement</b>
 
 ${msg.text}
----------------------
+\u2014 \u2014 \u2014
 
-<i>Note: All HTML formatting such as &lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, and &lt;a href="https://example.com"&gt;links&lt;/a&gt; will render correctly, but link previews will be disabled.</i>
-
-Do you want to send this message to all approved users with notifications enabled?`;
+Send to all approved users with notifications on?`;
       const keyboard = {
         inline_keyboard: [
           [
-            { text: "\u2705 Send Message", callback_data: "broadcast_confirm" },
-            { text: "\u274C Cancel", callback_data: "broadcast_cancel" }
+            { text: "Send", callback_data: "broadcast_confirm" },
+            { text: "Cancel", callback_data: "broadcast_cancel" }
           ]
         ]
       };
@@ -1399,7 +1409,7 @@ Do you want to send this message to all approved users with notifications enable
       adminBroadcastState.delete(telegramId);
       await bot.sendMessage(
         chatId,
-        "\u274C <b>Error</b>\n\nThere was an error processing your broadcast message. Please try again with /broadcast.",
+        "Couldn't process that message. Try /broadcast again.",
         { parse_mode: "HTML" }
       );
     }
@@ -1427,30 +1437,28 @@ Do you want to send this message to all approved users with notifications enable
       const eligibleUsers = usersWithJoinedPreferences.filter(
         (user) => user.notifications_enabled === true && user.telegram_id
       );
-      const confirmationMessage = `\u{1F680} <b>Collab Broadcast Preview</b>
+      const confirmationMessage = `<b>Collab broadcast preview</b>
 
-<b>Selected Collaboration:</b> ${collab.companyName} - ${collab.collab_type}
+${collab.companyName} \u2014 ${collab.collab_type}
 
-This is how your promotional message will appear:
+Preview:
 
------ <b>Preview</b> -----
-\u{1F91D} <b>New Collab</b>
+\u2014 \u2014 \u2014
+<b>New collab</b>
 
 ${msg.text}
 
-\u2705 <b>Request Collab</b> | <b>View More Collabs</b>
----------------------
+<b>Request collab</b> \xB7 <b>Browse more</b>
+\u2014 \u2014 \u2014
 
-<i>Note: The buttons will be context-aware based on each user's relationship to this collaboration.</i>
+Recipients: ${eligibleUsers.length} with notifications on.
 
-\u{1F4CA} <b>Will be sent to ${eligibleUsers.length} users who have notifications enabled</b>
-
-Do you want to send this broadcast?`;
+Send?`;
       const keyboard = {
         inline_keyboard: [
           [
-            { text: "\u2705 Send Broadcast", callback_data: "collab_broadcast_confirm" },
-            { text: "\u274C Cancel", callback_data: "collab_broadcast_cancel" }
+            { text: "Send", callback_data: "collab_broadcast_confirm" },
+            { text: "Cancel", callback_data: "collab_broadcast_cancel" }
           ]
         ]
       };
@@ -1472,7 +1480,7 @@ Do you want to send this broadcast?`;
       adminCollabBroadcastState.delete(telegramId);
       await bot.sendMessage(
         chatId,
-        "\u274C <b>Error</b>\n\nThere was an error processing your collaboration broadcast message. Please try again with /broadcastcollab.",
+        "Couldn't process that message. Try /broadcastcollab again.",
         { parse_mode: "HTML" }
       );
     }
@@ -1557,12 +1565,14 @@ async function handleStart(msg, match) {
           referrerDetails = cached.data;
           console.log(`[REFERRAL] Using cached referrer data`);
         } else {
-          const referrerData = await db.select({
-            id: users.id,
-            first_name: users.first_name,
-            last_name: users.last_name,
-            company_name: companies.name
-          }).from(users).leftJoin(companies, eq(companies.user_id, users.id)).where(eq(users.telegram_id, telegramIdFromCode)).limit(1);
+          const referrerData = await withDbRetry(
+            () => db.select({
+              id: users.id,
+              first_name: users.first_name,
+              last_name: users.last_name,
+              company_name: companies.name
+            }).from(users).leftJoin(companies, eq(companies.user_id, users.id)).where(eq(users.telegram_id, telegramIdFromCode)).limit(1)
+          );
           if (referrerData.length > 0) {
             const referrer = referrerData[0];
             referrerDetails = {
@@ -1591,13 +1601,15 @@ async function handleStart(msg, match) {
       existingUser = cachedUser.data;
       console.log(`[START] Using cached user data for ${telegramId}`);
     } else {
-      const userData = await db.select({
-        id: users.id,
-        telegram_id: users.telegram_id,
-        is_approved: users.is_approved,
-        first_name: users.first_name,
-        last_name: users.last_name
-      }).from(users).where(eq(users.telegram_id, telegramId)).limit(1);
+      const userData = await withDbRetry(
+        () => db.select({
+          id: users.id,
+          telegram_id: users.telegram_id,
+          is_approved: users.is_approved,
+          first_name: users.first_name,
+          last_name: users.last_name
+        }).from(users).where(eq(users.telegram_id, telegramId)).limit(1)
+      );
       if (userData.length > 0) {
         existingUser = userData[0];
         userCache.set(userCacheKey, {
@@ -1703,24 +1715,22 @@ async function notifyAdminsNewUser(userData) {
     const userTwitterFormatted = userData.twitter_url ? `<a href="${userData.twitter_url}">${userData.first_name} ${userData.last_name || ""}</a>` : `${userData.first_name} ${userData.last_name || ""}`;
     const companyTwitterUrl = userData.company_twitter_handle ? `https://twitter.com/${userData.company_twitter_handle.replace(/^@/, "")}` : null;
     const companyTwitterLink = companyTwitterUrl ? ` (<a href="${companyTwitterUrl}">Twitter</a>)` : "";
-    const message = `\u{1F195} <b>New User Application!</b>
+    const message = `<b>New application</b>
 
-<b>Name:</b> ${userTwitterFormatted} ${telegramHandle ? `(${telegramHandle})` : ""}
-<b>Company:</b> ${companyNameFormatted}${companyTwitterLink}
-<b>Role:</b> ${userData.job_title}
-
-Use the buttons below to take action:`;
+${userTwitterFormatted}${telegramHandle ? ` ${telegramHandle}` : ""}
+${companyNameFormatted}${companyTwitterLink}
+${userData.job_title}`;
     const keyboard = {
       inline_keyboard: [
         [
           {
-            text: "\u2705 Approve Application",
+            text: "Approve",
             callback_data: `approve_user_${userData.telegram_id}`
           }
         ],
         [
           {
-            text: "\u{1F441}\uFE0F View Application",
+            text: "View application",
             web_app: { url: `${WEBAPP_URL}/admin/applications` }
           }
         ]
@@ -1778,24 +1788,24 @@ async function notifyUserApproved(chatId, handle) {
     inline_keyboard: [
       [
         {
-          text: "\u{1F680} Launch Collab Room",
+          text: "Open Collab Room",
           web_app: { url: `${WEBAPP_URL}/discover` }
         }
       ],
       [
         {
-          text: "\u{1F4E3} Join Announcement Channel",
+          text: "Announcements",
           url: "https://t.me/TheMarketingDAO"
         }
       ]
     ]
   };
   const handleMention = handle ? `@${handle.replace(/^@/, "")}` : "";
-  const congratsMessage = handleMention ? `\u{1F389} Congratulations ${handleMention}! Your application has been approved!` : "\u{1F389} Congratulations! Your application has been approved!";
+  const approvalMessage = handleMention ? `${handleMention} \u2014 you're in.` : "You're in.";
   try {
     await bot.sendMessage(
       chatId,
-      congratsMessage + "\n\nWelcome to Collab Room! You now have full access to the platform.\n\nClick below to discover new collaborations and join our announcement channel for updates.",
+      approvalMessage + "\n\nFull access to Collab Room. New collab requests land in the feed daily.",
       { reply_markup: keyboard }
     );
     console.log("Approval notification sent successfully");
@@ -2054,13 +2064,13 @@ async function notifyReferrerWithRecord(referrer, referralRecord, referredUserFi
         inline_keyboard: [
           [
             {
-              text: "\u{1F680} Invite More Friends",
+              text: "Invite more",
               web_app: { url: `${WEBAPP_URL}/referrals` }
             }
           ],
           [
             {
-              text: "\u{1F4CB} Copy Referral Code",
+              text: "Copy code",
               callback_data: `copy_referral_code_${referralRecord.referral_code}`
             }
           ]
@@ -2095,15 +2105,11 @@ async function notifyReferrerWithRecord(referrer, referralRecord, referredUserFi
       );
       const referrerMention = referrer.handle ? `@${referrer.handle}` : referrer.first_name;
       const referredMention = referrer.referred_handle ? `@${referrer.referred_handle}` : referredUserFirstName;
-      const message = `\u{1F389} ${referrerMention} <b>Referral Success!</b>
+      const message = `${referrerMention} \u2014 ${referredMention} is in.
 
-Great news! ${referredMention} who you referred has been approved and now has full access to Collab Room.
+Referrals: ${usedReferrals}/${totalReferrals} used \xB7 ${remainingReferrals} remaining.
 
-<b>Your Referral Stats:</b>
-\u2022 ${usedReferrals}/${totalReferrals} referrals used
-\u2022 ${remainingReferrals} referral${remainingReferrals !== 1 ? "s" : ""} remaining
-
-Share your unique code to invite more people:`;
+Share your code to invite more:`;
       console.log(
         `[REFERRAL NOTIFICATION] About to send message: "${message.substring(0, 50)}..."`
       );
@@ -2141,7 +2147,7 @@ Share your unique code to invite more people:`;
           );
           await bot.sendMessage(
             telegramId,
-            `Referral Success! ${referredMention} who you referred has been approved and now has full access to Collab Room.`
+            `${referredMention} is in. (Referral approved.)`
           );
           console.log(
             `[REFERRAL NOTIFICATION] Fallback message sent successfully`
@@ -2225,29 +2231,26 @@ async function notifyUserCollabCreated(userId, collaborationId) {
       return false;
     }
     const topicsText = collaboration.topics && collaboration.topics.length > 0 ? `
-\u{1F3F7}\uFE0F <b>Topics:</b> ${collaboration.topics.join(", ")}` : "";
+Topics: ${collaboration.topics.join(", ")}` : "";
     const fundingStagesText = collaboration.required_funding_stages && collaboration.required_funding_stages.length > 0 ? `
-\u{1F4B0} <b>Required Funding Stages:</b> ${collaboration.required_funding_stages.join(", ")}` : "";
+Funding stages: ${collaboration.required_funding_stages.join(", ")}` : "";
     const blockchainNetworksText = collaboration.required_blockchain_networks && collaboration.required_blockchain_networks.length > 0 ? `
-\u26D3\uFE0F <b>Required Blockchain Networks:</b> ${collaboration.required_blockchain_networks.join(", ")}` : "";
+Networks: ${collaboration.required_blockchain_networks.join(", ")}` : "";
     const companySectorsText = collaboration.required_company_sectors && collaboration.required_company_sectors.length > 0 ? `
-\u{1F3E2} <b>Required Company Sectors:</b> ${collaboration.required_company_sectors.join(", ")}` : "";
-    const message = `\u{1F389} <b>Your Collaboration is Live!</b>
+Sectors: ${collaboration.required_company_sectors.join(", ")}` : "";
+    const message = `<b>Your ${collaboration.collab_type} collab is live.</b>
 
-Your ${collaboration.collab_type} collaboration has been successfully created and is now visible to other users.
+` + `${collaboration.description || ""}`.trim() + `
 
-<b>Type:</b> ${collaboration.collab_type}
-<b>Description:</b> ${collaboration.description || "No description"}
-<b>Company:</b> ${companyName}
-${topicsText}${fundingStagesText}${blockchainNetworksText}${companySectorsText}
+${companyName}${topicsText}${fundingStagesText}${blockchainNetworksText}${companySectorsText}
 
-Your collaboration will be shown to users who match your criteria. You'll receive a notification when someone requests to collaborate with you.`;
+We'll ping you when someone requests it.`;
     const keyboard = {
       inline_keyboard: [
         [
           {
-            text: "View My Collaborations",
-            web_app: { url: `${WEBAPP_URL}/marketing-collabs-new?tab=my` }
+            text: "View my collabs",
+            web_app: { url: `${WEBAPP_URL}/my-collaborations` }
           }
         ]
       ]
@@ -2348,31 +2351,26 @@ async function notifyAdminsNewCollaboration(collaborationId, creatorId) {
       );
     }
     const topicsText = collaboration.topics && collaboration.topics.length > 0 ? `
-\u{1F3F7}\uFE0F <b>Topics:</b> ${collaboration.topics.join(", ")}` : "";
+Topics: ${collaboration.topics.join(", ")}` : "";
     const fundingStagesText = collaboration.required_funding_stages && collaboration.required_funding_stages.length > 0 ? `
-\u{1F4B0} <b>Required Funding Stages:</b> ${collaboration.required_funding_stages.join(", ")}` : "";
+Funding stages: ${collaboration.required_funding_stages.join(", ")}` : "";
     const blockchainNetworksText = collaboration.required_blockchain_networks && collaboration.required_blockchain_networks.length > 0 ? `
-\u26D3\uFE0F <b>Required Blockchain Networks:</b> ${collaboration.required_blockchain_networks.join(", ")}` : "";
+Networks: ${collaboration.required_blockchain_networks.join(", ")}` : "";
     const companySectorsText = collaboration.required_company_sectors && collaboration.required_company_sectors.length > 0 ? `
-\u{1F3E2} <b>Required Company Sectors:</b> ${collaboration.required_company_sectors.join(", ")}` : "";
-    const message = `\u{1F195} <b>New Collaboration Created!</b>
+Sectors: ${collaboration.required_company_sectors.join(", ")}` : "";
+    const message = `<b>New collab</b>
 
-<b>Type:</b> ${collaboration.collab_type}
-<b>Type:</b> ${collaboration.collab_type}
-<b>Description:</b> ${collaboration.description || "Not provided"}
-${topicsText}${fundingStagesText}${blockchainNetworksText}${companySectorsText}
+${collaboration.collab_type} \u2014 ${companyName}
+by ${creator.first_name} ${creator.last_name || ""}${creator.handle ? ` (@${creator.handle})` : ""}
 
-<b>Created by:</b> ${creator.first_name} ${creator.last_name || ""} ${creator.handle ? `(@${creator.handle})` : ""}
-<b>Company:</b> ${companyName}
-
-Use the button below to view the collaboration:`;
+` + `${collaboration.description || ""}`.trim() + `${topicsText}${fundingStagesText}${blockchainNetworksText}${companySectorsText}`;
     const keyboard = {
       inline_keyboard: [
         [
           {
-            text: "\u{1F441}\uFE0F View Collaboration",
+            text: "View collab",
             web_app: {
-              url: `${WEBAPP_URL}/admin/collaborations/${collaborationId}`
+              url: `${WEBAPP_URL}/admin/dashboard`
             }
           }
         ]
@@ -2454,7 +2452,7 @@ async function handleBroadcast(msg) {
       console.log("[BROADCAST] Rejected: User not an admin:", telegramId);
       await bot.sendMessage(
         chatId,
-        "Sorry, this command is only available to administrators."
+        "Admins only."
       );
       return;
     }
@@ -2465,28 +2463,17 @@ async function handleBroadcast(msg) {
     });
     await bot.sendMessage(
       chatId,
-      `\u{1F4E3} <b>Broadcast Message</b>
+      `<b>Broadcast</b>
 
-Please send the message you want to broadcast to all active, approved users with notifications enabled.
+Send the message to broadcast to all approved users with notifications on.
 
-<i>Your message can include:</i>
-\u2022 <b>Bold text</b> using &lt;b&gt;text&lt;/b&gt;
-\u2022 <i>Italic text</i> using &lt;i&gt;text&lt;/i&gt;
-\u2022 <u>Underlined text</u> using &lt;u&gt;text&lt;/u&gt;
-\u2022 Links like &lt;a href="https://example.com"&gt;this&lt;/a&gt;
+<i>Formatting:</i> &lt;b&gt;bold&lt;/b&gt; \xB7 &lt;i&gt;italic&lt;/i&gt; \xB7 &lt;u&gt;underline&lt;/u&gt; \xB7 &lt;a href="..."&gt;link&lt;/a&gt;
 
-<i>IMPORTANT: For HTML tags to work, use the exact format shown above (including quotes around URLs).</i>
+<i>Placeholders:</i> {first_name} \xB7 {last_name} \xB7 {full_name} \xB7 {handle} \xB7 {company}
 
-<i>You can also use these personalization placeholders:</i>
-\u2022 {first_name} - User's first name
-\u2022 {last_name} - User's last name
-\u2022 {full_name} - User's full name
-\u2022 {handle} - User's Telegram handle with @ symbol
-\u2022 {company} - User's company name
+Example: <code>GM {handle}! How's {company}?</code>
 
-Example: "GM {handle}! How's everything at {company}?"
-
-Send your message now, or type /cancel to abort.`,
+Send now, or /cancel.`,
       { parse_mode: "HTML" }
     );
     logAdminMessage(
@@ -2499,7 +2486,7 @@ Send your message now, or type /cancel to abort.`,
     console.error("Error handling broadcast command:", error);
     await bot.sendMessage(
       chatId,
-      "Sorry, something went wrong. Please try again later."
+      "Something broke. Try again in a moment."
     );
   }
 }
@@ -2519,7 +2506,7 @@ async function handleCollabBroadcast(msg) {
       console.log("[COLLAB_BROADCAST] Rejected: User not an admin:", telegramId);
       await bot.sendMessage(
         chatId,
-        "Sorry, this command is only available to administrators."
+        "Admins only."
       );
       return;
     }
@@ -2534,7 +2521,7 @@ async function handleCollabBroadcast(msg) {
     if (recentCollaborations.length === 0) {
       await bot.sendMessage(
         chatId,
-        "\u274C <b>No Active Collaborations</b>\n\nThere are no active collaborations to broadcast at the moment.",
+        "No active collabs to broadcast right now.",
         { parse_mode: "HTML" }
       );
       return;
@@ -2563,7 +2550,7 @@ async function handleCollabBroadcast(msg) {
     };
     await bot.sendMessage(
       chatId,
-      "\u{1F680} <b>Collab Broadcast</b>\n\nSelect a collaboration to promote:\n\n<i>Choose from the 5 most recent active collaborations:</i>",
+      "<b>Collab broadcast</b>\n\nPick one of the 5 most recent active collabs:",
       {
         parse_mode: "HTML",
         reply_markup: keyboard
@@ -2579,7 +2566,7 @@ async function handleCollabBroadcast(msg) {
     console.error("Error handling collaboration broadcast command:", error);
     await bot.sendMessage(
       chatId,
-      "Sorry, something went wrong. Please try again later."
+      "Something broke. Try again in a moment."
     );
   }
 }
@@ -2608,7 +2595,7 @@ bot.onText(/\/cancel/, async (msg) => {
     );
   }
   if (cancelled) {
-    await bot.sendMessage(chatId, "\u2705 Broadcast cancelled.");
+    await bot.sendMessage(chatId, "Broadcast cancelled.");
   }
 });
 var adminBroadcastState = /* @__PURE__ */ new Map();
@@ -2623,7 +2610,7 @@ async function broadcastMessageToUsers(message, senderTelegramId, chatId) {
     });
     await bot.sendMessage(
       chatId,
-      "\u{1F4E4} <b>Broadcast process started</b>\n\nSending your message to all eligible users...",
+      "Sending to all eligible users\u2026",
       { parse_mode: "HTML" }
     );
     const usersWithJoinedPreferences = await db.select({
@@ -2645,7 +2632,7 @@ async function broadcastMessageToUsers(message, senderTelegramId, chatId) {
     let successCount = 0;
     let failCount = 0;
     const failedIds = [];
-    const formattedMessage = `\u{1F4E3} <b>Admin Announcement</b>
+    const formattedMessage = `<b>Announcement</b>
 
 ${message}`;
     console.log(
@@ -2713,16 +2700,16 @@ ${message}`;
           /\{company\}/g,
           user.company_name || ""
         );
-        const finalPersonalizedMessage = `\u{1F4E3} <b>Admin Announcement</b>
+        const finalPersonalizedMessage = `<b>Announcement</b>
 
 ${personalizedMessage}`;
-        console.log(`[BROADCAST] Sending message to user ${user.id} with parse_mode HTML: 
+        console.log(`[BROADCAST] Sending message to user ${user.id} with parse_mode HTML:
 Message content: ${finalPersonalizedMessage}`);
         const launchKeyboard = {
           inline_keyboard: [
             [
               {
-                text: "\u{1F680} Launch Collab Room",
+                text: "Open Collab Room",
                 web_app: { url: `${WEBAPP_URL}/discover` }
               }
             ]
@@ -2749,10 +2736,10 @@ Message content: ${finalPersonalizedMessage}`);
       }
     }
     adminBroadcastState.delete(senderTelegramId);
-    const summaryMessage = `\u2705 <b>Broadcast completed</b>
+    const summaryMessage = `<b>Broadcast complete.</b>
 
-Message sent to ${successCount} user${successCount !== 1 ? "s" : ""}
-Failed: ${failCount} user${failCount !== 1 ? "s" : ""}` + (failCount > 0 ? `
+Sent: ${successCount}
+Failed: ${failCount}` + (failCount > 0 ? `
 
 Some users may have blocked the bot or have invalid Telegram IDs.` : "");
     await bot.sendMessage(chatId, summaryMessage, { parse_mode: "HTML" });
@@ -2768,7 +2755,7 @@ Some users may have blocked the bot or have invalid Telegram IDs.` : "");
     adminBroadcastState.delete(senderTelegramId);
     await bot.sendMessage(
       chatId,
-      "\u274C <b>Broadcast Error</b>\n\nThere was an error while sending your broadcast message. Please try again later.",
+      "Broadcast failed. Try again in a moment.",
       { parse_mode: "HTML" }
     );
     throw error;
@@ -2785,7 +2772,7 @@ async function broadcastCollaborationToUsers(collaboration, message, senderTeleg
     });
     await bot.sendMessage(
       chatId,
-      "\u{1F4E4} <b>Collaboration broadcast process started</b>\n\nSending your promotional message to all eligible users...",
+      "Sending to all eligible users\u2026",
       { parse_mode: "HTML" }
     );
     const usersWithJoinedPreferences = await db.select({
@@ -2843,28 +2830,28 @@ async function broadcastCollaborationToUsers(collaboration, message, senderTeleg
         let buttons;
         if (collaboration.creator_id === user.id) {
           buttons = [
-            [{ text: "You are the host of this collaboration", callback_data: "host_info" }],
-            [{ text: "View More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }]
+            [{ text: "You're the host", callback_data: "host_info" }],
+            [{ text: "Browse more", web_app: { url: `${WEBAPP_URL}/discover` } }]
           ];
         } else if (requestLookup.has(user.id)) {
           const requestStatus = requestLookup.get(user.id);
           buttons = [
-            [{ text: "\u2705 Request Already Sent", callback_data: "request_sent" }],
-            [{ text: "View More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }]
+            [{ text: "Request sent", callback_data: "request_sent" }],
+            [{ text: "Browse more", web_app: { url: `${WEBAPP_URL}/discover` } }]
           ];
         } else if (collaboration.status !== "active") {
           buttons = [
-            [{ text: "This collaboration is no longer available", callback_data: "unavailable" }],
-            [{ text: "View More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }]
+            [{ text: "No longer available", callback_data: "unavailable" }],
+            [{ text: "Browse more", web_app: { url: `${WEBAPP_URL}/discover` } }]
           ];
         } else {
           buttons = [
-            [{ text: "\u2705 Request Collab", callback_data: `request_collab_${collaboration.id}` }],
-            [{ text: "View More Collabs", web_app: { url: `${WEBAPP_URL}/discover` } }]
+            [{ text: "Request collab", callback_data: `request_collab_${collaboration.id}` }],
+            [{ text: "Browse more", web_app: { url: `${WEBAPP_URL}/discover` } }]
           ];
         }
         const keyboard = { inline_keyboard: buttons };
-        const finalPersonalizedMessage = `\u{1F91D} <b>New Collab</b>
+        const finalPersonalizedMessage = `<b>New collab</b>
 
 ${personalizedMessage}`;
         await bot.sendMessage(userChatId, finalPersonalizedMessage, {
@@ -2887,12 +2874,12 @@ ${personalizedMessage}`;
       }
     }
     adminCollabBroadcastState.delete(senderTelegramId);
-    const summaryMessage = `\u2705 <b>Collaboration broadcast completed</b>
+    const summaryMessage = `<b>Collab broadcast complete.</b>
 
-<b>Collaboration:</b> ${collaboration.companyName} - ${collaboration.collab_type}
+${collaboration.companyName} \u2014 ${collaboration.collab_type}
 
-Message sent to ${successCount} user${successCount !== 1 ? "s" : ""}
-Failed: ${failCount} user${failCount !== 1 ? "s" : ""}` + (failCount > 0 ? `
+Sent: ${successCount}
+Failed: ${failCount}` + (failCount > 0 ? `
 
 Some users may have blocked the bot or have invalid Telegram IDs.` : "");
     await bot.sendMessage(chatId, summaryMessage, { parse_mode: "HTML" });
@@ -2908,7 +2895,7 @@ Some users may have blocked the bot or have invalid Telegram IDs.` : "");
     adminCollabBroadcastState.delete(senderTelegramId);
     await bot.sendMessage(
       chatId,
-      "\u274C <b>Collaboration Broadcast Error</b>\n\nThere was an error while sending your collaboration broadcast. Please try again later.",
+      "Collab broadcast failed. Try again in a moment.",
       { parse_mode: "HTML" }
     );
     throw error;
@@ -3018,8 +3005,7 @@ bot.on("callback_query", async (callbackQuery) => {
       const referralCode = action.substring("copy_referral_code_".length);
       await bot.answerCallbackQuery(callbackQuery.id, {
         text: `Your code: ${referralCode}
-
-It has been copied to the clipboard!`,
+Copied.`,
         show_alert: true
       });
       console.log(
@@ -3028,7 +3014,7 @@ It has been copied to the clipboard!`,
     } else {
       console.log(`[CALLBACK] Unknown callback action: ${action}`);
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "Unknown action"
+        text: "Unknown action."
       });
     }
   } catch (error) {
@@ -3037,7 +3023,7 @@ It has been copied to the clipboard!`,
     console.error("[CALLBACK] Error stack:", error.stack);
     try {
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "Sorry, something went wrong. Please try again."
+        text: "Something broke. Try again."
       });
     } catch (err) {
       console.error("[CALLBACK] Error sending callback answer:", err);
@@ -3056,7 +3042,7 @@ async function handleBroadcastConfirm(callbackQuery) {
     console.log(`Invalid broadcast state for user ${telegramId}`);
     await bot.sendMessage(
       chatId,
-      "\u274C <b>Error</b>\n\nBroadcast session expired or invalid. Please start again with /broadcast.",
+      "Session expired. Start again with /broadcast.",
       { parse_mode: "HTML" }
     );
     adminBroadcastState.delete(telegramId);
@@ -3064,10 +3050,10 @@ async function handleBroadcastConfirm(callbackQuery) {
   }
   try {
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Your broadcast is being processed..."
+      text: "Sending\u2026"
     });
     await bot.editMessageText(
-      "\u{1F4E4} <b>Broadcast confirmed</b>\n\nYour message is being sent to all users with notifications enabled. Please wait...",
+      "<b>Broadcast confirmed.</b>\n\nSending to all users with notifications on\u2026",
       {
         chat_id: chatId,
         message_id: callbackQuery.message.message_id,
@@ -3081,7 +3067,7 @@ async function handleBroadcastConfirm(callbackQuery) {
     adminBroadcastState.delete(telegramId);
     await bot.sendMessage(
       chatId,
-      "\u274C <b>Error</b>\n\nThere was an error processing your broadcast. Please try again with /broadcast.",
+      "Couldn't process the broadcast. Try /broadcast again.",
       { parse_mode: "HTML" }
     );
   }
@@ -3095,11 +3081,11 @@ async function handleBroadcastCancel(callbackQuery) {
   const chatId = callbackQuery.message.chat.id;
   try {
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Broadcast cancelled"
+      text: "Cancelled."
     });
     adminBroadcastState.delete(telegramId);
     await bot.editMessageText(
-      "\u2705 <b>Broadcast cancelled</b>\n\nYour message will not be sent. Use /broadcast to start again if needed.",
+      "<b>Broadcast cancelled.</b>\n\nNothing sent. Use /broadcast to start again.",
       {
         chat_id: chatId,
         message_id: callbackQuery.message.message_id,
@@ -3116,7 +3102,7 @@ async function handleBroadcastCancel(callbackQuery) {
     console.error("Error cancelling broadcast:", error);
     await bot.sendMessage(
       chatId,
-      "\u274C <b>Error</b>\n\nThere was an error cancelling your broadcast, but the broadcast has been stopped.",
+      "Broadcast stopped, but the cancel message failed to update.",
       { parse_mode: "HTML" }
     );
   }
@@ -3139,7 +3125,7 @@ async function handleCollabSelection(callbackQuery) {
     }).from(collaborations).where(eq(collaborations.id, collaborationId));
     if (!collaboration || collaboration.status !== "active") {
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "This collaboration is no longer available.",
+        text: "No longer available.",
         show_alert: true
       });
       return;
@@ -3155,29 +3141,20 @@ async function handleCollabSelection(callbackQuery) {
       timestamp: Date.now()
     });
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: `Selected: ${companyName} - ${collaboration.collab_type}`
+      text: `Selected: ${companyName} \u2014 ${collaboration.collab_type}`
     });
     await bot.editMessageText(
-      `\u{1F680} <b>Collab Broadcast</b>
+      `<b>Collab broadcast</b>
 
-<b>Selected Collaboration:</b> ${companyName} - ${collaboration.collab_type}
+${companyName} \u2014 ${collaboration.collab_type}
 
-\u{1F4DD} <b>Write your promotional message:</b>
+Write your promotional message.
 
-<i>Your message can include:</i>
-\u2022 <b>Bold text</b> using &lt;b&gt;text&lt;/b&gt;
-\u2022 <i>Italic text</i> using &lt;i&gt;text&lt;/i&gt;
-\u2022 <u>Underlined text</u> using &lt;u&gt;text&lt;/u&gt;
-\u2022 Links like &lt;a href="https://example.com"&gt;this&lt;/a&gt;
+<i>Formatting:</i> &lt;b&gt;bold&lt;/b&gt; \xB7 &lt;i&gt;italic&lt;/i&gt; \xB7 &lt;u&gt;underline&lt;/u&gt; \xB7 &lt;a href="..."&gt;link&lt;/a&gt;
 
-<i>Personalization placeholders:</i>
-\u2022 {{first_name}} - User's first name
-\u2022 {{last_name}} - User's last name
-\u2022 {{company_name}} - User's company name
-\u2022 {{role_title}} - User's job title
-\u2022 {{handle}} - User's Telegram handle
+<i>Placeholders:</i> {{first_name}} \xB7 {{last_name}} \xB7 {{company_name}} \xB7 {{role_title}} \xB7 {{handle}}
 
-Send your message now, or type /cancel to abort.`,
+Send now, or /cancel.`,
       {
         chat_id: chatId,
         message_id: callbackQuery.message.message_id,
@@ -3194,7 +3171,7 @@ Send your message now, or type /cancel to abort.`,
   } catch (error) {
     console.error("Error handling collaboration selection:", error);
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Error selecting collaboration. Please try again.",
+      text: "Couldn't select that collab. Try again.",
       show_alert: true
     });
   }
@@ -3210,7 +3187,7 @@ async function handleCollabBroadcastConfirm(callbackQuery) {
   if (!state || state.state !== "awaiting_confirmation" || !state.message || !state.selectedCollaboration) {
     console.log(`Invalid collaboration broadcast state for user ${telegramId}`);
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Broadcast session expired. Please start again.",
+      text: "Session expired. Start again.",
       show_alert: true
     });
     adminCollabBroadcastState.delete(telegramId);
@@ -3218,10 +3195,10 @@ async function handleCollabBroadcastConfirm(callbackQuery) {
   }
   try {
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Your collaboration broadcast is being processed..."
+      text: "Sending\u2026"
     });
     await bot.editMessageText(
-      "\u{1F4E4} <b>Collaboration Broadcast confirmed</b>\n\nYour promotional message is being sent to all eligible users. Please wait...",
+      "<b>Collab broadcast confirmed.</b>\n\nSending to all eligible users\u2026",
       {
         chat_id: chatId,
         message_id: callbackQuery.message.message_id,
@@ -3240,7 +3217,7 @@ async function handleCollabBroadcastConfirm(callbackQuery) {
     adminCollabBroadcastState.delete(telegramId);
     await bot.sendMessage(
       chatId,
-      "\u274C <b>Error</b>\n\nThere was an error processing your collaboration broadcast. Please try again with /broadcastcollab.",
+      "Couldn't process the broadcast. Try /broadcastcollab again.",
       { parse_mode: "HTML" }
     );
   }
@@ -3254,11 +3231,11 @@ async function handleCollabBroadcastCancel(callbackQuery) {
   const chatId = callbackQuery.message.chat.id;
   try {
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Collaboration broadcast cancelled"
+      text: "Cancelled."
     });
     adminCollabBroadcastState.delete(telegramId);
     await bot.editMessageText(
-      "\u2705 <b>Collaboration broadcast cancelled</b>\n\nYour message will not be sent. Use /broadcastcollab to start again if needed.",
+      "<b>Collab broadcast cancelled.</b>\n\nNothing sent. Use /broadcastcollab to start again.",
       {
         chat_id: chatId,
         message_id: callbackQuery.message.message_id,
@@ -3275,7 +3252,7 @@ async function handleCollabBroadcastCancel(callbackQuery) {
     console.error("Error cancelling collaboration broadcast:", error);
     await bot.sendMessage(
       chatId,
-      "\u274C <b>Error</b>\n\nThere was an error cancelling your collaboration broadcast, but the broadcast has been stopped.",
+      "Broadcast stopped, but the cancel message failed to update.",
       { parse_mode: "HTML" }
     );
   }
@@ -3290,7 +3267,7 @@ async function handleCollabRequestFromBroadcast(callbackQuery) {
     const [requesterUser] = await db.select({ id: users.id }).from(users).where(eq(users.telegram_id, requesterId));
     if (!requesterUser) {
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "Please register first by visiting the platform.",
+        text: "Open the app to finish signup first.",
         show_alert: true
       });
       return;
@@ -3302,14 +3279,14 @@ async function handleCollabRequestFromBroadcast(callbackQuery) {
     }).from(collaborations).where(eq(collaborations.id, collaborationId));
     if (!collaboration || collaboration.status !== "active") {
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "This collaboration is no longer available.",
+        text: "No longer available.",
         show_alert: true
       });
       return;
     }
     if (collaboration.creator_id === requesterUser.id) {
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "You cannot request your own collaboration.",
+        text: "Can't request your own collab.",
         show_alert: true
       });
       return;
@@ -3322,7 +3299,7 @@ async function handleCollabRequestFromBroadcast(callbackQuery) {
     );
     if (existingRequest) {
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "You have already requested this collaboration.",
+        text: "Already requested.",
         show_alert: true
       });
       return;
@@ -3334,7 +3311,7 @@ async function handleCollabRequestFromBroadcast(callbackQuery) {
       status: "pending"
     });
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Your collaboration request has been sent!"
+      text: "Request sent."
     });
     await notifyNewCollabRequest(
       collaboration.creator_id,
@@ -3350,7 +3327,7 @@ async function handleCollabRequestFromBroadcast(callbackQuery) {
   } catch (error) {
     console.error("Error handling collaboration request from broadcast:", error);
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Error processing request. Please try again.",
+      text: "Couldn't send the request. Try again.",
       show_alert: true
     });
   }
@@ -3388,7 +3365,7 @@ async function handleApproveUserCallback(callbackQuery) {
         `[APPROVAL] User with Telegram ID ${telegramIdToApprove} not found`
       );
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "User not found in database.",
+        text: "User not found.",
         show_alert: true
       });
       return;
@@ -3396,7 +3373,7 @@ async function handleApproveUserCallback(callbackQuery) {
     if (userToApprove.is_approved) {
       console.log(`[APPROVAL] User ${telegramIdToApprove} is already approved`);
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "This user is already approved.",
+        text: "Already approved.",
         show_alert: true
       });
       if (callbackQuery.message) {
@@ -3415,7 +3392,7 @@ async function handleApproveUserCallback(callbackQuery) {
       return;
     }
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "Approving user..."
+      text: "Approving\u2026"
     });
     await db.update(users).set({
       is_approved: true,
@@ -3509,16 +3486,14 @@ async function handleApproveUserCallback(callbackQuery) {
         console.error(`Error notifying referrer: ${referralError}`);
       }
     }
-    const confirmationMessage = `\u2705 <b>User Approved Successfully!</b>
+    const confirmationMessage = `<b>${userToApprove.first_name} ${userToApprove.last_name || ""}</b> approved.
 
-You have approved <b>${userToApprove.first_name} ${userToApprove.last_name || ""}</b>'s application.
-
-The user has been notified and now has full access to the platform.`;
+They've been notified.`;
     const confirmationKeyboard = {
       inline_keyboard: [
         [
           {
-            text: "\u{1F441}\uFE0F View All Applications",
+            text: "View all applications",
             web_app: { url: `${WEBAPP_URL}/admin/applications` }
           }
         ]
@@ -3548,7 +3523,7 @@ The user has been notified and now has full access to the platform.`;
   } catch (error) {
     console.error("Error handling user approval:", error);
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "An error occurred while approving the user. Please try again.",
+      text: "Couldn't approve. Try again.",
       show_alert: true
     });
   }
@@ -3569,7 +3544,7 @@ async function handleMatchInfoCallback(callbackQuery) {
     if (!request) {
       console.error(`[MATCH_INFO] Request with ID ${matchId} not found`);
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "Request not found in database.",
+        text: "Request not found.",
         show_alert: true
       });
       return;
@@ -3580,7 +3555,7 @@ async function handleMatchInfoCallback(callbackQuery) {
         `[MATCH_INFO] Collaboration with ID ${request.collaboration_id} not found`
       );
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "Collaboration details not found.",
+        text: "Collab not found.",
         show_alert: true
       });
       return;
@@ -3590,28 +3565,24 @@ async function handleMatchInfoCallback(callbackQuery) {
     if (!requester || !host) {
       console.error(`[MATCH_INFO] User details not found for match ${matchId}`);
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "User details not found.",
+        text: "User details missing.",
         show_alert: true
       });
       return;
     }
-    const matchInfo = `<b>\u{1F4CB} Request Details</b>
+    const matchInfo = `<b>Request details</b>
 
-<b>Collaboration Type:</b> ${collaboration.collab_type}
-<b>Created:</b> ${format(request.created_at || /* @__PURE__ */ new Date(), "MMM d, yyyy")}
+${collaboration.collab_type} \xB7 ${format(request.created_at || /* @__PURE__ */ new Date(), "MMM d, yyyy")}
 
-<b>\u{1F464} Host:</b> ${host.first_name} ${host.last_name || ""} ${host.handle ? `(@${host.handle})` : ""}
-<b>\u{1F464} Requester:</b> ${requester.first_name} ${requester.last_name || ""} ${requester.handle ? `(@${requester.handle})` : ""}
-
-<b>Status:</b> ${request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-
-Click below to view full details:`;
+Host: ${host.first_name} ${host.last_name || ""}${host.handle ? ` (@${host.handle})` : ""}
+Requester: ${requester.first_name} ${requester.last_name || ""}${requester.handle ? ` (@${requester.handle})` : ""}
+Status: ${request.status.charAt(0).toUpperCase() + request.status.slice(1)}`;
     const keyboard = {
       inline_keyboard: [
         [
           {
-            text: "\u{1F50D} View Full Details",
-            web_app: { url: `${WEBAPP_URL}/requests/${matchId}` }
+            text: "Open",
+            web_app: { url: `${WEBAPP_URL}/requests` }
           }
         ]
       ]
@@ -3624,7 +3595,7 @@ Click below to view full details:`;
   } catch (error) {
     console.error("Error handling match info:", error);
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "An error occurred while retrieving match information.",
+      text: "Couldn't load match info.",
       show_alert: true
     });
   }
@@ -3700,7 +3671,7 @@ async function handleSwipeCallback(callbackQuery) {
           `[SWIPE_CALLBACK] Collaboration with short ID ${shortCollabId} not found`
         );
         await bot.answerCallbackQuery(callbackQuery.id, {
-          text: "Collaboration not found.",
+          text: "Collab not found.",
           show_alert: true
         });
         return;
@@ -3744,7 +3715,7 @@ async function handleSwipeCallback(callbackQuery) {
         `[SWIPE_ACTION] User with Telegram ID ${fromTelegramId} not found`
       );
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "User not found. Please try again.",
+        text: "User not found.",
         show_alert: true
       });
       return;
@@ -3755,7 +3726,7 @@ async function handleSwipeCallback(callbackQuery) {
         `[SWIPE_ACTION] Collaboration with ID ${collaborationId} not found`
       );
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "Collaboration not found. It may have been deleted.",
+        text: "Collab not found. It may have been deleted.",
         show_alert: true
       });
       return;
@@ -3776,7 +3747,7 @@ async function handleSwipeCallback(callbackQuery) {
         `[SWIPE_ACTION] User ${user.id} does not own collaboration ${collaborationId}, creator is ${collaboration.creator_id}`
       );
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "You can only respond to requests for your own collaborations.",
+        text: "You can only respond to requests on your own collabs.",
         show_alert: true
       });
       return;
@@ -3792,7 +3763,7 @@ async function handleSwipeCallback(callbackQuery) {
         `[SWIPE_ACTION] No existing request found for collab ${collaborationId} and user ${requesterId}`
       );
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "Original request not found. It may have been removed.",
+        text: "Request not found. It may have been removed.",
         show_alert: true
       });
       return;
@@ -3806,7 +3777,7 @@ async function handleSwipeCallback(callbackQuery) {
       );
       if (callbackQuery.message) {
         await bot.editMessageText(
-          `\u2705 You've already matched with ${requester.first_name} ${requester.last_name || ""}${requester.handle ? ` (@${requester.handle})` : ""} on this collaboration.`,
+          `Already matched with ${requester.first_name} ${requester.last_name || ""}${requester.handle ? ` (@${requester.handle})` : ""} on this collab.`,
           {
             chat_id: chatId,
             message_id: callbackQuery.message.message_id,
@@ -3814,7 +3785,7 @@ async function handleSwipeCallback(callbackQuery) {
               inline_keyboard: [
                 [
                   {
-                    text: "\u{1F389} View Matches",
+                    text: "View matches",
                     web_app: { url: `${WEBAPP_URL}/matches` }
                   }
                 ]
@@ -3826,7 +3797,7 @@ async function handleSwipeCallback(callbackQuery) {
         );
       }
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: "You've already matched with this user."
+        text: "Already matched."
       });
       return;
     }
@@ -3851,7 +3822,7 @@ async function handleSwipeCallback(callbackQuery) {
           inline_keyboard: [
             [
               {
-                text: "\u{1F389} View Matches",
+                text: "View matches",
                 web_app: { url: `${WEBAPP_URL}/matches` }
               }
             ]
@@ -3859,11 +3830,11 @@ async function handleSwipeCallback(callbackQuery) {
         };
         await sendDirectFormattedMessage(
           requesterChatId,
-          `\u{1F389} <b>New Match!</b>
+          `<b>Matched.</b>
 
-<b>${user.first_name} ${user.last_name || ""}</b>${user.handle ? ` (@${user.handle})` : ""} from <a href="${hostCompanyUrl}">${hostCompany?.name || "their company"}</a> has matched with you on a <b>${collaboration.collab_type}</b> collaboration!
+<b>${user.first_name} ${user.last_name || ""}</b>${user.handle ? ` (@${user.handle})` : ""} from <a href="${hostCompanyUrl}">${hostCompany?.name || "their company"}</a> on the ${collaboration.collab_type} collab.
 
-Click below to view your matches and start chatting:`,
+Open matches to reach out.`,
           {
             parse_mode: "HTML",
             reply_markup: keyboard,
@@ -3874,7 +3845,7 @@ Click below to view your matches and start chatting:`,
       const [requesterCompany] = await db.select().from(companies).where(eq(companies.user_id, requesterId)).limit(1);
       if (callbackQuery.message) {
         await bot.editMessageText(
-          `\u2705 You matched with ${requester.first_name} ${requester.last_name || ""}${requester.handle ? ` (@${requester.handle})` : ""} from ${requesterCompany?.name || "their company"}!`,
+          `<b>Matched</b> with ${requester.first_name} ${requester.last_name || ""}${requester.handle ? ` (@${requester.handle})` : ""} from ${requesterCompany?.name || "their company"}.`,
           {
             chat_id: chatId,
             message_id: callbackQuery.message.message_id,
@@ -3882,7 +3853,7 @@ Click below to view your matches and start chatting:`,
               inline_keyboard: [
                 [
                   {
-                    text: "\u{1F389} View Matches",
+                    text: "View matches",
                     web_app: { url: `${WEBAPP_URL}/matches` }
                   }
                 ]
@@ -3894,7 +3865,7 @@ Click below to view your matches and start chatting:`,
         );
       }
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: `You matched with ${requester.first_name}! They've been notified.`
+        text: `Matched with ${requester.first_name}. They've been notified.`
       });
     } else if (direction === "left") {
       console.log(
@@ -3914,7 +3885,7 @@ Click below to view your matches and start chatting:`,
       );
       if (callbackQuery.message) {
         await bot.editMessageText(
-          `\u274C You hid the collaboration request from ${requester.first_name} ${requester.last_name || ""}.`,
+          `Hidden \u2014 request from ${requester.first_name} ${requester.last_name || ""}.`,
           {
             chat_id: chatId,
             message_id: callbackQuery.message.message_id
@@ -3922,13 +3893,13 @@ Click below to view your matches and start chatting:`,
         );
       }
       await bot.answerCallbackQuery(callbackQuery.id, {
-        text: `You hid the request from ${requester.first_name}.`
+        text: `Hidden request from ${requester.first_name}.`
       });
     }
   } catch (error) {
     console.error("Error handling swipe action:", error);
     await bot.answerCallbackQuery(callbackQuery.id, {
-      text: "An error occurred while processing your response. Please try again.",
+      text: "Couldn't process that. Try again.",
       show_alert: true
     });
   }
@@ -3975,17 +3946,17 @@ async function notifyNewCollabRequest(hostUserId, requesterUserId, collaboration
       inline_keyboard: [
         [
           {
-            text: "\u274C Hide",
+            text: "Hide",
             callback_data: `sl_${shortCollabId}_${shortRequesterId}`
           },
           {
-            text: "\u2705 Match",
+            text: "Match",
             callback_data: `sr_${shortCollabId}_${shortRequesterId}`
           }
         ],
         [
           {
-            text: "\u{1F680} Launch Collab Room",
+            text: "Open Collab Room",
             web_app: { url: `${WEBAPP_URL}/discover` }
           }
         ]
@@ -4002,26 +3973,34 @@ async function notifyNewCollabRequest(hostUserId, requesterUserId, collaboration
     let noteSection = "";
     if (request && request.note) {
       noteSection = `
-\u{1F4DD} <b>Note:</b> ${request.note}
-`;
+<b>Note:</b> ${request.note}`;
     }
     const companyTwitterHandle = requesterCompany?.twitter_handle ? requesterCompany.twitter_handle.replace("@", "") : "";
     const userTwitterHandle = requester.twitter_handle ? requester.twitter_handle.replace("@", "") : "";
     const twitterHandle = companyTwitterHandle || userTwitterHandle;
-    const twitterLink = twitterHandle ? `<a href="https://twitter.com/${twitterHandle}">Twitter</a>` : "Twitter";
-    const linkedinLink = requesterCompany?.linkedin_url ? `<a href="${requesterCompany.linkedin_url}">LinkedIn</a>` : "LinkedIn";
-    const websiteLink = requesterCompany?.website ? `<a href="${requesterCompany.website}">Website</a>` : "Website";
-    const hostHandle = host.handle || host.first_name;
-    const message = `\u{1F525} ${host.handle ? `@${host.handle}` : host.first_name} - <b>New Collab Request from ${requesterCompany?.name || requester.first_name + "'s company"}</b>${noteSection}
+    const linkParts = [];
+    if (twitterHandle) {
+      linkParts.push(`<a href="https://twitter.com/${twitterHandle}">Twitter</a>`);
+    }
+    if (requesterCompany?.linkedin_url) {
+      linkParts.push(`<a href="${requesterCompany.linkedin_url}">LinkedIn</a>`);
+    }
+    if (requesterCompany?.website) {
+      linkParts.push(`<a href="${requesterCompany.website}">Website</a>`);
+    }
+    const linksLine = linkParts.length ? `
+${linkParts.join(" \xB7 ")}` : "";
+    const requesterCompanyName = requesterCompany?.name || `${requester.first_name}'s company`;
+    const requesterRole = requesterCompany?.job_title || "";
+    const requesterDescription = requesterCompany?.short_description || "";
+    const message = `<b>New request on your ${collaboration.collab_type} collab.</b>
 
-\u{1F4BC} <a href="${requesterCompany?.website || requester.website || "#"}">${requesterCompany?.name || requester.first_name + "'s company"}</a>
-\u2753 <i>${requesterCompany?.short_description || "Web3 company focusing on blockchain solutions"}</i>
-\u{1F517} ${twitterLink} | ${linkedinLink} | ${websiteLink}
-\u{1F464} ${requesterCompany?.job_title || "Unknown Role"}
+<b><a href="${requesterCompany?.website || requester.website || "#"}">${requesterCompanyName}</a></b>` + (requesterRole ? `
+${requesterRole}` : "") + (requesterDescription ? `
+<i>${requesterDescription}</i>` : "") + linksLine + (collaboration.topics?.length ? `
 
-\u{1F91D} <b>Your Collab:</b> ${collaboration.collab_type}
-\u270F\uFE0F ${collaboration.description ? collaboration.description : "diving deep into other projects"}
-${collaboration.topics?.length ? "\u{1F3F7}\uFE0F " + collaboration.topics.join(", ") : ""}`;
+Topics: ${collaboration.topics.join(", ")}` : "") + (noteSection ? `
+${noteSection}` : "");
     console.log(
       `\u{1F514} SENDING MESSAGE: Attempting to send Telegram message to ${host.telegram_id}`
     );
@@ -4079,29 +4058,28 @@ async function notifyRequesterRequestSent(requesterUserId, hostUserId, collabora
       inline_keyboard: [
         [
           {
-            text: "\u{1F4F1} View My Matches",
+            text: "My matches",
             web_app: { url: `${WEBAPP_URL}/matches` }
           }
         ],
         [
           {
-            text: "\u{1F680} Launch Collab Room",
+            text: "Open Collab Room",
             web_app: { url: `${WEBAPP_URL}/discover` }
           }
         ]
       ]
     };
-    const userHandle = requester.username ? `@${requester.username}` : `${requester.first_name}${requester.last_name ? ` ${requester.last_name}` : ""}`;
     const companyNameDisplay = hostCompany.twitter_handle ? `<a href="https://x.com/${hostCompany.twitter_handle}">${hostCompany.name}</a>` : hostCompany.name;
-    let message = `\u2705 <b>${userHandle} - Your collab request has been sent to ${companyNameDisplay} for their collab ${collaboration.collab_type}.</b>
+    let message = `<b>Request sent</b> to ${companyNameDisplay} for their ${collaboration.collab_type} collab.
 
 `;
     if (note && note.trim()) {
-      message += `\u{1F4DD} <b>Your note:</b> ${note}
+      message += `<b>Your note:</b> ${note}
 
 `;
     }
-    message += `If they approve it, you'll be matched and able to connect via the My Matches section. You'll also get a notification here when that happens.`;
+    message += `We'll ping you here if they match.`;
     console.log(
       `\u{1F514} SENDING MESSAGE: Attempting to send confirmation to ${requester.telegram_id}`
     );
@@ -4145,7 +4123,7 @@ async function notifyMatchCreated(hostUserId, requesterUserId, collaborationId, 
       inline_keyboard: [
         [
           {
-            text: "\u{1F389} View Matches",
+            text: "View matches",
             web_app: { url: `${WEBAPP_URL}/matches` }
           }
         ]
@@ -4157,16 +4135,16 @@ async function notifyMatchCreated(hostUserId, requesterUserId, collaborationId, 
     const requesterTwitterLink = requesterCompany?.twitter_handle ? `<a href="https://twitter.com/${requesterCompany.twitter_handle}">@${requesterCompany.twitter_handle}</a>` : "Twitter";
     const requesterCompanyUrl = requesterCompany?.twitter_handle ? `https://twitter.com/${requesterCompany.twitter_handle}` : requesterCompany?.website || "#";
     const hostCompanyUrl = hostCompany?.twitter_handle ? `https://twitter.com/${hostCompany.twitter_handle}` : hostCompany?.website || "#";
-    const matchMessage = `\u{1F389} <b>New Match!</b>
+    const matchMessage = `<b>Matched.</b>
 
-You've matched with <b>${requester.first_name} ${requester.last_name || ""}</b>${requester.handle ? ` (@${requester.handle})` : ""} from <a href="${requesterCompanyUrl}">${requesterCompany?.name || "their company"}</a> on your <b>${collaboration.collab_type}</b> collaboration!
+<b>${requester.first_name} ${requester.last_name || ""}</b>${requester.handle ? ` (@${requester.handle})` : ""} from <a href="${requesterCompanyUrl}">${requesterCompany?.name || "their company"}</a> on your ${collaboration.collab_type} collab.
 
-Click below to view your matches and start chatting:`;
-    const requesterMessage = `\u{1F389} <b>New Match!</b>
+Open matches to reach out.`;
+    const requesterMessage = `<b>Matched.</b>
 
-<b>${host.first_name} ${host.last_name || ""}</b>${host.handle ? ` (@${host.handle})` : ""} from <a href="${hostCompanyUrl}">${hostCompany?.name || "their company"}</a> has matched with you on a <b>${collaboration.collab_type}</b> collaboration!
+<b>${host.first_name} ${host.last_name || ""}</b>${host.handle ? ` (@${host.handle})` : ""} from <a href="${hostCompanyUrl}">${hostCompany?.name || "their company"}</a> on the ${collaboration.collab_type} collab.
 
-Click below to view your matches and start chatting:`;
+Open matches to reach out.`;
     let hostNotified = false;
     let requesterNotified = false;
     if (!hostPreferences || hostPreferences.notifications_enabled !== false) {
@@ -5190,31 +5168,9 @@ var DatabaseStorage = class {
     if (collabIds.length === 0) {
       return { recentRequests: [], totalPendingCount: 0 };
     }
-    const rawQuery = `
-      SELECT 
-        r.id as request_id,
-        r.collaboration_id,
-        r.note,
-        r.created_at as request_created_at,
-        u.id as user_id,
-        u.first_name,
-        u.last_name,
-        c.name as company_name,
-        c.twitter_handle,
-        c.logo_url,
-        co.collab_type,
-        co.description as collab_description
-      FROM requests r
-      INNER JOIN users u ON r.requester_id = u.id
-      INNER JOIN companies c ON u.id = c.user_id
-      INNER JOIN collaborations co ON r.collaboration_id = co.id
-      WHERE r.collaboration_id = ANY($1)
-        AND r.status = 'pending'
-        AND r.requester_id != $2
-      ORDER BY r.created_at DESC
-    `;
+    const collabIdList = sql3.join(collabIds.map((id) => sql3`${id}`), sql3`, `);
     const results = await db.execute(sql3`
-      SELECT 
+      SELECT
         r.id as request_id,
         r.collaboration_id,
         r.note,
@@ -5231,7 +5187,7 @@ var DatabaseStorage = class {
       INNER JOIN users u ON r.requester_id = u.id
       INNER JOIN companies c ON u.id = c.user_id
       INNER JOIN collaborations co ON r.collaboration_id = co.id
-      WHERE r.collaboration_id = ANY(${collabIds})
+      WHERE r.collaboration_id IN (${collabIdList})
         AND r.status = 'pending'
         AND r.requester_id != ${userId}
       ORDER BY r.created_at DESC

@@ -61,8 +61,6 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
   const { availableTypes, selectType } = useCollaborationType();
 
   const handleTypeSelect = async (typeId: string) => {
-    console.log("Selected collaboration type:", typeId);
-    
     // Set the value and validate it
     form.setValue("collab_type", typeId, { shouldValidate: true });
     await form.trigger("collab_type");
@@ -77,8 +75,6 @@ export const TypeSelector: React.FC<TypeSelectorProps> = ({ form, onTypeSelected
     // Get the collaboration type definition from the registry
     const selectedType = getCollaborationType(typeId);
     if (selectedType && selectedType.defaultValues) {
-      console.log("Applying default values for type:", typeId, selectedType.defaultValues);
-      
       // Apply default values for this type
       form.reset({ 
         collab_type: typeId,
