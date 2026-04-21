@@ -18,7 +18,7 @@ import { authLimiter, requestLimiter, applicationLimiter } from './middleware/ra
 import { logger } from './utils/logger';
 // Twitter routes removed to fix deployment issues
 import referralRoutes from './routes/referral-routes';
-import { sendCollaborationWebhook, sendTestWebhookForAlchemy } from "./utils/webhook";
+import { fetchAndStoreTwitterLogo } from "./utils/fetch-twitter-logo";
 
 // Store active SSE connections for application status updates
 const activeStatusConnections = new Map<string, Response>();
@@ -1030,34 +1030,7 @@ export async function registerRoutes(app: Express) {
               company_twitter_handle: company.twitter_handle ?? undefined
             });
             console.log('Admin notification sent for new user application');
-            
-            // Fire webhook after successful company creation
-            try {
-              const baseWebhookUrl = process.env.N8N_COMPANY_SIGNUP_WEBHOOK_URL;
-              if (!baseWebhookUrl) {
-                logger.warn(`N8N_COMPANY_SIGNUP_WEBHOOK_URL not set; skipping signup webhook for company ${company.id}`);
-              } else {
-                const webhookUrl = `${baseWebhookUrl}${baseWebhookUrl.includes('?') ? '&' : '?'}id=${company.id}`;
-                const webhookResponse = await fetch(webhookUrl, {
-                  method: 'GET',
-                  headers: {
-                    'User-Agent': 'CollabRoom/1.0',
-                    'Content-Type': 'application/json'
-                  }
-                });
 
-                if (webhookResponse.ok) {
-                  const webhookData = await webhookResponse.text();
-                  logger.info(`Webhook fired successfully for company ${company.id}. Response: ${webhookData}`);
-                } else {
-                  logger.error(`Webhook failed for company ${company.id}. Status: ${webhookResponse.status}`);
-                }
-              }
-            } catch (webhookError) {
-              // Don't fail the signup process if webhook fails
-              logger.error(`Failed to fire webhook for company ${company.id}:`, webhookError);
-            }
-            
             // Send confirmation to the user with their telegram handle
             try {
               const telegramId = parseInt(result.user.telegram_id);
@@ -1172,33 +1145,46 @@ export async function registerRoutes(app: Express) {
             .returning();
 
           console.log('Updated company:', company);
-          return res.json({
-            success: true,
-            company,
-            message: 'Company information updated successfully'
-          });
-        }
-
-        // Create new company
-        console.log('Creating new company with data:', {
-          user_id: user.id,
-          ...companyData
-        });
-
-        [company] = await db
-          .insert(companies)
-          .values({
+        } else {
+          // Create new company
+          console.log('Creating new company with data:', {
             user_id: user.id,
             ...companyData
-          })
-          .returning();
+          });
 
-        console.log('Created company:', company);
+          [company] = await db
+            .insert(companies)
+            .values({
+              user_id: user.id,
+              ...companyData
+            })
+            .returning();
+
+          console.log('Created company:', company);
+        }
+
+        // Backfill the logo from unavatar if a Twitter handle is set and we
+        // don't already have a logo. Failure here should never fail the
+        // request — the user can add a logo later and the flow is resilient.
+        if (company.twitter_handle && !company.logo_url) {
+          const filename = await fetchAndStoreTwitterLogo(
+            company.twitter_handle,
+            company.id,
+          );
+          if (filename) {
+            [company] = await db.update(companies)
+              .set({ logo_url: filename })
+              .where(eq(companies.id, company.id))
+              .returning();
+          }
+        }
 
         return res.json({
           success: true,
           company,
-          message: 'Company information saved successfully'
+          message: existingCompany.length > 0
+            ? 'Company information updated successfully'
+            : 'Company information saved successfully'
         });
 
       } catch (dbError) {
@@ -2353,16 +2339,7 @@ export async function registerRoutes(app: Express) {
           // Log error but don't fail the overall request
           console.error('Failed to send admin notification for new collaboration:', adminNotifyError);
         }
-        
-        // Send webhook notification for new collaboration
-        try {
-          await sendCollaborationWebhook(newCollaboration.id);
-          console.log(`Webhook sent for new collaboration ${newCollaboration.id}`);
-        } catch (webhookError) {
-          // Log error but don't fail the overall request
-          console.error('Failed to send webhook for new collaboration:', webhookError);
-        }
-        
+
         res.status(201);
         return res.json({
           success: true,
@@ -3909,33 +3886,6 @@ export async function registerRoutes(app: Express) {
 
   // Register Referral API routes
   app.use('/api/referrals', referralRoutes);
-  
-  // Test webhook endpoint for Alchemy collaboration
-  app.get("/api/test-webhook-alchemy", async (req: Request, res: Response) => {
-    console.log('[Webhook Test] Testing webhook for latest Alchemy collaboration');
-    
-    try {
-      const result = await sendTestWebhookForAlchemy();
-      
-      if (result.success) {
-        return res.json({ 
-          success: true, 
-          message: result.message 
-        });
-      } else {
-        return res.status(404).json({ 
-          success: false, 
-          error: result.message 
-        });
-      }
-    } catch (error) {
-      console.error('[Webhook Test] Error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Failed to send test webhook' 
-      });
-    }
-  });
 
   return httpServer;
 }

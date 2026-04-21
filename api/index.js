@@ -1071,7 +1071,7 @@ pool.on("error", (err) => {
 var db = drizzle(pool, { schema: schema_exports });
 
 // server/routes.ts
-import { eq as eq6, and as and4, desc as desc4, inArray as inArray4, or as or3 } from "drizzle-orm";
+import { eq as eq5, and as and4, desc as desc4, inArray as inArray4, or as or3 } from "drizzle-orm";
 import { sql as sql4 } from "drizzle-orm";
 
 // server/telegram.ts
@@ -1496,8 +1496,8 @@ setInterval(() => {
   });
 }, CACHE_TTL);
 var KEYBOARDS = {
-  newUser: (url) => ({
-    inline_keyboard: [[{ text: "Launch Collab Room", web_app: { url } }]]
+  newUser: (url2) => ({
+    inline_keyboard: [[{ text: "Launch Collab Room", web_app: { url: url2 } }]]
   }),
   approvedUser: {
     inline_keyboard: [
@@ -6326,82 +6326,47 @@ router.post("/log-activity", referralLimiter, async (req, res) => {
 });
 var referral_routes_default = router;
 
-// server/utils/webhook.ts
-import axios from "axios";
-import { eq as eq5 } from "drizzle-orm";
-async function sendCollaborationWebhook(collaborationId) {
-  try {
-    console.log(`[Webhook] Preparing to send webhook for collaboration ${collaborationId}`);
-    const result = await db.select({
-      collaboration: collaborations,
-      company: companies,
-      user: users
-    }).from(collaborations).leftJoin(users, eq5(collaborations.creator_id, users.id)).leftJoin(companies, eq5(companies.user_id, users.id)).where(eq5(collaborations.id, collaborationId)).limit(1);
-    if (!result.length) {
-      console.error(`[Webhook] Collaboration ${collaborationId} not found`);
-      return;
-    }
-    const { collaboration, company, user } = result[0];
-    if (!collaboration || !company || !user) {
-      console.error(`[Webhook] Missing data for collaboration ${collaborationId}`);
-      return;
-    }
-    const payload = {
-      collaboration_id: collaboration.id,
-      collab_type: collaboration.collab_type,
-      collab_description: collaboration.description || "",
-      collab_date: collaboration.specific_date || null,
-      collab_date_type: collaboration.date_type || "any_future_date",
-      collab_details: collaboration.details || {},
-      company_name: company.name,
-      company_twitter_url: company.twitter_handle ? `https://x.com/${company.twitter_handle.replace("@", "")}` : "",
-      company_twitter_handle: company.twitter_handle || "",
-      company_linkedin_url: company.linkedin_url || "",
-      company_logo_url: company.logo_url || "",
-      creator_name: `${user.first_name} ${user.last_name || ""}`.trim(),
-      created_at: collaboration.created_at?.toISOString() || (/* @__PURE__ */ new Date()).toISOString()
-    };
-    console.log("[Webhook] Sending payload:", JSON.stringify(payload, null, 2));
-    const webhookUrl = process.env.N8N_COLLABORATION_WEBHOOK_URL;
-    if (!webhookUrl) {
-      console.warn("[Webhook] N8N_COLLABORATION_WEBHOOK_URL not set; skipping webhook for collaboration", collaborationId);
-      return;
-    }
-    const response = await axios.post(webhookUrl, payload, {
-      headers: {
-        "Content-Type": "application/json"
-      },
-      timeout: 1e4
-      // 10 second timeout
-    });
-    console.log(`[Webhook] Successfully sent webhook for collaboration ${collaborationId}. Status: ${response.status}`);
-  } catch (error) {
-    console.error(`[Webhook] Failed to send webhook for collaboration ${collaborationId}:`, error);
-  }
+// server/utils/fetch-twitter-logo.ts
+import { createClient } from "@supabase/supabase-js";
+var url = process.env.SUPABASE_URL;
+var serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+var bucket = process.env.SUPABASE_STORAGE_BUCKET || "logos";
+var supabase = url && serviceKey ? createClient(url, serviceKey) : null;
+function normalizeHandle(raw) {
+  return raw.replace(/^https?:\/\/(www\.)?(x\.com|twitter\.com)\//i, "").replace(/^@/, "").replace(/[/?#].*$/, "").trim();
 }
-async function sendTestWebhookForAlchemy() {
+async function fetchAndStoreTwitterLogo(handleOrUrl, companyId) {
+  if (!supabase) {
+    console.warn("[logo] supabase not configured; skipping logo fetch");
+    return null;
+  }
+  const handle = normalizeHandle(handleOrUrl);
+  if (!handle) return null;
   try {
-    console.log("[Webhook Test] Looking for latest Alchemy collaboration...");
-    const result = await db.select({
-      collaboration: collaborations,
-      company: companies,
-      user: users
-    }).from(collaborations).leftJoin(users, eq5(collaborations.creator_id, users.id)).leftJoin(companies, eq5(companies.user_id, users.id)).where(eq5(companies.name, "Alchemy")).orderBy(collaborations.created_at).limit(1);
-    if (!result.length) {
-      console.error("[Webhook Test] No Alchemy collaborations found");
-      return { success: false, message: "No Alchemy collaborations found" };
+    const res = await fetch(
+      `https://unavatar.io/twitter/${encodeURIComponent(handle)}?fallback=false`,
+      { signal: AbortSignal.timeout(8e3) }
+    );
+    if (!res.ok) {
+      console.warn(`[logo] unavatar returned ${res.status} for @${handle}`);
+      return null;
     }
-    const { collaboration } = result[0];
-    if (!collaboration) {
-      console.error("[Webhook Test] Invalid collaboration data");
-      return { success: false, message: "Invalid collaboration data" };
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    if (bytes.byteLength < 200) return null;
+    const filename = `${companyId}.png`;
+    const { error } = await supabase.storage.from(bucket).upload(filename, bytes, {
+      contentType: "image/png",
+      upsert: true,
+      cacheControl: "86400"
+    });
+    if (error) {
+      console.warn(`[logo] upload failed for @${handle}: ${error.message}`);
+      return null;
     }
-    console.log(`[Webhook Test] Found Alchemy collaboration: ${collaboration.id}`);
-    await sendCollaborationWebhook(collaboration.id);
-    return { success: true, message: `Test webhook sent for Alchemy collaboration ${collaboration.id}` };
-  } catch (error) {
-    console.error("[Webhook Test] Error:", error);
-    return { success: false, message: `Error: ${error}` };
+    return filename;
+  } catch (err) {
+    console.warn(`[logo] fetch error for @${handle}:`, err.message);
+    return null;
   }
 }
 
@@ -6535,7 +6500,7 @@ async function checkAdminMiddleware(req, res, next) {
       res.status(401);
       return res.json({ error: "Unauthorized - Not logged in" });
     }
-    const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+    const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
     if (!user) {
       logger2.warn("Admin check failed: User not found in database");
       res.status(401);
@@ -6557,9 +6522,9 @@ async function registerRoutes(app) {
   console.log("\u{1F527} ROUTE REGISTRATION: Starting API route registration");
   app.get("/api/network-stats", async (_req, res) => {
     try {
-      const usersResult = await db.select({ count: sql4`count(*)` }).from(users).where(eq6(users.is_approved, true));
-      const collabsResult = await db.select({ count: sql4`count(*)` }).from(collaborations).where(eq6(collaborations.status, "active"));
-      const matchesResult = await db.select({ count: sql4`count(*)` }).from(requests).where(eq6(requests.status, "accepted"));
+      const usersResult = await db.select({ count: sql4`count(*)` }).from(users).where(eq5(users.is_approved, true));
+      const collabsResult = await db.select({ count: sql4`count(*)` }).from(collaborations).where(eq5(collaborations.status, "active"));
+      const matchesResult = await db.select({ count: sql4`count(*)` }).from(requests).where(eq5(requests.status, "accepted"));
       res.json({
         users: Number(usersResult[0]?.count || 0),
         collaborations: Number(collabsResult[0]?.count || 0),
@@ -6586,15 +6551,15 @@ async function registerRoutes(app) {
         res.status(401);
         return res.json({ error: "Unauthorized" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         logger2.debug("User not found with telegram ID:", telegramUser.id);
         res.status(404);
         return res.json({ error: "User not found" });
       }
-      const [company] = await db.select().from(companies).where(eq6(companies.user_id, user.id));
-      const [notificationPreferences] = await db.select().from(notification_preferences).where(eq6(notification_preferences.user_id, user.id));
-      const [marketingPreferences] = await db.select().from(marketing_preferences).where(eq6(marketing_preferences.user_id, user.id));
+      const [company] = await db.select().from(companies).where(eq5(companies.user_id, user.id));
+      const [notificationPreferences] = await db.select().from(notification_preferences).where(eq5(notification_preferences.user_id, user.id));
+      const [marketingPreferences] = await db.select().from(marketing_preferences).where(eq5(marketing_preferences.user_id, user.id));
       const response = {
         user,
         company,
@@ -6630,7 +6595,7 @@ async function registerRoutes(app) {
         res.status(401);
         return res.json({ error: "Unauthorized" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         res.status(404);
         return res.json({ error: "User not found" });
@@ -6662,7 +6627,7 @@ async function registerRoutes(app) {
         res.status(401);
         return res.json({ error: "Unauthorized" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         res.status(404);
         return res.json({ error: "User not found" });
@@ -6747,7 +6712,7 @@ async function registerRoutes(app) {
         res.status(400);
         return res.json({ error: "Telegram ID is required" });
       }
-      const [userToImpersonate] = await db.select().from(users).where(eq6(users.telegram_id, telegram_id));
+      const [userToImpersonate] = await db.select().from(users).where(eq5(users.telegram_id, telegram_id));
       if (!userToImpersonate) {
         res.status(404);
         return res.json({ error: "User not found" });
@@ -6819,7 +6784,7 @@ async function registerRoutes(app) {
         res.status(400);
         return res.json({ error: "User ID is required" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.id, userId));
+      const [user] = await db.select().from(users).where(eq5(users.id, userId));
       if (!user) {
         res.status(404);
         return res.json({ error: "User not found" });
@@ -6829,7 +6794,7 @@ async function registerRoutes(app) {
         const [user2] = await tx.update(users).set({
           is_approved: true,
           approved_at: /* @__PURE__ */ new Date()
-        }).where(eq6(users.id, userId)).returning();
+        }).where(eq5(users.id, userId)).returning();
         updatedUser = user2;
         if (user2.referred_by) {
           logger2.info(`User ${userId} was referred by ${user2.referred_by}, processing referral completion`);
@@ -6841,7 +6806,7 @@ async function registerRoutes(app) {
             timestamp: (/* @__PURE__ */ new Date()).toISOString()
           })}`);
           try {
-            const [referrer] = await tx.select().from(users).where(eq6(users.id, user2.referred_by));
+            const [referrer] = await tx.select().from(users).where(eq5(users.id, user2.referred_by));
             if (referrer) {
               await tx.insert(referral_events).values({
                 referrer_id: referrer.id,
@@ -6850,12 +6815,12 @@ async function registerRoutes(app) {
                 completed_at: /* @__PURE__ */ new Date()
               });
               logger2.info(`Created completed referral event for referrer ${referrer.id} and user ${userId}`);
-              const [referrerReferral] = await tx.select().from(user_referrals).where(eq6(user_referrals.user_id, referrer.id));
+              const [referrerReferral] = await tx.select().from(user_referrals).where(eq5(user_referrals.user_id, referrer.id));
               if (referrerReferral) {
                 await tx.update(user_referrals).set({
                   total_used: referrerReferral.total_used + 1,
                   updated_at: /* @__PURE__ */ new Date()
-                }).where(eq6(user_referrals.id, referrerReferral.id));
+                }).where(eq5(user_referrals.id, referrerReferral.id));
                 logger2.info(`Updated referral count for referrer ${referrer.id}`);
               } else {
                 logger2.warn(`No referral record found for referrer ${referrer.id}`);
@@ -6938,7 +6903,7 @@ async function registerRoutes(app) {
         return res.json({ error: "First name is required" });
       }
       const result = await db.transaction(async (tx) => {
-        const existingUsers = await tx.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+        const existingUsers = await tx.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
         const isProfileUpdate = existingUsers.length > 0;
         let user;
         if (isProfileUpdate) {
@@ -6950,7 +6915,7 @@ async function registerRoutes(app) {
             twitter_url,
             twitter_followers,
             referral_code
-          }).where(eq6(users.telegram_id, telegramUser.id.toString())).returning();
+          }).where(eq5(users.telegram_id, telegramUser.id.toString())).returning();
           user = updatedRows[0];
         } else {
           const handle = telegramUser.username || `user_${telegramUser.id.toString().substring(0, 8)}`;
@@ -6987,15 +6952,15 @@ async function registerRoutes(app) {
                 }
                 const telegramIdFromCode = processedCode.split("_")[0];
                 logger2.info(`Extracted referrer Telegram ID from code: ${telegramIdFromCode}`);
-                const [referrer] = await tx.select().from(users).where(eq6(users.telegram_id, telegramIdFromCode));
+                const [referrer] = await tx.select().from(users).where(eq5(users.telegram_id, telegramIdFromCode));
                 if (referrer) {
                   logger2.info(`Found referrer user: ${referrer.id} (${referrer.first_name} ${referrer.last_name || ""}) for code ${referral_code}`);
-                  const [referralRecord] = await tx.select().from(user_referrals).where(eq6(user_referrals.referral_code, processedCode));
+                  const [referralRecord] = await tx.select().from(user_referrals).where(eq5(user_referrals.referral_code, processedCode));
                   if (referralRecord && referralRecord.is_auto_approve) {
                     shouldAutoApprove = true;
                     logger2.info(`Referral code ${referral_code} has auto-approval enabled - user will be automatically approved`);
                   }
-                  await tx.update(users).set({ referred_by: referrer.id }).where(eq6(users.id, user.id));
+                  await tx.update(users).set({ referred_by: referrer.id }).where(eq5(users.id, user.id));
                   logger2.info(`Updated user ${user.id} with referrer ${referrer.id}`);
                 } else {
                   logger2.warn(`Could not find referrer with Telegram ID ${telegramIdFromCode} for code ${referral_code}`);
@@ -7067,7 +7032,7 @@ async function registerRoutes(app) {
       });
       if (!result.isProfileUpdate && result.user) {
         try {
-          const [company] = await db.select().from(companies).where(eq6(companies.user_id, result.user.id));
+          const [company] = await db.select().from(companies).where(eq5(companies.user_id, result.user.id));
           if (company) {
             await notifyAdminsNewUser({
               telegram_id: result.user.telegram_id,
@@ -7081,29 +7046,6 @@ async function registerRoutes(app) {
               company_twitter_handle: company.twitter_handle ?? void 0
             });
             console.log("Admin notification sent for new user application");
-            try {
-              const baseWebhookUrl = process.env.N8N_COMPANY_SIGNUP_WEBHOOK_URL;
-              if (!baseWebhookUrl) {
-                logger2.warn(`N8N_COMPANY_SIGNUP_WEBHOOK_URL not set; skipping signup webhook for company ${company.id}`);
-              } else {
-                const webhookUrl = `${baseWebhookUrl}${baseWebhookUrl.includes("?") ? "&" : "?"}id=${company.id}`;
-                const webhookResponse = await fetch(webhookUrl, {
-                  method: "GET",
-                  headers: {
-                    "User-Agent": "CollabRoom/1.0",
-                    "Content-Type": "application/json"
-                  }
-                });
-                if (webhookResponse.ok) {
-                  const webhookData = await webhookResponse.text();
-                  logger2.info(`Webhook fired successfully for company ${company.id}. Response: ${webhookData}`);
-                } else {
-                  logger2.error(`Webhook failed for company ${company.id}. Status: ${webhookResponse.status}`);
-                }
-              }
-            } catch (webhookError) {
-              logger2.error(`Failed to fire webhook for company ${company.id}:`, webhookError);
-            }
             try {
               const telegramId = parseInt(result.user.telegram_id);
               if (!isNaN(telegramId)) {
@@ -7169,14 +7111,14 @@ async function registerRoutes(app) {
         res.status(400);
         return res.json({ error: "Invalid Telegram data" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         console.error("User not found");
         res.status(404);
         return res.json({ error: "User not found" });
       }
       try {
-        const existingCompany = await db.select().from(companies).where(eq6(companies.user_id, user.id));
+        const existingCompany = await db.select().from(companies).where(eq5(companies.user_id, user.id));
         let company;
         const companyData = {
           name: company_name,
@@ -7197,27 +7139,32 @@ async function registerRoutes(app) {
         console.log("Company data to save:", companyData);
         if (existingCompany.length > 0) {
           console.log("Updating existing company:", existingCompany[0]);
-          [company] = await db.update(companies).set(companyData).where(eq6(companies.user_id, user.id)).returning();
+          [company] = await db.update(companies).set(companyData).where(eq5(companies.user_id, user.id)).returning();
           console.log("Updated company:", company);
-          return res.json({
-            success: true,
-            company,
-            message: "Company information updated successfully"
+        } else {
+          console.log("Creating new company with data:", {
+            user_id: user.id,
+            ...companyData
           });
+          [company] = await db.insert(companies).values({
+            user_id: user.id,
+            ...companyData
+          }).returning();
+          console.log("Created company:", company);
         }
-        console.log("Creating new company with data:", {
-          user_id: user.id,
-          ...companyData
-        });
-        [company] = await db.insert(companies).values({
-          user_id: user.id,
-          ...companyData
-        }).returning();
-        console.log("Created company:", company);
+        if (company.twitter_handle && !company.logo_url) {
+          const filename = await fetchAndStoreTwitterLogo(
+            company.twitter_handle,
+            company.id
+          );
+          if (filename) {
+            [company] = await db.update(companies).set({ logo_url: filename }).where(eq5(companies.id, company.id)).returning();
+          }
+        }
         return res.json({
           success: true,
           company,
-          message: "Company information saved successfully"
+          message: existingCompany.length > 0 ? "Company information updated successfully" : "Company information saved successfully"
         });
       } catch (dbError) {
         console.error("Database error:", dbError);
@@ -7278,15 +7225,15 @@ async function registerRoutes(app) {
         res.status(400);
         return res.json({ error: "Invalid Telegram data" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         console.error("User not found");
         res.status(404);
         return res.json({ error: "User not found" });
       }
       try {
-        const existingNotificationPrefs = await db.select().from(notification_preferences).where(eq6(notification_preferences.user_id, user.id));
-        const existingMarketingPrefs = await db.select().from(marketing_preferences).where(eq6(marketing_preferences.user_id, user.id));
+        const existingNotificationPrefs = await db.select().from(notification_preferences).where(eq5(notification_preferences.user_id, user.id));
+        const existingMarketingPrefs = await db.select().from(marketing_preferences).where(eq5(marketing_preferences.user_id, user.id));
         const result = await db.transaction(async (tx) => {
           let generalPrefs;
           let marketingPrefs;
@@ -7295,7 +7242,7 @@ async function registerRoutes(app) {
             [generalPrefs] = await tx.update(notification_preferences).set({
               notification_frequency,
               notifications_enabled
-            }).where(eq6(notification_preferences.user_id, user.id)).returning();
+            }).where(eq5(notification_preferences.user_id, user.id)).returning();
             console.log("Updated notification preferences:", generalPrefs);
           } else {
             [generalPrefs] = await tx.insert(notification_preferences).values({
@@ -7313,7 +7260,7 @@ async function registerRoutes(app) {
             twitter_collabs: twitter_collab_types
           };
           if (existingMarketingPrefs.length > 0) {
-            [marketingPrefs] = await tx.update(marketing_preferences).set(marketingPrefsData).where(eq6(marketing_preferences.user_id, user.id)).returning();
+            [marketingPrefs] = await tx.update(marketing_preferences).set(marketingPrefsData).where(eq5(marketing_preferences.user_id, user.id)).returning();
             console.log("Updated marketing preferences:", marketingPrefs);
           } else {
             [marketingPrefs] = await tx.insert(marketing_preferences).values({
@@ -7349,11 +7296,11 @@ async function registerRoutes(app) {
       if (!telegramUser) {
         return res.status(401).json({ error: "Unauthorized" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-      const myCollaborations = await db.select().from(collaborations).where(eq6(collaborations.creator_id, user.id)).orderBy(desc4(collaborations.created_at));
+      const myCollaborations = await db.select().from(collaborations).where(eq5(collaborations.creator_id, user.id)).orderBy(desc4(collaborations.created_at));
       return res.json(myCollaborations);
     } catch (error) {
       return res.status(500).json({ error: "Internal server error" });
@@ -7455,14 +7402,14 @@ async function registerRoutes(app) {
           username: "dev_user"
         };
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         console.error("User not found");
         res.status(404);
         return res.json({ error: "User not found" });
       }
       try {
-        const existingMarketingPrefs = await db.select().from(marketing_preferences).where(eq6(marketing_preferences.user_id, user.id));
+        const existingMarketingPrefs = await db.select().from(marketing_preferences).where(eq5(marketing_preferences.user_id, user.id));
         let result;
         console.log("MARKETING PREFERENCES DEBUG: Received filtered_marketing_topics:", JSON.stringify(filtered_marketing_topics2));
         const safeFilteredTopics = Array.isArray(filtered_marketing_topics2) ? filtered_marketing_topics2.filter((item) => typeof item === "string") : [];
@@ -7544,7 +7491,7 @@ async function registerRoutes(app) {
           company_blockchain_networks: blockchainNetworks
         };
         if (existingMarketingPrefs.length > 0) {
-          [result] = await db.update(marketing_preferences).set(marketingPrefsData).where(eq6(marketing_preferences.user_id, user.id)).returning();
+          [result] = await db.update(marketing_preferences).set(marketingPrefsData).where(eq5(marketing_preferences.user_id, user.id)).returning();
           console.log("Updated marketing preferences:", result);
         } else {
           [result] = await db.insert(marketing_preferences).values({
@@ -7595,13 +7542,13 @@ async function registerRoutes(app) {
       if (!telegramUser) {
         return res.status(401).json({ error: "Unauthorized" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
       console.log("DEBUG: Updating notification preferences for user:", user.id);
       console.log("DEBUG: Setting notifications_enabled to:", enabled);
-      const existingNotificationPrefs = await db.select().from(notification_preferences).where(eq6(notification_preferences.user_id, user.id));
+      const existingNotificationPrefs = await db.select().from(notification_preferences).where(eq5(notification_preferences.user_id, user.id));
       const notification_frequency = enabled ? "Instant" : "Daily";
       let result;
       if (existingNotificationPrefs.length > 0) {
@@ -7610,7 +7557,7 @@ async function registerRoutes(app) {
           notification_frequency,
           notifications_enabled: enabled,
           updated_at: /* @__PURE__ */ new Date()
-        }).where(eq6(notification_preferences.user_id, user.id)).returning();
+        }).where(eq5(notification_preferences.user_id, user.id)).returning();
       } else {
         console.log("DEBUG: Creating new notification preferences");
         [result] = await db.insert(notification_preferences).values({
@@ -7659,15 +7606,15 @@ async function registerRoutes(app) {
         };
         return res.json({ user: devUser });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         res.status(404);
         return res.json({ error: "User not found" });
       }
-      const [company] = await db.select().from(companies).where(eq6(companies.user_id, user.id));
-      const [marketingPreferences] = await db.select().from(marketing_preferences).where(eq6(marketing_preferences.user_id, user.id));
+      const [company] = await db.select().from(companies).where(eq5(companies.user_id, user.id));
+      const [marketingPreferences] = await db.select().from(marketing_preferences).where(eq5(marketing_preferences.user_id, user.id));
       const conferencePreferences = null;
-      const [notificationPrefs] = await db.select().from(notification_preferences).where(eq6(notification_preferences.user_id, user.id)).catch((error) => {
+      const [notificationPrefs] = await db.select().from(notification_preferences).where(eq5(notification_preferences.user_id, user.id)).catch((error) => {
         console.error("Error fetching notification preferences:", error);
         return [null];
       });
@@ -7727,7 +7674,7 @@ async function registerRoutes(app) {
       if (!telegramUser) {
         return res.status(401).json({ error: "Unauthorized" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user || user.id !== userId) {
         return res.status(403).json({ error: "Forbidden - Cannot access this user status" });
       }
@@ -7795,7 +7742,7 @@ async function registerRoutes(app) {
         };
         return devUser;
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -7830,14 +7777,14 @@ async function registerRoutes(app) {
       }
       const telegramId = telegramData.id.toString();
       console.log(`Telegram ID: ${telegramId} attempting to update collaboration: ${id}`);
-      const [dbUser] = await db.select().from(users).where(eq6(users.telegram_id, telegramId));
+      const [dbUser] = await db.select().from(users).where(eq5(users.telegram_id, telegramId));
       if (!dbUser) {
         console.log("User not found with telegramId:", telegramId);
         return res.status(404).json({ error: "User not found" });
       }
       const userId = dbUser.id;
       console.log(`Found user with ID: ${userId}`);
-      const existingCollab = await db.select().from(collaborations).where(and4(eq6(collaborations.id, id), eq6(collaborations.creator_id, userId))).limit(1);
+      const existingCollab = await db.select().from(collaborations).where(and4(eq5(collaborations.id, id), eq5(collaborations.creator_id, userId))).limit(1);
       if (!existingCollab.length) {
         console.log("Collaboration not found or does not belong to the user");
         return res.status(404).json({ error: "Collaboration not found or you do not have permission to update it" });
@@ -7909,7 +7856,7 @@ async function registerRoutes(app) {
       console.log("   - min_user_followers:", updateData.min_user_followers);
       console.log("5. Cleaned update data:", JSON.stringify(updateData, null, 2));
       console.log("=== END DEBUG ===");
-      const [updatedCollab] = await db.update(collaborations).set(updateData).where(eq6(collaborations.id, id)).returning();
+      const [updatedCollab] = await db.update(collaborations).set(updateData).where(eq5(collaborations.id, id)).returning();
       console.log(`Successfully updated collaboration ${id}`);
       return res.status(200).json(updatedCollab);
     } catch (error) {
@@ -7994,12 +7941,6 @@ async function registerRoutes(app) {
         } catch (adminNotifyError) {
           console.error("Failed to send admin notification for new collaboration:", adminNotifyError);
         }
-        try {
-          await sendCollaborationWebhook(newCollaboration.id);
-          console.log(`Webhook sent for new collaboration ${newCollaboration.id}`);
-        } catch (webhookError) {
-          console.error("Failed to send webhook for new collaboration:", webhookError);
-        }
         res.status(201);
         return res.json({
           success: true,
@@ -8032,7 +7973,7 @@ async function registerRoutes(app) {
         return res.status(401).json({ error: "Unauthorized - No Telegram user found" });
       }
       console.log("Found Telegram user in request:", telegramUser.id);
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         console.error("User not found in database for Telegram ID:", telegramUser.id);
         return res.status(404).json({ error: "User not found" });
@@ -8064,12 +8005,12 @@ async function registerRoutes(app) {
       if (!status || status !== "active" && status !== "paused") {
         return res.status(400).json({ error: 'Invalid status value. Status must be either "active" or "paused".' });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
       const collabId = req.params.id;
-      const [collaboration] = await db.select().from(collaborations).where(eq6(collaborations.id, collabId));
+      const [collaboration] = await db.select().from(collaborations).where(eq5(collaborations.id, collabId));
       if (!collaboration) {
         return res.status(404).json({ error: "Collaboration not found" });
       }
@@ -8093,7 +8034,7 @@ async function registerRoutes(app) {
         console.error("No Telegram user ID found");
         return res.status(401).json({ error: "Unauthorized" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         console.error("User not found");
         return res.status(404).json({ error: "User not found" });
@@ -8116,7 +8057,7 @@ async function registerRoutes(app) {
         company_website: companies.website,
         company_twitter_handle: companies.twitter_handle,
         company_job_title: companies.job_title
-      }).from(collaborations).leftJoin(companies, eq6(companies.user_id, collaborations.creator_id)).where(eq6(collaborations.creator_id, user.id)).orderBy(desc4(collaborations.created_at));
+      }).from(collaborations).leftJoin(companies, eq5(companies.user_id, collaborations.creator_id)).where(eq5(collaborations.creator_id, user.id)).orderBy(desc4(collaborations.created_at));
       console.log("Found collaborations:", myCollaborations.length);
       console.log("Collaborations data:", JSON.stringify(myCollaborations, null, 2));
       const collabTypes = myCollaborations.map((collab) => collab.collab_type);
@@ -8135,7 +8076,7 @@ async function registerRoutes(app) {
     console.log("Params:", req.params);
     try {
       const { id } = req.params;
-      const [collaboration] = await db.select().from(collaborations).where(eq6(collaborations.id, id)).limit(1);
+      const [collaboration] = await db.select().from(collaborations).where(eq5(collaborations.id, id)).limit(1);
       if (!collaboration) {
         console.log(`Collaboration with ID ${id} not found`);
         return res.status(404).json({ error: "Collaboration not found" });
@@ -8156,7 +8097,7 @@ async function registerRoutes(app) {
         console.error("No Telegram user ID found");
         return res.status(401).json({ error: "Unauthorized" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         console.error("User not found");
         return res.status(404).json({ error: "User not found" });
@@ -8178,15 +8119,15 @@ async function registerRoutes(app) {
       if (!telegramUser) {
         return res.status(401).json({ error: "Unauthorized" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-      const userCollaborations = await db.select({ id: collaborations.id }).from(collaborations).where(eq6(collaborations.creator_id, user.id));
+      const userCollaborations = await db.select({ id: collaborations.id }).from(collaborations).where(eq5(collaborations.creator_id, user.id));
       const userCollaborationIds = userCollaborations.map((c) => c.id);
       const userRequests = await db.select().from(requests).where(or3(
-        eq6(requests.requester_id, user.id),
-        eq6(requests.host_id, user.id)
+        eq5(requests.requester_id, user.id),
+        eq5(requests.host_id, user.id)
       ));
       const interactions = {};
       userRequests.forEach((request) => {
@@ -8216,7 +8157,7 @@ async function registerRoutes(app) {
       const telegramUser = getTelegramUserFromRequest2(req);
       let currentUserId = null;
       if (telegramUser) {
-        const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+        const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
         if (user) {
           currentUserId = user.id;
           console.log("Found authenticated user:", currentUserId);
@@ -8335,11 +8276,11 @@ async function registerRoutes(app) {
         console.error("User not found");
         return res.status(404).json({ error: "User not found" });
       }
-      const [application] = await db.select().from(collab_applications).where(eq6(collab_applications.id, id));
+      const [application] = await db.select().from(collab_applications).where(eq5(collab_applications.id, id));
       if (!application) {
         return res.status(404).json({ error: "Application not found" });
       }
-      const [collaboration] = await db.select().from(collaborations).where(eq6(collaborations.id, application.collaboration_id));
+      const [collaboration] = await db.select().from(collaborations).where(eq5(collaborations.id, application.collaboration_id));
       if (!collaboration) {
         return res.status(404).json({ error: "Collaboration not found" });
       }
@@ -8348,7 +8289,7 @@ async function registerRoutes(app) {
       }
       try {
         const updatedApplication = await storage.updateApplicationStatus(id, status);
-        const [applicant] = await db.select().from(users).where(eq6(users.id, application.applicant_id));
+        const [applicant] = await db.select().from(users).where(eq5(users.id, application.applicant_id));
         if (applicant) {
         }
         return res.json({
@@ -8385,14 +8326,14 @@ async function registerRoutes(app) {
       }
       const telegramId = telegramData.id.toString();
       console.log(`Telegram ID: ${telegramId} attempting to update collaboration: ${id}`);
-      const [dbUser] = await db.select().from(users).where(eq6(users.telegram_id, telegramId));
+      const [dbUser] = await db.select().from(users).where(eq5(users.telegram_id, telegramId));
       if (!dbUser) {
         console.log("User not found with telegramId:", telegramId);
         return res.status(404).json({ error: "User not found" });
       }
       const userId = dbUser.id;
       console.log(`Found user with ID: ${userId}`);
-      const existingCollab = await db.select().from(collaborations).where(and4(eq6(collaborations.id, id), eq6(collaborations.creator_id, userId))).limit(1);
+      const existingCollab = await db.select().from(collaborations).where(and4(eq5(collaborations.id, id), eq5(collaborations.creator_id, userId))).limit(1);
       if (!existingCollab.length) {
         console.log("Collaboration not found or does not belong to the user");
         return res.status(404).json({ error: "Collaboration not found or you do not have permission to update it" });
@@ -8403,7 +8344,7 @@ async function registerRoutes(app) {
         return res.status(400).json({ error: "Missing required fields" });
       }
       updateData.updated_at = /* @__PURE__ */ new Date();
-      const [updatedCollab] = await db.update(collaborations).set(updateData).where(eq6(collaborations.id, id)).returning();
+      const [updatedCollab] = await db.update(collaborations).set(updateData).where(eq5(collaborations.id, id)).returning();
       console.log(`Successfully updated collaboration ${id}`);
       return res.status(200).json(updatedCollab);
     } catch (error) {
@@ -8422,20 +8363,20 @@ async function registerRoutes(app) {
       }
       const telegramId = telegramData.id.toString();
       console.log(`Telegram ID: ${telegramId} attempting to delete collaboration: ${id}`);
-      const [dbUser] = await db.select().from(users).where(eq6(users.telegram_id, telegramId));
+      const [dbUser] = await db.select().from(users).where(eq5(users.telegram_id, telegramId));
       if (!dbUser) {
         console.log("User not found with telegramId:", telegramId);
         return res.status(404).json({ error: "User not found" });
       }
       const userId = dbUser.id;
       console.log(`Found user with ID: ${userId}`);
-      const existingCollab = await db.select().from(collaborations).where(and4(eq6(collaborations.id, id), eq6(collaborations.creator_id, userId))).limit(1);
+      const existingCollab = await db.select().from(collaborations).where(and4(eq5(collaborations.id, id), eq5(collaborations.creator_id, userId))).limit(1);
       if (!existingCollab.length) {
         console.log("Collaboration not found or does not belong to the user");
         return res.status(404).json({ error: "Collaboration not found or you do not have permission to delete it" });
       }
-      const deletedCollab = await db.delete(collaborations).where(eq6(collaborations.id, id)).returning();
-      const deletedRequests = await db.delete(requests).where(eq6(requests.collaboration_id, id)).returning();
+      const deletedCollab = await db.delete(collaborations).where(eq5(collaborations.id, id)).returning();
+      const deletedRequests = await db.delete(requests).where(eq5(requests.collaboration_id, id)).returning();
       console.log(`Successfully deleted collaboration ${id} and ${deletedRequests.length} related requests`);
       return res.status(200).json({
         success: true,
@@ -8716,7 +8657,7 @@ async function registerRoutes(app) {
             request: requests,
             user: users,
             collaboration: collaborations
-          }).from(requests).where(eq6(requests.id, request_id)).innerJoin(users, eq6(requests.requester_id, users.id)).innerJoin(collaborations, eq6(requests.collaboration_id, collaborations.id));
+          }).from(requests).where(eq5(requests.id, request_id)).innerJoin(users, eq5(requests.requester_id, users.id)).innerJoin(collaborations, eq5(requests.collaboration_id, collaborations.id));
           if (!originalRequest) {
             console.log(`Database error: Original request ${request_id} not found`);
             return res.status(404).json({ error: "Original request not found" });
@@ -8738,7 +8679,7 @@ async function registerRoutes(app) {
             console.log(`Success: Created request record with ID: ${newRequest[0].id}`);
             console.log(`Details: request for collaboration ${actualCollaborationId} by user ${user.id}`);
             console.log("MATCH CREATED! Both users made requests.");
-            const [collaboration] = await db.select().from(collaborations).where(eq6(collaborations.id, actualCollaborationId));
+            const [collaboration] = await db.select().from(collaborations).where(eq5(collaborations.id, actualCollaborationId));
             console.log("Collaboration details for notification:", {
               id: actualCollaborationId,
               creator_id: collaboration?.creator_id,
@@ -8865,9 +8806,9 @@ async function registerRoutes(app) {
             const userCollabIds = userCollaborations.map((collab) => collab.id);
             const hostPendingRequests = await db.select().from(requests).where(
               and4(
-                eq6(requests.requester_id, hostId),
+                eq5(requests.requester_id, hostId),
                 inArray4(requests.collaboration_id, userCollabIds),
-                eq6(requests.status, "pending")
+                eq5(requests.status, "pending")
               )
             );
             console.log(`Found ${hostPendingRequests.length} pending requests from host for user's collaborations`);
@@ -8899,8 +8840,8 @@ async function registerRoutes(app) {
               console.log(`Success: Created match record with ID: ${match.id}`);
               const userCollabType = matchedUserCollab.collab_type;
               const hostCollabType = collaboration2.collab_type;
-              const [hostCompanyInfo] = await db.select().from(companies).where(eq6(companies.user_id, hostId));
-              const [userCompanyInfo] = await db.select().from(companies).where(eq6(companies.user_id, user.id));
+              const [hostCompanyInfo] = await db.select().from(companies).where(eq5(companies.user_id, hostId));
+              const [userCompanyInfo] = await db.select().from(companies).where(eq5(companies.user_id, user.id));
               console.log("Database notifications removed - using Telegram notifications only");
               try {
                 await notifyMatchCreated(user.id, hostId, matchedCollaboration.collaboration_id, note2);
@@ -9053,12 +8994,12 @@ async function registerRoutes(app) {
         console.error("No Telegram user ID found");
         return res.status(401).json({ error: "Unauthorized" });
       }
-      const [user] = await db.select().from(users).where(eq6(users.telegram_id, telegramUser.id.toString()));
+      const [user] = await db.select().from(users).where(eq5(users.telegram_id, telegramUser.id.toString()));
       if (!user) {
         console.error("User not found in database");
         return res.status(404).json({ error: "User not found" });
       }
-      const userRequests = await db.select().from(requests).where(eq6(requests.requester_id, user.id));
+      const userRequests = await db.select().from(requests).where(eq5(requests.requester_id, user.id));
       console.log(`Found ${userRequests.length} requests for user ${user.id}`);
       const formattedRequests = userRequests.map((request) => ({
         id: request.id,
@@ -9079,29 +9020,6 @@ async function registerRoutes(app) {
     }
   });
   app.use("/api/referrals", referral_routes_default);
-  app.get("/api/test-webhook-alchemy", async (req, res) => {
-    console.log("[Webhook Test] Testing webhook for latest Alchemy collaboration");
-    try {
-      const result = await sendTestWebhookForAlchemy();
-      if (result.success) {
-        return res.json({
-          success: true,
-          message: result.message
-        });
-      } else {
-        return res.status(404).json({
-          success: false,
-          error: result.message
-        });
-      }
-    } catch (error) {
-      console.error("[Webhook Test] Error:", error);
-      return res.status(500).json({
-        success: false,
-        error: "Failed to send test webhook"
-      });
-    }
-  });
   return httpServer;
 }
 
