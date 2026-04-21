@@ -79,8 +79,12 @@ export function BottomSheet({
           the drawer's position 1:1 (fades down as you pull down, fades back
           up if you release without dismissing). Don't add CSS `animate-*`
           classes here or they'll fight vaul's inline opacity writes.
+
+          bg-overlay reads --overlay (alpha baked in). Don't use
+          bg-brand-dark/70 — Tailwind's opacity modifier silently drops the
+          alpha on oklch() CSS vars, leaving the overlay invisible.
         */}
-        <DrawerPrimitive.Overlay className="fixed inset-0 z-50 bg-brand-dark/70" />
+        <DrawerPrimitive.Overlay className="fixed inset-0 z-50 bg-overlay" />
         <DrawerPrimitive.Content
           className={cn(
             "fixed inset-x-0 bottom-0 z-50 flex flex-col",

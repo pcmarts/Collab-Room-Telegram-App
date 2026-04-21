@@ -64,6 +64,7 @@ export default {
         },
         hairline: "var(--border-hairline)",
         "border-strong": "var(--border-strong)",
+        overlay: "var(--overlay)",
         success: "var(--success)",
         warning: "var(--warning)",
 
