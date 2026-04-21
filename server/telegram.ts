@@ -1682,7 +1682,7 @@ export async function notifyUserCollabCreated(
         [
           {
             text: "View my collabs",
-            web_app: { url: `${WEBAPP_URL}/marketing-collabs-new?tab=my` },
+            web_app: { url: `${WEBAPP_URL}/my-collaborations` },
           },
         ],
       ],
@@ -1883,7 +1883,7 @@ export async function notifyAdminsNewCollaboration(
           {
             text: "View collab",
             web_app: {
-              url: `${WEBAPP_URL}/admin/collaborations/${collaborationId}`,
+              url: `${WEBAPP_URL}/admin/dashboard`,
             },
           },
         ],
@@ -3606,7 +3606,7 @@ async function handleMatchInfoCallback(
         [
           {
             text: "Open",
-            web_app: { url: `${WEBAPP_URL}/requests/${matchId}` },
+            web_app: { url: `${WEBAPP_URL}/requests` },
           },
         ],
       ],
