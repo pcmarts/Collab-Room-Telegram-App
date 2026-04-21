@@ -18,10 +18,13 @@ const isProduction = config.NODE_ENV === 'production';
 export const pool = new Pool({
   connectionString: config.DATABASE_URL,
   ssl: isProduction ? { rejectUnauthorized: false } : false,
-  // Low max for serverless — each invocation gets its own short-lived connection.
-  max: isProduction ? 1 : 10,
+  // Small pool for serverless — pgBouncer on Supabase handles fan-out for us.
+  // `connectionTimeoutMillis` is generous because cold-start TLS to Supabase's
+  // pooler can stretch past the 10s default; 30s leaves headroom without
+  // causing functions to hang forever.
+  max: isProduction ? 3 : 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  connectionTimeoutMillis: 30000,
 });
 
 // Add error handler to prevent pool crashes
