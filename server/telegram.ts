@@ -70,27 +70,32 @@ if (!botToken) {
   throw new Error("Telegram bot token is required");
 }
 
-// Setup admin message logging
+// Admin message logging writes to a local file in dev — useful for spot-checking
+// what the bot sent to admins during manual testing. On Vercel the filesystem is
+// read-only, so both the directory create and every appendFileSync fail and spam
+// the runtime log. Skip the whole thing on serverless; console.log stays put.
+const isFileLoggingEnabled = !process.env.VERCEL;
 const LOG_DIR = path.join(process.cwd(), "logs");
 const ADMIN_MESSAGE_LOG = path.join(LOG_DIR, "admin_messages.log");
 
-// Create logs directory if it doesn't exist
-try {
-  if (!fs.existsSync(LOG_DIR)) {
-    fs.mkdirSync(LOG_DIR, { recursive: true });
-    console.log("Created logs directory:", LOG_DIR);
+if (isFileLoggingEnabled) {
+  try {
+    if (!fs.existsSync(LOG_DIR)) {
+      fs.mkdirSync(LOG_DIR, { recursive: true });
+      console.log("Created logs directory:", LOG_DIR);
+    }
+  } catch (err) {
+    console.error("Failed to create logs directory:", err);
   }
-} catch (err) {
-  console.error("Failed to create logs directory:", err);
 }
 
-// Function to log admin messages
 function logAdminMessage(
   adminId: string,
   messageType: string,
   messageContent: string,
   recipientInfo?: string,
 ) {
+  if (!isFileLoggingEnabled) return;
   try {
     const timestamp = new Date().toISOString();
     const logEntry = `[${timestamp}] ADMIN[${adminId}] TYPE[${messageType}] ${recipientInfo ? `RECIPIENT[${recipientInfo}] ` : ""}MESSAGE: ${messageContent}\n`;

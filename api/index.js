@@ -1107,17 +1107,21 @@ console.log(
 if (!botToken) {
   throw new Error("Telegram bot token is required");
 }
+var isFileLoggingEnabled = !process.env.VERCEL;
 var LOG_DIR = path.join(process.cwd(), "logs");
 var ADMIN_MESSAGE_LOG = path.join(LOG_DIR, "admin_messages.log");
-try {
-  if (!fs.existsSync(LOG_DIR)) {
-    fs.mkdirSync(LOG_DIR, { recursive: true });
-    console.log("Created logs directory:", LOG_DIR);
+if (isFileLoggingEnabled) {
+  try {
+    if (!fs.existsSync(LOG_DIR)) {
+      fs.mkdirSync(LOG_DIR, { recursive: true });
+      console.log("Created logs directory:", LOG_DIR);
+    }
+  } catch (err) {
+    console.error("Failed to create logs directory:", err);
   }
-} catch (err) {
-  console.error("Failed to create logs directory:", err);
 }
 function logAdminMessage(adminId, messageType, messageContent, recipientInfo) {
+  if (!isFileLoggingEnabled) return;
   try {
     const timestamp2 = (/* @__PURE__ */ new Date()).toISOString();
     const logEntry = `[${timestamp2}] ADMIN[${adminId}] TYPE[${messageType}] ${recipientInfo ? `RECIPIENT[${recipientInfo}] ` : ""}MESSAGE: ${messageContent}
@@ -6992,7 +6996,16 @@ async function registerRoutes(app) {
       });
       if (!result.isProfileUpdate && result.user) {
         try {
-          const [company] = await db.select().from(companies).where(eq5(companies.user_id, result.user.id));
+          let [company] = await db.select().from(companies).where(eq5(companies.user_id, result.user.id));
+          if (company && company.twitter_handle && !company.logo_url) {
+            const filename = await fetchAndStoreTwitterLogo(
+              company.twitter_handle,
+              company.id
+            );
+            if (filename) {
+              [company] = await db.update(companies).set({ logo_url: filename }).where(eq5(companies.id, company.id)).returning();
+            }
+          }
           if (company) {
             await notifyAdminsNewUser({
               telegram_id: result.user.telegram_id,

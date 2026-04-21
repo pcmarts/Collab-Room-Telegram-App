@@ -1011,10 +1011,26 @@ export async function registerRoutes(app: Express) {
       if (!result.isProfileUpdate && result.user) {
         try {
           // Get company data for the notification
-          const [company] = await db
+          let [company] = await db
             .select()
             .from(companies)
             .where(eq(companies.user_id, result.user.id));
+
+          // Backfill the company logo from unavatar once the transaction has
+          // committed. Non-fatal: the helper swallows errors and returns null.
+          if (company && company.twitter_handle && !company.logo_url) {
+            const filename = await fetchAndStoreTwitterLogo(
+              company.twitter_handle,
+              company.id,
+            );
+            if (filename) {
+              [company] = await db
+                .update(companies)
+                .set({ logo_url: filename })
+                .where(eq(companies.id, company.id))
+                .returning();
+            }
+          }
 
           if (company) {
             // Send notification to all admins with enhanced user data
