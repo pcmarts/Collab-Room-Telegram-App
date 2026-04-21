@@ -2,7 +2,7 @@ import express, { type Express, type Request, Response, NextFunction } from "exp
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { registerRoutes } from "./routes";
-import { bot } from "./telegram";
+import { bot, lastStartError } from "./telegram";
 import { config } from "../shared/config";
 import { apiLimiter } from "./middleware/rate-limiter";
 import { logger } from "./utils/logger";
@@ -83,6 +83,12 @@ export async function createApp(): Promise<{ app: Express; httpServer: any }> {
       },
     })
   );
+
+  // Debug: expose the last handleStart error as JSON so we can see full details
+  // without Vercel's log viewer truncating.
+  app.get("/api/debug/last-start-error", (_req, res) => {
+    res.json({ error: lastStartError ?? null });
+  });
 
   // Telegram webhook endpoint. Mounted BEFORE the /api rate-limiter so the bot
   // isn't throttled.
