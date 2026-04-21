@@ -73,13 +73,14 @@ export function BottomSheet({
       shouldScaleBackground
     >
       <DrawerPrimitive.Portal>
-        <DrawerPrimitive.Overlay
-          className={cn(
-            "fixed inset-0 z-50 bg-brand-dark/40",
-            "data-[state=open]:animate-in data-[state=closed]:animate-out",
-            "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-          )}
-        />
+        {/*
+          Overlay opacity is managed natively by vaul — on open/close it
+          transitions smoothly, and during a swipe-to-dismiss drag it tracks
+          the drawer's position 1:1 (fades down as you pull down, fades back
+          up if you release without dismissing). Don't add CSS `animate-*`
+          classes here or they'll fight vaul's inline opacity writes.
+        */}
+        <DrawerPrimitive.Overlay className="fixed inset-0 z-50 bg-brand-dark/70" />
         <DrawerPrimitive.Content
           className={cn(
             "fixed inset-x-0 bottom-0 z-50 flex flex-col",

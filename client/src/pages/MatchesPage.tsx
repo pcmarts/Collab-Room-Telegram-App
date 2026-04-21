@@ -1,19 +1,13 @@
 import * as React from "react";
 import { lazy, Suspense, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiRequest } from "@/lib/queryClient";
 import { useMatchContext } from "@/contexts/MatchContext";
 import { useLocation } from "wouter";
-import { PageHeader } from "../components/PageHeader";
+import { PageHeader } from "@/components/PageHeader";
 import { Eyebrow } from "@/components/brand";
 import { LogoAvatar } from "@/components/ui/logo-avatar";
 import { MessageCircle, Info, Linkedin, Twitter, Loader2 } from "lucide-react";
@@ -301,37 +295,55 @@ export default function MatchesPage() {
         {error ? errorState : isLoading && !matches ? skeletonRows : content}
       </div>
 
-      <Dialog
+      <BottomSheet
         open={!!selectedMatch}
         onOpenChange={(open) => !open && setSelectedMatch(null)}
+        size="tall"
+        eyebrow={selectedMatch?.collaborationType.toUpperCase()}
+        title={selectedMatch?.companyName ?? "Match"}
+        subtitle={
+          selectedMatch
+            ? `${selectedMatch.matchedPerson}${
+                selectedMatch.roleTitle ? ` · ${selectedMatch.roleTitle}` : ""
+              } — matched ${selectedMatch.matchDate}`
+            : undefined
+        }
+        footer={
+          selectedMatch ? (
+            <BottomSheet.ActionBar>
+              <Button
+                variant="outline"
+                onClick={handleCloseMatchDetail}
+              >
+                Close
+              </Button>
+              <Button
+                onClick={() => handleChatClick(selectedMatch.username)}
+                disabled={!selectedMatch.username}
+              >
+                <MessageCircle className="h-4 w-4" />
+                Open chat
+              </Button>
+            </BottomSheet.ActionBar>
+          ) : undefined
+        }
       >
-        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="sr-only">
-              {selectedMatch
-                ? `${selectedMatch.collaborationType} Details`
-                : "Match Details"}
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              Detailed information about this collaboration match
-            </DialogDescription>
-          </DialogHeader>
-          {selectedMatch && (
-            <Suspense
-              fallback={
-                <div className="flex justify-center py-6">
-                  <Loader2 className="h-5 w-5 animate-spin text-text-subtle" />
-                </div>
-              }
-            >
-              <MatchDetail
-                match={selectedMatch}
-                onBack={handleCloseMatchDetail}
-              />
-            </Suspense>
-          )}
-        </DialogContent>
-      </Dialog>
+        {selectedMatch && (
+          <Suspense
+            fallback={
+              <div className="flex justify-center py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-text-subtle" />
+              </div>
+            }
+          >
+            <MatchDetail
+              match={selectedMatch}
+              onBack={handleCloseMatchDetail}
+              hideHeader
+            />
+          </Suspense>
+        )}
+      </BottomSheet>
     </div>
   );
 }

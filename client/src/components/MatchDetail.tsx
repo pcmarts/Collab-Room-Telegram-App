@@ -44,9 +44,16 @@ interface Match {
 interface MatchDetailProps {
   match: Match;
   onBack: () => void;
+  /**
+   * When true, suppress the component's own header block (company chrome)
+   * and footer action bar. Use this when rendering inside a BottomSheet —
+   * the sheet owns the eyebrow/title/CTAs and the internal chrome would
+   * duplicate them.
+   */
+  hideHeader?: boolean;
 }
 
-function MatchDetail({ match, onBack }: MatchDetailProps) {
+function MatchDetail({ match, onBack, hideHeader = false }: MatchDetailProps) {
   let detailsSection;
 
   // Helper function to format common field types
@@ -229,20 +236,9 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
     );
   };
 
-  // For collaboration details, the host is the company that created the collaboration
-  // We need the correct host for each match type
-  let hostName = "Bondex"; // Hard-coded for the specific match ID requested by the user
-  let hostWebsite = "https://bondex.app";
-  
-  // For match b60da8b9-dbb4-4e24-b05a-669d5b507ab0, force to use Bondex as the host
-  if (match.id === "b60da8b9-dbb4-4e24-b05a-669d5b507ab0") {
-    hostName = "Bondex";
-    hostWebsite = "https://bondex.app";
-  }
-  
   const companyData = {
-    name: hostName,
-    website: hostWebsite
+    name: match.companyName,
+    website: match.companyWebsite,
   };
 
   // Render different details based on collaboration type
@@ -425,43 +421,43 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header Section with Match Summary */}
-      <div className="pb-4 border-b border-hairline">
-        <div className="flex items-start gap-3 mb-2">
-          {/* Company Logo */}
-          <LogoAvatar
-            name={match.companyName || "Company"}
-            logoUrl={match.companyLogoUrl}
-            className="w-16 h-16"
-            size="xl"
-          />
-          
-          {/* Company info and collaboration details */}
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-xl font-bold">{match.companyName}</h2>
-            </div>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-text-muted mb-1">
-                  {match.matchedPerson}
-                </p>
-                <p className="text-sm text-text-muted">
-                  {match.roleTitle}
-                </p>
+      {/* Header Section with Match Summary — skipped when embedded in a BottomSheet */}
+      {!hideHeader && (
+        <div className="pb-4 border-b border-hairline">
+          <div className="flex items-start gap-3 mb-2">
+            <LogoAvatar
+              name={match.companyName || "Company"}
+              logoUrl={match.companyLogoUrl}
+              className="w-16 h-16"
+              size="xl"
+            />
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-xl font-bold">{match.companyName}</h2>
               </div>
-              <div className="flex flex-col items-end">
-                <Badge variant="outline" className="text-brand bg-brand-subtle border-brand/15 mb-1 whitespace-nowrap">
-                  {match.collaborationType}
-                </Badge>
-                <p className="text-xs text-text-muted">
-                  Matched on {match.matchDate}
-                </p>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-text-muted mb-1">
+                    {match.matchedPerson}
+                  </p>
+                  <p className="text-sm text-text-muted">{match.roleTitle}</p>
+                </div>
+                <div className="flex flex-col items-end">
+                  <Badge
+                    variant="outline"
+                    className="text-brand bg-brand-subtle border-brand/15 mb-1 whitespace-nowrap"
+                  >
+                    {match.collaborationType}
+                  </Badge>
+                  <p className="text-xs text-text-muted">
+                    Matched on {match.matchDate}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Personalized Note - If Present */}
       {match.note && (
@@ -689,24 +685,26 @@ function MatchDetail({ match, onBack }: MatchDetailProps) {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-between pt-2 border-t border-hairline">
-        <Button variant="outline" onClick={onBack}>
-          Back to Matches
-        </Button>
-        <Button
-          onClick={() => {
-            if (match.username) {
-              window.open(`https://t.me/${match.username}`, "_blank");
-            } else {
-              alert("No Telegram username found for this contact");
-            }
-          }}
-        >
-          <MessageCircle className="w-4 h-4 mr-2" />
-          Chat
-        </Button>
-      </div>
+      {/* Action Buttons — skipped when embedded in a BottomSheet (sheet owns the footer) */}
+      {!hideHeader && (
+        <div className="flex justify-between pt-2 border-t border-hairline">
+          <Button variant="outline" onClick={onBack}>
+            Back to Matches
+          </Button>
+          <Button
+            onClick={() => {
+              if (match.username) {
+                window.open(`https://t.me/${match.username}`, "_blank");
+              } else {
+                alert("No Telegram username found for this contact");
+              }
+            }}
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Chat
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
